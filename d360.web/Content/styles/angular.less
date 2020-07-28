@@ -7328,7 +7328,7 @@ d3s-icon-picker {
         margin-left: -.75rem;
 
         .measure-details-panel {
-            padding: 8px;
+            padding: 16px;
             border: @ig-field-border;
             border-radius: 4px;
 
@@ -7337,6 +7337,30 @@ d3s-icon-picker {
                 font-size: large;
                 font-weight: bold;
                 margin-bottom: 16px;
+            }
+        }
+
+        .empty-metric-message {
+            background: @ig-grey-t5;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 0px 0px 8px 0px;
+
+            .fa {
+                margin-right: 8px;
+            }
+        }
+
+        .no-measure-message {
+            color: @ig-grey-t3;
+            padding: 8px;
+        }
+
+        .measure-list {
+            padding-left: 16px;
+
+            li {
+                list-style-type: disc;
             }
         }
 
@@ -7361,6 +7385,278 @@ d3s-icon-picker {
 
                 .score-range {
                     padding-right: 16px;
+                }
+            }
+        }
+    }
+}
+.modal-measure {
+    .modal-measure-editor {
+        padding: 0px 16px 16px 16px;
+        margin-top: -32px;
+
+        .metric-form {
+            overflow: auto;
+        }
+
+        .conditions {
+            padding: 0px 16px;
+        }
+
+        .bottom-space {
+            margin-bottom: 16px;
+        }
+
+        .input-spinner {
+            margin-top: 0px;
+            border: 1px solid #bdbfc6;
+            width: 220px;
+            border-radius: 4px;
+            padding: 4px;
+            height: 32px;
+
+            .ui-spinner {
+                margin-top: -3px;
+                width: 212px;
+                height: 28px;
+                background: inherit;
+
+                .ui-spinner-input {
+                    border: none;
+                    width: 204px;
+                    background: inherit;
+                    margin-top: 2px;
+                }
+
+                .ui-spinner-button {
+                    background: @ig-grey-t3;
+                    border-radius: 2px;
+                }
+            }
+
+            &.required {
+                background: #f5fbfd;
+            }
+
+            &:focus-within:not(.ui-state-error) {
+                outline: 0 none;
+                outline-offset: 0;
+                box-shadow: 0 0 0 2px #8abddf;
+                border-color: #006fba;
+            }
+
+            &:hover:not(.ui-state-error) {
+                border-color: #212121;
+            }
+
+            &.invalid {
+                background: @ig-red-t3;
+            }
+        }
+
+        .ig-accordion {
+            .ui-accordion-header {
+                border-top: 1px solid #999;
+                border-bottom: 0 none;
+                border-left: 0 none;
+                border-right: 0 none;
+                background: #fff;
+                margin-top: 16px;
+
+                &.ui-state-active {
+                    background: #fff;
+                    border-left: 0 none;
+                    border-right: 0 none;
+                    border-radius: 0;
+                    border-top: 1px solid #999;
+                    border-bottom: none;
+                    margin-top: 16px;
+                }
+
+                .fa {
+                    position: absolute;
+                    left: 0.5em;
+                    top: 50%;
+                    margin-top: -10px;
+                    font-size: 10px;
+                    width: 14px;
+                    background: black;
+                    border-radius: 50%;
+                    padding: 2px;
+                    height: 14px;
+                    color: white;
+                    line-height: 8px;
+                }
+
+                .ui-accordion-header-info {
+                    display: inline-flex;
+
+                    .ig-input-label {
+                        .info-tip {
+                            .fa {
+                                position: relative;
+                                top: 0px;
+                                margin: 0px;
+                                left: -16px;
+                                font-size: 14px;
+                                width: initial;
+                                color: #5ca3d3;
+                                line-height: 11px;
+                                background: none;
+                                padding: 12px;
+                            }
+                        }
+                    }
+                }
+
+                a {
+                    display: inline-flex;
+                    padding: 0.5em 0.5em 0.5em 2em;
+                    font-weight: normal;
+                    text-transform: none;
+                    color: #5c5e60;
+                    font-size: 1em;
+                }
+            }
+        }
+
+        .feedback {
+            background: #b21a3e;
+            padding: 2px 7px;
+            font-size: 12px;
+            color: white;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+            width: auto;
+        }
+
+        .condition-row {
+            &.d3s-color-picker {
+                width: 100%;
+
+                .ui-dropdown {
+                    &.invalid {
+                        background: @ig-red-t3;
+                    }
+                }
+            }
+        }
+
+        .input-container {
+            width: 30%;
+            padding: 8px 8px 8px 0px;
+
+            .ig-input {
+                margin-bottom: 0px;
+            }
+        }
+
+        .condition-dropdown {
+            padding: 8px 8px 8px 0px;
+            width: 30%;
+
+            &.no-pad {
+                padding: 0px;
+
+                .ui-dropdown {
+                    width: 220px;
+                }
+            }
+
+            .ui-dropdown {
+                min-width: 150px;
+            }
+        }
+
+        .actions-btn {
+            align-self: center;
+            padding-left: 8px;
+        }
+
+        .measure-two-col {
+            display: inline-flex;
+            flex-direction: row;
+            flex-grow: 1;
+            width: 100%;
+
+            .mesure-info {
+                margin: 24px;
+                padding: 8px;
+                border-radius: 4px;
+                background: @ig-grey-t5;
+                flex-grow: 1;
+                display: inline-flex;
+                height: inherit;
+
+                .fa {
+                    height: 16px;
+                    padding: 4px;
+                    margin-right: 4px;
+                }
+            }
+        }
+
+        .matchtype-container {
+            display: inline-flex;
+
+            .matchtype-option {
+                padding: 4px;
+                margin-left: 4px;
+
+                .ui-radiobutton-box {
+                    border: 1px solid black;
+                    background: #fff;
+                    color: black;
+                }
+            }
+        }
+    }
+
+    .action-bar {
+        padding: 0px 0px 24px 0px !important;
+        margin-top: 16px;
+    }
+}
+
+
+.ig-input-label {
+    display: block;
+    font-weight: bold;
+    white-space: nowrap;
+
+    .fa {
+        color: @ig-midblue-t2;
+        line-height: 20px;
+    }
+
+    .info-tip {
+        display: inline-flex;
+        padding-left: 4px;
+        height: 16px;
+
+        .tip-container {
+            position: relative;
+        }
+
+        .tooltip-content {
+            display: none;
+        }
+
+        &:hover {
+            .tip-container {
+                .tooltip-content {
+                    display: block;
+                    top: -75px;
+                    left: -110px;
+                    position: absolute;
+                    height: 150px;
+                    width: 490px;
+                    white-space: normal;
+
+                    &.group {
+                        top: -50px;
+                        height: 105px;
+                    }
                 }
             }
         }

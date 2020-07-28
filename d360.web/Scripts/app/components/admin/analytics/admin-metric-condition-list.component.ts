@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -12,12 +12,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() conditionUid: string;
-    @Input() position: number;
     @Input() assetTypeUid: string;
     @Input() conditions: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() metricConditionListFieldTypes: MetricFieldTypeViewModel[] = [];
-
+   
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
@@ -160,34 +158,6 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         return '';
     }
 
-    add() {
-        this.selection = new MetricAssetVersionConditionItemViewModel();
-        this.selection.IsEditMode = false;
-        this.formMode = FormMode.Adding;
-        this.formModeChange.emit(this.formMode);
-    }
-
-    edit(e: any) {
-        this.selection.IsEditMode = true;
-        this.formMode = FormMode.Editing;
-        this.formModeChange.emit(this.formMode);
-    }
-
-    delete(i: number) {
-        this.selectedIndex = i;
-        this.formMode = FormMode.Deleting;
-        this.formModeChange.emit(this.formMode);
-    }
-
-    confirmDelete() {
-        this.conditions.splice(this.selectedIndex, 1).slice();
-        this.conditionsChange.emit(this.conditions);
-
-        this.refreshSelectedFieldTypeIds();
-
-        this.formMode = FormMode.Default;
-        this.formModeChange.emit(this.formMode);
-    }
 
     save(e: MetricAssetVersionConditionItemViewModel) {
         e.OperatorText = this.operators.find(o => o.value === e.Operator).label;
