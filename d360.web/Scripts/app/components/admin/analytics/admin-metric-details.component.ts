@@ -82,9 +82,8 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                             [scoreData]="scoreData"
                                             (selectionChange)="selectionChanged($event)"></d3s-admin-metric-list>
                             </div>
-                            <div class="col s5 measure-details-panel">
-                                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                                <div *ngIf="!isLoading">
+                            <div *ngIf="!isLoading && selectedMetric" class="col s5 measure-details-panel">
+                                <div>
                                       <div class="panel-heading">
                                           {{selectedMetric?.Name}}
                                       </div>
