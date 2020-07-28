@@ -508,7 +508,7 @@ export class ProcessDiagramTemplates {
                 curve: go.Link.JumpOver,
                 corner: 5,
                 toShortLength: 4,
-                fromEndSegmentLength: 60,
+                fromEndSegmentLength: 20,
                 toEndSegmentLength: 20,
                 cursor: 'pointer'
             },

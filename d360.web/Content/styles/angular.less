@@ -7007,8 +7007,34 @@ d3s-process-diagram {
             color: black;
         }
 
-        .ui-multiselect-label-container {
-            max-width: 250px;
+        .ui-multiselect {
+            height: auto;
+            min-height: 32px;
+
+            .ui-multiselect-label-container {
+                max-width: 250px;
+                overflow: visible;
+                width: 100%;
+
+                .ui-multiselect-label {
+                    height: auto !important;
+                    padding-left: 4px;
+                    padding-top: 0px;
+                }
+            }
+
+            .ig-colorfield-item-selected {
+                margin-top: 2px !important;
+                display: inline-block;
+                float: left;
+                margin-left: auto !important;
+                margin-right: 4px;
+                padding: 0px 4px !important;
+
+                .ig-colorfield-item-label {
+                    padding-right: 12px;
+                }
+            }
         }
 
         .ui-editor-toolbar {
