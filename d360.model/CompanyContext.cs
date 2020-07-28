@@ -2961,19 +2961,22 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
                 {
+                    string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
+                    string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
+                    string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
+                    
                     columns += $"{name}_T.value as [{name}],";
                     joins += $@" outer apply(
-
                             select value = (
                                 SELECT
                                 COALESCE(ADV.DisplayValue, AC.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
                                 FROM field fi
-                                cross apply STRING_SPLIT(fi.Value, ',') SPFfi
-                                inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = try_cast(SPFfi.value as int)
+                                {fieldJoin}
+                                inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
                                 cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
-                                where FieldTypeID = {f.ID} and fi.AssetID = A.Id and '{f.Type}' = 'Lookup'
+                                where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
 							){name}_T(value)";
                 }
