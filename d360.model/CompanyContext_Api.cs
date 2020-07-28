@@ -1338,12 +1338,7 @@ where T.ExecutionId = @executionid;
 
                     }
                 }
-
-                if (errorMessages.Any())
-                {
-                    errorMessage = string.Join(errorDelimiter, errorMessages);
-                    errorMessage += "."; //ending period
-                }
+                                
 
                 if (fieldTable != null)
                 {
@@ -1361,7 +1356,12 @@ where T.ExecutionId = @executionid;
 
                     fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
                 }
+            }
 
+            if (errorMessages.Any())
+            {
+                errorMessage = string.Join(errorDelimiter, errorMessages);
+                errorMessage += "."; //ending period
             }
 
             return fieldRows;
