@@ -1,5 +1,4 @@
-﻿using ApplicationInsights.Helpers.WebJobs;
-using d360.core;
+﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.utils.company;
@@ -7,8 +6,6 @@ using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
