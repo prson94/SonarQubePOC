@@ -60,7 +60,12 @@ export class Switch implements ControlValueAccessor, OnInit  {
         return this.disabled ? 0.33 : 1;
     }
 
-    @ViewChild("switch", {static:false}) _el: ElementRef;
+    @ViewChild("switch", { static: false }) _el: ElementRef;
+
+    toggle(e: Event) {
+        this.tryChangeValue(this.value === undefined ? true : !this.value);
+        e.preventDefault();
+    }
 
     tryChangeValue(val: boolean) {
         if (!this.disabled) {
