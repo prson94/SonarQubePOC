@@ -5,7 +5,7 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { IconPickerModule } from '../shared/icon-picker.component';
+import { IconPickerModule } from '../shared/controls/icon-picker/icon-picker.component';
 import { SwitchModule } from '../shared/controls/switch/switch'
 import { CoreModule } from '../shared/core.module';
 

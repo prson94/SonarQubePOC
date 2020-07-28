@@ -10,7 +10,7 @@ import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
 
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
-import { IconPickerModule } from '../icon-picker.component';
+import { IconPickerModule } from '../controls/icon-picker/icon-picker.component';
 
 import { ShortcutListComponent } from './shortcut-list.component';
 import { ShortcutItemComponent } from './shortcut-item.component';
