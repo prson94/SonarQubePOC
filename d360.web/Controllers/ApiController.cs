@@ -5928,10 +5928,28 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
                 var parentReferenceListType = Company.GetParentType(referenceListType.ObjectID, SystemObjects.ReferenceItemType);
 
                 if (parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-
-                var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
+                string textValue, colorjoin;
+                if (LookupFieldHasColorItem(fieldType))
+                {
+                    textValue = "colorJSON.FV as Text";
+                    colorjoin = $@" outer apply (SELECT FV = (
+							SELECT flv.Text as name,
+							 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
+							from Asset A 
+                            outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+							where A.Object = flv.LookupObjectType and A.ObjectID = flv.Value 
+							FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+						)colorJSON";
+                }
+                else
+                {
+                    textValue = "flv.Text";
+                    colorjoin = "";
+                }
+                var sql = $@"select {textValue}, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
                         inner join AssetDetail ad on(ad.TypeId = id.subjecttypeid and ad.Type='ReferenceItemType' and ad.[ObjectId] = id.subjectid  and ad.[Object]='ReferenceItem' )
+                        {colorjoin}
                         where flv.fieldTypeID = @id and ad.[ObjectId] in @parentReferenceItemId";
 
                 items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
