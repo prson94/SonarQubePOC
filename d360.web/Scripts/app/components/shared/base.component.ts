@@ -281,7 +281,7 @@ export class BaseComponent {
                     'Change Log',
                     'Change Log',
                     ['fa-eye'],
-                    `/sidebar/audit${this.objectContextUrl()}`, null, 40
+                    `/sidebar/audit${this.auditContextUrl()}`, null, 40
                 );
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
@@ -484,6 +484,35 @@ export class BaseComponent {
         }
 
         return `/${this.objectType}/${this.objectID}`;
+    }
+
+    auditContextUrl(): string {
+        let uid = this.uid;
+
+        //Tag url set in tag-item.component
+        switch (this.constructor.name) {
+            case 'AdminArtifactsComponent':
+                uid = this['selectedRow']['id'];
+                break;
+            case 'AdminHierarchiesComponent':
+                uid = this['selected']['uid'];
+                break;
+            case 'ReferenceListComponent':
+                uid = this['selectedReferenceListUid'];
+                break;
+            case 'AdminRelationshipsComponent':
+                uid = this['selected']['Uid'];
+                break;
+            case 'HierarchyItemStructureComponent':
+                if(this['assetType'])
+                    uid = this['assetType']['AssetTypeUID'];
+                break;
+        }
+        
+        if (uid && uid != '00000000-0000-0000-0000-000000000000') {
+            return `/${uid}`;
+        }
+        return '';
     }
 
     uidContextUrl(): string {

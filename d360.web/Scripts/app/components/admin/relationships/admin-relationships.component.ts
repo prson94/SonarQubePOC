@@ -31,6 +31,9 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
 
         this.buildSecondaryNavigationForObject(this.selected.Id, 'IntersectType');
 
+        if (this.auditSidebar) {
+            this.auditSidebar.url = `/sidebar/audit/${this.selected.Uid}`;
+        }
     }
 
     ngOnDestroy() {
