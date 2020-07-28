@@ -435,7 +435,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                         g.ConditionItems.ForEach(c =>
                         {
-                            var ci = cg.Items.SingleOrDefault(i => i.Uid == c.Uid);
+                            var ci = cg.Items.SingleOrDefault(i => (i.Uid != Guid.Empty) && (i.Uid == c.Uid));
 
                             if (ci == null)
                             {

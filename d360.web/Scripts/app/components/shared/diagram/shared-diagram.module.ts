@@ -80,6 +80,7 @@ import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-di
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
 import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
+import { DynEditorService } from '../../../services/dyn-editor.service';
 
 
 @NgModule({
@@ -175,7 +176,8 @@ import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-di
             useClass: GovernRequestInterceptor,
             multi: true
         },
-        IconService
+        IconService,
+        DynEditorService
     ]
 })
 export class SharedDiagramModule { }

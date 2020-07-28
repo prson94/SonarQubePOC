@@ -26,7 +26,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                 <div class="measure-heading">
                                     <div class="title">Score Definition</div>
                                     <div class="actions">
-                                        <button igButton icon="fa-pencil" tooltip="Edit score definition"></button>
+                                        <button igButton icon="fa-pencil" (click)="showEdit = true" tooltip="Edit score definition"></button>
                                     </div>
                                 </div>
                                 <div class="measure-details">  
@@ -78,7 +78,9 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                             [metricListFieldTypes]="metricListFieldTypes"
                                             [assetType]="selectedAssetType"
                                             [allocationUid]="allocationUid" 
-                                            (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
+                                            [scoreType]="data"
+                                            [scoreData]="scoreData"
+                                            (selectionChange)="selectionChanged($event)"></d3s-admin-metric-list>
                             </div>
                             <div *ngIf="!isLoading && selectedMetric" class="col s5 measure-details-panel">
                                 <div>
@@ -101,7 +103,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                           <div class="details-header">Grouping Measure</div>
                                           <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                                       </div>
-                                      <div *ngIf="hasConditions(selectedMetric)" class="measure-details-item">
+                                      <div *ngIf="showConditions" class="measure-details-item">
                                           <div class="details-header">Asset Conditions</div>
                                           <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
                                               <div class="condition-content">
@@ -121,6 +123,9 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                             </div>
                         </div>
                    </div>
+                    <d3s-modal *ngIf="data" [title]="editTitle" additionalClasses="medium-dialog" (onClose)="onScoreSaveCancel()" [isVisible]="showEdit">
+                        <d3s-admin-allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load($event);"></d3s-admin-allocation-editor>
+                    </d3s-modal>
                 `,
     providers: [MetricsService, AssetTypeService, AllocationService]
 })
@@ -136,7 +141,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     MatchType: MetricMatchType = MetricMatchType.All;
     private metricListFieldTypes: MetricFieldTypeViewModel[] = [];
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
-
+    private showEdit: boolean = false;
     private operators = [
         { value: 'eq', label: '=' },
         { value: 'neq', label: '!=' },
@@ -146,7 +151,11 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         { value: 'gte', label: '>=' },
     ];
 
+    private maxHeight: number
+
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
+    showConditions: boolean;
+    scoreData: any[];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -214,6 +223,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     if (items.length > 0) {
                         this.data = items[0];
                         this.formatScoreCalc();
+                        this.metricsService.getMetricsScores(this.assetTypeUid, this.data.scoreType)
+                            .subscribe(f => {
+                                if (f && f.items && f.items.length > 0) {
+                                    this.scoreData = f.items;
+                                }
+                            });
                         this.isLoading = false;
                     }
                 });
@@ -267,24 +282,33 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     } 
 
     private hasConditions(item: MetricAssetViewModel) {
+        
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
-            this.formatConditions();
-            return true;
+            if (this.conditions.length > 0) {
+                this.formatConditions();
+                return true;
+            } else
+                return false;
         } else {
             this.conditions = [];
+            return false;
         }
     }
+
     add() {
         if (this.metricList) {
-            this.metricList.selectNode(null);
-            this.metricList.add();
+            this.metricList.add(false);
         }
     }
 
     close() {
         if (this.metricList)
             this.metricList.close();
+    }
+
+    onScoreSaveCancel() {
+        
     }
 
     getAsPrecentage(val: number) {
@@ -305,62 +329,72 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         return s;
     }
     parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        console.log(field.Type);
-        console.log(OperatorText);
-        switch (field.Type) {
-            case 'Date':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Text':
-            case 'Lookup':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    default:
-                        return OperatorText;
-                }
-            case 'Decimal':
-            case 'Number':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Boolean':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    default:
-                        return OperatorText;
-                }
+        if (field) {
+            switch (field.Type) {
+                case 'Date':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is before'
+                        case '>':
+                            return 'is after'
+                        case '<=':
+                            return 'is on or before'
+                        case '>=':
+                            return 'is on or after'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Text':
+                case 'Lookup':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Decimal':
+                case 'Number':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is before'
+                        case '>':
+                            return 'is after'
+                        case '<=':
+                            return 'is on or before'
+                        case '>=':
+                            return 'is on or after'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Boolean':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        default:
+                            return OperatorText;
+                    }
+            }
         }
         return '';
+    }
+
+    selectionChanged(event) {
+        this.selectedMetric = event;
+        if (this.hasConditions(this.selectedMetric)) {
+            this.showConditions = true;
+        }
+        else {
+            this.showConditions = false;
+        }
     }
 }
