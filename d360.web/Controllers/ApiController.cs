@@ -2715,11 +2715,9 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             var assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
 
             var fields = new List<FieldType>();
-            fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
-            fields.Add(new FieldType { Type = "string", Name = "Uid", FriendlyName = "Asset UID" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetID", FriendlyName = "Asset ID" });
-            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
-
+            var tempFields = new List<FieldType>();
+            var fieldsToRemove = new List<FieldType>();
+            fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());            
 
             #region Populate Excel Document
 
@@ -2738,24 +2736,35 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 
             document.SelectWorksheet(assetSheetName);
 
-            //document.SetCellValue(1, 1, "Level 1 Name");
-            //document.SetCellValue(1, 2, "Level 1 Description");
-            //document.SetCellValue(1, 3, "Level 2 Name");
-            //document.SetCellValue(1, 4, "Level 2 Description");
-            //document.SetCellValue(1, 5, "Level 3 Name");
-            //document.SetCellValue(1, 6, "Level 3 Description");
-            //document.SetCellValue(1, 7, "Level 4 Name");
-            //document.SetCellValue(1, 8, "Level 4 Description");
             int index = 1;
             foreach (var field in fields)
             {
-                document.SetCellValue(1, index++, (string)field.FriendlyName);
+                if (field.IsPartOfKey)
+                {
+                    fieldsToRemove.Add(field);
+                    for (int i = 1; i < 3 + 1; i++)
+                    {
+                        tempFields.Add(new FieldType { Type = "string", Name = $"Level {index} {(string)field.FriendlyName}", FriendlyName = $"Level {index} {(string)field.FriendlyName}" });
+                    }
+                }
             }
-            //document.SetCellValue(1, index + 1, "Level 1 Uid");
-            //document.SetCellValue(1, index + 2, "Level 2 Uid");
-            //document.SetCellValue(1, index + 3, "Level 3 Uid");
-            //document.SetCellValue(1, index + 4, "Level 4 Uid");
-            //document.SetCellValue(1, index + 5, "URL");
+            for (int i = 1; i < 3+1; i++)
+            {
+                tempFields.Add(new FieldType { Type = "string", Name = $"Level {i} UID", FriendlyName = $"Level {i} UID" });
+            }
+            fields.AddRange(tempFields);
+            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
+            foreach (var field in fieldsToRemove)
+                fields.Remove(field);
+
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, index, (string)field.FriendlyName);
+                index++;
+            }
+
+
+            //BuildTree(policies,0);
 
             int rowNumber = 1;
             foreach (var row in policies)
@@ -2799,6 +2808,16 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
+        }
+
+        public void BuildTree(IEnumerable<dynamic> tree, int parentID = 0)
+        {
+            //var test1 = tree.Where(x => (parentID != 0 ? x.ParentID == parentID : !x.ParentID)).ToList();
+            var test = tree.Where(x=> x.ParentID != null && x.ParentID != parentID).ToList();
+            foreach(var t in test)
+            {
+                //BuildTree(tree, t.ID);
+            }
         }
 
         protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)

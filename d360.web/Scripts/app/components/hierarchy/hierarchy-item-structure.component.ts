@@ -221,10 +221,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
-
+                        console.log(this.hierarchy);
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
-
+                        console.log(this.treeNodeArray);
                         this.isLoading = false;
                     }
                 );
@@ -248,7 +248,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 children: (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.ID))
             });
         }
-
+        console.log(res);
         return res;
     }
 
