@@ -558,6 +558,48 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
+
+        /// <summary>
+        /// Get the Measure Version history.
+        /// </summary>
+        /// <param name="measureUid">The unique identifier for the measure.</param>
+        /// <returns>The history for a given an measure.</returns>
+        [
+            HttpGet,
+            Route("history/measure/{measureUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the version history the given measure.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public IHttpActionResult GetMeasureHistory(Guid measureUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the measure version history for this measure."));
+
+            var prefix = "Metrics.GetMeasureHistory => ";
+
+            try
+            {
+                List<MeasureVersionHistoryModel> models = null;
+
+                List<string> history = MetricsRepository.GetMetricVersionHistory(measureUid);
+
+                models = JsonConvert.DeserializeObject<List<MeasureVersionHistoryModel>>(string.Join("", history));
+                if (models == null)
+                    models = new List<MeasureVersionHistoryModel>();
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x=>x.Version)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+        }
     }
 
 

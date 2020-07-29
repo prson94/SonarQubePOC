@@ -29,5 +29,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
         Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
+        List<string> GetMetricVersionHistory(Guid measureUid);
     }
 }
