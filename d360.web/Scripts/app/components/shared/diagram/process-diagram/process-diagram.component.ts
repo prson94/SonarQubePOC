@@ -11,7 +11,7 @@ import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
 import { Router } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
-import { Breadcrumb } from '../../../../models/breadcrumb.model';
+import { DynEditorService } from '../../../../services/dyn-editor.service';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -81,7 +81,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         private processService: ProcessService,
         public cdRef: ChangeDetectorRef,
         private router: Router,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        public dynEditorService: DynEditorService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;

@@ -31,6 +31,7 @@ import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
+import { DynEditorService } from '../../../services/dyn-editor.service';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -116,9 +117,18 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
         private cascadeService: CascadeService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private dynEditorService: DynEditorService
     ) {
         super();
+
+        this.dynEditorService.formUpdate.subscribe(res => {
+            if (this.assetUid && this.assetUid == res.assetUid) {
+                if (this.dataModel) {
+                    this.dataModel[res.fieldName] = res.fieldValue;
+                }
+            }
+        });
     }
 
     ngOnInit() {
@@ -229,7 +239,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
     handleEditor(result: EditorField[]) {
 
-        if (this.dataModel && !this.assetUid) {
+        if (this.dataModel) {
             result.forEach(res => {
                 if (res.Name == 'Name') {
                     res.Value = this.dataModel['Name'];

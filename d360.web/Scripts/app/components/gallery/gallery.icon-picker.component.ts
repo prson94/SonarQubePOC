@@ -27,7 +27,7 @@
 export class GalleryIconPickerComponent implements OnInit {
     protected properties: Array<any>;
     protected events: Array<any>;
-    protected sampleUsage: string = '<d3s-icon-picker [(ngModel)]="model.Icon"></d3s-icon-picker>';
+    protected sampleUsage: string = '<ig-icon-picker [(ngModel)]="model.Icon"></ig-icon-picker>';
 
     private value;
     private formValue;

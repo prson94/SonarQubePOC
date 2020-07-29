@@ -18,7 +18,7 @@ export const ICON_VALUE_ACCESSOR: any = {
 
 
 @Component({
-    selector: 'd3s-icon-picker',
+    selector: 'ig-icon-picker',
     templateUrl: 'icon-picker.component.html',
     providers: [ICON_VALUE_ACCESSOR],
     styleUrls: ['icon-picker.component.css']
