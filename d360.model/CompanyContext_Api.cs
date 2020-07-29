@@ -1338,12 +1338,7 @@ where T.ExecutionId = @executionid;
 
                     }
                 }
-
-                if (errorMessages.Any())
-                {
-                    errorMessage = string.Join(errorDelimiter, errorMessages);
-                    errorMessage += "."; //ending period
-                }
+                                
 
                 if (fieldTable != null)
                 {
@@ -1361,7 +1356,12 @@ where T.ExecutionId = @executionid;
 
                     fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
                 }
+            }
 
+            if (errorMessages.Any())
+            {
+                errorMessage = string.Join(errorDelimiter, errorMessages);
+                errorMessage += "."; //ending period
             }
 
             return fieldRows;
@@ -2808,6 +2808,41 @@ where   ExecutionID = @ExecutionID
                     #endregion
 
                     this.ValidateDeleteRelationshipTypes(execution, timeout);
+
+                    //Delete lookup fields
+                    //First get the field type id
+                    List<long> lookupFieldIdList = Connection.Query<long>($@"
+                                            select	
+                                               distinct FTL.FieldTypeID
+                                            from
+                                                FieldTypeLookup FTL
+					                            cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
+						                            IntersectTypeUid uniqueidentifier, 
+						                            AssetTypeUid uniqueidentifier,
+						                            RelationType int, 
+						                            Direction int
+					                            ) R
+					                            inner join [IntersectType] IT on IT.uid = R.intersectTypeUid
+					                            inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.Uid=IT.UID and 
+					                                                                            EDR.ExecutionID = @ExecutionID 
+					                                                                            and 
+					                                                                            EDR.Success is null;",
+                        new { execution.ExecutionID }, commandTimeout: timeout).ToList();
+
+                    //delete the lookup
+                    Connection.Execute($@"
+                                    delete  T
+                                    from    [FieldTypeLookup] T
+                                    where T.FieldTypeID in @fieldtypeIdList",
+                                    new { fieldtypeIdList = lookupFieldIdList.ToArray() }, commandTimeout: timeout);
+
+                    //delete the fieldtype
+                    Connection.Execute($@"
+                                    delete  T
+                                    from    [FieldType] T
+                                    where T.ID in @fieldtypeIdList",
+                                    new { fieldtypeIdList = lookupFieldIdList.ToArray() }, commandTimeout: timeout);
+
 
                     Connection.Execute(@"
                             
@@ -4737,7 +4772,7 @@ insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], In
                             try
                             {
                                 #region Field table delete
-
+                                
                                 Connection.Execute($@"
 delete  T
 from    [Field] T
@@ -4898,6 +4933,33 @@ from    [Intersect] T
                                                     where I.Uid = ER.[UID] )
                             ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
+            //check for lookups
+            Connection.Execute(@"
+                                update	T
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship lookups associated with this relationship.',
+	                                    T.Success = 0
+                                from	api.ExecutionDeletedRelationshipType T
+                                        inner join
+		                                (
+			                                select	EDR.ExecutionID,
+					                                EDR.ItemNumber,
+					                                Count(1) as [Count]
+			                                from	FieldTypeLookup O
+					                                cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
+						                                IntersectTypeUid uniqueidentifier, 
+						                                AssetTypeUid uniqueidentifier,
+						                                RelationType int, 
+						                                Direction int
+					                                ) R
+					                                inner join [IntersectType] IT on IT.uid = R.intersectTypeUid
+					                                inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and 
+					                                EDR.ExecutionID = @ExecutionID
+					                                and 
+					                                EDR.Success is null
+			                                where EDR.[Cascade]=0
+					                                group by ExecutionID, ItemNumber
+                                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
+                                            new { execution.ExecutionID }, commandTimeout: timeout);
 
 
         }

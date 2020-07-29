@@ -9,7 +9,8 @@ import {
     OnDestroy,
     OnInit,
     Output,
-    ViewChild
+    ViewChild,
+    HostListener
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
@@ -27,6 +28,7 @@ import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { filter } from 'rxjs/operators';
 import { clearLine } from 'readline';
+import { DynEditorService } from '../../../services/dyn-editor.service';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
@@ -44,6 +46,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() selectedObjectID: number;
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
+    @Input() assetUid: string;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -77,6 +80,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private fieldChangeSub;
     private editorChangeSub;
 
+    private isMenuVisible: boolean = false;
     private hasCascadeLoaded: boolean = false;
 
     //For a drop down search option
@@ -94,10 +98,18 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
         private ref: ChangeDetectorRef,
-        private tagService: TagService
+        private tagService: TagService,
+        public dynEditorService: DynEditorService
     ) {
         super();
         this.component_uid = Math.random().toString(36).substring(2);
+        this.dynEditorService.formUpdate.subscribe(res => {
+            if (this.assetUid && this.assetUid == res.assetUid) {
+                if (this.field.FieldName == res.fieldName) {
+                    this.form.controls[res.fieldName].patchValue(res.fieldValue);
+                }
+            }
+        });
     }
 
     searchTags(q: any) {
@@ -801,4 +813,15 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         else return 'Optional';
     }
 
+    @HostListener('click', ['$event.target'])
+    onClick(el) {
+        var htmlElement = el as HTMLElement;
+        if (htmlElement.classList.contains('open-editor-menu')
+            || htmlElement.parentElement.classList.contains('open-editor-menu')) {
+            this.isMenuVisible = !this.isMenuVisible;
+        }
+        else {
+            this.isMenuVisible = false;
+        }
+    }
 }

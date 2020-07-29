@@ -21,7 +21,7 @@
 export class GallerySwitchComponent implements OnInit {
     protected properties: Array<any>;    
     protected events: Array<any>;
-    protected sampleUsage: string = '<igx-switch></igx-switch>';
+    protected sampleUsage: string = '<ig-switch></ig-switch>';
     protected bindingVal: boolean = true;
     protected formVal: boolean = false;
     ngOnInit(): void {

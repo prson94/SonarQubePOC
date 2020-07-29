@@ -545,9 +545,10 @@
         background: rgba(0, 0, 0, 0.14);
     }
 
-    button.disabled {
+    button.disabled, button:disabled {
         color: #888;
         cursor: default;
+        pointer-events: none;
     }
 
     button.disabled:hover {

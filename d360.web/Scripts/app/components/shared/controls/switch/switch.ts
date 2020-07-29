@@ -11,7 +11,7 @@ export const SWITCH_VALUE_ACCESSOR: any = {
 
 
 @Component({
-    selector: 'igx-switch',
+    selector: 'ig-switch',
     templateUrl: 'switch.html',
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,

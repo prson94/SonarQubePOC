@@ -38,4 +38,11 @@ export class MetricsService extends BaseObservableService {
             .post<JsonResult>(`/api/v2/metrics`, model)
             .pipe(catchError(err => this.handleError(err)));
     }
+
+    public getMetricsScores(assetTypeUid: string,type:any): Observable<any> {
+        return this.http
+            .get<any>(`/api/v2/metrics/${assetTypeUid}/scores?_scoreType=${type}`)
+            .pipe(catchError(err => this.handleError(err)));
+    }
+
 }

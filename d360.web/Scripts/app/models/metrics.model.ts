@@ -40,7 +40,8 @@ export class MetricAssetVersionConditionItemViewModel {
     FieldTypeName: string;
     ValuesText: string;
     OperatorText: string;
-    IsEditMode: boolean;
+    IsEditMode: boolean; 
+    operatorOptions: any[];
 
     SingleValue: any; //For non-list fields
 }

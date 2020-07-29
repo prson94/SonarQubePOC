@@ -692,16 +692,18 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                     formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'FusionAttribute'", "F.Id");
                     formattedIntersectJoin = string.Format(intersectJoin, "'FusionAttribute'", "F.Id");
 
-                    countSql = $@"select count(*) from FusionAttribute F 
+                    countSql = $@"select count(*) from FusionAttribute F
+                                    inner join Fusion FF on FF.ID = F.FusionID
                                     inner join [IntersectType] IT on IT.Id = @intersectTypeID
                         left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                                where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                                where FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
                                 {formattedCardinalityCheck}";
-                    sql = $@"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
+                    sql = $@"select F.ID as Value, FF.Name + '.' + F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
                             from FusionAttribute F with (nolock)
+                            inner join Fusion FF on FF.ID = F.FusionID
                             inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                            where F.FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                            where F.FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
                             {formattedCardinalityCheck}
                             order by 3 desc, TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
@@ -2961,19 +2963,22 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
                 {
+                    string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
+                    string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
+                    string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
+                    
                     columns += $"{name}_T.value as [{name}],";
                     joins += $@" outer apply(
-
                             select value = (
                                 SELECT
                                 COALESCE(ADV.DisplayValue, AC.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
                                 FROM field fi
-                                cross apply STRING_SPLIT(fi.Value, ',') SPFfi
-                                inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = try_cast(SPFfi.value as int)
+                                {fieldJoin}
+                                inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
                                 cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
-                                where FieldTypeID = {f.ID} and fi.AssetID = A.Id and '{f.Type}' = 'Lookup'
+                                where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
 							){name}_T(value)";
                 }

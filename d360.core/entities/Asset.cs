@@ -239,6 +239,7 @@ namespace d360.core.entities
     {
         public bool HasAssetRestriction { get; set; }
         public bool HasAssetTypeRestriction { get; set; }
+        public bool HasAssetPermission { get; set; }
     }
     public class AssetTypePossibleOwnersModel
     {
