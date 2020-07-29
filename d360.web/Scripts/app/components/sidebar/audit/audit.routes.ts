@@ -4,6 +4,7 @@ import { AuditComponent } from './audit.component';
 
 const routes: Routes = [
     { path: ':uid', component: AuditComponent },
+    { path: ':type/:uid', component: AuditComponent },
 ];
 
 @NgModule({

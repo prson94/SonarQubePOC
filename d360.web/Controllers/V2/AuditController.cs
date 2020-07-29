@@ -162,11 +162,12 @@ namespace d360.web.Controllers.V2
                 if (
                     !Company.Any<Asset>(i => i.uid == assetUid) &&
                     !Company.Any<Tag>(i => i.uid == assetUid) &&
+                    !Company.Any<IssueType>(i => i.uid == assetUid) &&
                     !Company.Any<IntersectType>(i => i.uid == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if(assetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, AssetType, Tag or RelationshipType not found for UID"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type or RelationshipType not found for UID"));
                     isAssetType = true;
                 }
 
@@ -603,11 +604,13 @@ namespace d360.web.Controllers.V2
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
             left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
             inner join  (
-    			select uid, DisplayValue, object, objectid, AssetTypeClass from AssetDetail where uid = @uid
+    			select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = @uid
     			union
-                select uid, value as DisplayName, 'Tag' as object, id as ObjectID, 11 as AssetTypeClass from Tag where uid = @uid
+                select uid, value as DisplayName, 'Tag' as Object, id as ObjectID, 11 as AssetTypeClass from Tag where uid = @uid
                 union
-                select uid, itn.name as DisplayValue, 'IntersectType' as object, id as ObjectID, 0 as AssetTypeClass from dbo.[IntersectType] IT
+                select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass from dbo.IssueType where uid = @uid
+                union
+                select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from dbo.[IntersectType] IT
                     CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = @uid
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 

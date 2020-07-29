@@ -63,8 +63,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     if (this.objectType == 'PolicyType' || this.objectType == 'TaxonomyType')
                         reloadNav = false;
 
+                    let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
+
                     if (reloadNav)
-                        this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+                        this.buildSecondaryNavigationForObject(objectID, this.objectType);
                 });
             });
     }
@@ -167,14 +169,13 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             this.filters.forEach(f => {
                 let apiName = f.field;
                 let val = AdvancedFiltersHelper.escapeString(f.value)
-                expressions.push(`${apiName} ct ${val}`);
+                expressions.push(`${apiName} ct '${val}'`);
             });
             params._filter = expressions.join(' and ');
         }
         else {
             delete params['_filter'];
         }
-        console.log(params);
         return params;
     }
 }
