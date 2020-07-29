@@ -13,6 +13,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
         { label: 'Icon Picker', key: 'icon-picker' },
+        { label: 'Tag Picker', key: 'tag-picker' },
     ];
 
     ngOnInit(): void {        

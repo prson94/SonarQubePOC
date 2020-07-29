@@ -1,3 +1,30 @@
-﻿<div #switch [attr.id]="inputId" [attr.tabindex]="tabindex" [ngStyle]="style" [class]="styleClass" (keydown.space)="toggle($event)" class="tag-picker {{disabled ? 'disabled':''}}">
-
+﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="styleClass" class="tag-picker {{disabled ? 'disabled':''}}">
+    <div class="selected-tags">
+        <ng-container *ngIf="tagsArray.length > 0">
+            <div class="selected-tag" *ngFor="let item of tagsArray">
+                {{item}}
+                <div *ngIf="!disabled" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
+                    <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                </div>
+            </div>
+        </ng-container>
+        <div class="add-tag-wrapper" *ngIf="!disabled">
+            <p-autoComplete [(ngModel)]="tagAutocompleteValue"
+                            (onBlur)="resetValue()"
+                            scrollHeight="400px"
+                            [tabindex]="tabindex"
+                            value="tagAutocompleteValue"
+                            inputStyleClass="inputBox"
+                            placeholder="Click to add..."
+                            [suggestions]="searchResults"
+                            (onKeyUp)="checkKey($event,tagAutocompleteValue)"
+                            (onSelect)="saveTag($event)"
+                            field="name"
+                            (completeMethod)="search($event,$event.query)">
+                <ng-template let-elm pTemplate="item">
+                    <span [innerHTML]="highlight(elm.name,tagAutocompleteValue)"></span>
+                </ng-template>
+            </p-autoComplete>
+        </div>
+    </div>
 </div>

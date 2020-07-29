@@ -16,9 +16,11 @@ import { GalleryRoutingModule } from './gallery.routes';
 import { GallerySwitchComponent } from './gallery.switch.component';
 import { GalleryButtonComponent } from './gallery.button.component';
 import { GalleryIconPickerComponent } from './gallery.icon-picker.component';
+import { GalleryTagPickerComponent } from './gallery.tag-picker.component';
 import { GalleryGuard } from '../../guards/gallery.guard';
 
 import { TableModule } from 'primeng/table';
+import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 
 
 @NgModule({
@@ -33,6 +35,7 @@ import { TableModule } from 'primeng/table';
 
         SwitchModule,
         IconPickerModule,
+        TagPickerModule,
 
         TableModule,
 
@@ -42,6 +45,7 @@ import { TableModule } from 'primeng/table';
         GallerySwitchComponent,
         GalleryButtonComponent,
         GalleryIconPickerComponent,
+        GalleryTagPickerComponent
     ],
     providers: [
         GalleryGuard,
