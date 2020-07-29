@@ -137,8 +137,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     public close() {
         this.formMode = FormMode.Default;
     }
-    public history(showhistory: boolean) {
-        this.isHistoryModalVisible = showhistory;
+    public showHistory(isHistoryVisible: boolean) {
+        this.isHistoryModalVisible = isHistoryVisible;
     }
     getAsPrecentage(val: number) {
         if (val == 0)
@@ -167,7 +167,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         });
         menu.push({
             label: 'Version History',
-            command: (event) => { this.history(true); }
+            command: (event) => { this.showHistory(true); }
         });
         return menu;
     }
