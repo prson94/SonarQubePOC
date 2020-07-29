@@ -692,16 +692,18 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                     formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'FusionAttribute'", "F.Id");
                     formattedIntersectJoin = string.Format(intersectJoin, "'FusionAttribute'", "F.Id");
 
-                    countSql = $@"select count(*) from FusionAttribute F 
+                    countSql = $@"select count(*) from FusionAttribute F
+                                    inner join Fusion FF on FF.ID = F.FusionID
                                     inner join [IntersectType] IT on IT.Id = @intersectTypeID
                         left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                                where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                                where FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
                                 {formattedCardinalityCheck}";
-                    sql = $@"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
+                    sql = $@"select F.ID as Value, FF.Name + '.' + F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
                             from FusionAttribute F with (nolock)
+                            inner join Fusion FF on FF.ID = F.FusionID
                             inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-                            where F.FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                            where F.FusionAttributeTypeID = @objID and F.Deleted = 0 and (@query is null or F.TextPath like '%' + @query + '%')
                             {formattedCardinalityCheck}
                             order by 3 desc, TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
