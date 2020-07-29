@@ -438,6 +438,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private diagramStateChanged() {
         this.isSaveDisabled = this.isCurrentStateSaved();
         this.isCanvasEmpty = this.isEmpty();
+
+        if (this.isDiagramLoaded) {
+            if (!this.isSaveDisabled) {
+                this.breadcrumbsService.setCurrentObjectState('modified');
+            }
+            else {
+                this.breadcrumbsService.setCurrentObjectState('');
+            }
+        }
+
         this.cdRef.detectChanges();
     }
     private isEmpty() {

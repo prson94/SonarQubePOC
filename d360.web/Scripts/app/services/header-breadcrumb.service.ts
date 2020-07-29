@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Subject, Observable, forkJoin, from} from 'rxjs';
+import { Subject, Observable, forkJoin, from } from 'rxjs';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 
 
 @Injectable()
-export class HeaderBreadcrumbService extends BaseObservableService{
+export class HeaderBreadcrumbService extends BaseObservableService {
     private sitenavservice: SiteMenuService;
 
     constructor(
@@ -38,6 +38,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     private breadcrumbPopLastSource = new Subject<boolean>();
     private currentObjectInfoSource = new Subject<any>();
     private buildFromStorageSource = new Subject<Breadcrumb[]>();
+    private currentObjectStateSource = new Subject<string>();
 
     // Observable streams
     breadcrumbs$ = this.breadcrumbSource.asObservable();
@@ -46,7 +47,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     breadcrumbPopLastSource$ = this.breadcrumbPopLastSource.asObservable();
     currentObjectInfo$ = this.currentObjectInfoSource.asObservable();
     buildFromStorage$ = this.buildFromStorageSource.asObservable();
-
+    currentObjectStateSource$ = this.currentObjectStateSource.asObservable();
     currentObject: any;
 
 
@@ -75,6 +76,10 @@ export class HeaderBreadcrumbService extends BaseObservableService{
         this.breadcrumbSource.next(breadcrumb);
     }
 
+    setCurrentObjectState(objectState: string) {
+        this.currentObjectStateSource.next(objectState);
+    }
+
     clearBreadcrumbs() {
         this.breadcrumbClearSource.next(true);
     }
@@ -89,7 +94,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     saveBreacrumbsToStorage(crumbs: Breadcrumb[]) {
         localStorage.setItem("Header_Breadcrumbs", JSON.stringify([...crumbs]));
     }
-    getBreadcrumbsFromStorage(): Breadcrumb[]  {
+    getBreadcrumbsFromStorage(): Breadcrumb[] {
         return JSON.parse(localStorage.getItem("Header_Breadcrumbs"));
     }
     buildFromStorage() {
@@ -158,7 +163,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
 
     }
-    getFolderIcon(menuID: string):Observable<string> {
+    getFolderIcon(menuID: string): Observable<string> {
         let icon = "fa-folder";
         let promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
@@ -167,7 +172,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                         icon = s.Icon;
                         if (icon == null && s.FullURL)
                             icon = "URL-" + s.FullURL;
-                        else if(icon == null)
+                        else if (icon == null)
                             icon = "fa-folder";
                     }
                 });
@@ -181,7 +186,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                             icon = s.Icon;
                             if (icon == null && s.FullURL)
                                 icon = "URL-" + s.FullURL;
-                            else if(icon == null)
+                            else if (icon == null)
                                 icon = "fa-folder";
                         }
                     });
