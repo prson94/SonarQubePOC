@@ -688,6 +688,7 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
@@ -788,6 +789,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
     <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
@@ -849,6 +851,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
@@ -880,6 +883,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
