@@ -252,11 +252,14 @@ namespace d360.web.Controllers.V2
             dynamic result;
             result = Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
 
-            if(result == null)
+            if (result == null)
                 result = Company.Query<dynamic>($@"select Object,ObjectId,Name as DisplayValue from AssetType where uid = @assetUid", new { assetUid }).FirstOrDefault();
 
             if (result == null)
                 result = Company.Query<dynamic>($@"select 'Tag' as Object, ID as ObjectId,Value as DisplayValue from Tag where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'IssueType' as Object, ID as ObjectId, Name as DisplayValue from IssueType where uid = @assetUid", new { assetUid }).FirstOrDefault();
 
             if (result == null)
                 result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, itn.name as DisplayValue
