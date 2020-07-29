@@ -85,6 +85,7 @@ namespace d360.core.helpers
                 DataType.RefListRelationship.ToString(),
                 DataType.Tag.ToString(),
                 DataType.Score.ToString(),
+                DataType.FieldFromRelationship.ToString(),
             };
 
             return types;
@@ -103,7 +104,7 @@ namespace d360.core.helpers
                 DataType.Score.ToString(),
             };
 
-            return types;
+            return types;   
         }
 
         public static List<string> GetNonlistableFields(this DataType dt)
