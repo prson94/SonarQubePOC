@@ -10,10 +10,11 @@ export class HeaderActionsService {
     showNotifications: boolean = false;    
     showHelp: boolean = true;
     showSearch: boolean = true;
-    showRaiseIssue: boolean = false;  
+    showRaiseIssue: boolean = true;  
     showFollow: boolean = CompanySettings.ShowImpactSidebar != 'false';
-    showShoppingCart: boolean = false;
+    showShoppingCart: boolean = true;
     showHomePage: boolean = true;
+    forceTakeActionHidden: boolean = false;
 
     private headerActionsSource = new Subject<HeaderActions>();
     public onHeaderActionsChange$ = this.headerActionsSource.asObservable();
