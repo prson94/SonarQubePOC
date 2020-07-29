@@ -11,15 +11,17 @@ import {
 
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
 import { map } from 'rxjs/operators';
+import { SelectItem } from 'primeng/api';
 
 
 @Component({
     selector: 'd3s-workflow-step-summary',
     templateUrl: './workflow-step-summary.component.html',
-    providers: [ResponsibilityTypeService, WorkflowService ],
+    providers: [ResponsibilityTypeService, WorkflowService, GroupService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -43,9 +45,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     private fields = [];
 
     private lookups = [];
+    private groups: SelectItem[] = [];
     private intersectTypes = [];
 
-    constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef, private workflowService: WorkflowService) {
+    constructor(private responsibilityService: ResponsibilityTypeService, private ref: ChangeDetectorRef, private workflowService: WorkflowService, private groupService: GroupService) {
         super();
     }
 
@@ -79,6 +82,15 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                             this.step.settings.ResponsibilityTypeID.push(id);
                         }
                     }
+                } else if (this.step.settings['MessageRecipientType'] == 'Group') {
+                    this.groupService.getGroups().subscribe(GroupList => {
+                        this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+                        if (this.step.settings.MessageToGroup != undefined) {
+                            if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                                this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
+                            }
+                        }
+                    });
                 }
                 if (this.step.activityType == WorkflowActivityType.Form) {
                     this.getLookups();
@@ -111,6 +123,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
         if (r != null)
             return r.Name;
         return "";
+    }
+
+    getGroupName(): string {
+        return (this.step.settings.MessageToGroup == null) ? '<none>' : this.groups.find(g => g.value == this.step.settings.MessageToGroup).label;
     }
 
     getLookups() {

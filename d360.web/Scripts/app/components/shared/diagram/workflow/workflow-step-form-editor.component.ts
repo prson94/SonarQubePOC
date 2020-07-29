@@ -16,12 +16,14 @@ import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
-import { FormMode } from '../../../../models/form.model';
+import { GroupService } from '../../../../services/group.service';
+import { FormMode, SelectItem } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-step-form-editor',
-    providers: [WorkflowService, ResponsibilityTypeService],
+    providers: [WorkflowService, ResponsibilityTypeService, GroupService],
     templateUrl: './workflow-step-form-editor.component.html'
 })
 
@@ -51,6 +53,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private intersectType = null;
 
     private destination = [];
+    private groups: SelectItem[] = [];
     private lookups = null;
     private intersectTypes = null;
     private isListLoading = false;
@@ -80,7 +83,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private responsibilityService: ResponsibilityTypeService) {
+        private responsibilityService: ResponsibilityTypeService,
+        private groupService: GroupService ) {
         super();
     }
 
@@ -90,24 +94,46 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
-        if (this.destination.length < 1)
-         this.workflowService.getEmailTaskRecipientType()
-                .pipe(
-                    map(r => {
-                    this.isLoading = true;
-                        r.forEach(e => {
-                            if (e.ID < 1)
-                                return;
-                            else if (e.ID == EmailTaskRecipientType.Followers)
-                                return;
-                            this.destination.push({
-                                value: EmailTaskRecipientType[e.ID],
-                                label: e.Name
-                            });
+
+        if (this.destination.length < 1) {
+            this.isLoading = true;
+
+            forkJoin(
+                this.workflowService.getEmailTaskRecipientType(),
+                this.groupService.getGroups()
+            ).subscribe(
+                (
+                    [
+                        EmailTaskRecipientList,
+                        GroupList
+                    ]
+                ) => {
+                    /* EmailTaskRecipientList */
+                    EmailTaskRecipientList.forEach(e => {
+                        if (e.ID < 1)
+                            return;
+                        else if (e.ID == EmailTaskRecipientType.Followers)
+                            return;
+                        this.destination.push({
+                            value: EmailTaskRecipientType[e.ID],
+                            label: e.Name
                         });
-                    }),
-                    map(() => this.isLoading = false)
-             ).subscribe();
+                    });
+                    /* ./EmailTaskRecipientList */
+
+                    /* GroupList */
+                    this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+                    if (this.step.settings.MessageToGroup != undefined) {
+                        if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                            this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
+                        }
+                    }
+                    /* ./GroupList */
+
+                    this.isLoading = false;
+                }
+            );
+        }
     }
 
     ngOnChanges() {

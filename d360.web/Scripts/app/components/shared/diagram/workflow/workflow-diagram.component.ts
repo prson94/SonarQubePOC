@@ -970,7 +970,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             }
                         }
                         break;
-
+                    case "Group":
+                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
+                            return false;
+                        break;
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
@@ -1006,6 +1009,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             if (x > -1)
                                 return false;
                         }
+                        break;
+                    case "Group":
+                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
+                            return false;
                         break;
                 }
 
@@ -1273,6 +1280,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.MessageToGroup = e.settings.MessageToGroup;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
 
@@ -1297,6 +1305,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.MessageToGroup = e.settings.MessageToGroup;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 if (n.settings.SendFormEmail == true) {
