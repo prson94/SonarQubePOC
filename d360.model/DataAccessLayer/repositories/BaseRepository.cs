@@ -196,7 +196,7 @@ namespace d360.model.DataAccessLayer.repositories
                         {
                             fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
                         }
-                        else if (f.Type == "ComplexRelationLookup")
+                        else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
                         {
                             fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]");
                         }
@@ -396,7 +396,7 @@ namespace d360.model.DataAccessLayer.repositories
                             ){tableAlias}(FormattedValue, [Value]) ";
                     fieldJoins.Add(sql);
                 }
-                else if (f.Type == "ComplexRelationLookup")
+                else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
                 {
                     fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
                 }
