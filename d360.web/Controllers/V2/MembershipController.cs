@@ -590,19 +590,10 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Group for provided UID is an active directory group and cannot be manually managed."));
 
                 var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
-                    IF EXISTS    
-                    (
-                    SELECT 1
-                    FROM[Group] G
-                    inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
-                    WHERE A.ObjectID = G.ID and G.SecondaryOwnerResourceID = @user
-                    )
-                    BEGIN
                         Update G set  G.SecondaryOwnerResourceID = null
                         from[Group] AS G
                         inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group'
-                        where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user
-                    END", new { resource = resourceUid, group = groupUid, user = userId });
+                        where G.ID = A.ObjectID and G.SecondaryOwnerResourceID = @user", new { resource = resourceUid, group = groupUid, user = userId });
 
                 if (res > 0) return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
                 else return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist"));
