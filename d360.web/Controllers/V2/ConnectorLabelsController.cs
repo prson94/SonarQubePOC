@@ -92,12 +92,18 @@ namespace d360.web.Controllers.V2
 
 
             if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Label value cannot be empty!")));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Label value cannot be empty.")));
 
             var labelValue = label.Value.Trim();
             var dbRecord = Company.ConnectorLabels.FirstOrDefault(x => x.Value.ToLower() == labelValue.ToLower());
             if (dbRecord != null)
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
+
+
+            if (labelValue.Length > 40)
+            {
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "Maximum length of label is 40 characters.")));
+            }
 
             dbRecord = new ConnectorLabel();
             dbRecord.Value = labelValue;

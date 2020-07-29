@@ -695,7 +695,7 @@ new
                 List<FieldType> fields = new List<FieldType>();
 
                 var guid = Guid.NewGuid().ToString().Replace("-", "");
-                fields.Add(new FieldType { Type = "string", Name = guid + "StepNo", FriendlyName = "Step No" });
+                fields.Add(new FieldType { Type = "number", Name = guid + "StepNo", FriendlyName = "Step No" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "DiagramAssetName", FriendlyName = "Diagram Asset Name" });
 
                 if (includeParent)
@@ -707,7 +707,7 @@ new
 
 
                 fields.Add(new FieldType { Type = "string", Name = guid + "UID", FriendlyName = "Diagram Asset UID" });
-                fields.Add(new FieldType { Type = "string", Name = guid + "ID", FriendlyName = "Diagram Asset ID" });
+                fields.Add(new FieldType { Type = "number", Name = guid + "ID", FriendlyName = "Diagram Asset ID" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "URL", FriendlyName = "Diagram URL" });
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
