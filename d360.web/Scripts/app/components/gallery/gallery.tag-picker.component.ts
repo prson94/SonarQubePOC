@@ -33,6 +33,7 @@ export class GalleryTagPickerComponent implements OnInit {
         this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the tag picker control. Tag values are separated by '|'.", Default: "null" });
         this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "null" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
+        this.properties.push({ Name: "readOnly", Type: "boolean", Description: "Used to set the control to read only state where the user cannot add or remove tags", Default: "false" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
 
         this.events = new Array();

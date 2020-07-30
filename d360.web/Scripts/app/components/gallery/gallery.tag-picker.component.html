@@ -34,6 +34,16 @@
     </div>
     <hr />
     <div class="gallery-section">
+        <h4>Read Only</h4>
+        <p>
+            As with all form controls this input can be in read only mode (enter values in basic example to see result)
+        </p>
+        <div>
+            <ig-tag-picker [(ngModel)]="value" [readOnly]="true"></ig-tag-picker>
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
         <h4>Tab Index</h4>
         <p>
             Click on the first input then tab using your tab keys.

@@ -3,12 +3,12 @@
         <ng-container *ngIf="tagsArray.length > 0">
             <div class="selected-tag" *ngFor="let item of tagsArray">
                 {{item}}
-                <div *ngIf="!disabled" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
+                <div *ngIf="!disabled && !readOnly" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
                     <i style="padding-left:10px" class="fa fa-times-circle"></i>
                 </div>
             </div>
         </ng-container>
-        <div class="add-tag-wrapper" *ngIf="!disabled">
+        <div class="add-tag-wrapper" *ngIf="!disabled && !readOnly">
             <p-autoComplete [(ngModel)]="tagAutocompleteValue"
                             (onBlur)="resetValue()"
                             scrollHeight="400px"

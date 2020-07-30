@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { TagType } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
+import { SelectItem } from 'primeng/api';
 
 
 export const SWITCH_VALUE_ACCESSOR: any = {
@@ -28,6 +29,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Input() disabled = false;
 
+    @Input() readOnly = false;
+
     @Input() styleClass: any;
 
     @Input() style: any;
@@ -42,18 +45,18 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Output() onUnselect: EventEmitter<any> = new EventEmitter();
 
-    protected value: string = '';  // this is intentionally NOT public or an input you should be using ngModel..
+    protected value: Array<SelectItem> = [];  // this is intentionally NOT public or an input you should be using ngModel..
 
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
 
-    private tagsArray: string[] = [];
+    private tagsArray: SelectItem[] = [];
     private tagAutocompleteValue: string = '';
     private savingTag: boolean = false;
 
     private searchSub: Subscription;
-    private searchResults: any[] = [];
+    private searchResults: SelectItem[] = [];
 
     constructor(protected changeDetectorRef: ChangeDetectorRef,
         private tagService: TagService,
@@ -63,17 +66,17 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
     @ViewChild("tagPicker", { static: false }) _el: ElementRef;
 
-    tryChangeValue(val: string) {
+    tryChangeValue(val: SelectItem) {
         if (!this.disabled) {
             this.writeValue(val);
         }
     }
 
-    tryAddValue(val: string) {
+    tryAddValue(val: SelectItem) {
         if (!this.disabled) {
             var newValue = '';
 
-            if (this.tagsArray.some(x => x.trim().toLowerCase() == val.trim().toLowerCase()))
+            if (this.tagsArray.some(x => x.value.trim().toLowerCase() == val.value.trim().toLowerCase()))
                 return;
 
             if (this.value != '') {
