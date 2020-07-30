@@ -513,7 +513,6 @@ export class BaseComponent {
         //Tag needs to be part of the URL for the header to behave
         if (this.objectType == 'Tag') {
             if (this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
-                console.log(`/${this.objectType}/${this.uid}`);
                 return `/${this.objectType}/${this.uid}`;
             }
         }
@@ -775,7 +774,6 @@ export class BaseComponent {
     }
 
     buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
-        console.log('buildSecondaryNavigation', objectId, objectType)
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         data.Class = assetClass;
@@ -818,7 +816,6 @@ export class BaseComponent {
         }
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
-            console.log(data, r);
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
