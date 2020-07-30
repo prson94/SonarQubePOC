@@ -1,32 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-import {
-    catchError,
-    distinctUntilChanged,
-    map,
-    switchMap
-} from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserTranslation,
     AssetBrowserTranslationNode,
     AssetBrowserTranslationLink,
     AssetBrowserDiagramAsset,
-    AssetBrowserTranslationRelationCount,
-    AssetBrowserApiHopDirection,    AssetBrowserApiHopType,
+    AssetBrowserApiHopDirection,
     FilterAncestryMode,
-    FilterSelectionsModel,
-    AssetBrowserApiHopRequestModel,
-    AssetBrowserTranslationOwnerCount,
-    AssetBrowserApiOwnerHopRequestModel,    StoredAssetBrowserFilterModel,
-    AssetBrowserAssetsModel,
-    AssetBrowserAssetModel,
+    FilterSelectionsModel,    StoredAssetBrowserFilterModel,
     AssetBrowserOwnersModel,
-    AssetBrowserAssetRelationModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
-    DiagramTypesModel
+    DiagramTypesModel,
+    AssetBrowserResponseModel,
+    AssetBrowserApiHopAssetRequestModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -49,6 +38,237 @@ export class BrowserService extends BaseObservableService {
         this.iconService.getIconProperties().subscribe(data => {
             this.iconProperties = data;
         });
+    }
+
+    private processResponse(response: AssetBrowserResponseModel) {
+        response.nodes.forEach(n => {
+
+            //#region Select template
+
+            let templateName = "";
+            if (!n.group) {
+                n.group = "";
+            }
+            if (n.group !== "") {
+                if (!n.leaf) {
+                    templateName = "Group";
+                }
+            }
+            else {
+                templateName = n.focal ? "FocalPortGroup" : "PortGroup";
+            }
+            n.template = templateName;
+            n.nonHiddenTemplate = templateName;
+
+            //#endregion
+
+            n.class = AssetTypeClass[n.class] as any;
+            n.icon = this.getIconUnicode(n.icon, n.class);
+            n.isGroup = !n.leaf;
+        });
+
+        //#region Load root data from hierarchy array
+
+        response.hierarchy.forEach(h => {
+            try {
+                let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
+                if (rootNode) {
+                    rootNode.owners = h.owners;
+                    rootNode.relations = h.relations;
+                    if (h.backwardReveal !== AssetBrowserApiHopDirection.None) {
+                        rootNode.showReveal = AssetBrowserApiHopDirection[h.backwardReveal] as any;
+                    }
+                    else {
+                        rootNode.showReveal = AssetBrowserApiHopDirection[h.forwardReveal] as any;
+                    }
+
+                    // Handle initial expanded logic.
+                    rootNode.relations.forEach((r, rix) => {
+                        let ix = response.links.findIndex(l => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
+                        if (ix > -1) {
+                            r.expanded = true;
+                            response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix; 
+                        } 
+                    });
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        });
+
+        //#endregion
+    }
+
+    private processOwnerResponse(hierarchyKey: string,
+        badgeIndex: number,
+        responsibilityTypeId: number,
+        responsibilityTypeName: string,
+        response: AssetBrowserOwnersModel
+    ): AssetBrowserResponseModel {
+
+        let newResponse = new AssetBrowserResponseModel();
+        newResponse.hierarchy = [];
+        newResponse.nodes = [];
+        newResponse.links = [];
+        newResponse.reveals = null;
+
+        let rootKey = hierarchyKey + '|O|' + badgeIndex;
+
+        newResponse.hierarchy.push({
+            hierarchyKey: rootKey,
+            backwardReveal: AssetBrowserApiHopDirection.None,
+            forwardReveal: AssetBrowserApiHopDirection.None,
+            owners: [],
+            relations: []
+        });
+
+        let rootLink: AssetBrowserTranslationLink =  {
+            from: hierarchyKey,
+            to: rootKey,
+            text: "",
+            back: "#cccccc",
+            predicateId: null,
+            predicateIds: [],
+            predicateType: null,
+            predicateUid: null,
+            responsibilityTypeId: responsibilityTypeId,
+            links: [],
+            badgeIdentifier: rootKey
+        };
+
+        response.ownerRelations.forEach(l => {
+            rootLink.links.push({
+                id: 0,
+                from: l.assetKey,
+                to: l.ownerKey
+            });
+        });
+
+        newResponse.links.push(rootLink);
+
+        // Add root node.
+        let rootNode = new AssetBrowserTranslationNode();
+        rootNode.hierarchyKey = rootKey;
+        rootNode.key = rootKey;
+        rootNode.text = responsibilityTypeName;
+        rootNode.hop = 0;
+        rootNode.assetUid = "";
+        rootNode.focal = false;
+        rootNode.actionCount = 0;
+        rootNode.assetTypeId = 0;
+        rootNode.backAmount = 0;
+        rootNode.showIcon = true;
+        rootNode.back = "#ffffcc";
+        rootNode.hasAssetReadAccess = true;
+        rootNode.icon = this.getIconUnicode("fa-users", AssetTypeClass.BusinessAsset);
+        rootNode.leaf = false;
+        rootNode.isGroup = true;
+        rootNode.responsibilityTypeId = responsibilityTypeId;
+        rootNode.template = "Owners";
+        rootNode.nonHiddenTemplate = "Owners";
+        newResponse.nodes.push(rootNode);
+
+        response.owners.forEach(o => {
+            let n = new AssetBrowserTranslationNode();
+            n.hierarchyKey = rootKey;
+            n.key = o.key;
+            n.group = rootKey;
+            n.text = o.displayValue;
+            n.hop = 0;
+            n.assetUid = o.resourceUid;
+            n.focal = false;
+            n.actionCount = 0;
+            n.assetTypeId = 0;
+            n.backAmount = 0;
+            n.showIcon = true;
+            n.back = o.backColor;
+            n.hasAssetReadAccess = true;
+            n.icon = this.getIconUnicode(o.icon, AssetTypeClass.BusinessAsset);
+            n.leaf = true;
+            n.isGroup = false;
+            n.responsibilityTypeId = responsibilityTypeId;
+            n.template = "Owner";
+            n.nonHiddenTemplate = "Owner";
+            newResponse.nodes.push(n);
+        });
+
+        //#endregion
+
+        return newResponse;
+    }
+
+    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/lineage/initial`;
+        if (numberOfHops <= 0 || numberOfHops > 5)
+            numberOfHops = 3;
+
+        return this.http.post(url, { ancestry: +ancestry, uid: uid, hopCount: numberOfHops }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/initial`;
+        if (numberOfHops <= 0 || numberOfHops > 5)
+            numberOfHops = 3;
+
+        return this.http.post(url, { uid: uid, hopCount: numberOfHops }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/hop`;
+         
+        return this.http.post(url, {
+            ancestry: ancestry,
+            hierarchyKey: hierarchyKey,
+            assets: assets,
+            preloadedIntersects: preloadedIntersects,
+            predicateUid: predicateUid,
+            direction: direction
+        }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getLineageHop(hierarchyKey: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/lineage/hop`;
+
+        return this.http.post(url, { hierarchyKey: hierarchyKey, assets: assets, preloadedIntersects: preloadedIntersects, direction: direction }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieve results from the Govern API for owners regarding specific assets.
+    * @returns A deep model of owners.
+    */
+    public getOwnerHop(hierarchyKey: string, badgeIndex: number, responsibilityTypeId: number, responsibilityTypeName: string, assets: AssetBrowserApiHopAssetRequestModel[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/ownership/hop`;
+
+        return this.http.post(url, { Assets: assets, ResponsibilityTypeId: responsibilityTypeId }).pipe(
+            map((response: AssetBrowserOwnersModel) => {
+                return this.processOwnerResponse(hierarchyKey, badgeIndex, responsibilityTypeId, responsibilityTypeName, response);
+            }),
+            catchError(err => this.handleError(err))
+        );
     }
 
     /**
@@ -78,90 +298,6 @@ export class BrowserService extends BaseObservableService {
         const url = `api/v2/browser/diagramasset/${uid}`;
 
         return this.http.get(url).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    /**
-    * Retrieve results from the Govern API for lineage regarding a specific asset.
-    * @returns A deep models with hierarchical assets and relationships between them.
-    */
-    public getAssetBrowserHop(
-        model: AssetBrowserApiHopRequestModel
-    ): Observable<AssetBrowserAssetsModel> {
-        const url = `api/v2/browser`;
-
-        return this.http.post(url, model).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err)) 
-        );
-
-    }
-
-    private findDirectParents(currentParent: AssetBrowserAssetModel, nodes: AssetBrowserAssetModel[], newHierarchy: AssetBrowserAssetModel[]) {
-        let parent: AssetBrowserAssetModel;
-
-        if (nodes) {
-            for (let n of nodes) {
-                if (n.items) {
-                    parent = n;
-                    this.findDirectParents(parent, n.items, newHierarchy);
-                }
-                else {
-                    newHierarchy.push(currentParent);
-                    break;
-                }
-            }
-
-        }
-        else {
-            newHierarchy.push(currentParent);
-        }
-    }
-
-    public convertResponseModel(model: AssetBrowserAssetsModel, ancestryMode: FilterAncestryMode): AssetBrowserAssetsModel {
-        let convertedModel: AssetBrowserAssetsModel = new AssetBrowserAssetsModel();
-        convertedModel.assets = model.assets.map(o => o);
-        convertedModel.assetRelations = model.assetRelations.map(o => o);
-
-        switch (+ancestryMode) {
-            case FilterAncestryMode.AllAncestors:
-                break;
-            case FilterAncestryMode.DirectAncestor:
-                let assets: AssetBrowserAssetModel[] = new Array<AssetBrowserAssetModel>();
-                this.findDirectParents(null, model.assets, assets);
-                convertedModel.assets = assets;
-                break;
-        }
-
-        return convertedModel;
-    }
-
-    /**
-    * Retrieve results from the Govern API for lineage regarding a specific asset.
-    * @returns A deep models with hierarchical assets and relationships between them.
-    */
-    public getImpactBrowserHop(
-        model: AssetBrowserApiHopRequestModel
-    ): Observable<AssetBrowserAssetsModel> {
-        const url = `api/v2/browser/impact`;
-
-        return this.http.post(url, model).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    /**
-    * Retrieve results from the Govern API for owners regarding specific assets.
-    * @returns A deep model of owners.
-    */
-    public getAssetOwners(
-        model: AssetBrowserApiOwnerHopRequestModel
-    ): Observable<AssetBrowserOwnersModel> {
-        const url = `api/v2/browser/owners`;
-        return this.http.post(url, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err))
         );
@@ -221,368 +357,6 @@ export class BrowserService extends BaseObservableService {
         return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
             map((response: DiagramTypesModel) => response),
             catchError(err => this.handleError(err)));
-    }
-
-    /**
-    * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
-    * @returns A diagram-specific representation for the nodes.
-    */
-    public translateAssetNodes(includeNonLeaf: boolean, assets: AssetBrowserAssetModel[]): AssetBrowserTranslationNode[] {
-        let nodes: AssetBrowserTranslationNode[] = new Array<AssetBrowserTranslationNode>();
-
-        try {
-            assets.forEach(a => {
-                this.loadTranslationChildNodes(includeNonLeaf, nodes, a, null, null, a.backColor, a.foreColor);
-            });
-        } catch (e) {
-            console.log(e);
-        }
-
-        return nodes;
-    }
-
-    /**
-    * Traverses data and determines the links to draw on root diagram nodes, as determined
-    * by relationships within descendant nodes.
-    * @returns A diagram-specific representation for the links.
-    */
-    public translateAssetLinks(nodes: AssetBrowserTranslationNode[], relations: AssetBrowserAssetRelationModel[]): AssetBrowserTranslationLink[] {
-        let links: AssetBrowserTranslationLink[] = new Array<AssetBrowserTranslationLink>();
-
-        try {
-            let rootNodes = nodes.filter(n => { return n.isGroup && !n.group; });
-            let ignoredRootKeys: string[] = new Array();
-
-            rootNodes.forEach(rootNode => {
-
-                let keys: string[] = new Array();
-
-                // 1. Cycle through all descendants and compile list of keys.
-                this.compileDescendantUidList(rootNode.key, nodes, keys);
-                keys.push(rootNode.key);
-
-                // 2. Loop through all assetRelations to see if any apply.
-                let forwardIntersections = relations.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
-                let backwardIntersections = relations.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
-
-                // You can ignore this node in loop below.
-                ignoredRootKeys.push(rootNode.key);
-
-                rootNodes
-                    .filter(nextRootNode => { return ignoredRootKeys.indexOf(nextRootNode.key) == -1; })
-                    .forEach(nextRootNode => {
-
-                        let theseNodeKeys: string[] = new Array();
-                        this.compileDescendantUidList(nextRootNode.key, nodes, theseNodeKeys);
-                        theseNodeKeys.push(nextRootNode.key);
-
-                        let fl = this.buildLinkRoot(forwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, true);
-                        if (fl) {
-                            if (links.findIndex(l => { return l.from == fl.from && l.to == fl.to; }) == -1) {
-                                links.push(fl);
-                            }
-                        }
-
-                        let bl = this.buildLinkRoot(backwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, false);
-                        if (bl) {
-                            if (links.findIndex(l => { return l.from == bl.from && l.to == bl.to; }) == -1) {
-                                links.push(bl);
-                            }
-                        }
-                    });
-            });
-        } catch (e) {
-            console.log(e);
-        }
-
-        return links;
-    }
-
-    /**
-    * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
-    * @returns A diagram-specific representation for the nodes and links.
-    */
-    public translateOwnersResponseModel(model: AssetBrowserOwnersModel): AssetBrowserTranslation {
-        let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
-
-        let baseKey: string = model.fromKey + '|' + model.responsibilityTypeId;
-
-        try {
-            translationModel.nodes = new Array();
-
-            let ownersNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
-
-            ownersNode.showReveal = AssetBrowserApiHopDirection.None;
-            //ownersNode.assetUid = a.assetUid;
-            //ownersNode.assetTypeId = a.assetTypeId;
-            ownersNode.class = AssetTypeClass.Organization; //convert string from API to enum value
-            ownersNode.back = "#FFE5D0";
-            ownersNode.backAmount = 0;
-            ownersNode.fore = "#ffffff";
-            ownersNode.foreAmount = 0;
-            ownersNode.icon = this.getIconUnicode('fa-user', AssetTypeClass.BusinessAsset);
-            ownersNode.isGroup = true;
-            ownersNode.key = baseKey;
-            ownersNode.text = model.responsibilityType;
-            ownersNode.template = "Owners";
-            ownersNode.responsibilityTypeId = model.responsibilityTypeId;
-            translationModel.nodes.push(ownersNode); 
-
-            model.owners.forEach(a => {
-                let ownerNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
-
-                ownerNode.showReveal = AssetBrowserApiHopDirection.None;
-                ownerNode.assetUid = a.resourceUid;
-                //ownerNode.assetTypeId = a.assetTypeId;
-                ownerNode.class = AssetTypeClass.BusinessAsset; //convert string from API to enum value
-                ownerNode.back = "#000000";
-                ownerNode.backAmount = 0;
-                ownerNode.fore = "#ffffff";
-                ownerNode.foreAmount = 0;
-                ownerNode.icon = this.getIconUnicode(a.icon, AssetTypeClass.BusinessAsset);
-                ownerNode.isGroup = false; 
-                ownerNode.group = baseKey; 
-                ownerNode.key = a.key;
-                ownerNode.template = "Owner";
-                ownerNode.text = a.displayValue;
-                translationModel.nodes.push(ownerNode);
-            });
-        } catch (e) {
-            console.log(e);
-        }
-
-        try {
-            let link = new AssetBrowserTranslationLink();
-
-            // from/to must stay as is, because there is other code that depends on this ordering.
-            link.back = "#cccccc";
-            link.from = model.fromKey;
-            link.fromPort = "R";
-            link.to = baseKey;
-            link.toPort = "L;"
-
-            translationModel.links = new Array();
-            translationModel.links.push(link);
-        } catch (e) {
-            console.log(e);
-        }
-
-        return translationModel;
-    }
-
-    /**
-    * Walks the nodes to find the hierarchy of the specified parent key, building a list of keys along the way.
-    * @returns An array of nodes keys in a hierarchy.
-    */
-    private compileDescendantUidList( 
-        parentKey: string,
-        nodes: AssetBrowserTranslationNode[],
-        keys: string[]
-    )
-    {
-        let childNodes = nodes.filter(n => { return n.group == parentKey; });
-        childNodes.forEach(n => {
-            this.compileDescendantUidList(n.key, nodes, keys);
-            keys.push(n.key);
-        });
-    }
-
-    /**
-    * Accepts impacted relationships for the root node, and details about the root node and comparison node, then
-    * makes a determination as to whether these nodes need to have a link associated between them.
-    * @returns A diagram link, if one is required.
-    */
-    private buildLinkRoot(
-        assetRelations: AssetBrowserAssetRelationModel[],
-        rootKey: string,
-        rootNodeUids: string[],
-        currentKey: string,
-        currentNodeUids: string[],
-        forward: boolean
-    ): AssetBrowserTranslationLink {
-
-        let fl: AssetBrowserTranslationLink;
-        let relevantIntersects = assetRelations.filter(x => {
-            return (forward) ?
-                (rootNodeUids.indexOf(x.subjectKey) >= 0) :
-                (rootNodeUids.indexOf(x.objectKey) >= 0);
-        });
-
-        relevantIntersects = relevantIntersects.filter(x => {
-            return (forward) ?
-                (currentNodeUids.indexOf(x.objectKey) >= 0) :
-                (currentNodeUids.indexOf(x.subjectKey) >= 0);
-        });
-
-        if (relevantIntersects.length > 0) {
-            fl = new AssetBrowserTranslationLink();
-
-            fl.back = "#cccccc";
-            fl.from = forward ? rootKey : currentKey;
-            fl.fromPort = "R";
-            fl.to = forward ? currentKey : rootKey;
-            fl.toPort = "L;"
-
-            let linkText: string = "";
-            relevantIntersects.forEach(intersect => {
-                if (linkText.indexOf(intersect.predicate) == -1) {
-                    linkText += ((linkText === "") ? "" : ", ") + intersect.predicate;
-                }
-                if (!fl.predicateIds) {
-                    fl.predicateIds = [];
-                }
-                fl.predicateIds.push(intersect.predicateId);
-
-                if (!fl.intersectUids) {
-                    fl.intersectUids = [];
-                }
-                fl.intersectUids.push({ intersectUid: intersect.intersectUid, predicateId: intersect.predicateId });
-            });
-            fl.text = linkText;
-
-        }
-
-        return fl;
-    }
-
-    /**
-    * Recurses through a node hierarchy received from the Govern API, then sends a list of impacted keys up the 
-    * hierarchy in order to properly populate the impact property string collection on each ancestor node.
-    * @returns A string of impacted keys. This impacted keys are used for node highlighting for impact paths.
-    */
-    private loadTranslationChildNodes(
-        includeNonLeaf: boolean,
-        nodesToReturn: AssetBrowserTranslationNode[],
-        current: AssetBrowserAssetModel,
-        rootTranslationNode: AssetBrowserTranslationNode,
-        parentKey: string,
-        backColor: string,
-        foreColor: string) {
-
-        // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, rootTranslationNode, includeNonLeaf, parentKey, backColor, foreColor);
-
-        if (!rootTranslationNode && includeNonLeaf) {
-            rootTranslationNode = currentNode;
-        } 
-
-        if (current.items) {
-            current.items.forEach(a => {
-                // Recurse
-                this.loadTranslationChildNodes(includeNonLeaf, nodesToReturn, a, rootTranslationNode, current.key, backColor, foreColor);
-            });
-        }
-
-        // Add the current node, after everything is calculated, including impact collection.
-        nodesToReturn.push(currentNode);
-
-    }
-
-    /**
-    * Creates a diagram node based on the data from the API, as well as the base color and shading ratio (whole number) that should be applied.
-    * @returns A diagram node.
-    */
-    private createTranslationNode(
-        a: AssetBrowserAssetModel,
-        rootTranslationNode: AssetBrowserTranslationNode,
-        includeNonLeaf: boolean,
-        parentKey: string,
-        backColor: string,
-        foreColor: string): AssetBrowserTranslationNode {
-        let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
-
-        let isThisALeaf: boolean = !a.items || a.items.length == 0;
-
-        if (isThisALeaf || includeNonLeaf) {
-            a.ownerCounts.forEach(oC => {
-                let thisKey: string = (rootTranslationNode ? rootTranslationNode.key : a.key) + '-O-' + oC.ResponsibilityTypeID.toString();
-
-                let existing = (rootTranslationNode) ?
-                    rootTranslationNode.owners.find(i => { return i.key == thisKey; }) :
-                    n.owners.find(i => { return i.key == thisKey; });
-            
-                if (existing) {
-                    if (oC.Users) {
-                        oC.Users.forEach(u => {
-                            if (!existing.users.find(eu => { return eu == u; })) {
-                                existing.count += 1;
-                            }
-                        });
-                    }
-                    else {
-                        existing.count += oC.Count;
-                    }
-                }
-                else {
-                    let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
-                    assetBrowserTranslationOwnerCount.key = thisKey;
-                    assetBrowserTranslationOwnerCount.expanded = oC.Expanded;
-                    assetBrowserTranslationOwnerCount.users = oC.Users;
-                    assetBrowserTranslationOwnerCount.count = oC.Count;
-                    assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
-                    assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
-                    if (rootTranslationNode) {
-                        rootTranslationNode.owners.push(assetBrowserTranslationOwnerCount);
-                    }
-                    else {
-                        n.owners.push(assetBrowserTranslationOwnerCount);
-                    }
-                }
-            });
-
-            a.relationCounts.forEach(rC => {
-                let existing = (rootTranslationNode) ?
-                    rootTranslationNode.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; }) :
-                    n.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; });
-
-                if (existing) {
-                    existing.count += rC.Count;
-                }
-                else {
-                    let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
-                    assetBrowserTranslationRelationCount.expanded = rC.Expanded;
-                    assetBrowserTranslationRelationCount.count = rC.Count;
-                    assetBrowserTranslationRelationCount.direction = rC.Direction;
-                    assetBrowserTranslationRelationCount.predicate = rC.Predicate;
-                    assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
-                    assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
-                    if (rootTranslationNode) {
-                        rootTranslationNode.relations.push(assetBrowserTranslationRelationCount);
-                    }
-                    else {
-                        n.relations.push(assetBrowserTranslationRelationCount);
-                    }
-                }
-            });
-        }
-
-        n.actionCount = a.actionCount;
-        n.showReveal = AssetBrowserApiHopDirection[a.reveal] as any; //convert string from API to enum value
-        n.assetUid = a.assetUid;
-        n.assetTypeId = a.assetTypeId;
-        n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value
-        n.back = backColor;
-        n.backAmount = a.backAmount;
-        n.fore = (foreColor) ? foreColor : "#404040";
-        n.foreAmount = a.foreAmount;
-        n.icon = this.getIconUnicode(a.icon, n.class);
-        n.isGroup = (a.items && a.items.length > 0);
-        n.key = a.key;
-        n.text = a.displayValue;
-        n.hasAssetReadAccess = a.hasAssetReadAccess;
-
-        if (parentKey && parentKey !== "") {
-            n.group = parentKey;
-
-            if (n.isGroup) {
-                n.template = "Group";
-            } 
-        }
-        else {
-            n.template = (a.focal) ? "FocalPortGroup" :"PortGroup";
-        }
-
-        return n;
     }
 
     /**

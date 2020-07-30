@@ -15,6 +15,7 @@
 	<!-- Types (object-based naming) -->
 	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
+	<include file="scripts/Udt.dbo.Ids.xml"/>
 	<include file="scripts/Udt.dbo.IDTable.xml"/>
 	<include file="scripts/Udt.dbo.IntegrationAssetHashType.xml"/>
 	<include file="scripts/Udt.dbo.LineageTable.xml"/>
@@ -245,13 +246,13 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-  <include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
-  <include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
-  <include file="scripts/Table.api.ExecutionGroup.xml"/>
-  <include file="scripts/Table.api.ExecutionMetric.xml"/>
+	<include file="scripts/Table.api.ExecutionGroup.xml"/>
+	<include file="scripts/Table.api.ExecutionMetric.xml"/>
 	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
@@ -449,15 +450,9 @@
 	<include file="scripts/Procedure.fusion.LoadMarkitMapLineageData.xml"/>
 	<include file="scripts/Procedure.fusion.ProcessFusionCacheInQueue.xml"/>
 	<include file="scripts/Procedure.fusion.UpdateFusionTextPaths.xml"/>
-	<include file="scripts/Procedure.graph.GetHop.xml"/>
-	<include file="scripts/Procedure.graph.Hop_GetBadgeCounts.xml"/>
-	<include file="scripts/Procedure.graph.Hop_GetImpact.xml"/>
-	<include file="scripts/Procedure.graph.Hop_GetLineage.xml"/>
-	<include file="scripts/Procedure.graph.Hop_GetResults.xml"/>
-	<include file="scripts/Procedure.graph.Hop_GetSelf.xml"/>
-	<include file="scripts/Procedure.graph.Hop_LoadHopHierarchies.xml"/>
-	<include file="scripts/Procedure.graph.Hop_LoadNextHopAssets.xml"/>
-	<include file="scripts/Procedure.graph.Hop_LoadSingleParentHeirarchies.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
@@ -475,6 +470,8 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
+
+	<include file="scripts/Procedure.Deletions.xml"/>
     
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
