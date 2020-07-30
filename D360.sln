@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.model", "d360.model\d360.model.csproj", "{B12A1078-5835-43B8-AFB2-C3D24C4AA098}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{88BBA351-DA2A-4551-AF28-5F1568952F7E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Common", "1. Common", "{5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.extensions", "d360.extensions\d360.extensions.csproj", "{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}"
@@ -87,6 +85,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.core", "d360.core\d360.core.csproj", "{779B4B57-42B9-4478-9464-2A4880ABF27B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,10 +97,6 @@ Global
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098}.Release|Any CPU.Build.0 = Release|Any CPU
-		{88BBA351-DA2A-4551-AF28-5F1568952F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88BBA351-DA2A-4551-AF28-5F1568952F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88BBA351-DA2A-4551-AF28-5F1568952F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88BBA351-DA2A-4551-AF28-5F1568952F7E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -221,13 +217,16 @@ Global
 		{779B4B57-42B9-4478-9464-2A4880ABF27B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{779B4B57-42B9-4478-9464-2A4880ABF27B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{779B4B57-42B9-4478-9464-2A4880ABF27B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B12A1078-5835-43B8-AFB2-C3D24C4AA098} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
-		{88BBA351-DA2A-4551-AF28-5F1568952F7E} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{DF57BE56-958B-4C4D-B82C-6B61297434AB} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{CAFAC467-D243-4CC4-BC7F-9F1DA0FBFFFE} = {757CF48D-6728-4702-AC12-754629196548}
@@ -261,9 +260,10 @@ Global
 		{AEE9929B-B6D4-4034-B7A2-7836277C7E08} = {757CF48D-6728-4702-AC12-754629196548}
 		{27F0D451-FD9F-4E23-AFCF-F2CE94522A50} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{779B4B57-42B9-4478-9464-2A4880ABF27B} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
+		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal

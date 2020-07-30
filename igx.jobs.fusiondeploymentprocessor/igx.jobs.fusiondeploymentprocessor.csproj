@@ -299,7 +299,7 @@
       <Name>d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
-      <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>
+      <Project>{11e0bc56-6f38-42eb-af5c-6fa9968ba0fa}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
     <ProjectReference Include="..\igx.jobs\igx.jobs.csproj">
