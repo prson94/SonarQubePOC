@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowListItem } from '../../models/workflow.model';
 import { State } from '../../models/asset.model';
 
 

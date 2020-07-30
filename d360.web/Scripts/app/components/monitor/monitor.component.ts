@@ -66,14 +66,14 @@ import { isNull } from 'util';
             <div [hidden]="!tabIsActive('monitor')">
                 <div class="row">
                     <div class="col s12">
-                        <div class="tile tile-detail" *ngIf="selectedWorkflowType != null">                                              
+                        <div class="tile tile-detail" *ngIf="selectedWorkflowType?.TypeID != null">                                              
                             <object-detail [objectType]="'Monitor'" [objectID]="selectedWorkflowType?.VersionID" ></object-detail>
                         </div>
                     </div>
                 </div>
                 <div class="row">  
                     <div class="col s12">
-                        <d3s-workflow-diagram *ngIf="selectedWorkflowType != null"
+                        <d3s-workflow-diagram *ngIf="selectedWorkflowType?.TypeID != null"
                             [id]="selectedWorkflowType?.TypeID" 
                             [version]="selectedWorkflowType?.Version" 
                             [filteredObject]="objectType"
@@ -248,7 +248,6 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         this.activeIndex = e.index;
         this.activeTab = this.tabs[e.index];
         this.activeTab.loaded = true;
-        //console.log(e);
     }
 
     tabIsLoaded(key: string) {
