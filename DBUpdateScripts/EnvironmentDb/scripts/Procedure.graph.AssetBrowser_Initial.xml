@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v1">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -504,7 +504,6 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
-							and Hr.Hop > 0
 					union all
 					select	distinct
 							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
@@ -520,7 +519,6 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
-							and Hr.Hop < 0
 					) O
 			group by [Predicate], ID, Uid, Direction
 			for json path
