@@ -38,6 +38,10 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Output() onChange: EventEmitter<any> = new EventEmitter();
 
+    @Output() onSelect: EventEmitter<any> = new EventEmitter();
+
+    @Output() onUnselect: EventEmitter<any> = new EventEmitter();
+
     protected value: string = '';  // this is intentionally NOT public or an input you should be using ngModel..
 
     onModelChange: Function = () => { };
@@ -114,6 +118,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     removeItem(tag: string) {
         this.tagsArray = this.tagsArray.filter(x => x != tag);
         this.tryChangeValue(this.tagsArray.join('|'));
+        this.onUnselect.emit(tag);
     }
 
     ngOnDestroy() {
@@ -212,11 +217,13 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                             }
                             this.showMessageForResult(this.messagesService, result, msg);
                             this.tryAddValue(tagValue);
+                            this.onSelect.emit(tagValue);
                             this.tagAutocompleteValue = '';
                         });
                 }
                 else {
                     this.tryAddValue(tagValue);
+                    this.onSelect.emit(tagValue);
                     this.tagAutocompleteValue = '';
                 }
             })

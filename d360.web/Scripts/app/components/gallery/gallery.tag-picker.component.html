@@ -5,7 +5,10 @@
 
 <div class="tile tile-detail">
     <header>Basic Usage</header>
-    <code>{{sampleUsage}}</code>
+    <code>{{sampleUsage}}</code><br />
+    Or<br />
+    <code>{{sampleUsage2}}</code>
+
 </div>
 
 <div class="tile tile-detail">
@@ -13,24 +16,22 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
-            <strong>Use this input to update tag control. Separate tags with | symbol</strong><br />
-            <input type="text" name="value" [(ngModel)]="value" /><br /><br />
-        </div>
-        <div>
             <ig-tag-picker [(ngModel)]="value"></ig-tag-picker>
         </div>
-
+        <div>
+            <strong>Selected Value:</strong> {{value}}
+        </div>
     </div>
     <hr />
     <div class="gallery-section">
         <h4>Disabled</h4>
         <p>
-            As with all form controls this input can be disabled
+            As with all form controls this input can be disabled (enter values in basic example to see result)
         </p>
         <div>
             <ig-tag-picker [(ngModel)]="value" [disabled]="true"></ig-tag-picker>
         </div>
-    </div> 
+    </div>
     <hr />
     <div class="gallery-section">
         <h4>Tab Index</h4>
@@ -51,6 +52,27 @@
         <div class="row">&nbsp;</div>
         <div class="row">
             <input type="text" tabindex="4" />
+        </div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Events</h4>
+        <p>
+            Add or remove tags to trigger modelChange, onSelect and onUnselect events.
+        </p>
+        <div class="row">
+            <ig-tag-picker [(ngModel)]="valueEvents" (onChange)="tagOnChange=$event" (onSelect)="tagOnSelect=$event" (onUnselect)="tagOnUnselect=$event"></ig-tag-picker>
+        </div>
+        <br />
+        <div class="row">
+            <span class="event-label">onChange value</span>:{{tagOnChange}}
+        </div>
+        <div class="row">
+            <span class="event-label">onSelect value</span>:{{tagOnSelect}}
+        </div>
+        <div class="row">
+            <span class="event-label">onUnselect value</span>:{{tagOnUnselect}}
         </div>
     </div>
 </div>

@@ -4,16 +4,27 @@
 @Component({
     selector: 'gallery-tag-picker',
     templateUrl: './gallery.tag-picker.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    styles: [`
+        .event-label {
+            width: 110px;
+            font-weight: bold;
+            display: inline-block;
+            }`]
 })
 
 export class GalleryTagPickerComponent implements OnInit {
     protected properties: Array<any>;
     protected events: Array<any>;
     protected sampleUsage: string = '<ig-tag-picker [(ngModel)]="model.Tags"></ig-tag-picker>';
+    protected sampleUsage2: string = '<ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>';
 
-    private value: string = 'Added Tag|Testing Data';
+
+    private value: string = '';
     private formValue;
+
+
+    private valueEvents: string = '';
 
     constructor(private ref: ChangeDetectorRef) { }
 
@@ -26,5 +37,7 @@ export class GalleryTagPickerComponent implements OnInit {
 
         this.events = new Array();
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });
+        this.events.push({ Name: "onSelect", Description: "Callback to invoke when a tag suggestion is selected or new tag is added." });
+        this.events.push({ Name: "onUnselect", Description: "Callback to invoke when a tag is removed from selection." });
     }
 }
