@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { SelectItem } from '../../models/form.model';
 
 
 @Component({
@@ -20,7 +21,7 @@ export class GalleryTagPickerComponent implements OnInit {
     protected sampleUsage2: string = '<ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>';
 
 
-    private value: string = '';
+    private value: SelectItem[] = [];
     private formValue;
 
 

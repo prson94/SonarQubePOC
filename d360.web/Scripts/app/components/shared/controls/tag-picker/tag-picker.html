@@ -1,8 +1,8 @@
 ﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="styleClass" class="tag-picker {{disabled ? 'disabled':''}}">
     <div class="selected-tags">
-        <ng-container *ngIf="tagsArray.length > 0">
-            <div class="selected-tag" *ngFor="let item of tagsArray">
-                {{item}}
+        <ng-container *ngIf="value && value.length > 0">
+            <div class="selected-tag" *ngFor="let item of value">
+                {{item.title}}
                 <div *ngIf="!disabled && !readOnly" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
                     <i style="padding-left:10px" class="fa fa-times-circle"></i>
                 </div>
@@ -22,7 +22,7 @@
                             field="name"
                             (completeMethod)="search($event,$event.query)">
                 <ng-template let-elm pTemplate="item">
-                    <span [innerHTML]="highlight(elm.name,tagAutocompleteValue)"></span>
+                    <span [innerHTML]="highlight(elm.title,tagAutocompleteValue)"></span>
                 </ng-template>
             </p-autoComplete>
         </div>

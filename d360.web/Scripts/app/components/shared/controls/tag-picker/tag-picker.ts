@@ -51,7 +51,6 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     onModelTouched: Function = () => { };
 
-    private tagsArray: SelectItem[] = [];
     private tagAutocompleteValue: string = '';
     private savingTag: boolean = false;
 
@@ -66,7 +65,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
     @ViewChild("tagPicker", { static: false }) _el: ElementRef;
 
-    tryChangeValue(val: SelectItem) {
+    tryChangeValue(val: SelectItem[]) {
         if (!this.disabled) {
             this.writeValue(val);
         }
@@ -74,33 +73,23 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     tryAddValue(val: SelectItem) {
         if (!this.disabled) {
-            var newValue = '';
+            var newValue: SelectItem[] = [];
+            if (this.value)
+                newValue = this.value;
 
-            if (this.tagsArray.some(x => x.value.trim().toLowerCase() == val.value.trim().toLowerCase()))
+            if (this.value && this.value.some(x => x.title.trim().toLowerCase() == val.title.trim().toLowerCase()))
                 return;
 
-            if (this.value != '') {
-                newValue = this.value + '|' + val;
-            }
-            else {
-                newValue = val;
-            }
+            newValue.push(val);
+
             this.writeValue(newValue);
         }
     }
 
-    writeValue(obj: string): void {
+    writeValue(obj: SelectItem[]): void {
         if (this._el) this._el.nativeElement.focus();
 
         this.value = obj;
-        if (this.value != undefined) {
-            this.tagsArray = [];
-            this.value.split('|')
-                .forEach(tag => {
-                    if (tag != '')
-                        this.tagsArray.push(tag);
-                })
-        }
         this.onModelChange(this.value);
         this.onChange.emit(this.value);
         this.changeDetectorRef.markForCheck();
@@ -118,9 +107,9 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         this.disabled = isDisabled
     }
 
-    removeItem(tag: string) {
-        this.tagsArray = this.tagsArray.filter(x => x != tag);
-        this.tryChangeValue(this.tagsArray.join('|'));
+    removeItem(tag: SelectItem) {
+        var newValue = this.value.filter(x => x.title != tag.title);
+        this.tryChangeValue(newValue);
         this.onUnselect.emit(tag);
     }
 
@@ -144,33 +133,37 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     checkKey(event, value) {
         if (event.key == "Enter" && !this.savingTag) {
-            if (value) {
-                event.Value = value.Value ? value.Value.trim() : value.trim();
-                this.saveTag(event);
+            if (typeof value == 'string') {
+                this.saveTag({ title: value, value: '' });
+            }
+            else {
+                this.saveTag(value);
             }
         }
     }
 
-    isTagValid(value: string) {
+    isTagValid(item: SelectItem) {
         var isAssigned = false;
-        this.tagsArray.forEach(x => {
-            if (x.trim().toLowerCase() == value.trim().toLowerCase()) {
-                this.messagesService.showError('Error', 'Tag already assigned');
-                isAssigned = true;
-            }
-        })
+        if (this.value) {
+            this.value.forEach(x => {
+                if (x.title.trim().toLowerCase() == item.title.trim().toLowerCase()) {
+                    this.messagesService.showError('Error', 'Tag already assigned');
+                    isAssigned = true;
+                }
+            })
+        }
         if (isAssigned)
             return false;
 
-        if (value.includes("|")) {
+        if (item.title.includes("|")) {
             this.messagesService.showError('Error', "Tag can't contain | character");
             return false;
         }
-        if (value.length < 1) {
+        if (item.title.length < 1) {
             this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
             return false;
         }
-        if (value.length > 100) {
+        if (item.title.length > 100) {
             this.messagesService.showError('Error', "Tag must be less then 100 characters in length");
             return false;
         }
@@ -185,48 +178,48 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
             this.tagService.searchTagsTypeAhead(searchValue, 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
-                        this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
-                        this.changeDetectorRef.markForCheck();
+                        var sorted = res.sort((a, b) => a.name.localeCompare(b.name));
+                        this.searchResults = [];
+                        sorted.forEach(tag => {
+                            this.searchResults.push({ value: tag.code, title: tag.name })
+                        });
                     }
                     else if (res && res.length == 0) {
-                        this.searchResults = res;
-                        this.changeDetectorRef.markForCheck();
+                        this.searchResults = [];
                     }
+                    this.changeDetectorRef.markForCheck();
 
-                    this.searchResults.forEach(x => x.Value = x.name);
 
                 }, err => { console.log(err) });
 
     }
 
-    saveTag(event) {
-        var tagValue = event.Value;
-
-        if (!this.isTagValid(tagValue)) {
+    saveTag(event: SelectItem) {
+        if (!this.isTagValid(event)) {
             return;
         }
         this.savingTag = true;
 
         var tagType = new TagType();
-        tagType.Value = tagValue;
+        tagType.Value = event.title;
         this.tagService.doesTagExist(tagType)
             .subscribe(result => {
                 if (result == null) {
-                    this.tagService.saveTag(event)
+                    this.tagService.saveTag(tagType)
                         .subscribe(result => {
                             let msg: string = '';
-                            if (event.uid == undefined) {
-                                msg = `${event.Value} succesfully created`;
+                            if (event.value == undefined) {
+                                msg = `${event.title} succesfully created`;
                             }
                             this.showMessageForResult(this.messagesService, result, msg);
-                            this.tryAddValue(tagValue);
-                            this.onSelect.emit(tagValue);
+                            this.tryAddValue({ value: result.uid, title: result.Value });
+                            this.onSelect.emit({ value: result.uid, title: result.Value });
                             this.tagAutocompleteValue = '';
                         });
                 }
                 else {
-                    this.tryAddValue(tagValue);
-                    this.onSelect.emit(tagValue);
+                    this.tryAddValue(event);
+                    this.onSelect.emit(event);
                     this.tagAutocompleteValue = '';
                 }
             })

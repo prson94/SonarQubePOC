@@ -19,7 +19,7 @@
             <ig-tag-picker [(ngModel)]="value"></ig-tag-picker>
         </div>
         <div>
-            <strong>Selected Value:</strong> {{value}}
+            <strong>Selected Value:</strong> <pre>{{value | json}}</pre> 
         </div>
     </div>
     <hr />
@@ -76,13 +76,13 @@
         </div>
         <br />
         <div class="row">
-            <span class="event-label">onChange value</span>:{{tagOnChange}}
+            <span class="event-label">onChange value</span>:<pre>{{tagOnChange | json}}</pre>
         </div>
         <div class="row">
-            <span class="event-label">onSelect value</span>:{{tagOnSelect}}
+            <span class="event-label">onSelect value</span>:<pre>{{tagOnSelect | json}}</pre>
         </div>
         <div class="row">
-            <span class="event-label">onUnselect value</span>:{{tagOnUnselect}}
+            <span class="event-label">onUnselect value</span>:<pre>{{tagOnUnselect | json}}</pre>
         </div>
     </div>
 </div>
