@@ -2711,6 +2711,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             var document = new SLDocument();
             const string assetSheetName = "Assets";
             const string apiSheetName = "Api Info";
+            int maxDepth = 1;
 
             var assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
 
@@ -2736,21 +2737,33 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 
             document.SelectWorksheet(assetSheetName);
 
+            foreach (var row in policies)
+            {
+                int depth = CheckDepth(policies, row.ID);
+                row.Add("Level", depth);
+                //row.Level = depth;
+                if (depth > maxDepth)
+                {
+                    maxDepth = depth;
+                }
+            }
+
             int index = 1;
             foreach (var field in fields)
             {
                 if (field.IsPartOfKey)
                 {
                     fieldsToRemove.Add(field);
-                    for (int i = 1; i < 3 + 1; i++)
+                    for (int i = 1; i < maxDepth + 1; i++)
                     {
-                        tempFields.Add(new FieldType { Type = "string", Name = $"Level {index} {(string)field.FriendlyName}", FriendlyName = $"Level {index} {(string)field.FriendlyName}" });
+                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.FriendlyName}", FriendlyName = $"Level {i} {(string)field.FriendlyName}", ID = field.ID});
+
                     }
                 }
             }
-            for (int i = 1; i < 3+1; i++)
+            for (int i = 1; i < maxDepth+1; i++)
             {
-                tempFields.Add(new FieldType { Type = "string", Name = $"Level {i} UID", FriendlyName = $"Level {i} UID" });
+                tempFields.Add(new FieldType { Type = "string", Name = $"Uid", FriendlyName = $"Level {i} UID" });
             }
             fields.AddRange(tempFields);
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
@@ -2762,9 +2775,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                 document.SetCellValue(1, index, (string)field.FriendlyName);
                 index++;
             }
-
-
-            //BuildTree(policies,0);
+          
 
             int rowNumber = 1;
             foreach (var row in policies)
@@ -2772,9 +2783,14 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                 index = 1;
                 rowNumber++;
                 var rowValues = (row as IDictionary<string, object>);
+                //int itemDepth = CheckDepth(policies,row.ID);
 
                 foreach (var field in fields)
                 {
+                    if (field.Name == "Uid")
+                    {
+                        OutputKeyField(row, document, index, rowNumber);
+                    }
                     if (rowValues.ContainsKey(field.Name))
                     {
                         var val = rowValues[field.Name];
@@ -2810,14 +2826,28 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return ResponseMessage(result);
         }
 
-        public void BuildTree(IEnumerable<dynamic> tree, int parentID = 0)
+        public void OutputKeyField(IDictionary<string, object> item, SLDocument document, int colIndex, int rowIndex)
         {
-            //var test1 = tree.Where(x => (parentID != 0 ? x.ParentID == parentID : !x.ParentID)).ToList();
-            var test = tree.Where(x=> x.ParentID != null && x.ParentID != parentID).ToList();
-            foreach(var t in test)
+            var test = item;
+            //if (item.Level = 1)
+            //{
+            //    document.SetCellValue(rowIndex, colIndex, (string)item.Uid);
+            //}
+            //if (item.ParentID != null && item.Parent != 0)
+            //{
+            //    level = CheckDepth(tree, item.ParentID, ++level);
+            //}
+        }
+
+
+        public int CheckDepth(IEnumerable<dynamic> tree, int itemID, int level = 1)
+        {
+            var item = tree.Where(x => x.ID == itemID).FirstOrDefault();
+            if (item.ParentID != null && item.Parent != 0)
             {
-                //BuildTree(tree, t.ID);
+                level = CheckDepth(tree, item.ParentID, ++level);
             }
+            return level;
         }
 
         protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
