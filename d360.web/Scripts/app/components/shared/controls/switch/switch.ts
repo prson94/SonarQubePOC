@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
@@ -15,7 +15,8 @@ export const SWITCH_VALUE_ACCESSOR: any = {
     templateUrl: 'switch.html',
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./switch.css']
+    styleUrls: ['./switch.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Switch implements ControlValueAccessor, OnInit  {        
     @Input() trueLabel = "Yes";
