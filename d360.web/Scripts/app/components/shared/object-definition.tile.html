@@ -10,24 +10,11 @@
     <object-detail
       [objectID]="objectID"
       [objectType]="objectType"
+      [objectUID]="object?.UID"
+      [nymTypes]="nymTypes"
+      [hasModifyRelationshipsPermissions]="hasModifyRelationshipsPermissions"
+      [hasDeleteRelationshipsPermissions]="hasDeleteRelationshipsPermissions"
     ></object-detail>
-  </simple-accordion>
-  <simple-accordion
-    header="{{ nym.Name }} ({{ synonyms.itemCount }})"
-    [active]="false"
-    *ngFor="let nym of nymTypes"
-  >
-    <d3s-synonyms-tile
-      #synonyms
-      [predicateId]="nym.ID"
-      [predicateName]="nym.Name"
-      [objectID]="objectID"
-      [objectType]="objectType"
-      [assetUid]="object?.UID"
-      [readonly]="false"
-      [hasAdd]="hasModifyRelationshipsPermissions()"
-      [hasDelete]="hasDeleteRelationshipsPermissions()"
-    ></d3s-synonyms-tile>
   </simple-accordion>
 </div>
 <d3s-dynamic-editor

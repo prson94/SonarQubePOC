@@ -171,3 +171,14 @@ export class Classification {
     ID: number;
     Name: string;
 }
+
+export class Category {
+    constructor(name: string) {
+        this.name = name;
+    }
+    loaded = false;
+    hasData = false;
+    name: string;
+    rows = [];
+    active = false;
+}
