@@ -408,7 +408,10 @@ select	A.TypeName,
                              outer apply(
 							select value = (
 								SELECT 
-								ADV.DisplayValue as name,
+								 CASE
+				                    WHEN (F.AllowMultipleValues = 0) THEN COALESCE(fi.FormattedValue, ADV.DisplayValue, AC.Code)
+				                    ELSE COALESCE(ADV.DisplayValue, AC.Code)
+			                     END as name,
                                 JSON_VALUE(ACJ.ColorJSON,'$.Value') as color
 								FROM field fi 
 								cross apply STRING_SPLIT(fi.Value, ',') SPFfi
