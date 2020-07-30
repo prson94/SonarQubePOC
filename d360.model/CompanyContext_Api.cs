@@ -1086,7 +1086,8 @@ where T.ExecutionId = @executionid;
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
             DataTable fieldTable, out bool success, out string errorMessage,
-            bool useFriendlyNames = false
+            bool useFriendlyNames = false,
+            bool allowTagFields = false
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
@@ -1108,6 +1109,10 @@ where T.ExecutionId = @executionid;
             }
 
             var restrictedFieldTypes = DataType.Text.GetNotAllowedToUpdateViaAssetApi();
+            if (allowTagFields)
+            {
+                restrictedFieldTypes = restrictedFieldTypes.Where(x => x != "Tag").ToList();
+            }
 
             foreach (var k in fields)
             {
@@ -1338,7 +1343,7 @@ where T.ExecutionId = @executionid;
 
                     }
                 }
-                                
+
 
                 if (fieldTable != null)
                 {
@@ -4772,7 +4777,7 @@ insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], In
                             try
                             {
                                 #region Field table delete
-                                
+
                                 Connection.Execute($@"
 delete  T
 from    [Field] T

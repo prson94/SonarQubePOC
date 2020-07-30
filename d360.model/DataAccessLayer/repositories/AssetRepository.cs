@@ -2290,6 +2290,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                         null,
                         out success,
                         out error,
+                        true,
                         true
                         );
                     if (!success)

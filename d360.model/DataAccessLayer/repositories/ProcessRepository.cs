@@ -425,7 +425,8 @@ merge Field as T
 	using (select edaf.*,a.id as AssetId from api.ExecutionDiagramAssetField  edaf
 		inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = edaf.executionitemuid 
         inner join asset a on eda.uid = a.uid
-		where eda.executionid = @executionid and edaf.executionid = @executionid
+        inner join fieldtype ft on ft.id = edaf.FieldTypeID
+		where eda.executionid = @executionid and edaf.executionid = @executionid and ft.type <> 'Tag'
 	) as S
 	on (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID)
 	when matched and T.Value <> S.FieldValue COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS 
