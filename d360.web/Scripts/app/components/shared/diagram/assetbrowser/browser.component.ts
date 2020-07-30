@@ -1579,10 +1579,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
                 let image_data = this.diagram.makeImageData({
                     scale: 1,
-                    returnType: "blob",
+                    returnType: "blob", 
                     background: "#fff",
+                    maxSize: new go.Size(Infinity, Infinity), 
                     callback: (image_data) => this.panels_Download_Callback(image_data, this.assetUid)
-                });
+                }); 
                 break;
             case AssetBrowserPanelCommand.Filters:
                 this.helper_SetVisiblePanel(e);
@@ -1627,7 +1628,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         var url = window.URL.createObjectURL(image_data);
         var filename = `${assetUid}.png`;
         var a = document.createElement("a");
-        //a.style = "display: none";
+
         a.href = url;
         a.download = filename;
         // IE 11
