@@ -19,7 +19,7 @@
                         {{item.Name}}
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
-                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                    <td>{{item.EffectiveDate | date:'shortDate'}}</td>
                     <td>
                         <div class="RowTools" *ngIf="item.IsGroup">
                             <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
