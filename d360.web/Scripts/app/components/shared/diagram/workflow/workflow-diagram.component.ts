@@ -339,7 +339,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == 0 && this.uid == "00000000-0000-0000-0000-000000000000") {
+        if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
             this.isLoading = false;
             return of();
         }

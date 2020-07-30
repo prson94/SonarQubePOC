@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowListItem } from '../../models/workflow.model';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 
@@ -140,7 +139,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
                         //select first row by default
                         this.selection = this.workflowItems[0];
                         this.selectionChange.emit(this.selection);
-                    }
+                    } 
                     this.onLoadComplete.emit({ rows: this.workflowItems == null ? 0 : this.workflowItems.length });
                     this.isLoading = false;
                 })

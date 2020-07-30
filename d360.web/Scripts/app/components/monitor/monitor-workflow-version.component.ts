@@ -18,7 +18,7 @@ import { BaseComponent } from "../shared/base.component";
             <d3s-monitor-list 
                     [showSimpleFilter]="showSimpleFilter"
                     [workflowTypes]="selectedWorkflowTypes" 
-                    (selectionChange)="monitorListChage($event)" 
+                    (selectionChange)="monitorListChange($event)" 
                     [objectType]="objectType" 
                     [objectId]="objectId" 
                     (filteredTypes)="monitorFilterTypesChange($event)"
@@ -41,11 +41,10 @@ export class MonitorWorkflowVersionComponent extends BaseComponent implements On
     @Input() selectAll: boolean = true;
     @Input() showHeader: boolean = true;
 
-    @Input()selectedWorkflowTypes: any[];
+    @Input() selectedWorkflowTypes: any[];
     selectedWorkflowType: any = null;
     showSimpleFilter: boolean = true;
-    //selectedWorkflowItem: any;
-    //selectedWorkflowItemDetail: any;
+
 
     isFiltered: boolean = false;
     filteredTypes: any[];
@@ -61,7 +60,7 @@ export class MonitorWorkflowVersionComponent extends BaseComponent implements On
         this.onFilterChanged.emit($event);
     }
 
-    monitorListChage($event) {
+    monitorListChange($event) {
         this.selectedWorkflowType = $event;
         this.onMonitorListChanged.emit($event);
     }
