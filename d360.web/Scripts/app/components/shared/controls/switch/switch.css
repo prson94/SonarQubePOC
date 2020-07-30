@@ -36,10 +36,12 @@
     transition: color 150ms ease;
 }
 
-.switch :focus {
-    outline: none;
-    border: none;
-    box-shadow: none;
+.switch:focus {
+    outline: 0 none;
+    outline-offset: 0;
+    -webkit-box-shadow: 0 0 0 2px #8abddf;
+    -moz-box-shadow: 0 0 0 2px #8abddf;
+    box-shadow: 0 0 0 2px #8abddf;
 }
 
 

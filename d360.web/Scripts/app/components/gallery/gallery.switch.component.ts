@@ -6,8 +6,8 @@
     templateUrl: './gallery.switch.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [
-    `
-        .requiredMessage{
+     `
+        .switch-required-message{
             border: 1px solid 999999;
             border-radius: 20px;
             background-color: #9ddae6;
