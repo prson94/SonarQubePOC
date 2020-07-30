@@ -562,13 +562,16 @@ namespace d360.web.Controllers
             };
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool allowTagField = false)
         {
             var row = startRow;
 
+            if (allowTagField)
+                limitedFieldTypes = limitedFieldTypes.Where(x => x != "Tag").ToList();
+
             fields.ForEach(f =>
             {
-                if (f.IsEditable && f.Type != "Tag")
+                if (f.IsEditable || (f.Type == "Tag" && allowTagField))
                 {
                     #region Is Editable
 
@@ -1068,6 +1071,15 @@ namespace d360.web.Controllers
                                 fld.Value = ft.DefaultValue;
                             }
                         }
+
+                        if (ft.Type == "Tag" && includeTagField)
+                        {
+                            fld.Value = Company.Query<string>(@"select STRING_AGG(t.Value,'|') as value from asset a
+                            inner join assettag at on a.id = at.assetid
+                            inner join tag t on at.tagid = t.id
+                            where a.object = @obj and a.ObjectId = @objId", new { obj = @object, objId = objectID }).FirstOrDefault();
+                        }
+
 
                         list.Add(fld);
 
