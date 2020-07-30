@@ -53,6 +53,11 @@ var webpackConfig = {
 
     module: {
         rules: [
+            {
+                test: /\.less$/,
+                exclude: /node_modules/,
+                loader: 'raw-loader!less-loader'
+            },
           // .ts files for TypeScript
             {
                 test: /\.ts$/,

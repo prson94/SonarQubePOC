@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, } from '@angular/core';
 import { BaseComponent } from '../../base.component';
 
 import { CommonModule } from '@angular/common';
@@ -21,12 +21,13 @@ export const ICON_VALUE_ACCESSOR: any = {
     selector: 'ig-icon-picker',
     templateUrl: 'icon-picker.component.html',
     providers: [ICON_VALUE_ACCESSOR],
-    styleUrls: ['icon-picker.component.css']
+    styleUrls: ['icon-picker.component.less'],
+    encapsulation: ViewEncapsulation.None,
 })
 
 export class IconPickerComponent extends BaseComponent implements ControlValueAccessor {
     @Input() ngModel: string;
-    @Input() tabindex: string;
+    @Input() tabindex: number = 0;
     @Input() disabled: boolean = false;
     @Input() required;
     @Input() style: any;
