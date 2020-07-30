@@ -1,9 +1,9 @@
 ﻿import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
-import {AuditResults} from '../models/audit.model';
+import { AuditResults, AuditObject } from '../models/audit.model';
 import {SortOrder} from '../models/enums.model';
 import {GridFilterExpression} from '../models/grid-definition.model';
 
@@ -19,58 +19,49 @@ export class AuditService extends BaseObservableService {
         super(messagesService);
     }
 
-    getAuditData(
-        objectID: number,
-        objectType: string,
-        pageNum: number,
-        pageSize: number,
-        sortOrder: SortOrder,
-        sortField?: string,
-        filters?: GridFilterExpression[]
-    ): Observable<AuditResults> {
-        let sortCol = sortField != undefined ? sortField : "";
-        let url = `api/v2/audit/${objectType}/${objectID}/auditcombined.json?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}`;
-        let indx = 0;
-
-        if (filters != undefined) {
-            url += `&filterscount=${filters.length}`;
-
-            for (let filter of filters) {
-                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
-                indx++;
-            }
+    public getAuditData(assetUid: string, params: any): Observable<AuditResults> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
         }
 
         return this
             .http
-            .get(url)
+            .get(`/api/v2/audit/${assetUid}${qString}`)
             .pipe(
                 map(response => <AuditResults>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    exportToExcel(objectID: number, objectType: string, name: string, filters?: GridFilterExpression[]) {        
-        let url = `api/v2/audit/${objectType}/${objectID}/download/excel/audit.xls`;
-
-        let indx = 0;
-
-        if (filters != undefined) {
-            url += `?filterscount=${filters.length}`;
-
-            for (let filter of filters) {
-                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
-                indx++;
-            }
-        }
-
-        this
+    public getLegacyDetails(assetUid: string): Observable<AuditObject> {
+        return this
             .http
-            .get(
-                url,
-                {responseType: 'blob'}
-            )
-            .subscribe(data => this.downloadFile(data, name));
+            .get(`/api/v2/audit/objectdetail/${assetUid}`)
+            .pipe(
+                map(response => <AuditObject>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public exportToExcel(assetUid: string, params: any, fileName) {
+
+        //Setup paging for export
+        params['_pageNum'] = 1;
+        params['_pageSize'] = 200000;
+
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        this.
+            http
+            .get(`/api/v2/audit/${assetUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe(data => this.downloadFile(data, fileName));
     }
 
     downloadFile(

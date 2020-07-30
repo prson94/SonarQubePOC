@@ -78,6 +78,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
                 bool isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                int pageSizeLimit = isStreamResponse ? 200000 : 250;
 
                 var orderBySql = "";
                 var orderDirection = "desc";
@@ -86,7 +87,7 @@ namespace d360.web.Controllers.V2
                 int pageNum = 1;
                 int pageSize = 200;
 
-                string isValid = isPageSizeAndNumValid(queryParams);
+                string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
                 if (!string.IsNullOrEmpty(isValid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
@@ -113,6 +114,7 @@ namespace d360.web.Controllers.V2
                 new DefaultFilter("action", "A.action", SqlFieldType.Text),
                 new DefaultFilter("actionAssetUid", "A.actionAssetUid", SqlFieldType.Text),
                 new DefaultFilter("actionAssetTypeUid", "A.actionAssetTypeUid", SqlFieldType.Text),
+                new DefaultFilter("actionObject", "A.actionObject", SqlFieldType.Text),
                 new DefaultFilter("actionObjectTypeName", "A.actionObjectTypeName", SqlFieldType.Text),
                 new DefaultFilter("actionObjectName", "A.actionObjectName", SqlFieldType.Text),
                 new DefaultFilter("actionDescription", "A.actionDescription", SqlFieldType.Text),
@@ -157,12 +159,15 @@ namespace d360.web.Controllers.V2
 
                 bool isAssetType = false;
                 AssetType assetType = null;
-                Asset asset = Company.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
-                if (asset == null)
+                if (
+                    !Company.Any<Asset>(i => i.uid == assetUid) &&
+                    !Company.Any<Tag>(i => i.uid == assetUid) &&
+                    !Company.Any<IssueType>(i => i.uid == assetUid) &&
+                    !Company.Any<IntersectType>(i => i.uid == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if(assetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset or AssetType not found for UID"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type or RelationshipType not found for UID"));
                     isAssetType = true;
                 }
 
@@ -186,7 +191,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (pageSize < 1) pageSize = 1;
                     if (pageNum < 1) pageNum = 1;
-                    if (pageSize > 250) pageSize = 250;
+                    if (pageSize > pageSizeLimit) pageSize = pageSizeLimit;
                     if (pageNum > 10000) pageNum = 10000;
                     offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
                 }
@@ -229,6 +234,40 @@ namespace d360.web.Controllers.V2
                 });
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
             }
+        }
+
+        /// <summary>
+        /// Gets displayname, object and objectid from Uid regardless of whether the UID is Asset, AssetType or Tag
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("objectdetail/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetLegacyObjectDetails(Guid assetUid)
+        {
+            dynamic result;
+            result = Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select Object,ObjectId,Name as DisplayValue from AssetType where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'Tag' as Object, ID as ObjectId,Value as DisplayValue from Tag where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'IssueType' as Object, ID as ObjectId, Name as DisplayValue from IssueType where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, itn.name as DisplayValue
+                    from dbo.[IntersectType] IT
+                    CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }).FirstOrDefault();
+
+            
+            return result;
         }
 
 
@@ -373,22 +412,22 @@ namespace d360.web.Controllers.V2
             {
                 rowIndex++;
 
-                document.SetCellValue(rowIndex, 1, row.ResourceName);
-                document.SetCellValue(rowIndex, 2, (((DateTime)row.Date)));
+                document.SetCellValue(rowIndex, 1, row.resourceName);
+                document.SetCellValue(rowIndex, 2, (((DateTime)row.date)));
 
                 SLStyle style = document.CreateStyle();
                 style.FormatCode = "mmm dd yyyy hh:mm:ss";
                 document.SetCellStyle(rowIndex, 2, style);
 
-                document.SetCellValue(rowIndex, 3, row.Action);
-                document.SetCellValue(rowIndex, 4, row.Field ?? "");
-                document.SetCellValue(rowIndex, 5, row.NewValue ?? "");
-                document.SetCellValue(rowIndex, 6, row.PreviousValue ?? "");
-                document.SetCellValue(rowIndex, 7, row.ActionObject);
-                document.SetCellValue(rowIndex, 8, row.ActionObjectTypeName);
-                document.SetCellValue(rowIndex, 9, row.ActionObjectName);
-                document.SetCellValue(rowIndex, 10, row.ActionDescription);
-                document.SetCellValue(rowIndex, 11, row.Version ?? "");
+                document.SetCellValue(rowIndex, 3, row.action);
+                document.SetCellValue(rowIndex, 4, row.field ?? "");
+                document.SetCellValue(rowIndex, 5, row.newValue ?? "");
+                document.SetCellValue(rowIndex, 6, row.previousValue ?? "");
+                document.SetCellValue(rowIndex, 7, row.actionObject);
+                document.SetCellValue(rowIndex, 8, row.actionObjectTypeName);
+                document.SetCellValue(rowIndex, 9, row.actionObjectName);
+                document.SetCellValue(rowIndex, 10, row.actionDescription);
+                document.SetCellValue(rowIndex, 11, row.version ?? "");
             }
 
             #endregion
@@ -536,6 +575,7 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
+                ga.ActionObject,
 	            ga.ActionObjectTypeName as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
@@ -566,7 +606,16 @@ namespace d360.web.Controllers.V2
             left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
             left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
-            inner join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
+            inner join  (
+    			select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = @uid
+    			union
+                select uid, value as DisplayName, 'Tag' as Object, id as ObjectID, 11 as AssetTypeClass from Tag where uid = @uid
+                union
+                select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass from dbo.IssueType where uid = @uid
+                union
+                select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from dbo.[IntersectType] IT
+                    CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = @uid
+			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;
         }
@@ -586,6 +635,7 @@ namespace d360.web.Controllers.V2
 	            ga.action,
 	            ActionA.uid as actionAssetUid,
 	            ActionAT.uid as actionAssetTypeUid,
+                ga.ActionObject,
 	            ga.ActionObjectTypeName as actionObjectTypeName,
 	            ga.actionObjectName,
 	            ga.actionDescription,
@@ -632,6 +682,7 @@ namespace d360.web.Controllers.V2
 	                ga.action,
 	                ActionA.uid as actionAssetUid,
 	                ActionAT.uid as actionAssetTypeUid,
+                    ga.ActionObject,
 	                ga.ActionObjectTypeName as actionObjectTypeName,
 	                ga.actionObjectName,
 	                ga.actionDescription,
@@ -673,7 +724,7 @@ namespace d360.web.Controllers.V2
             return querySql;
         }
 
-        public new string isPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public string IsPageSizeAndNumValid(IEnumerable<KeyValuePair<string, string>> queryParams, int pageSizeLimit = 250)
         {
             var parameters = queryParams.ToList();
             long pageSize = 0;
@@ -686,7 +737,7 @@ namespace d360.web.Controllers.V2
                     return "Invalid pageSize value provided.";
                 if (long.TryParse(_pageSize, out pageSize))
                 {
-                    if (pageSize > 250) return "Invalid pageSize value provided. Number is too large";
+                    if (pageSize > pageSizeLimit) return "Invalid pageSize value provided. Number is too large";
                     if (pageSize <= 0) return "Invalid pageSize value provided. Value must be greater than 0";
                 }
                 else
