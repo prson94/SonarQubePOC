@@ -21,7 +21,7 @@ export const ICON_VALUE_ACCESSOR: any = {
     selector: 'ig-icon-picker',
     templateUrl: 'icon-picker.component.html',
     providers: [ICON_VALUE_ACCESSOR],
-    styleUrls: ['icon-picker.component.css']
+    styleUrls: ['icon-picker.component.less']
 })
 
 export class IconPickerComponent extends BaseComponent implements ControlValueAccessor {

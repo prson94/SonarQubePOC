@@ -5,17 +5,6 @@
     selector: 'gallery-switch',
     templateUrl: './gallery.switch.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [
-     `
-        .switch-required-message{
-            border: 1px solid 999999;
-            border-radius: 20px;
-            background-color: #9ddae6;
-            padding: 5px;
-            color: 666666;
-            margin-left: 20px;
-        }
-    `],
 })
 
 export class GallerySwitchComponent implements OnInit {
