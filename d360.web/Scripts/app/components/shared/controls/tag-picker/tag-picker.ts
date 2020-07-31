@@ -23,7 +23,7 @@ export const SWITCH_VALUE_ACCESSOR: any = {
     templateUrl: 'tag-picker.html',
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./tag-picker.css']
+    styleUrls: ['./tag-picker.less']
 })
 export class TagPicker extends BaseComponent implements ControlValueAccessor, OnDestroy {
 
@@ -232,25 +232,35 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     enter(tag: SelectItem, element: HTMLElement) {
         var box = element.getBoundingClientRect();
         var el = this._el.nativeElement as HTMLElement;
-
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
-        tooltip.style.top = (box.top - tooltip.clientHeight) + 'px';
-        tooltip.style.left = box.left + 'px';
 
+        tooltip.style.display = 'block';
+        tooltip.style.top = (box.top - 42) + 'px';
+        tooltip.style.left = (box.left - 8) + 'px';
 
-        tooltip.style.display = 'none';
         this.isTooltipLoaded = false;
         this.tagService.getTagTooltip(tag.value, '', tag.title)
             .subscribe(t => {
                 this.tagTooltip = t[0];
                 this.isTooltipLoaded = true;
-                tooltip.style.display = 'block';
+
                 this.changeDetectorRef.markForCheck();
+
+                setTimeout(() => {
+                    var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
+
+                    var size = tooltip.getBoundingClientRect();
+                    tooltip.style.top = (box.top - size.height - 6) + 'px';
+
+                    this.changeDetectorRef.markForCheck();
+
+                }, 1);
+
+
             });
     }
 
     leave() {
-        console.log("leave");
         var el = this._el.nativeElement as HTMLElement;
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
         tooltip.style.display = 'none';

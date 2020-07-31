@@ -749,8 +749,7 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
-    <Content Include="Scripts\app\components\shared\controls\switch\switch.css" />
-    <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.css" />
+    <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />

@@ -542,7 +542,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
                 }
-                else if (field.FieldType == "Tag") {
+                else if (field != null && field.FieldType == 'Tag') {
                     var arr = this.form.value[p] as SelectItem[];
                     if (arr) {
                         this.form.value[p] = arr.map(x => x.title).join('|');
