@@ -1,28 +1,24 @@
-﻿using d360.core.entities;
-using d360.model;
-using Microsoft.Web.Http;
-using System;
-using System.Web.Http;
-using d360.core;
-using System.Linq;
-using System.Data.SqlClient;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Graph;
 using d360.core.enums;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
+using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
-using Swashbuckle.Swagger.Annotations;
 using d360.web.Models;
-using System.Web.Http.Description;
+using Microsoft.Web.Http;
+using Newtonsoft.Json;
+using Swashbuckle.Swagger.Annotations;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
-using d360.core.entities.Views;
-using d360.model.DataAccessLayer;
-using d360.core.entities.Graph;
-using DocumentFormat.OpenXml.EMMA;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -43,157 +39,6 @@ namespace d360.web.Controllers.V2
         {
             GraphFilterRepository = graphFilterRepository;
         }
-
-        public class AssetBrowserResponseModel
-        {
-            public List<AssetBrowserNode> nodes { get; set; }
-            public List<AssetBrowserLink> links { get; set; }
-            public List<AssetBrowserHeirarchy> hierarchy { get; set; }
-            public List<AssetBrowserRevealNode> reveals { get; set; }
-        }
-
-        public class AssetBrowserNodeOwnerCount 
-        {
-            public string key { get; set; }
-            public bool expanded { get; set; }
-            //[JsonIgnore]
-            //public string usersList { get; set; }
-            //public List<int> users { get { return JsonConvert.DeserializeObject<List<int>>(usersList ?? "[]"); } }
-            public int count { get; set; }
-            public int responsibilityTypeId { get; set; }
-            public string responsibilityType { get; set; }
-        }
-
-        public class AssetBrowserNodeRelationCount
-        {
-            public string key { get; set; }
-            public string predicate { get; set; }
-            public int predicateId { get; set; }
-            public Guid predicateUid { get; set; }
-            public int direction { get; set; }
-            public int count { get; set; }
-            public bool expanded { get; set; }
-        }
-
-        public class AssetBrowserHeirarchy
-        {
-            public string hierarchyKey { get; set; }
-            public int backwardReveal { get; set; }
-            public int forwardReveal { get; set; }
-            [JsonIgnore]
-            public string ownersJson { get; set; }
-            public List<AssetBrowserNodeOwnerCount> owners { get { return JsonConvert.DeserializeObject<List<AssetBrowserNodeOwnerCount>>(ownersJson ?? "[]"); } }
-            [JsonIgnore]
-            public string relationsJson { get; set; }
-            public List<AssetBrowserNodeRelationCount> relations { get { return JsonConvert.DeserializeObject<List<AssetBrowserNodeRelationCount>>(relationsJson ?? "[]"); } }
-        }
-
-        public class AssetBrowserRevealNode
-        {
-            public string hierarchyKey { get; set; }
-            public string from { get; set; }
-            public string to { get; set; }
-            public AssetBrowserApiHopDirection direction { get; set; }
-        }
-
-        public class AssetBrowserNode
-        {
-            public string hierarchyKey { get; set; }
-            public bool focal { get; set; }
-            public bool leaf { get; set; }
-            public string key { get; set; }
-            public string group { get; set; }
-            public Guid? assetUid { get; set; }
-            public int assetTypeId { get; set; }
-            public Guid assetTypeUid { get; set; }
-            public decimal backAmount { get; set; }
-            public string back { get; set; }
-            public string icon { get; set; }
-            public AssetTypeClass @class { get; set; }
-            public string text { get; set; }
-            
-            public int actionCount { get; set; }
-            public bool useAsTransformation { get; set; }
-            public bool hasAssetReadAccess { get; set; }
-            public bool isSubjectInTransformation { get; set; }
-        }
-
-        public class AssetBrowserChildLink
-        {
-            public long id { get; set; }
-            public string from { get; set; }
-            public string to { get; set; }
-        }
-
-        public class AssetBrowserLink
-        {
-            public string from { get; set; }
-            public string to { get; set; }
-            public string back { get; set; }
-            public int predicateId { get; set; }
-            public Guid predicateUid { get; set; }
-            public string text { get; set; }
-            public int predicateType { get; set; }
-            [JsonIgnore]
-            public string linksJson { get; set; }
-            public List<AssetBrowserChildLink> links { get { return JsonConvert.DeserializeObject<List<AssetBrowserChildLink>>(linksJson ?? "[]"); } }
-        }
-
-        public enum AssetBrowserAncestry
-        {
-            AllAncestors = 1,
-            DirectAncestor = 2,
-            TypeOnly = 3 //For Impact
-        }
-
-        public class AssetBrowserInitialModel
-        {
-            public AssetBrowserAncestry ancestry { get; set; }
-            public Guid uid { get; set; }
-            public int hopCount { get; set; }
-        }
-
-        public class AssetBrowserImpactInitialModel
-        {
-            public Guid uid { get; set; }
-            public int hopCount { get; set; }
-        }
-
-        public class AssetBrowserLineageInitialModel
-        {
-            public AssetBrowserAncestry ancestry { get; set; }
-            public Guid uid { get; set; }
-            public int hopCount { get; set; }
-        }
-
-        public abstract class AssetBrowserHopModelBase
-        {
-            public string hierarchyKey { get; set; }
-        }
-        
-        public abstract class AssetBrowserHopModelRelationBase: AssetBrowserHopModelBase
-        {
-            public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
-            public List<long> preloadedIntersects { get; set; }
-            public AssetBrowserApiHopDirection direction { get; set; }
-        }
-
-        public class AssetBrowserLineageHopModel: AssetBrowserHopModelRelationBase
-        {
-        }
-
-        public class AssetBrowserImpactHopModel : AssetBrowserHopModelRelationBase
-        {
-            public AssetBrowserAncestry ancestry { get; set; }
-            public Guid predicateUid { get; set; }
-        }
-
-        public class AssetBrowserOwnershipHopModel: AssetBrowserHopModelBase
-        {
-            public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
-            public int responsibilityTypeId { get; set; }
-        }
-
 
         async Task<HttpResponseMessage> getInitial(AssetBrowserInitialModel postModel)
         {
@@ -253,7 +98,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserAssetsModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -268,7 +113,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserAssetsModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -298,7 +143,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserAssetsModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -344,7 +189,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserAssetsModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -383,6 +228,17 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        [
+            Route("owners"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetOwnerHopOldPath(AssetBrowserApiOwnerHopRequestModel criteria)
+        {
+            return await GetOwnerHop(criteria);
+        }
+
         /// <summary>
         /// Retrieves owners for the specified set of assets.
         /// </summary>
@@ -398,7 +254,7 @@ namespace d360.web.Controllers.V2
         /// </param>
         /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
         [
-            Route("ownership/hop", Order = 1), Route("owners", Order = 2),
+            Route("ownership/hop"),
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -453,7 +309,8 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                     }
                 }
 
-                var ownerRelations = from o in owners
+                var ownerRelations = (
+                                     from o in owners
                                      join a in criteria.Assets on o.assetUid equals a.Uid
                                      select new AssetBrowserOwnerRelationModel
                                      {
@@ -463,9 +320,9 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                          foreColor = o.foreColor,
                                          ownerKey = o.key,
                                          ownerUid = o.resourceUid
-                                     };
+                                     }).ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { owners = distinctOwners, ownerRelations });
+                return Request.CreateResponse(HttpStatusCode.OK, new AssetBrowserOwnersModel { owners = distinctOwners, ownerRelations = ownerRelations });
             }
             catch (Exception ex)
             {
