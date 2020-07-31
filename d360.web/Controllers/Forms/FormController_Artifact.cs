@@ -149,38 +149,6 @@ namespace d360.web.Controllers
         }
         #endregion
 
-        #region Form Get/Post
-
-        [AjaxValidateAntiForgeryToken, HttpPost, Route("RequestCertification")]
-        public JsonResult RequestCertification(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                int id = parseIntField(form, "ID");
-                var asset = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
-
-                if (asset == null) throw new NotFoundException("artifact");
-
-                Company.RequestObjectCertification(SystemObjects.Artifact, asset.ObjectID, SystemObjects.ArtifactType, asset.AssetType.ObjectID);
-
-                return jsonSuccess("Request successfully created.", "", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        #endregion
-
         #endregion
 
         #region ArtifactType

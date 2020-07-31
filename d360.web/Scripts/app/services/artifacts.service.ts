@@ -18,6 +18,7 @@ import { AssetDetail } from '../models/asset.model';
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
+import { ApiResult } from "../models/apiresult.model";
 
 @Injectable()
 export class ArtifactService extends BaseObservableService {
@@ -111,24 +112,19 @@ export class ArtifactService extends BaseObservableService {
             ;
     }
 
-    requestCertification(objectId: number): Observable<JsonResult> {
-        const headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-
-        return this.http
-            .post(
-                'form/RequestCertification',
-                `ID=${objectId}`,
-                {
-                    headers: headers
-                }
-            )
+    public requestCertification(assetUid: string): Observable<JsonResult> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this
+            .http
+            .post(`api/v2/assets/RequestCertification/${assetUid}`, httpOptions)
             .pipe(
-                map(res => <JsonResult>res),
+                map((res: ApiResult) => {
+                    return res;
+                }),
                 catchError(err => this.handleError(err))
-            )
-            ;
-    }
+            );
+    } 
 
 }

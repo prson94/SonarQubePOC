@@ -33,6 +33,17 @@
                                                      [objectId]="objectId">
                 </d3s-workflow-responsibility-selector>
             </div>
+            <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
+                <div class="FieldName">
+                    Recipient Group
+                </div>
+                <div>
+                    <select [ngModel]="step.settings.MessageToGroup" (ngModelChange)="step.settings.MessageToGroup = $event; stepChange.emit(step)" style="width: 95%">
+                        <option></option>
+                        <option *ngFor="let d of groups" [value]="d.value">{{d.label}}</option>
+                    </select>
+                </div>
+            </div>
             <div class="col s12">
                 <div class="FieldName">
                     Subject

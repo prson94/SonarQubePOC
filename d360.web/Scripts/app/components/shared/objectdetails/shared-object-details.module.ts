@@ -20,7 +20,11 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
-
+import { SynonymsTile } from './synonyms.tile';
+import { FormsModule } from '@angular/forms';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SharedDeleteFormModule } from '../delete.form';
+import { ObjectDetailCategoryComponent } from './object-detail-category.component';
 
 @NgModule({
     imports: [
@@ -41,12 +45,16 @@ import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker
         TilesModule,
         TooltipModule,
         D3SColorPickerModule,
-        
+        FormsModule,
+        AutoCompleteModule,
+        SharedDeleteFormModule
     ],
     declarations: [
         DynamicLookupGridComponent,
         ObjectDetailComponent, 
         ObjectDetailFieldComponent,
+        ObjectDetailCategoryComponent,
+        SynonymsTile,
     ],
     exports: [
         ObjectDetailComponent,
