@@ -82,6 +82,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
     clearBreadcrumbs() {
         this.breadcrumbClearSource.next(true);
+        this.currentObjectStateSource.next('');
     }
 
     breadcrumbTreeClick(id: number) {

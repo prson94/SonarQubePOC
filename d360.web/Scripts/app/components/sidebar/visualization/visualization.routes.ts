@@ -10,7 +10,7 @@ const routes: Routes = [
     { path: 'impact/:objectType/:objectId', component: ImpactComponent },
     { path: 'lineage/:objectType/:objectId', component: LineageComponent },
     { path: 'lineage/:objectType/:objectId/:showUsageOnly', component: LineageComponent },
-    { path: 'browser/:assetUid', component: BrowserComponent },
+    { path: 'browser/:assetUid', component: BrowserComponent, canDeactivate: [DeactivateGuard] },
     { path: 'browser/:assetUid/:diagramType', component: BrowserComponent, canDeactivate:[DeactivateGuard] },
     { path: 'diagram/:objectId', component: DiagramComponent },
 ];

@@ -19,7 +19,8 @@ import {
     AssetBrowserFilterChangeEvent,
     AssetBrowserPanelCommand,
     AssetBrowserPanelModel,
-    DiagramTypesModel,
+    DiagramTypesModel,
+
     FilterAncestryMode,
     AssetBrowserResponseModel 
 } from '../../../../models/lineage.model';
@@ -2846,7 +2847,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     processDiagramSavedState($event) {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType == DiagramType.Process)
             this.saveStateChanged.emit($event);
         else this.saveStateChanged.emit(null);
     }
