@@ -19,8 +19,7 @@ import {
     AssetBrowserFilterChangeEvent,
     AssetBrowserPanelCommand,
     AssetBrowserPanelModel,
-    DiagramTypesModel,
-
+    DiagramTypesModel,
     FilterAncestryMode,
     AssetBrowserResponseModel 
 } from '../../../../models/lineage.model';
