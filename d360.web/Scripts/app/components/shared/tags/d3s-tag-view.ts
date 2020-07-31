@@ -58,28 +58,25 @@ export class TagView extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
-        try {            
-            if (this.data && (typeof this.data == 'string')) {                
-                this.tags = JSON.parse(this.data);
-                if (typeof this.tags !== 'object') throw new TypeError("not an array");                
-            }
-            else this.tags = this.data;            
-        }
-        catch (err) {            
-            if (this.data && (typeof this.data == 'string')) {
+
+        if (this.data) {
+            this.tags = [];
+
+            if (typeof this.data == 'string') {
                 this.tags = [];
                 this.data.split('|').forEach(t => {
                     this.tags.push({ Value: t, uid: null });
                 });
-
+            }
+            if (typeof this.data == 'object') {
+                this.tags = this.data;
             }
 
-            console.warn("d3s-tag-view::Error while parsing tags!");
+            if (this.tags) {
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+            }
+            this.selected = this.tags;
         }
-        if (this.tags) {
-            this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-        }
-        this.selected = this.tags;
     }
 
     addTag(event, tag) {
