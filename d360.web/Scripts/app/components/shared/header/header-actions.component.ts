@@ -72,6 +72,7 @@ export class HeaderActionsComponent {
     ngOnInit() {
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
+                this.headerActionsService.setActionsToDefaultValues();
                 this.previousUrl = this.currentUrl;
                 this.currentUrl = e.url;
                 this.isAdminSidebarUrl = false;
