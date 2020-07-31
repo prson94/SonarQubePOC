@@ -39,8 +39,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     invalidWeightMessage: string;
     maxHeight: number = window.innerHeight - 250;
     maxScoreEffectiveDate: Date;
-    measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures.' 
-                                + 'Only those assets matching the conditions will be scored using these measures.'
+    measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. ' 
+                                + 'Only those assets matching the conditions will be scored using these measures. '
                                 + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
@@ -156,9 +156,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
                 if (this.model.ConditionGroups.length && !this.model.IsGroup) {
                     let conditions = this.model.ConditionGroups[0].ConditionItems;
-                    if (conditions.length == 0) {
-                        valid = false;
-                    } else {
+                    if (conditions.length > 0) {
                         let fieldIds = conditions.map(x => { return x.ConditionFieldTypeID });
                         conditions.forEach(x => {
                             if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
