@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v29">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v30">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -343,7 +343,7 @@ begin
 					@obj varchar(50) = null,
 					@previousFieldCount int = null,
 					@previousRn varchar(3) = null,
-					@joinPrefix varchar(5) = 'inner',
+					@joinPrefix varchar(6) = ' inner',
 					@tableStatement varchar(2500) = ''
 
 			select	@direction = Direction,
@@ -384,7 +384,7 @@ begin
 
 				if @previousFieldCount = 0
 				begin
-					set @joinPrefix = 'left'
+					set @joinPrefix = ' left'
 				end
 
 				if @direction = 1
@@ -419,7 +419,7 @@ begin
 			set @obj = null
 			set @previousFieldCount	= null
 			set @previousRn = null
-			set @joinPrefix = 'inner'
+			set @joinPrefix = ' inner'
 			set @tableStatement = ''
 
 			set @current = @current + 1
