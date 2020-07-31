@@ -16,7 +16,6 @@ import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
-import { ArtifactStatusComponent } from './artifact-status.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
@@ -55,7 +54,6 @@ export function highchartsFactory() {
         SimpleCarouselModule
     ],
     declarations: [    
-        ArtifactStatusComponent,
         ObjectBoardComponent,
         ObjectHealthDetailsComponent,        
         ObjectIssuesComponent,
@@ -70,7 +68,7 @@ export function highchartsFactory() {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true },
-        {
+        { 
             provide: HighchartsStatic,
             useFactory: highchartsFactory
         },

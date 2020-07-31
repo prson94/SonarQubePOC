@@ -2449,5 +2449,62 @@ namespace d360.web.Controllers.V2
 
 
         }
+
+        /// <summary>
+        /// Request certification of the specified asset
+        /// </summary>
+        /// <param name="assetUid">The uid of the asset</param>
+        /// <returns>API response for success or failure</returns>
+        [
+            HttpPost,
+            Route("RequestCertification/{assetUid}"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Details of the asset.", typeof(object)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> RequestCertification(Guid assetUid)
+        {
+            var prefix = "Assets.RequestCertification => ";
+
+            try
+            {
+                var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x=> x.AssetType).FirstOrDefault();
+
+                if (asset == null) throw new NotFoundException("Asset");
+
+                if (Enum.TryParse(asset.Object, out SystemObjects obj) && Enum.TryParse(asset.AssetType.Object, out SystemObjects objType))
+                {
+                    Company.RequestObjectCertification(obj, asset.ObjectID, objType, asset.AssetType.ObjectID);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiStatusResponse() { Success = true, Message = "Request successfully created.", Uid = asset.uid })
+                        )
+                    );
+                }
+                else
+                {
+                    throw new NotFoundException("Invalid Asset");
+
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+
+
+        }
     }
 }
