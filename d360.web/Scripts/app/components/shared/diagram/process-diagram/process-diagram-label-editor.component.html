@@ -10,6 +10,7 @@
                                     [dropdown]="true" (onKeyUp)="onKeyUp($event)">
                     </p-autoComplete>
                     <button *ngIf="linkLabel" (click)="clearLabel()" igButton class="clear-label" icon="fa-times" tooltip="Clear Label"></button>
+                    <div class="error-message" *ngIf="linkLabel && linkLabel.length > 40">Maximum length for labels is 40 characters</div>
                 </div>
             </div>
         </div>

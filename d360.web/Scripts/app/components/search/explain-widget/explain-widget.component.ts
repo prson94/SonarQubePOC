@@ -72,7 +72,6 @@ export class ExplainWidgetComponent implements OnInit {
                     fld = "freq";
                 } else if (d.description.substring(0, 10) === "parameter ") {
                     fld = d.description.substring(10);
-                    console.log(fld);
                 } else {
                     fld = d.description;
                 }

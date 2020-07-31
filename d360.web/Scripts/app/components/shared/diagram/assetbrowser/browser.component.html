@@ -82,7 +82,7 @@
                             <section *ngIf="panelModel.AddVisible">
                                 <div #addLineagePanel class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-addpanel [assetBrowserData]="responseModel" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
+                                    <d3s-assetbrowser-addpanel [assetBrowserData]="diagramData" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
                                 </div>
                             </section>
 

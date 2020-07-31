@@ -34,6 +34,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private isExternallyCalculated: boolean = false;
     showDelete: boolean = false;
 
+    private isHistoryModalVisible: boolean = false;
+
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -131,9 +133,12 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     public delete() {
         this.formMode = FormMode.Deleting;
-    }
+    }    
     public close() {
         this.formMode = FormMode.Default;
+    }
+    public showHistory(isHistoryVisible: boolean) {
+        this.isHistoryModalVisible = isHistoryVisible;
     }
     getAsPrecentage(val: number) {
         if (val == 0)
@@ -152,7 +157,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             s = s.substr(1, s.length);
         return s;
     }
-
     private getCardMenuItems(): MenuItem[] {
         var menu: MenuItem[] = [
             { label: 'Edit', command: (event) => { this.edit() } },
@@ -163,7 +167,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         });
         menu.push({
             label: 'Version History',
-            command: (event) => { console.log("not yet implemented"); }
+            command: (event) => { this.showHistory(true); }
         });
         return menu;
     }

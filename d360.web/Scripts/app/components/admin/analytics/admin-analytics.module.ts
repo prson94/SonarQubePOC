@@ -46,6 +46,7 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
 import { SwitchModule } from '../../shared/controls/switch/switch';
+import { AdminMetricHistoryComponent } from './admin-metric-history.component'
 
 @NgModule({
     imports: [
@@ -98,7 +99,8 @@ import { SwitchModule } from '../../shared/controls/switch/switch';
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,
-        AdminAnalyticsDetailsComponent
+        AdminAnalyticsDetailsComponent,
+        AdminMetricHistoryComponent
     ],
     providers: [
         {

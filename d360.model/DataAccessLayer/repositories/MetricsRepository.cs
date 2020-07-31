@@ -1252,5 +1252,55 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                       where metricassetuid = @metricVersionUid
                       order by EffectiveDate desc", new { metricVersionUid = uid }).FirstOrDefault();
         }
+
+        public List<string> GetMetricVersionHistory(Guid measureUid)
+        {
+            return Company.Query<string>($@"                    
+                    select ROW_NUMBER() over (Order by V.EffectiveDate asc, ISNULL(V.EffectiveEndDate, GETDATE()) asc) as version, 
+                            A.Uid as MeasureUid,
+                    		V.Name,
+                    		V.Description,
+                    		V.EffectiveDate,
+							V.EffectiveEndDate,
+							V.Weight,
+							V.Uid as versionuid,
+							(
+                    			select		C.Uid,
+											C.Position,
+											C.Threshold,
+											C.Weight,
+											C.MatchType,
+											(
+												select	CI.Uid,
+														CI.ConditionType,
+														CI.ConditionFieldTypeID,
+														CI.ConditionIntersectTypeID,
+														CI.Operator,
+														(
+															select	[Value]
+															from	metrics.AssetVersionConditionItemValue
+															where	Uid = CI.Uid
+															for json path
+														) as [Values]
+												from	metrics.AssetVersionConditionItem CI
+												where	CI.AssetVersionConditionUid = C.Uid
+												for json path
+											) as ConditionItems
+                    			from		metrics.AssetVersionCondition C
+                    			where		C.AssetVersionUid = V.Uid
+								order by	C.Position
+                    			for		json path
+                    		) as ConditionGroups
+                    from	metrics.Asset A                    		
+                            cross apply (
+                    			select	EffectiveDate as EffectiveDate
+                    			from	metrics.AssetVersion
+                    			where	AssetUid = A.Uid
+                    		) MV
+                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate
+					where A.Uid = @measureUid
+					Order by version
+                    for		json path", new { measureUid }).ToList();
+        }
     }
 }

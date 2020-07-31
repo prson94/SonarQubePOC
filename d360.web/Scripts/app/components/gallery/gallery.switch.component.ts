@@ -5,17 +5,6 @@
     selector: 'gallery-switch',
     templateUrl: './gallery.switch.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [
-    `
-        .requiredMessage{
-            border: 1px solid 999999;
-            border-radius: 20px;
-            background-color: #9ddae6;
-            padding: 5px;
-            color: 666666;
-            margin-left: 20px;
-        }
-    `],
 })
 
 export class GallerySwitchComponent implements OnInit {
@@ -34,7 +23,7 @@ export class GallerySwitchComponent implements OnInit {
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
         this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component.", Default: "" });
         this.properties.push({ Name: "inputId", Type: "string", Description: "Identifier of the focus input to match a label defined for the dropdown.", Default: "" });
-        this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "" });
+        this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         
 
         this.events = new Array();

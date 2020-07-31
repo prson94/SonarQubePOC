@@ -17,6 +17,7 @@ import { PipesModule } from '../../../../pipes/pipes.module';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { SegmentsTooltipComponent } from './segments-tooltip.component';
 
+import { DirectivesModule } from '../../directives/directives.module'
 
 @NgModule({
     imports: [
@@ -34,7 +35,8 @@ import { SegmentsTooltipComponent } from './segments-tooltip.component';
         SharedModule,
         TreeModule,
         DialogModule,
-        PaginatorModule
+        PaginatorModule,
+        DirectivesModule
     ],
     declarations: [
         AssetSearchComponent,

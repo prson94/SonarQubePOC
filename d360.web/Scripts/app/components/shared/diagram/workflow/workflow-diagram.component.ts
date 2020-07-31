@@ -339,7 +339,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == 0 && this.uid == "00000000-0000-0000-0000-000000000000") {
+        if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
             this.isLoading = false;
             return of();
         }
@@ -954,16 +954,20 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
                             return false
 
-                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType')) {
-                            let objArr = this.model.Event.IssueObject.split("|", 1);
-                            let Issobj = "";
-                            if (objArr.length <= 0)
-                                Issobj = " ";
-                            else
-                                Issobj = objArr[0];
+                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType'))
+                        {
+                            if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '')
+                            {
+                                let objArr = this.model.Event.IssueObject.split("|", 1);
+                                let Issobj = "";
+                                if (objArr.length <= 0)
+                                    Issobj = " ";
+                                else
+                                    Issobj = objArr[0];
 
-                            if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
-                                return;
+                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                    return;
+                            }
                         }
                         break;
 

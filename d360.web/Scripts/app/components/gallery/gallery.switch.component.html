@@ -40,8 +40,8 @@
             <b>Required bool(yes/no)</b>
         </div>
         <div class="row">
-            <ig-switch name="somebool" [(ngModel)]="formVal" [alwaysSet]="false" #somebool="ngModel" required [style]="{'background' : somebool?.errors?.required ? '#9ddae6' : ''}"></ig-switch>
-            <span *ngIf="somebool.invalid && (somebool.dirty || somebool.touched)" class="requiredMessage">
+            <ig-switch name="somebool" [(ngModel)]="formVal" [alwaysSet]="false" #somebool="ngModel" required [styleClass]="somebool?.errors?.required ? 'switch-required-unset' : ''"></ig-switch>
+            <span *ngIf="somebool.invalid && (somebool.dirty || somebool.touched)" class="switch-required-message">
                 <span *ngIf="somebool.errors.required">
                     Value required
                 </span>

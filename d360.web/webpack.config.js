@@ -61,6 +61,11 @@ var webpackConfig = {
 
     module: {
         rules: [
+            {
+                test: /\.less$/,        
+                exclude: /node_modules/,
+                loader: 'raw-loader!less-loader' 
+            },
             // .ts files for TypeScript
             {
                 test: /\.ts$/,
@@ -75,7 +80,7 @@ var webpackConfig = {
                 ],
                 exclude: [/\.(spec|e2e)\.ts$/],
             },
-            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
+            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },            
             { test: /\.html$/, loader: 'raw-loader' },
             {
                 // Hide import warnings

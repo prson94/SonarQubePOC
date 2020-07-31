@@ -37,7 +37,7 @@ export class GalleryIconPickerComponent implements OnInit {
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the icon picker control", Default: "null" });
-        this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "null" });
+        this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "required", Type: "boolean", Description: "When this attribute is present the control must have a selected value to be valid", Default: "" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });

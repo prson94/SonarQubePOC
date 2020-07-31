@@ -17,6 +17,17 @@ export class MetricAssetViewModel {
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
 }
 
+export class MetricAssetHistoryViewModel {
+    Uid: string;
+    Version: number;
+    Name: string;
+    Description: string;
+    EffectiveDate: string | Date;
+    EffectiveEndDate: string | Date;
+    Weight: number;
+    ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
+}
+
 export class MetricAssetVersionConditionViewModel {
     Uid: string;
     Position: number;

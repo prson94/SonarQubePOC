@@ -40,7 +40,6 @@ import { UserListComponent } from './user/user-list.component';
 import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
 import { SiteModalModule } from './modal/gov-modal.module';
 
-
 @NgModule({
     declarations: [                           
         GroupMembersComponent,                            
@@ -51,7 +50,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
         ResourceResponsibilityGridComponent,                        
         SynonymsTile,           
         UserListComponent,
-        ResourceMultiSelectGridComponent,
+        ResourceMultiSelectGridComponent
     ],
     exports: [                                                                                                                                        
         GroupMembersComponent,                             
@@ -61,7 +60,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               
         UserListComponent,    
-        ResourceMultiSelectGridComponent,
+        ResourceMultiSelectGridComponent
         ]
     , imports: [
         CommonModule,

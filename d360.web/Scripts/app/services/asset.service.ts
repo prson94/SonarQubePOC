@@ -189,17 +189,19 @@ export class AssetService extends BaseObservableService {
             .subscribe(data => this.downloadFile(data, fileName));
     }
 
-    public searchAssetPath(filter: AssetSearchFilter): Observable<AssetSearchApiResponse> {
+    public searchAssetPath(filterValue: AssetSearchFilter): Observable<AssetSearchApiResponse> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
 
         return this
             .http
-            .post(`/api/v2/assets/paths`, filter, httpOptions)
-            .pipe(map(response => {
-                return <AssetSearchApiResponse>(response);
-            }),
+            .post(`/api/v2/assets/paths`, filterValue, httpOptions)
+            .pipe(
+                debounceTime(500),
+                map(response => {
+                    return <AssetSearchApiResponse>(response);
+                }),
                 catchError(err => this.handleError(err))
             );
     }

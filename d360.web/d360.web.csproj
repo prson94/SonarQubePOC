@@ -688,6 +688,7 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
@@ -746,11 +747,12 @@
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
-    <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.css" />
+    <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\switch\switch.css" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.css" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
+    <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.html" />
@@ -791,6 +793,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
     <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
@@ -852,6 +855,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
@@ -873,10 +877,12 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.templates.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.ts" />
@@ -885,6 +891,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />

@@ -131,6 +131,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                             if (this.selectedReferenceItemType)
                                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
+                            if (this.auditSidebar) {
+                                this.auditSidebar.url = `/sidebar/audit/${this.selectedReferenceListUid}`;
+                            }
                         });
                     });
                 }
@@ -164,7 +167,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     setSecondaryNavItems() {
         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null, null, null, null, true, null, null));
         if (this.auditSidebar) {
-            this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
+            this.auditSidebar.url = `/sidebar/audit/${this.selectedReferenceListUid}`;
         }
 
         if (this.impactSidebar) {

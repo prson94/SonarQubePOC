@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.extensions;
 using Dapper;
 using Newtonsoft.Json;
@@ -522,6 +523,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         {
             public int FieldTypeID { get; set; }
             public AssetTypeClass Class { get; set; }
+            public string FieldType { get; set; }
         }
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
@@ -736,6 +738,7 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
+                    var definitionErrorMessage = $"The definition provided for the computed relationship lookup {f.Name} has one or more invalid uids.";
                     var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "_assetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
@@ -805,7 +808,7 @@ from	IntersectType I
                         var isFieldFromRelationship = i.FieldTypeName.StartsWith("Relation.");
 
                         var fieldInfo = Company.Query<FieldInfo>(@"
-                            select coalesce(F.ID, 0) as FieldTypeID, T.Class
+                            select coalesce(F.ID, 0) as FieldTypeID, T.Class, F.Type  as FieldType
                             from   AssetType T 
                                    left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
                             where  T.uid = @AssetTypeUid",
@@ -817,7 +820,7 @@ from	IntersectType I
                             var intersectTypeUid = relation.IntersectTypeUid;
                             var fieldName = i.FieldTypeName.Replace("Relation.", "").Trim();
                             fieldInfo = Company.Query<FieldInfo>(@"
-                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class
+                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class, F.Type as FieldType
                             from   IntersectType IT 
                                    left join FieldType F on F.Object = 'IntersectType' and F.ObjectID = IT.Id and F.Name = @fieldName 
                             where  IT.uid = @intersectTypeUid",
@@ -828,6 +831,14 @@ from	IntersectType I
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
                             hasDefinitionError = true;
+                            return;
+                        }
+
+                        //field from relationship types are not supported on relationship lookups
+                        if (DataType.Text.GetNotAllowedInRelationshipLookup().Contains(fieldInfo.FieldType))
+                        {
+                            hasDefinitionError = true;
+                            definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field from relationships are not supported on compuited relation lookup fields.";
                             return;
                         }
 
@@ -878,7 +889,7 @@ from	IntersectType I
 
                     if (hasDefinitionError)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"The definition provided for the computed relationship lookup {f.Name} has one or more invalid uids.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", definitionErrorMessage);
                     }
 
                     #endregion

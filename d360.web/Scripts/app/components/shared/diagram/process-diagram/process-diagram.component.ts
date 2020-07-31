@@ -12,6 +12,9 @@ import { DiagramNodeBase } from '../../../../models/process.model';
 import { Router } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
+import { HeaderActionsService } from '../../../../services/header-actions.service';
+import { Action } from 'rxjs/internal/scheduler/Action';
+import { HeaderActions } from '../../../../models/header.model';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -71,6 +74,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private selectedLinkData: any;
     private nodeNames: string[] = [];
 
+    private initialActions = new HeaderActions();
+
+
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
@@ -78,6 +84,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
+        private headerActionService: HeaderActionsService,
         private processService: ProcessService,
         public cdRef: ChangeDetectorRef,
         private router: Router,
@@ -229,6 +236,25 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.isReadOnly = !state;
         if (this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
+        }
+
+        if (this.isEditMode) {
+            this.headerActionService.showFavorite = false;
+            this.headerActionService.showFollow = false;
+            this.headerActionService.showHomePage = false;
+            this.headerActionService.showNotifications = false;
+            this.headerActionService.showRaiseIssue = false;
+            this.headerActionService.showSearch = false;
+            this.headerActionService.showShoppingCart = false;
+        }
+        else {
+            this.headerActionService.showFavorite = this.initialActions.showFavorite;
+            this.headerActionService.showFollow = this.initialActions.showFollow;
+            this.headerActionService.showHomePage = this.initialActions.showHomePage;
+            this.headerActionService.showNotifications = this.initialActions.showNotifications;
+            this.headerActionService.showRaiseIssue = this.initialActions.showRaiseIssue;
+            this.headerActionService.showSearch = this.initialActions.showSearch;
+            this.headerActionService.showShoppingCart = this.initialActions.showShoppingCart;
         }
     }
 
@@ -398,6 +424,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
             })
         });
+        //set initial actions
+
+        this.initialActions.showFavorite = this.headerActionService.showFavorite;
+        this.initialActions.showFollow = this.headerActionService.showFollow;
+        this.initialActions.showHelp = this.headerActionService.showHelp;
+        this.initialActions.showHomePage = this.headerActionService.showHomePage;
+        this.initialActions.showNotifications = this.headerActionService.showNotifications;
+        this.initialActions.showRaiseIssue = this.headerActionService.showRaiseIssue;
+        this.initialActions.showSearch = this.headerActionService.showSearch;
+        this.initialActions.showShoppingCart = this.headerActionService.showShoppingCart;
 
         //load current asset diagram
         this.load();
@@ -438,6 +474,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private diagramStateChanged() {
         this.isSaveDisabled = this.isCurrentStateSaved();
         this.isCanvasEmpty = this.isEmpty();
+
+        if (this.isDiagramLoaded) {
+            if (!this.isSaveDisabled) {
+                this.breadcrumbsService.setCurrentObjectState('modified');
+            }
+            else {
+                this.breadcrumbsService.setCurrentObjectState('');
+            }
+        }
+
         this.cdRef.detectChanges();
     }
     private isEmpty() {

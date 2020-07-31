@@ -1,4 +1,8 @@
-﻿<div #switch [attr.id]="inputId" [attr.tabindex]="tabindex" [ngStyle]="style" [class]="styleClass" (keydown.space)="toggle($event)" class="switch {{value === true ? ' checked' : ''}} {{value === undefined ? 'unset' : ''}} {{disabled ? 'disabled':''}}">
-    <button tabindex="-1" (click)="tryChangeValue(true)" class="check" [attr.aria-label]="trueLabel">{{trueLabel}}</button>
-    <button tabindex="-1" (click)="tryChangeValue(false)" class="uncheck" [attr.aria-label]="falseLabel">{{falseLabel}}</button>
+﻿<div #switch 
+     [ngClass]="{'switch':true,'checked':value ===true,'unset':value===undefined,'disabled':disabled}"
+     [attr.id]="inputId" [attr.tabindex]="tabindex" 
+     [ngStyle]="style" [class]="styleClass" 
+     (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy" >
+    <button tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
+    <button tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>
 </div>

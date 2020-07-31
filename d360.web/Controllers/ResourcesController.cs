@@ -558,7 +558,7 @@ outer apply(
         select value = (
              SELECT
 			 CASE
-				WHEN (FT.Name = 'status' and FT.AllowMultipleValues = 0) THEN COALESCE(Fi.FormattedValue, ADV.DisplayValue, AC.Code)
+				WHEN (FT.AllowMultipleValues = 0) THEN COALESCE(Fi.FormattedValue, ADV.DisplayValue, AC.Code)
 				ELSE COALESCE(ADV.DisplayValue, AC.Code)
 			 END as name,
              COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color

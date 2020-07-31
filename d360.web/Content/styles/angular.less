@@ -591,11 +591,6 @@ nav.top, .left-side-nav {
         min-width: 500px;
         max-width: 550px;
     }
-
-    .top-menu-hider {
-        width: 318px;
-        right: 68px;
-    }
 }
 
 
@@ -1197,6 +1192,12 @@ div.breadcrumbs {
 
     .breadcrumb-search {
         border-radius: 3px;
+    }
+
+    .object-state {
+        color: white;
+        font-weight: bold;
+        padding-left: 4px;
     }
 }
 
@@ -6922,15 +6923,6 @@ d3s-process-diagram {
         background-color: #eff2f6;
     }
 
-    .top-menu-hider {
-        height: 39px;
-        width: 472px;
-        background-color: #252c41;
-        position: fixed;
-        top: 0px;
-        right: 80px;
-    }
-
     #process-diagram {
 
         &.fullscreen {
@@ -7126,95 +7118,6 @@ d3s-process-diagram {
                 }
             }
         }
-    }
-}
-
-ig-icon-picker {
-
-    p-dropdown .ui-dropdown {
-        background: #ffffff;
-        border: 1px solid #bdbfc6;
-        height: 32px;
-        width: 100%;
-        border-radius: 4px;
-    }
-
-    .ui-dropdown {
-
-        .ui-dropdown-trigger {
-            background-color: #f1f1f3;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            padding: 0;
-            color: #202020;
-            margin-top: 3px;
-            margin-right: 3px;
-            border-radius: 2px;
-            font-size: 10px;
-
-            &:hover {
-                background-color: #d7d8dc;
-            }
-        }
-
-        &:not(.ui-state-disabled):hover {
-            border-color: #898d99;
-        }
-
-        &:not(.ui-state-disabled):focus {
-            outline: 0 none;
-            outline-offset: 0;
-            box-shadow: 0 0 0 2px #8abddf;
-        }
-
-        .ui-dropdown-clear-icon {
-            right: 30px;
-            top: 3px;
-            margin-top: 0;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            background: #f1f1f3;
-            text-align: center;
-            font-size: 16px;
-            color: #202020;
-
-            &:hover {
-                background-color: #d7d8dc;
-            }
-        }
-
-        .ui-dropdown-label {
-            font-family: "Source Sans Pro", sans-serif;
-            background: none;
-            height: 30px;
-            line-height: 30px;
-            padding-left: 8px;
-            padding-right: 32px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-
-            &.ui-placeholder {
-                color: #6f7482;
-                position: relative;
-                top: -4px;
-                border-radius: 4px;
-            }
-        }
-
-        .ui-dropdown-panel .ui-dropdown-item-group {
-            font-size: 14px;
-            color: #898d99;
-            height: 32px;
-            font-weight: 700;
-        }
-    }
-
-    .ui-state-focus {
-        background: none !important;
     }
 }
 
@@ -7709,6 +7612,18 @@ ig-icon-picker {
                 height: 24px;
                 width: 24px;
                 margin-top: 4px;
+            }
+
+            .error-message {
+                background: #b21a3e;
+                padding: 4px 7px;
+                font-size: 12px;
+                color: white;
+                border-bottom-left-radius: 3px;
+                border-bottom-right-radius: 3px;
+                margin-top: 0px;
+                display: inline-block;
+                margin-top: 1px;
             }
 
             .ui-autocomplete {

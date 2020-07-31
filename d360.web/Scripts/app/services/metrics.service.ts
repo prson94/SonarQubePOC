@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JsonResult } from '../models/jsonresult.model';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType } from '../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetHistoryViewModel } from '../models/metrics.model';
 import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
@@ -30,6 +30,12 @@ export class MetricsService extends BaseObservableService {
     public getMetricsByAllocation(allocationUid: string): Observable<MetricAssetViewModel[]> {
         return this.http
             .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure`)
+            .pipe(catchError(err => this.handleError(err)));
+    }
+
+    public getMetricsVersionHistory(measureUid: string): Observable<MetricAssetHistoryViewModel[]> {
+        return this.http
+            .get<MetricAssetHistoryViewModel[]>(`/api/v2/scoring/history/measure/${measureUid}`)
             .pipe(catchError(err => this.handleError(err)));
     }
 

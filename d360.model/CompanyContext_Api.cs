@@ -768,6 +768,9 @@ from    Field F
         inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
         new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+            //check for 0 fields to update case which often happens when editing from ui since you cant edit json fields.
+            if (!fields.Any()) return;
+
             var collectionFieldProperties = new List<FieldJsonProperty>();
 
             foreach (var f in fields)
@@ -3031,8 +3034,8 @@ where   ExecutionID = @ExecutionID
                         #region Generate data sets
 
                         if (predicateType.HasValue)
-                        {
-                            it = Filter<IntersectType>(o => o.Object == at.Object && o.ObjectID == at.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
+                        {                            
+                            it = Database.Connection.QueryFirstOrDefault<IntersectType>("select i.[Subject],i.[SubjectID],i.[uid],i.ID from [dbo].[intersecttype] i inner join [predicate] p on (i.predicateid = p.id) where i.[Object] = @obj and i.[ObjectID] = @objID and p.[Type] = @predicate", new { obj = at.Object, objID = at.ObjectID, predicate = predicateType } );                            
                             if (it != null)
                             {
                                 parentObject = it.Subject;

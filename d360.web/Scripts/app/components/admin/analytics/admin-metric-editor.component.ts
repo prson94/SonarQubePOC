@@ -76,13 +76,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.verb = "Edit"
             if (this.model.EffectiveDate !== null) {
                 this.model.EffectiveDate = new Date(this.model.EffectiveDate as string);
-                this.model.EffectiveDate.setMinutes(this.model.EffectiveDate.getMinutes() + this.model.EffectiveDate.getTimezoneOffset());
             }
-
-            //get the scoring data
-            //check if there is anything there 
-            //if there is then show message saying gotta update effective date 
-            //if not show message saying edit is fine and update EF will crete new version.
 
             this.isLoading = false;
         } else {

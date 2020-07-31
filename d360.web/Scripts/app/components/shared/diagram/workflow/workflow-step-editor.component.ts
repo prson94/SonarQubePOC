@@ -106,16 +106,19 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
                         if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType'))
                         {
-                            let objArr = this.issueObject.split("|", 1);
-                            let Issobj = "";
-                            if (objArr.length <= 0)
-                                Issobj = " ";
-                            else
-                                Issobj = objArr[0];
+                            if (this.issueObject != null && this.issueObject != '')
+                            {
+                                let objArr = this.issueObject.split("|", 1);
+                                let Issobj = "";
+                                if (objArr.length <= 0)
+                                    Issobj = " ";
+                                else
+                                    Issobj = objArr[0];
 
-                            if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
-                                return;
+                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                    return;
                             }
+                         }
                     }
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],

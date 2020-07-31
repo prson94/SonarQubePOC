@@ -19,7 +19,7 @@
                         {{item.Name}}
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
-                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                    <td>{{item.EffectiveDate | date:'shortDate'}}</td>
                     <td>
                         <div class="RowTools" *ngIf="item.IsGroup">
                             <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
@@ -42,6 +42,16 @@
     <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">
         <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
     </d3s-modal>
+    <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
+        <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
+                                  [MeasureUid]="selection?.Uid"
+                                  [AssetTypeDisplayValue]="assetType.Name"
+                                  [MeasureDisplayValue]="selection?.Name"
+                                  [isExternallyCalculated]="isExternallyCalculated"
+                                  [metricListFieldTypes]="metricListFieldTypes"
+                                  (onClose)="showHistory(false)">
+        </d3s-metric-history>        
+    </d3s-modal>
     <d3s-delete-form *ngIf="selection" [uri]="'api/v2/metrics/' + selection?.Uid"
                      [method]="'delete'"
                      [showAsModal]="true"
@@ -53,8 +63,10 @@
                      (onDeleteFail)="formMode = FormMode.Default">
         <div prompt>
             <div *ngIf="selection.IsGroup">
-                <p>Are you sure you want to disable the grouping measure '{{selection.Name}}'?<br />
-                <span *ngIf="selectedNode.children.length > 0">This will also disable the following grouped measures:</span></p>
+                <p>
+                    Are you sure you want to disable the grouping measure '{{selection.Name}}'?<br />
+                    <span *ngIf="selectedNode.children.length > 0">This will also disable the following grouped measures:</span>
+                </p>
                 <div *ngIf="selectedNode.children.length > 0">
                     <ul class="measure-list">
                         <li *ngFor="let item of selectedNode.children">{{item.data.Name}}</li>

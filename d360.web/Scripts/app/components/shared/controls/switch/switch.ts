@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
@@ -15,7 +15,8 @@ export const SWITCH_VALUE_ACCESSOR: any = {
     templateUrl: 'switch.html',
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./switch.css']
+    styleUrls: ['./switch.less'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Switch implements ControlValueAccessor, OnInit  {        
     @Input() trueLabel = "Yes";
@@ -26,13 +27,15 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     @Input() disabled = false;
 
-    @Input() styleClass: any;
+    @Input() styleClass: string;
 
     @Input() style: any;
 
-    @Input() tabindex: string;
+    @Input() tabindex: number = 0;
 
     @Input() inputId: string;
+
+    @Input() ariaLabelledBy: string;
 
     @Output() onChange: EventEmitter<any> = new EventEmitter();
 
@@ -46,7 +49,7 @@ export class Switch implements ControlValueAccessor, OnInit  {
     constructor(protected changeDetectorRef: ChangeDetectorRef) { }
 
 
-    ngOnInit(): void {
+    ngOnInit(): void {        
         if (!this.trueLabel || this.trueLabel.length > 5) {
             console.error("Invalid use of switch component true label should be 5 or less characters and not null")
         }    
@@ -104,8 +107,6 @@ export class Switch implements ControlValueAccessor, OnInit  {
     }
 }
 
-
-
 @NgModule({
     imports: [CommonModule],
     declarations: [Switch],
@@ -113,4 +114,3 @@ export class Switch implements ControlValueAccessor, OnInit  {
 })
 
 export class SwitchModule { }
-

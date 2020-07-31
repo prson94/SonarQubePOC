@@ -520,8 +520,6 @@ export class ProcessDiagramTemplates {
                 curve: go.Link.JumpOver,
                 corner: 5,
                 toShortLength: 4,
-                fromEndSegmentLength: 20,
-                toEndSegmentLength: 20,
                 cursor: 'pointer'
             },
             new go.Binding("points").makeTwoWay(),
@@ -558,7 +556,16 @@ export class ProcessDiagramTemplates {
             $(go.Panel, "Auto", {
                 segmentIndex: 0,
                 segmentOffset: new go.Point(50, 0),
+                toolTip: $("ToolTip",
+                    $(go.TextBlock, {
+                        margin: 4,
+                        text: "View and edit related assets"
+                    },
+                        new go.Binding("text", "label").makeTwoWay()
+                    )
+                )
             },
+
                 new go.Binding("visible", "", function (data) {
                     return data.data.label ? true : false;
                 }).ofObject(),
@@ -584,7 +591,16 @@ export class ProcessDiagramTemplates {
                         maxSize: new go.Size(60, NaN),
                         margin: new go.Margin(2, 2, 2, 2)
                     },
-                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("text", "", function (node: go.Link) {
+                        if (node.data.label) {
+                            var label = node.data.label as string;
+                            if (label.length > 20)
+                                return label.substr(0, 20) + '...';
+
+                            return label;
+                        }
+                        return "";
+                    }).ofObject(),
                     new go.Binding("background", "isSelected", function (data) {
                         return data ? '#166aa8' : '#000000';
                     }).ofObject())

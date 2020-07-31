@@ -157,4 +157,17 @@ namespace d360.core.entities.Metric
         public int Value { get; set; }
         public string Text { get; set; }
     }
+
+    public class MeasureVersionHistoryModel
+    {
+        public Guid MeasureUid { get; set; }
+        public int Version { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }        
+        public DateTime EffectiveDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
+        public double Weight { get; set; }
+        public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+
+    }
 }

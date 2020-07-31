@@ -76,7 +76,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     updateConnectorLabelToLink() {
-        if (!this.linkLabel)
+        if (!this.linkLabel || this.linkLabel.length > 40)
             return;
 
         if (this.createLabelSub)
