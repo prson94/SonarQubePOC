@@ -57,6 +57,9 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     private searchSub: Subscription;
     private searchResults: SelectItem[] = [];
 
+    private tagTooltip: TagType;
+    private isTooltipLoaded: boolean = false;
+
     constructor(protected changeDetectorRef: ChangeDetectorRef,
         private tagService: TagService,
         private messagesService: MessagesObservableService
@@ -226,6 +229,33 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         this.savingTag = false;
     }
 
+    enter(tag: SelectItem, element: HTMLElement) {
+        var box = element.getBoundingClientRect();
+        var el = this._el.nativeElement as HTMLElement;
+
+        var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
+        tooltip.style.top = (box.top - tooltip.clientHeight) + 'px';
+        tooltip.style.left = box.left + 'px';
+
+
+        tooltip.style.display = 'none';
+        this.isTooltipLoaded = false;
+        this.tagService.getTagTooltip(tag.value, '', tag.title)
+            .subscribe(t => {
+                this.tagTooltip = t[0];
+                this.isTooltipLoaded = true;
+                tooltip.style.display = 'block';
+                this.changeDetectorRef.markForCheck();
+            });
+    }
+
+    leave() {
+        console.log("leave");
+        var el = this._el.nativeElement as HTMLElement;
+        var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
+        tooltip.style.display = 'none';
+        this.changeDetectorRef.markForCheck();
+    }
 }
 
 
