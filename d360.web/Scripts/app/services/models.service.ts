@@ -50,14 +50,14 @@ export class ModelsService extends BaseObservableService {
     }
     getModelHierarchyExcel(
         id: number,
-        details?: boolean,
+        modelName?: string,
         stripHtml: boolean = false
     ) {
-        this.http.get(`internal/taxonomy/ModelHierarchyExcel?id=${id}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Models'));
-    }
+        this.http.get(`api/policytypes/${id}/hierarchyExcel?assetClass=Policy?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, modelName));
+      }
 
     downloadFile(data: Blob, name: string) {
-        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        var filename = `Filtered ${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         }

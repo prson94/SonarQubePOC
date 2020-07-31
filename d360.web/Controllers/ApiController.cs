@@ -28,6 +28,7 @@ using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using System.Data.Entity;
 
 namespace d360.web.Controllers
 {
@@ -38,6 +39,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
+        TaxonomyController taxonomyController;
         public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
@@ -45,6 +47,7 @@ namespace d360.web.Controllers
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            this.taxonomyController = new TaxonomyController(community, company);
             this.tagRepository = tagRepository;
         }
 
@@ -2703,22 +2706,40 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return policies;
         }
 
-        [Route("policytypes/{id:int}/policiesExcel")]
-        public async Task<IHttpActionResult> GetPoliciesExcel(int id, bool stripHtml = false)
+
+        [Route("policytypes/{id:int}/hierarchyExcel")]
+        public async Task<IHttpActionResult> GetHierarchyExcel(int id,string assetClass, bool stripHtml = false)
         {
-            var policies = GetPoliciesByType(id, stripHtml);
+            IQueryable<dynamic> levels = null;
+            IEnumerable<dynamic> results = null;
+            AssetType assetType = null;
+
+            if (assetClass == "Policy")
+            {
+                results = GetPoliciesByType(id, stripHtml);
+                levels = GetPolicyTypeLevels(id);
+                assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
+            }
+
+            if(assetClass == "Model")
+            {
+                var modelData = this.taxonomyController.ModelHierarchyDetailed(id, stripHtml);
+                results = (IEnumerable<dynamic>)modelData.Data;
+                levels = GetTaxonomyTypeLevels(id);
+                assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "TaxonomyType");
+            }
+            
 
             var document = new SLDocument();
             const string assetSheetName = "Assets";
             const string apiSheetName = "Api Info";
             int maxDepth = 1;
 
-            var assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
 
             var fields = new List<FieldType>();
             var tempFields = new List<FieldType>();
             var fieldsToRemove = new List<FieldType>();
-            fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());            
+            fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
             #region Populate Excel Document
 
@@ -2732,16 +2753,14 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, 1);
             document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, 1);
+            document.SetCellValue(3, 2, results.Count());
 
 
             document.SelectWorksheet(assetSheetName);
 
-            foreach (var row in policies)
+            foreach (var row in results)
             {
-                int depth = CheckDepth(policies, row.ID);
-                row.Add("Level", depth);
-                //row.Level = depth;
+                int depth = CheckDepth(results, row.ID);
                 if (depth > maxDepth)
                 {
                     maxDepth = depth;
@@ -2756,14 +2775,30 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                     fieldsToRemove.Add(field);
                     for (int i = 1; i < maxDepth + 1; i++)
                     {
-                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.FriendlyName}", FriendlyName = $"Level {i} {(string)field.FriendlyName}", ID = field.ID});
+                        string levelName = "Level " + i.ToString();
+                        foreach (var level in levels)
+                        {
+                            if ((int)level.Level == i)
+                            {
+                                levelName = level.Name;
+                            }
+                        }
+                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
 
                     }
                 }
             }
-            for (int i = 1; i < maxDepth+1; i++)
+            for (int i = 1; i < maxDepth + 1; i++)
             {
-                tempFields.Add(new FieldType { Type = "string", Name = $"Uid", FriendlyName = $"Level {i} UID" });
+                string levelName = "Level " + i.ToString();
+                foreach (var level in levels)
+                {
+                    if ((int)level.Level == i)
+                    {
+                        levelName = level.Name;
+                    }
+                }
+                tempFields.Add(new FieldType { Type = "string", Name = $"Uid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
             }
             fields.AddRange(tempFields);
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
@@ -2775,43 +2810,22 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                 document.SetCellValue(1, index, (string)field.FriendlyName);
                 index++;
             }
-          
+
 
             int rowNumber = 1;
-            foreach (var row in policies)
+            List<int> used = new List<int>();
+            foreach (var row in results)
             {
-                index = 1;
-                rowNumber++;
-                var rowValues = (row as IDictionary<string, object>);
-                //int itemDepth = CheckDepth(policies,row.ID);
-
-                foreach (var field in fields)
+                if (used.Contains(row.ID))
                 {
-                    if (field.Name == "Uid")
-                    {
-                        OutputKeyField(row, document, index, rowNumber);
-                    }
-                    if (rowValues.ContainsKey(field.Name))
-                    {
-                        var val = rowValues[field.Name];
-                        setCellValueFromField(document, rowNumber, index, field, val);
-                    }
-                    else if(rowValues.ContainsKey("Field" + field.ID))
-                    {
-                        var val = rowValues["Field" + field.ID];
-                        setCellValueFromField(document, rowNumber, index, field, val);
-                    }
-                    else if(field.Name == "Url")
-                    {
-                        var val = "asset/" + row.Uid;
-                        setCellValueFromField(document, rowNumber, index, field, val);
-                    }
-
-                    index++;
+                    continue;
                 }
+                rowNumber++;
+                (int, List<int>) tuple = AddRow(results, document, fields, rowNumber, row, maxDepth, used);
+                (rowNumber, used) = tuple;
             }
 
-                #endregion
+            #endregion
 
             var stream = new System.IO.MemoryStream();
             document.SaveAs(stream);
@@ -2826,19 +2840,87 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return ResponseMessage(result);
         }
 
-        public void OutputKeyField(IDictionary<string, object> item, SLDocument document, int colIndex, int rowIndex)
+        private (int, List<int>) AddRow(IEnumerable<dynamic> policies, SLDocument document, List<FieldType> fields, int rowNumber, dynamic row, int maxDepth, List<int> used)
         {
-            var test = item;
-            //if (item.Level = 1)
-            //{
-            //    document.SetCellValue(rowIndex, colIndex, (string)item.Uid);
-            //}
-            //if (item.ParentID != null && item.Parent != 0)
-            //{
-            //    level = CheckDepth(tree, item.ParentID, ++level);
-            //}
-        }
+            var rowValues = (row as IDictionary<string, object>);
+            int itemDepth = CheckDepth(policies, row.ID);
+            int index = 1;
+            int level = 1;
 
+            foreach (var field in fields)
+            {
+                if (field.IsPartOfKey)
+                {
+                    if (level > maxDepth)
+                        level = 1;
+                    if (level == itemDepth)
+                    {
+                        //item is at the same depth as the current level fill in cell  as normal
+                        level++;
+                    }
+                    else
+                    {
+                        //parent data needs to be found here for how deep we are 
+                        var parent = policies.FirstOrDefault(x => x.ID == row.ParentID);
+                        int tempIndex = index;
+                        while (parent != null && CheckDepth(policies, parent.ID) != level)
+                        {
+                            parent = policies.FirstOrDefault(x => x.ID == parent.ParentID);
+                        }
+
+                        if (parent != null)
+                        {
+                            var parentRowValue = (parent as IDictionary<string, object>);
+                            if (parentRowValue.ContainsKey(field.Name))
+                            {
+                                var val = parentRowValue[field.Name];
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            }
+                            else if (parentRowValue.ContainsKey("Field" + field.ID))
+                            {
+                                var val = parentRowValue["Field" + field.ID];
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            }
+
+                        }
+                        index++;
+                        level++;
+                        continue;
+                    }
+                }
+                else
+                {
+                    level = 1;
+                }
+                if (rowValues.ContainsKey(field.Name))
+                {
+                    var val = rowValues[field.Name];
+                    setCellValueFromField(document, rowNumber, index, field, val);
+                }
+                else if (rowValues.ContainsKey("Field" + field.ID))
+                {
+                    var val = rowValues["Field" + field.ID];
+                    setCellValueFromField(document, rowNumber, index, field, val);
+                }
+                else if (field.Name == "Url")
+                {
+                    var val = "asset/" + row.Uid;
+                    setCellValueFromField(document, rowNumber, index, field, val);
+                }
+                used.Add(row.ID);
+                index++;
+            }
+
+            //check kids
+            var children = policies.Where(x => x.ParentID == row.ID);
+            foreach (var child in children)
+            {
+                rowNumber++;
+                (int, List<int>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
+                (rowNumber, used) = tuple;
+            }
+            return (rowNumber, used);
+        }
 
         public int CheckDepth(IEnumerable<dynamic> tree, int itemID, int level = 1)
         {
@@ -2894,34 +2976,6 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                     break;
             }
         }
-
-        [Route("models/{id:int}/exportExcel")]
-        public HttpResponseMessage ModelHierarchyExcel(int id)
-        {
-            //var models = ModelHierarchyDetailed(id, true);
-
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "testing");
-
-            var stream = new System.IO.MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Relationship Type Items.xlsx"
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-
-            return result;
-
-            //return models;
-        }
-
 
         [Route("PolicyType/{id:int}/levels")]
         public IQueryable<dynamic> GetPolicyTypeLevels(int id)

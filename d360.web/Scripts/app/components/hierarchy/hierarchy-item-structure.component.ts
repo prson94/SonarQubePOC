@@ -336,7 +336,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private exportExcel(level: number) {
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
-                this.modelsService.getModelHierarchyExcel(this.objectTypeId, true, true);
+                this.modelsService.getModelHierarchyExcel(this.objectTypeId, this.assetType.Name, true);
                 console.log("models");
                 break;
             case AssetTypeClass.Policy:

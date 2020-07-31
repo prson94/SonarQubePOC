@@ -35,7 +35,7 @@ export class PoliciesService extends BaseObservableService {
         policyName: string,
         stripHtml: boolean = false
     ) {
-        this.http.get(`api/policytypes/${policyTypeId}/policiesExcel?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
+        this.http.get(`api/policytypes/${policyTypeId}/hierarchyExcel?assetClass=Policy?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
     }
 
     downloadFile(data: Blob, name: string) {
