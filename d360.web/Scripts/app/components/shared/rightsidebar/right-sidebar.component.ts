@@ -291,7 +291,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             result => {
                 this.status = result;
                 if (this.status != undefined && this.status != null && this.status.length > 0) {
-                    var draftValues = CompanySettings.RequestCertificationDraft;
+                    var draftValues = <string>CompanySettings.RequestCertificationDraft;
 
                     if (!draftValues) {
                         draftValues = "DRAFT";
@@ -304,7 +304,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     } catch (e) {
                         statusHeading = status;
                     }
-                    this.showCertify = statusHeading && (draftValues.toUpperCase().split(',').indexOf(statusHeading.toUpperCase()) > -1) && hasWorkFlow;
+                    let isDraft = false;
+                    let draftArray = draftValues.toUpperCase().split(',');
+                    draftArray.forEach(x => {
+                        if (statusHeading.toUpperCase().indexOf(x.toUpperCase()) != -1)
+                            isDraft = true;
+                    });
+
+                    this.showCertify = statusHeading && isDraft && hasWorkFlow;
 
                     this.showStatus = true;
                     this.ref.markForCheck();
@@ -438,15 +445,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     certify() {
         this.showCertifyModal = false;
-        if (this.currentObject && this.currentObject.objectID)
+        if (this.currentObject && this.currentObject.Uid)
             this.artifactService
-                .requestCertification(this.currentObject.objectID)
+                .requestCertification(this.currentObject.Uid)
                 .subscribe(result => {
                     window.setTimeout(
                         x => {
-
                             this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
-
                         }, 6000);
                 });
     }
