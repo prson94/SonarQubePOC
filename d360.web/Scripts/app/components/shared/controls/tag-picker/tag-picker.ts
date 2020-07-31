@@ -230,6 +230,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     enter(tag: SelectItem, element: HTMLElement) {
+        if (this.disabled) return;
+        
         var box = element.getBoundingClientRect();
         var el = this._el.nativeElement as HTMLElement;
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
@@ -261,6 +263,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     leave() {
+        if (this.disabled) return;
+
         var el = this._el.nativeElement as HTMLElement;
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
         tooltip.style.display = 'none';

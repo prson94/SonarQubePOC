@@ -1,6 +1,6 @@
 ﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="styleClass" class="tag-picker {{disabled ? 'disabled':''}}">
     <div class="selected-tags">
-        <div class="tooltip-wrapper">
+        <div *ngIf="!disabled" class="tooltip-wrapper">
             <div class="tag-tooltip">
                 <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
                 <ng-container *ngIf="isTooltipLoaded">
