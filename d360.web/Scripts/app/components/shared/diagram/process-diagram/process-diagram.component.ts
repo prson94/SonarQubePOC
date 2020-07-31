@@ -234,6 +234,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         });
         this.myDiagram.isModelReadOnly = !state;
         this.myDiagram.isReadOnly = !state;
+        if (this.myDiagram.isReadOnly) {
+            this.myDiagram.toolManager.textEditingTool.doCancel();
+        }
         if (this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
