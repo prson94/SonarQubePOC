@@ -22,6 +22,7 @@
                     [options]="filter?.Data?.options"
                     [style]="{width:'100%'}"
                     [ngModel]="filter?.Data?.objectIds"
+                    [selectionLimit]="100"
                     (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
                 <p-selectButton [name]="'relationIncludeType_' + index"
                     [options]="connectors"
@@ -33,6 +34,7 @@
                     [options]="ownerValues"
                     [style]="{width:'100%'}"
                     [ngModel]="filter?.Data"
+                    [selectionLimit]="100"
                     (ngModelChange)="filter.Data = $event"></p-multiSelect>
             </span>
             <span *ngSwitchDefault>
@@ -47,8 +49,8 @@
                                     [virtualScroll]="(filter.Field?.Data?.filteritems?.length > 100 ? true : false)"
                                     itemSize="20"
                                     [filter]="true"
-                                    [ngModel]="filter?.Data?.value"
-                                    (ngModelChange)="filter.Data.value = $event"
+                                    [ngModel]="filter?.Data?.value" 
+                                    (ngModelChange)="filter.Data.value = $event;"
                                     placeholder="Choose a field">
                         </p-dropdown>
                     </span>
