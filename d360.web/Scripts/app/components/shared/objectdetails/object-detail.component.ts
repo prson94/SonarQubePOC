@@ -1,5 +1,5 @@
 import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { DetailRow, DetailField, DetailFieldType } from '../../../models/object-detail.model';
+import { DetailRow, DetailField, DetailFieldType, NymType, Category } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -13,6 +13,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class ObjectDetailComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
+    @Input() nymTypes: NymType[] = [];
+    @Input() objectUID: string;
+    @Input() hasModifyRelationshipsPermissions: boolean;
+    @Input() hasDeleteRelationshipsPermissions: boolean;
     private assetUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
@@ -21,6 +25,7 @@ export class ObjectDetailComponent implements OnChanges {
     readonly noCategory: string  = "None";
         
     private categories: Category[] = new Array<Category>();
+    private systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
     constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService, private cdRef: ChangeDetectorRef) { }
@@ -51,49 +56,16 @@ export class ObjectDetailComponent implements OnChanges {
                         }
                     }
 
+                    this.populateSystemProperties(this.rows);
+
+                    //remove system property rows.
+                    this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
+
                     this.rows.forEach(r => {
                         if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
                             this.categories.push(new Category(r.Category));
 
-                        r.FirstColumnFields.forEach(f => {
-                            this.setDetailFieldType(f);
-                                                        
-                            if (f.Type == DetailFieldType.Lookup) {
-                                this.objectDetailService.getLookupGrid(f.LookupGridUrl)
-                                    .subscribe(i => {
-                                        f.Data = i;
-                                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
-                                            f.Type = DetailFieldType.None;
-                                            r.FirstColumnFields.splice(r.FirstColumnFields.indexOf(f), 1);
-                                        }
-                                    });
-                            }
-                            if (f.Name == 'UID') {
-                                this.assetUID = f.Value;
-                            }
-
-                        });
-                        r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
-
-                        r.SecondColumnFields.forEach(s => {
-                            this.setDetailFieldType(s);
-                                                        
-                            if (s.Type == DetailFieldType.Lookup) {
-                                this.objectDetailService.getLookupGrid(s.LookupGridUrl)
-                                    .subscribe(i => {
-                                        s.Data = i;
-                                        if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
-                                            s.Type = DetailFieldType.None;
-                                            r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
-                                        }
-                                    });
-                            }
-                            if (s.Name == 'UID') {
-                                this.assetUID = s.Value;
-                            }
-                        });
-
-                        r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
+                        this.populateRow(r)                        
                     });
                                        
                     let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
@@ -115,7 +87,7 @@ export class ObjectDetailComponent implements OnChanges {
                     this.cdRef.markForCheck();
                 });
         }
-    }
+    }    
     
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
@@ -172,15 +144,63 @@ export class ObjectDetailComponent implements OnChanges {
         }        
 
     }
-}
 
-class Category {
-    constructor(name: string) {
-        this.name = name;
+    private populateRow(row) {
+        row.FirstColumnFields.forEach(f => {
+            this.setDetailFieldType(f);
+
+            if (f.Type == DetailFieldType.Lookup) {
+                this.objectDetailService.getLookupGrid(f.LookupGridUrl)
+                    .subscribe(i => {
+                        f.Data = i;
+                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
+                            f.Type = DetailFieldType.None;
+                            row.FirstColumnFields.splice(row.FirstColumnFields.indexOf(f), 1);
+                        }
+                    });
+            }
+            if (f.Name == 'UID') {
+                this.assetUID = f.Value;
+            }
+
+        });
+        row.FirstColumnFields = row.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
+
+        row.SecondColumnFields.forEach(s => {
+            this.setDetailFieldType(s);
+
+            if (s.Type == DetailFieldType.Lookup) {
+                this.objectDetailService.getLookupGrid(s.LookupGridUrl)
+                    .subscribe(i => {
+                        s.Data = i;
+                        if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
+                            s.Type = DetailFieldType.None;
+                            row.SecondColumnFields.splice(row.SecondColumnFields.indexOf(s), 1);
+                        }
+                    });
+            }
+            if (s.Name == 'UID') {
+                this.assetUID = s.Value;
+            }
+        });
+
+        row.SecondColumnFields = row.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
     }
-    loaded = false;
-    hasData = false;
-    name: string;
-    rows = [];    
-    active = false;
+
+    private populateSystemProperties(rows: DetailRow[]) {        
+        let systemPropertyItems = this.rows.filter(row => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
+
+        this.systemPropertiesCategory.rows = [];
+        for (let j of systemPropertyItems) {
+            if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
+                this.systemPropertiesCategory.rows.push(j);
+            }
+        }
+        this.systemPropertiesCategory.rows.forEach(row => {
+            this.populateRow(row);
+        });
+
+        this.systemPropertiesCategory.hasData = true;
+        this.systemPropertiesCategory.loaded = true;
+    }
 }
