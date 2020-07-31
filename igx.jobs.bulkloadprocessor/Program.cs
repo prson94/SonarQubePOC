@@ -762,6 +762,26 @@ set		Status = 0,
 		StatusMessage = 'No user found with this email address. '
 where	UserID is null;", transaction: trans);
 
+
+                    company.Execute($@"
+merge       AssetDisplayValue as T
+using       (
+                select  A.ID,
+                        ADV.DisplayValue,
+                        CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                        SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                from    Asset A
+                        inner join [Group] G on G.ID = A.ObjectID and A.Object = 'Group'
+                        inner join #GroupInsertResult L on L.ID = G.ID
+                        cross apply GetAssetDisplayValueByID(A.ID) ADV
+                where   ADV.DisplayValue is not null
+            ) as S 
+on          ( T.AssetID = S.ID )
+when		not matched by target then
+insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());"
+, transaction: trans);
+
                     company.Execute(@"
 merge into	[ResourceGroup] as T
 using		(
@@ -824,10 +844,14 @@ from	LoadItem T
 
                     trans.Commit();
                 }
-                catch 
+                catch
                 {
-                    trans.Rollback();
-                    throw;
+                    try
+                    {
+                        trans.Rollback();
+                        throw;
+                    }
+                    catch { }
                 }
             }
         }
@@ -1090,8 +1114,12 @@ where	T.Success = 1", transaction: trans);
                 }
                 catch
                 {
-                    trans.Rollback();
-                    throw;
+                    try
+                    {
+                        trans.Rollback();
+                        throw;
+                    } 
+                    catch { }
                 }
             }
 
@@ -1252,8 +1280,12 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                 }
                 catch
                 {
-                    trans.Rollback();
-                    throw;
+                    try
+                    {
+                        trans.Rollback();
+                        throw;
+                    }
+                    catch { }
                 }
             }
 
