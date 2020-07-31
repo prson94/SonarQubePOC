@@ -30,12 +30,13 @@ export class PoliciesService extends BaseObservableService {
             );
     }
 
-    getPoliciesExcel(
+    getHierarchyExcel(
         policyTypeId: number,
         policyName: string,
+        type: string,
         stripHtml: boolean = false
     ) {
-        this.http.get(`api/policytypes/${policyTypeId}/hierarchyExcel?assetClass=Policy?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
+        this.http.get(`api/hierarchy/${policyTypeId}/hierarchyExcel?assetClass=${type}?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
     }
 
     downloadFile(data: Blob, name: string) {

@@ -221,10 +221,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
-                        console.log(this.hierarchy);
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
-                        console.log(this.treeNodeArray);
                         this.isLoading = false;
                     }
                 );
@@ -248,7 +246,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 children: (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.ID))
             });
         }
-        console.log(res);
         return res;
     }
 
@@ -336,11 +333,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private exportExcel(level: number) {
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
-                this.modelsService.getModelHierarchyExcel(this.objectTypeId, this.assetType.Name, true);
-                console.log("models");
+                this.policiesService.getHierarchyExcel(this.objectTypeId, this.assetType.Name,'Model', true);
                 break;
             case AssetTypeClass.Policy:
-                this.policiesService.getPoliciesExcel(this.objectTypeId, this.assetType.Name, true);
+                this.policiesService.getHierarchyExcel(this.objectTypeId, this.assetType.Name,'Policy', true);
                 break;
         }
     }

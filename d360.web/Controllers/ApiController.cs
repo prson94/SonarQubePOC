@@ -2707,7 +2707,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
         }
 
 
-        [Route("policytypes/{id:int}/hierarchyExcel")]
+        [Route("hierarchy/{id:int}/hierarchyExcel")]
         public async Task<IHttpActionResult> GetHierarchyExcel(int id,string assetClass, bool stripHtml = false)
         {
             IQueryable<dynamic> levels = null;
