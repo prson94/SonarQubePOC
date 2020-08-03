@@ -279,6 +279,28 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
+            {
+                try
+                {
+                    var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
+                    var includeFieldsList = includeFieldsString
+                        .Split(',')
+                        .Select(s => s.ToLower())
+                        .ToList();
+
+                    if (includeFieldsList.Any())
+                    {
+                        fieldTypes = fieldTypes.Where(x => includeFieldsList.Contains(x.Name.ToLower())).ToList();
+                    }
+                }
+                catch
+                {
+                    throw new ArgumentException("Could not parse value of _includeFields");
+                }
+
+            }
+
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
