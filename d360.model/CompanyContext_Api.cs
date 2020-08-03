@@ -2829,7 +2829,8 @@ where   ExecutionID = @ExecutionID
 					                            inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.Uid=IT.UID and 
 					                                                                            EDR.ExecutionID = @ExecutionID 
 					                                                                            and 
-					                                                                            EDR.Success is null;",
+					                                                                            EDR.Success is null
+                                            where ISJSON(FTL.[Definition])>0;",
                         new { execution.ExecutionID }, commandTimeout: timeout).ToList();
 
                     //delete the lookup
@@ -4959,7 +4960,7 @@ from    [Intersect] T
 					                                EDR.ExecutionID = @ExecutionID
 					                                and 
 					                                EDR.Success is null
-			                                where EDR.[Cascade]=0
+			                                where EDR.[Cascade]=0 and ISJSON(o.Definition)>0
 					                                group by ExecutionID, ItemNumber
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
                                             new { execution.ExecutionID }, commandTimeout: timeout);
