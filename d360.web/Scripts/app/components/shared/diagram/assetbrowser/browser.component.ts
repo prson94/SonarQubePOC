@@ -371,7 +371,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let links = this.diagramModelAsGraph().linkDataArray;
         let badgeLink = links.find(l => { return l.badgeIdentifier === badgeIdentifier; });
         if (badgeLink) {
-            console.log(badgeLink);
             // Line below would only be used IF impacts were to go in both directions. As it is now, we hard-code them to only go in one direction (forward).
             //let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
             let impactNodeKey = badgeLink.to;
@@ -835,15 +834,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return preloadedIntersects;
     }
 
-    private helper_HideAndDisableSingleGroup(node: go.Group) {
+    private helper_HideAndDisableSingleGroup(node: go.Group, filterHiddenBy: string) {
         this.diagram.startTransaction("HideAndDisableSingleGroup");
 
+        this.diagram.model.setDataProperty(node.data, 'filterHiddenBy', filterHiddenBy);
         this.diagram.model.setDataProperty(node.data, 'hideMode', 0);
         this.diagram.model.setDataProperty(node.data, 'template', "HiddenDisabledNode");
 
         let hierarchyNodes = node.findSubGraphParts();
         hierarchyNodes.each(c => {
-            console.log(c.data);
             this.diagram.model.setDataProperty(c.data, 'visible', false);
             this.diagram.model.setDataProperty(c.data, 'opacity', 0);
             this.diagram.model.setDataProperty(c.data, 'template', (c.data.isGroup) ? "HiddenSubNode" : "HiddenLeafNode"); 
@@ -855,6 +854,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_ShowAndEnableSingleGroup(node: go.Group) {
         this.diagram.startTransaction("ShowAndEnableSingleGroup");
 
+        this.diagram.model.setDataProperty(node.data, 'filterHiddenBy', null);
         this.diagram.model.setDataProperty(node.data, 'hideMode', null);
         this.diagram.model.setDataProperty(node.data, 'template', node.data.nonHiddenTemplate);
 
@@ -874,10 +874,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let groupAssetTypeId = (g.data && g.data.assetTypeId) ? g.data.assetTypeId : -1;
             if (groupAssetTypeId > -1) {
                 if (hiddenIds.findIndex(id => { return id == groupAssetTypeId; }) > -1) {
-                    this.helper_HideAndDisableSingleGroup(g);
+                    this.helper_HideAndDisableSingleGroup(g, "a");
                 }
                 else {
-                    if (g.data.isGroup) {
+                    if (g.data.isGroup && (g.data.filterHiddenBy == "a" || !g.data.filterHiddenBy) && g.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(g);
                     }
                 }
@@ -901,13 +901,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             g.findLinksOutOf().each(l => {
                 if (hiddenIds.findIndex(id => { return l.data.predicateId == id; }) == -1) {
-                    if (l.toNode.data.isGroup) {
+                    if (l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "p" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
                 else {
                     if (l.toNode.data.isGroup) {
-                        this.helper_HideAndDisableSingleGroup(l.toNode as go.Group);
+                        this.helper_HideAndDisableSingleGroup(l.toNode as go.Group, "p");
                     }
                 }
             });
@@ -932,13 +932,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             g.findLinksOutOf().each(l => {
                 if (hiddenIds.findIndex(id => { return l.data.responsibilityTypeId == id; }) == -1) {
-                    if (l.toNode.data.isGroup) {
+                    if (l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "r" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
                 else {
                     if (l.toNode.data.isGroup) {
-                        this.helper_HideAndDisableSingleGroup(l.toNode as go.Group);
+                        this.helper_HideAndDisableSingleGroup(l.toNode as go.Group, "r");
                     }
                 }
             });
@@ -1060,7 +1060,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        //this.loadFilter();
         this.helper_PopulateDiagram().subscribe(bComplete => {
             this.helper_HideDeselectedAssetTypes();
             this.helper_HideDeselectedPredicates();
@@ -1139,59 +1138,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             n.isHighlighted = false;
         });
 
-        //#region process dynamic elements like reveal nodes and relation badges
-
         this.diagram.findTopLevelGroups().each(g => {
-            let children = g.findSubGraphParts();
-            //let childAssets: AssetBrowserApiHopAssetRequestModel[] = [];
-            let childOwners = [];
-            let childRelations = [];
-            //let backReveal: boolean = false;
-            //let forwardReveal: boolean = false;
-
-
-            //children.each(c => {
-
-            //    let data: AssetBrowserTranslationNode = c.data;
-
-            //    if (data.owners != null && data.owners.length > 0) {
-            //        for (let i = 0; i < data.owners.length; i++) {
-            //            let r = data.owners[i];
-            //            let rel = childOwners.find(c => c.responsibilityTypeId == r.responsibilityTypeId);
-            //            if (rel != null) {
-            //                rel.count += r.count;
-            //            }
-            //            else if (g.data.owners.find(c => c.responsibilityTypeId == r.responsibilityTypeId) == null) {
-            //                childOwners.push(r);
-            //            }
-            //        }
-            //        data.owners = [];
-            //    }
-
-            //    if (data.relations != null && data.relations.length > 0) {
-            //        for (let i = 0; i < data.relations.length; i++) {
-            //            let r = data.relations[i];
-            //            let rel = childRelations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction);
-            //            if (rel != null) {
-            //                rel.count += r.count;
-            //            }
-            //            else if (g.data.relations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction) == null) {
-            //                childRelations.push(r);
-            //            }
-            //        }
-            //        data.relations = [];
-            //    }
-
-            //});
-
-            //g.data.owners = g.data.owners.concat(childOwners);
-            //this.diagram.model.setDataProperty(g.data, "owners", g.data.owners.slice());
-            //g.data.relations = g.data.relations.concat(childRelations);
-            //this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
             this.diagram.model.setDataProperty(g.data, "showBadges", this.displayConfiguration.DisplayBadges);
         });
-
-        //#endregion
 
         this.diagram.commitTransaction("load_all_data");
         this.helper_UpdateDiagramLayout();
@@ -1256,7 +1205,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.helper_PopulateDiagram().subscribe(bComplete => {
             this.isLoading = false;
             this.helper_SetFilterWindow();
-            this.helper_HideDeselectedAssetTypes();
+            this.helper_HideDeselectedAssetTypes(); 
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
             this.helper_CalculateAlertCount();
@@ -1269,18 +1218,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     */
     private helper_RemoveRevealNode(data: AssetBrowserTranslationNode, direction: AssetBrowserApiHopDirection) {
         this.diagram.startTransaction('reveal');
-        this.diagramModelAsGraph().removeNodeData(data);
 
-        let l: go.ObjectData;
-        if (direction == AssetBrowserApiHopDirection.Backward) {
-            l = this.diagramModelAsGraph().linkDataArray.find(l => l.to == data.hierarchyKey && l.from == data.key);
+        let selectedRevealNode = this.diagram.findNodeForKey(data.key);
+        if (selectedRevealNode) {
+            selectedRevealNode.findLinksInto().each(l => {
+                this.diagramModelAsGraph().removeLinkData(l.data);
+            });
+            selectedRevealNode.findLinksOutOf().each(l => {
+                this.diagramModelAsGraph().removeLinkData(l.data);
+            });
         }
-        else {
-            l = this.diagramModelAsGraph().linkDataArray.find(l => l.to == data.key && l.from == data.hierarchyKey);
-        }
-        if (l) {
-            this.diagramModelAsGraph().removeLinkData(l);
-        }
+        this.diagramModelAsGraph().removeNodeData(data);
 
         this.diagram.commitTransaction('reveal');
     }
@@ -2036,7 +1984,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             scrollMode: go.Diagram.DocumentScroll,
             layout: layout,
             "undoManager.isEnabled": true,
-            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" }
+            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
+            "animationManager.isEnabled": false 
         });
 
         let model = (dg.model as go.GraphLinksModel);

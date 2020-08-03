@@ -463,6 +463,7 @@ export class AssetBrowserTranslationNode {
     focal: boolean;
 
     hideMode: AssetBrowserApiHopDirection = null;
+    filterHiddenBy: string = null;
 }
 
 // Ownership Models
