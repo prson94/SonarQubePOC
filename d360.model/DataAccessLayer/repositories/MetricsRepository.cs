@@ -348,11 +348,18 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 };
 
                 // End-date the now previous version, if any.
-                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null);
-                if (existingAssetVersion != null)
+                var existingAssetVersions = Company.Filter<MetricAssetVersion>(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null)
+                    .OrderByDescending(x => x.EffectiveDate)
+                    .ToList();
+                for (var i = 0; i < existingAssetVersions.Count; i++)
                 {
-                    existingAssetVersion.EffectiveEndDate = effectiveDate;
-                    Company.Update(existingAssetVersion);
+                    if (i == 0)
+                    {
+                        var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
+                        endDateToUse = endDateToUse.AddDays(-1);
+                        existingAssetVersions[i].EffectiveEndDate = endDateToUse;
+                        Company.Update(existingAssetVersions[i]);
+                    }
                 }
 
                 Company.Add(metricAssetVersion);
