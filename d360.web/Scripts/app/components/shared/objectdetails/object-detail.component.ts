@@ -200,7 +200,7 @@ export class ObjectDetailComponent implements OnChanges {
             this.populateRow(row);
         });
 
-        this.systemPropertiesCategory.hasData = true;
+        this.systemPropertiesCategory.hasData = this.systemPropertiesCategory.rows.length > 0;
         this.systemPropertiesCategory.loaded = true;
     }
 }
