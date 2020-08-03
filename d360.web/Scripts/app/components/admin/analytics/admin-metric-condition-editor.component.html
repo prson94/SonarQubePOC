@@ -27,13 +27,13 @@
                 <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
-                <div class="ig-input calendar required" >
-                    <p-calendar appendTo="body" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                <div (click)="pc1.toggle()" class="ig-input calendar required" >
+                    <p-calendar #pc1 appendTo="body" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
                     <i class="fa fa-calendar"></i>
                 </div>
             </div>
-            <div *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar required">
-                <p-calendar appendTo="body" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+            <div (click)="pc2.toggle()" *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar required">
+                <p-calendar #pc2 appendTo="body" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Number'">
                 <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
