@@ -110,7 +110,7 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
             this.el.nativeElement.appendChild(spinnerElement);
         } else {
             DomHandler.removeClass(this.el.nativeElement, "ig-state-loading");
-            this.el.nativeElement.setAttribute("disabled", "false");
+            this.el.nativeElement.removeAttribute("disabled");
         }
     }
 
