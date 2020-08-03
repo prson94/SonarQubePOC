@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v2">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -182,6 +182,15 @@ begin
 		select	ObjectID, Hop, ObjectSalt
 		from	#hops
 		group by ObjectID, Hop, ObjectSalt;
+
+	if not exists(select * from #hopAssets)
+	begin
+		-- Put self into the table.
+		insert into #hopAssets
+			select	ID, 1, @backSubjectSalt
+			from	Asset 
+			where	Uid = @uid;
+	end
 
 	drop table if exists #hierarchies
 	create table #hierarchies (
