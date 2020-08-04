@@ -134,7 +134,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly linkDefaultBackColor: string = '#808080';
     private readonly linkDefaultBorderColor: string = '#999';
     private readonly plusIcon: string = '\uf067';
-    private readonly hideIcon: string = '\uf111';
+    private readonly hideIcon: string = '\uf070';
     private readonly disabledNodeBackColor: string = '#fff';
 
     private readonly textMaxSize = new go.Size(200, Infinity);
