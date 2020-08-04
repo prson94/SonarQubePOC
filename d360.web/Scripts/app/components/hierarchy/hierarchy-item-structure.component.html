@@ -11,6 +11,10 @@
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
             <p-treeTable #treeTable
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
                          *ngIf="!showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
@@ -78,6 +82,11 @@
                             </div>
                         </td>
                     </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="treeTable.first"
+                                          [rows]="treeTable.rows"
+                                          [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-treeTable>
             <d3s-asset-delete-editor *ngIf="showDelete"

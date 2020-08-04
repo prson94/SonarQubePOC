@@ -34,6 +34,9 @@ import { TreeTableModule, TreeTable } from 'primeng/treetable';
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit {
+
+    rowsPerPage: number = 25;
+
     assetTypeClass: AssetTypeClass;
     assetTypeUid: string;
     objectTypeId: number;
