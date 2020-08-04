@@ -279,24 +279,39 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+
+            var includeFieldsList = new List<string>();
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
             {
                 try
                 {
                     var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
-                    var includeFieldsList = includeFieldsString
+                    includeFieldsList = includeFieldsString
                         .Split(',')
                         .Select(s => s.ToLower())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
                         .ToList();
-
-                    if (includeFieldsList.Any())
-                    {
-                        fieldTypes = fieldTypes.Where(x => includeFieldsList.Contains(x.Name.ToLower())).ToList();
-                    }
                 }
                 catch
                 {
                     throw new ArgumentException("Could not parse value of _includeFields");
+                }
+
+
+                //validate param values
+                includeFieldsList.ForEach(f =>
+                {
+                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f))
+                    {
+                        throw new ArgumentException($"Invalid value {f} in _includeFields parameter, field with this name not found.");
+                    }
+                });
+
+                if (includeFieldsList.Any())
+                {
+                    fieldTypes = fieldTypes
+                        .Where(x => includeFieldsList.Contains(x.Name.ToLower()))
+                        .ToList();
                 }
 
             }
@@ -613,12 +628,12 @@ namespace d360.model.DataAccessLayer
                     List<int> filteredFields = new List<int>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 
-                    if (includeOnlyListableFields)
+                    if (includeOnlyListableFields || includeFieldsList.Any())
                     {
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
-                        getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
                         fieldColumns.AddRange(tempFieldColumns);
                         fieldJoins.AddRange(tempJoins);
                         countJoins.AddRange(tempJoins);
