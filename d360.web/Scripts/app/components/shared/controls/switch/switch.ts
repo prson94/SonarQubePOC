@@ -58,11 +58,6 @@ export class Switch implements ControlValueAccessor, OnInit  {
         }    
     }
 
-    @HostBinding('style.opacity')
-    get opacity() {
-        return this.disabled ? 0.33 : 1;
-    }
-
     @ViewChild("switch", { static: false }) _el: ElementRef;
 
     toggle(e: Event) {

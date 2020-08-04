@@ -1,6 +1,6 @@
 ﻿<div #switch 
      [ngClass]="{'switch':true,'checked':value ===true,'unset':value===undefined,'disabled':disabled}"
-     [attr.id]="inputId" [attr.tabindex]="tabindex" 
+     [attr.id]="inputId" [attr.tabindex]="(disabled ? -1 : tabindex)" 
      [ngStyle]="style" [class]="styleClass" 
      (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy" >
     <button tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
