@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionRollupPathFilterValue-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionRollupPathFilterValue')
+BEGIN
+	CREATE TABLE [metrics].[AssetVersionRollupPathFilterValue] (
+		[AssetVersionRollupPathFilterUid] uniqueidentifier NOT NULL,
+		[Value] nvarchar(250) NOT NULL,
+		CONSTRAINT [PK_AssetVersionRollupPathFilterValue] PRIMARY KEY CLUSTERED ( [AssetVersionRollupPathFilterUid] ASC, [Value] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK__MetricAssetVersionRollupPathFilterValue_MetricAssetVersionRollupPathFilter')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilterValue]  WITH CHECK ADD CONSTRAINT [FK__MetricAssetVersionRollupPathFilterValue_MetricAssetVersionRollupPathFilter] FOREIGN KEY([AssetVersionRollupPathFilterUid]) REFERENCES [metrics].[AssetVersionRollupPathFilter] ([Uid]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilterValue] CHECK CONSTRAINT [FK__MetricAssetVersionRollupPathFilterValue_MetricAssetVersionRollupPathFilter];
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [metrics].[AssetVersionRollupPathFilterValue]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
