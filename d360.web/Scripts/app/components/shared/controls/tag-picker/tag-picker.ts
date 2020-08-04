@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation, OnDestroy } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -23,6 +23,7 @@ export const SWITCH_VALUE_ACCESSOR: any = {
     templateUrl: 'tag-picker.html',
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./tag-picker.less']
 })
 export class TagPicker extends BaseComponent implements ControlValueAccessor, OnDestroy {
@@ -31,11 +32,11 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Input() readOnly = false;
 
-    @Input() styleClass: any;
+    @Input() styleClass: string;
 
     @Input() style: any;
 
-    @Input() tabindex: string;
+    @Input() tabindex: number = 0;
 
     @Input() inputId: string;
 
