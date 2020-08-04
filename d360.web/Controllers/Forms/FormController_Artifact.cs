@@ -32,7 +32,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1, true);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -73,14 +73,14 @@ namespace d360.web.Controllers
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-                        
+
             var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                 i.Object == "ArtifactType" &&
                 i.ObjectID == at &&
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
-            
+
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
@@ -92,7 +92,7 @@ namespace d360.web.Controllers
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-        
+
         /// <param name="id">ArtifactID</param>
         [Route("Artifact_EditFields"), NonNullableParameters]
         public JsonResult Artifact_EditFields(int id)
@@ -100,24 +100,24 @@ namespace d360.web.Controllers
             if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
-            var list = new List<EditableField>();                        
+            var list = new List<EditableField>();
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
             var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
-            
+
 
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
                 {
                     var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
-                   
+
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                     var parents = Company.Query<SelectListItem>($"select lower(convert(nvarchar(36), A.uid)) as Value, AD.DisplayValue as Text from Asset A inner join AssetDisplayValue AD on A.ID = AD.AssetID   where A.AssetTypeID = {parentType.ID}").OrderBy(i => i.Text).ToList();
-                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? (parent.uid.ToString()??"").ToLower() : ""), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
                 }
             }
 
@@ -126,15 +126,15 @@ namespace d360.web.Controllers
                     SystemObjects.Artifact.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(), 
-                    Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(), 
+                    Company.GetFieldTypesByObject(SystemObjects.ArtifactType, a.AssetType.ObjectID).ToList(),
+                    Company.GetFieldRelationsByObject(SystemObjects.Artifact, id).ToList(),
                     2
                 )
             );
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-                        
+
         [HttpGet, Route("Artifact_SimilarItems"), NonNullableParameters]
         public JsonNetResult Artifact_SimilarItems(int typeID, string query)
         {
@@ -153,7 +153,7 @@ namespace d360.web.Controllers
 
         #region ArtifactType
 
-    
+
         [HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
         public JsonResult DeleteArtifactType(int id)
         {
@@ -168,9 +168,9 @@ namespace d360.web.Controllers
                 Company.Delete(SystemObjects.ArtifactType, id);
 
                 dynamic custom = new
-                {                    
+                {
                     assetType.Name,
-                    action = "delete"              
+                    action = "delete"
                 };
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
@@ -206,7 +206,7 @@ namespace d360.web.Controllers
                     if (parentAssetType != null)
                         parentUid = parentAssetType.uid;
                 }
-                  
+
                 var loadPredicates = false;
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
                 var loadParentReferenceItemOptions = false;
@@ -242,7 +242,7 @@ namespace d360.web.Controllers
                     case AssetTypeClass.Reference:
                     case AssetTypeClass.ReferenceItemType:
                         ot = SystemObjects.ReferenceItemType;
-                        appendTitle = "Reference List";                        
+                        appendTitle = "Reference List";
                         loadParentReferenceItemOptions = true;
                         break;
                 }
@@ -287,7 +287,7 @@ namespace d360.web.Controllers
                         },
                         Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };
-                    
+
                     switch (@class)
                     {
                         case AssetTypeClass.FusionAttribute:
@@ -302,7 +302,7 @@ namespace d360.web.Controllers
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
-                        case AssetTypeClass.Model:                            
+                        case AssetTypeClass.Model:
                             model.AssetType.Hierarchy.MaximumDepth = assetType.HierarchyMaximumDepth;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
@@ -388,7 +388,7 @@ namespace d360.web.Controllers
                             {
                                 BackColor = "#000",
                                 ForeColor = "#FFF",
-                                Icon =null
+                                Icon = null
                             },
                             Hierarchy = new HierarchyInsert()
                             {

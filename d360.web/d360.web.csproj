@@ -721,6 +721,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.tag-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
@@ -748,6 +749,8 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
+    <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
+    <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
@@ -858,6 +861,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tag-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.button.component.ts" />
@@ -870,6 +874,7 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.ts" />

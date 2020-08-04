@@ -30,14 +30,16 @@
                     <div class="ql-formats">
                         <button igButton icon="fa-ellipsis-v" class="open-editor-menu {{isMenuVisible ? 'ig-state-active' : ''}}" tooltip="More..."></button>
                         <div *ngIf="isMenuVisible" class="custom-tools">
-                            <div class="menu-item">Alignment
+                            <div class="menu-item">
+                                Alignment
                                 <ul>
                                     <li class="menu-item" (click)="qlCenter.click()">Center</li>
                                     <li class="menu-item" (click)="qlRight.click()">Right</li>
                                     <li class="menu-item" (click)="qlJustify.click()">Justify</li>
                                 </ul>
-                            </div>                           
-                            <div class="menu-item">Insert
+                            </div>
+                            <div class="menu-item">
+                                Insert
                                 <ul>
                                     <li class="menu-item" (click)="qlImage.click()">Image</li>
                                     <li class="menu-item" (click)="qlCode.click()">Code</li>
@@ -48,11 +50,11 @@
                     </div>
 
                     <div style="display:none;">
-                        <button class="ql-align" value="center" #qlCenter></button> 
-                        <button class="ql-align" value="right" #qlRight></button> 
-                        <button class="ql-align" value="justify" #qlJustify></button> 
-                        <button class="ql-image" value="image" #qlImage></button> 
-                        <button class="ql-code-block" value="code-block" #qlCode></button> 
+                        <button class="ql-align" value="center" #qlCenter></button>
+                        <button class="ql-align" value="right" #qlRight></button>
+                        <button class="ql-align" value="justify" #qlJustify></button>
+                        <button class="ql-image" value="image" #qlImage></button>
+                        <button class="ql-code-block" value="code-block" #qlCode></button>
                     </div>
                 </p-header>
             </p-editor>
@@ -262,6 +264,10 @@
                 <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
             </div>
             <d3s-multiselect-grid-v2 *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field"></d3s-multiselect-grid-v2>
+
+            <div *ngSwitchCase="'Tag'">
+                <ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>
+            </div>
             <div class="error-message" *ngIf="!isValid && isDirty">{{errorMessage}}</div>
         </div>
     </div>

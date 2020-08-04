@@ -12,7 +12,8 @@ import {
     SimpleChange,
 
     ViewChild,
-    ElementRef,
+    ElementRef,
+
     ViewEncapsulation
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -32,6 +33,7 @@ import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
+import { SelectItem } from 'primeng/api';
 
 @Component({
     selector: 'd3s-dynamic-editor-v2',
@@ -369,7 +371,22 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                     value: (field.Value),
                     disabled: field.ReadOnly
                 }, this.getFieldValidators(field));
-            } else {
+            } else if (field.FieldType == 'Tag') {
+                if (field.Value) {
+                    var arr = (field.Value as string).split('|');
+                    var arrValue: SelectItem[] = [];
+                    arr.forEach(tag => {
+                        arrValue.push({ title: tag, value: '' });
+                    })
+                    field.Value = arrValue;
+
+                }
+                group[field.FieldName] = new FormControl({
+                    value: (field.Value === null ? '' : field.Value),
+                    disabled: setDisabled
+                }, this.getFieldValidators(field));
+            }
+            else {
                 if (field.FieldType == "Relationship" && this.selection) {
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
@@ -524,7 +541,14 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
-                } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
+                }
+                else if (field != null && field.FieldType == 'Tag') {
+                    var arr = this.form.value[p] as SelectItem[];
+                    if (arr) {
+                        this.form.value[p] = arr.map(x => x.title).join('|');
+                    }
+                }
+                else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
                     }
