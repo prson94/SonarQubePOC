@@ -2873,6 +2873,13 @@ where   ExecutionID = @ExecutionID
                                         and ER.Success is null) S on FT.[Object] = 'IntersectType' 
                                         and S.ID = FT.ObjectID ;
 
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
+					                    EDR.Success is null
 
                             delete  T
                             from    [Intersect] T
@@ -4970,6 +4977,29 @@ from    [Intersect] T
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
                                             new { execution.ExecutionID }, commandTimeout: timeout);
 
+            //check for relationship fields
+            Connection.Execute(@"
+                                update	T
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship fields associated with this relationship.',
+	                                    T.Success = 0
+                                from	api.ExecutionDeletedRelationshipType T
+                                        inner join
+		                                (
+                                            select	EDR.ExecutionID,
+					                                EDR.ItemNumber,
+					                                Count(1) as [Count]                                             
+                                            from 
+                                                    FieldType FT 
+                                                    inner join 
+                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                                    inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                                    and 
+					                                EDR.Success is null
+                                                    AND
+                                                    EDR.[Cascade]=0
+                                            group by ExecutionID, ItemNumber			                                
+                                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
+                                            new { execution.ExecutionID }, commandTimeout: timeout);
 
         }
 
