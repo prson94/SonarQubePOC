@@ -250,6 +250,7 @@ namespace d360.model.DataAccessLayer
             string permissionDetailSQL = " ";
             string includePermissionFields = " ";
             bool listColorsAsJSON = false;
+            bool includeColor = true;
             var includeTotal = true;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
@@ -324,6 +325,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecolor"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecolor").Value, out includeColor);
             }
 
             List<string> fieldColumns = new List<string>();
@@ -817,7 +823,7 @@ namespace d360.model.DataAccessLayer
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
-                    ACJ.ColorJson as Color,
+                    {(includeColor ? "ACJ.ColorJson as Color," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
@@ -831,7 +837,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-                cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                {(includeColor ? "cross apply dbo.GetAssetColorJsonById(A.Id) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
