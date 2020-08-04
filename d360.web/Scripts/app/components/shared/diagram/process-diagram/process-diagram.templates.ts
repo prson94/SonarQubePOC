@@ -875,6 +875,28 @@ export class ProcessDiagramTemplates {
         );
 
     }
+
+    public static blankTemplate_pallete() {
+        var $ = go.GraphObject.make;
+
+        return $(go.Node, "Spot",
+            {
+                cursor: 'default',
+                selectable: false,
+
+            },
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape, 'Rectangle',
+                        {
+                            fill: 'transparent',
+                            strokeWidth: 0,
+                            width: 100,
+                            height: 100,
+                        }
+                    ))));
+    }
+
     private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
         var category = obj['data'].category;
         var toolTipDIV = document.getElementById('toolTipDIV-' + category);

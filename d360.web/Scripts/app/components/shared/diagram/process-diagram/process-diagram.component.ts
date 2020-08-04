@@ -785,10 +785,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
         })
 
+        if (this.events.length == 1) {
+            eventArr.push({
+                category: 'blank-node'
+            });
+        }
+
         this.myEventPalette.model.nodeDataArray = eventArr;
 
         var templmap = new go.Map<string, go.Node>();
         templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
+        templmap.add("blank-node", ProcessDiagramTemplates.blankTemplate_pallete());
         this.myEventPalette.nodeTemplateMap = templmap;
 
         this.myActivityPallete =
@@ -803,10 +810,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     'toolManager.hoverDelay': 100
                 });
 
-        var eventArr = [];
+        var activitiesArr = [];
         // now add the initial contents of the Palette
         this.activities.forEach(ev => {
-            eventArr.push({
+            activitiesArr.push({
                 category: 'activity',
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
@@ -820,10 +827,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
         })
 
-        this.myActivityPallete.model.nodeDataArray = eventArr;
+        if (this.activities.length == 1) {
+            activitiesArr.push({
+                category: 'blank-node'
+            });
+        }
+        this.myActivityPallete.model.nodeDataArray = activitiesArr;
 
         var templmap = new go.Map<string, go.Node>();
         templmap.add("activity", ProcessDiagramTemplates.activityTemplate_pallete());
+        templmap.add("blank-node", ProcessDiagramTemplates.blankTemplate_pallete());
         this.myActivityPallete.nodeTemplateMap = templmap;
 
 
@@ -839,10 +852,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     'toolManager.hoverDelay': 100
                 });
 
-        var eventArr = [];
+        var gatewaysArr = [];
         // now add the initial contents of the Palette
         this.gateways.forEach(ev => {
-            eventArr.push({
+            gatewaysArr.push({
                 category: 'gateway',
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
@@ -855,11 +868,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 relCount: "0"
             });
         })
-
-        this.myGatewayPallete.model.nodeDataArray = eventArr;
+        if (this.gateways.length == 1) {
+            gatewaysArr.push({
+                category: 'blank-node'
+            });
+        }
+        this.myGatewayPallete.model.nodeDataArray = gatewaysArr;
 
         var templmap = new go.Map<string, go.Node>();
         templmap.add("gateway", ProcessDiagramTemplates.gatewayTemplate_pallete());
+        templmap.add("blank-node", ProcessDiagramTemplates.blankTemplate_pallete());
         this.myGatewayPallete.nodeTemplateMap = templmap;
 
         this.isPalleteLoaded = true;
