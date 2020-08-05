@@ -28,7 +28,6 @@ using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
 using DocumentFormat.OpenXml.Office2010.Excel;
-using System.Data.Entity;
 
 namespace d360.web.Controllers
 {
@@ -39,7 +38,6 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
-        TaxonomyController taxonomyController;
         public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
@@ -47,7 +45,6 @@ namespace d360.web.Controllers
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
-            this.taxonomyController = new TaxonomyController(community, company);
             this.tagRepository = tagRepository;
         }
 
