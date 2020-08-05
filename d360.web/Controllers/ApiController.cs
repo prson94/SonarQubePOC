@@ -2703,6 +2703,16 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return policies;
         }
 
+        [Route("PolicyType/{id:int}/levels")]
+        public IQueryable<dynamic> GetPolicyTypeLevels(int id)
+        {
+            return Company.Query<dynamic>(@"Select AT.ObjectId as PolicyTypeID,ATL.Level,ATL.Name,ATL.Description
+                                            From AssetTypeLevel ATL
+                                            inner join AssetType AT on AT.Id = ATL.AssetTypeID
+                                            WHERE  [object]='PolicyType' and ObjectId=@ObjectId
+                                            order by Level", new { ObjectId = id }).AsQueryable();
+        }
+
 
         #endregion
 
