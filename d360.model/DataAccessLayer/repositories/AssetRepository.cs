@@ -19,7 +19,7 @@ using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.core.entities.Process;
-using AngleSharp.Io
+using AngleSharp.Io;
 using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace d360.model.DataAccessLayer
