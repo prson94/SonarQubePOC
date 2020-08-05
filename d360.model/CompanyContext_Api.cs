@@ -500,13 +500,41 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             if (sendWorkflowEvents)
             {
                 res = Connection.Query<AssetFieldTypeUpdate>($@"
-                    select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
-	                    inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+                    select  EA.Object, 
+                            EA.ObjectID, 
+                            EF.FieldTypeID AS Id 
+                    from    {tableName} EA 
+	                        inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
                                             and EF.ItemNumber = EA.ItemNumber 
                                             and EA.ObjectID is not null 
                                             and EF.FieldTypeID is not null
-	                    inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
-                    where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
+	                        inner join Field F on F.FieldTypeId = EF.FieldTypeID 
+                                            and F.ObjectType = EA.Object 
+                                            and F.ObjectId = EA.ObjectID
+                    where   EA.ExecutionID = @executionID 
+                            and EA.IsNew <> 1 
+                            {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} 
+                            and @sendWorkflowEvents = 1 
+                            and EA.ItemNumber between @beginItemNumber and @endItemNumber
+
+                    union all
+
+                    select  EA.Object, 
+                            EA.ObjectID, 
+                            EF.FieldTypeID AS Id 
+                    from    {tableName} EA 
+	                        inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+                                            and EF.ItemNumber = EA.ItemNumber 
+                                            and EA.ObjectID is not null 
+                                            and EF.FieldTypeID is not null
+                    where   EA.ExecutionID = @executionID 
+                            and EA.IsNew <> 1 
+                            and @sendWorkflowEvents = 1 
+                            and EA.ItemNumber between @beginItemNumber and @endItemNumber
+                            {(shouldCheckExistingFieldValues ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
+                            and not exists (select 1 from Field where FieldTypeID = EF.FieldTypeID 
+                                and ObjectType = EA.Object and ObjectID = EA.ObjectID)
+"
                     , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
 
