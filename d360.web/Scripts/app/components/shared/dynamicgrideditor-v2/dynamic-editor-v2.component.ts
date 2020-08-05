@@ -324,6 +324,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 this.form.valueChanges.subscribe(x => {
                     this.onSubmit();
                 })
+
+                setTimeout(() => this.onSubmit(), 20);
             }
         }
 

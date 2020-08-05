@@ -725,7 +725,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private selectFirstInvalidField() {
         setTimeout(() => {
-            (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement).focus();
+            var el = (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement);
+            if (el)
+                el.focus();
         }, 200);
     }
 
