@@ -564,6 +564,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
+        var originalPosition = JSON.parse(JSON.stringify(this.myDiagram.toolManager.panningTool.originalPosition));
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
@@ -602,8 +603,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                         this.myDiagram.select(selectedNode);
                     }
                 }
-                this.cdRef.detectChanges();
 
+                this.cdRef.detectChanges();
+                if (isFromSave)
+                    this.myDiagram.position = originalPosition;
             });
     }
 
@@ -728,7 +731,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private selectFirstInvalidField() {
         setTimeout(() => {
-            (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement).focus();
+            var el = (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement);
+            if (el)
+                el.focus();
         }, 200);
     }
 

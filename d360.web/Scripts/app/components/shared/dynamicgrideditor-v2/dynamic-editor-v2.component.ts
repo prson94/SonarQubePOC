@@ -326,6 +326,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 this.form.valueChanges.subscribe(x => {
                     this.onSubmit();
                 })
+
+                setTimeout(() => this.onSubmit(), 20);
             }
         }
 
@@ -391,9 +393,9 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
                     }
-                } else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
+                }
+                else if (field.FieldType == "Lookup" && !field.Value && this.selection) {
                     let selected = field.Items.filter(x => x.Selected);
-
                     field.Value = [];
 
                     for (let item of selected) {
@@ -551,6 +553,9 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
+                    }
+                    if (!this.form.value[p] && field.Value && !field.MultiSelect) {
+                        this.form.value[p] = field.Value;
                     }
                 }
             }

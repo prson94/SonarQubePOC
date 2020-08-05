@@ -7000,32 +7000,10 @@ d3s-process-diagram {
         }
 
         .ui-multiselect {
-            height: auto;
-            min-height: 32px;
-
             .ui-multiselect-label-container {
                 max-width: 250px;
-                overflow: visible;
                 width: 100%;
-
-                .ui-multiselect-label {
-                    height: auto !important;
-                    padding-left: 4px;
-                    padding-top: 0px;
-                }
-            }
-
-            .ig-colorfield-item-selected {
-                margin-top: 2px !important;
-                display: inline-block;
-                float: left;
-                margin-left: auto !important;
-                margin-right: 4px;
-                padding: 0px 4px !important;
-
-                .ig-colorfield-item-label {
-                    padding-right: 12px;
-                }
+                overflow:hidden;
             }
         }
 
@@ -7041,45 +7019,6 @@ d3s-process-diagram {
 
                 &.with-border {
                     border-right: 1px solid #dde0e3;
-                }
-
-                .custom-tools {
-                    position: absolute;
-                    background-color: white;
-                    border: 1px solid #cccccc;
-                    padding: 6px;
-                    margin-top: 28px;
-                    right: 16px;
-                    background: #f1f2f3;
-                    font-size: 14px;
-                    font-weight: normal;
-                    z-index: 10;
-
-                    .menu-item {
-                        color: black;
-                        position: relative;
-                        cursor: pointer;
-
-                        &:hover {
-                            ul {
-                                display: block;
-                            }
-                        }
-
-                        ul {
-                            display: none;
-                            position: absolute;
-                            top: -7px;
-                            transform: translateX(-100%);
-                            left: -6px;
-                            background: #f1f2f3;
-                            border: 1px solid #cccccc;
-
-                            li {
-                                list-style-type: none;
-                            }
-                        }
-                    }
                 }
             }
         }
