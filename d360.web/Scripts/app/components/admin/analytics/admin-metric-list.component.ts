@@ -174,7 +174,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             command: (event) => { this.delete(); }
         });
         menu.push({
-            label: 'Version History',
+            label: 'Version History (' + this.selection.VersionCount +')',
             command: (event) => { this.showHistory(true); }
         });
         return menu;
