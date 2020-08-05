@@ -37,6 +37,9 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("ParentDisplayName", "Parent.DisplayValue", SqlFieldType.Text));
             }
 
+            allowedDefaultFields.Add(new DefaultFilter("CreatedOn", "A.CreatedOn", SqlFieldType.Date));
+            allowedDefaultFields.Add(new DefaultFilter("UpdatedOn", "A.UpdatedOn", SqlFieldType.Date));
+
             if (useUserDefaultFields)
             {
                 allowedDefaultFields.Clear();
