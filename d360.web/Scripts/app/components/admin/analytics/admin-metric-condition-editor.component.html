@@ -1,13 +1,13 @@
 ﻿<div class="row condtions" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
-        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'"tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
             </ng-template>
         </p-dropdown>
-        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="selectedItem">
                 <div>
                     <span>{{parseOperator(condition,item.label)}}</span>
@@ -21,28 +21,28 @@
         </p-dropdown>
         <div class="input-container">
             <div *ngIf="condition?.FieldType?.Type == 'Text'">
-                <input type="text" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+                <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
+                <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
-                <div (click)="pc1.toggle()" class="ig-input calendar required" >
-                    <p-calendar #pc1 appendTo="body" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                <div (click)="doToggle($event,pc1)" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
+                    <p-calendar #pc1 appendTo="body" [baseZIndex]="20000" (onShow)="$event.stopPropagation()" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
                     <i class="fa fa-calendar"></i>
                 </div>
             </div>
-            <div (click)="pc2.toggle()" *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar required">
-                <p-calendar #pc2 appendTo="body" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+            <div (click)="doToggle($event,pc2)" *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
+                <p-calendar #pc2 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Number'">
-                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
-                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
+                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [step]="0.25" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
-                <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
+                <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
         </div>
         <div class="actions-btn">
@@ -51,12 +51,23 @@
     </div>
     <div class="feedback" *ngIf="!conditionsValid">Condition fields must be unique*</div>
     <div class="condition-row d3s-color-picker" *ngIf="fieldTypeDropdownOptions.length > 0">
-        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [ngClass]="{'required': !newCondition.ConditionFieldTypeID}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
             </ng-template>
+        </p-dropdown>
+        <p-dropdown *ngIf="conditionItems.length == 0" [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true"></p-dropdown>
+        <div *ngIf="conditionItems.length == 0" class="input-container">
+            <input type="text" igInput class="no-margin-btm" disabled />
+        </div>
+        <div *ngIf="conditionItems.length == 0" class="actions-btn">
+            <button igButton disabled icon="fa-trash" (click)="removeCondition(condition)" tooltip="Remove Condition"></button>
+        </div>
+    </div>
+    <div *ngIf="conditionItems.length == 0" class="condition-row d3s-color-picker">
+        <p-dropdown [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true">
         </p-dropdown>
     </div>
 </div>

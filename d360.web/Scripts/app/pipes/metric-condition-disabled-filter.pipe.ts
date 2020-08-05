@@ -6,9 +6,14 @@ export class MetricConditionDisabledFilterPipe implements PipeTransform {
 
 
     transform(items: any[], invalidIds: number[]): any {
-        var filtered = items.filter(function (item) {
-            return invalidIds.indexOf(+item.value) === -1;
-        });
-        return filtered
+        if (invalidIds && invalidIds.length > 0) {
+            var filtered = items.filter(function (item) {
+                return invalidIds.indexOf(+item.value) === -1;
+            });
+            return filtered;
+        } else {
+            return items;
+
+        }
     }
 }

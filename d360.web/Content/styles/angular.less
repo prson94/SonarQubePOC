@@ -7414,13 +7414,13 @@ d3s-process-diagram {
                                     .tooltip-content {
                                         display: block;
                                         left: -110px;
-                                        position: absolute;
+                                        position: fixed;
                                         width: 490px;
                                         white-space: normal;
 
                                         &.group {
-                                            top: -54px;
                                             height: 126px;
+                                            transform: translate(0px, -126px)
                                         }
                                     }
                                 }
@@ -7533,11 +7533,66 @@ d3s-process-diagram {
     }
 
     .action-bar {
-        padding: 0px 0px 24px 0px !important;
+        padding: 0px 0px 0px 0px !important;
         margin-top: 16px;
     }
 }
 
+.ig-input {
+    &.calendar {
+        padding: 0px 0px 0px 8px;
+        display: inline-flex;
+
+        p-calendar {
+            border: none !important;
+            background: inherit;
+        }
+
+        p-calendar:focus {
+            border: none !important;
+            background: inherit;
+        }
+
+        .ui-calendar {
+            background: inherit;
+
+            .ui-inputtext {
+                border: none !important;
+                background: inherit;
+            }
+        }
+
+        .fa {
+            background-color: #f1f1f3;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            color: #202020;
+            margin-top: 3px;
+            margin-right: 3px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-left: auto;
+        }
+
+        &.required {
+            background: #f5fbfd;
+            border-color: #212121;
+        }
+
+        &:focus-within:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 2px #8abddf;
+            border-color: #006fba;
+        }
+
+        &:hover:not(.ui-state-error) {
+            border-color: #212121;
+        }
+    }
+}
 
 .ig-input-label {
     display: block;
@@ -7566,16 +7621,16 @@ d3s-process-diagram {
             .tip-container {
                 .tooltip-content {
                     display: block;
-                    top: -75px;
                     left: -110px;
-                    position: absolute;
+                    position: fixed;
                     height: 150px;
                     width: 490px;
                     white-space: normal;
+                    transform: translate(0px, -150px);
 
                     &.group {
-                        top: -50px;
                         height: 105px;
+                        transform: translate(0px, -105px);
                     }
                 }
             }
