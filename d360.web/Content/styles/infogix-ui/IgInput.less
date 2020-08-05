@@ -1,0 +1,98 @@
+﻿
+@import './IgUiVariables.less';
+
+.ig-input {
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 14px;
+    color: #202020;
+    background: #ffffff;
+    padding: 0 8px;
+    border: 1px solid #bdbfc6;
+    height: 32px;
+    line-height: 30px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    width: 220px;
+
+    &.text-area {
+        height: 64px;
+        max-width: 720px;
+        width: 720px;
+        resize: none;
+    }
+
+    &.no-margin-btm {
+        margin-bottom: 0px;
+    }
+
+    &.big {
+        width: 60%;
+    }
+
+    &.calendar {
+        padding: 0px 0px 0px 8px;
+        display: inline-flex;
+
+        .ui-calendar {
+            background: inherit;
+
+            .ui-inputtext {
+                border: none !important;
+                background: inherit;
+            }
+        }
+
+        .fa {
+            background-color: #f1f1f3;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            color: #202020;
+            margin-top: 3px;
+            margin-right: 3px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-left: auto;
+        }
+
+        &.required {
+            background: #f5fbfd;
+        }
+
+        &:focus-within:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 2px #8abddf;
+            border-color: #006fba;
+        }
+
+        &:hover:not(.ui-state-error) {
+            border-color: #212121;
+        }
+    }
+
+    &:enabled:focus:not(.ui-state-error) {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: 0 0 0 2px #8abddf;
+        border-color: #006fba;
+    }
+
+    &:enabled:hover:not(.ui-state-error) {
+        border-color: #212121;
+    }
+
+    &.ng-dirty.ng-invalid {
+        background: @ig-lightblue-t4;
+        border-bottom-color: none;
+    }
+
+    &.required {
+        background: @ig-lightblue-t5;
+    }
+
+    &.invalid {
+        border-bottom: 1px solid @ig-red-s3;
+    }
+}

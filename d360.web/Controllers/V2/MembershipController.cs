@@ -581,9 +581,6 @@ select G.* from [Group] G
 inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
 where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
-                if (group?.IsActiveDirectoryGroup == true)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Group for provided UID is an active directory group and cannot be manually managed."));
-
                 var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
 
                 if (res > 0) return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
@@ -1105,7 +1102,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
 
             var document = new SLDocument();
-            document.AddWorksheet("Users");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Users");
 
             int colIndex = 1;
             int rowIndex = 1;
@@ -1132,46 +1129,6 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             document.SaveAs(stream);
             var result = stream.ToArray();
             return result;
-        }
-
-        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
-        {
-            var valueString = value?.ToString() ?? "";
-            switch (dataType.ToUpper())
-            {
-                case "DECIMAL":
-                    double dVal = 0;
-                    if (double.TryParse(valueString, out dVal))
-                        document.SetCellValue(rowIndex, colIndex, dVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "NUMBER":
-                    int intVal = 0;
-                    if (int.TryParse(valueString, out intVal))
-                        document.SetCellValue(rowIndex, colIndex, intVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "DATE":
-                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
-                    {
-                        document.SetCellValue(rowIndex, colIndex, dateVal);
-
-                        SLStyle style = document.CreateStyle();
-                        style.FormatCode = "m/d/yyyy";
-                        document.SetCellStyle(rowIndex, colIndex, style);
-                    }
-                    break;
-                default:
-                    var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(value + "");
-                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-                    if (txt.StartsWith("="))
-                        txt = "'" + txt;
-                    document.SetCellValue(rowIndex, colIndex, txt);
-                    break;
-            }
         }
     }
 }

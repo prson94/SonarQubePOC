@@ -19,13 +19,15 @@ import { FieldType } from '../../../../models/fields.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
 import * as go from 'gojs';
+import { SelectItem } from 'primeng/api';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
-    providers: [WorkflowService],
+    providers: [WorkflowService, GroupService],
     templateUrl: './workflow-step-editor.component.html'
 })
 
@@ -33,6 +35,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() issueObject: string;
+    @Input() ChangeType: WorkflowChangeType; 
     @Input() step: NodeModel;
     @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
@@ -54,9 +57,12 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         { value: '2', label: 'Pending Delete' },
         { value: '3', label: 'Deleted' },
     ];
-    
+
+    WorkflowChangeType = WorkflowChangeType;
+
     private quill;
     private destination = [];
+    private groups: SelectItem[] = [];
 
     private responsibilities = [];
     private intersectType = null;
@@ -70,7 +76,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private formRelationshipFields = [];
     private formRelationship;
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService, private groupService: GroupService) {
         super();
     }
 
@@ -84,12 +90,54 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 r.forEach(e => {
                     if (e.ID < 1)
                         return;
+                    else if (e.ID == EmailTaskRecipientType.Followers) {
+                        if (this.objectType == 'IntersectType' || this.ChangeType == WorkflowChangeType.Loaded)
+                            return false;
+
+                        if (!(this.ChangeType == WorkflowChangeType.Add ||
+                            this.ChangeType == WorkflowChangeType.Update ||
+                            this.ChangeType == WorkflowChangeType.Schedule ||
+                            this.ChangeType == WorkflowChangeType.RequestCertification))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Update) &&
+                            !(this.objectType == 'ArtifactType' || this.objectType == 'PolicyType' || this.objectType == 'RuleType' || this.objectType == 'TaxonomyType'))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Add) && !(this.objectType == 'IssueType'))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType'))
+                        {
+                            if (this.issueObject != null && this.issueObject != '')
+                            {
+                                let objArr = this.issueObject.split("|", 1);
+                                let Issobj = "";
+                                if (objArr.length <= 0)
+                                    Issobj = " ";
+                                else
+                                    Issobj = objArr[0];
+
+                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                    return;
+                            }
+                         }
+                    }
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],
                         label: e.Name
                     });
                 });
             });
+
+        this.groupService.getGroups().subscribe(GroupList => {
+            this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+            if (this.step.settings.MessageToGroup != undefined) {
+                if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                    this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
+                }
+            }
+        });
     }
 
     ngOnChanges() {

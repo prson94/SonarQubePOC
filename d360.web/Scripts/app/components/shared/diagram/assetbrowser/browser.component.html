@@ -10,15 +10,28 @@
                     <div class="button-spacer"></div>
                     <div style="display: inline-block">
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
-                        <button *ngIf="canEditProcessDiagram()" type="button" class="gov-button-v2 primary" (click)="editProcess();"><i class="fa fa-pencil"></i>Edit</button>
+
+                        <ng-container *ngIf="displayConfiguration.DiagramType == 3">
+                            <button igButton icon="igx-related-asset-icon" class="top-spacer-4"  [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                            <div class="button-spacer"></div>
+                            <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
+                            <div class="button-spacer"></div>
+                            <button *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" tooltip="Edit Process Diagram" (click)="editProcess()"></button>
+                        </ng-container>
                     </div>
 
                 </div>
                 <div class="controls-right">
-                    <d3s-assetbrowser-panels (click)="panels_Click($event)"
-                                             [diagramType]="displayConfiguration.DiagramType"
-                                             [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"
-                                             [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
+                    <div class="asset-browser-button-group">
+                        <button *ngIf="displayConfiguration.DiagramType == 3" type="button" title="Information Panel" aria-label="Information Panel" (click)="openProcessDiagramInfo()" [class]="'icon mr8' + (processDiagramRef && processDiagramRef.isInfoPanelOpened ? ' selected' : '')"><i class="fa fa-info-circle"></i></button>
+
+                        <d3s-assetbrowser-panels (click)="panels_Click($event)"
+                                                 [diagramType]="displayConfiguration.DiagramType"
+                                                 [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"
+                                                 [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
+
+                    </div>
+
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
@@ -69,7 +82,7 @@
                             <section *ngIf="panelModel.AddVisible">
                                 <div #addLineagePanel class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                    <d3s-assetbrowser-addpanel [assetBrowserData]="responseModel" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
+                                    <d3s-assetbrowser-addpanel [assetBrowserData]="diagramData" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
                                 </div>
                             </section>
 
@@ -115,7 +128,7 @@
 
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType == 3">
                 <div class="col s12" style="padding: 0">
-                    <d3s-process-diagram (saveState)="processDiagramSavedState($event)" [assetUid]="originalAssetUid" (editModeClosed)="isProcessDiagramInEditMode = false" [isFullScreen]="isFullScreen" [isEditMode]="isProcessDiagramInEditMode"></d3s-process-diagram>
+                    <d3s-process-diagram #processDiagram (saveState)="processDiagramSavedState($event)" [assetUid]="originalAssetUid" (editModeClosed)="isProcessDiagramInEditMode = false" [isFullScreen]="isFullScreen" [isEditMode]="isProcessDiagramInEditMode"></d3s-process-diagram>
                 </div>
             </div>
         </div>

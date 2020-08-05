@@ -70,6 +70,15 @@
                         </ng-template>
                     </div>
                 </div>
+                <div class="col s6"
+                     *ngIf="step.settings['MessageRecipientType'] == 'Group'">
+                    <div class="FieldName">
+                        Recipient Group
+                    </div>
+                    <div>
+                        {{getGroupName()}}
+                    </div>
+                </div>
                 <div class="col s6">
                     <div class="FieldName">
                         Subject
@@ -160,6 +169,15 @@
                                 {{step?.settings?.ResponsibilitySide != null ? step?.settings?.ResponsibilitySide :
                                 ''}} {{getResponsibilityName(i)}}
                             </ng-container>
+                    </div>
+                </div>
+                <div class="col s6"
+                     *ngIf="step.settings['MessageRecipientType'] == 'Group'">
+                    <div class="FieldName">
+                        Recipient Group
+                    </div>
+                    <div>
+                        {{getGroupName()}}
                     </div>
                 </div>
                 <div class="col s6"

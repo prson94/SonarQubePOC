@@ -76,9 +76,11 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
-import { ProcessDiagramAssedEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
-import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
+import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
+import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
+import { DynEditorService } from '../../../services/dyn-editor.service';
 
 
 @NgModule({
@@ -100,9 +102,10 @@ import { SharedRelationshipModule } from '../relationship/shared-relationship.mo
         SiteModalModule,
         ScoreBadgeModule,
         D3SColorPickerModule,
-        SharedDynamicGridEditorModule,
+        SharedDynamicGridEditorModuleV2,
         SiteModalModule,
         SharedRelationshipModule,
+        SharedObjectDetailsModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -158,7 +161,8 @@ import { SharedRelationshipModule } from '../relationship/shared-relationship.mo
         LineageTechnicalRelationshipsComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
-        ProcessDiagramAssedEditorComponent
+        ProcessDiagramAssetEditorComponent,
+        ProcessDiagramLabelEditorComponent
     ],
     exports: [
         AssetBrowserComponent,
@@ -172,7 +176,8 @@ import { SharedRelationshipModule } from '../relationship/shared-relationship.mo
             useClass: GovernRequestInterceptor,
             multi: true
         },
-        IconService
+        IconService,
+        DynEditorService
     ]
 })
 export class SharedDiagramModule { }

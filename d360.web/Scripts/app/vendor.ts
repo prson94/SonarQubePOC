@@ -36,6 +36,7 @@ import 'primeng/togglebutton';
 import 'primeng/tooltip';
 import 'primeng/tree';
 import 'primeng/treetable';
+import 'primeng/focustrap';
 
 
 import 'lodash';

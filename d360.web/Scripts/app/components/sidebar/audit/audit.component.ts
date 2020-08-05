@@ -4,25 +4,21 @@ import { LazyLoadEvent } from 'primeng/api';
 
 import {BaseComponent} from '../../shared/base.component';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {ObjectDetailService} from '../../../services/object-detail.service';
 import {AuditService} from '../../../services/audit.service';
-import {Audit} from '../../../models/audit.model';
+import {Audit, AuditApiFilters} from '../../../models/audit.model';
 import {SortOrder} from '../../../models/enums.model';
 import {GridFilterExpression} from '../../../models/grid-definition.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { AdvancedFiltersHelper } from '../../../static/advanced-filter-helpers';
 
 @Component({
     selector: 'd3s-audit',
-    providers: [AuditService, ObjectDetailService],
+    providers: [AuditService],
     templateUrl: './audit.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
-    @Input() objectID: number = 0;
-    @Input() objectType: string;
-    @Input() objectName: string;
-
     totalRecords: number;
     rowsPerPage: number = 10;
     audits: Audit[] = [];
@@ -39,7 +35,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private router: Router,
         private auditService: AuditService,
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        private objectDetailService: ObjectDetailService,
         private changeDetectorRef: ChangeDetectorRef,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService
@@ -54,27 +49,25 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .route
             .params
             .subscribe(params => {
-                this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-                if (params['objectId'].length == 36) {
-                    this.objectID = params['objectId'];
-                }
 
-                this.objectType = params['objectType'];
+                this.uid = params['uid'];
 
-                this.objectDetailService.getObject(this.objectID,this.objectType).subscribe(res => {
-                    if (res) {
-                        this.objectName = res.Name ? res.Name : res.DisplayValue;
-                    }
-                }
-                );
-                let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+                this.auditService.getLegacyDetails(this.uid).subscribe(res => {
+                    this.objectName = res.DisplayValue;
+                    this.objectID = res.ObjectId;
+                    this.objectType = res.Object;
 
-                //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
-                if (this.objectType == 'PolicyType' || this.objectType == 'TaxonomyType')
-                    reloadNav = false;
+                    let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
-                if (reloadNav)
-                    this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+                    //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
+                    if (this.objectType == 'PolicyType' || this.objectType == 'TaxonomyType')
+                        reloadNav = false;
+
+                    let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
+
+                    if (reloadNav)
+                        this.buildSecondaryNavigationForObject(objectID, this.objectType);
+                });
             });
     }
 
@@ -86,39 +79,28 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     private getData() {
         this.isLoading = true;
-
         this
             .auditService
-            .getAuditData(
-                this.objectID,
-                this.objectType,
-                this.currentPageNumber,
-                this.rowsPerPage,
-                this.sortOrder,
-                this.sortField,
-                this.filters
-            )
+            .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;
-                result.results.forEach(function (object) {
-                    if ((object.ActionObject == "ArtifactType" && object.Class == 1) || (object.ActionObject == "Artifact" && object.Class == 1)) {
-                        object.ActionObject = "Business Asset";
-                        object.ActionObjectTypeName = "Business Asset";
-                        if (object.ActionDescription.includes("Artifact")) {
-                            object.ActionDescription = object.ActionDescription.replace("ArtifactType", "Business Asset");
-                            object.ActionDescription = object.ActionDescription.replace("Artifact", "Business Asset");
+                result.items.forEach(function (object) {
+                    if ((object.actionObject == "ArtifactType" && object.class == 1) || (object.actionObject == "Artifact" && object.class == 1)) {
+                        object.actionObject = "Business Asset";
+                        if (object.actionDescription.includes("Artifact")) {
+                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Business Asset");
+                            object.actionDescription = object.actionDescription.replace("Artifact", "Business Asset");
                         }
                     }
-                    if ((object.ActionObject == "ArtifactType" && object.Class == 8) || (object.ActionObject == "Artifact" && object.Class == 8)) {
-                        object.ActionObject = "Technical Asset";
-                        object.ActionObjectTypeName = "Technical Asset";
-                        if (object.ActionDescription.includes("Artifact")) {
-                            object.ActionDescription = object.ActionDescription.replace("ArtifactType", "Technical Asset");
-                            object.ActionDescription = object.ActionDescription.replace("Artifact", "Technical Asset");
+                    if ((object.actionObject == "ArtifactType" && object.class == 8) || (object.actionObject == "Artifact" && object.class == 8)) {
+                        object.actionObject = "Technical Asset";
+                        if (object.actionDescription.includes("Artifact")) {
+                            object.actionDescription = object.actionDescription.replace("ArtifactType", "Technical Asset");
+                            object.actionDescription = object.actionDescription.replace("Artifact", "Technical Asset");
                         }
                     }
                 });
-                this.audits = result.results;
+                this.audits = <Audit[]>result.items;
                 this.totalRecords = result.total;
                 this.changeDetectorRef.markForCheck();
             });
@@ -159,10 +141,41 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this
             .auditService
             .exportToExcel(
-                this.objectID,
-                this.objectType,
-                fileName,
-                this.filters
+                this.uid,
+                this.getParams(),
+                fileName
             );
+    }
+
+    private getParams() {
+        var params = new AuditApiFilters();
+        params._pageSize = this.rowsPerPage;
+        params._pageNum = this.currentPageNumber + 1;
+
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+        else {
+            delete params['_order'];
+        }
+
+        if (this.sortOrder != SortOrder.None)
+            params._direction = this.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+        else {
+            delete params['_direction'];
+        }
+        if (this.filters && this.filters.length > 0) {
+            let expressions: string[] = [];
+            this.filters.forEach(f => {
+                let apiName = f.field;
+                let val = AdvancedFiltersHelper.escapeString(f.value)
+                expressions.push(`${apiName} ct '${val}'`);
+            });
+            params._filter = expressions.join(' and ');
+        }
+        else {
+            delete params['_filter'];
+        }
+        return params;
     }
 }

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v5">
-  <comment>GOV-11110</comment>
+  <changeSet author="TKlok" id="Procedure.utility.AddAuditEntry-v6">
+  <comment>GOV-11409, GOV-11410</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -213,7 +213,7 @@ begin
 	
 	if @MainObject = 'Policy'
 	begin
-		select	@MainObjectTypeName = 'Policy',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
@@ -326,7 +326,7 @@ begin
 	
 	if @MainObject = 'Rule'
 	begin		
-		select	@MainObjectTypeName = 'Rule',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
@@ -346,7 +346,7 @@ begin
 	
 	if @MainObject = 'Taxonomy'
 	begin
-		select	@MainObjectTypeName = A.TypeName + ' model',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
@@ -819,6 +819,7 @@ begin
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from Report where ID = @MainObjectID
 		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Report where ID = @MainObjectID
 		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ShowOnHomePage', ShowOnHomePage, 0, 0 from Report where ID = @MainObjectID
 	end
 
 	if @MainObject = 'Resource'

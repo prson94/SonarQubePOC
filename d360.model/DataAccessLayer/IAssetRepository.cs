@@ -15,7 +15,7 @@ namespace d360.model.DataAccessLayer
         Asset GetAssetByUID(Guid assetUid);
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
-        Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false);
         Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
         dynamic GetFieldTypes(Guid assetTypeUid);
@@ -52,6 +52,7 @@ namespace d360.model.DataAccessLayer
         List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model);
         Task<SLDocument> GetHierarchyExcel(Guid uid, string assetClass, bool stripHtml);
-
+        Task<dynamic> GetAssetSingle(Guid assetUid);
+        Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
     }
 }

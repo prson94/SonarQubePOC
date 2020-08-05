@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -80,8 +80,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\gudusoft.gsqlparser.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack, Version=1.11.23.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.11.23\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizer, Version=5.0.0.0, Culture=neutral, PublicKeyToken=61c49a1a9e79cc28, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlSanitizer.5.0.310\lib\net46\HtmlSanitizer.dll</HintPath>
@@ -379,6 +379,7 @@
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\V2\SurveysController.cs" />
+    <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
@@ -471,6 +472,7 @@
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
+    <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.min.css">
@@ -685,6 +687,8 @@
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
@@ -717,6 +721,11 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.tag-picker.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.icon-picker.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
@@ -738,6 +747,11 @@
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
+    <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
+    <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
+    <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
+    <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.html" />
@@ -749,6 +763,7 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
@@ -761,6 +776,9 @@
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\addpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.html" />
+    <Content Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
@@ -769,11 +787,11 @@
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
     <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
@@ -783,7 +801,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
-    <Content Include="Scripts\app\components\shared\synonyms.tile.html" />
+    <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.html" />
@@ -835,6 +853,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
@@ -842,17 +861,36 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tag-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.button.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.templates.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-editor-v2.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-value-v2.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-field-v2.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\dynamic-grid-v2.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
@@ -1042,6 +1080,7 @@
     <Content Include="Content\styles\infogix-ui\IgUiVariables.less" />
     <Content Include="Content\styles\infogix-ui\IgButton.less" />
     <Content Include="Content\styles\infogix-ui\infogix-ui.less" />
+    <Content Include="Content\styles\infogix-ui\IgInput.less" />
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
@@ -1107,6 +1146,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.ttf" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
+    <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1214,7 +1254,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
-    <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <Content Include="Scripts\app\components\shared\controls\switch\switch.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
@@ -1225,7 +1265,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\switch\switch.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.ts" />
@@ -1242,7 +1282,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
@@ -1313,7 +1352,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-help.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-profile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
@@ -1552,10 +1591,12 @@
     <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\deactivate.guard.ts" />
+    <TypeScriptCompile Include="Scripts\app\guards\gallery.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
@@ -1591,6 +1632,8 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\connectorLabel.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\dyn-editor.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
@@ -1715,7 +1758,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-raise-issue.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.module.ts" />

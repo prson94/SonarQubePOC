@@ -1496,6 +1496,23 @@ namespace d360.model
                     users.Add(res);
                 }
             }
+            else if (settings.RecipientType == EmailTaskRecipientType.Group)
+            {
+                if(settings.RecipientGroup == Guid.Empty)
+                {
+                    Console.Write("ERROR - NO GROUP SPECIFIED FOR THE GROUP FORM TASK.");
+                    return;
+                }
+
+                int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
+                if (recipientGroup <= 0)
+                {
+                    Console.Write("ERROR - INVALID GROUP FOR THE GROUP FORM TASK.");
+                    return;
+                }
+
+                users = GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
+            }
 
             var url = "";
             var prefix = "";
@@ -1713,6 +1730,28 @@ namespace d360.model
                     }
                 }
             }
+            else if (settings.RecipientType == EmailTaskRecipientType.Followers)
+            {
+                var users = GetWorkflowUsersBasedOnFollowers(item.Step.Version.TypeID, item.Step.ID, item.ItemID);
+
+                foreach (var user in users)
+                {
+                    Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
+
+                    emailedUsers.Add(user.Email);
+
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                    }
+                }
+            }
             else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
                 if (string.IsNullOrEmpty(settings.SpecificUser))
@@ -1740,6 +1779,43 @@ namespace d360.model
                     }
                 }
             }
+            else if (settings.RecipientType == EmailTaskRecipientType.Group)
+            {
+                if (settings.RecipientGroup == Guid.Empty)
+                {
+                    Console.Write("ERROR - NO GROUP SPECIFIED FOR THE GROUP EMAIL TASK.");
+                    return;
+                }
+
+                int recipientGroup = Query<int>(@"select ObjectID from asset where [Object] = 'Group' and uid = @Uid", new { Uid = settings.RecipientGroup }).FirstOrDefault();
+                if (recipientGroup <= 0)
+                {
+                    Console.Write("ERROR - INVALID GROUP FOR THE GROUP EMAIL TASK.");
+
+                    return;
+                }
+
+                var users = GetWorkflowUsersBasedOnGroup(recipientGroup);
+
+                foreach (var user in users)
+                {
+                    Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
+
+                    emailedUsers.Add(user.Email);
+
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                    }
+                }
+            }
+
 
             SaveItemStepEmailedUsers(item, emailedUsers);
         }
@@ -1855,19 +1931,7 @@ namespace d360.model
                 if (defaultWorkflowUserGroup > 0)
                 {
                     // a default workflow group has been defined for when there are no memebers in the resonponsibilities
-                    return Query<core.entities.GlobalReportingResource>(@"select distinct	R.ResourceID, 
-						            R.FirstName, 
-						            R.LastName, 
-						            R.Email, 
-						            R.Email, 
-                                    R.LastLoggedInOn,
-                                    R.LastLoggedInOn as DateLastLoggedIn, 
-						            1 as ResourceTypeID, 
-                                    R.[State],
-						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
-				            from	reporting.Global_Resource R
-							inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
-                            where rg.groupid= @groupId and R.[State] = 1", new { groupId = defaultWorkflowUserGroup });
+                    return GetWorkflowUsersBasedOnGroup(defaultWorkflowUserGroup);
                 }
                 else
                 {
@@ -1888,6 +1952,31 @@ namespace d360.model
             }
 
             return users;
+        }
+
+        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnFollowers(int typeID, int stepID, long itemID)
+        {
+            var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWFFollowers] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
+
+            return users;
+        }
+
+        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId)
+        {
+            // a default workflow group has been defined for when there are no memebers in the resonponsibilities
+            return Query<core.entities.GlobalReportingResource>(@"select distinct	R.ResourceID, 
+						    R.FirstName, 
+						    R.LastName, 
+						    R.Email, 
+						    R.Email, 
+                            R.LastLoggedInOn,
+                            R.LastLoggedInOn as DateLastLoggedIn, 
+						    1 as ResourceTypeID, 
+                            R.[State],
+						    case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
+				    from	reporting.Global_Resource R
+					inner join [resourcegroup] rg on (R.ResourceID = rg.ResourceID)
+                    where rg.groupid= @groupId and R.[State] = 1", new { groupId });
         }
 
         private void SaveItemStepEmailedUsers(WorkflowItemStep item, List<string> emailedUsers)

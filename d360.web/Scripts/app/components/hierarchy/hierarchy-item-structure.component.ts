@@ -184,6 +184,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                         this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
                     }
 
+                    if (this.auditSidebar) {
+                        this.auditSidebar.url = `/sidebar/audit/${this.assetType.AssetTypeUID}`;
+                    }
+
                     this.secondaryNavService.showHeader(true);
                 });
 

@@ -13,10 +13,31 @@ namespace d360.utils.company
 {
     public static class CompanyConnectionUtils
     {        
-
         public static string GetConnectionString(int id, string server, string username, string password)
         {
             return CompanyConnectionStringHelper.ConnectionString(id, server, username, password);
+        }
+
+        public static string GetCompanyConnectionString(int companyID)
+        {
+            string connectionString = "";
+            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                if (cnn.State != System.Data.ConnectionState.Open)
+                    cnn.Open();
+
+                var company = cnn.Query<dynamic>(
+                    @"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
+                    new { companyID }
+                ).FirstOrDefault();
+
+                if (company != null)
+                {
+                    connectionString = CompanyConnectionStringHelper.ConnectionString(companyID, company.Server, company.Username, company.Password);
+                }
+            }
+            
+            return connectionString;
         }
 
         public static SqlConnection GetCompanyConnection(int id, string server, string username, string password)

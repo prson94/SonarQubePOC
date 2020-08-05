@@ -1,67 +1,47 @@
-﻿<header *ngIf="formMode == FormMode.Default">
-    &nbsp;
-    <d3s-tile-actions [hasAdd]="showAddButton()" (addClick)="add()"></d3s-tile-actions>
-</header>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <div [ngSwitch]="formMode">
-        <div *ngSwitchCase="FormMode.Default">
-            <p-table #dt [value]="conditions" selectionMode="single" [(selection)]="selection">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Field</th>
-                        <th>Operator</th>
-                        <th>Value</th>
-                        <th style="width: 100px"></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item let-i="rowIndex">
-                    <tr [pSelectableRow]="item">
-                        <td>{{item.FieldTypeName}}</td>
-                        <td>{{item.OperatorText}}</td>
-                        <td>{{item.Type != 'Date' ? item.ValuesText : (item.ValuesText | date:'shortDate')}}</td>
-                        <td>
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="selection = item; edit(i)"><i class="fa fa-pencil"></i></a>
-                                <a style="cursor:pointer;" (click)="selection = item; delete(i)"><i class="fa fa-trash-o"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
-        <div *ngSwitchCase="FormMode.Adding">
-            <d3s-admin-metric-condition-editor [uid]="metricUid"
-                                               [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                               [usedFieldTypes]="usedFieldTypes"
-                                               [assetTypeUid]="assetTypeUid"
-                                               [(condition)]="selection"
-                                               (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                               (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
-            </d3s-admin-metric-condition-editor>
-        </div>
-        <div *ngSwitchCase="FormMode.Editing">
-            <d3s-admin-metric-condition-editor [uid]="metricUid"
-                                               [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                               [usedFieldTypes]="usedFieldTypes"
-                                               [assetTypeUid]="assetTypeUid"
-                                               [(condition)]="selection"
-                                               (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                               (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
-            </d3s-admin-metric-condition-editor>
-        </div>
-        <div *ngSwitchCase="FormMode.Deleting">
-            <div class="row">
-                <div class="col s12">
-                    Are you sure you want to delete this condition?
+﻿<div class="row" *ngIf="g.ConditionItems">
+    <div class="condition-row d3s-color-picker" *ngFor="let condition of g.ConditionItems">
+        <p-dropdown [class]="condition-dropdown" [options]="metricEditorFieldTypes | metricConditionDisabledFilter" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="item">
+                <div class="ig-colorfield-item">
+                    <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col s12" style="padding-top: 15px">
-                    <button pButton type="button" label="Delete" (click)="confirmDelete()" style="float: right"></button>
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default; formModeChange.emit(formMode);" style="float: right"></button>
+            </ng-template>
+        </p-dropdown>
+        <p-dropdown [class]="condition-dropdown" [options]="operators" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="item">
+                <div class="ig-colorfield-item">
+                    <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
-            </div>
+            </ng-template>
+        </p-dropdown>
+        <div *ngIf="condition?.FieldType?.Type == 'Text'">
+            <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
         </div>
+        <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
+            <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.SingleValue">
+                <option></option>
+                <option *ngFor="let l of getLookupValues()" [value]="l.Value">{{l.Text}}</option>
+            </select>
+        </div>
+        <div *ngIf="condition?.FieldType?.Type == 'Date'">
+            <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+        </div>
+        <div *ngIf="condition?.FieldType?.Type == 'DateTime'">
+            <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+        </div>
+        <div *ngIf="condition?.FieldType?.Type == 'Number'">
+            <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+        </div>
+        <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
+            <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
+        </div>
+        <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
+            <p-toggleButton [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" onLabel="True" offLabel="False"></p-toggleButton>
+        </div>
+        {{condition.Name}} {{condition.OperatorText}} {{condition.ValuesText}}
     </div>
+</div>
+<div class="row" *ngIf="g.ConditionItems.length > 1">
+    <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
+    <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
 </div>

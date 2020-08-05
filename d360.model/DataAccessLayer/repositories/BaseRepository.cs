@@ -196,6 +196,10 @@ namespace d360.model.DataAccessLayer.repositories
                         {
                             fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
                         }
+                        else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
+                        {
+                            fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]");
+                        }
                         else
                         {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -329,12 +333,12 @@ namespace d360.model.DataAccessLayer.repositories
                 else if (f.Type == "RefListRelationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select
-                           STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),'{RELATIONSHIP_DELIMITER}') as FormattedValue
-                        from [Intersect] I
-                        left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
-						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
-                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(R1.SubjectName,R2.ObjectName) is not null
+                        select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
+                        from (
+                        select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
+                        union all
+                        select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
+                        ) Names
                     ) {tableAlias}");
                 }
                 else if (f.Type == "JsonElement")
@@ -361,14 +365,28 @@ namespace d360.model.DataAccessLayer.repositories
                 }
                 else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
                 {
+                    string lookupValueJoinCriteria;
+                    string displayName;
+
+                    if (f.AllowMultipleValues)
+                    {
+                        displayName = $@"ADV{tableAlias}.DisplayValue";
+                        lookupValueJoinCriteria = $" cross apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias} inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+                    }
+                    else
+                    {
+                        displayName = $@"{tableAlias}.formattedValue";
+                        lookupValueJoinCriteria = $" inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = {tableAlias}.Value ";
+                    }
+
+
                     string sql = $@"outer apply(
                                 select FormattedValue = 
-                                (SELECT COALESCE(ADV{tableAlias}.DisplayValue, AC{tableAlias}.Code) as name,
+                                (SELECT COALESCE({displayName}, AC{tableAlias}.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
-								cross apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
-                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value   
+                                {lookupValueJoinCriteria}								
                                 cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
                                 cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH),
@@ -377,6 +395,10 @@ namespace d360.model.DataAccessLayer.repositories
 									 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql})                                
                             ){tableAlias}(FormattedValue, [Value]) ";
                     fieldJoins.Add(sql);
+                }
+                else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
+                {
+                    fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
                 }
                 else
                 {

@@ -1,0 +1,21 @@
+﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
+
+@Component({
+    selector: 'gallery',
+    templateUrl: './gallery.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+
+export class GalleryComponent implements OnInit {
+    protected activeControl: string = "switch";
+    protected controls = [
+        { label: 'Switch Input', key: 'switch' },
+        { label: 'Button Directive', key: 'button' },
+        { label: 'Icon Picker', key: 'icon-picker' },
+        { label: 'Tag Picker', key: 'tag-picker' },
+    ];
+
+    ngOnInit(): void {        
+    }
+}

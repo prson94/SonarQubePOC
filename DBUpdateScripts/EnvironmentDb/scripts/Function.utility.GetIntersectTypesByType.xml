@@ -5,12 +5,60 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.utility.GetIntersectTypesByType-v3">
+  <changeSet author="Pappas" id="Function.utility.GetIntersectTypesByType-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [utility].[GetIntersectTypesByType]  
+(
+	@assetTypeUid uniqueidentifier
+)
+RETURNS TABLE   
+AS  
+RETURN   
+(
+	select	top 100
+			'I' as type,
+			*  
+	from	(
+			select	Uid,  
+					cast(Uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|2' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))),   
+						'relates to'  
+					) + ' ' + ObjectName + ' (->)' as title  
+			from	IntersectTypeDetail
+			where	SubjectUid = @assetTypeUid and PredicateType not in (15,16,17)
+			
+			union  
+   
+			select	Uid,
+					cast(Uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|1' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))), 
+						'is related to'
+					) + ' ' + SubjectName + ' (<-)' as title  
+			from	IntersectTypeDetail  
+			where	ObjectUid = @assetTypeUid and PredicateType not in (15,16,17)
+
+			union
+
+			select	Uid,  
+					cast(Uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|3' as value,  
+					coalesce(
+						UPPER(LEFT(PredicateName, 1)) + LOWER(SUBSTRING(PredicateName, 2, LEN(PredicateNAME))) + ' or ' + UPPER(LEFT(PredicateInverse, 1)) + LOWER(SUBSTRING(PredicateInverse, 2, LEN(PredicateInverse))),   
+						'relates to or is related to'  
+					) + ' ' + ObjectName + ' (<->)' as title  
+			from	IntersectTypeDetail
+			where	SubjectUid = @assetTypeUid and SubjectUid = ObjectUid and PredicateType in (6,7,9,14)
+   ) O order by title 
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [utility].[GetIntersectTypesByType]  
 (
 	@assetTypeUid uniqueidentifier
@@ -30,7 +78,7 @@ RETURN
 						'relates to'  
 					) + ' ' + ObjectName + ' (->)' as title  
 			from	IntersectTypeDetail
-			where	SubjectUid = @assetTypeUid
+			where	SubjectUid = @assetTypeUid and PredicateType not in (15,16,17)
 			
 			union  
    
@@ -41,77 +89,7 @@ RETURN
 						'related to'
 					) + ' ' + SubjectName + ' (<-)' as title  
 			from	IntersectTypeDetail  
-			where	ObjectUid = @assetTypeUid
-   ) O order by title 
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE or ALTER   FUNCTION [utility].[GetIntersectTypesByType]  
-(
- @type varchar(50),
- @id int
-)  
-RETURNS TABLE   
-AS  
-RETURN   
-(  
-select top 100000  
-   *  
- from (  
-   select 'I' as type,  
-     I.uid,  
-     cast(I.Uid as varchar(36)) + '|' + cast((SELECT uid from AssetType WHERE Object = I.Subject and ObjectID = I.SubjectID) as varchar(36)) + '|' + '|2' as value,  
-     coalesce(  
-      UPPER(LEFT(P.Name, 1)) + LOWER(SUBSTRING(P.Name, 2, LEN(P.NAME))),   
-      'Relates to'  
-     ) + ' ' + I.SubjectName + '(->)' as title  
-   from IntersectTypeDetail I  
-     left join [Predicate] P on P.ID = I.PredicateID  
-   where Subject = @type and SubjectID = @id and Object = @type and ObjectID = @id  
-   union  
-   select 'I' as type,  
-     i.Uid,  
-     cast(i.Uid as varchar(36)) + '|' + cast((SELECT uid from AssetType WHERE Object = I.Object and ObjectID = I.ObjectID) as varchar(36)) + '|1' as value,  
-     coalesce(UPPER(LEFT(P.Inverse, 1)) + LOWER(SUBSTRING(P.Inverse, 2, LEN(P.Inverse))), 'Related to') + ' ' + I.ObjectName + '(<-)' as title  
-   from IntersectTypeDetail I  
-     left join [Predicate] P on P.ID = I.PredicateID  
-   where Subject = @type and SubjectID = @id and Object = @type and ObjectID = @id  
-   union  
-   select 'I' as type,  
-     i.Uid,  
-     cast(i.Uid as varchar(36)) +   
-     '|' +  
-     case   
-      when (Subject = @type and SubjectID = @id) then cast((SELECT uid from AssetType WHERE Object = I.Object and ObjectID = I.ObjectID) as varchar(36)) + '|2'  
-      else cast((SELECT uid from AssetType WHERE Object = I.Subject and ObjectID = I.SubjectID) as varchar(36)) + '|1'  
-     end as value,  
-     case   
-      when (Subject = @type and SubjectID = @id) then coalesce(UPPER(LEFT(P.Name, 1)) + LOWER(SUBSTRING(P.Name, 2, LEN(P.Name))), 'Relates to') +' ' + I.ObjectName + '(->)'  
-      else coalesce(UPPER(LEFT(P.Inverse, 1)) + LOWER(SUBSTRING(P.Inverse, 2, LEN(P.Inverse))), 'Related to') + ' ' + I.SubjectName + '(<-)'  
-     end as title  
-   from IntersectTypeDetail I  
-     left join [Predicate] P on P.ID = I.PredicateID  
-   where (  
-     (Subject = @type and SubjectID = @id) or (Object = @type and ObjectID = @id)  
-     )  
-     and  Subject + cast(SubjectID as varchar) <> Object + cast(ObjectID as varchar)  
-   union  
-   select 'I' as type,  
-     i.Uid,  
-     cast(i.Uid as varchar(36)) + '|' +  
-     case   
-      when (Subject = @type and SubjectID = @id) then cast((SELECT uid from AssetType WHERE Object = I.Object and ObjectID = I.ObjectID) as varchar(36))  
-      else cast((SELECT uid from AssetType WHERE Object = I.Subject and ObjectID = I.SubjectID) as varchar(36))  
-     end + '|0' as value,  
-	 case 
-	  when (Subject = @type and SubjectID = @id) then coalesce(UPPER(LEFT(P.Name, 1)) + LOWER(SUBSTRING(P.Name, 2, LEN(P.Name))) + ' / ' + UPPER(LEFT(P.Inverse, 1)) + LOWER(SUBSTRING(P.Inverse, 2, LEN(P.Inverse))), 'Relates to / Related to') + ' ' + I.ObjectName + '(<->)' 
-	  else  coalesce(UPPER(LEFT(P.Name, 1)) + LOWER(SUBSTRING(P.Name, 2, LEN(P.Name))) + ' / ' + UPPER(LEFT(P.Inverse, 1)) + LOWER(SUBSTRING(P.Inverse, 2, LEN(P.Inverse))), 'Relates to / Related to') + ' ' + I.SubjectName + '(<->)' 
-     end as title  
-   from IntersectTypeDetail I  
-     left join [Predicate] P on P.ID = I.PredicateID  
-   where (Subject = @type and SubjectID = @id) or (Object = @type and ObjectID = @id)  
+			where	ObjectUid = @assetTypeUid and PredicateType not in (15,16,17)
    ) O order by title 
 )
 		]]>

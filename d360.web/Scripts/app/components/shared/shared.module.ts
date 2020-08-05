@@ -35,11 +35,9 @@ import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
-import { SynonymsTile } from './synonyms.tile';
 import { UserListComponent } from './user/user-list.component';
 import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
 import { SiteModalModule } from './modal/gov-modal.module';
-
 
 @NgModule({
     declarations: [                           
@@ -48,10 +46,9 @@ import { SiteModalModule } from './modal/gov-modal.module';
         ObjectDefinitionTile,
         ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
-        ResourceResponsibilityGridComponent,                        
-        SynonymsTile,           
+        ResourceResponsibilityGridComponent,      
         UserListComponent,
-        ResourceMultiSelectGridComponent,
+        ResourceMultiSelectGridComponent
     ],
     exports: [                                                                                                                                        
         GroupMembersComponent,                             
@@ -61,7 +58,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               
         UserListComponent,    
-        ResourceMultiSelectGridComponent,
+        ResourceMultiSelectGridComponent
         ]
     , imports: [
         CommonModule,

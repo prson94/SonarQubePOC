@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.extensions;
 using Dapper;
 using Newtonsoft.Json;
@@ -217,7 +218,6 @@ select	@pageSize as 'pageSize',
                 case when FT.Type = 'Boolean' then FT.ShowIfEmpty else null end as 'Type.Boolean.ShowIfEmpty', 
                 case when FT.Type = 'Boolean' then FT.IsRequired else null end as 'Type.Boolean.Validation.IsRequired', 
 
-		        case when FT.Type = 'FusionLookup' then FT.ColumnOrder else null end as 'Type.ComputedFusionLookup.ColumnOrder',
 
 		        case when FT.Type = 'OwnershipLookup' then FT.ColumnOrder else null end as 'Type.ComputedOwnershipLookup.ColumnOrder',
 		        case when FT.Type = 'OwnershipLookup' then FT.DisplayDescription else null end as 'Type.ComputedOwnershipLookup.Description.Display',
@@ -523,6 +523,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         {
             public int FieldTypeID { get; set; }
             public AssetTypeClass Class { get; set; }
+            public string FieldType { get; set; }
         }
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
@@ -634,24 +635,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         newFieldType.DisplayDescription = f.Type.Score.Description.Display;
                     }
 
-                }
-                else if (f.Type.ComputedFusionLookup != null)
-                {
-                    if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Fusion Lookup type on an action type or relationship type for field {f.Name}.");
-                    }
-
-                    newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder.HasValue ? f.Type.ComputedFusionLookup.ColumnOrder.Value : ++maxColumnIndex;
-                    if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
-                    newFieldType.IsDisplayable = f.Type.ComputedFusionLookup.IsDisplayable;
-                    newFieldType.IsEditable = false;
-                    newFieldType.IsListable = false;
-                    newFieldType.IsPartOfKey = false;
-                    newFieldType.IsPrimaryFilter = false;
-                    newFieldType.ShowIfEmpty = false;
-                    newFieldType.SortOrder = 99;
-                }
+                }                
                 else if (f.Type.ComputedOwnershipLookup != null)
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
@@ -722,7 +706,7 @@ from	IntersectType I
                     newFieldType.IsEditable = false;
                     newFieldType.IsListable = f.Type.ComputedRelationshipField.IsListable;
                     newFieldType.IsPartOfKey = false;
-                    newFieldType.IsPrimaryFilter = false;
+		    newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
                 }
@@ -754,6 +738,7 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
+                    var definitionErrorMessage = $"The definition provided for the computed relationship lookup {f.Name} has one or more invalid uids.";
                     var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "_assetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
@@ -823,7 +808,7 @@ from	IntersectType I
                         var isFieldFromRelationship = i.FieldTypeName.StartsWith("Relation.");
 
                         var fieldInfo = Company.Query<FieldInfo>(@"
-                            select coalesce(F.ID, 0) as FieldTypeID, T.Class
+                            select coalesce(F.ID, 0) as FieldTypeID, T.Class, F.Type  as FieldType
                             from   AssetType T 
                                    left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
                             where  T.uid = @AssetTypeUid",
@@ -835,7 +820,7 @@ from	IntersectType I
                             var intersectTypeUid = relation.IntersectTypeUid;
                             var fieldName = i.FieldTypeName.Replace("Relation.", "").Trim();
                             fieldInfo = Company.Query<FieldInfo>(@"
-                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class
+                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class, F.Type as FieldType
                             from   IntersectType IT 
                                    left join FieldType F on F.Object = 'IntersectType' and F.ObjectID = IT.Id and F.Name = @fieldName 
                             where  IT.uid = @intersectTypeUid",
@@ -846,6 +831,14 @@ from	IntersectType I
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
                             hasDefinitionError = true;
+                            return;
+                        }
+
+                        //field from relationship types are not supported on relationship lookups
+                        if (DataType.Text.GetNotAllowedInRelationshipLookup().Contains(fieldInfo.FieldType))
+                        {
+                            hasDefinitionError = true;
+                            definitionErrorMessage = $@"The definition provided for the computed relationship lookup {f.Name} is invalid. Field from relationships are not supported on compuited relation lookup fields.";
                             return;
                         }
 
@@ -896,7 +889,7 @@ from	IntersectType I
 
                     if (hasDefinitionError)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"The definition provided for the computed relationship lookup {f.Name} has one or more invalid uids.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", definitionErrorMessage);
                     }
 
                     #endregion
@@ -1330,6 +1323,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Relationship.IsListable;
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
+                    newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
                 }
                 else if (f.Type.Text != null)
                 {

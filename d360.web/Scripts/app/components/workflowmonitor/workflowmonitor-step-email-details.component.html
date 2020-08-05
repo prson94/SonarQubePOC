@@ -18,23 +18,31 @@
         </div>
     </div>
     <div class="col s6"
-        *ngIf="step.ItemSettings.hasEmails == true">
+         *ngIf="step.ItemSettings.hasEmails == true">
         <span class="FieldName">Recipients:</span>
         <div *ngFor="let e of displayEmails; let i = index">
             <ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
-                {{e['@address']}} <span *ngIf="e.name != null">(<d3s-preview-tooltip [objectType]="'Resource'"
-                        [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>)
+                {{e['@address']}} <span *ngIf="e.name != null">
+                    (<d3s-preview-tooltip [objectType]="'Resource'"
+                                          [objectId]="e.id"><a>{{e.name}}</a></d3s-preview-tooltip>)
                     <i *ngIf="e.responsibility">({{e.responsibility}})</i>
                 </span>
             </ng-container>
         </div>
         <div *ngIf="displayEmails.length > 5 && showAll == false">
             <a (click)="toggleShowAll()"
-                style="cursor: pointer">Show All</a>
+               style="cursor: pointer">Show All</a>
         </div>
         <div *ngIf="displayEmails.length > 5 && showAll == true">
             <a (click)="toggleShowAll()"
-                style="cursor: pointer">Show Less</a>
+               style="cursor: pointer">Show Less</a>
+        </div>
+    </div>
+    <div class="col s6"
+         *ngIf="step.ItemSettings.hasEmails == false">
+        <span class="FieldName">Recipients:</span>
+        <div>
+            <span>None</span>
         </div>
     </div>
 </div>

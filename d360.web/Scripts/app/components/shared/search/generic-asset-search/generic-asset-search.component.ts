@@ -1,10 +1,9 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChange, SimpleChanges, AfterContentInit } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { AssetService } from '../../../../services/asset.service';
 import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentDisplayStyle } from '../../../../models/asset-search.model';
 import { PredicateType, Predicate } from '../../../../models/predicate.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { ToolTipService } from '../../../../services/tooltip.service';
-import { debounceTime } from 'rxjs/operators';
 
 declare var CompanySettings;
 
@@ -260,12 +259,9 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.searchOption.Filters = this.filters;
 
         this.isLoading = true;
-
         this.assetService.searchAssetPath(this.searchOption)
-            .pipe(debounceTime(400))
             .subscribe(result => {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
-
 
                 this.selected.forEach(s => {
                     let ix = this.searchresults.findIndex(x => x.Uid == s.Uid);
@@ -275,7 +271,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                         this.searchresults = this.searchresults.slice();
                     }
                 });
-
 
                 this.searchResultsCount = result.total;
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);

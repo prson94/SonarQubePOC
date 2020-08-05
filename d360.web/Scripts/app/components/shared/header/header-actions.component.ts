@@ -16,8 +16,8 @@ declare var CompanySettings;
                 <div #actions class="header-action-container" (window:resize)="onResize($event)">
                     <ul class="header-actions-list">
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
-                        <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
+                        <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton && headerActionsService.showRaiseIssue"><d3s-raise-issue-button></d3s-raise-issue-button></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart && headerActionsService.showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-favorites></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-follow></d3s-header-follow></li>                    
@@ -72,6 +72,7 @@ export class HeaderActionsComponent {
     ngOnInit() {
         this.routerSub = this.router.events.subscribe(e => {
             if (e instanceof NavigationEnd) {
+                this.headerActionsService.setActionsToDefaultValues();
                 this.previousUrl = this.currentUrl;
                 this.currentUrl = e.url;
                 this.isAdminSidebarUrl = false;
@@ -150,6 +151,7 @@ export class HeaderActionsComponent {
 
         this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
             this.headerActionsService.showFollow = x.showFollow;
+
         });
 
     }

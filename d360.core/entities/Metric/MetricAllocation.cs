@@ -39,9 +39,9 @@ namespace d360.core.entities.Metric
         [DataMember]
         public int UpperThreshold { get; set; }
 
-        public int CreatedBy { get; set; }
+        public new int CreatedBy { get; set; }
         
-        public int UpdatedBy { get; set; }
+        public new int UpdatedBy { get; set; }
     }
 
     #region API Models

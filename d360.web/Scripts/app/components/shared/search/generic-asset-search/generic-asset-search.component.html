@@ -54,7 +54,7 @@
 
         <div class="gas-search {{isSearchWindowOpened ? 'visible':''}}">
             <div class="search-field {{!isSearchPhraseValid ? 'error' : ''}}">
-                <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
+                <input #searchInput delayedInput (delayedInput)="search($event)" [delayTime]="600" placeholder="Type to search for assets" />
                 <span class="feedback">Search phrase must have at least one alpha-numerical character!</span>
             </div>
             <span class="search-button">

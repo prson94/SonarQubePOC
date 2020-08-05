@@ -145,6 +145,7 @@ namespace d360.model
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
         DbSet<Tag> Tags { get; set; }
+        DbSet<ConnectorLabel> ConnectorLabels { get; set; }
         DbSet<AssetTag> AssetTags { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
         DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }
@@ -270,7 +271,7 @@ namespace d360.model
         void RebuildDisplayValuesRequest();
         void RebuildAssetGraphRequest();
         void RebuildIndexRequest();
-        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
+        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);
@@ -315,11 +316,12 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
+        void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
-        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
+        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false);
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
 
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);

@@ -45,6 +45,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
+import { SwitchModule } from '../../shared/controls/switch/switch';
+import { AdminMetricHistoryComponent } from './admin-metric-history.component'
 
 @NgModule({
     imports: [
@@ -85,7 +87,9 @@ import { MenuModule } from 'primeng/menu';
         TooltipModule,
         DirectivesModule,
         SiteModalModule,
-        InfoTooltipModule
+        InfoTooltipModule,
+        SwitchModule,
+
     ],
     declarations: [
         AdminAnalyticsComponent,
@@ -95,7 +99,8 @@ import { MenuModule } from 'primeng/menu';
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,
-        AdminAnalyticsDetailsComponent
+        AdminAnalyticsDetailsComponent,
+        AdminMetricHistoryComponent
     ],
     providers: [
         {

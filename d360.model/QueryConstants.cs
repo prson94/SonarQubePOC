@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.enums;
 using d360.core.resources;
 
 namespace d360.model
@@ -661,7 +662,7 @@ from	Asset A
 			 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
 			)
 		) I
-where	A.[Object] = @obj and A.ObjectID = @objId
+where	A.[Object] = @obj and A.ObjectID = @objId and IT.PredicateType not in ({1})
 order by IT.[Name]
 ";
 
@@ -1279,7 +1280,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
             where t.id = @id and vst.State = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))
 ";
 
-        public static string WorkflowObjectTypes = @"
+        public static string WorkflowObjectTypes = $@"
            	select * from (
                 select 
 		            [object] + '|' + cast(objectId as varchar) as [value],
@@ -1328,6 +1329,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	            union all
                 select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
                 from intersecttype t
+				inner join [Predicate] p on p.ID=t.PredicateID and p.Type not in ({(int)PredicateType.Diagram}, {(int)PredicateType.DiagramUse}, {(int)PredicateType.DiagramReference})
 	            cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
                 group by t.id, t_name.name
 	            union all

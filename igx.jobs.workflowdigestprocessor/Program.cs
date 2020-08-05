@@ -1,6 +1,7 @@
 ﻿using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using System;
@@ -50,22 +51,9 @@ namespace igx.jobs.workflowdigestprocessor
                 {
                     try
                     {
-                        #region Create EF connection
+                        // Create EF connection
+                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
 
-                        var sec = new UriSecurityContextProvider()
-                        {
-                            CompanyID = c.CompanyID,
-                            ResourceID = 0,
-                            CompanyPrefix = c.UrlPrefix,
-                            IsAdministrator = true
-                        };
-                        var cache = new DummyCachingProvider();
-                        var queue = new AzureQueueSource();
-                        var community = new CommunityContext(cache, queue, sec);
-                        var company = new CompanyContext(community, cache, queue, sec, true);
-
-                        #endregion
-                        
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }
                     catch (Exception ex)

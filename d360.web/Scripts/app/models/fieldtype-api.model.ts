@@ -20,10 +20,7 @@ export class FieldType {
         switch (type) {
             case 'Boolean':
                 this.Boolean = new Boolean();
-                break;
-            case 'ComputedFusionLookup':
-                this.ComputedFusionLookup = new ComputedFusionLookup();
-                break;
+                break;            
             case 'OwnershipLookup':
                 this.OwnershipLookup = new ComputedOwnershipLookup();
                 break;
@@ -89,8 +86,7 @@ export class FieldType {
         }
     }
 
-    Boolean: Boolean;
-    ComputedFusionLookup: ComputedFusionLookup;
+    Boolean: Boolean;    
 
     //need a second ComputedOwnershipLookup so the API can serialize the object by the class name
     OwnershipLookup: ComputedOwnershipLookup;
@@ -191,20 +187,6 @@ export class Description {
 
 export class BooleanValidation {
     IsRequired: boolean = false;
-}
-
-export class ComputedFusionLookup implements ICommonOptions  {
-    Validation: BooleanValidation = new BooleanValidation();
-    ColumnWidth: number = null;
-    SortOrder: number = 0;
-    IsEditable: boolean = false;
-    IsListable: boolean = false;
-    IsPartOfKey: boolean = false;
-    IsPrimaryFilter: boolean = false;
-    ShowIfEmpty: boolean = false;
-    ColumnOrder: number;
-    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
-    IsDisplayable: boolean = true;
 }
 
 export class DisplayOnlyDescription {

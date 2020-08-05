@@ -343,15 +343,23 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     Threshold = model.Threshold,
                     Weight = model.Weight,
                     State = metricAsset.State,
-                    EffectiveEndDate = null
+                    EffectiveEndDate = null,
+                    Definition = model.ScoreType == ScoreType.Governance ? "{ \"Check\": \"External\"}" : "{}"
                 };
 
                 // End-date the now previous version, if any.
-                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null);
-                if (existingAssetVersion != null)
+                var existingAssetVersions = Company.Filter<MetricAssetVersion>(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null)
+                    .OrderByDescending(x => x.EffectiveDate)
+                    .ToList();
+                for (var i = 0; i < existingAssetVersions.Count; i++)
                 {
-                    existingAssetVersion.EffectiveEndDate = effectiveDate;
-                    Company.Update(existingAssetVersion);
+                    if (i == 0)
+                    {
+                        var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
+                        endDateToUse = endDateToUse.AddDays(-1);
+                        existingAssetVersions[i].EffectiveEndDate = endDateToUse;
+                        Company.Update(existingAssetVersions[i]);
+                    }
                 }
 
                 Company.Add(metricAssetVersion);
@@ -434,7 +442,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                         g.ConditionItems.ForEach(c =>
                         {
-                            var ci = cg.Items.SingleOrDefault(i => i.Uid == c.Uid);
+                            var ci = cg.Items.SingleOrDefault(i => (i.Uid != Guid.Empty) && (i.Uid == c.Uid));
 
                             if (ci == null)
                             {
@@ -552,6 +560,14 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             #endregion
 
             Company.Update(metricAssetVersion);
+
+            if (isNew)
+            {
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureCreated, metricAsset);
+            }
+            {
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
+            }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -765,7 +781,8 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     			where		C.AssetVersionUid = V.Uid
 								order by	C.Position
                     			for		json path
-                    		) as ConditionGroups
+                    		) as ConditionGroups,
+                            VC.Count as [VersionCount]
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid
                             cross apply (
@@ -774,6 +791,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     			where	AssetUid = A.Uid
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
+                            cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
                     for		json path", new { allocationUid }).ToList();
         }
 
@@ -1242,6 +1260,56 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                       from [metrics].[ScoreItem]
                       where metricassetuid = @metricVersionUid
                       order by EffectiveDate desc", new { metricVersionUid = uid }).FirstOrDefault();
+        }
+
+        public List<string> GetMetricVersionHistory(Guid measureUid)
+        {
+            return Company.Query<string>($@"                    
+                    select ROW_NUMBER() over (Order by V.EffectiveDate asc, ISNULL(V.EffectiveEndDate, GETDATE()) asc) as version, 
+                            A.Uid as MeasureUid,
+                    		V.Name,
+                    		V.Description,
+                    		V.EffectiveDate,
+							V.EffectiveEndDate,
+							V.Weight,
+							V.Uid as versionuid,
+							(
+                    			select		C.Uid,
+											C.Position,
+											C.Threshold,
+											C.Weight,
+											C.MatchType,
+											(
+												select	CI.Uid,
+														CI.ConditionType,
+														CI.ConditionFieldTypeID,
+														CI.ConditionIntersectTypeID,
+														CI.Operator,
+														(
+															select	[Value]
+															from	metrics.AssetVersionConditionItemValue
+															where	Uid = CI.Uid
+															for json path
+														) as [Values]
+												from	metrics.AssetVersionConditionItem CI
+												where	CI.AssetVersionConditionUid = C.Uid
+												for json path
+											) as ConditionItems
+                    			from		metrics.AssetVersionCondition C
+                    			where		C.AssetVersionUid = V.Uid
+								order by	C.Position
+                    			for		json path
+                    		) as ConditionGroups
+                    from	metrics.Asset A                    		
+                            cross apply (
+                    			select	EffectiveDate as EffectiveDate
+                    			from	metrics.AssetVersion
+                    			where	AssetUid = A.Uid
+                    		) MV
+                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate
+					where A.Uid = @measureUid
+					Order by version
+                    for		json path", new { measureUid }).ToList();
         }
     }
 }

@@ -5,73 +5,12 @@ import { TreeNode, MenuItem } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
-import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 
 @Component({
     selector: 'd3s-admin-metric-list',
-    template: ` 
-               <d3s-loading [isLoading]="isLoading"></d3s-loading>
-               <div *ngIf="!isLoading">
-                <div [ngSwitch]="formMode">
-                    <div *ngSwitchCase="FormMode.Default">
-                        <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
-                            <ng-template pTemplate="header">
-                                <tr> 
-                                    <th>Name</th>
-                                    <th style="width: 120px" *ngIf="!isExternallyCalculated">Weight</th>
-                                    <th style="width: 120px">Effective Date</th>
-                                    <th style="width: 40px"></th>
-                                    <th style="width: 40px"></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-rowNode let-item="rowData">
-                                <tr [ttSelectableRow]="rowNode">
-                                    <td>
-                                        <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                                        {{item.Name}}
-                                    </td>
-                                    <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
-                                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
-                                    <td>
-                                        <div class="RowTools" *ngIf="item.IsGroup">             
-                                            <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add()" tooltip="Add measure to group"></button>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools">  
-                                            <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                                            <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="Measure Actions"></button>                                
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-treeTable>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Deleting">
-                        <header>
-                            Delete Group
-                        </header>
-                        <d3s-delete-form
-                            [uri]="'api/v2/metrics/' + selection?.Uid"
-                            [method]="'delete'"
-                            [prompt]="'Are you sure you want to delete the metric group [' + [selection?.Name] + ']?'"                                         
-                            (onCancel)="formMode = FormMode.Default"
-                            (onDeleteSuccess)="formMode = FormMode.Default; load();"
-                            (onDeleteFail)="formMode = FormMode.Default">
-                        </d3s-delete-form> 
-                    </div>
-                </div>
-
-                </div>
-                `,
+    templateUrl: './admin-metric-list.component.html',
     providers: [MetricsService, AllocationService]
 })
 
@@ -79,11 +18,15 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     @Input() assetType: AssetTypeMetricModel;
     @Input() allocationUid: string;
     @Output() selectionChange = new EventEmitter();
+    @Input() scoreType: ScoreTypeAllocation;
+    @Input() scoreData: any;
 
     private metrics: MetricAssetViewModel[] = [];
     private metricTree: TreeNode[] = [];
     private selectedNode: TreeNode;
     private selection: MetricAssetViewModel;
+    private previousSelection: MetricAssetViewModel;
+    private previousSelectedNode: TreeNode;
 
     @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
 
@@ -91,6 +34,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     FormMode = FormMode;
 
     private isExternallyCalculated: boolean = false;
+    showDelete: boolean = false;
+
+    private isHistoryModalVisible: boolean = false;
 
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
@@ -104,6 +50,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         if (changes['allocationUid'] && this.allocationUid) {
             this.formMode = FormMode.Default;
             this.load();
+        }
+        if (changes['scoreData'] && this.scoreData) {
+            this.scoreData = [ ...this.scoreData ];
         }
     }
 
@@ -145,6 +94,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             this.selection = null;
             this.metricTree = [];
         }
+
     }
 
     addChildren(node: TreeNode) {
@@ -163,14 +113,21 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public selectNode(e: any) {
+        if (e == null)
+            return;
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
     }
 
     public add(asChild: boolean = false) {
-        if (!asChild)
+        this.previousSelection = { ...this.selection };
+        this.previousSelectedNode = { ...this.selectedNode };
+        if (!asChild) {
+            this.selection = null;
             this.selectedNode = null;
+            this.selectionChange.emit(this.selection);
+        }
         this.formMode = FormMode.Adding;
     }
 
@@ -180,9 +137,16 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     public delete() {
         this.formMode = FormMode.Deleting;
-    }
+    }    
     public close() {
         this.formMode = FormMode.Default;
+        this.selectedNode = { ...this.previousSelectedNode };
+        this.selection = { ...this.previousSelection };
+        this.selectionChange.emit(this.selection);
+        console.log(this.selection);
+    }
+    public showHistory(isHistoryVisible: boolean) {
+        this.isHistoryModalVisible = isHistoryVisible;
     }
     getAsPrecentage(val: number) {
         if (val == 0)
@@ -210,8 +174,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             command: (event) => { this.delete(); }
         });
         menu.push({
-            label: 'Version History',
-            command: (event) => { console.log("not yet implemented"); }
+            label: 'Version History (' + this.selection.VersionCount +')',
+            command: (event) => { this.showHistory(true); }
         });
         return menu;
     }
