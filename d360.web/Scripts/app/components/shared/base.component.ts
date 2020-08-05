@@ -487,37 +487,37 @@ export class BaseComponent {
     }
 
     auditContextUrl(): string {
+        const blankUid = '00000000-0000-0000-0000-000000000000';
         let uid = this.uid;
 
-        switch (this.constructor.name) {
-            case 'AdminArtifactsComponent':
-                uid = this['selectedRow']['id'];
-                break;
-            case 'AdminHierarchiesComponent':
-                uid = this['selected']['uid'];
-                break;
-            case 'AdminIssueTypesComponent':
-                uid = this['selected']['Uid'];
-                break;
-            case 'ReferenceListComponent':
-                uid = this['selectedReferenceListUid'];
-                break;
-            case 'AdminRelationshipsComponent':
-                uid = this['selected']['Uid'];
-                break;
-            case 'HierarchyItemStructureComponent':
-                if(this['assetType'])
-                    uid = this['assetType']['AssetTypeUID'];
-                break;
-        }
         //Tag needs to be part of the URL for the header to behave
         if (this.objectType == 'Tag') {
-            if (this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+            if (this.uid && this.uid != blankUid) {
                 return `/${this.objectType}/${this.uid}`;
             }
         }
-    
-        if (uid && uid != '00000000-0000-0000-0000-000000000000') {
+
+        /**
+         * Extract UID value for AssetTypes, IssueTypes, Referrence lists etc to use with audit component
+         * Minimizer obfuscates this.constructor.name, so we'll have to look for specifi properties
+         */
+        if (this.uid == undefined || this.uid == blankUid) {
+            if (this['selectedRow'] && this['selectedRow']['id']) { //AdminArtifactsComponent
+                uid = this['selectedRow']['id'];
+            } else if (this['selectedReferenceListUid']) { //ReferenceListComponent
+                uid = this['selectedReferenceListUid'];
+            } else if (this['assetType'] && this['assetType']['AssetTypeUID']) { //HierarchyItemStructureComponent
+                uid = this['assetType']['AssetTypeUID'];
+            } else if (this['selected']) {
+                if (this['selected']['Uid']) { //AdminIssueTypesComponent, AdminRelationshipsComponent
+                    uid = this['selected']['Uid'];
+                } else if (this['selected']['uid']) { //AdminHierarchiesComponent
+                    uid = this['selected']['uid']
+                }
+            }
+        }
+
+        if (uid && uid != blankUid) {
             return `/${uid}`;
         }
         return '';
