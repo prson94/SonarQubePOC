@@ -143,7 +143,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.selectedNode = { ...this.previousSelectedNode };
         this.selection = { ...this.previousSelection };
         this.selectionChange.emit(this.selection);
-        console.log(this.selection);
     }
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
@@ -174,7 +173,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             command: (event) => { this.delete(); }
         });
         menu.push({
-            label: 'Version History (' + this.selection.VersionCount +')',
+            label: 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')',
             command: (event) => { this.showHistory(true); }
         });
         return menu;
