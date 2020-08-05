@@ -217,6 +217,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeParent", "If the value is True, the results will include parent UID and parent display name for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
 
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
@@ -2436,6 +2438,63 @@ namespace d360.web.Controllers.V2
                 }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+
+
+        }
+
+        /// <summary>
+        /// Request certification of the specified asset
+        /// </summary>
+        /// <param name="assetUid">The uid of the asset</param>
+        /// <returns>API response for success or failure</returns>
+        [
+            HttpPost,
+            Route("RequestCertification/{assetUid}"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Details of the asset.", typeof(object)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> RequestCertification(Guid assetUid)
+        {
+            var prefix = "Assets.RequestCertification => ";
+
+            try
+            {
+                var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x=> x.AssetType).FirstOrDefault();
+
+                if (asset == null) throw new NotFoundException("Asset");
+
+                if (Enum.TryParse(asset.Object, out SystemObjects obj) && Enum.TryParse(asset.AssetType.Object, out SystemObjects objType))
+                {
+                    Company.RequestObjectCertification(obj, asset.ObjectID, objType, asset.AssetType.ObjectID);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiStatusResponse() { Success = true, Message = "Request successfully created.", Uid = asset.uid })
+                        )
+                    );
+                }
+                else
+                {
+                    throw new NotFoundException("Invalid Asset");
+
+                }
+
+
+
             }
             catch (Exception ex)
             {

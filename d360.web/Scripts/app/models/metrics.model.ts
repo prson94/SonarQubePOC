@@ -15,6 +15,7 @@ export class MetricAssetViewModel {
     UpdateFrequency: MetricUpdateFrequency;
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
+    VersionCount: number;
 }
 
 export class MetricAssetHistoryViewModel {

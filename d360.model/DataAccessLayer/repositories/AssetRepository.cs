@@ -250,6 +250,7 @@ namespace d360.model.DataAccessLayer
             string permissionDetailSQL = " ";
             string includePermissionFields = " ";
             bool listColorsAsJSON = false;
+            bool includeColor = true;
             var includeTotal = true;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
@@ -279,6 +280,43 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+
+            var includeFieldsList = new List<string>();
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
+            {
+                try
+                {
+                    var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
+                    includeFieldsList = includeFieldsString
+                        .Split(',')
+                        .Select(s => s.ToLower())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToList();
+                }
+                catch
+                {
+                    throw new ArgumentException("Could not parse value of _includeFields");
+                }
+
+
+                //validate param values
+                includeFieldsList.ForEach(f =>
+                {
+                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f))
+                    {
+                        throw new ArgumentException($"Invalid value {f} in _includeFields parameter, field with this name not found.");
+                    }
+                });
+
+                if (includeFieldsList.Any())
+                {
+                    fieldTypes = fieldTypes
+                        .Where(x => includeFieldsList.Contains(x.Name.ToLower()))
+                        .ToList();
+                }
+
+            }
+
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
@@ -287,6 +325,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includecolor"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecolor").Value, out includeColor);
             }
 
             List<string> fieldColumns = new List<string>();
@@ -591,12 +634,12 @@ namespace d360.model.DataAccessLayer
                     List<int> filteredFields = new List<int>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 
-                    if (includeOnlyListableFields)
+                    if (includeOnlyListableFields || includeFieldsList.Any())
                     {
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
-                        getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
                         fieldColumns.AddRange(tempFieldColumns);
                         fieldJoins.AddRange(tempJoins);
                         countJoins.AddRange(tempJoins);
@@ -780,7 +823,7 @@ namespace d360.model.DataAccessLayer
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
-                    ACJ.ColorJson as Color,
+                    {(includeColor ? "ACJ.ColorJson as Color," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
@@ -794,7 +837,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-                cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                {(includeColor ? "cross apply dbo.GetAssetColorJsonById(A.Id) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
@@ -2290,6 +2333,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                         null,
                         out success,
                         out error,
+                        true,
                         true
                         );
                     if (!success)

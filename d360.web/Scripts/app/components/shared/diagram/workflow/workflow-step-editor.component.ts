@@ -19,13 +19,15 @@ import { FieldType } from '../../../../models/fields.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
 import * as go from 'gojs';
+import { SelectItem } from 'primeng/api';
 
 @Component({
     selector: 'd3s-workflow-step-editor',
-    providers: [WorkflowService],
+    providers: [WorkflowService, GroupService],
     templateUrl: './workflow-step-editor.component.html'
 })
 
@@ -60,6 +62,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     private quill;
     private destination = [];
+    private groups: SelectItem[] = [];
 
     private responsibilities = [];
     private intersectType = null;
@@ -73,7 +76,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private formRelationshipFields = [];
     private formRelationship;
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService, private groupService: GroupService) {
         super();
     }
 
@@ -126,6 +129,15 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                     });
                 });
             });
+
+        this.groupService.getGroups().subscribe(GroupList => {
+            this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+            if (this.step.settings.MessageToGroup != undefined) {
+                if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
+                    this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
+                }
+            }
+        });
     }
 
     ngOnChanges() {

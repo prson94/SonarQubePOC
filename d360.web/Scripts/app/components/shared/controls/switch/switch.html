@@ -1,7 +1,7 @@
 ﻿<div #switch 
      [ngClass]="{'switch':true,'checked':value ===true,'unset':value===undefined,'disabled':disabled}"
-     [attr.id]="inputId" [attr.tabindex]="tabindex" 
-     [ngStyle]="style" [class]="styleClass" 
+     [attr.id]="inputId" [attr.tabindex]="(disabled ? -1 : tabindex)" 
+     [ngStyle]="style" [class]="styleClass" role="checkbox" [attr.aria-checked]="(value===undefined? 'indeterminate' : value)"
      (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy" >
     <button tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
     <button tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>

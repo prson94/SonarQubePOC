@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, AfterContentInit } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -17,7 +17,7 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
                     <div class="col s12">
                         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter"  [ngModel]="dt.filters['global']?.value">
                         <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Id','Subject.Name','Predicate.Name','Predicate.Inverse','Object.Name']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" 
-                            [stateStorage]="gridStateStorage" stateKey="admin-relationships-grid"
+                            [stateStorage]="gridStateStorage" stateKey="{{gridStorageKey}}"
                             (selectionChange)="selected=$event;selectedChange.emit(selected)">
                             <ng-template pTemplate="header">
                                 <tr>
@@ -43,10 +43,10 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
                                     <th style="width: 40px"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
-                                    <th><d3s-column-filter [field]="'Id'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Subject.Name'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Predicate.Name'" [datatype]="'text'"></d3s-column-filter></th>
-                                    <th><d3s-column-filter [field]="'Object.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [value]="dt.filters['Id']?.value" [field]="'Id'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [value]="dt.filters['Subject.Name']?.value" [field]="'Subject.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [value]="dt.filters['Predicate.Name']?.value" [field]="'Predicate.Name'" [datatype]="'text'"></d3s-column-filter></th>
+                                    <th><d3s-column-filter [value]="dt.filters['Object.Name']?.value" [field]="'Object.Name'" [datatype]="'text'"></d3s-column-filter></th>
                                     <th></th>
                                     <th></th>
                                     <th></th>
@@ -116,7 +116,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-    
+    private gridStorageKey: string = "admin-relationships-grid";
     constructor(private messagesService: MessagesObservableService, private relationshipsService: RelationshipsService) {   
         super();     
         this.theDeleteCallback = this.deleteRelationship.bind(this);
@@ -171,6 +171,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                             this.selectedChange.emit(this.selected)
                         }
                     }
+                    this.checkGridState();
                 });
         } else {
             this.relationshipsService.getRelationshipTypes()
@@ -184,7 +185,17 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                             this.selectedChange.emit(this.selected)
                         }
                     }
+                    this.checkGridState();
                 });
+        }
+    }
+
+    private checkGridState() {
+        if (sessionStorage.getItem(this.gridStorageKey)) {
+            let gridData = JSON.parse(sessionStorage.getItem(this.gridStorageKey));
+
+            if (gridData.filters && Object.keys(gridData.filters).length > 0)
+                this.showSimpleFilter = false;
         }
     }
 

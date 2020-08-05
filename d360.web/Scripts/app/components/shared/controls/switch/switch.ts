@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, HostBinding, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
@@ -23,7 +23,7 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     @Input() falseLabel = "No";
 
-    @Input() alwaysSet: boolean = true;
+    @Input() optional: boolean = false;
 
     @Input() disabled = false;
 
@@ -46,9 +46,12 @@ export class Switch implements ControlValueAccessor, OnInit  {
     onModelTouched: Function = () => { };
     
 
-    constructor(protected changeDetectorRef: ChangeDetectorRef) { }
-
-
+    constructor(
+        protected changeDetectorRef: ChangeDetectorRef
+    )
+    {
+    }
+    
     ngOnInit(): void {        
         if (!this.trueLabel || this.trueLabel.length > 5) {
             console.error("Invalid use of switch component true label should be 5 or less characters and not null")
@@ -56,11 +59,6 @@ export class Switch implements ControlValueAccessor, OnInit  {
         if (!this.falseLabel || this.falseLabel.length > 5) {
             console.error("Invalid use of switch component true label should be 5 or less characters and not null")
         }    
-    }
-
-    @HostBinding('style.opacity')
-    get opacity() {
-        return this.disabled ? 0.33 : 1;
     }
 
     @ViewChild("switch", { static: false }) _el: ElementRef;
@@ -79,10 +77,10 @@ export class Switch implements ControlValueAccessor, OnInit  {
     writeValue(obj: boolean): void {
         if (this._el) this._el.nativeElement.focus();
         
-        if (this.alwaysSet && (obj === this.value)) {        
+        if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
             return;
         }
-        else if (!this.alwaysSet && (obj === this.value)) {            
+        else if (this.optional && (obj === this.value)) {      // optional and current value = previous       
             this.value = undefined;
         }
         else {

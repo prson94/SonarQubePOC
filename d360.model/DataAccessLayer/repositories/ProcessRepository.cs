@@ -106,9 +106,20 @@ namespace d360.model.DataAccessLayer
 	                    inner join AssetType AT on AT.ID = A.AssetTypeID
 	                    left join AssetTypeStyle ATS on ATS.Id = AT.Id
 	                    cross apply(
-	                    select ft.Name, f.Value from Field f 
-	                    inner join FieldType ft on f.FieldTypeID = ft.ID
-	                    where assetid = a.id for json path
+						select * from (
+							select ft.Name, f.Value from Field f 
+							inner join FieldType ft on f.FieldTypeID = ft.ID and ft.Type <> 'Tag'
+							where assetid = a.id 
+							union 
+							   select ft.Name, STRING_AGG(T.Value, '|') as Value 
+							   from Asset asset
+							     inner join fieldtype ft on ft.assettypeid = at.id and ft.type = 'Tag'
+								 inner join AssetTag atag on atag.AssetID = asset.ID
+								 inner join Tag T on T.ID = atag.TagID
+							where asset.id = a.id
+							group by ft.Name
+						) as Fields
+						for json path
 	                    )field(json)
                     where A.uid in @assetUids", new { assetUids }).ToList();
 
@@ -425,7 +436,8 @@ merge Field as T
 	using (select edaf.*,a.id as AssetId from api.ExecutionDiagramAssetField  edaf
 		inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = edaf.executionitemuid 
         inner join asset a on eda.uid = a.uid
-		where eda.executionid = @executionid and edaf.executionid = @executionid
+        inner join fieldtype ft on ft.id = edaf.FieldTypeID
+		where eda.executionid = @executionid and edaf.executionid = @executionid and ft.type <> 'Tag'
 	) as S
 	on (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID)
 	when matched and T.Value <> S.FieldValue COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS 
@@ -437,6 +449,49 @@ merge Field as T
 	when		not matched by target then
 	insert		(AssetId,FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn)
 	values		(S.AssetId,S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FormattedValue, @resourceId, getutcdate());
+
+
+drop table if exists #tagMap
+create table #tagMap(
+	AssetId int,
+	TagId int,
+	IsAdd bit,
+	IsDelete bit
+)
+
+;with tags_cte as (select eda.Uid, edaf.formattedvalue 
+from api.executiondiagramasset eda
+inner join api.executiondiagramassetfield edaf on edaf.ExecutionItemUid = eda.ExecutionItemUid 
+inner join FieldType ft on edaf.FieldTypeID = ft.id and ft.Type = 'Tag'
+where eda.executionid = @executionId and edaf.executionid = @executionId)
+    insert into #tagMap
+    select a.ID as AssetId, 
+    T.Id as TagId,
+    CASE When AT.Id is null and T.Id is not null then 1
+    else 0 end as IsAdd,
+    0 as IsDelete
+    from tags_cte
+    cross apply string_split(FormattedValue,'|')Tag
+    inner join Asset A on A.uid = tags_cte.uid
+    left join Tag T on T.Value = Tag.value
+    left join AssetTag AT on AT.AssetID = A.ID AND at.TagID = t.ID
+
+insert into #tagMap
+select distinct at.AssetID, at.TagId,0,1
+from AssetTag at
+inner join #tagMap tm on tm.assetid = at.assetid 
+left join #tagMap tag on tag.assetid = at.assetid and tag.tagid = at.tagid
+where tag.assetid is null
+
+insert into AssetTag (AssetID, TagID, CreatedOn, CreatedBy)
+select AssetId, TagId, getutcdate(),@resourceId
+from #tagMap where IsAdd = 1
+
+delete assetTag
+from AssetTag assetTag
+inner join #tagMap tm on tm.AssetId = assetTag.AssetID and tm.TagId = assetTag.TagID
+where tm.IsDelete = 1
+
 
 merge       AssetDisplayValue as T
 using       (

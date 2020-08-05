@@ -348,11 +348,18 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 };
 
                 // End-date the now previous version, if any.
-                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null);
-                if (existingAssetVersion != null)
+                var existingAssetVersions = Company.Filter<MetricAssetVersion>(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null)
+                    .OrderByDescending(x => x.EffectiveDate)
+                    .ToList();
+                for (var i = 0; i < existingAssetVersions.Count; i++)
                 {
-                    existingAssetVersion.EffectiveEndDate = effectiveDate;
-                    Company.Update(existingAssetVersion);
+                    if (i == 0)
+                    {
+                        var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
+                        endDateToUse = endDateToUse.AddDays(-1);
+                        existingAssetVersions[i].EffectiveEndDate = endDateToUse;
+                        Company.Update(existingAssetVersions[i]);
+                    }
                 }
 
                 Company.Add(metricAssetVersion);
@@ -774,7 +781,8 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     			where		C.AssetVersionUid = V.Uid
 								order by	C.Position
                     			for		json path
-                    		) as ConditionGroups
+                    		) as ConditionGroups,
+                            VC.Count as [VersionCount]
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid
                             cross apply (
@@ -783,6 +791,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     			where	AssetUid = A.Uid
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
+                            cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
                     for		json path", new { allocationUid }).ToList();
         }
 

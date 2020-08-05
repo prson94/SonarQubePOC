@@ -24,14 +24,14 @@
                             <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
                         </th>
                         <th style="width: 2%"></th>
-                        <th *ngIf="!groupIsActiveDirectory" style="width: 3%"></th>
+                        <th style="width: 3%"></th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
                         <th><d3s-column-filter [field]="'LastName'" [datatype]="'text'"></d3s-column-filter></th>
                         <th><d3s-column-filter [field]="'FirstName'" [datatype]="'text'"></d3s-column-filter></th>
                         <th><d3s-column-filter [field]="'Owner'" [datatype]="'text'"></d3s-column-filter></th>
                         <th></th>
-                        <th *ngIf="!groupIsActiveDirectory"></th>
+                        <th></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
@@ -44,7 +44,7 @@
                                 <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID" icon="info"></d3s-preview-tooltip>
                             </div>
                         </td>
-                        <td *ngIf="!groupIsActiveDirectory">
+                        <td>
                             <div class="RowTools">
                                 <a (click)="delete(item.ResourceID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>

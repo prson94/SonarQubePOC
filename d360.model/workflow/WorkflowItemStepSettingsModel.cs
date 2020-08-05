@@ -13,6 +13,7 @@ namespace d360.model.workflow
         private static string FORM_SHOULD_EMAIL_USERS = "SendFormEmail";
         private static string STORED_PROC_ID = "ProcedureID";
         private static string EMAIL_MESSAGE_USER = "MessageToUser";
+        private static string EMAIL_MESSAGE_GROUP = "MessageToGroup";
         private static string EMAIL_RECIPIENT_TYPE = "MessageRecipientType";
         private static string EMAIL_MESSAGE_BODY = "MessageBodyTemplate";
         private static string EMAIL_MESSAGE_SUBJECT = "MessageSubjectTemplate";
@@ -42,6 +43,8 @@ namespace d360.model.workflow
 
         public string SpecificUser { get; set; }
 
+        public Guid RecipientGroup { get; set; }
+
         public List<WorkflowFieldUpdateSettings> FieldUpdateSettings { get; set; }
 
         public List<WorkflowRelationshipUpdateSettings> RelationshipUpdateSettings { get; set; }
@@ -66,6 +69,7 @@ namespace d360.model.workflow
             int storedProcedureID = -1;
             var messageRecipientType = EmailTaskRecipientType.Initiator;
             var specificUser = "";
+            Guid recipientGroup = Guid.Empty;
             var includeFormResponses = false;
             var messageSubject = "";
             var messageBody = "";
@@ -103,7 +107,12 @@ namespace d360.model.workflow
                 {
                     specificUser = root.Element(EMAIL_MESSAGE_USER).Value;
                 }
-                
+
+                if (root.Element(EMAIL_MESSAGE_GROUP) != null)
+                {
+                    Guid.TryParse(root.Element(EMAIL_MESSAGE_GROUP).Value, out recipientGroup);
+                }
+
                 if (root.Element(EMAIL_RECIPIENT_TYPE) != null)
                 {
                     if (!Enum.TryParse<EmailTaskRecipientType>(root.Element(EMAIL_RECIPIENT_TYPE).Value, out messageRecipientType))
@@ -150,6 +159,7 @@ namespace d360.model.workflow
                 FormShouldSendEmail = formShouldEmailUsers,
                 StoredProcedureID = storedProcedureID,
                 SpecificUser = specificUser,
+                RecipientGroup = recipientGroup,
                 RecipientType = messageRecipientType,
                 ShouldIncludeFormResponses = includeFormResponses,
                 SubjectTemplate = messageSubject ?? MISSING_SUBJECT_VALUE,

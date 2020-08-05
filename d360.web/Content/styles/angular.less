@@ -2275,7 +2275,7 @@ div.home-image-title-text {
     left: 0;
     bottom: 0;
     right: 0;
-    z-index: 1000 !important;
+    z-index: 20000 !important;
     padding-top: 40px;
     padding-bottom: 40px;
     background: rgba(255, 255, 255, 0.8);
@@ -5310,7 +5310,7 @@ a.mid-blue {
 
 .full-screen-ab {
     position: absolute;
-    top: 0px;
+    top: 40px;
     left: 0px;
     width: 100%;
     height: 100%;
@@ -7234,7 +7234,7 @@ d3s-process-diagram {
 }
 .modal-measure {
     .modal-measure-editor {
-        padding: 0px 16px 16px 16px;
+        padding: 0px 24px 24px 24px;
         margin-top: -32px;
 
         .metric-form {
@@ -7346,6 +7346,23 @@ d3s-process-diagram {
                                 line-height: 11px;
                                 background: none;
                                 padding: 12px;
+                            }
+
+                            &:hover {
+                                .tip-container {
+                                    .tooltip-content {
+                                        display: block;
+                                        left: -110px;
+                                        position: absolute;
+                                        width: 490px;
+                                        white-space: normal;
+
+                                        &.group {
+                                            top: -54px;
+                                            height: 126px;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

@@ -93,7 +93,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                       </div>
                                      <div class="measure-details-item">
                                           <div class="details-header">Effective Dates</div>
-                                          <div class="details-content">{{selectedMetric?.EffectiveDate  | utcDate | date:'shortDate'}} - Present</div>
+                                          <div class="details-content">{{selectedMetric?.EffectiveDate  | date:'shortDate'}} - Present</div>
                                       </div>
                                      <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
                                           <div class="details-header">Weight</div>

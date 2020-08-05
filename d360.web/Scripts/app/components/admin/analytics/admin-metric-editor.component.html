@@ -8,7 +8,7 @@
                 </div>
                 <div class="row">
                     <div>
-                        <textarea igInput tabindex="2" istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" autoResize="autoResize" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
+                        <textarea igInput tabindex="2" istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
                     </div>
                 </div>
                 <div class="measure-two-col">
@@ -17,8 +17,8 @@
                             <div class="ig-input-label">
                                 Effective From
                             </div>
-                            <div class="ig-input calendar required">
-                                <p-calendar tabindex="3" [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                            <div (click)="pc.toggle()" class="ig-input calendar required">
+                                <p-calendar #pc tabindex="3" appendTo="body" [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
                         </div>
@@ -31,7 +31,7 @@
                                         <div class="tooltip-content">
                                             Weight determines the contributions of this measure to the overall score calculated for an asset.
                                             For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
-                                            The sum of all measures used to calculate the score should sum to 100% (at the top-level with and within each group of measures.
+                                            The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).
                                             Where they do not, they will be adjusted when used to calculate the score.
                                         </div>
                                     </div>
@@ -49,7 +49,7 @@
                         <i class="fa fa-info-circle"></i>
                         <span *ngIf="scoreData" class="measure-message">
                             As scoring data has been collected against this measure (effective from {{maxScoreEffectiveDate | date:'shortDate' }}),
-                            any changes you make to this measiure will result in a  new version being created, with a new effective date.
+                            any changes you make to this measure will result in a  new version being created, with a new effective date.
                         </span>
                         <span *ngIf="!scoreData" class="measure-message">
                             Keep an effective date of {{model.EffectiveDate | date:'shortDate' }} to update the current version of the measure.

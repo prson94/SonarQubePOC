@@ -505,8 +505,28 @@ export class ProcessDiagramTemplates {
             this.makePort("B", go.Spot.Bottom)
         );
     }
+
     public static get linkTemplate() {
         var $ = go.GraphObject.make;
+
+        function isDirectLink(link: go.Link) {
+            let directLinks: string[] = ['BT', 'TB', 'LR', 'RL'];
+
+            var dir = link.data.fromPort + link.data.toPort;
+
+            if (directLinks.indexOf(dir) != -1)
+                return true;
+
+            return false;
+        }
+
+        function getPortsDistance(link: go.Link) {
+            var from = link.fromNode;
+            var to = link.toNode;
+
+            var distance = Math.sqrt(from.position.distanceSquaredPoint(to.position));
+            return distance;
+        }
 
         return $(go.Link,  // the whole link panel
             {
@@ -520,11 +540,18 @@ export class ProcessDiagramTemplates {
                 curve: go.Link.JumpOver,
                 corner: 5,
                 toShortLength: 4,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                toEndSegmentLength: 10
             },
             new go.Binding("points").makeTwoWay(),
             new go.Binding("layerName", "isSelected", function (selected) {
                 return selected ? 'Foreground' : '';
+            }).ofObject(),
+            new go.Binding("fromEndSegmentLength", "", function (link: go.Link) {
+                if (isDirectLink(link) && getPortsDistance(link) < 150) {
+                    return 10;
+                }
+                return link.data.label ? 50 : 10;
             }).ofObject(),
             $(go.Shape,
                 {
@@ -568,6 +595,18 @@ export class ProcessDiagramTemplates {
 
                 new go.Binding("visible", "", function (data) {
                     return data.data.label ? true : false;
+                }).ofObject(),
+                new go.Binding("segmentOffset", "", function (link: go.Link) {
+                    if (isDirectLink(link) && getPortsDistance(link) < 150) {
+                        return new go.Point(20, 0);
+                    }
+                    return new go.Point(50, 0);
+                }).ofObject(),
+                new go.Binding("segmentFraction", "", function (link: go.Link) {
+                    if (isDirectLink(link) && getPortsDistance(link) < 150) {
+                        return 0.5;
+                    }
+                    return null;
                 }).ofObject(),
                 $(go.Shape, "RoundedRectangle",  // the link shape
                     {
@@ -836,6 +875,28 @@ export class ProcessDiagramTemplates {
         );
 
     }
+
+    public static blankTemplate_pallete() {
+        var $ = go.GraphObject.make;
+
+        return $(go.Node, "Spot",
+            {
+                cursor: 'default',
+                selectable: false,
+
+            },
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape, 'Rectangle',
+                        {
+                            fill: 'transparent',
+                            strokeWidth: 0,
+                            width: 100,
+                            height: 100,
+                        }
+                    ))));
+    }
+
     private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
         var category = obj['data'].category;
         var toolTipDIV = document.getElementById('toolTipDIV-' + category);

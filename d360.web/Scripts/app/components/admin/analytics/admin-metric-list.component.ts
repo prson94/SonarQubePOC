@@ -25,6 +25,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private metricTree: TreeNode[] = [];
     private selectedNode: TreeNode;
     private selection: MetricAssetViewModel;
+    private previousSelection: MetricAssetViewModel;
+    private previousSelectedNode: TreeNode;
 
     @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
 
@@ -119,6 +121,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public add(asChild: boolean = false) {
+        this.previousSelection = { ...this.selection };
+        this.previousSelectedNode = { ...this.selectedNode };
         if (!asChild) {
             this.selection = null;
             this.selectedNode = null;
@@ -136,6 +140,10 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }    
     public close() {
         this.formMode = FormMode.Default;
+        this.selectedNode = { ...this.previousSelectedNode };
+        this.selection = { ...this.previousSelection };
+        this.selectionChange.emit(this.selection);
+        console.log(this.selection);
     }
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
@@ -166,7 +174,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             command: (event) => { this.delete(); }
         });
         menu.push({
-            label: 'Version History',
+            label: 'Version History (' + this.selection.VersionCount +')',
             command: (event) => { this.showHistory(true); }
         });
         return menu;

@@ -36,10 +36,6 @@ export class ObjectDetailFieldComponent {
             return "Error";
         }
     }
-    private getJSONString(obj: any): string {
-        return JSON.stringify(obj)
-    }
-
     private get isArrayValue(): boolean {
         return this.field != null
             && this.field.Values

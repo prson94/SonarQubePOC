@@ -51,87 +51,148 @@ namespace d360.web.Models
 
     #region Asset
 
-    [DataContract]
-    public class AssetBrowserAssetModel
+    public class AssetBrowserResponseModel
     {
-        [DataMember]
-        public bool focal { get; set; } = false;
-        [DataMember]
-        public int hop { get; set; }
-        [DataMember]
-        public int assetTypeId { get; set; }
-        [DataMember]
-        public Guid assetTypeUid { get; set; }
-        [DataMember]
-        public Guid assetUid { get; set; }
-        [DataMember]
+        public List<AssetBrowserNode> nodes { get; set; }
+        public List<AssetBrowserLink> links { get; set; }
+        public List<AssetBrowserHeirarchy> hierarchy { get; set; }
+        public List<AssetBrowserRevealNode> reveals { get; set; }
+    }
+
+    public class AssetBrowserNodeOwnerCount
+    {
         public string key { get; set; }
-        [DataMember]
-        public string parentKey { get; set; }
-        [DataMember]
-        public string displayValue { get; set; }
-        [DataMember]
-        public string backColor { get; set; }
-        [DataMember]
-        public double backAmount { get; set; }
-        [DataMember]
-        public string foreColor { get; set; }
-        [DataMember]
-        public double foreAmount { get; set; }
-        [DataMember]
-        public string icon { get; set; }
-        [DataMember]
-        public bool useAsTransformation { get; set; }
-        [DataMember]
-        public bool hasAssetReadAccess { get; set; }
-        [DataMember]
-        public bool isSubjectInTransformation { get; set; }
-        [DataMember]
-        public AssetTypeClass @class { get; set; }
-        [DataMember]
-        public AssetBrowserApiHopDirection reveal { get; set; }
-        [DataMember]
-        public int actionCount { get; set; }
-        [DataMember]
-        public List<AssetBrowserOwnerCountModel> ownerCounts { get; set; }
-        [DataMember]
-        public List<AssetBrowserAssetRelationCountModel> relationCounts { get; set; }
-        [DataMember]
-        public List<AssetBrowserAssetModel> items { get; set; }
+        public bool expanded { get; set; }
+        //[JsonIgnore]
+        //public string usersList { get; set; }
+        //public List<int> users { get { return JsonConvert.DeserializeObject<List<int>>(usersList ?? "[]"); } }
+        public int count { get; set; }
+        public int responsibilityTypeId { get; set; }
+        public string responsibilityType { get; set; }
     }
 
-    public class AssetBrowserAssetsModel
+    public class AssetBrowserNodeRelationCount
     {
-        public List<AssetBrowserAssetModel> assets { get; set; } = new List<AssetBrowserAssetModel>();
-        public List<AssetBrowserAssetRelationModel> assetRelations { get; set; } = new List<AssetBrowserAssetRelationModel>();
-    }
-
-    public class AssetBrowserAssetRelationCountModel
-    {
-        public string Predicate { get; set; }
-        public int PredicateID { get; set; }
-        public Guid PredicateUid { get; set; }
-        public AssetBrowserApiHopDirection Direction { get; set; }
-        public int Count { get; set; }
-        public bool Expanded { get; set; }
-        public string Key { get; set; }
-    }
-
-    public class AssetBrowserAssetRelationModel
-    {
-        public Guid intersectUid { get; set; }
-        public AssetBrowserApiHopDirection direction { get; set; }
-        public Guid subjectUid { get; set; }
-        public string subjectKey { get; set; }
-        public Guid objectUid { get; set; }
-        public string objectKey { get; set; }
+        public string key { get; set; }
         public string predicate { get; set; }
         public int predicateId { get; set; }
         public Guid predicateUid { get; set; }
-        public PredicateType predicateType { get; set; }
-        public string backColor { get; set; }
-        public string foreColor { get; set; }
+        public int direction { get; set; }
+        public int count { get; set; }
+        public bool expanded { get; set; }
+    }
+
+    public class AssetBrowserHeirarchy
+    {
+        public string hierarchyKey { get; set; }
+        public int backwardReveal { get; set; }
+        public int forwardReveal { get; set; }
+        [JsonIgnore]
+        public string ownersJson { get; set; }
+        public List<AssetBrowserNodeOwnerCount> owners { get { return JsonConvert.DeserializeObject<List<AssetBrowserNodeOwnerCount>>(ownersJson ?? "[]"); } }
+        [JsonIgnore]
+        public string relationsJson { get; set; }
+        public List<AssetBrowserNodeRelationCount> relations { get { return JsonConvert.DeserializeObject<List<AssetBrowserNodeRelationCount>>(relationsJson ?? "[]"); } }
+    }
+
+    public class AssetBrowserRevealNode
+    {
+        public string hierarchyKey { get; set; }
+        public string from { get; set; }
+        public string to { get; set; }
+        public AssetBrowserApiHopDirection direction { get; set; }
+    }
+
+    public class AssetBrowserNode
+    {
+        public string hierarchyKey { get; set; }
+        public bool focal { get; set; }
+        public bool leaf { get; set; }
+        public string key { get; set; }
+        public string group { get; set; }
+        public Guid? assetUid { get; set; }
+        public int assetTypeId { get; set; }
+        public Guid assetTypeUid { get; set; }
+        public decimal backAmount { get; set; }
+        public string back { get; set; }
         public string icon { get; set; }
+        public AssetTypeClass @class { get; set; }
+        public string text { get; set; }
+
+        public int actionCount { get; set; }
+        public bool useAsTransformation { get; set; }
+        public bool hasAssetReadAccess { get; set; }
+        public bool isSubjectInTransformation { get; set; }
+    }
+
+    public class AssetBrowserChildLink
+    {
+        public long id { get; set; }
+        public string from { get; set; }
+        public string to { get; set; }
+    }
+
+    public class AssetBrowserLink
+    {
+        public string from { get; set; }
+        public string to { get; set; }
+        public string back { get; set; }
+        public int predicateId { get; set; }
+        public Guid predicateUid { get; set; }
+        public string text { get; set; }
+        public int predicateType { get; set; }
+        [JsonIgnore]
+        public string linksJson { get; set; }
+        public List<AssetBrowserChildLink> links { get { return JsonConvert.DeserializeObject<List<AssetBrowserChildLink>>(linksJson ?? "[]"); } }
+    }
+
+    public enum AssetBrowserAncestry
+    {
+        AllAncestors = 1,
+        DirectAncestor = 2,
+        TypeOnly = 3 //For Impact
+    }
+
+    public class AssetBrowserInitialModel
+    {
+        public AssetBrowserAncestry ancestry { get; set; }
+        public Guid uid { get; set; }
+        public int hopCount { get; set; }
+    }
+
+    public class AssetBrowserImpactInitialModel
+    {
+        public Guid uid { get; set; }
+        public int hopCount { get; set; }
+    }
+
+    public class AssetBrowserLineageInitialModel
+    {
+        public AssetBrowserAncestry ancestry { get; set; }
+        public Guid uid { get; set; }
+        public int hopCount { get; set; }
+    }
+
+    public abstract class AssetBrowserHopModelBase
+    {
+        public string hierarchyKey { get; set; }
+    }
+
+    public abstract class AssetBrowserHopModelRelationBase : AssetBrowserHopModelBase
+    {
+        public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
+        public List<long> preloadedIntersects { get; set; }
+        public AssetBrowserApiHopDirection direction { get; set; }
+    }
+
+    public class AssetBrowserLineageHopModel : AssetBrowserHopModelRelationBase
+    {
+    }
+
+    public class AssetBrowserImpactHopModel : AssetBrowserHopModelRelationBase
+    {
+        public AssetBrowserAncestry ancestry { get; set; }
+        public Guid predicateUid { get; set; }
     }
 
     #endregion
@@ -147,6 +208,7 @@ namespace d360.web.Models
         public string Name { get; set; }
         public string Path { get; set; }
     }
+    
     internal class AssetBrowserPredicateFilterItem
     {
         public int Id { get; set; }
@@ -288,29 +350,8 @@ namespace d360.web.Models
 
     public class AssetBrowserOwnersModel
     {
-        public List<AssetBrowserOwnerModel> owners { get; set; } = new List<AssetBrowserOwnerModel>();
-        public List<AssetBrowserAssetRelationModel> ownerRelations { get; set; } = new List<AssetBrowserAssetRelationModel>();
-    }
-
-    public class AssetBrowserOwnerCountModel
-    {
-        public string ResponsibilityType { get; set; }
-
-        public int ResponsibilityTypeID { get; set; }
-
-        public string UsersList { get; set; }
-
-        public int[] Users
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(UsersList)) UsersList = "[]";
-                return JsonConvert.DeserializeObject<int[]>(UsersList);
-            }
-        }
-
-        public int Count { get; set; }
-        public bool Expanded { get; set; }
+        public ICollection<AssetBrowserOwnerModel> owners { get; set; }
+        public ICollection<AssetBrowserOwnerRelationModel> ownerRelations { get; set; }
     }
 
     public class AssetBrowserOwnerRelationModel

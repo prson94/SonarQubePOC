@@ -5,9 +5,9 @@
         const string CONNECTION_ENABLE_MARS = "True";
 
         // retry logic documentation https://docs.microsoft.com/en-us/azure/azure-sql/database/troubleshoot-common-connectivity-issues
-        const int CONNECTION_RETRY_COUNT = 3;   // Default is 1. Range is 0 through 255.
-        const int CONNECTION_RETRY_INTERVAL = 3; //Default is 10 seconds. Range is 1 through 60.
-        const int CONNECTION_TIMEOUT = 30;  // Default is 15 seconds. Range is 0 through 2147483647, NEEDS TO BE AT LEAST  Connection Timeout = ConnectRetryCount * ConnectionRetryInterval
+        const int CONNECTION_RETRY_COUNT = 10;   // Default is 1. Range is 0 through 255.
+        const int CONNECTION_RETRY_INTERVAL = 10; //Default is 10 seconds. Range is 1 through 60.  https://docs.microsoft.com/en-us/dotnet/api/system.data.sqlclient.sqlconnectionstringbuilder.connectretryinterval?view=dotnet-plat-ext-3.1
+        const int CONNECTION_TIMEOUT = 100;  // Default is 15 seconds. Range is 0 through 2147483647, NEEDS TO BE AT LEAST  Connection Timeout = ConnectRetryCount * ConnectionRetryInterval
 
         const string GOVERN_ENVIRONMENT_DATABASE_NAME_PREFIX = "D3S";
 

@@ -56,6 +56,9 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 20)]
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+        
+        [DataMember, JsonProperty(Order = 21)]
+        public int VersionCount { get; set; }
     }
 
     [DataContract]
