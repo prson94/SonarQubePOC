@@ -19,6 +19,7 @@ import { PoliciesService } from '../../services/policies.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { TreeTableModule, TreeTable } from 'primeng/treetable';
+import { V2ApiFilters } from '../../models/asset-search.model';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -331,12 +332,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     private exportExcel(level: number) {
+        var params = new V2ApiFilters();
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
-                this.policiesService.getHierarchyExcel(this.objectTypeId, this.assetType.Name,'Model', true);
+                params._isHierachyItem = 'Model';
+                this.policiesService.getHierarchyExcel(this.assetType.AssetTypeUID, this.assetType.Name, params, 'Model', true);
                 break;
             case AssetTypeClass.Policy:
-                this.policiesService.getHierarchyExcel(this.objectTypeId, this.assetType.Name,'Policy', true);
+                params._isHierachyItem = 'Policy';
+                this.policiesService.getHierarchyExcel(this.assetType.AssetTypeUID, this.assetType.Name, params,'Policy', true);
                 break;
         }
     }

@@ -1,5 +1,5 @@
 ﻿import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
@@ -31,12 +31,19 @@ export class PoliciesService extends BaseObservableService {
     }
 
     getHierarchyExcel(
-        policyTypeId: number,
+        assetTypeUid: string,
         policyName: string,
+        params: any,
         type: string,
         stripHtml: boolean = false
     ) {
-        this.http.get(`api/hierarchy/${policyTypeId}/hierarchyExcel?assetClass=${type}?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        this.http.get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
     }
 
     downloadFile(data: Blob, name: string) {

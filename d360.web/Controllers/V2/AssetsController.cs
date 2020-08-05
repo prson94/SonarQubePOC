@@ -317,8 +317,21 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
+                        string isHierachyItem = "";
+                        if (queryParams.Any(p => p.Key.Trim().ToLower() == "_ishierachyitem"))
+                            isHierachyItem = queryParams.ToList().First(k => k.Key.ToLower() == "_ishierachyitem").Value;
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+
+                        
+                        SLDocument results;
+                        if (isHierachyItem == "Policy" || isHierachyItem == "Model")
+                        {
+                            results = await AssetRepository.GetHierarchyExcel(assetTypeUid, isHierachyItem, true);
+                        }
+                        else
+                        {
+                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                        }
 
                         var stream = new MemoryStream();
                         results.SaveAs(stream);
