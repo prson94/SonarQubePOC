@@ -20,13 +20,13 @@
     <ig-switch trueLabel="True" falseLabel="False"></ig-switch>
     <br /><br /><br /><br />
     <h4>With optional selection</h4>
-    <p>By default an option must be selected however it is possible to enable no selection via the alwaysSet property.  Simply click on the selected value a second time to unselect or initialize ngModel to undefined.</p>
-    <ig-switch [alwaysSet]="false" [ngModel]="undefined"></ig-switch>
+    <p>The optional property is used to allow the switch control to return to the unselected state after a value is selected.  When not set once a value is selected the switch will not allow you to return to having no value selected.  Simply click on the selected value a second time to unselect.</p>
+    <ig-switch [optional]="true" [ngModel]="undefined"></ig-switch>
     <br /><br /><br /><br />
     <h4>Binding</h4>
     <p>2-way binding between the switch control is supported using ngModel</p>
-    <ig-switch [(ngModel)]="bindingVal" [alwaysSet]="false"></ig-switch> <br />
-    <span>Current Value is : {{bindingVal}}</span>
+    <ig-switch [(ngModel)]="bindingVal" [optional]="true"></ig-switch> <br />
+    <span>Current Value is : {{(bindingVal === undefined ? '[undefined]' : bindingVal)}}</span>
     <br /><br /><br /><br />
     <h4>Disabled</h4>
     <p>As with all form controls this input can be disabled</p>
@@ -40,7 +40,7 @@
             <b>Required bool(yes/no)</b>
         </div>
         <div class="row">
-            <ig-switch name="somebool" [(ngModel)]="formVal" [alwaysSet]="false" #somebool="ngModel" required [styleClass]="somebool?.errors?.required ? 'switch-required-unset' : ''"></ig-switch>
+            <ig-switch name="somebool" [(ngModel)]="formVal" #somebool="ngModel" required [styleClass]="somebool?.errors?.required ? 'switch-required-unset' : ''"></ig-switch>
             <span *ngIf="somebool.invalid && (somebool.dirty || somebool.touched)" class="switch-required-message">
                 <span *ngIf="somebool.errors.required">
                     Value required
