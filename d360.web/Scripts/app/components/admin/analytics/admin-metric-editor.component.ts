@@ -109,7 +109,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (this.scoreData && this.scoreData.length) {
             let maxDates: any[] = [];
             this.scoreData.forEach(x => {
-                if (x.Scores) {
+                if (x.Scores && x.Scores.length > 0) {
                     let scores = x.Scores.sort((x, y) => {
                         let datex = new Date(x.EffectiveDate);
                         let datey = new Date(y.EffectiveDate);
