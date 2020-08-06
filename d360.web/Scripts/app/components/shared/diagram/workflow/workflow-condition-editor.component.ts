@@ -290,8 +290,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
-            case 'list':
-            case 'fusionlookup':
+            case 'list':            
             case 'text':
                 this.operators = [
                     { value: '=', label: '=' },

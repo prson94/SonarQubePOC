@@ -1,11 +1,12 @@
 ﻿<d3s-modal [title]="componentTitle" [subtitle]="subtitle" [showTitle]="true" additionalClasses="full-window-dialog" [showConfirm]="false" (onClose)="cancel()" [isVisible]="isModalVisible">
     <div class="modal-content">
+        <div class="modal-child-component">
             <d3s-object-relationships [objectType]="objectType"
                                       [objectID]="objectID"
                                       [objectName]="objectName"
                                       [objectPermissions]="permissions"
                                       [isModal]="true"></d3s-object-relationships>
-                
+        </div>   
         <button class="modal-button-position button right"
                 type="button"
                 (click)="cancel()"

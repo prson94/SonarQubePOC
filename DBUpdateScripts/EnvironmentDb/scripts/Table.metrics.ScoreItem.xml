@@ -34,4 +34,89 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.metrics.ScoreItem-v2.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Uid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [Uid] uniqueidentifier constraint DF_MetricScoreItem_Uid default(newid()) not null
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AssetVersionUid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [AssetVersionUid] uniqueidentifier null
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Evidence')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [Evidence] nvarchar(max) null
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'ConditionUid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [ConditionUid] uniqueidentifier null
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [AdjustedMaxWeight] decimal(5,3) null
+END
+
+if exists (select * from sys.key_constraints where  name = 'PK_MetricScoreItem')
+begin
+	alter table [metrics].[ScoreItem] drop constraint [PK_MetricScoreItem]
+	alter table [metrics].[ScoreItem] add constraint [PK_MetricScoreItem] primary key nonclustered ( [Uid] asc )
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScoreItem')
+begin
+	alter table [metrics].[ScoreItem] add constraint UQ_MetricScoreItem unique clustered ( [AssetUid], [MetricAssetUid], [EffectiveDate] ); 
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Uid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP CONSTRAINT [DF_MetricScoreItem_Uid]
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [Uid]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AssetVersionUid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [AssetVersionUid]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'Evidence')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [Evidence]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'ConditionUid')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [ConditionUid]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [AdjustedMaxWeight]
+END
+
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScoreItem')
+begin
+	alter table [metrics].[ScoreItem] drop constraint UQ_MetricScoreItem 
+end
+
+if exists (select * from sys.key_constraints where  name = 'PK_MetricScoreItem')
+begin
+	alter table [metrics].[ScoreItem] drop constraint [PK_MetricScoreItem]
+	alter table [metrics].[ScoreItem] add constraint [PK_MetricScoreItem] primary key clustered ( [AssetUid] ASC, [MetricAssetUid] ASC, [EffectiveDate] DESC )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

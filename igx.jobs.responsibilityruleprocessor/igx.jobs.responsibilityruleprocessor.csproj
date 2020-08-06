@@ -183,7 +183,7 @@
       <HintPath>..\packages\System.Spatial.5.8.4\lib\net40\System.Spatial.dll</HintPath>
     </Reference>
     <Reference Include="System.Text.RegularExpressions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.RegularExpressions.4.3.0\lib\net463\System.Text.RegularExpressions.dll</HintPath>
+      <HintPath>..\packages\System.Text.RegularExpressions.4.3.1\lib\net463\System.Text.RegularExpressions.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Dataflow, Version=4.5.24.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Tpl.Dataflow.4.5.24\lib\portable-net45+win8+wpa81\System.Threading.Tasks.Dataflow.dll</HintPath>
@@ -224,7 +224,7 @@
       <Name>d360.model</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
-      <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>
+      <Project>{11e0bc56-6f38-42eb-af5c-6fa9968ba0fa}</Project>
       <Name>d360.utils.company</Name>
     </ProjectReference>
     <ProjectReference Include="..\igx.jobs\igx.jobs.csproj">

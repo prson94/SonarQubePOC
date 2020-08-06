@@ -15,6 +15,18 @@ export class MetricAssetViewModel {
     UpdateFrequency: MetricUpdateFrequency;
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
+    VersionCount: number;
+}
+
+export class MetricAssetHistoryViewModel {
+    Uid: string;
+    Version: number;
+    Name: string;
+    Description: string;
+    EffectiveDate: string | Date;
+    EffectiveEndDate: string | Date;
+    Weight: number;
+    ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
 }
 
 export class MetricAssetVersionConditionViewModel {
@@ -40,7 +52,8 @@ export class MetricAssetVersionConditionItemViewModel {
     FieldTypeName: string;
     ValuesText: string;
     OperatorText: string;
-    IsEditMode: boolean;
+    IsEditMode: boolean; 
+    operatorOptions: any[];
 
     SingleValue: any; //For non-list fields
 }

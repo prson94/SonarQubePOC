@@ -60,6 +60,7 @@ namespace igx.jobs
             {
                 var Caching = new DummyCachingProvider();
                 var Queue = new AzureQueueSource();
+                var Storage = new AzureStorageProvider();
                 var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
                 var Community = new CommunityContext(Caching, Queue, Security);
 #if DEBUG
@@ -75,7 +76,7 @@ namespace igx.jobs
                         Community.CurrentCompanyDomain = c.UrlPrefix;
                         Security.CompanyID = c.CompanyID;
                         Security.CompanyPrefix = c.UrlPrefix;
-                        var company = new CompanyContext(Community, Caching, Queue, Security, true);
+                        var company = new CompanyContext(Community, Caching, Queue, Security, Storage, true);
 
                         var settings = company.Table<IntegrationSetting>().ToList();
 
@@ -545,6 +546,7 @@ where	[AllowChangeDetection] = 0").ToList();
             var Caching = new DummyCachingProvider();
             var Queue = new AzureQueueSource();
             var Security = new UriSecurityContextProvider { IsAdministrator = true, ResourceID = 0 };
+            var Storage = new AzureStorageProvider();
             Community = new CommunityContext(Caching, Queue, Security)
             {
                 CurrentCompanyID = QueueModel.CompanyID,
@@ -552,7 +554,7 @@ where	[AllowChangeDetection] = 0").ToList();
             };
             Security.CompanyID = QueueModel.CompanyID;
             Security.CompanyPrefix = QueueModel.UrlPrefix;
-            Company = new CompanyContext(Community, Caching, Queue, Security, true);
+            Company = new CompanyContext(Community, Caching, Queue, Security, Storage, true);
 
             #region Set common properties that we will work with in many methods
 

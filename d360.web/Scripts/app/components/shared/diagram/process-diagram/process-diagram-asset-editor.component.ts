@@ -11,9 +11,12 @@ import { EditorField } from '../../../../models/editor-field.model';
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent implements OnChanges {
+export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
+    @Input() isReadOnly: boolean = true;
+    @Input() disallowedNames: string[] = [];
     @Output() nodeDataChange = new EventEmitter();
+    private assetName: string = '';
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -29,24 +32,28 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.nodeData && changes.nodeData.currentValue != changes.nodeData.previousValue) {
-            if (this.nodeData)
-                this.load();
+            if (this.nodeData) {
+                this.assetName = this.nodeData['Name'];
+            }
         }
     }
 
-    load() {
-        this.cdRef.detectChanges();
-        this.cdRef.markForCheck();
-    }
-
-
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
+    //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
+
+        if (data && data['Name']) {
+            this.assetName = data['Name'];
+        }
+
         for (var prop in data) {
             if (data[prop] == undefined) {
+                delete data[prop];
+            }
+            if (prop == 'Uid' || prop == 'AssetTypeUid') {
                 delete data[prop];
             }
         }
@@ -55,8 +62,14 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
             if (data[f.FieldName] == undefined) {
                 data[f.FieldName] = '';
             }
+            else {
+                if (f.FieldType == 'DateTime') {
+                    var dateTime = new Date(data[f.FieldName]);
+                    dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
+                    data[f.FieldName] = dateTime.toISOString();
+                }
+            }
         });
-
         this.nodeDataChange.emit(data);
     }
 

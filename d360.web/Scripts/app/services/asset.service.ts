@@ -189,22 +189,6 @@ export class AssetService extends BaseObservableService {
             .subscribe(data => this.downloadFile(data, fileName));
     }
 
-    getHierarchyExcel(
-        assetTypeUid: string,
-        policyName: string,
-        params: any,
-        type: string,
-        stripHtml: boolean = false
-    ) {
-        var qString = '';
-        if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
-                qString = '?' + qString;
-        }
-        this.http.get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
-    }
-
     public searchAssetPath(filter: AssetSearchFilter): Observable<AssetSearchApiResponse> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -212,10 +196,12 @@ export class AssetService extends BaseObservableService {
 
         return this
             .http
-            .post(`/api/v2/assets/paths`, filter, httpOptions)
-            .pipe(map(response => {
-                return <AssetSearchApiResponse>(response);
-            }),
+            .post(`/api/v2/assets/paths`, filterValue, httpOptions)
+            .pipe(
+                debounceTime(500),
+                map(response => {
+                    return <AssetSearchApiResponse>(response);
+                }),
                 catchError(err => this.handleError(err))
             );
     }

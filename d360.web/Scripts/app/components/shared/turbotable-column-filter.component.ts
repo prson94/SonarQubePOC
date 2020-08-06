@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, Input, Output } from "@angular/core";
+﻿import { Component, NgModule, Input, Output, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Table } from 'primeng/table';
 import { EventEmitter } from '@angular/core';
@@ -7,7 +7,7 @@ import { EventEmitter } from '@angular/core';
     selector: 'd3s-column-filter',
     template: `
         <ng-container [ngSwitch]="datatype">
-            <input *ngSwitchCase="'text'" type="text" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="ui-column-filter ui-inputtext">
+            <input *ngSwitchCase="'text'" type="text" pInputText value="{{value}}" (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="ui-column-filter ui-inputtext">
             <input *ngSwitchCase="'number'" type="number" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="ui-column-filter ui-inputtext">
             <input *ngSwitchCase="'date'" type="text" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode)" class="ui-column-filter ui-inputtext">
         </ng-container>
@@ -17,12 +17,12 @@ export class D3SColumnFilter {
     @Input() datatype: string = 'text';
     @Input() field: string;
     @Input() filterMatchMode = 'contains';
-
+    @Input() value: any;
     @Output() onChangeCallback = new EventEmitter();
 
     constructor(public dt: Table) {
     }
-
+    
     onChange(event) {
         if (this.onChangeCallback) {
             this.onChangeCallback.emit({ value: event, prop: this.field });

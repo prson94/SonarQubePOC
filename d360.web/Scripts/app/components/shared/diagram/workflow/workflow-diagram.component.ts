@@ -339,7 +339,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == 0 && this.uid == "00000000-0000-0000-0000-000000000000") {
+        if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
             this.isLoading = false;
             return of();
         }
@@ -940,6 +940,40 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
                             return false;
                         break;
+                    case "Followers":
+                        let obj = this.model.Event.Object;
+                        if (obj == 'IntersectType' || this.model.Event.ChangeType == WorkflowChangeType.Loaded) 
+                            return false;
+
+                        if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
+                            this.model.Event.ChangeType == WorkflowChangeType.Update ||
+                            this.model.Event.ChangeType == WorkflowChangeType.Schedule ||
+                            this.model.Event.ChangeType == WorkflowChangeType.RequestCertification))
+                            return false;
+
+                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
+                            return false
+
+                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType'))
+                        {
+                            if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '')
+                            {
+                                let objArr = this.model.Event.IssueObject.split("|", 1);
+                                let Issobj = "";
+                                if (objArr.length <= 0)
+                                    Issobj = " ";
+                                else
+                                    Issobj = objArr[0];
+
+                                if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                    return;
+                            }
+                        }
+                        break;
+                    case "Group":
+                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
+                            return false;
+                        break;
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));
@@ -975,6 +1009,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                             if (x > -1)
                                 return false;
                         }
+                        break;
+                    case "Group":
+                        if (n.settings.MessageToGroup == null || n.settings.MessageToGroup.length != 36)
+                            return false;
                         break;
                 }
 
@@ -1242,6 +1280,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.MessageBodyTemplate = e.settings.MessageBodyTemplate;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.MessageToGroup = e.settings.MessageToGroup;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
 
@@ -1266,6 +1305,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
+                n.settings.MessageToGroup = e.settings.MessageToGroup;
                 n.settings.ResponsibilityTypeID = e.settings.ResponsibilityTypeID;
                 n.settings.IncludePreviousFormResponses = e.settings.IncludePreviousFormResponses;
                 if (n.settings.SendFormEmail == true) {

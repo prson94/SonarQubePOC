@@ -76,7 +76,7 @@ namespace d360.web.Controllers
         public JsonNetResult()
         {
             SerializerSettings = new JsonSerializerSettings();
-            SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;            
+            SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
         }
 
         public override void ExecuteResult(ControllerContext context)
@@ -140,7 +140,7 @@ namespace d360.web.Controllers
                    select r
                 );
         }
-        
+
         #region Error Handling Helper
 
         [System.Runtime.Serialization.DataContract(Name = "Error")]
@@ -168,7 +168,7 @@ namespace d360.web.Controllers
         }
 
         internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
-        {            
+        {
             return ResponseMessage(
                 Request.CreateResponse(
                     status,
@@ -191,7 +191,7 @@ namespace d360.web.Controllers
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
-            if(!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackEvent(eventName, properties, metrics);
             telemetry = null;
         }
@@ -213,7 +213,7 @@ namespace d360.web.Controllers
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
         {
-            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn,false, enableRelationFields, checkForKeyColumn);            
+            Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
         }
 
         internal string applyFilteringSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
@@ -224,7 +224,7 @@ namespace d360.web.Controllers
             var filters = string.Empty;
 
             if (query.ContainsKey("filterscount"))
-            { 
+            {
                 if (int.TryParse(query["filterscount"], out filterscount))
                 {
                     var filteredFields = new List<string>();    //Keeps track of the filters we have set so far.
@@ -233,7 +233,7 @@ namespace d360.web.Controllers
                         if (query.ContainsKey("filterdatafield" + i))
                         {
                             var fField = query["filterdatafield" + i];
-                            filteredFields.Add(fField);                        
+                            filteredFields.Add(fField);
                         }
                     }
 
@@ -280,7 +280,7 @@ namespace d360.web.Controllers
                     }
 
                     sql += filters;
-                }            
+                }
             }
 
 
@@ -296,10 +296,11 @@ namespace d360.web.Controllers
         internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
         {
             string sortDataField = "";
-            
+
             var query = Request.GetQueryStrings();
 
-            if (query.ContainsKey("sortDataField")) {
+            if (query.ContainsKey("sortDataField"))
+            {
                 sortDataField = query["sortDataField"];
             }
             if (query.ContainsKey("sortOrder"))
@@ -307,7 +308,7 @@ namespace d360.web.Controllers
                 sortOrder = query["sortOrder"];
             }
 
-            
+
 
             if (string.IsNullOrEmpty(sortDataField))
                 sortDataField = sortDefaultField;
@@ -338,7 +339,8 @@ namespace d360.web.Controllers
 
             var query = Request.GetQueryStrings();
 
-            if (query.ContainsKey("pagenum")) {
+            if (query.ContainsKey("pagenum"))
+            {
                 pagenum = int.Parse(query["pagenum"]);
             }
             if (query.ContainsKey("pagesize"))
@@ -359,7 +361,7 @@ namespace d360.web.Controllers
                 ExecutionID = Guid.NewGuid(),
                 StartedOn = DateTime.UtcNow,
                 Route = Request?.RequestUri?.LocalPath,
-                Method =  Request?.Method?.Method,
+                Method = Request?.Method?.Method,
                 ResourceID = Company.CurrentResourceID,
                 Total = total,
                 Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
@@ -371,8 +373,8 @@ namespace d360.web.Controllers
         }
         #endregion
     }
-        
-    public class BaseController: Controller
+
+    public class BaseController : Controller
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
@@ -560,13 +562,16 @@ namespace d360.web.Controllers
             };
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool allowTagField = false)
         {
             var row = startRow;
 
+            if (allowTagField)
+                limitedFieldTypes = limitedFieldTypes.Where(x => x != "Tag").ToList();
+
             fields.ForEach(f =>
             {
-                if (f.IsEditable && f.Type != "Tag")
+                if (f.IsEditable || (f.Type == "Tag" && allowTagField))
                 {
                     #region Is Editable
 
@@ -629,7 +634,7 @@ namespace d360.web.Controllers
                                 }
                                 else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)
                                 {
-                                    if(f.FilterFieldTypeID > 0)
+                                    if (f.FilterFieldTypeID > 0)
                                     {
                                         fld.DelayedLoadType = "FieldFilter";
                                         //Field filter works similar to ParentFieldType, so we'll overload those parameters
@@ -727,7 +732,7 @@ namespace d360.web.Controllers
                                     }
                                 }
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
                                 SendException(ex);
@@ -736,22 +741,27 @@ namespace d360.web.Controllers
 
                         if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
-                            var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+                            var sql = @"select
+                                            [ID],
+                                            [Subject],
+                                            [SubjectID],
+                                            [SubjectCardinality],
+                                            [Object],
+                                            [ObjectID],
+                                            [ObjectCardinality],
+                                            [PredicateID] from [dbo].[intersecttype] where ID = @ID";
+                            var intersectType = Company.Database.Connection.QueryFirstOrDefault<IntersectType>(sql, new { ID = f.LookupObjectID.Value });
                             if (intersectType != null)
                             {
                                 bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
-                                
-                                
+
+
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                 if (cardinality != Cardinality.Many)
                                     fld.MultiSelect = false;
                                 else
                                     fld.MultiSelect = true;
-
-                                var result = Company.GetRelationshipFieldItems(f.ID);
-                                fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
-                                fld.RecordCount = (int)result["Count"];
 
                                 Predicate predicate = null;
                                 if (intersectType.PredicateID.HasValue)
@@ -769,7 +779,7 @@ namespace d360.web.Controllers
                             fld.Required = (f.MinimumLength > 0 || f.Length > 0 || f.IsRequired);
                         else
                         {
-                            if (!new[] { "Number", "Decimal",  "Text" }.Contains(f.Type))
+                            if (!new[] { "Number", "Decimal", "Text" }.Contains(f.Type))
                             {
                                 fld.Required = (f.MinimumLength > 0 || f.Length > 0);
                             }
@@ -789,10 +799,16 @@ namespace d360.web.Controllers
         internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
         {
             var row = startRow;
+            bool includeTagField = false;
+            if (@object == "Task")
+            {
+                this.limitedFieldTypes = this.limitedFieldTypes.Where(x => x != "Tag").ToList();
+                includeTagField = true;
+            }
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable && ft.Type != "Tag")
+                if (ft.IsEditable || (includeTagField && ft.Type == "Tag"))
                 {
                     #region Is Editable
 
@@ -926,7 +942,7 @@ namespace d360.web.Controllers
 
                                     if (ft.AllowMultipleValues)
                                     {
-                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value})
+                                        items = Company.Query<FieldLookupValue>(itemSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID.Value })
                                             .OrderBy(o => o.Text)
                                             .Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString() })
                                             .ToList();
@@ -953,7 +969,7 @@ namespace d360.web.Controllers
                                     {
                                         int maxItems = int.Parse(Community.GetCompanySettings()["MaxDropdownItems"]);
                                         int count = Company.Query<int>(countSql, new { fieldTypeId = ft.ID, lookupObjectType = ft.LookupObjectType, lookupObjectId = ft.LookupObjectID }).FirstOrDefault();
-                                        
+
                                         string selectedValue = null;
                                         if (f != null && !string.IsNullOrWhiteSpace(f.Value))
                                             selectedValue = f.Value;
@@ -993,7 +1009,7 @@ namespace d360.web.Controllers
                                     }
                                 }
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 fld.Items.Add(new SelectListItem { Text = "Error while rendering lookup field type.", Value = "" });
 
@@ -1041,9 +1057,9 @@ namespace d360.web.Controllers
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
                         else
                             if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
-                            {
-                                fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
-                            }
+                        {
+                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+                        }
 
 
 
@@ -1055,6 +1071,15 @@ namespace d360.web.Controllers
                                 fld.Value = ft.DefaultValue;
                             }
                         }
+
+                        if (ft.Type == "Tag" && includeTagField)
+                        {
+                            fld.Value = Company.Query<string>(@"select STRING_AGG(t.Value,'|') as value from asset a
+                            inner join assettag at on a.id = at.assetid
+                            inner join tag t on at.tagid = t.id
+                            where a.object = @obj and a.ObjectId = @objId", new { obj = @object, objId = objectID }).FirstOrDefault();
+                        }
+
 
                         list.Add(fld);
 
@@ -1087,38 +1112,38 @@ namespace d360.web.Controllers
                 {
                     var value = form[ft.Name];
                     List<int> items = new List<int>();
-                        var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
-                        if (intersectType != null)
+                    var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
+                    if (intersectType != null)
+                    {
+                        var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
+                        if (!string.IsNullOrEmpty(value))
+                            items = value.Trim(' ', ',').Split(',').Select<string, int>(int.Parse).ToList();
+                        //delete any intersects for this object not in the list
+                        List<Intersect> intersects = null;
+                        if (isSubject)
                         {
-                            var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
-                            if(!string.IsNullOrEmpty(value))
-                                items =  value.Trim(' ', ',').Split(',').Select<string, int>(int.Parse).ToList();
-                            //delete any intersects for this object not in the list
-                            List<Intersect> intersects = null;
-                            if (isSubject)
+                            intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid).ToList();
+                            foreach (var intersect in intersects)
                             {
-                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid).ToList();
-                                foreach (var intersect in intersects)
+                                //check if the object is in the value list if not delete the intersect
+                                if (!items.Contains(intersect.ObjectID))
                                 {
-                                    //check if the object is in the value list if not delete the intersect
-                                    if(!items.Contains(intersect.ObjectID))
-                                    {
-                                        Company.Delete<Intersect>(intersect);
-                                    }
+                                    Company.Delete<Intersect>(intersect);
                                 }
                             }
-                            else
+                        }
+                        else
+                        {
+                            intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid).ToList();
+                            foreach (var intersect in intersects)
                             {
-                                intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid).ToList();
-                                foreach (var intersect in intersects)
+                                //check if the object is in the value list if not delete the intersect
+                                if (!items.Contains(intersect.SubjectID))
                                 {
-                                    //check if the object is in the value list if not delete the intersect
-                                    if (!items.Contains(intersect.SubjectID))
-                                    {
-                                        Company.Delete<Intersect>(intersect);
-                                    }
+                                    Company.Delete<Intersect>(intersect);
                                 }
                             }
+                        }
 
                         if (!string.IsNullOrEmpty(value))
                         {
@@ -1189,7 +1214,7 @@ namespace d360.web.Controllers
                 result.Add(item.Key, item.Value);
             return result;
         }
-        
+
         internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (properties == null) properties = new Dictionary<string, string>();
@@ -1203,7 +1228,7 @@ namespace d360.web.Controllers
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
-            if(!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
+            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
             telemetry.TrackEvent(eventName, properties, metrics);
             telemetry = null;
         }
@@ -1265,7 +1290,7 @@ namespace d360.web.Controllers
             string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
             Dictionary<string, object> extraParams = null,
             bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
-        {            
+        {
             var dbArgs = new Dapper.DynamicParameters();
             var obj = objectType.Replace("Type", "");
 
@@ -1310,7 +1335,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             // If simple filter specified add that criteria to the sql
             if (!string.IsNullOrEmpty(filter))
             {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(staticFields, obj, objectTypeID, filter, dbArgs, fields)}";                
+                sql = $"{sql} and {addDynamicFieldSimpleFilter(staticFields, obj, objectTypeID, filter, dbArgs, fields)}";
             }
 
             var querySql = $@"select * from ({sql}) A";
@@ -1325,7 +1350,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
             #endregion
 
-            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn:idColumn);  // Filtering
+            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn: idColumn);  // Filtering
 
             countSql += filters;
             querySql += filters;
@@ -1335,7 +1360,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             if (string.IsNullOrEmpty(sortDataField))
             {
                 var sortSql = "";
-                
+
                 foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
                 {
                     var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
@@ -1369,7 +1394,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             #endregion
 
             querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
-                        
+
             int total = Company.Query<int>(countSql, dbArgs).First();
             var query = Company.Query<dynamic>(querySql, dbArgs);
 
@@ -1387,7 +1412,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
         }
 
         internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
-        {            
+        {
             if (string.IsNullOrEmpty(filterExp)) return "";
 
             var fieldTypeRelationType = type;
@@ -1434,7 +1459,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         }
                     }
 
-                        sb.Append($"(Field{field.ID}_OTD.{columnName} like @simpleFilter + '%')");
+                    sb.Append($"(Field{field.ID}_OTD.{columnName} like @simpleFilter + '%')");
                 }
                 else if (field.Type == DataType.FieldFromRelationship.ToString())
                 {
@@ -1459,11 +1484,11 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         else
                             sb.Append($"(Field{field.ID}_T.FormattedValue like @simpleFilter + '%')");
                     }
-                    
+
                 }
             }
 
-            var val = new Dapper.DbString { Value = filterExp.Replace('*','%').Replace('?','_'), Length = 200};
+            var val = new Dapper.DbString { Value = filterExp.Replace('*', '%').Replace('?', '_'), Length = 200 };
 
             dbArgs.Add("simpleFilter", val);
 
@@ -1481,9 +1506,9 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             var fieldTypeRelationType = $"{type}Type";
             if (fields == null)
             {
-                fields = Company.Filter<FieldType>(i => 
-                        i.Object == fieldTypeRelationType && 
-                        i.ObjectID == typeID && 
+                fields = Company.Filter<FieldType>(i =>
+                        i.Object == fieldTypeRelationType &&
+                        i.ObjectID == typeID &&
                         i.IsListable
                     ).OrderBy(i => i.ColumnOrder).ToList();
             }
@@ -1539,7 +1564,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     columns += thisColumn;
                     if (includeIdColumn) columns += $"{name}.Value as [{name}ID], ";
                 }
-                
+
                 joins += fieldJoin;
 
                 if (filterFields.Contains(name))
@@ -1577,7 +1602,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     else
                         condition = "CONTAINS";
                 }
-            }            
+            }
 
             var querySyntax = "";
             switch (condition)
@@ -1607,7 +1632,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     dbParams.Add(bind, $"%{value}");
                     querySyntax = $"{field} LIKE @{bind}";
                     break;
-                case "IN":                    
+                case "IN":
                     dbParams.Add(bind, value.Split(new string[] { "!~!" }, StringSplitOptions.RemoveEmptyEntries));
                     querySyntax = $"{field} IN @{bind}";
                     break;
@@ -1619,7 +1644,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     {
                         if (index != 0) querySyntax += " or ";
                         var bind_sub = $"{bind}{index++}";
-                        dbParams.Add(bind_sub, $"%{part}%");                        
+                        dbParams.Add(bind_sub, $"%{part}%");
                         querySyntax += $"{field} LIKE @{bind_sub}";
                     }
                     querySyntax += ")";
@@ -1659,7 +1684,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
             return querySyntax;
         }
-        
+
         internal bool isValidFieldName(string field)
         {
             var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
@@ -1684,7 +1709,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             var sb = new StringBuilder();
 
             if (int.TryParse(query["relfilterscount"], out filterscount) && filterscount > 0)
-            {    
+            {
                 for (var i = 0; i < filterscount; i++)
                 {
                     var fFieldId = int.Parse(query["relfilterdatafield" + i]);
@@ -1743,12 +1768,12 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
                     var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
                     if (fieldType != null && fieldType.AllowMultipleValues)
-                        filter= applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
+                        filter = applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
                     else
-                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId +".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
-                    
+                        filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId + ".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
+
                     if (!string.IsNullOrEmpty(filter))
-                    {                        
+                    {
                         filters += filter;
                     }
                 }
@@ -1757,7 +1782,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return filters;
         }
 
-        private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID", bool v2ApiFilterValues = false)
+        private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber, FieldType fieldType, string idColumn = "A.ID", bool v2ApiFilterValues = false)
         {
             value = value.Replace("!~!", ",");
 
@@ -1798,7 +1823,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
         internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false, bool v2ApiFilterValues = false)
         {
-            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields,fromArtifact: fromArtifact, v2ApiFilterValues: v2ApiFilterValues);
+            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields, fromArtifact: fromArtifact, v2ApiFilterValues: v2ApiFilterValues);
         }
 
         internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
@@ -1914,9 +1939,9 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     }
                 }
             }
-            
+
             #endregion
-            
+
             #region Ownership Filters
 
             string ownerUsers = query["ownerUsers"];
@@ -1936,7 +1961,8 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         var ids = group.Split('|');
                         if (ids.Length == 2)
                         {
-                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem {
+                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
+                            {
                                 FilterType = UiRequestOwnershipFilterType.Group,
                                 ResponsibilityTypeID = int.Parse(ids[0]),
                                 SecurityAssetID = int.Parse(ids[1])
@@ -1952,7 +1978,8 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         var ids = user.Split('|');
                         if (ids.Length == 2)
                         {
-                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem {
+                            ownershipFilter.Items.Add(new UiRequestOwnershipFilterItem
+                            {
                                 FilterType = UiRequestOwnershipFilterType.User,
                                 ResponsibilityTypeID = int.Parse(ids[0]),
                                 SecurityAssetID = int.Parse(ids[1])
@@ -2006,9 +2033,9 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                             }
                         }
                     }
-                    if(fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
-                        filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn, v2ApiFilterValues);
-                   else
+                    if (fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
+                        filters += applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn, v2ApiFilterValues);
+                    else
                         filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
 
                     if (!string.IsNullOrEmpty(filter))
@@ -2018,7 +2045,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     }
                 }
             }
-             filters += whereFilter;
+            filters += whereFilter;
             #endregion
 
             #region Relationship Filters
@@ -2113,7 +2140,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             }
 
             #endregion
-                        
+
             return filters;
         }
 
@@ -2132,7 +2159,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             {
                 throw new Exception("Invalid sort order specified");
             }
-                        
+
             // make sure its a valid field name
             if (!isValidFieldName(sortDataField))
             {
@@ -2187,7 +2214,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                 if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
                 {
                     return !(companySetting.AuthenticationType == AuthenticationType.Forms);
-                    
+
                 }
             }
 

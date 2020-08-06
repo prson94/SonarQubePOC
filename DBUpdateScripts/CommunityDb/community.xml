@@ -60,4 +60,5 @@
   <include file="scripts/GOV-11063.xml"/>  <!-- Change Setting Type on settings 60,71 to number-->
   <include file="scripts/GOV-11173.xml"/>  <!-- Change Setting Type on settings 68 to not locked-->  
   <include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
+  <include file="scripts/GOV-11295.xml"/>  <!-- Rename table CompanyFeature-->  
 </databaseChangeLog>

@@ -834,12 +834,9 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Diagram Asset Types";
                     responseModel.Object = SystemObjects.TaskType.ToString();
 
-                    var checkUidSQL = @"select count(*) from companysetting
-                                    where companyid = @companyId and settingid = 73
-                                    and Value != '00000000-0000-0000-0000-000000000000'";
+                    var govRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
 
-                    var res = Community.Query<int>(checkUidSQL, new { companyid = Company.CurrentCompanyID }).FirstOrDefault();
-                    responseModel.Items.HasGovernanceRoleUidSet = res > 0;
+                    responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
 
                 }
 
@@ -991,7 +988,7 @@ namespace d360.web.Controllers
                     }
                 }
             }
-            if (!Company.CurrentResourceIsAdmin)
+            if (responseModel != null && !Company.CurrentResourceIsAdmin)
             {
                 if (model.AssetUid != null)
                 {

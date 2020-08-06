@@ -45,7 +45,7 @@ namespace igx.jobs.databasecleaner
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 2).ToList();
+                companies = companies.Where(x => x.CompanyID == 1).ToList();
 #endif
 
                 foreach(var c in companies)
@@ -55,6 +55,11 @@ namespace igx.jobs.databasecleaner
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
                             company.Open();
+
+                            //remove any old api execution records
+                            await company.ExecuteAsync("[api].[DeleteExecutionRecords]", commandTimeout: 1800);
+
+                            //update database statistics
                             await company.ExecuteAsync("sp_updatestats", commandTimeout: 1400);
                         }                          
                     }

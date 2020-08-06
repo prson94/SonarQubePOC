@@ -1,0 +1,80 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Procedure.utility.GetOwnersForWFFollowers-v1">
+	<comment>GOV-4601</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [utility].[GetOwnersForWFFollowers]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+as
+begin
+	declare @objectId int,			
+			@objectType varchar(50),
+			@assetId bigint,
+			@assetTypeId bigint,
+			@issueId int;
+
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, ResourceTypeID int, Status nvarchar(25))
+	
+	begin
+		select 
+			@objectType = i.object, 
+			@objectId = i.objectid,
+			@assetId = a.id,
+			@assetTypeId = a.assetTypeId 
+		from [workflow].[item] i
+		left join Asset a on a.object = i.object and A.objectid = i.objectid 
+		where i.id = @workflowItemID;
+
+		if @objectType = 'Issue'
+		begin				
+			select 
+				@issueId = i.id, 
+				@objectType = i.[object], 
+				@objectId = i.[objectid],
+				@assetId = a.id,
+				@assetTypeId = a.assetTypeID
+			from Issue i
+			left join Asset a on a.Object = i.Object and a.ObjectID = i.ObjectID
+			where i.id = @objectId
+		end
+			
+		insert into @tbl
+			select	FD.ResourceID, 
+					FD.FollowerFirstName FirstName, 
+					FD.FollowerLastName LastName, 
+					FD.FollowerEmail Email, 
+					FD.FollowerEmail Email, 
+					R.LastLoggedInOn as DateLastLoggedIn, 
+					1 as ResourceTypeID, 
+					case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+			from	FollowDetail FD
+					inner join reporting.Global_Resource R on 
+							FD.ResourceID = R.ResourceID
+							and R.State = 1
+			where FD.Objecttype = @objectType and FD.ObjectID = @objectId
+			and FD.FollowerEmail not like '%?subject=%';
+	end		
+
+	select * from @tbl;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP PROCEDURE IF EXISTS [utility].[GetOwnersForWFFollowers];  
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

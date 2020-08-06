@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpGet, Route("styles")]
-        public async Task<HttpResponseMessage> StyleCustomizations()
+        public HttpResponseMessage StyleCustomizations()
         {
             var css = "";
 
@@ -121,7 +121,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpPut, Route("styles")]
-        public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
+        public HttpResponseMessage UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");

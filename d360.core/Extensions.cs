@@ -46,7 +46,7 @@ namespace d360.core
             foreach (JToken c in o)
             {
                 properties.AddRange(
-                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, fieldJsonPropertyLoadLimitToTopLevel : fieldJsonPropertyLoadLimitToTopLevel)
+                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel)
                     );
                 pos++;
             }
@@ -90,7 +90,8 @@ namespace d360.core
                     }
                     else
                     {
-                        properties.Add(new FieldJsonProperty {
+                        properties.Add(new FieldJsonProperty
+                        {
                             IsArray = false,
                             Name = (p as JProperty).Name,
                             Parent = parentName,
@@ -182,6 +183,18 @@ namespace d360.core
 
             return sb.ToString();
         }
+        /// <summary>
+        /// Returns truncated string to 31 characters to accomodate xlsx sheet name limit
+        /// </summary>
+        public static string GetSafeSheetName(this string inputString)
+        {
+            if (inputString == null) return "";
+            if (inputString.Length < 31)
+                return inputString;
+
+            return inputString.Substring(0, 28) + "...";
+        }
+
     }
 
     public static class XMLExtensions

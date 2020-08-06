@@ -10,6 +10,7 @@ import { D3SModal } from './gov-modal.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
 import { TooltipModule } from 'primeng/tooltip';
+import { FocusTrapModule } from 'primeng/focustrap';
 
 @NgModule({
     imports: [
@@ -20,7 +21,8 @@ import { TooltipModule } from 'primeng/tooltip';
         PipesModule, 
 
         //prime
-        TooltipModule
+        TooltipModule,
+        FocusTrapModule
     ],
     declarations: [
         D3SModal

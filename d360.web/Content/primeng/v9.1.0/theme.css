@@ -1631,14 +1631,15 @@ body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeho
 }
 
 .d3s-color-picker .ui-dropdown-panel, 
+.igx-blue.ui-dropdown-panel,
 .d3s-color-picker .ui-multiselect-panel {
-    padding: 0;
-    border: none;
-    background-color: #ffffff;
-    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    max-width: 600px;
+	padding: 0;
+	border: none;
+	background-color: #ffffff;
+	-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	-moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	max-width: 600px;
 }
 
 .d3s-color-picker .ui-multiselect .ui-chkbox-box {
@@ -1665,6 +1666,7 @@ body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeho
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container, 
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container {
   position: relative;
   padding: 4px 4px 4px 4px;
@@ -1686,15 +1688,17 @@ body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeho
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter,
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container .ui-inputtext {
-    width: 100%;
-    padding-right: 32px;
-    border-radius: 4px;
-	height: 32px;
-    padding-left: 8px;
+  width: 100%;
+  padding-right: 32px;
+  border-radius: 4px;
+  height: 32px;
+  padding-left: 8px;
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon,
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container .ui-multiselect-filter-icon{
   width: 24px;
   height: 24px;
@@ -1715,6 +1719,8 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item, 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item, 
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group{
   padding: 8px 8px;
@@ -1728,6 +1734,8 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item.ui-state-highlight, 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group.ui-state-highlight,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item.ui-state-highlight, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group.ui-state-highlight,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item.ui-state-highlight, 
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group.ui-state-highlight{
   color: #202020;
@@ -1747,6 +1755,8 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover {
     color: #202020;
@@ -1889,6 +1899,11 @@ body .ui-toast .ui-toast-message.ui-toast-message-error .ui-toast-close-icon {
 	position: absolute;
 	bottom: 24px;
 	right: 24px;
+}
+
+.modal-overlay .modal-dialog .modal-content .modal-child-component {	
+	overflow-y: auto;
+	height: calc(100% - 40px);
 }
 
 .treetable .pi-sort-alt:before {

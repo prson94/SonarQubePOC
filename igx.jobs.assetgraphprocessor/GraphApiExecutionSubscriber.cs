@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,6 +22,7 @@ namespace igx.jobs.assetgraphprocessor
     {
         const string functionName = "AssetGraphProcessor_GraphApiExecutionSubscriber";
         const int timeout = 60 * 180; //3 hours
+        const int sqlBatchSize = 5000;
 
         public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphApiExecution", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
@@ -82,6 +84,16 @@ namespace igx.jobs.assetgraphprocessor
                             await ProcessAssets(company, assets, typeUid, info, true);
 
                             break;
+                        case ApiExecutionAction.DeleteAssets:
+                            var deleteFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(execution.Fields);
+                            typeUid = deleteFields.AssetTypeUid;
+
+                            //we need to process the non-batch DELETE call here too since we could have thousands of assets when Cascade == true
+                            //so we grab the uids from the API table since we may or may not have results in storage
+                            assets = (await company.QueryAsync<AssetUpdate>("select [uid] from api.ExecutionDeletedAsset where Success = 1 and ExecutionID = @ExecutionID", new { info.execution.ExecutionID })).ToList();
+                            
+                            await ProcessAssets(company, assets, typeUid, info, false);
+                            break;
                         case ApiExecutionAction.PostRelationships:
                             var postRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(execution.Fields);
                             typeUid = postRelFields.IntersectTypeUid;
@@ -130,6 +142,7 @@ namespace igx.jobs.assetgraphprocessor
 
         private static async Task ProcessAssets(SqlConnection company, List<AssetUpdate> assets, Guid assetTypeUid, AssetEventInfo info, bool isInsert)
         {
+
             if (assets == null || !assets.Any())
             {
                 throw new Exception("Asset JSON not found in storage");
@@ -178,7 +191,7 @@ namespace igx.jobs.assetgraphprocessor
 
                     var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = table.Rows.Count,
+                        BatchSize = sqlBatchSize,
                         DestinationTableName = "#GraphAssets",
                         BulkCopyTimeout = timeout
                     };
@@ -253,11 +266,29 @@ namespace igx.jobs.assetgraphprocessor
                     , commandTimeout: timeout);
 
 
-                    // Update paths/segments for applicable assets
-                    await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
-                    , new { executionId = info.execution.ExecutionID }
-                    , transaction: trans
-                    , commandTimeout: timeout);
+
+                    bool shouldUpdateGraphHierarchy = true;
+                    
+                    bool hasChildAssetType = (await company.QueryAsync<bool>(@"select case when T.ID is null then cast(0 as bit) else cast(1 as bit) end from AssetType A
+                        left join IntersectTypeDetail T on T.Subject = A.Object and T.SubjectID = A.ObjectID and T.PredicateType in (3,4)
+                        where A.[uid] = @assetTypeUid"
+                    , new { assetTypeUid }
+                    , transaction: trans))
+                    .SingleOrDefault();
+
+                    //skip heirarchy update if we're deleting leaf assets
+                    if (info.execution.Action == ApiExecutionAction.DeleteAssets && !hasChildAssetType) 
+                        shouldUpdateGraphHierarchy = false;
+
+
+                    if (shouldUpdateGraphHierarchy)
+                    {
+                        // Update paths/segments for applicable assets
+                        await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
+                        , new { executionId = info.execution.ExecutionID }
+                        , transaction: trans
+                        , commandTimeout: timeout);
+                    }
 
                     // Cleanup 
                     await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
@@ -270,8 +301,12 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 catch (Exception ex)
                 {
-                    trans.Rollback();
-                    throw ex;
+                    try
+                    {
+                        trans.Rollback();
+                        throw ex;
+                    }
+                    catch { }
                 }
 
             }
@@ -311,7 +346,7 @@ namespace igx.jobs.assetgraphprocessor
 
                     var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
                     {
-                        BatchSize = table.Rows.Count,
+                        BatchSize = sqlBatchSize,
                         DestinationTableName = "#GraphEdges",
                         BulkCopyTimeout = timeout
                     };
@@ -444,8 +479,12 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 catch (Exception ex)
                 {
-                    trans.Rollback();
-                    throw ex;
+                    try
+                    {
+                        trans.Rollback();
+                        throw ex;
+                    }
+                    catch { }
                 }
             }
         }

@@ -125,9 +125,7 @@ namespace d360.web.Controllers.V2
         /// 
         /// There are some general rules about the various field types:
         /// - `Boolean` *(True/False)*
-        ///     1. Supports adding values through the Govern Application UI and REST API.
-        /// - `ComputedFusionLookup` *(Fusion Lookup)*
-        ///     1. This is a computed field and does not support directly editing values.
+        ///     1. Supports adding values through the Govern Application UI and REST API.        
         /// - `ComputedOwnershipLookup` *(Ownership Lookup)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `ComputedRelationshipField` *(Field from Relationship)*
@@ -529,14 +527,19 @@ namespace d360.web.Controllers.V2
 
                 var allRelationships = queryAllRelationships.ToList();
 
+                var excludedFieldRelationshipPredicates = new List<PredicateType> { PredicateType.Diagram, PredicateType.DiagramUse, PredicateType.DiagramReference };
+
                 var cardinalRelationships = allRelationships.Where(i =>
                     (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
                     (i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
                 ).ToList();
 
                 var fieldFromRelRelationships = allRelationships.Where(i =>
-                    (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
-                    (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                    (!i.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(i.PredicateType.Value)) &&
+                    (
+                        (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                        (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                    )
                 ).ToList();
 
                 IEnumerable<int> LookupObjectIDs = await Company.QueryAsync<int>(@"select distinct LookupObjectID from [FieldType] ft 
@@ -548,7 +551,8 @@ namespace d360.web.Controllers.V2
                                                                                   and   ft2.LookupObjectID is not null)", new { objectType = sType, objectid = id, ffieldtypeid = fieldtypeid });
 
                 var Field_Relationships = allRelationships
-                    .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy
+                    .Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
+                                && x.PredicateType != PredicateType.InterTypeHierarchy
                                 && x.Object != SystemObjects.IntersectType.ToString()
                                 && x.Subject != SystemObjects.IntersectType.ToString()
                                )
@@ -608,12 +612,7 @@ namespace d360.web.Controllers.V2
                             value = i.Name
                         })
                         .OrderBy(i => i.title).ToList();
-
-                if (!Community.IsFusionEnabled())
-                {
-                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
-                }
-
+                
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();

@@ -673,6 +673,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System Properties.
+        /// </summary>
+        public static string SystemFieldCategory {
+            get {
+                return ResourceManager.GetString("SystemFieldCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string SystemNoCategory {
+            get {
+                return ResourceManager.GetString("SystemNoCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required..
         /// </summary>
         public static string TaxonomyType_Description {

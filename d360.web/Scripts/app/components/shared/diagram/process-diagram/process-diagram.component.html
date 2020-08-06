@@ -1,85 +1,72 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
-    <div *ngIf="isEditMode" class="top-menu-hider"></div>
-
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
-            <button type="button" (click)="switchModes()" title="Exit Designer">
-                <i class="fa fa-chevron-circle-left"></i> Exit Designer
-            </button>
+
+            <button igButton icon="fa-chevron-circle-left" label="Exit Designer" title="Exit Designer" (click)="doControlledAction('switchModes')"></button>
             <div class="button-spacer"></div>
-            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
-                <i class="fa fa-save"></i>
-            </button>
+
+            <button igButton icon="fa-save" tooltip="Save changes" [disabled]="isSaveDisabled" (click)="save()"></button>
+            <div class="button-spacer"></div>
+            <button igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
+            <button igButton icon="igx-related-asset-icon" class="top-spacer-4" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <div class="button-spacer"></div>
+            <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!isExportEnabled()" (click)="doControlledAction('export')"></button>
 
         </div>
         <div class="controls-right">
-            <div class="asset-browser-button-group">
-                <button  class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
-                    <i class="fa fa-sitemap"></i>
-                </button>
-                <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
-                    <i class="fa fa-info-circle"></i>
-                </button>
-            </div>
+            <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
+
+
     <div class="diagram-content">
-        <div id="myPaletteDiv" *ngIf="isLoaded && isEditMode">
-            <p-accordion [multiple]="true">
-                <p-accordionTab header="Events" [selected]="true">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of events">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="rounder">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </p-accordionTab>
-                <p-accordionTab header="Activities">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of activities">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="rectangler">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
+            <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
+        </div>
+        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
+            <div class="gov-accordion">
+                <div id="toolTipDIV-event" class="tooltip-content">
+                    <p id="toolTipParagraph-event"></p>
+                </div>
+                <div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
 
-                </p-accordionTab>
-                <p-accordionTab header="Gateways">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of gateways">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="diamonder">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
+                        <span>Events</span>
                     </div>
+                    <div class="content">
+                        <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+                <div id="toolTipDIV-activity" class="tooltip-content">
+                    <p id="toolTipParagraph-activity"></p>
+                </div>
+                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
+                        <span>Activities</span>
+                    </div>
+                    <div class="content">
 
-                </p-accordionTab>
-            </p-accordion>
+                        <div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+                <div id="toolTipDIV-gateway" class="tooltip-content">
+                    <p id="toolTipParagraph-gateway"></p>
+                </div>
+                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
+                        <span>Gateways</span>
+                    </div>
+                    <div class="content">
+                        <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div #diagram id="process-diagram-placeholder">
             <div class="empty-overlay" *ngIf="isDiagramLoaded">
@@ -99,10 +86,10 @@
             <div id="diagram"></div>
         </div>
 
-        <div class="editors {{(isInfoPanelOpened && isEditMode  ? 'display' : 'hide')}}">
+        <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
-                <div *ngIf="!selectedNodeData">
+                <div *ngIf="!selectedNodeData && (!selectedLinkData || !isEditMode)">
                     <div class="empty-overlay">
                         <div class="content">
                             <div class="icon-holder">
@@ -114,14 +101,19 @@
                 </div>
                 <div *ngFor="let item of loadedEditors">
                     <div class="{{(selectedNodeData && item.key == selectedNodeData.key ? 'display' : 'hide')}}">
-                        <d3s-process-diagram-asset-editor [nodeData]="item"
-                                                          (nodeDataChange)="updateNodeFromForm($event)">
+                        <d3s-process-diagram-asset-editor [isReadOnly]="!isEditMode"
+                                                          [nodeData]="item"
+                                                          (nodeDataChange)="updateNodeFromForm($event)"
+                                                          [disallowedNames]="nodeNames">
                         </d3s-process-diagram-asset-editor>
                     </div>
                 </div>
+                <div *ngIf="selectedLinkData && isEditMode">
+                    <d3s-process-diagram-label-editor (linkDataChange)="updateLinkFromForm($event)" [linkData]="selectedLinkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
+                </div>
             </div>
         </div>
-        <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="isErrorModalOpened=false" [isVisible]="isErrorModalOpened">
+        <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">
             <div class="content">
                 <div class="row">
                     Sorry, we cannot save your changes to the diagram until the following issues are resolved:
@@ -129,13 +121,35 @@
                     <br />
                     <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
                         <div class="validation-error" *ngFor="let item of validationErrors.errors">
-                            {{item.Error}}
+                            <div *ngIf="item.ErrorType && item.ErrorType.indexOf('Custom') != -1; then thenBlock else elseBlock"></div>
+                            <ng-template #thenBlock>
+                                <ul>
+                                    <li>
+                                        <i class="fa fa-exclamation-circle"></i> {{item.Error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
+                            <ng-template #elseBlock>
+                                <span class="error-title">
+                                    Asset <strong>{{item.AssetName}}</strong> has following issues:
+                                </span>
+                                <ul>
+                                    <li *ngFor="let error of item.Error.split('.')">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-exclamation-circle"></i> {{error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
                         </div>
+                        <span *ngIf="areNamesUnique">
+                            <br />
+                            Please rename your flow objects to ensure that each has a unique name.
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="action-bar">
-                <button class="button" (click)="isErrorModalOpened=false">Close</button>
+                <div class="grow"></div>
+                <button #closeSaveButton igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
 
             </div>
         </d3s-modal>
@@ -143,47 +157,54 @@
         <d3s-modal [title]="'Save Changes?'" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
             <div class="content">
                 <div class="row">
-                    Would you like to save your changes to the diagram before leaving the Diagram Designer?
+                    {{actionMessage}}
                 </div>
             </div>
             <div class="action-bar">
-                <button class="button" (click)="isSavingChangesModalOpened=false">Cancel</button>
-                <button class="button" (click)="discardChanged()">Discard Changes</button>
+                <button igButton label="Cancel" tabindex="2001" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
+                <span class="spacer"></span>
+                <button igButton label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
                 <div class="grow"></div>
-                <button class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>
+                <button igButton class="ig-button-primary" label="Save Changes" #saveChangesButton tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
 
             </div>
         </d3s-modal>
 
-        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving">
+        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving || isExporting">
             <div class="content">
                 <div class="row">
                     <div class="loader">
                         <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                        <span class="text">
+                        <span class="text" *ngIf="isSaving && !isExporting">
                             Saving changes
+                        </span>
+                        <span class="text" *ngIf="isExporting">
+                            Exporting diagram
                         </span>
                     </div>
                 </div>
             </div>
         </d3s-modal>
 
-        <d3s-modal [title]="'Delete Selected Item'" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
+        <d3s-modal [title]="deleteModelTitle" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
             <div class="content">
-                <div class="row">
+                <div class="row" *ngIf="getSelectedNodeCount() <= 1">
                     Please confirm that you wish to delete the selected item, as this operation cannot be undone.
+                </div>
+                <div class="row" *ngIf="getSelectedNodeCount() > 1">
+                    Please confirm that you wish to delete the {{getSelectedNodeCount()}} selected items, as this operation cannot be undone.
                 </div>
             </div>
             <div class="action-bar">
-                <button class="button" (click)="promptDeleteOpened=false">Cancel</button>
+                <button igButton label="Cancel" #deleteCancelButton tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
                 <div class="grow"></div>
-                <button class="button primary" (click)="promptDeleteOpened=false;deleteSelectedNode();">Delete</button>
+                <button igButton class="ig-button-primary" label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
 
             </div>
         </d3s-modal>
 
         <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
-                                 (onClose)="isRelatedAssetsVisible = false"
+                                 (onClose)="closeRelationshipModel()"
                                  [isModalVisible]="isRelatedAssetsVisible"
                                  [objectID]="selectedNodeData.objectId"
                                  [objectType]="'Task'">

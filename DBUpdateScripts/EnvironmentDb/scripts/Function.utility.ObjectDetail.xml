@@ -5,13 +5,175 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Function.utility.ObjectDetail-v4">
-    <comment>GOV-10380</comment>
+  <changeSet author="kmcnamee" id="Function.utility.ObjectDetail-v5">
+    <comment>GOV-10380,GOV-11593</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [utility].[ObjectDetail]
+(
+	@type varchar(50), 
+	@id int
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	AssetTypeUid uniqueidentifier,
+	Name nvarchar(max),
+	TextPath nvarchar(max),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	[Class] int,
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource',
+		'Task'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, AssetTypeUid, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,																	    TypeID,	[Type],	TypeName, [Class], Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, AssetTypeUid, DisplayValue,	DisplayValue,	NULL,			null,		null,		case when Object in ('Task') then Null else dbo.GenerateAssetUrl(ID) end,	TypeID,	Type,	TypeName, AssetTypeClass, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType',
+		'TaskType'
+	)
+	begin
+		insert into @tbl (	ID,		AssetTypeUid, [Uid], Name,	TextPath,	[Description],	ParentID,	ParentType, Url,																	TypeID, [Type], TypeName, [Class])
+			SELECT			ObjectID, O.[Uid], O.[Uid],		Name,	Name,		Description,	NULL,		NULL,	case when Object in ('TaskType') then null else	turl.[url] end as Url,	ObjectID,		@type,	'Asset Type', O.[Class]
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name, 0	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class],[UID])
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type', 0, uid
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,	UID,	Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName, [Class])
+			SELECT			O.ID,O.Uid,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name, 0
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		UID,Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	O.uid,O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type', 0
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report', 0
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type', 0
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName, [Class])
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type',11)
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name, 0
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Tag'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			T.ID,	T.Value,	T.Value,	NULL,	NULL,		@type,		'tag/' + CAST(T.Uid AS varchar(50)),	0,	'Tag',	'Tag', 0
+			FROM	Tag T
+			WHERE	T.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText = COALESCE(S.IconText, 'leaf') 
+	from	@tbl T
+			left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
+			left join AssetTypeStyle S on S.ID = A.ID
+
+	RETURN
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [utility].[ObjectDetail]
 (
 	@type varchar(50), 
@@ -170,10 +332,6 @@ BEGIN
 
 	RETURN
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>

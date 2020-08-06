@@ -1,25 +1,39 @@
 ﻿export class Audit {
-    Action: string;
-    ActionDescription: string;
-    ActionObject: string;
-    ActionObjectID: number;
-    ActionObjectName: string;
-    ActionObjectTypeName: string;
-    Date: Date;
-    ID: number;
-    Object: string;
-    ObjectID: number;
-    ObjectName: string;
-    ResourceID: number;
-    ResourceName: string;
-    Field: string;
-    Class: number;
-    NewValue: string;
-    PreviousValue: string;
-    Version: string;
+    action: string;
+    actionDescription: string;
+    actionObject: string;
+    actionObjectID: number;
+    actionObjectName: string;
+    actionAssetTypeUid: string;
+    actionObjectTypeName: string;
+    date: Date;
+    actionAssetUid: string;
+    object: string;
+    objectName: string;
+    resourceName: string;
+    field: string;
+    class: number;
+    newValue: string;
+    previousValue: string;
+    version: string;
+    resourceUid: string
 }
 
 export class AuditResults {
-    results: Audit[];
+    items: Audit[];
     total: number;
+    pageSize: number;
+    pageNum: number;
+}
+export class AuditApiFilters {
+    _pageSize: number;
+    _pageNum: number;
+    _order: string;
+    _direction: string;
+    _filter: string;
+}
+export class AuditObject {
+    ObjectId: number;
+    Object: string;
+    DisplayValue: string;
 }

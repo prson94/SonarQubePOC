@@ -1,4 +1,4 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -13,12 +13,13 @@ import { MessagesObservableService } from '../../../services/messages-observable
     providers: [MetricsService]
 })
 
-export class AdminMetricEditorComponent extends BaseComponent implements OnInit {
+export class AdminMetricEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() model: MetricAssetViewModel = null;
     @Input() allocationUid: string;
     @Input() uid: string;
     @Input() parentUid: string;
     @Input() isExternallyCalculated: boolean;
+    @Input() scoreData: any;
 
     @Input() metricEditorFieldTypes: MetricFieldTypeViewModel[] = [];
 
@@ -34,9 +35,30 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     metricItem: any = null;
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
+    private displayWeight: number = 0;
+    invalidWeightMessage: string;
+    maxHeight: number = window.innerHeight - 250;
+    maxScoreEffectiveDate: Date;
+    measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. ' 
+                                + 'Only those assets matching the conditions will be scored using these measures. '
+                                + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue)) {
+            this.isLoading = true;
+            this.load();
+        }
+        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue)) {
+            this.isLoading = true;
+            this.load();
+        }
+        if (changes['scoreData'] && (changes['scoreData'].currentValue != changes['scoreData'].previousValue)) {
+            this.getMaxScoreDate();
+        }
     }
 
     ngOnInit() {
@@ -44,24 +66,34 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     }
 
     load() {
+        if (!this.model)
+            this.model = new MetricAssetViewModel();
+        this.displayWeight = 1;
+        this.invalidWeightMessage = "";
+        this.child = "";
+        this.model.ParentUid = null;
         if (this.uid) {
             this.verb = "Edit"
-            this.isLoading = false;
-
             if (this.model.EffectiveDate !== null) {
                 this.model.EffectiveDate = new Date(this.model.EffectiveDate as string);
-                this.model.EffectiveDate.setMinutes(this.model.EffectiveDate.getMinutes() + this.model.EffectiveDate.getTimezoneOffset());
             }
+
+            this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
+            this.model.Weight = .01;
+            this.model.IsGroup = false;
             this.verb = "Add";
-            this.isLoading = false;
             if (this.parentUid) {
                 this.child = "Child";
                 this.model.ParentUid = this.parentUid;
             }
             this.model.EffectiveDate = new Date();
             this.model.AllocationUid = this.allocationUid;
+            this.isLoading = false;
+        }
+        if (this.model.Weight) {
+            this.displayWeight = Math.round(this.model.Weight * 100);
         }
 
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 
@@ -70,11 +102,31 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
             dummyConditionGroup.MatchType = MetricMatchType.Any; 
             this.model.ConditionGroups.push(dummyConditionGroup);
         }
+
+        this.getMaxScoreDate();
+    }
+
+    private getMaxScoreDate() {
+        if (this.scoreData && this.scoreData.length) {
+            let maxDates: any[] = [];
+            this.scoreData.forEach(x => {
+                let scores = x.Scores.sort((x, y) => {
+                    let datex = new Date(x.EffectiveDate);
+                    let datey = new Date(y.EffectiveDate);
+                    return datey.getTime() - datex.getTime();
+                });
+                maxDates.push(new Date(scores[0].EffectiveDate));
+            });
+            maxDates.sort((x, y) => {
+                return y.getTime() - x.getTime();
+            });
+            this.maxScoreEffectiveDate = maxDates[0];
+        }
     }
 
     valid() {
         let valid = true;
-
+        this.invalidWeightMessage = "";
         if (this.model === null) {
             valid = false;
         } else {
@@ -93,10 +145,27 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
             if (!this.isExternallyCalculated) {
                 if (this.model.Weight === null || !this.model.Weight) {
                     valid = false; 
+                    this.invalidWeightMessage = "Please enter a value between 1 and 100";
+                    
                 }
                 else {
                     if (parseFloat(this.model.Weight.toFixed(2)) === 0) { 
                         valid = false;
+                    }
+                }
+
+                if (this.model.ConditionGroups.length && !this.model.IsGroup) {
+                    let conditions = this.model.ConditionGroups[0].ConditionItems;
+                    if (conditions.length > 0) {
+                        let fieldIds = conditions.map(x => { return x.ConditionFieldTypeID });
+                        conditions.forEach(x => {
+                            if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
+                                valid = false;
+                            }
+                        });
+                        if (fieldIds.some((item, inx) => { return fieldIds.indexOf(item) != inx })) {
+                            valid = false;
+                        }
                     }
                 }
             }
@@ -158,6 +227,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     }
 
     cancel() {
+        this.model = null;
+        this.load();
         this.onCancel.emit();
     }
 
@@ -171,11 +242,20 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     }
 
     private clamp(val: any, min: number, max: number, precision: number) {
+        if (!val) {
+            this.model.Weight = null;
+            this.valid()
+        }
+        val = val / 100;
         const newVal = FormHelpers.clamp(val, min, max, precision);
 
-        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined) 
+        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined)
             this.weightInput.nativeElement.value = newVal;
 
         this.model.Weight = newVal;
+    }
+
+    setMaxHeight() {
+        window.innerHeight - 200;
     }
 };

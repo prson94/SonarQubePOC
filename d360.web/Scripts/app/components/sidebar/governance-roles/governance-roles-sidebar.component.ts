@@ -64,21 +64,17 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
 
             });
 
-        forkJoin(
-            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleDescription),
-            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleLabel),
-            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid),
-        ).subscribe(([r1, r2, r3]) => {
-            this.originalModel = new GovernanceRole();
-            this.originalModel.Description = r1[0].StringSetting.Value;
-            this.originalModel.Name = r2[0].StringSetting.Value;
-            this.originalModel.RefListUid = r3[0].StringSetting.Value;
+        this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid)
+            .subscribe((r3) => {
+                this.originalModel = new GovernanceRole();
 
-            this.model = this.getInitialData();
-            this.isLoading = false;
-            this.cdRef.detectChanges();
+                this.originalModel.RefListUid = r3[0].StringSetting.Value;
 
-        });
+                this.model = this.getInitialData();
+                this.isLoading = false;
+                this.cdRef.detectChanges();
+
+            });
 
     }
 
@@ -98,30 +94,19 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
     private save() {
         //calling save function
         this.isSaving = true;
-        var updateLabel = new SettingsPutModel();
-        updateLabel.StringSetting = new StringSetting();
-        updateLabel.SettingID = CompanySettingEnum.GovernanceRoleLabel;
-        updateLabel.StringSetting.Value = this.model.Name;
-
-        var updateDesc = new SettingsPutModel();
-        updateDesc.StringSetting = new StringSetting();
-        updateDesc.SettingID = CompanySettingEnum.GovernanceRoleDescription;
-        updateDesc.StringSetting.Value = this.model.Description;
 
         var updateRefList = new SettingsPutModel();
         updateRefList.StringSetting = new StringSetting();
         updateRefList.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
         updateRefList.StringSetting.Value = this.model.RefListUid;
 
-        forkJoin(
-            this.settingsService.putSetting(updateLabel),
-            this.settingsService.putSetting(updateDesc),
-            this.settingsService.putSetting(updateRefList)
-        ).subscribe(([r1, r2, r3]) => {
-            this.isSaving = false;
-            this.originalModel = this.model;
-            this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
-        });
+
+        this.settingsService.putSetting(updateRefList)
+            .subscribe((res) => {
+                this.isSaving = false;
+                this.originalModel = this.model;
+                this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
+            });
     }
 
     ngOnDestroy() {

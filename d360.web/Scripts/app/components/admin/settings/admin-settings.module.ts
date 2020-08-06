@@ -8,7 +8,7 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
-import { IconPickerModule } from '../../shared/icon-picker.component';
+import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
 import { AdminSettingsComponent } from './admin-settings.component';

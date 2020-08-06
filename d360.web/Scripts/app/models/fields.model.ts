@@ -205,5 +205,6 @@ export enum ComplexLookupRelationType {
 }
 export enum Direction {
     Back = 1,
-    Forward = 2
+    Forward = 2,
+    Both = 3
 }

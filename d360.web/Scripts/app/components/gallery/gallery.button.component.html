@@ -1,0 +1,83 @@
+﻿<div class="tile tile-detail">
+    <header>Button Directive</header>
+    <p>Angular directive that can be applied to Html button controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <button igButton label="Label Only" [loading]="loadingState" [disabled]="disabledState"></button>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Basic with icon</h4>
+        <div>
+            <button igButton label="Label and icon" icon="fa-bell" [loading]="loadingState" [disabled]="disabledState"></button>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Icon only</h4>
+        <div>
+            <button igButton tooltip="Icon only" icon="fa-bell" [loading]="loadingState" [disabled]="disabledState"></button>
+            <p>Buttons without a label must always provide a tooltip.</p>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Change state of the buttons above with</h4>
+        <div>
+            <button igButton label="Toggle Disabled" icon="fa-ban" (click)="toggleDisabled()"></button>&nbsp;
+            <button igButton label="Toggle Loading" icon="fa-spinner" (click)="toggleLoading()"></button>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <button igButton label="I'm 3rd" icon="fa-list-ol" tabindex="3"></button>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="4" />
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

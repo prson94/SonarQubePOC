@@ -768,6 +768,9 @@ from    Field F
         inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
         new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+            //check for 0 fields to update case which often happens when editing from ui since you cant edit json fields.
+            if (!fields.Any()) return;
+
             var collectionFieldProperties = new List<FieldJsonProperty>();
 
             foreach (var f in fields)
@@ -911,14 +914,12 @@ insert into #LookupValues
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
 group by fieldvalue, Id
 
-;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+;insert into #LookupValues
+select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
-	where executionid = @executionid)
-insert into #LookupValues
-select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues
-group by fieldvalue, Id
+	where T.FieldValue is not null and executionid = @executionid;
 
 update	T
 set		T.[Value] = '0'
@@ -1078,7 +1079,6 @@ where T.ExecutionId = @executionid;
                 Type = AssetEventType.Execution
             };
 
-
             QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
@@ -1088,7 +1088,10 @@ where T.ExecutionId = @executionid;
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
-            DataTable fieldTable, out bool success, out string errorMessage)
+            DataTable fieldTable, out bool success, out string errorMessage,
+            bool useFriendlyNames = false,
+            bool allowTagFields = false
+            )
         {
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
@@ -1109,6 +1112,10 @@ where T.ExecutionId = @executionid;
             }
 
             var restrictedFieldTypes = DataType.Text.GetNotAllowedToUpdateViaAssetApi();
+            if (allowTagFields)
+            {
+                restrictedFieldTypes = restrictedFieldTypes.Where(x => x != "Tag").ToList();
+            }
 
             foreach (var k in fields)
             {
@@ -1120,6 +1127,10 @@ where T.ExecutionId = @executionid;
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
+                if (useFriendlyNames)
+                {
+                    fieldName = fieldType.FriendlyName;
+                }
                 if (fieldType == null)
                 {
                     if (fieldName.ToLower() == "color")
@@ -1336,11 +1347,6 @@ where T.ExecutionId = @executionid;
                     }
                 }
 
-                if (errorMessages.Any())
-                {
-                    errorMessage = string.Join(errorDelimiter, errorMessages);
-                    errorMessage += "."; //ending period
-                }
 
                 if (fieldTable != null)
                 {
@@ -1358,7 +1364,12 @@ where T.ExecutionId = @executionid;
 
                     fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
                 }
+            }
 
+            if (errorMessages.Any())
+            {
+                errorMessage = string.Join(errorDelimiter, errorMessages);
+                errorMessage += "."; //ending period
             }
 
             return fieldRows;
@@ -1481,7 +1492,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var graphResults = new List<DatabaseBulkAssetResult>();
@@ -2217,7 +2228,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendAssetGraphEvents(graphResults);
+                        if (sendGraphEvents)
+                        {
+                            SendAssetGraphEvents(graphResults);
+                        }
 
                         if (sendWorkflowEvents)
                         {
@@ -2803,6 +2817,42 @@ where   ExecutionID = @ExecutionID
 
                     this.ValidateDeleteRelationshipTypes(execution, timeout);
 
+                    //Delete lookup fields
+                    //First get the field type id
+                    List<long> lookupFieldIdList = Connection.Query<long>($@"
+                                            select	
+                                               distinct FTL.FieldTypeID
+                                            from
+                                                FieldTypeLookup FTL
+					                            cross apply OPENJSON(FTL.[Definition], N'lax $.Relations') with (
+						                            IntersectTypeUid uniqueidentifier, 
+						                            AssetTypeUid uniqueidentifier,
+						                            RelationType int, 
+						                            Direction int
+					                            ) R
+					                            inner join [IntersectType] IT on IT.uid = R.intersectTypeUid
+					                            inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.Uid=IT.UID and 
+					                                                                            EDR.ExecutionID = @ExecutionID 
+					                                                                            and 
+					                                                                            EDR.Success is null
+                                            where ISJSON(FTL.[Definition])>0;",
+                        new { execution.ExecutionID }, commandTimeout: timeout).ToList();
+
+                    //delete the lookup
+                    Connection.Execute($@"
+                                    delete  T
+                                    from    [FieldTypeLookup] T
+                                    where T.FieldTypeID in @fieldtypeIdList",
+                                    new { fieldtypeIdList = lookupFieldIdList.ToArray() }, commandTimeout: timeout);
+
+                    //delete the fieldtype
+                    Connection.Execute($@"
+                                    delete  T
+                                    from    [FieldType] T
+                                    where T.ID in @fieldtypeIdList",
+                                    new { fieldtypeIdList = lookupFieldIdList.ToArray() }, commandTimeout: timeout);
+
+
                     Connection.Execute(@"
                             
                                 delete  T
@@ -2823,6 +2873,13 @@ where   ExecutionID = @ExecutionID
                                         and ER.Success is null) S on FT.[Object] = 'IntersectType' 
                                         and S.ID = FT.ObjectID ;
 
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
+					                    EDR.Success is null
 
                             delete  T
                             from    [Intersect] T
@@ -2985,8 +3042,8 @@ where   ExecutionID = @ExecutionID
                         #region Generate data sets
 
                         if (predicateType.HasValue)
-                        {
-                            it = Filter<IntersectType>(o => o.Object == at.Object && o.ObjectID == at.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
+                        {                            
+                            it = Database.Connection.QueryFirstOrDefault<IntersectType>("select i.[Subject],i.[SubjectID],i.[uid],i.ID from [dbo].[intersecttype] i inner join [predicate] p on (i.predicateid = p.id) where i.[Object] = @obj and i.[ObjectID] = @objID and p.[Type] = @predicate", new { obj = at.Object, objID = at.ObjectID, predicate = predicateType } );                            
                             if (it != null)
                             {
                                 parentObject = it.Subject;
@@ -4892,7 +4949,57 @@ from    [Intersect] T
                                                     where I.Uid = ER.[UID] )
                             ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
+            //check for lookups
+            Connection.Execute(@"
+                                update	T
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship lookups associated with this relationship.',
+	                                    T.Success = 0
+                                from	api.ExecutionDeletedRelationshipType T
+                                        inner join
+		                                (
+			                                select	EDR.ExecutionID,
+					                                EDR.ItemNumber,
+					                                Count(1) as [Count]
+			                                from	FieldTypeLookup O
+					                                cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
+						                                IntersectTypeUid uniqueidentifier, 
+						                                AssetTypeUid uniqueidentifier,
+						                                RelationType int, 
+						                                Direction int
+					                                ) R
+					                                inner join [IntersectType] IT on IT.uid = R.intersectTypeUid
+					                                inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and 
+					                                EDR.ExecutionID = @ExecutionID
+					                                and 
+					                                EDR.Success is null
+			                                where EDR.[Cascade]=0 and ISJSON(o.Definition)>0
+					                                group by ExecutionID, ItemNumber
+                                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
+                                            new { execution.ExecutionID }, commandTimeout: timeout);
 
+            //check for relationship fields
+            Connection.Execute(@"
+                                update	T
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship fields associated with this relationship.',
+	                                    T.Success = 0
+                                from	api.ExecutionDeletedRelationshipType T
+                                        inner join
+		                                (
+                                            select	EDR.ExecutionID,
+					                                EDR.ItemNumber,
+					                                Count(1) as [Count]                                             
+                                            from 
+                                                    FieldType FT 
+                                                    inner join 
+                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                                    inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                                    and 
+					                                EDR.Success is null
+                                                    AND
+                                                    EDR.[Cascade]=0
+                                            group by ExecutionID, ItemNumber			                                
+                                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
+                                            new { execution.ExecutionID }, commandTimeout: timeout);
 
         }
 
@@ -6826,6 +6933,9 @@ insert into #Keys
 
                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsChanged, import);
+
             return results;
         }
 
@@ -7298,10 +7408,10 @@ insert into #Keys
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
                     }
-
-
                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsRemoved, import);
 
             return results;
         }
@@ -8053,7 +8163,7 @@ WHEN MATCHED
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
                         row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
-                        row["ExecutionItemUid"] = Guid.NewGuid(); 
+                        row["ExecutionItemUid"] = Guid.NewGuid();
 
                         table.Rows.Add(row);
 
@@ -8083,7 +8193,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    
+
 
                     bulkCopy.WriteToServer(table);
 
@@ -8400,7 +8510,7 @@ SO.ObjectID as SecondaryID
                 results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
             }
 
-            
+
 
             itemNumber = 1;
             if (generalChecksCompleted)

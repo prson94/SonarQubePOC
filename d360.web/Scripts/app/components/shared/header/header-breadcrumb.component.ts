@@ -1,7 +1,7 @@
 import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
-import { Subscription }   from 'rxjs';
+import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
 import { windowWhen } from 'rxjs/operators';
 import { clearLine } from 'readline';
@@ -19,7 +19,8 @@ import { clearLine } from 'readline';
                 </span>
                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index">
                     <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || breadcrumb.show" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSpaceForCrumbs"></d3s-header-breadcrumb-item>                    
-                </div>                
+                </div>  
+                <div class="object-state" *ngIf="objectState"> - {{objectState}}</div>
                 </div>  
               `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -31,6 +32,7 @@ export class HeaderBreadcrumbComponent {
     subscriptionClear: Subscription;
     subscriptionBuildFromStorage: Subscription;
     subscriptionAdd: Subscription;
+    subscriptionChangeState: Subscription;
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
     showThisManyCrumbs: number = 0;
@@ -39,6 +41,7 @@ export class HeaderBreadcrumbComponent {
     private resizeTimer: any;
     private maxSpaceForCrumbs: number = 800;
     private maxWidthOfSmallPanel: number = window.innerWidth - 200;
+    private objectState: string = '';
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
@@ -47,7 +50,7 @@ export class HeaderBreadcrumbComponent {
         this.breadcrumbs = [];
         this.subscriptionAdd = headerBreadcrumbService.breadcrumbs$.subscribe(
             breadcrumb => {
-                if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb,['active']))) {
+                if (!_.isEqual(_.omit(this.breadcrumbs[this.breadcrumbs.length - 1], ['active']), _.omit(breadcrumb, ['active']))) {
 
                     if (this.breadcrumbs.length != 0) {
                         this.breadcrumbs[this.breadcrumbs.length - 1].active = true;
@@ -61,20 +64,25 @@ export class HeaderBreadcrumbComponent {
             });
         this.subscriptionClear = headerBreadcrumbService.breadcrumbClear$.subscribe(
             breadcrumb => {
-                this.breadcrumbs.splice(0, this.breadcrumbs.length);                
+                this.breadcrumbs.splice(0, this.breadcrumbs.length);
                 this.ref.markForCheck();
             })
         this.subscriptionPop = headerBreadcrumbService.breadcrumbPopLastSource$.subscribe(
             breadcrumb => {
-                this.breadcrumbs.pop();                
+                this.breadcrumbs.pop();
                 this.ref.markForCheck();
             })
         this.subscriptionBuildFromStorage = headerBreadcrumbService.buildFromStorage$.subscribe(res => {
             this.breadcrumbs = res;
         });
+
+        this.subscriptionChangeState = headerBreadcrumbService.currentObjectStateSource$.subscribe(res => {
+            this.objectState = res;
+            this.ref.markForCheck();
+        });
     }
 
-    
+
     private hideSmallPanel(item) {
         item.style.display = "none";
     }
@@ -82,7 +90,7 @@ export class HeaderBreadcrumbComponent {
     private fixHeight($event, smallPanel) {
         smallPanel.style.display = "block";
         smallPanel.style.maxWidth = this.maxWidthOfSmallPanel + "px";
-    } 
+    }
 
     ngOnDestroy() {
         if (this.subscriptionPop) {
@@ -96,6 +104,9 @@ export class HeaderBreadcrumbComponent {
         }
         if (this.subscriptionBuildFromStorage) {
             this.subscriptionBuildFromStorage.unsubscribe();
+        }
+        if (this.subscriptionChangeState) {
+            this.subscriptionChangeState.unsubscribe();
         }
     }
 
@@ -114,20 +125,20 @@ export class HeaderBreadcrumbComponent {
         let logo = element.parentElement.previousSibling;
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
-        
+
         var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
-        
+
         this.maxSpaceForCrumbs = windowWidth - (controlsWidth + logoWidth);
         this.maxWidthOfSmallPanel = windowWidth - logoWidth;
 
         //if the width of this + the logo + the controls is bigger than screen start hiding breadcrumbs
         var worseCaseWidth = this.estimateMaxLength(this.maxSpaceForCrumbs) + logoWidth + controlsWidth;
-       
-        if (worseCaseWidth > windowWidth) {                
+
+        if (worseCaseWidth > windowWidth) {
             this.showLastOnly = true;
             this.showCrumb();
         }
-        else {                
+        else {
             this.showLastOnly = false;
             this.breadcrumbs.forEach(x => { x.show = true; });
         }
@@ -135,7 +146,7 @@ export class HeaderBreadcrumbComponent {
         this.ref.markForCheck();
     }
 
-    onResize(event) {  
+    onResize(event) {
         clearTimeout(this.resizeTimer);
         this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth), 150);
     }
@@ -147,7 +158,7 @@ export class HeaderBreadcrumbComponent {
         for (var i = this.breadcrumbs.length - 1; i >= 0; i--) {
 
             html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
-            if (this.breadcrumbs[i].parentTypeName !== undefined) 
+            if (this.breadcrumbs[i].parentTypeName !== undefined)
                 html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>'
             html += '</a>';
 
@@ -164,11 +175,11 @@ export class HeaderBreadcrumbComponent {
             if (max < maxSpaceForCrumbs)
                 maxNumberOfCrumbsInSpace++;
 
-           this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
+            this.breadcrumbUIElement.nativeElement.removeChild(tempCrumb);
         }
         this.showThisManyCrumbs = maxNumberOfCrumbsInSpace;
         if (this.showLastOnly)
-            max += 40; 
+            max += 40;
         return max + 20;//for the left margin on the breadcrumb
     }
 
@@ -183,12 +194,12 @@ export class HeaderBreadcrumbComponent {
         }
         let maxIndex = this.breadcrumbs.length - 1;
         let minIndex = this.breadcrumbs.length - this.showThisManyCrumbs;
-        for (var i = 0; i < this.breadcrumbs.length; i++) {     
+        for (var i = 0; i < this.breadcrumbs.length; i++) {
             if (i >= minIndex && i <= maxIndex) this.breadcrumbs[i].show = true;
             else this.breadcrumbs[i].show = false;
 
         }
 
-        
+
     }
 }

@@ -1,0 +1,127 @@
+﻿<div class="tile tile-detail">
+    <header>Icon Picker control</header>
+    <p>A dropdown input that allows choosing a govern icon.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <ig-icon-picker></ig-icon-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Binding</h4>
+        <div>
+            <ig-icon-picker [(ngModel)]="value"></ig-icon-picker>
+        </div>
+        <div>
+            <strong>Selected Value:</strong> {{value}}
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <p>
+            As with all form controls this input can be disabled
+        </p>
+        <div>
+            <ig-icon-picker [disabled]="true"></ig-icon-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-icon-picker tabindex="3" [style]="{'width' : '150px'}"></ig-icon-picker>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Reactive Forms</h4>
+        <p>
+            The component can be used with reactive forms as well.
+        </p>
+        <div>
+            <form #form="ngForm">
+                <div class="row">
+                    <ig-icon-picker #myIcon="ngModel"
+                                     name="myIcon"
+                                     [(ngModel)]="formValue"
+                                     [style]="{'border' : myIcon?.errors?.required ? '2px solid #900' : ''}"
+                                     required></ig-icon-picker>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <span *ngIf="myIcon.invalid && (myIcon.dirty || myIcon.touched)" class="requiredMessage">
+                        <span *ngIf="myIcon.errors.required">
+                            * Value required
+                        </span>
+                    </span>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-event>
+            <tr>
+                <td>{{event.Name}}</td>
+                <td>{{event.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

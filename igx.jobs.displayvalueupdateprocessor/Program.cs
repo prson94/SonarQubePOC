@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Dapper;
 using d360.core.entities;
 using d360.core.enums;
+using d360.extensions.storage;
 
 namespace igx.jobs.displayvalueupdateprocessor
 {
@@ -55,7 +56,8 @@ namespace igx.jobs.displayvalueupdateprocessor
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
                 var community = new CommunityContext(cache, queue, sec);
-                var company = new CompanyContext(community, cache, queue, sec, true);
+                var storage = new AzureStorageProvider();
+                var company = new CompanyContext(community, cache, queue, sec, storage, true);
 
                 #endregion
 

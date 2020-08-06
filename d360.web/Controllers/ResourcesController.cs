@@ -544,6 +544,7 @@ from	FollowDetail F
                     }
                     else if (det != null)
                     {
+
                         var sql = @"
 select  COALESCE(Color.value,FormattedValue,' ') as Value,
 	    F.FriendlyName as Name,
@@ -556,7 +557,10 @@ inner join fieldType FT on FT.ID = F.FieldTypeID
 outer apply(
         select value = (
              SELECT
-			 COALESCE(ADV.DisplayValue, AC.Code) as name,
+			 CASE
+				WHEN (FT.AllowMultipleValues = 0) THEN COALESCE(Fi.FormattedValue, ADV.DisplayValue, AC.Code)
+				ELSE COALESCE(ADV.DisplayValue, AC.Code)
+			 END as name,
              COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
              FROM field fi
              cross apply STRING_SPLIT(F.Value, ',') SPFfi

@@ -51,7 +51,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private quill;
 
     @Output() listItemChange = new EventEmitter();
-    @Output() relationItemChange = new EventEmitter(); 
+    @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
@@ -75,7 +75,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private filterException: string = '';
     private fieldChangeSub;
     private editorChangeSub;
-        
+
     private hasCascadeLoaded: boolean = false;
 
     //For a drop down search option
@@ -88,7 +88,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
 
     private component_uid: string = '';
-    
+
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -137,7 +137,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (items.length > 0) {
             return items.filter(x => x.Text != "Choose...").map((x) => {
                 try {
-                    
+
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
                         return { label: colorobj.name, value: x.Value, title: colorobj.color };
@@ -156,7 +156,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     if (colorobj)
                         return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };
                 } catch (ex) {
-                    return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group : x.Group, Color: 'transparent'};
+                    return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: 'transparent' };
                 }
             });
             return its;
@@ -233,7 +233,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
                             res => {
-                                this.field.Items = res;
+                                if (this.field.UseColorControl)
+                                    this.field.Items = this.getColorItemsAsSelectItem(res);
+                                else 
+                                    this.field.Items = res;
 
                                 if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
                                     this.field.Value = null;
@@ -354,11 +357,17 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.field.Value = null;
             this.form.controls[this.field.FieldName].setValue(this.field.Value);
         }
-            
+
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
+            if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
+                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
+            }
+
             window.setTimeout(() => {
+                
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
+                this.ref.detectChanges();
             }, 250);
         }
 
@@ -430,7 +439,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
         else if (this.field.FieldType == 'Relationship') {
             this.listItemChange.emit({ field: this.field, value: data });
-            
+
         } else if (this.field.FieldType == 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
@@ -523,8 +532,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 return this.fieldMessage(this.field.FieldName);
         }
     }
-    
-    get currentFieldName() {        
+
+    get currentFieldName() {
         return this.field ? this.field.Name : '';
     }
 
@@ -647,6 +656,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private lazyLoad(e: any) {
         this.relationItemsLoading = true;
+        this.ref.markForCheck();
+
         var object = this.object;
         var objectId = this.objectID;
 
@@ -721,7 +732,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onEditorChange(event: any) {
-        if (event == null ||  event.field == null)
+        if (event == null || event.field == null)
             return;
 
         let field = event.field;

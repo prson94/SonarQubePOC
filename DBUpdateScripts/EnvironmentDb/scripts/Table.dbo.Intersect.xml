@@ -133,7 +133,8 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterUpdate-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.Intersect-Intersect_AfterUpdate-v2">
+    <comment>GOV-11623</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -147,11 +148,11 @@ BEGIN
 	SET NOCOUNT ON;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+        select 'Update', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
 		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+        select 'Update', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
 		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
 END
 		]]>

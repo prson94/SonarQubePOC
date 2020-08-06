@@ -26,6 +26,7 @@ export class SiteUrlHelpers {
     static SITE_URL_MODEL_ROOT = 'model';
     static SITE_URL_ADMIN_ROOT = 'admin';
     static SITE_URL_HOME_ROOT = 'home';
+    static SITE_URL_GALLERY_ROOT = 'gallery';
     static SITE_URL_MAPPING_ROOT = 'mapping';
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
     static SITE_URL_DASHBOARD_ROOT = 'dashboard';

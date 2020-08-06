@@ -528,6 +528,15 @@
         background-color: #ccc;
     }
 
+    button:focus {
+        background: #f1f1f2;
+        outline: 0 none;
+        outline-offset: 0;
+        -webkit-box-shadow: 0 0 0 2px #8abddf;
+        -moz-box-shadow: 0 0 0 2px #8abddf;
+        box-shadow: 0 0 0 2px #8abddf;
+    }
+
     button:hover {
         background-color: rgba(185,192,197,0.5);
     }
@@ -536,9 +545,10 @@
         background: rgba(0, 0, 0, 0.14);
     }
 
-    button.disabled {
+    button.disabled, button:disabled {
         color: #888;
         cursor: default;
+        pointer-events: none;
     }
 
     button.disabled:hover {
