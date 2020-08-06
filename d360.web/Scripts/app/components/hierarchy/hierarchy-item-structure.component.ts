@@ -68,9 +68,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     showDelete: boolean;
     selectedLevel: number = 0;
     filterColumns: string[] = ['DisplayValue'];
-    filterText: string;
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
+    @ViewChild("inputBox", { static: false }) filterText: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -342,6 +342,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private exportExcel(level: number) {
         var params = new V2ApiFilters();
         params._onlyListableFields = false;
+        params._simpleFilter = this.filterText.nativeElement.value;
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
                 params._isHierachyItem = true;

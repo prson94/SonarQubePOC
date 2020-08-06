@@ -21,6 +21,7 @@ using d360.model.helpers;
 using d360.core.entities.Process;
 using AngleSharp.Io;
 using DocumentFormat.OpenXml.Spreadsheet;
+using System.Globalization;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1142,14 +1143,16 @@ namespace d360.model.DataAccessLayer
         {
             IQueryable<dynamic> levels = null;
             IEnumerable<dynamic> results = null;
+            List<dynamic> assetUids = null;
+            IEnumerable<dynamic> allResults = null;
             AssetType assetType = null;
             var fields = new List<FieldType>();
             var tempFields = new List<FieldType>();
             var fieldsToRemove = new List<FieldType>();
 
             string filter = "";
-            if (queryParams.Any(p => p.Key.Trim().ToLower() == "_filter"))
-                filter = queryParams.ToList().First(k => k.Key.ToLower() == "_filter").Value;
+            if (queryParams.Any(p => p.Key.Trim().ToLower() == "_simplefilter"))
+                filter = queryParams.ToList().First(k => k.Key.ToLower() == "_simplefilter").Value.ToString();
 
             var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
@@ -1177,7 +1180,24 @@ namespace d360.model.DataAccessLayer
                 results = data.items;
                 levels = GetTaxonomyTypeLevels(id);
             }
+            List<KeyValuePair<string, string>> qp = new List<KeyValuePair<string, string>>();
 
+            
+            if (!String.IsNullOrEmpty(filter))
+            {
+                assetUids = results.Select(x => x.AssetUid).ToList();
+                var allFamily = GetAllFamilyForAssetUid(assetUids);
+
+                var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter");
+                qp.AddRange(par);
+                qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allFamily)));
+                var fammilyAssets = await GetAssets(uid, qp);
+                allResults = results.Union(fammilyAssets.items);
+            }
+            else
+            {
+                allResults = results;
+            }
 
             var document = new SLDocument();
             const string assetSheetName = "Assets";
@@ -1196,15 +1216,14 @@ namespace d360.model.DataAccessLayer
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, 1);
             document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, results.Count());
+            document.SetCellValue(3, 2, allResults.Count());
 
 
             document.SelectWorksheet(assetSheetName);
 
-            foreach (var row in results)
+            foreach (var row in allResults)
             {
-                var test = row.AssetUid;
-                int depth = CheckDepth(results, row.AssetUid);
+                int depth = CheckDepth(allResults, row.AssetUid);
                 if (depth > maxDepth)
                 {
                     maxDepth = depth;
@@ -1262,14 +1281,14 @@ namespace d360.model.DataAccessLayer
 
             int rowNumber = 1;
             List<Guid> used = new List<Guid>();
-            foreach (var row in results)
+            foreach (var row in allResults)
             {
                 if (used.Contains(row.AssetUid))
                 {
                     continue;
                 }
                 rowNumber++;
-                (int, List<Guid>) tuple = AddRow(results, document, fields, rowNumber, row, maxDepth, used);
+                (int, List<Guid>) tuple = AddRow(allResults, document, fields, rowNumber, row, maxDepth, used);
                 (rowNumber, used) = tuple;
             }
 
@@ -1280,91 +1299,93 @@ namespace d360.model.DataAccessLayer
 
         private (int, List<Guid>) AddRow(IEnumerable<dynamic> policies, SLDocument document, List<FieldType> fields, int rowNumber, dynamic row, int maxDepth, List<Guid> used)
         {
-            var rowValues = (row as IDictionary<string, object>);
-            int itemDepth = CheckDepth(policies, row.AssetUid);
-            int index = 1;
-            int level = 1;
+            if (!used.Contains(row.AssetUid))
+            {
+                var rowValues = (row as IDictionary<string, object>);
+                int itemDepth = CheckDepth(policies, row.AssetUid);
+                int index = 1;
+                int level = 1;
 
-            var typesToAvoid = new List<string>() {
+                var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.Lookup.ToString()
             };
 
-            foreach (var field in fields)
-            {
-                if (typesToAvoid.Contains(field.Type))
-                    continue;
-                if (field.IsPartOfKey)
+                foreach (var field in fields)
                 {
-                    if (level > maxDepth)
-                        level = 1;
-                    if (level == itemDepth)
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+                    if (field.IsPartOfKey)
                     {
-                        //item is at the same depth as the current level fill in cell  as normal
-                        level++;
+                        if (level > maxDepth)
+                            level = 1;
+                        if (level == itemDepth)
+                        {
+                            //item is at the same depth as the current level fill in cell  as normal
+                            level++;
+                        }
+                        else
+                        {
+                            //parent data needs to be found here for how deep we are 
+                            var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
+                            int tempIndex = index;
+                            while (parent != null && CheckDepth(policies, parent.AssetUid) != level)
+                            {
+                                parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
+                            }
+
+                            if (parent != null)
+                            {
+                                var parentRowValue = (parent as IDictionary<string, object>);
+                                if (parentRowValue.ContainsKey(field.Name))
+                                {
+                                    var val = parentRowValue[field.Name];
+                                    setCellValueFromField(document, rowNumber, index, field, val);
+                                }
+                                else if (parentRowValue.ContainsKey("Field" + field.ID))
+                                {
+                                    var val = parentRowValue["Field" + field.ID];
+                                    setCellValueFromField(document, rowNumber, index, field, val);
+                                }
+
+                            }
+                            index++;
+                            level++;
+                            continue;
+                        }
                     }
                     else
                     {
-                        //parent data needs to be found here for how deep we are 
-                        var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
-                        int tempIndex = index;
-                        while (parent != null && CheckDepth(policies, parent.AssetUid) != level)
-                        {
-                            parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
-                        }
-
-                        if (parent != null)
-                        {
-                            var parentRowValue = (parent as IDictionary<string, object>);
-                            if (parentRowValue.ContainsKey(field.Name))
-                            {
-                                var val = parentRowValue[field.Name];
-                                setCellValueFromField(document, rowNumber, index, field, val);
-                            }
-                            else if (parentRowValue.ContainsKey("Field" + field.ID))
-                            {
-                                var val = parentRowValue["Field" + field.ID];
-                                setCellValueFromField(document, rowNumber, index, field, val);
-                            }
-
-                        }
-                        index++;
-                        level++;
-                        continue;
+                        level = 1;
                     }
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+                        var val = rowValues[field.Name];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+                    else if (rowValues.ContainsKey("Field" + field.ID))
+                    {
+                        var val = rowValues["Field" + field.ID];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+                    else if (field.Name == "Url")
+                    {
+                        var val = "asset/" + row.AssetUid;
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+                    used.Add(row.AssetUid);
+                    index++;
                 }
-                else
-                {
-                    level = 1;
-                }
-                if (rowValues.ContainsKey(field.Name))
-                {
-                    var val = rowValues[field.Name];
-                    setCellValueFromField(document, rowNumber, index, field, val);
-                }
-                else if (rowValues.ContainsKey("Field" + field.ID))
-                {
-                    var val = rowValues["Field" + field.ID];
-                    setCellValueFromField(document, rowNumber, index, field, val);
-                }
-                else if (field.Name == "Url")
-                {
-                    var val = "asset/" + row.AssetUid;
-                    setCellValueFromField(document, rowNumber, index, field, val);
-                }
-                used.Add(row.AssetUid);
-                index++;
-            }
 
-            //check kids
-            var children = policies.Where(x => x.ParentUid == row.AssetUid);
-            foreach (var child in children)
-            {
-                rowNumber++;
-                (int, List<Guid>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
-                //used.AddRange(tuple.Item2);
-                (rowNumber, used) = tuple;
+                //check kids
+                var children = policies.Where(x => x.ParentUid == row.AssetUid);
+                foreach (var child in children)
+                {
+                    rowNumber++;
+                    (int, List<Guid>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
+                    (rowNumber, used) = tuple;
+                }
             }
             return (rowNumber, used);
         }
@@ -1372,7 +1393,7 @@ namespace d360.model.DataAccessLayer
         private int CheckDepth(IEnumerable<dynamic> tree, Guid itemID, int level = 1)
         {
             var item = tree.Where(x => x.AssetUid == itemID).FirstOrDefault();
-            if (item.ParentUid != null && item.Parent != 0)
+            if (item != null && item.ParentUid != null)
             {
                 level = CheckDepth(tree, item.ParentUid, ++level);
             }
@@ -1395,6 +1416,62 @@ namespace d360.model.DataAccessLayer
                                             inner join AssetType AT on AT.Id = ATL.AssetTypeID
                                             WHERE  [object]='TaxonomyType' and ObjectId=@ObjectId
                                             order by Level", new { ObjectId = id }).AsQueryable();
+        }
+
+        private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
+        {
+            var sql = $@"drop table if exists #family
+?
+                create table #family(
+                 AssetUid uniqueidentifier
+                )
+                ?
+                --GET ALL CHILDREN
+                ;with family_cte as (
+                select a1.uid,ADV.DisplayValue
+                from graph.assetnode an
+                inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
+                inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
+                inner join asset a1 on a1.uid = rel1.Uid
+                cross apply GetAssetDisplayValueById(a1.ID)ADV
+                where an.Uid in @assetUid
+                union all
+                select a1.uid, ADV.DisplayValue
+                from family_cte fam, graph.assetnode an
+                inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
+                inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
+                inner join asset a1 on a1.uid = rel1.Uid
+                cross apply GetAssetDisplayValueById(a1.ID)ADV
+                where an.Uid = fam.uid)
+                insert into #family 
+                select 
+                uid as AssetUid from family_cte
+                ?
+                --GET ALL PARENT
+                ;with family_cte as (
+                select a2.uid,ADV.DisplayValue
+                from graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid in @assetUid
+                union all
+                select a2.uid, ADV.DisplayValue
+                from family_cte fam, graph.assetnode an
+                inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
+                inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
+                inner join asset a2 on a2.uid = rel2.Uid
+                cross apply GetAssetDisplayValueById(a2.ID)ADV
+                where an.Uid = fam.uid)
+                insert into #family 
+                select 
+                uid as AssetUid from family_cte
+                ?
+                ?
+                select * from #family";
+
+            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }).AsList();
         }
 
 
