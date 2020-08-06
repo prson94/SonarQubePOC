@@ -81,7 +81,11 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                             this.selection = this.metricTree[0].data;
                             this.selectionChange.emit(this.selection);
                             this.selectedNode = this.metricTree[0];
+                        } else {
+                            this.selectionChange.emit(null);
                         }
+                    } else {
+                        this.selectionChange.emit(null);
                     }
 
                     this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
