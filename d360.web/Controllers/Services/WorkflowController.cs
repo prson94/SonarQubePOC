@@ -2553,10 +2553,25 @@ order by wi.StartedOn desc";
 
                 if (result.ActivityType == WorkflowActivityType.Form && result.Complete == false)
                 {
-                    if ((result.MessageRecipientType == EmailTaskRecipientType.Responsibility.ToString() || result.MessageRecipientType == EmailTaskRecipientType.None.ToString()))
+                    if (result.MessageRecipientType == EmailTaskRecipientType.Responsibility.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Group.ToString() || result.MessageRecipientType == EmailTaskRecipientType.None.ToString())
                     {
                         //get responsible users
-                        var users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
+                        List<GlobalReportingResource> users = null;
+                        if (result.MessageRecipientType == EmailTaskRecipientType.Group.ToString())
+                        {
+                            int recipientGroup = Company.Query<int>(@"select ObjectID from [dbo].[Asset] a
+                                        inner join workflow.VersionStep vs
+	                                        on a.[Object] = 'Group' and a.uid = vs.Settings.query('settings/MessageToGroup').value('.', 'uniqueidentifier')
+                                        where vs.id = @stepId;", new { stepId = result.StepID }).FirstOrDefault();
+                            if (recipientGroup > 0)
+                            {
+                                users = Company.GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
+                            }
+                        }
+                        else
+                        {
+                            users = Company.GetWorkflowUsersBasedOnResponsibility(result.TypeID, result.StepID, result.ItemID).ToList();
+                        }
 
                         if (fields?.Reassignments?.Any() ?? false)
                         {
@@ -3358,6 +3373,17 @@ order by wi.StartedOn desc";
                             {
                                 users = Company.GetWorkflowUsersBasedOnResponsibility(detail.TypeID, detail.StepID, detail.ItemID).ToList();
 
+                            }
+                            else if (detail.Settings.MessageRecipientType == EmailTaskRecipientType.Group.ToString())
+                            {
+                                int recipientGroup = Company.Query<int>(@"select ObjectID from [dbo].[Asset] a
+                                        inner join workflow.VersionStep vs
+	                                        on a.[Object] = 'Group' and a.uid = vs.Settings.query('settings/MessageToGroup').value('.', 'uniqueidentifier')
+                                        where vs.id = @stepId;", new { stepId = detail.StepID }).FirstOrDefault();
+                                if (recipientGroup > 0)
+                                {
+                                    users = Company.GetWorkflowUsersBasedOnGroup(recipientGroup).ToList();
+                                }
                             }
                             else if (detail.Settings.MessageRecipientType == "SpecificUser")
                             {
