@@ -23,7 +23,7 @@
                          (onFilter)="expandNodes()">
                 <ng-template pTemplate="caption">
                     <div>
-                        <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+                        <input type="text" [ngModel]="filterText" pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
                     </div>
                 </ng-template>
                 <ng-template pTemplate="header">

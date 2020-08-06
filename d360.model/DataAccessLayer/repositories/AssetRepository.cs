@@ -253,6 +253,9 @@ namespace d360.model.DataAccessLayer
             bool listColorsAsJSON = false;
             bool includeColor = true;
             var includeTotal = true;
+            bool isHierachyItem = false;
+            string hierarchyParentUidCol = "";
+            string hierarchyParentUidSelect = "";
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -811,7 +814,20 @@ namespace d360.model.DataAccessLayer
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}";
 
+            var hierachy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+            bool.TryParse(hierachy, out isHierachyItem);
 
+            if (isHierachyItem)
+            {
+                hierarchyParentUidCol = " ,Parent.uid as ParentUid";
+                hierarchyParentUidSelect = $@" outer apply (
+					select	PA.uid 
+					from	[Intersect] I
+                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+							inner join Asset PA on PA.Object = I.Subject and PA.ObjectID =I.SubjectID
+					) Parent ";
+            }
 
             var sql = $@"
                 {populatePremissionAssetTableSQL}
@@ -831,6 +847,7 @@ namespace d360.model.DataAccessLayer
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
                     {(includePermissionDetails ? includePermissionFields : "")}
+                    {hierarchyParentUidCol}
                 from Asset A
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
@@ -840,6 +857,7 @@ namespace d360.model.DataAccessLayer
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonById(A.Id) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
+                {hierarchyParentUidSelect}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
@@ -1134,18 +1152,21 @@ namespace d360.model.DataAccessLayer
                 filter = queryParams.ToList().First(k => k.Key.ToLower() == "_filter").Value;
 
             var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString()
+                DataType.OwnershipLookup.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.Lookup.ToString()
             };
 
             string assetClass = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).Object;
             var id = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).ObjectID;
-            
 
+            var data = await GetAssets(uid, queryParams);
             if (assetClass == "PolicyType")
             {
+                
                 assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
-                results = GetPoliciesByType(id, fields, stripHtml);
+                results = data.items;
                 levels = GetPolicyTypeLevels(id);
             }
 
@@ -1153,7 +1174,7 @@ namespace d360.model.DataAccessLayer
             {
                 assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "TaxonomyType");
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
-                results = ModelHierarchyDetailed(id,fields, stripHtml);
+                results = data.items;
                 levels = GetTaxonomyTypeLevels(id);
             }
 
@@ -1182,7 +1203,8 @@ namespace d360.model.DataAccessLayer
 
             foreach (var row in results)
             {
-                int depth = CheckDepth(results, row.ID);
+                var test = row.AssetUid;
+                int depth = CheckDepth(results, row.AssetUid);
                 if (depth > maxDepth)
                 {
                     maxDepth = depth;
@@ -1205,7 +1227,7 @@ namespace d360.model.DataAccessLayer
                                 levelName = level.Name;
                             }
                         }
-                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey,SortOrder = index });
+                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
 
                     }
                 }
@@ -1221,7 +1243,7 @@ namespace d360.model.DataAccessLayer
                         levelName = level.Name;
                     }
                 }
-                tempFields.Add(new FieldType { Type = "string", Name = $"Uid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
+                tempFields.Add(new FieldType { Type = "string", Name = $"AssetUid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
             }
             tempFields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
             fields = tempFields;
@@ -1239,16 +1261,15 @@ namespace d360.model.DataAccessLayer
 
 
             int rowNumber = 1;
-            List<int> used = new List<int>();
-            var temp = results.Where(x => x.DisplayValue.ToLower().Contains(filter.ToLower())).ToList();
-            foreach (var row in temp)
+            List<Guid> used = new List<Guid>();
+            foreach (var row in results)
             {
-                if (used.Contains(row.ID))
+                if (used.Contains(row.AssetUid))
                 {
                     continue;
                 }
                 rowNumber++;
-                (int, List<int>) tuple = AddRow(results, document, fields, rowNumber, row, maxDepth, used);
+                (int, List<Guid>) tuple = AddRow(results, document, fields, rowNumber, row, maxDepth, used);
                 (rowNumber, used) = tuple;
             }
 
@@ -1257,24 +1278,18 @@ namespace d360.model.DataAccessLayer
             return document;
         }
 
-        private (int, List<int>) AddRow(IEnumerable<dynamic> policies, SLDocument document, List<FieldType> fields, int rowNumber, dynamic row, int maxDepth, List<int> used)
+        private (int, List<Guid>) AddRow(IEnumerable<dynamic> policies, SLDocument document, List<FieldType> fields, int rowNumber, dynamic row, int maxDepth, List<Guid> used)
         {
             var rowValues = (row as IDictionary<string, object>);
-            int itemDepth = CheckDepth(policies, row.ID);
+            int itemDepth = CheckDepth(policies, row.AssetUid);
             int index = 1;
             int level = 1;
 
             var typesToAvoid = new List<string>() {
-                DataType.OwnershipLookup.ToString()
+                DataType.OwnershipLookup.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.Lookup.ToString()
             };
-
-            if (row.ParentID != null && !used.Contains(row.ParentID))
-            {
-                var parent = policies.FirstOrDefault(x => x.ID == row.ParentID);
-                (int, List<int>) tuple = AddRow(policies, document, fields, rowNumber, parent, maxDepth, used);
-                used.AddRange(tuple.Item2);
-                rowNumber++;
-            }
 
             foreach (var field in fields)
             {
@@ -1292,11 +1307,11 @@ namespace d360.model.DataAccessLayer
                     else
                     {
                         //parent data needs to be found here for how deep we are 
-                        var parent = policies.FirstOrDefault(x => x.ID == row.ParentID);
+                        var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
                         int tempIndex = index;
-                        while (parent != null && CheckDepth(policies, parent.ID) != level)
+                        while (parent != null && CheckDepth(policies, parent.AssetUid) != level)
                         {
-                            parent = policies.FirstOrDefault(x => x.ID == parent.ParentID);
+                            parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
                         }
 
                         if (parent != null)
@@ -1335,30 +1350,31 @@ namespace d360.model.DataAccessLayer
                 }
                 else if (field.Name == "Url")
                 {
-                    var val = "asset/" + row.Uid;
+                    var val = "asset/" + row.AssetUid;
                     setCellValueFromField(document, rowNumber, index, field, val);
                 }
-                used.Add(row.ID);
+                used.Add(row.AssetUid);
                 index++;
             }
 
             //check kids
-            var children = policies.Where(x => x.ParentID == row.ID);
+            var children = policies.Where(x => x.ParentUid == row.AssetUid);
             foreach (var child in children)
             {
                 rowNumber++;
-                (int, List<int>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
-                used.AddRange(tuple.Item2);
+                (int, List<Guid>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
+                //used.AddRange(tuple.Item2);
+                (rowNumber, used) = tuple;
             }
             return (rowNumber, used);
         }
 
-        private int CheckDepth(IEnumerable<dynamic> tree, int itemID, int level = 1)
+        private int CheckDepth(IEnumerable<dynamic> tree, Guid itemID, int level = 1)
         {
-            var item = tree.Where(x => x.ID == itemID).FirstOrDefault();
-            if (item.ParentID != null && item.Parent != 0)
+            var item = tree.Where(x => x.AssetUid == itemID).FirstOrDefault();
+            if (item.ParentUid != null && item.Parent != 0)
             {
-                level = CheckDepth(tree, item.ParentID, ++level);
+                level = CheckDepth(tree, item.ParentUid, ++level);
             }
             return level;
         }
@@ -1390,129 +1406,6 @@ namespace d360.model.DataAccessLayer
                 return (string)colorObj["Name"] ?? "";
             }
             return "";
-        }
-
-        private IEnumerable<dynamic> GetPoliciesByType(int id, List<FieldType> fields, bool stripHtml = false)
-        {
-            var joins = "";
-            var columns = "";
-            getDynamicFieldJoinStatements(fields,id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
-
-            var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                ) 
-						                    then 1
-						                    else 0
-
-                                        end as P_CanEdit,
-		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                                   ) 
-						                                   then 1
-						                                   else 0
-
-                                        end as P_CanDelete";
-
-            if (CompanyContext.CurrentResourceIsAdmin)
-            {
-                permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
-            }
-
-            var querySql = $@"
-select	top 100 percent 
-        A.ObjectID as ID, 
-        A.[Uid],
-        A.ID as AssetID, 
-        P.SubjectID as ParentID,
-        TD.DisplayValue,
-        {columns}
-       -- 0 as Level,
-		case 
-				when Work.[Count] > 0 then cast(1 as bit)
-				else cast(0 as bit)
-			end as HasWorkflow,
-        {permissionSql}
-from	
-        Asset A
-        inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-        {joins}         
-        inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
-        outer apply (
-					select	I.SubjectID
-					from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ObjectID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-					) P
-		cross apply (
-					select	count(1) as [Count]
-					from	workflow.EventRegistration WER
-							inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
-					where	WER.Object = ATT.Object
-							and WER.ObjectID = ATT.ObjectID
-					) Work
-where   A.ID not in ({CompanyContext.GetNoReadSqlStatement()})
-        and A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})";
-
-            var sql = string.Format(@"select * from ({0}) A", querySql);
-
-            sql += " order by A.DisplayValue";
-
-            var policies = CompanyContext.Query<dynamic>(sql, new { id, r = CompanyContext.CurrentResourceID }).ToList();
-
-            return policies;
-        }
-
-        private IEnumerable<dynamic> ModelHierarchyDetailed(int id, List<FieldType> fields, bool stripHtml = false)
-        {
-            var joins = "";
-            var columns = "";
-
-            // get the dynamic fields set as listable for this taxonomy
-            getDynamicFieldJoinStatementsForTaxonomy(id, "Taxonomy", out joins, out columns, false, false, true, fields, "A.ObjectID");
-
-            var editRightsColumnStatement = "cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete,";
-            var editRightsJoinStatement = "";
-
-            if (!CompanyContext.CurrentResourceIsAdmin)
-            {
-                editRightsColumnStatement = " cast(IIF(S_E.[Count] = 0, 0, 1) as bit) as P_CanEdit, cast(IIF(S_D.[Count] = 0, 0, 1) as bit) as P_CanDelete, ";
-                editRightsJoinStatement = $@"
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset}) as S_E 
-cross apply (select count(1) as [Count] from ResponsibilityDetail where ResourceID = @r and ( (AssetID = A.ID) or (AssetTypeID = A.AssetTypeID and AssetID = 0) ) and PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset}) as S_D ";
-            }
-
-            var sql = $@"
-select	A.ObjectID as ID, 
-        A.[Uid],
-        P.SubjectID as ParentID, 
-		P.uid as ParentUid,
-		A.AssetTypeUid as AssetTypeUid,
-        A.TypeID as TaxonomyTypeID,
-        {editRightsColumnStatement}
-        A.ID as AssetID,  
-        {columns} 
-        D.DisplayValue
-from	AssetWithType A        
-        {joins} 
-        inner join dbo.AssetDisplayValue D on A.ID = D.AssetID
-        {editRightsJoinStatement}
-        outer apply (
-					select	top 1 I.SubjectID, A.uid
-					from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-							inner join Asset A on A.ObjectId = I.SubjectID and A.Object = I.Subject
-					) P
-where   A.Type = 'TaxonomyType' 
-        and A.TypeID = @id 
-        and A.[State] = 1 
-        and A.ID not in ({CompanyContext.GetNoReadSqlStatement()}) 
-        and A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})
-order by DisplayValue ";
-
-            var models = CompanyContext.Query<dynamic>(sql, new { id, r = CompanyContext.CurrentResourceID }).ToList();
-
-            return models;
         }
 
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
