@@ -189,7 +189,7 @@ export class AssetService extends BaseObservableService {
             .subscribe(data => this.downloadFile(data, fileName));
     }
 
-    public searchAssetPath(filter: AssetSearchFilter): Observable<AssetSearchApiResponse> {
+    public searchAssetPath(filterValue: AssetSearchFilter): Observable<AssetSearchApiResponse> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
