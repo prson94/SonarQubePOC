@@ -50,6 +50,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
     private colors: any[] = [];
+    private diagramOriginalPosition: any;
 
     private isLoaded = false;
     public isDiagramLoaded = false;
@@ -376,6 +377,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramStateChanged();
         });
 
+        var self = this;
+        this.myDiagram.addDiagramListener("InitialLayoutCompleted", function (e: go.DiagramEvent) {
+            if (self.diagramOriginalPosition) {
+                e.diagram.position = self.diagramOriginalPosition;
+                self.diagramOriginalPosition = null;
+            }
+        });
         var model = this.myDiagram.model as go.GraphLinksModel;
 
         model.linkFromPortIdProperty = "fromPort";
@@ -564,7 +572,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
-        var originalPosition = JSON.parse(JSON.stringify(this.myDiagram.toolManager.panningTool.originalPosition));
+        this.diagramOriginalPosition = JSON.parse(JSON.stringify(this.myDiagram.toolManager.panningTool.originalPosition));
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
@@ -605,8 +613,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
 
                 this.cdRef.detectChanges();
-                if (isFromSave)
-                    this.myDiagram.position = originalPosition;
             });
     }
 
