@@ -6,6 +6,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { AssetService } from '../../services/asset.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { LevelsService } from '../../services/levels.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -30,6 +31,7 @@ import { V2ApiFilters } from '../../models/asset-search.model';
         ModelsService,
         PoliciesService,
         PermissionsService,
+        AssetService,
     ],
     templateUrl: 'hierarchy-item-structure.component.html'
 })
@@ -68,6 +70,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     filterColumns: string[] = ['DisplayValue'];
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
+    @ViewChild("inputBox", { static: false }) test: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -81,7 +84,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         private modelsService: ModelsService,
         private policiesService: PoliciesService,
         private headerActionsService: HeaderActionsService,
-        protected secondaryNavService: SecondaryNavService
+        protected secondaryNavService: SecondaryNavService,
+        private assetService: AssetService
     ) {
         super();
 
@@ -333,14 +337,15 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private exportExcel(level: number) {
         var params = new V2ApiFilters();
+        params._filter = this.test.nativeElement.value;
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
-                params._isHierachyItem = 'Model';
-                this.policiesService.getHierarchyExcel(this.assetType.AssetTypeUID, this.assetType.Name, params, 'Model', true);
+                params._isHierachyItem = true;
+                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params,this.assetType.Name);
                 break;
             case AssetTypeClass.Policy:
-                params._isHierachyItem = 'Policy';
-                this.policiesService.getHierarchyExcel(this.assetType.AssetTypeUID, this.assetType.Name, params,'Policy', true);
+                params._isHierachyItem = true;
+                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params, this.assetType.Name);
                 break;
         }
     }

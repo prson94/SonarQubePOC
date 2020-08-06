@@ -33,8 +33,6 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
-        //TaxonomyController taxonomyController;
-        //ApiController apiController;
 
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
@@ -1029,25 +1027,41 @@ namespace d360.model.DataAccessLayer
             return document;
         }
 
-        public async Task<SLDocument> GetHierarchyExcel(Guid uid, string assetClass, bool stripHtml = false)
+        public async Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml = false)
         {
             IQueryable<dynamic> levels = null;
             IEnumerable<dynamic> results = null;
             AssetType assetType = null;
-            var id = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).ObjectID;
+            var fields = new List<FieldType>();
+            var tempFields = new List<FieldType>();
+            var fieldsToRemove = new List<FieldType>();
 
-            if (assetClass == "Policy")
+            string filter = "";
+            if (queryParams.Any(p => p.Key.Trim().ToLower() == "_filter"))
+                filter = queryParams.ToList().First(k => k.Key.ToLower() == "_filter").Value;
+
+            var typesToAvoid = new List<string>() {
+                DataType.OwnershipLookup.ToString()
+            };
+
+            string assetClass = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).Object;
+            var id = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).ObjectID;
+            
+
+            if (assetClass == "PolicyType")
             {
-                results = GetPoliciesByType(id, stripHtml);
-                levels = GetPolicyTypeLevels(id);
                 assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+                results = GetPoliciesByType(id, fields, stripHtml);
+                levels = GetPolicyTypeLevels(id);
             }
 
-            if (assetClass == "Model")
+            if (assetClass == "TaxonomyType")
             {
-                results = ModelHierarchyDetailed(id, stripHtml);
-                levels = GetTaxonomyTypeLevels(id);
                 assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "TaxonomyType");
+                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+                results = ModelHierarchyDetailed(id,fields, stripHtml);
+                levels = GetTaxonomyTypeLevels(id);
             }
 
 
@@ -1055,12 +1069,6 @@ namespace d360.model.DataAccessLayer
             const string assetSheetName = "Assets";
             const string apiSheetName = "Api Info";
             int maxDepth = 1;
-
-
-            var fields = new List<FieldType>();
-            var tempFields = new List<FieldType>();
-            var fieldsToRemove = new List<FieldType>();
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
             #region Populate Excel Document
 
@@ -1104,11 +1112,12 @@ namespace d360.model.DataAccessLayer
                                 levelName = level.Name;
                             }
                         }
-                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
+                        tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey,SortOrder = index });
 
                     }
                 }
             }
+            tempFields.AddRange(fields);
             for (int i = 1; i < maxDepth + 1; i++)
             {
                 string levelName = "Level " + i.ToString();
@@ -1121,13 +1130,16 @@ namespace d360.model.DataAccessLayer
                 }
                 tempFields.Add(new FieldType { Type = "string", Name = $"Uid", FriendlyName = $"{levelName} UID", IsPartOfKey = true });
             }
-            fields.AddRange(tempFields);
-            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
+            tempFields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
+            fields = tempFields;
             foreach (var field in fieldsToRemove)
                 fields.Remove(field);
 
+
             foreach (var field in fields)
             {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
                 document.SetCellValue(1, index, (string)field.FriendlyName);
                 index++;
             }
@@ -1135,7 +1147,8 @@ namespace d360.model.DataAccessLayer
 
             int rowNumber = 1;
             List<int> used = new List<int>();
-            foreach (var row in results)
+            var temp = results.Where(x => x.DisplayValue.ToLower().Contains(filter.ToLower())).ToList();
+            foreach (var row in temp)
             {
                 if (used.Contains(row.ID))
                 {
@@ -1158,7 +1171,11 @@ namespace d360.model.DataAccessLayer
             int index = 1;
             int level = 1;
 
-            if(row.ParentID != null && !used.Contains(row.ParentID))
+            var typesToAvoid = new List<string>() {
+                DataType.OwnershipLookup.ToString()
+            };
+
+            if (row.ParentID != null && !used.Contains(row.ParentID))
             {
                 var parent = policies.FirstOrDefault(x => x.ID == row.ParentID);
                 (int, List<int>) tuple = AddRow(policies, document, fields, rowNumber, parent, maxDepth, used);
@@ -1168,6 +1185,8 @@ namespace d360.model.DataAccessLayer
 
             foreach (var field in fields)
             {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
                 if (field.IsPartOfKey)
                 {
                     if (level > maxDepth)
@@ -1280,11 +1299,11 @@ namespace d360.model.DataAccessLayer
             return "";
         }
 
-        private IEnumerable<dynamic> GetPoliciesByType(int id, bool stripHtml = false)
+        private IEnumerable<dynamic> GetPoliciesByType(int id, List<FieldType> fields, bool stripHtml = false)
         {
             var joins = "";
             var columns = "";
-            getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
+            getDynamicFieldJoinStatements(fields,id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
 
             var permissionSql = @"case when exists (
                                         select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
@@ -1350,12 +1369,10 @@ where   A.ID not in ({CompanyContext.GetNoReadSqlStatement()})
             return policies;
         }
 
-        private IEnumerable<dynamic> ModelHierarchyDetailed(int id, bool stripHtml = false)
+        private IEnumerable<dynamic> ModelHierarchyDetailed(int id, List<FieldType> fields, bool stripHtml = false)
         {
             var joins = "";
             var columns = "";
-
-            var fields = getFieldTypesByObjectType("TaxonomyType", id, true);
 
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatementsForTaxonomy(id, "Taxonomy", out joins, out columns, false, false, true, fields, "A.ObjectID");

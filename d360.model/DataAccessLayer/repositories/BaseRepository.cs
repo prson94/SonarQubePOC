@@ -789,9 +789,9 @@ namespace d360.model.DataAccessLayer.repositories
             }
         }
 
-        protected void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
+        protected void getDynamicFieldJoinStatements(List<FieldType> fields,int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
         {
-            this.CompanyContext.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
+            this.CompanyContext.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, fields, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
         }
 
         internal void getDynamicFieldJoinStatementsForTaxonomy(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")

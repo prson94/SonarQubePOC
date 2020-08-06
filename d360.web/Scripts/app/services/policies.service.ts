@@ -30,38 +30,6 @@ export class PoliciesService extends BaseObservableService {
             );
     }
 
-    getHierarchyExcel(
-        assetTypeUid: string,
-        policyName: string,
-        params: any,
-        type: string,
-        stripHtml: boolean = false
-    ) {
-        var qString = '';
-        if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-            if (qString)
-                qString = '?' + qString;
-        }
-        this.http.get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
-    }
-
-    downloadFile(data: Blob, name: string) {
-        var filename = `Filtered ${name} ${new Date().toDateString()}.xlsx`;
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
-
     getPolicyType(id: number): Observable<PolicyType> {
         return this.http.get(`api/policytypes/${id}`)
             .pipe(

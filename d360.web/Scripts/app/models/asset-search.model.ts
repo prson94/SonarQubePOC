@@ -90,5 +90,5 @@ export class V2ApiFilters {
     usegraphforparent: boolean;
     _onlyListableFields: boolean;
     _listColorsAsJSON: boolean;
-    _isHierachyItem: string;
+    _isHierachyItem: boolean;
 }

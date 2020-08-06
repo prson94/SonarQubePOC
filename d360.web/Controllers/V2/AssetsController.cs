@@ -317,16 +317,17 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
-                        string isHierachyItem = "";
-                        if (queryParams.Any(p => p.Key.Trim().ToLower() == "_ishierachyitem"))
-                            isHierachyItem = queryParams.ToList().First(k => k.Key.ToLower() == "_ishierachyitem").Value;
+                        
+                        bool isHierachyItem = false;
+                        var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+                        bool.TryParse(value, out isHierachyItem);
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
 
                         
                         SLDocument results;
-                        if (isHierachyItem == "Policy" || isHierachyItem == "Model")
+                        if (isHierachyItem)
                         {
-                            results = await AssetRepository.GetHierarchyExcel(assetTypeUid, isHierachyItem, true);
+                            results = await AssetRepository.GetHierarchyExcel(assetTypeUid, queryParams, true);
                         }
                         else
                         {
