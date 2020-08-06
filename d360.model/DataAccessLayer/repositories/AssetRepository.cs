@@ -289,8 +289,8 @@ namespace d360.model.DataAccessLayer
                     var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
                     includeFieldsList = includeFieldsString
                         .Split(',')
-                        .Select(s => s.ToLower())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Select(s => s.ToLower().Trim())
+                        .Where(s => !string.IsNullOrEmpty(s))
                         .ToList();
                 }
                 catch
