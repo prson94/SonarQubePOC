@@ -7,7 +7,7 @@
                 </div>
             </ng-template>
         </p-dropdown>
-        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [(ngModel)]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="selectedItem">
                 <div>
                     <span>{{parseOperator(condition,item.label)}}</span>
