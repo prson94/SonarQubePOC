@@ -1219,6 +1219,10 @@ namespace d360.model.DataAccessLayer
                     var fammilyAssets = await GetAssets(uid, qp);
                     allResults = results.Union(fammilyAssets.items);
                 }
+                else
+                {
+                    allResults = results;
+                }
             }
             else
             {
@@ -1307,7 +1311,7 @@ namespace d360.model.DataAccessLayer
 
             int rowNumber = 1;
             List<Guid> used = new List<Guid>();
-            foreach (var row in allResults)
+            foreach (var row in allResults.Where(x => x.ParentUid == null).ToList())
             {
                 if (used.Contains(row.AssetUid))
                 {
@@ -1445,7 +1449,7 @@ namespace d360.model.DataAccessLayer
 
         private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
         {
-            var sql = $@"drop table if exists #family?
+            var sql = $@"drop table if exists #family
                 create table #family(
                  AssetUid uniqueidentifier
                 )
