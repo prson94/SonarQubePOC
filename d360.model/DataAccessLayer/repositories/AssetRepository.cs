@@ -1242,7 +1242,7 @@ namespace d360.model.DataAccessLayer
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, 1);
             document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, allResults.Count());
+            document.SetCellValue(3, 2, allResults.Select(m => m.AssetUid).Distinct().Count());
 
 
             document.SelectWorksheet(assetSheetName);
@@ -1257,11 +1257,11 @@ namespace d360.model.DataAccessLayer
             }
 
             int index = 1;
-            foreach (var field in fields)
-            {
-                if (field.IsPartOfKey)
+                foreach (var field in fields)
                 {
-                    fieldsToRemove.Add(field);
+                    if (field.IsPartOfKey)
+                    {
+                        fieldsToRemove.Add(field);
                     for (int i = 1; i < maxDepth + 1; i++)
                     {
                         string levelName = "Level " + i.ToString();
@@ -1275,8 +1275,8 @@ namespace d360.model.DataAccessLayer
                         tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
 
                     }
+                    }
                 }
-            }
             tempFields.AddRange(fields);
             for (int i = 1; i < maxDepth + 1; i++)
             {
