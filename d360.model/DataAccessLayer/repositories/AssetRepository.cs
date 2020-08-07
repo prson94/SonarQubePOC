@@ -22,6 +22,8 @@ using d360.core.entities.Process;
 using AngleSharp.Io;
 using DocumentFormat.OpenXml.Spreadsheet;
 using System.Globalization;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using AngleSharp.Text;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1154,16 +1156,37 @@ namespace d360.model.DataAccessLayer
             if (queryParams.Any(p => p.Key.Trim().ToLower() == "_simplefilter"))
                 filter = queryParams.ToList().First(k => k.Key.ToLower() == "_simplefilter").Value.ToString();
 
+            string orderValue = "";
+            int orderID = 0;
+            if (queryParams.Any(p => p.Key.Trim().ToLower() == "_order"))
+            {
+                orderValue = queryParams.ToList().First(k => k.Key.ToLower() == "_order").Value.ToString();
+                if (orderValue != "undefined")
+                {
+                    orderValue = orderValue.Split(new[] { "Field" }, StringSplitOptions.None)[1];
+                    orderID = int.Parse(orderValue);
+                }
+            }
+
+            List<KeyValuePair<string, string>> queryParamsWithOrder = new List<KeyValuePair<string, string>>();
+            if (orderID != 0)
+            {
+                var orderName = CompanyContext.FieldTypes.Where(f => f.ID == orderID).FirstOrDefault().FriendlyName;
+                queryParamsWithOrder.AddRange(queryParams);
+                queryParamsWithOrder.RemoveAll(x => x.Key == "_order");
+                queryParamsWithOrder.Add(new KeyValuePair<string, string>("_order", orderName));
+            }
+            else
+                queryParamsWithOrder.AddRange(queryParams);
+
             var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
-                DataType.ComplexRelationLookup.ToString(),
-                DataType.Lookup.ToString()
+                DataType.ComplexRelationLookup.ToString()
             };
 
             string assetClass = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).Object;
             var id = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).ObjectID;
-
-            var data = await GetAssets(uid, queryParams);
+            var data = await GetAssets(uid, queryParamsWithOrder);
             if (assetClass == "PolicyType")
             {
                 
@@ -1188,11 +1211,14 @@ namespace d360.model.DataAccessLayer
                 assetUids = results.Select(x => x.AssetUid).ToList();
                 var allFamily = GetAllFamilyForAssetUid(assetUids);
 
-                var par = queryParams.Where(k => k.Key.ToLower() != "_simplefilter");
-                qp.AddRange(par);
-                qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allFamily)));
-                var fammilyAssets = await GetAssets(uid, qp);
-                allResults = results.Union(fammilyAssets.items);
+                if (allFamily.Count > 0)
+                {
+                    var par = queryParamsWithOrder.Where(k => k.Key.ToLower() != "_simplefilter");
+                    qp.AddRange(par);
+                    qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allFamily)));
+                    var fammilyAssets = await GetAssets(uid, qp);
+                    allResults = results.Union(fammilyAssets.items);
+                }
             }
             else
             {
@@ -1308,8 +1334,7 @@ namespace d360.model.DataAccessLayer
 
                 var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
-                DataType.ComplexRelationLookup.ToString(),
-                DataType.Lookup.ToString()
+                DataType.ComplexRelationLookup.ToString()
             };
 
                 foreach (var field in fields)
@@ -1402,7 +1427,7 @@ namespace d360.model.DataAccessLayer
 
         private IQueryable<dynamic> GetPolicyTypeLevels(int id)
         {
-            return CompanyContext.Query<dynamic>(@"Select AT.ObjectId as PolicyTypeID,ATL.Level,ATL.Name,ATL.Description
+            return CompanyContext.Query<dynamic>($@"Select AT.ObjectId as PolicyTypeID,ATL.Level,ATL.Name,ATL.Description
                                             From AssetTypeLevel ATL
                                             inner join AssetType AT on AT.Id = ATL.AssetTypeID
                                             WHERE  [object]='PolicyType' and ObjectId=@ObjectId
@@ -1420,12 +1445,10 @@ namespace d360.model.DataAccessLayer
 
         private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
         {
-            var sql = $@"drop table if exists #family
-?
+            var sql = $@"drop table if exists #family?
                 create table #family(
                  AssetUid uniqueidentifier
                 )
-                ?
                 --GET ALL CHILDREN
                 ;with family_cte as (
                 select a1.uid,ADV.DisplayValue
@@ -1446,7 +1469,6 @@ namespace d360.model.DataAccessLayer
                 insert into #family 
                 select 
                 uid as AssetUid from family_cte
-                ?
                 --GET ALL PARENT
                 ;with family_cte as (
                 select a2.uid,ADV.DisplayValue
@@ -1467,8 +1489,6 @@ namespace d360.model.DataAccessLayer
                 insert into #family 
                 select 
                 uid as AssetUid from family_cte
-                ?
-                ?
                 select * from #family";
 
             return CompanyContext.Query<Guid>(sql, new { assetUid = uids }).AsList();

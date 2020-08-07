@@ -342,15 +342,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private exportExcel(level: number) {
         var params = new V2ApiFilters();
         params._onlyListableFields = false;
+        params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
+        params._order = this.treeTable._sortField;
         params._simpleFilter = this.filterText.nativeElement.value;
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
                 params._isHierachyItem = true;
-                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params,this.assetType.Name);
+                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params,'Filtered ' + this.assetType.Name);
                 break;
             case AssetTypeClass.Policy:
                 params._isHierachyItem = true;
-                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params, this.assetType.Name);
+                this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params, 'Filtered ' +this.assetType.Name);
                 break;
         }
     }
