@@ -1,6 +1,16 @@
-﻿@import "_Variables";
+﻿@import "infogix-ui/IgUiVariables";
+@import "_Variables";
 
 .asset-browser {
+
+    .error-panel {
+        position: absolute;
+        top: 75px;
+        z-index: 0;
+        text-align: center;
+        color: @ig-diagram-error-color;
+    }
+
     .asset-browser-header {
         background-color: #f1f2f3;
         display: flex;
@@ -287,37 +297,6 @@
                         }
                     }
                 }
-                /*.fields {
-                    div {
-                        display: inline-flex;
-
-                        label {
-                            width: 142px;
-                            height: 24px;
-                            font-family: 'Source Sans Pro Bold';
-                            font-size: 14px;
-                            font-weight: bold;
-                            font-stretch: normal;
-                            font-style: normal;
-                            line-height: normal;
-                            letter-spacing: normal;
-                            color: #202020;
-                        }
-
-                        div,
-                        span {
-                            width: 272px;
-                            font-family: 'Source Sans Pro';
-                            font-size: 14px;
-                            font-weight: normal;
-                            font-stretch: normal;
-                            font-style: normal;
-                            line-height: normal;
-                            letter-spacing: normal;
-                            color: #202020;
-                        }
-                    }
-                }*/
             }
 
             &.popup-opened {
