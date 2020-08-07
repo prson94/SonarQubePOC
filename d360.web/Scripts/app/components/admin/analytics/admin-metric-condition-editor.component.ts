@@ -55,7 +55,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.metricConditionEditorFieldTypes.forEach(ft => {
             ft.Disabled = false;
         });
-        this.usedFieldTypes = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
+        if (!this.conditionItems)
+            this.conditionItems = [];
+
+        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeID }) : [];
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
         this.conditionsValid = true;
         this.usedFieldTypes.forEach(i => {
