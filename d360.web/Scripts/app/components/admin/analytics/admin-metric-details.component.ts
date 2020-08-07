@@ -99,7 +99,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                           <div class="details-header">Weight</div>
                                           <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
                                       </div>
-                                     <div class="measure-details-item">
+                                     <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
                                           <div class="details-header">Grouping Measure</div>
                                           <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                                       </div>
