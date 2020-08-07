@@ -785,7 +785,7 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    whereStatements.Add("Exists (SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids and a.ID=rd.AssetID)");
+                    whereStatements.Add("Exists (SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids and (a.ID=rd.AssetID OR ( rd.ApplyToType = 1 and rd.AssetID = 0 and rd.AssetTypeId=a.AssetTypeId)))");
                 }
             }
 
