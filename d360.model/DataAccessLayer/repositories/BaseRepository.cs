@@ -811,17 +811,5 @@ namespace d360.model.DataAccessLayer.repositories
             }
         }
 
-        internal void getDynamicFieldJoinStatementsForTaxonomy(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID")
-        {
-            this.CompanyContext.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
-        }
-
-        internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
-        {
-            return (listableOnly) ?
-                this.CompanyContext.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
-                this.CompanyContext.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.ColumnOrder).ToList();
-        }
-
     }    
 }
