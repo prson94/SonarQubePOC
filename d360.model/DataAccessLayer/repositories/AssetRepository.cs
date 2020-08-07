@@ -1323,7 +1323,7 @@ namespace d360.model.DataAccessLayer
             }
 
             #endregion
-
+            SetExcelColumnWidths(document, fields);
             return document;
         }
 
