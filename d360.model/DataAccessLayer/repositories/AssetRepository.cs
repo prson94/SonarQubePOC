@@ -1184,27 +1184,21 @@ namespace d360.model.DataAccessLayer
                 DataType.ComplexRelationLookup.ToString()
             };
 
-            string assetClass = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).Object;
-            var id = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid).ObjectID;
+            assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            var id = assetType.ObjectID;
             var data = await GetAssets(uid, queryParamsWithOrder);
-            if (assetClass == "PolicyType")
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+            results = data.items;
+            if (assetType.Class == AssetTypeClass.Policy)
             {
-                
-                assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
-                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
-                results = data.items;
                 levels = GetPolicyTypeLevels(id);
             }
 
-            if (assetClass == "TaxonomyType")
+            if (assetType.Class == AssetTypeClass.Model)
             {
-                assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "TaxonomyType");
-                fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
-                results = data.items;
                 levels = GetTaxonomyTypeLevels(id);
             }
             List<KeyValuePair<string, string>> qp = new List<KeyValuePair<string, string>>();
-
             
             if (!String.IsNullOrEmpty(filter))
             {
@@ -1415,6 +1409,10 @@ namespace d360.model.DataAccessLayer
                     (int, List<Guid>) tuple = AddRow(policies, document, fields, rowNumber, child, maxDepth, used);
                     (rowNumber, used) = tuple;
                 }
+            }
+            else
+            {
+                rowNumber--;
             }
             return (rowNumber, used);
         }

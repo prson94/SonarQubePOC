@@ -352,7 +352,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         if (this.filterText.nativeElement.value != '')
             params._simpleFilter = '*' + this.filterText.nativeElement.value;
         else
-            delete params._order;
+            delete params._simpleFilter;
         params._isHierachyItem = true;
         this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params,'Filtered ' + this.assetType.Name);
     }
