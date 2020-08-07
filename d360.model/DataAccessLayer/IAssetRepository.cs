@@ -51,6 +51,7 @@ namespace d360.model.DataAccessLayer
         dynamic GetExecutionStatusModel(Guid executionUid);
         List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model);
+        Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
         Task<dynamic> GetAssetSingle(Guid assetUid);
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
     }

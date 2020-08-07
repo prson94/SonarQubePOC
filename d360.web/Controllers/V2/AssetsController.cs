@@ -319,8 +319,22 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
+                        
+                        bool isHierachyItem = false;
+                        var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+                        bool.TryParse(value, out isHierachyItem);
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+
+                        
+                        SLDocument results;
+                        if (isHierachyItem)
+                        {
+                            results = await AssetRepository.GetHierarchyExcel(assetTypeUid, queryParams, true);
+                        }
+                        else
+                        {
+                            results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                        }
 
                         var stream = new MemoryStream();
                         results.SaveAs(stream);

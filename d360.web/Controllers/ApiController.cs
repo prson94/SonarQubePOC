@@ -2703,7 +2703,6 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return policies;
         }
 
-
         [Route("PolicyType/{id:int}/levels")]
         public IQueryable<dynamic> GetPolicyTypeLevels(int id)
         {
