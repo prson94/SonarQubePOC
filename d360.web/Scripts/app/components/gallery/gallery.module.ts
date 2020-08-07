@@ -21,6 +21,7 @@ import { GalleryGuard } from '../../guards/gallery.guard';
 
 import { TableModule } from 'primeng/table';
 import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
+import { GalleryInputComponent } from './gallery.input.component';
 
 
 @NgModule({
@@ -45,7 +46,8 @@ import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
         GallerySwitchComponent,
         GalleryButtonComponent,
         GalleryIconPickerComponent,
-        GalleryTagPickerComponent
+        GalleryTagPickerComponent,
+        GalleryInputComponent
     ],
     providers: [
         GalleryGuard,
