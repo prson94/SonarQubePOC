@@ -1201,7 +1201,7 @@ namespace d360.model.DataAccessLayer
                 levels = GetTaxonomyTypeLevels(id);
             }
             List<KeyValuePair<string, string>> qp = new List<KeyValuePair<string, string>>();
-            
+
             if (!String.IsNullOrEmpty(filter))
             {
                 assetUids = results.Select(x => x.AssetUid).ToList();
@@ -1388,11 +1388,37 @@ namespace d360.model.DataAccessLayer
                     }
                     level++;
                 }
+                var uidCounterLevel = 1;
+                List<object> writtenUids = new List<object>();
                 foreach (var field in fields.Where(x => !keyFields.Select(y => y.ID).Contains(x.ID)))
                 {
                     if (typesToAvoid.Contains(field.Type))
                         continue;
-                    if (rowValues.ContainsKey(field.Name))
+                    if (field.Name == "AssetUid")
+                    {
+                        var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
+                        while (parent != null && CheckDepth(policies, parent.AssetUid) != uidCounterLevel)
+                        {
+                            parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
+                        }
+                        if (parent != null && parent.AssetUid != row.AssetUid)
+                        {
+                            var parentRowValue = (parent as IDictionary<string, object>);
+                            var val = parentRowValue[field.Name];
+                            if (!writtenUids.Contains(val))
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            writtenUids.Add(val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            if (!writtenUids.Contains(val))
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            writtenUids.Add(val);
+                        }
+                        uidCounterLevel++;
+                    }
+                    else if (rowValues.ContainsKey(field.Name))
                     {
                         var val = rowValues[field.Name];
                         setCellValueFromField(document, rowNumber, index, field, val);
