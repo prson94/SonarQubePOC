@@ -285,7 +285,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
-            if (this.conditions.length > 0) {
+            if (this.conditions && this.conditions.length > 0) {
                 this.formatConditions();
                 return true;
             } else

@@ -28,7 +28,7 @@
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
                 <div (click)="doToggle($event,pc1)" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
-                    <p-calendar #pc1 appendTo="body" [baseZIndex]="20000" (onShow)="$event.stopPropagation()" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                    <p-calendar #pc1 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
                     <i class="fa fa-calendar"></i>
                 </div>
             </div>
