@@ -502,8 +502,12 @@ export class BaseComponent {
          * Minimizer obfuscates this.constructor.name, so we'll have to look for specifi properties
          */
         if (this.uid == undefined || this.uid == blankUid) {
-            if (this['selectedRow'] && this['selectedRow']['id']) { //AdminArtifactsComponent
-                uid = this['selectedRow']['id'];
+            if (this['selectedRow']) {
+                if (this['selectedRow']['id']) { //AdminArtifactsComponent
+                    uid = this['selectedRow']['id'];
+                } else if (this['selectedRow']['uid']) { //AdminDiagramAssetComponent
+                    uid = this['selectedRow']['uid'];
+                }
             } else if (this['selectedReferenceListUid']) { //ReferenceListComponent
                 uid = this['selectedReferenceListUid'];
             } else if (this['assetType'] && this['assetType']['AssetTypeUID']) { //HierarchyItemStructureComponent
