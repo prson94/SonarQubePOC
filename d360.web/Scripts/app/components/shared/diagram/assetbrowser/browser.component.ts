@@ -77,6 +77,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen = false;
     private loadingText = '';
 
+    private isError: boolean = false;
+    private errorText = '';
+
     private searchText = '';
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
@@ -1286,6 +1289,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_PopulateDiagram(): Observable<boolean> {
         let dgmObs: Observable<boolean>;
 
+        this.errorText = "";
+        this.isError = false;
+        this.cdRef.markForCheck();
+
         dgmObs = new Observable(obs => {
             let isLineage: boolean = this.helper_LineageDiagramApplies();
 
@@ -1295,17 +1302,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_ResetDiagramData();
 
             let subscriber = (data: AssetBrowserResponseModel) => {
-                this.diagramData = data;
-                this.loadingText = "Determining links and meaning...";
+                if (data) {
+                    this.diagramData = data;
+                    this.loadingText = "Determining links and meaning...";
 
-                this.helper_ParseTranslatedData(data);
+                    this.helper_ParseTranslatedData(data);
 
-                this.helper_ResizeDiagram();
-                this.helper_ScaleDiagram(1);
-                this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                this.loadingText = "";
-                this.isLoading = false;
-
+                    this.helper_ResizeDiagram();
+                    this.helper_ScaleDiagram(1);
+                    this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                    this.loadingText = "";
+                    this.isLoading = false;
+                }
+                else {
+                    this.errorText = "Unable to retrieve Asset Browser content.";
+                    this.isError = true;
+                    this.isLoading = false;
+                }
                 this.cdRef.markForCheck();
 
                 obs.next(true);
