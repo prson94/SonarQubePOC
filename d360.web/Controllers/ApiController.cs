@@ -9,13 +9,11 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
-using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -27,7 +25,6 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
-using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace d360.web.Controllers
 {
@@ -2177,25 +2174,25 @@ order by    rnk, [Name]";
                     sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')                            
-                            inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID)) 
+                            inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
 							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
 							union
 							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')     
-                            inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID) ) 
+                            inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
                             cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
                             order by disp.DisplayValue";
                     break;
                 case SystemObjects.FusionAttributeType:
                     sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) ) 
+                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( I.Subject = 'FusionAttribute' and A.ID = I.SubjectID ) and I.IntersectTypeID = @intersectTypeId
                             inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             union 
                             select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
-                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
+                            inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
                             inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             order by A.TextPath
                             ";
@@ -2209,19 +2206,21 @@ order by    rnk, [Name]";
                     break;
                 case SystemObjects.PolicyType:
                 case SystemObjects.Policy:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
+                case SystemObjects.TaxonomyType:
+                    var ty = (type == SystemObjects.TaxonomyType ? "Taxonomy" : "Policy");
+                    sql = $@"select distinct disp.TextPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
 							from AssetType ATT
-							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')                            
-                            inner join [Intersect] I on ( (I.Subject = 'Policy' and ASS.ObjectID = I.SubjectID)) 
+							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')                            
+                            inner join [Intersect] I on ( (I.Subject = '{ty}' and ASS.ObjectID = I.SubjectID)) and I.IntersectTypeID = @intersectTypeId
 							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
+							select distinct disp.TextPath as Name, ASS.ObjectID as ID, '{ty}' as [Type] , ASS.Uid
                             from AssetType ATT
-							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')     
-                            inner join [Intersect] I on ( (I.Object = 'Policy' and ASS.ObjectID = I.ObjectID) ) 
+							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = '{ty}Type')     
+                            inner join [Intersect] I on ( (I.Object = '{ty}' and ASS.ObjectID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
                             cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
                             order by disp.TextPath";
-                    break;
+                    break;                
                 case SystemObjects.ReferenceItemType:
                     if (id != 0)
                     {
@@ -2230,7 +2229,7 @@ order by    rnk, [Name]";
                             inner join AssetType AST on AST.ID = A.AssetTypeID
                             inner join AssetDisplayValue AD on AD.AssetID =A.ID
                             inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
-                            where AST.ObjectID= @id and AST.[Object]='ReferenceItemType'
+                            where AST.ObjectID= @id and AST.[Object]='ReferenceItemType' and I.IntersectTypeID = @intersectTypeId
                             order by AD.DisplayValue";
                     }
                     else
@@ -2243,6 +2242,7 @@ order by    rnk, [Name]";
                     sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] , A.Uid
                             from reporting.Global_Resource A 
                             inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
+                            where I.IntersectTypeID = @intersectTypeId
                             order by 1";
                     break;
                 case SystemObjects.RuleType:
@@ -2250,57 +2250,19 @@ order by    rnk, [Name]";
                     sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
-                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
+                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID) and I.IntersectTypeID = @intersectTypeId
                             union
                             select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
-                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
+                            inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
                             order by D.DisplayValue";
-                    break;
-                case SystemObjects.TaxonomyType:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
-							from AssetType ATT
-							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')                            
-                            inner join [Intersect] I on ( (I.Subject = 'Taxonomy' and ASS.ObjectID = I.SubjectID)) 
-							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
-							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
-                            from AssetType ATT
-							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')     
-                            inner join [Intersect] I on ( (I.Object = 'Taxonomy' and ASS.ObjectID = I.ObjectID) ) 
-                            cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
-                            order by disp.TextPath";
-                    break;
-                case SystemObjects.MapType:
-                    sql = @"
-select	C.DisplayValue as Name, 
-		ObjectID as ID, 
-		[Object] as [Type] 
-from	AssetDetail C 
-		inner join (
-			select	distinct 
-					case 
-						when Subject = 'Map' then Object
-						else Subject
-					end as O,
-					case 
-						when Subject = 'Map' then ObjectID
-						else SubjectID
-					end as OID
-			from	[Intersect]
-			where	IntersectTypeID = @intersectTypeId
-		) I on I.O = C.Object and I.OID = C.ObjectID
-order by C.DisplayValue";
-                    break;
-                default:
-                    sql = "";
-                    break;
+                    break;                                
             }
 
             if (string.IsNullOrEmpty(sql)) return null;
 
-            return await Company.QueryAsync<FilterObjectItem>(sql, new { id = id, intersectTypeId = intersectTypeId });
+            return await Company.QueryAsync<FilterObjectItem>(sql, new { id, intersectTypeId });
         }
 
         /// <summary>
@@ -6042,73 +6004,6 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
             return Company.ApiEntityUris.Where(x => x.EntityID == entity.ID).ToList();
         }
 
-        #endregion
-
-        #region Private
-
-        private string GetOrderStatement(SystemObjects type, int id)
-        {
-            string sortStatement;
-            var fieldTypes = Company.FieldTypes.Where(x => x.IsListable == true && x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
-                .OrderBy(x => x.SortOrder)
-                .ThenBy(x => x.Name)
-                .ToList();
-
-            if (fieldTypes.Count == 0)
-            {
-                sortStatement = "order by A.DisplayValue";
-            }
-            else
-            {
-                List<string> sortStatements = new List<string>();
-                foreach (var ft in fieldTypes)
-                {
-                    sortStatements.Add(getFieldDataTypeWrapper(ft));
-                }
-                sortStatement = "order by " + string.Join(", ", sortStatements);
-            }
-
-            return sortStatement;
-        }
-
-        private string getFieldDataTypeWrapper(FieldType ft)
-        {
-            var fieldType = getFieldDataType(ft);
-
-            if (!string.IsNullOrEmpty(fieldType))
-            {
-                string val = $"Field{ft.ID}_T.FormattedValue";
-
-                if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
-                {
-                    val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
-                }
-
-                if (fieldType == "bit")
-                    return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
-                else
-                    return $"try_cast({val} as {fieldType})";
-            }
-
-            return $"Field{ft.ID}_T.FormattedValue";
-        }
-        private string getFieldDataType(FieldType field)
-        {
-            switch (field?.Type)
-            {
-                case "Date":
-                case "DateTime":
-                    return "datetime";
-                case "Number":
-                    return "bigint";
-                case "Decimal":
-                    return "float";
-                case "Boolean":
-                    return "bit";
-                default:
-                    return "";
-            }
-        }
-        #endregion
+        #endregion        
     }
 }
