@@ -43,14 +43,16 @@
         <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
-        <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                                  [MeasureUid]="selection?.Uid"
-                                  [AssetTypeDisplayValue]="assetType.Name"
-                                  [MeasureDisplayValue]="selection?.Name"
-                                  [isExternallyCalculated]="isExternallyCalculated"
-                                  [metricListFieldTypes]="metricListFieldTypes"
-                                  (onClose)="showHistory(false)">
-        </d3s-metric-history>        
+        <div style="max-height: calc(100% - 60px);">
+            <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
+                                [MeasureUid]="selection?.Uid"
+                                [AssetTypeDisplayValue]="assetType.Name"
+                                [MeasureDisplayValue]="selection?.Name"
+                                [isExternallyCalculated]="isExternallyCalculated"
+                                [metricListFieldTypes]="metricListFieldTypes"
+                                (onClose)="showHistory(false)">
+            </d3s-metric-history>
+        </div>
     </d3s-modal>
     <d3s-delete-form *ngIf="selection" [uri]="'api/v2/metrics/' + selection?.Uid"
                      [method]="'delete'"
