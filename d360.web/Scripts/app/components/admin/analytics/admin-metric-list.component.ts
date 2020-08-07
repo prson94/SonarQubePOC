@@ -125,7 +125,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public add(asChild: boolean = false) {
-        this.previousSelection = { ...this.selection };
+        if (this.selection)
+            this.previousSelection = { ...this.selection };
+        if (this.selectedNode)
         this.previousSelectedNode = { ...this.selectedNode };
         if (!asChild) {
             this.selection = null;
@@ -144,8 +146,10 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }    
     public close() {
         this.formMode = FormMode.Default;
-        this.selectedNode = { ...this.previousSelectedNode };
-        this.selection = { ...this.previousSelection };
+        if (this.previousSelectedNode)
+            this.selectedNode = { ...this.previousSelectedNode };
+        if (this.previousSelection)
+            this.selection = { ...this.previousSelection };
         this.selectionChange.emit(this.selection);
     }
     public showHistory(isHistoryVisible: boolean) {
