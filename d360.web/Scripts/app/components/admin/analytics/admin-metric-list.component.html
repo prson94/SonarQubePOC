@@ -19,7 +19,7 @@
                         {{item.Name}}
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
-                    <td>{{item.EffectiveDate | date:'shortDate'}}</td>
+                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                     <td>
                         <div class="RowTools" *ngIf="item.IsGroup">
                             <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
@@ -39,8 +39,8 @@
     <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" (onClose)="close()" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Adding">
         <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
     </d3s-modal>
-    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">
-        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" (onClose)="close()" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">
+        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load()" (onSave)="formMode = FormMode.Default; load(previousSelectedNode); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
