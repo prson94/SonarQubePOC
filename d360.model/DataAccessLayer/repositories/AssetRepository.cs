@@ -1257,13 +1257,14 @@ namespace d360.model.DataAccessLayer
             }
 
             int index = 1;
+            for (int i = 1; i < maxDepth + 1; i++)
+            {
                 foreach (var field in fields)
                 {
                     if (field.IsPartOfKey)
                     {
                         fieldsToRemove.Add(field);
-                    for (int i = 1; i < maxDepth + 1; i++)
-                    {
+
                         string levelName = "Level " + i.ToString();
                         foreach (var level in levels)
                         {
@@ -1275,8 +1276,8 @@ namespace d360.model.DataAccessLayer
                         tempFields.Add(new FieldType { Type = "string", Name = $"{(string)field.Name}", FriendlyName = $"{levelName} {(string)field.FriendlyName}", ID = field.ID, IsPartOfKey = field.IsPartOfKey });
 
                     }
-                    }
                 }
+            }
             tempFields.AddRange(fields);
             for (int i = 1; i < maxDepth + 1; i++)
             {
@@ -1331,36 +1332,40 @@ namespace d360.model.DataAccessLayer
                 int itemDepth = CheckDepth(policies, row.AssetUid);
                 int index = 1;
                 int level = 1;
-
                 var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
                 DataType.ComplexRelationLookup.ToString()
             };
-
-                foreach (var field in fields)
+                var keyFields = fields.Where(x => x.IsPartOfKey && x.ID > 0).GroupBy(x => x.ID).Select(x => x.First()).ToList();
+                for (int currentLevel = 1; currentLevel <= maxDepth; currentLevel++)
                 {
-                    if (typesToAvoid.Contains(field.Type))
-                        continue;
-                    if (field.IsPartOfKey)
+                    if (currentLevel == itemDepth)
                     {
-                        if (level > maxDepth)
-                            level = 1;
-                        if (level == itemDepth)
+                        foreach (var field in keyFields)
                         {
-                            //item is at the same depth as the current level fill in cell  as normal
-                            level++;
-                        }
-                        else
-                        {
-                            //parent data needs to be found here for how deep we are 
-                            var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
-                            int tempIndex = index;
-                            while (parent != null && CheckDepth(policies, parent.AssetUid) != level)
+                            if (rowValues.ContainsKey(field.Name))
                             {
-                                parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
+                                var val = rowValues[field.Name];
+                                setCellValueFromField(document, rowNumber, index, field, val);
                             }
-
-                            if (parent != null)
+                            else if (rowValues.ContainsKey("Field" + field.ID))
+                            {
+                                var val = rowValues["Field" + field.ID];
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            }
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        var parent = policies.FirstOrDefault(x => x.AssetUid == row.ParentUid);
+                        while (parent != null && CheckDepth(policies, parent.AssetUid) != level)
+                        {
+                            parent = policies.FirstOrDefault(x => x.AssetUid == parent.ParentUid);
+                        }
+                        if (parent != null)
+                        {
+                            foreach (var field in keyFields)
                             {
                                 var parentRowValue = (parent as IDictionary<string, object>);
                                 if (parentRowValue.ContainsKey(field.Name))
@@ -1373,17 +1378,20 @@ namespace d360.model.DataAccessLayer
                                     var val = parentRowValue["Field" + field.ID];
                                     setCellValueFromField(document, rowNumber, index, field, val);
                                 }
-
+                                index++;
                             }
-                            index++;
-                            level++;
-                            continue;
+                        }
+                        else
+                        {
+                            index += keyFields.Count;
                         }
                     }
-                    else
-                    {
-                        level = 1;
-                    }
+                    level++;
+                }
+                foreach (var field in fields.Where(x => !keyFields.Select(y => y.ID).Contains(x.ID)))
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
                     if (rowValues.ContainsKey(field.Name))
                     {
                         var val = rowValues[field.Name];
@@ -1402,7 +1410,6 @@ namespace d360.model.DataAccessLayer
                     used.Add(row.AssetUid);
                     index++;
                 }
-
                 //check kids
                 var children = policies.Where(x => x.ParentUid == row.AssetUid);
                 foreach (var child in children)
