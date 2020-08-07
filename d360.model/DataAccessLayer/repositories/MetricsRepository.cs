@@ -236,6 +236,11 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (!string.IsNullOrEmpty(model.Name) && model.Name.Length > 250)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Name cannot be longer than 250 characters.");
+            }
+
             if (!string.IsNullOrEmpty(operatorErrorMessage))
             {
                 operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
