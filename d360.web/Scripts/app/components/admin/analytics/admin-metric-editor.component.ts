@@ -103,6 +103,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
 
         this.getMaxScoreDate();
+        this.onResize(null);
     }
 
     private getMaxScoreDate() {
@@ -263,6 +264,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
-        this.maxHeight = window.innerHeight - 190;
+        this.maxHeight = window.innerHeight - 240;
     }
 };
