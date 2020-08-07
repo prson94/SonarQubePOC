@@ -38,7 +38,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService, ref: ChangeDetectorRef) {
         super();
     }
 
@@ -77,13 +77,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                 this.addChildren(n);
                             }
                         });
-                        if (this.metricTree !== null && this.metricTree.length > 0) {
-                            this.selection = this.metricTree[0].data;
-                            this.selectionChange.emit(this.selection);
-                            this.selectedNode = this.metricTree[0];
-                        } else {
-                            this.selectionChange.emit(null);
-                        }
                     } else {
                         this.selectionChange.emit(null);
                     }
@@ -91,6 +84,13 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
+                        if (this.metricTree !== null && this.metricTree.length > 0) {
+                            this.selection = this.metricTree[0].data;
+                            this.selectionChange.emit(this.selection);
+                            this.selectedNode = this.metricTree[0];
+                        } else {
+                            this.selectionChange.emit(null);
+                        }
                     })
                 });
         }
@@ -136,6 +136,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public edit() {
+        this.previousSelection = { ...this.selection };
+        this.previousSelectedNode = { ...this.selectedNode };
         this.formMode = FormMode.Editing;
     }
 

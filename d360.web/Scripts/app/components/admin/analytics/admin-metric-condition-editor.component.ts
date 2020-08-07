@@ -213,6 +213,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                             }
                         }
                         break;
+                    case 'Date':
+                    case 'DateTime':
+                        if (c.Values) {
+                            if (c.Values[0].Value) {
+                                c.SingleValue = new Date(c.Values[0].Value);
+                                c.ValuesText = c.Values[0].Value;
+                            }
+                        }
+                        break;
                     default:
                         if (c.Values) {
                             if (c.Values[0].Value) {
@@ -231,6 +240,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'Decimal':
                     case 'Number':
                     case 'Date':
+                    case 'DateTime':
                         options = [
                             { value: 'eq', label: '=' },
                             { value: 'neq', label: '!=' },
