@@ -347,6 +347,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             params._order = this.treeTable._sortField;
         }
         else {
+            params.useTypeLevelDefaultSorts = true;
             delete params._order;
         }
         if (this.filterText.nativeElement.value != '')

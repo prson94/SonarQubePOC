@@ -1177,7 +1177,9 @@ namespace d360.model.DataAccessLayer
                 queryParamsWithOrder.Add(new KeyValuePair<string, string>("_order", orderName));
             }
             else
+            {
                 queryParamsWithOrder.AddRange(queryParams);
+            }
 
             var typesToAvoid = new List<string>() {
                 DataType.OwnershipLookup.ToString(),
@@ -1203,7 +1205,7 @@ namespace d360.model.DataAccessLayer
             if (!String.IsNullOrEmpty(filter))
             {
                 assetUids = results.Select(x => x.AssetUid).ToList();
-                var allFamily = GetAllFamilyForAssetUid(assetUids);
+                var allFamily = GetAllFamilyForAssetUid(assetUids).Distinct().ToList();
 
                 if (allFamily.Count > 0)
                 {
