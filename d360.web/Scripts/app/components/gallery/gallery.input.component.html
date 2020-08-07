@@ -1,0 +1,69 @@
+﻿<div class="tile tile-detail">
+    <header>Input Directive</header>
+    <p>Angular directive that can be applied to Html input controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <input igInput type="text" [disabled]="disabledState" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <input igInput type="text" required />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input igInput type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput label="I'm 3rd" tabindex="3" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
