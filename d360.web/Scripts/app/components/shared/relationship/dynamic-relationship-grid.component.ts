@@ -51,6 +51,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     selected: any = null;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    isGridLoading: boolean = false;
+    isDataLoading: boolean = false;
     theDeleteCallback: Function;
 
     private showTechnical: boolean = false;
@@ -86,19 +88,21 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     getFieldsDefinition() {
-
+        this.isGridLoading = true;
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType).subscribe(
             result => {
-                this.columns = result.Columns;
-                this.fields = result.Fields;
+                this.isGridLoading = false;
+                this.columns = result.Columns;                                
+                this.fields = result.Fields;                
                 this.readOnly = result.IsReadOnly;
-                this.readOnlyChange.emit(this.readOnly);                
+                this.readOnlyChange.emit(this.readOnly);                  
             }
         );
+        this.isGridLoading = false;
     }
 
     getData(forceEditorOpen: boolean = false) {
-        this.isLoading = true;
+        this.isDataLoading = true;
         this.relationshipsService.getObjectRelationships(
             this.objectType,
             this.objectID,
@@ -108,12 +112,13 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             false,
             !this.isSubject)
             .subscribe(result => {
-                this.relations = result;
-                this.isLoading = false;
+                this.relations = result;                
                 if (this.relations.length > 0) this.selected = this.relations[0];
                 this.relationshipAdded.emit({ count: result.length });
                 if (this.shouldShowEditor() && !forceEditorOpen) this.closeEditor();
-            });
+                this.isDataLoading = false;
+            },
+            () => { this.isDataLoading = false;});
     }
 
     private shouldShowEditor(): boolean {

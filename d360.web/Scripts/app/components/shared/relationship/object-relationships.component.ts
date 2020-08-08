@@ -73,14 +73,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
                 this.isLoading = false;
                 this.updateCardinality();
-            },
-            error => {
-                this.isLoading = false;
-            },
-            () => {
-                this.isLoading = false;
             }
-
         );
     }
 
