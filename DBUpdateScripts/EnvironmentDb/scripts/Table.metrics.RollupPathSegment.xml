@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.metrics.RollupPathSegment-v1">
+  <changeSet author="Pappas" id="Table.metrics.RollupPathSegment-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,7 +16,7 @@ BEGIN
 	CREATE TABLE [metrics].[RollupPathSegment](
 		[RollupPathUid] uniqueidentifier NOT NULL,
 		[Position] int NOT NULL,
-		[AssetTypeID] int NOT NULL,
+		[AssetTypeID] int NULL,
 		CONSTRAINT [PK_MetricRollupPathSegment] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, [Position] ASC )
 	)
 END
@@ -29,7 +29,7 @@ END
 
 IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathSegment_AssetType')
 BEGIN
-	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE NO ACTION
+	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE SET NULL
 	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_AssetType]
 END
 

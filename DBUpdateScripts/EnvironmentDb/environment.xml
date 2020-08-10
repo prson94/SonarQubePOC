@@ -469,6 +469,7 @@
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
 	<include file="scripts/Procedure.lineage.GetByObject.xml"/>
+	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>

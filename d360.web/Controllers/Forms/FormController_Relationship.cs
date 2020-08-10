@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -812,6 +813,8 @@ order by r.Name";
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+
                 return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -850,6 +853,8 @@ order by r.Name";
                 if (model == null) throw new NotFoundException("relationship type");
 
                 Company.Delete(SystemObjects.IntersectType, id);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -905,6 +910,7 @@ order by r.Name";
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 Company.UpsertIntersectType(model, lineageVersion);
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
