@@ -80,7 +80,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private initialActions = new HeaderActions();
 
-
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
