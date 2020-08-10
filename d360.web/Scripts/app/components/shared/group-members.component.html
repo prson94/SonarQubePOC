@@ -74,8 +74,9 @@
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            <d3s-delete-form [uri]="'/api/v2/membership/groups/' + groupUid + '/' + selectedRow.uid"
-                             [method]="'delete'"
+            <d3s-delete-form
+                             [callback]="theDeleteCallback"
+                             [method]="'callback'"
                              [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + groupName + '?'"
                              (onDeleteSuccess)="confirmDelete()"
                              (onCancel)="cancel();">

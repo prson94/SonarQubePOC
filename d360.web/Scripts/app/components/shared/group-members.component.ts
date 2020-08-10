@@ -6,7 +6,8 @@ import {BaseComponent} from '../shared/base.component';
 import {JsonResult} from '../../models/jsonresult.model';
 import {EditorField} from '../../models/editor-field.model';
 import * as _ from 'lodash';
-import {ResourcesService} from '../../services/resources.service';
+import { ResourcesService } from '../../services/resources.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-group-members',
@@ -27,10 +28,13 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     private FormMode = FormMode;
     private selectedResource: string;
     private members = new Array<AddUserToGroup>();
+    theDeleteCallback: Function;
+    public showDelete: boolean = false;
 
 
-    constructor(private groupService: GroupService) {
+    constructor(private groupService: GroupService, private messagesService: MessagesObservableService) {
         super();
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -130,12 +134,31 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
 
     delete(id: number): void {
+        this.showDelete = true;
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.groupItems.find(f => f.ResourceID == id);
+    }
+
+    error(e: any) {
+        this.formMode = FormMode.Default;
+    }
+    errorDelete(e: any) {
+        this.formMode = FormMode.Default;
     }
 
     confirmDelete() {
         this.formMode = FormMode.Default;
         this.load();
+    }
+
+    deleteService() {
+        this.groupService.deleteUsersFromGroup(this.groupUid, this.selectedRow.uid).subscribe(
+            result => {
+                this.showDelete = false;
+                this.formMode = FormMode.Default;
+                this.load();
+                this.showMessageForResult(this.messagesService, result);
+            }
+        );
     }
 }
