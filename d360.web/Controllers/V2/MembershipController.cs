@@ -586,9 +586,6 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (group?.PrimaryOwnerResourceID == userId)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group."));
 
-                if (group?.IsActiveDirectoryGroup == true)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Group for provided UID is an active directory group and cannot be manually managed."));
-
                 var res = await Company.Database.Connection.ExecuteAsync(@"delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID;  
                         Update G set  G.SecondaryOwnerResourceID = null
                         from[Group] AS G
