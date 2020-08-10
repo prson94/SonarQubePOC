@@ -148,9 +148,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }    
     public close() {
         this.formMode = FormMode.Default;
-        if (this.previousSelectedNode)
+        if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)
             this.selectedNode = { ...this.previousSelectedNode };
-        if (this.previousSelection)
+        if (this.previousSelection && this.metrics && this.metrics.length > 0)
             this.selection = { ...this.previousSelection };
         this.selectionChange.emit(this.selection);
     }
