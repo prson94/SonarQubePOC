@@ -28,7 +28,7 @@
     "angular2-highcharts": "0.5.5",
     "codemirror": "5.55.0",
     "core-js": "^2.5.7",
-    "gojs": "2.0.16",
+    "gojs": "2.1.22",
     "highcharts": "6.2.0",
     "lodash": "4.17.19",
     "ng-json-view": "2.2.0",
