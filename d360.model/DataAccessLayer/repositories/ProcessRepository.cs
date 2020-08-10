@@ -218,7 +218,6 @@ namespace d360.model.DataAccessLayer
 
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
-            execution.Method = "Process";
             execution.ProcessingStartedOn = DateTime.UtcNow;
             Company.Add(execution);
 
