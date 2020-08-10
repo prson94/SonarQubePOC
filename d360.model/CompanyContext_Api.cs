@@ -8186,7 +8186,8 @@ WHEN MATCHED
                             row["Name"] = item.Name.Trim();
 
                         row["Description"] = item.Description;
-                        row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
+                        if (item.PrimaryOwnerUid != null)
+                            row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
                         if (item.SecondaryOwnerUid != null)
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
@@ -8254,13 +8255,7 @@ WHEN MATCHED
 		                    [Message] = coalesce([Message], '') + 'Primary Owner Uid provided is not a resource uid;'
                     from [api].[ExecutionGroup] EG 
                     left join [Asset] A on A.[uid] = EG.[PrimaryOwnerUid] and A.Object = 'Resource'
-                    where	ExecutionID = @ExecutionID and A.uid is null;
-
-                    update	[api].[ExecutionGroup]
-                    set		Success = 0,
-		                    [Message] = coalesce([Message], '') + 'No Primary Owner Uid provided;'
-                    from [api].[ExecutionGroup] EG 
-                    where	ExecutionID = @ExecutionID and EG.PrimaryOwnerUid = @emptyUid;
+                    where	ExecutionID = @ExecutionID and coalesce(EG.[PrimaryOwnerUid], @emptyUid) <> @emptyUid and A.uid is null;
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
@@ -8345,7 +8340,9 @@ SO.ObjectID as SecondaryID
                     where EG.ExecutionID = @ExecutionID 
                     and EG.ItemNumber between @beginItemNumber and @endItemNumber
                     and EG.Success is null
-                    and EG.GroupUid is null;
+                    and EG.GroupUid is null
+                    and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
+					and G.PrimaryOwnerResourceID is not null;
 
 	                INSERT INTO [ResourceGroup](GroupID,[ResourceID])
                     SELECT G.ID, G.SecondaryOwnerResourceID
@@ -8374,6 +8371,7 @@ SO.ObjectID as SecondaryID
                                     where EG.ExecutionID = @ExecutionID 
                                     and EG.ItemNumber between @beginItemNumber and @endItemNumber
                                     and EG.Success is null
+                                    and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
                     END
 
                     IF NOT EXISTS    
