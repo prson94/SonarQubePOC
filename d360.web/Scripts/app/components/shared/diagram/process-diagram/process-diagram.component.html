@@ -14,6 +14,9 @@
 
         </div>
         <div class="controls-right">
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Switch to Diagram View"></button>
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')" tooltip="Switch to List View"></button>
+            <div class="button-spacer"></div>
             <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
@@ -83,7 +86,10 @@
                     <span>Choose Edit to start creating your diagram</span>
                 </div>
             </div>
-            <div id="diagram"></div>
+            <div [hidden]="viewType == 'list'" id="diagram"></div>
+            <div [hidden]="viewType == 'diagram'" id="list-view">
+                list view
+            </div>
         </div>
 
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">

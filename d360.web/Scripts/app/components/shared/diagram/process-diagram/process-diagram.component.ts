@@ -29,6 +29,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
+
+    public viewType: string = 'diagram';
+
     public myDiagram: go.Diagram;
     private assetDetail: any;
 
@@ -55,7 +58,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isLoaded = false;
     public isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
-    private isCanvasEmpty: boolean = true;
+    public isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
     private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
@@ -988,6 +991,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.isErrorModalOpened = false;
         if (this.validationErrors) {
             this.selectFirstInvalidField();
+        }
+    }
+
+    public changeViewType(type: string) {
+        if (type == 'list') {
+            this.viewType = 'list';
+        }
+        else {
+            this.viewType = 'diagram';
         }
     }
 }
