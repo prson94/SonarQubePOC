@@ -7,7 +7,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 
 import { PreviewPopupComponent } from './preview-popup.component';
 import { DirectivesModule } from '../../../directives/directives.module';
-import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 
 @NgModule({
     imports: [
@@ -17,7 +17,7 @@ import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker
         DialogModule,
         CoreModule,
         NgxJsonViewModule,
-        D3SColorPickerModule,
+        IgColorPickerModule,
     ],
     declarations: [
         PreviewPopupComponent

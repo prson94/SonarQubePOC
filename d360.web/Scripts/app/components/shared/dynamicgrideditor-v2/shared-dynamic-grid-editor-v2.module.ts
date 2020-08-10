@@ -35,7 +35,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
-import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 
 @NgModule({
@@ -56,7 +56,7 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
         SimilarItemsModule,
         TagUsageInfoModule,
         TagViewModule,
-        D3SColorPickerModule,
+        IgColorPickerModule,
         //prime        
         CalendarModule,
         DropdownModule,

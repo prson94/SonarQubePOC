@@ -19,7 +19,7 @@ import { TableModule } from 'primeng/table';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { TooltipModule } from 'primeng/tooltip';
-import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 import { SynonymsTile } from './synonyms.tile';
 import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -44,7 +44,7 @@ import { ObjectDetailCategoryComponent } from './object-detail-category.componen
         TagViewModule,
         TilesModule,
         TooltipModule,
-        D3SColorPickerModule,
+        IgColorPickerModule,
         FormsModule,
         AutoCompleteModule,
         SharedDeleteFormModule

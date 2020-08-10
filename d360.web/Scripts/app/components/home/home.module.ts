@@ -24,7 +24,7 @@ import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { D3SColorPickerModule } from '../shared/small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../shared/small-widgets/color-picker/color-picker.module';
 
 
 @NgModule({
@@ -44,7 +44,7 @@ import { D3SColorPickerModule } from '../shared/small-widgets/color-picker/color
         //d3s
         CoreModule,
         SearchModule,
-        D3SColorPickerModule,
+        IgColorPickerModule,
         SocialModule,
         SharedAssignmentsModule,
         TilesModule,

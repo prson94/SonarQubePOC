@@ -6,10 +6,10 @@ import { SelectItem } from 'primeng/api';
 import { AssetService } from '../../../../services/asset.service';
 
 @Component({
-    selector: 'd3s-color-picker',
+    selector: 'ig-color-picker',
     template: `
                 <div class="d3s-color-picker">
-                    <p-dropdown [appendTo]="'body'" [options]="colors" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
+                    <p-dropdown [appendTo]="'body'" [options]="colors" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors" [disabled]="disabled">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -34,6 +34,7 @@ export class ColorPickerComponent implements OnInit {
     @Input() placeholder: string = 'Optional';
     @Input() selectedColor: string;
     @Input() loadDefaultColors: boolean = false;
+    @Input() disabled: boolean = false;
     @Output() selectedColorChange = new EventEmitter();
 
     constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
