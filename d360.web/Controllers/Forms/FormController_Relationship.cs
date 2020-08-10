@@ -6,6 +6,7 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using Newtonsoft.Json.Linq;
 using Resources;
 using System;
 using System.Collections.Generic;
@@ -830,6 +831,7 @@ order by r.Name";
             try
             {
                 var id = parseIntField(form, "ID");
+                var uid = parseTextField(form, "IntersectTypeUid");
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
 
                 if (!Company.CurrentResourceIsAdmin)
@@ -839,6 +841,10 @@ order by r.Name";
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
                 if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type == "Relationship" && i.LookupObjectType == "IntersectType").Count() > 0)
                     return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
+                if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\""+ uid + "\"")).Count() > 0)                
+                {
+                    return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
+                }
 
                 var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");

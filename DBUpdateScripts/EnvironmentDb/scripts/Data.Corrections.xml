@@ -864,4 +864,43 @@ from	metrics.AssetVersion V
 		</sql>
 	</changeSet>
 
+	<changeSet author="Pappas" id="Data.Corrections.GOV-11760">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update		V
+set			V.EffectiveEndDate = DATEADD(dd, -1, NV.EffectiveDate)
+from		metrics.AssetVersion V
+			cross apply (
+				select	min(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = V.AssetUid
+						and EffectiveDate > V.EffectiveDate
+			) NV
+where		V.EffectiveEndDate is null;
+
+update		V
+set			V.EffectiveEndDate = DATEADD(dd, -1, NV.EffectiveDate)
+from		metrics.AssetVersion V
+			cross apply (
+				select	min(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = V.AssetUid
+						and EffectiveDate > V.EffectiveDate
+			) NV
+where		NV.EffectiveDate = V.EffectiveEndDate;
+
+update		V
+set			V.EffectiveEndDate = DATEADD(dd, -1, NV.EffectiveDate)
+from		metrics.AssetVersion V
+			cross apply (
+				select	min(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = V.AssetUid
+						and EffectiveDate > V.EffectiveDate
+			) NV
+where		NV.EffectiveDate < V.EffectiveEndDate;
+]]>
+		</sql>
+	</changeSet>
+
  </databaseChangeLog>

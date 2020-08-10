@@ -12,7 +12,7 @@
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
 
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
-                            <button igButton icon="igx-related-asset-icon" class="top-spacer-4"  [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                            <button igButton icon="igx-related-asset-icon" class="top-spacer-4" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
                             <div class="button-spacer"></div>
                             <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
                             <div class="button-spacer"></div>
@@ -35,13 +35,18 @@
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
-                <div class="col s12" style="position: absolute;z-index: 0;">
+                <div class="col s12" style="position: absolute; z-index: 0;">
                     <d3s-loading isLoading="true">{{loadingText}}</d3s-loading>
+                </div>
+            </div>
+            <div class="row" *ngIf="isError">
+                <div class="col s12 error-panel">
+                    <div><i class="fa fa-2x fa-exclamation-circle"></i></div>
+                    <div>{{errorText}}</div>
                 </div>
             </div>
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType != 3">
                 <div class="col s12" style="padding: 0">
-
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
 
                     <div *ngIf="isWindowVisible()" class="asset-browser-window">

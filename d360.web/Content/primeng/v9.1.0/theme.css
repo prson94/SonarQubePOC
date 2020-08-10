@@ -1547,6 +1547,12 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
 	min-width: 248px;
 }
 
+.d3s-color-picker .ui-dropdown.required{
+    background: #f5fbfd;
+    box-shadow: 0 0 0 2px #8abddf;
+    border-color: #006fba;
+}
+
 .d3s-color-picker .ui-dropdown:not(.ui-state-disabled):hover
 .d3s-color-picker .ui-multiselect:not(.ui-state-disabled):hover {
     border-color: #898d99;

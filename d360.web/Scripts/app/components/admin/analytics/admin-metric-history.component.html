@@ -1,11 +1,11 @@
-﻿<div class="modal-measure-editor">
+﻿<div class="modal-measure-history">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="row" *ngIf="!isLoading">
-        <div style="margin-left:0.67em">
+    <div class="row" *ngIf="!isLoading" style="height:100%">
+        <div style="margin-left: 0.67em;height: 5%">
             <p>Version history of the measure '{{MeasureDisplayValue}}' for asset type '{{AssetTypeDisplayValue}}'</p>
-        </div>        
-        <div class="col s7">
-            <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)" styleClass="treetable">
+        </div>
+        <div class="col s7" style="height:90%;overflow-y:auto;">
+            <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px', 'height' : '100%' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)" styleClass="treetable">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [ttSortableColumn]="'Version'">
@@ -34,12 +34,12 @@
                 </ng-template>
             </p-treeTable>
         </div>
-        <div *ngIf="selectedNode" class="col s5 measure-details-panel">
+        <div *ngIf="selectedNode" class="col s5 measure-details-panel" style="max-height:90%;overflow-y: auto;">
             <div>
                 <div>
                     <div class="measure-details-item">
                         <div class="details-header">Name</div>
-                        <div class="details-content">{{selection?.Name}}</div>                        
+                        <div class="details-content">{{selection?.Name}}</div>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">Description</div>
@@ -72,12 +72,13 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div style="padding-top:20px;padding-bottom:20px;" class="right">
-        <button igButton class="ig-button-primary"
-                type="button"
-                (click)="cancel()"
-                label="Close">
-        </button>
+
+        <div style="padding-top:20px;padding-bottom:20px;height:5%;align-content:center;" class="right">
+            <button igButton class="ig-button-primary"
+                    type="button"
+                    (click)="cancel()"
+                    label="Close">
+            </button>
+        </div>
     </div>
 </div>

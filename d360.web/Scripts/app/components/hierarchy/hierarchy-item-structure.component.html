@@ -3,7 +3,9 @@
         <div class="tile tile-detail">
             <header *ngIf="!showDelete && !showEditor">
                 &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
-                                         (addClick)="showAdd(0)"></d3s-tile-actions>
+                                         [hasExport]="true"
+                                         (addClick)="showAdd(0)"
+                                         (exportClick)="exportExcel(0)"></d3s-tile-actions>
             </header>
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
@@ -27,7 +29,7 @@
                          >
                 <ng-template pTemplate="caption">
                     <div>
-                        <input type="text" pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+                        <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
                     </div>
                 </ng-template>
                 <ng-template pTemplate="header">

@@ -24,38 +24,6 @@
                         <button class="ql-italic"></button>
                         <button class="ql-underline"></button>
                     </span>
-                    <span class="ql-formats with-border">
-                        <button class="ql-link"></button>
-                    </span>
-                    <div class="ql-formats">
-                        <button igButton icon="fa-ellipsis-v" class="open-editor-menu {{isMenuVisible ? 'ig-state-active' : ''}}" tooltip="More..."></button>
-                        <div *ngIf="isMenuVisible" class="custom-tools">
-                            <div class="menu-item">
-                                Alignment
-                                <ul>
-                                    <li class="menu-item" (click)="qlCenter.click()">Center</li>
-                                    <li class="menu-item" (click)="qlRight.click()">Right</li>
-                                    <li class="menu-item" (click)="qlJustify.click()">Justify</li>
-                                </ul>
-                            </div>
-                            <div class="menu-item">
-                                Insert
-                                <ul>
-                                    <li class="menu-item" (click)="qlImage.click()">Image</li>
-                                    <li class="menu-item" (click)="qlCode.click()">Code</li>
-                                    <li class="menu-item">Clean</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:none;">
-                        <button class="ql-align" value="center" #qlCenter></button>
-                        <button class="ql-align" value="right" #qlRight></button>
-                        <button class="ql-align" value="justify" #qlJustify></button>
-                        <button class="ql-image" value="image" #qlImage></button>
-                        <button class="ql-code-block" value="code-block" #qlCode></button>
-                    </div>
                 </p-header>
             </p-editor>
             <div *ngSwitchCase="'Lookup'">
@@ -68,12 +36,13 @@
                                        ngDefaultControl
                                        [defaultLabel]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
-                                <div class="d3s-color-multiSelect">
+                                <div class="d3s-color-multiSelect" *ngIf="items && items.length < 2">
                                     <div *ngFor="let item of items" class="ig-colorfield-item-selected">
                                         <span class="ig-colorfield-swatch" [style.background-color]="getColorByID(item)"></span>
                                         <span class="ig-colorfield-item-label">{{getLabelByID(item)}}</span>
                                     </div>
                                 </div>
+                                <span *ngIf="items && items.length > 1">{{items.length}} items selected</span>
                             </ng-template>
                             <ng-template let-color pTemplate="item">
                                 <div class="ig-colorfield-item">

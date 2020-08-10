@@ -1,4 +1,4 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -10,7 +10,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
 @Component({
     selector: 'd3s-admin-metric-editor',
     templateUrl: './admin-metric-editor.component.html',
-    providers: [MetricsService]
+    providers: [MetricsService],
+
 })
 
 export class AdminMetricEditorComponent extends BaseComponent implements OnInit, OnChanges {
@@ -35,10 +36,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     metricItem: any = null;
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
-    private displayWeight: number = 0;
-    invalidWeightMessage: string;
-    maxHeight: number = window.innerHeight - 250;
+    private displayWeight: number = null;
+    maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
+    currentEffectiveDate: Date;
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. ' 
                                 + 'Only those assets matching the conditions will be scored using these measures. '
                                 + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
@@ -68,20 +69,21 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     load() {
         if (!this.model)
             this.model = new MetricAssetViewModel();
-        this.displayWeight = 1;
-        this.invalidWeightMessage = "";
+        this.displayWeight = null;
         this.child = "";
         this.model.ParentUid = null;
+        this.currentEffectiveDate = null;
         if (this.uid) {
             this.verb = "Edit"
             if (this.model.EffectiveDate !== null) {
-                this.model.EffectiveDate = new Date(this.model.EffectiveDate as string);
+                this.model.EffectiveDate = new Date(this.model.EffectiveDate);
+                this.currentEffectiveDate = this.model.EffectiveDate;
             }
 
             this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
-            this.model.Weight = .01;
+            this.model.Weight = null;
             this.model.IsGroup = false;
             this.verb = "Add";
             if (this.parentUid) {
@@ -104,18 +106,21 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
 
         this.getMaxScoreDate();
+        this.onResize(null);
     }
 
     private getMaxScoreDate() {
         if (this.scoreData && this.scoreData.length) {
             let maxDates: any[] = [];
             this.scoreData.forEach(x => {
-                let scores = x.Scores.sort((x, y) => {
-                    let datex = new Date(x.EffectiveDate);
-                    let datey = new Date(y.EffectiveDate);
-                    return datey.getTime() - datex.getTime();
-                });
-                maxDates.push(new Date(scores[0].EffectiveDate));
+                if (x.Scores && x.Scores.length > 0) {
+                    let scores = x.Scores.sort((x, y) => {
+                        let datex = new Date(x.EffectiveDate);
+                        let datey = new Date(y.EffectiveDate);
+                        return datey.getTime() - datex.getTime();
+                    });
+                    maxDates.push(new Date(scores[0].EffectiveDate));
+                }
             });
             maxDates.sort((x, y) => {
                 return y.getTime() - x.getTime();
@@ -126,7 +131,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     valid() {
         let valid = true;
-        this.invalidWeightMessage = "";
         if (this.model === null) {
             valid = false;
         } else {
@@ -144,9 +148,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
             if (!this.isExternallyCalculated) {
                 if (this.model.Weight === null || !this.model.Weight) {
-                    valid = false; 
-                    this.invalidWeightMessage = "Please enter a value between 1 and 100";
-                    
+                    valid = false;                     
                 }
                 else {
                     if (parseFloat(this.model.Weight.toFixed(2)) === 0) { 
@@ -156,7 +158,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
                 if (this.model.ConditionGroups.length && !this.model.IsGroup) {
                     let conditions = this.model.ConditionGroups[0].ConditionItems;
-                    if (conditions.length > 0) {
+                    if (conditions && conditions.length > 0) {
                         let fieldIds = conditions.map(x => { return x.ConditionFieldTypeID });
                         conditions.forEach(x => {
                             if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
@@ -176,14 +178,15 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     save() {
         this.isLoading = true;
-
         var prevDate: string | Date = null;
+        var previousConditions = [...this.model.ConditionGroups];
+
         if (this.model.EffectiveDate !== null) {
             prevDate = this.model.EffectiveDate;
-            let d = new Date(this.model.EffectiveDate as string);
+            let d = new Date(this.model.EffectiveDate);
             let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-            this.model.EffectiveDate = condate.toISOString();
+            this.model.EffectiveDate = condate;
         }
 
         this.model.ConditionGroups.forEach(g => {
@@ -211,7 +214,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
             });
         });
-
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
                 if (r) {
@@ -220,7 +222,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     this.onSave.emit(); 
                 }
                 else {
-                    this.model.EffectiveDate = prevDate;
+                    this.model.EffectiveDate = prevDate as Date;
+                    this.model.ConditionGroups = [...previousConditions];
                     this.isLoading = false;
                 }
             });
@@ -244,7 +247,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     private clamp(val: any, min: number, max: number, precision: number) {
         if (!val) {
             this.model.Weight = null;
-            this.valid()
+            this.valid();
+            return;
         }
         val = val / 100;
         const newVal = FormHelpers.clamp(val, min, max, precision);
@@ -254,8 +258,16 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
         this.model.Weight = newVal;
     }
-
-    setMaxHeight() {
-        window.innerHeight - 200;
+    doToggle(evt: MouseEvent, pc:any) {
+        let htmlEl = evt.target as Element;
+        if (htmlEl.classList.contains('ui-inputtext')) {
+            evt.stopPropagation();
+            return;
+        }
+        pc.toggle();
+    }
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        this.maxHeight = window.innerHeight - 240;
     }
 };

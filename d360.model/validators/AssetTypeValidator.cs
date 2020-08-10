@@ -248,6 +248,21 @@ namespace d360.core.validators
             if (!(queryParams.Any(p => p.Key.Trim().ToLower() == "_order")))
                 return true;
 
+            var isHierachyItem = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+            if (!String.IsNullOrEmpty(isHierachyItem))
+            {
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+                if(!String.IsNullOrEmpty(order))
+                {
+                    int orderID = 0;
+                    order = order.Split(new[] { "Field" }, StringSplitOptions.None)[1];
+                    orderID = int.Parse(order);
+                    var orderName = CompanyContext.FieldTypes.Where(f => f.ID == orderID).FirstOrDefault();
+                    if (orderName != null)
+                        return true;
+                }
+            }
+
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
                 return false;

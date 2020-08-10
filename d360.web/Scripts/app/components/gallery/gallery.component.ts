@@ -14,6 +14,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Button Directive', key: 'button' },
         { label: 'Icon Picker', key: 'icon-picker' },
         { label: 'Tag Picker', key: 'tag-picker' },
+        { label: 'Input Directive', key: 'input' },
     ];
 
     ngOnInit(): void {        

@@ -9,12 +9,13 @@ export class MetricAssetViewModel {
     IsGroup: boolean;
     Name: string;
     Description: string;
-    EffectiveDate: string | Date;
+    EffectiveDate: Date;
     Weight: number;
     Threshold: number;
     UpdateFrequency: MetricUpdateFrequency;
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
+    VersionCount: number;
 }
 
 export class MetricAssetHistoryViewModel {
@@ -22,8 +23,8 @@ export class MetricAssetHistoryViewModel {
     Version: number;
     Name: string;
     Description: string;
-    EffectiveDate: string | Date;
-    EffectiveEndDate: string | Date;
+    EffectiveDate: Date;
+    EffectiveEndDate: Date;
     Weight: number;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
 }

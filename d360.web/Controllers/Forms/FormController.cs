@@ -536,6 +536,8 @@ namespace d360.web.Controllers
                 case "FUSIONATTRIBUTETYPECUSTOMQUERY":
                     return DeleteFusionAttributeTypeCustomQuery(form);
                 case "INTERSECTTYPE":
+                    IntersectType intersectType = Company.GetById<IntersectType>(objectID);
+                    form.Add("IntersectTypeUid", intersectType.uid.ToString());
                     return DeleteIntersectType(form);
                 case "ISSUETYPE":
                     return DeleteIssueType(form);
