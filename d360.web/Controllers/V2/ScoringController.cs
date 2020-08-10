@@ -428,6 +428,12 @@ namespace d360.web.Controllers.V2
                 if (models == null)
                     models = new List<MetricAssetViewModel>();
 
+                // Check to ensure that no conditions groups are empty. If any are empty, remove before sending down to consumer.
+                models.ForEach(m =>
+                {
+                    m.ConditionGroups.RemoveAll(g => g.ConditionItems == null || g.ConditionItems.Count == 0);
+                });
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)

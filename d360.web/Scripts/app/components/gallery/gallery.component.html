@@ -7,10 +7,11 @@
             <a *ngFor="let control of controls" (click)="activeControl = control.key;" [class]="(activeControl == control.key ? 'collection-item active' : 'collection-item')">{{control.label}}</a>
         </div>        
     </div>
-    <div class="col s10">          
+    <div class="col s10">
         <gallery-switch *ngIf="(activeControl=='switch')"></gallery-switch>
         <gallery-button *ngIf="(activeControl=='button')"></gallery-button>
         <gallery-icon-picker *ngIf="(activeControl=='icon-picker')"></gallery-icon-picker>
         <gallery-tag-picker *ngIf="(activeControl=='tag-picker')"></gallery-tag-picker>
+        <gallery-input *ngIf="(activeControl=='input')"></gallery-input>
     </div>
 </div>

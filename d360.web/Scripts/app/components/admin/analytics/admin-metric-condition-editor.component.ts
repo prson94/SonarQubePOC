@@ -55,7 +55,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.metricConditionEditorFieldTypes.forEach(ft => {
             ft.Disabled = false;
         });
-        this.usedFieldTypes = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
+        if (!this.conditionItems)
+            this.conditionItems = [];
+
+        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeID }) : [];
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
         this.conditionsValid = true;
         this.usedFieldTypes.forEach(i => {
@@ -98,8 +101,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     removeCondition(condition: MetricAssetVersionConditionItemViewModel) {
         const index = this.conditionItems.indexOf(condition);
         if (index > -1) {
-            this.conditionItems.splice(index, 1);
+            let item = this.conditionItems.splice(index, 1)[0];
+            let ftIndex = this.usedFieldTypes.indexOf(item.ConditionFieldTypeID);
+
+            if (ftIndex > -1) {
+                this.usedFieldTypes.splice(ftIndex, 1);
+                this.usedFieldTypes = [ ...this.usedFieldTypes ];//workaroud so the angular filter pipe detects changes
+            }
         }
+        this.ref.markForCheck();
     }
 
     conditionFieldIsInvalid(condition: MetricAssetVersionConditionItemViewModel) {
@@ -206,6 +216,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                             }
                         }
                         break;
+                    case 'Date':
+                    case 'DateTime':
+                        if (c.Values) {
+                            if (c.Values[0].Value) {
+                                c.SingleValue = new Date(c.Values[0].Value);
+                                c.ValuesText = c.Values[0].Value;
+                            }
+                        }
+                        break;
                     default:
                         if (c.Values) {
                             if (c.Values[0].Value) {
@@ -224,6 +243,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'Decimal':
                     case 'Number':
                     case 'Date':
+                    case 'DateTime':
                         options = [
                             { value: 'eq', label: '=' },
                             { value: 'neq', label: '!=' },
@@ -320,5 +340,14 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     matchTypeChangeEvt() {
         this.matchTypeChange.emit(this.matchType);
+    }
+    
+    doToggle(evt: MouseEvent, pc: any) {
+        let htmlEl = evt.target as Element;
+        if (htmlEl.classList.contains('ui-inputtext')) {
+            evt.stopPropagation();
+            return;
+        }
+        pc.toggle();
     }
 };

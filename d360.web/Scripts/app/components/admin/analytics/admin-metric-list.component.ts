@@ -38,7 +38,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService, ref: ChangeDetectorRef) {
         super();
     }
 
@@ -77,16 +77,20 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                 this.addChildren(n);
                             }
                         });
-                        if (this.metricTree !== null && this.metricTree.length > 0) {
-                            this.selection = this.metricTree[0].data;
-                            this.selectionChange.emit(this.selection);
-                            this.selectedNode = this.metricTree[0];
-                        }
+                    } else {
+                        this.selectionChange.emit(null);
                     }
 
                     this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
+                        if (this.metricTree !== null && this.metricTree.length > 0) {
+                            this.selection = this.metricTree[0].data;
+                            this.selectionChange.emit(this.selection);
+                            this.selectedNode = this.metricTree[0];
+                        } else {
+                            this.selectionChange.emit(null);
+                        }
                     })
                 });
         }
@@ -121,7 +125,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public add(asChild: boolean = false) {
-        this.previousSelection = { ...this.selection };
+        if (this.selection)
+            this.previousSelection = { ...this.selection };
+        if (this.selectedNode)
         this.previousSelectedNode = { ...this.selectedNode };
         if (!asChild) {
             this.selection = null;
@@ -132,6 +138,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public edit() {
+        this.previousSelection = { ...this.selection };
+        this.previousSelectedNode = { ...this.selectedNode };
         this.formMode = FormMode.Editing;
     }
 
@@ -140,10 +148,11 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }    
     public close() {
         this.formMode = FormMode.Default;
-        this.selectedNode = { ...this.previousSelectedNode };
-        this.selection = { ...this.previousSelection };
+        if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)
+            this.selectedNode = { ...this.previousSelectedNode };
+        if (this.previousSelection && this.metrics && this.metrics.length > 0)
+            this.selection = { ...this.previousSelection };
         this.selectionChange.emit(this.selection);
-        console.log(this.selection);
     }
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
@@ -174,7 +183,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             command: (event) => { this.delete(); }
         });
         menu.push({
-            label: 'Version History',
+            label: 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')',
             command: (event) => { this.showHistory(true); }
         });
         return menu;

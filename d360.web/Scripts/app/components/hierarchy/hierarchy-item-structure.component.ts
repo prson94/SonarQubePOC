@@ -6,6 +6,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
+import { AssetService } from '../../services/asset.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { LevelsService } from '../../services/levels.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -19,6 +20,7 @@ import { PoliciesService } from '../../services/policies.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { TreeTableModule, TreeTable } from 'primeng/treetable';
+import { V2ApiFilters } from '../../models/asset-search.model';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -29,6 +31,7 @@ import { TreeTableModule, TreeTable } from 'primeng/treetable';
         ModelsService,
         PoliciesService,
         PermissionsService,
+        AssetService,
     ],
     templateUrl: 'hierarchy-item-structure.component.html'
 })
@@ -67,6 +70,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     filterColumns: string[] = ['DisplayValue'];
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
+    @ViewChild("inputBox", { static: false }) filterText: any;
 
     constructor(
         private route: ActivatedRoute,
@@ -80,7 +84,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         private modelsService: ModelsService,
         private policiesService: PoliciesService,
         private headerActionsService: HeaderActionsService,
-        protected secondaryNavService: SecondaryNavService
+        protected secondaryNavService: SecondaryNavService,
+        private assetService: AssetService
     ) {
         super();
 
@@ -225,10 +230,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
-
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
-
                         this.isLoading = false;
                     }
                 );
@@ -252,7 +255,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 children: (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.ID))
             });
         }
-
         return res;
     }
 
@@ -335,6 +337,25 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private closeEditor() {
         this.showEditor = false;
+    }
+
+    private exportExcel(level: number) {
+        var params = new V2ApiFilters();
+        params._onlyListableFields = false;
+        params._direction = this.treeTable._sortOrder == 1 ? 'ASC' : 'DESC';
+        if (this.treeTable._sortField != undefined) {
+            params._order = this.treeTable._sortField;
+        }
+        else {
+            params.useTypeLevelDefaultSorts = true;
+            delete params._order;
+        }
+        if (this.filterText.nativeElement.value != '')
+            params._simpleFilter = '*' + this.filterText.nativeElement.value;
+        else
+            delete params._simpleFilter;
+        params._isHierachyItem = true;
+        this.assetService.downloadAssetsExcel(this.assetType.AssetTypeUID, params,'Filtered ' + this.assetType.Name);
     }
 
     private showAdd(level: number) {

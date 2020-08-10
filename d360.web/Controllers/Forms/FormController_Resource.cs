@@ -577,12 +577,17 @@ namespace d360.web.Controllers
 
                 Company.Add(model);
 
-                Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = (int)model.PrimaryOwnerResourceID });
                 try
                 {
+
+                    if (model.PrimaryOwnerResourceID.HasValue)
+                    {
+                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
+                    }
+
                     if (model.SecondaryOwnerResourceID.HasValue)
                     {
-                        if (!model.PrimaryOwnerResourceID.Equals(model.SecondaryOwnerResourceID))
+                        if (model?.PrimaryOwnerResourceID?.Equals(model.SecondaryOwnerResourceID) == false)
                             Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
                     }
                 }
@@ -631,7 +636,7 @@ namespace d360.web.Controllers
 
                 var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == model.ID).Select(i => i.ResourceID).ToList();
 
-                if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
+                if (model.PrimaryOwnerResourceID.HasValue && !currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
                 {
                     Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
                 }

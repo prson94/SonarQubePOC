@@ -2530,6 +2530,7 @@ div.home-image-title-text {
     &.large-dialog {
         width: 100%;
         max-width: 800px;
+        max-height: 100%;
     }
 
     &.mini-dialog-no-action {
@@ -7000,32 +7001,10 @@ d3s-process-diagram {
         }
 
         .ui-multiselect {
-            height: auto;
-            min-height: 32px;
-
             .ui-multiselect-label-container {
                 max-width: 250px;
-                overflow: visible;
                 width: 100%;
-
-                .ui-multiselect-label {
-                    height: auto !important;
-                    padding-left: 4px;
-                    padding-top: 0px;
-                }
-            }
-
-            .ig-colorfield-item-selected {
-                margin-top: 2px !important;
-                display: inline-block;
-                float: left;
-                margin-left: auto !important;
-                margin-right: 4px;
-                padding: 0px 4px !important;
-
-                .ig-colorfield-item-label {
-                    padding-right: 12px;
-                }
+                overflow:hidden;
             }
         }
 
@@ -7041,45 +7020,6 @@ d3s-process-diagram {
 
                 &.with-border {
                     border-right: 1px solid #dde0e3;
-                }
-
-                .custom-tools {
-                    position: absolute;
-                    background-color: white;
-                    border: 1px solid #cccccc;
-                    padding: 6px;
-                    margin-top: 28px;
-                    right: 16px;
-                    background: #f1f2f3;
-                    font-size: 14px;
-                    font-weight: normal;
-                    z-index: 10;
-
-                    .menu-item {
-                        color: black;
-                        position: relative;
-                        cursor: pointer;
-
-                        &:hover {
-                            ul {
-                                display: block;
-                            }
-                        }
-
-                        ul {
-                            display: none;
-                            position: absolute;
-                            top: -7px;
-                            transform: translateX(-100%);
-                            left: -6px;
-                            background: #f1f2f3;
-                            border: 1px solid #cccccc;
-
-                            li {
-                                list-style-type: none;
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -7294,8 +7234,15 @@ d3s-process-diagram {
     }
 }
 .modal-measure {
+    .modal-measure-history {
+        padding: 0px 24px 24px 24px;
+        height: calc(100% - 40px);
+        margin-top: -32px;
+    }
+
     .modal-measure-editor {
         padding: 0px 24px 24px 24px;
+        height: 100%;
         margin-top: -32px;
 
         .metric-form {
@@ -7414,13 +7361,13 @@ d3s-process-diagram {
                                     .tooltip-content {
                                         display: block;
                                         left: -110px;
-                                        position: absolute;
+                                        position: fixed;
                                         width: 490px;
                                         white-space: normal;
 
                                         &.group {
-                                            top: -54px;
                                             height: 126px;
+                                            transform: translate(0px, -126px)
                                         }
                                     }
                                 }
@@ -7533,11 +7480,66 @@ d3s-process-diagram {
     }
 
     .action-bar {
-        padding: 0px 0px 24px 0px !important;
+        padding: 0px 0px 0px 0px !important;
         margin-top: 16px;
     }
 }
 
+.ig-input {
+    &.calendar {
+        padding: 0px 0px 0px 8px;
+        display: inline-flex;
+
+        p-calendar {
+            border: none !important;
+            background: inherit;
+        }
+
+        p-calendar:focus {
+            border: none !important;
+            background: inherit;
+        }
+
+        .ui-calendar {
+            background: inherit;
+
+            .ui-inputtext {
+                border: none !important;
+                background: inherit;
+            }
+        }
+
+        .fa {
+            background-color: #f1f1f3;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            color: #202020;
+            margin-top: 3px;
+            margin-right: 3px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-left: auto;
+        }
+
+        &.required {
+            background: #f5fbfd;
+            border-color: #212121;
+        }
+
+        &:focus-within:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 2px #8abddf;
+            border-color: #006fba;
+        }
+
+        &:hover:not(.ui-state-error) {
+            border-color: #212121;
+        }
+    }
+}
 
 .ig-input-label {
     display: block;
@@ -7566,16 +7568,16 @@ d3s-process-diagram {
             .tip-container {
                 .tooltip-content {
                     display: block;
-                    top: -75px;
                     left: -110px;
-                    position: absolute;
+                    position: fixed;
                     height: 150px;
                     width: 490px;
                     white-space: normal;
+                    transform: translate(0px, -150px);
 
                     &.group {
-                        top: -50px;
                         height: 105px;
+                        transform: translate(0px, -105px);
                     }
                 }
             }

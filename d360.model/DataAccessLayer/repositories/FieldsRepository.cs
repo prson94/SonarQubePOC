@@ -712,9 +712,17 @@ from	IntersectType I
                 }
                 else if (f.Type.ComputedRelationshipLookup != null)
                 {
+
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
+                    }
+
+                    var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+
+                    if(assetType.Class == AssetTypeClass.User)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a ComputedRelationshipLookup type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
                     }
 
                     if (f.Type.ComputedRelationshipLookup.Definition == null

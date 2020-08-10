@@ -93,13 +93,13 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                       </div>
                                      <div class="measure-details-item">
                                           <div class="details-header">Effective Dates</div>
-                                          <div class="details-content">{{selectedMetric?.EffectiveDate  | date:'shortDate'}} - Present</div>
+                                          <div class="details-content">{{selectedMetric?.EffectiveDate | utcDate  | date:'shortDate'}} - Present</div>
                                       </div>
                                      <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
                                           <div class="details-header">Weight</div>
                                           <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
                                       </div>
-                                     <div class="measure-details-item">
+                                     <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
                                           <div class="details-header">Grouping Measure</div>
                                           <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                                       </div>
@@ -124,7 +124,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                         </div>
                    </div>
                     <d3s-modal *ngIf="data" [title]="editTitle" additionalClasses="medium-dialog" (onClose)="onScoreSaveCancel()" [isVisible]="showEdit">
-                        <d3s-admin-allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load($event);"></d3s-admin-allocation-editor>
+                        <d3s-admin-allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="showEdit=false;"></d3s-admin-allocation-editor>
                     </d3s-modal>
                 `,
     providers: [MetricsService, AssetTypeService, AllocationService]
@@ -134,7 +134,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private selectedAssetType: AssetTypeMetricModel = null;
     private selectedMetric = null;
     routeParamsSubscription: any;
-    private data: ScoreTypeAllocation;
+    private data: ScoreTypeAllocation = null;
     private assetTypeUid: string;
     private allocationUid: string;
     formattedScoreCalc: string;
@@ -285,7 +285,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
-            if (this.conditions.length > 0) {
+            if (this.conditions && this.conditions.length > 0) {
                 this.formatConditions();
                 return true;
             } else

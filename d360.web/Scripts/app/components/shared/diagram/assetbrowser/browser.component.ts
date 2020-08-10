@@ -77,6 +77,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen = false;
     private loadingText = '';
 
+    private isError: boolean = false;
+    private errorText = '';
+
     private searchText = '';
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
@@ -134,7 +137,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly linkDefaultBackColor: string = '#808080';
     private readonly linkDefaultBorderColor: string = '#999';
     private readonly plusIcon: string = '\uf067';
-    private readonly hideIcon: string = '\uf111';
+    private readonly hideIcon: string = '\uf070';
     private readonly disabledNodeBackColor: string = '#fff';
 
     private readonly textMaxSize = new go.Size(200, Infinity);
@@ -548,32 +551,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private helper_HideNextHop(links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
-        links.each(l => {
-            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
-            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
-
-            if (rootNodeData.template == "MoreData") {
-                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
-            }
-            else {
-                this.diagram.model.setDataProperty(rootNodeData, 'template', "HiddenNode");
-                this.diagram.model.setDataProperty(rootNodeData, 'visible', false);
-                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
-                let hierarchyNodes = rootNode.findSubGraphParts();
-                hierarchyNodes.each(c => {
-                    this.diagram.model.setDataProperty(c.data, 'opacity', 0);
-                    this.diagram.model.setDataProperty(c.data, 'visible', false);
-                    this.diagram.model.setDataProperty(c.data, 'template', (c.data.isGroup) ? "HiddenSubNode" : "HiddenLeafNode");
-                });
-
-                this.helper_HideNextHop(
-                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
-                    direction
-                );
-            }
-        });
-    }
+    //#region Hiding / Unhiding
 
     private context_Hide(e, obj, direction: AssetBrowserApiHopDirection = null) { 
         if (obj != null && obj.part != null && obj.part.data != null) {
@@ -582,32 +560,191 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
 
             this.diagram.startTransaction("context_hide_node");
-            this.diagram.model.setDataProperty(rootNodeData, 'hideMode', direction);
-            this.diagram.model.setDataProperty(rootNodeData, 'template', "HiddenNode");
 
-            let hierarchyNodes = rootNode.findSubGraphParts();
-            hierarchyNodes.each(c => {
-                this.diagram.model.setDataProperty(c.data, 'visible', false);
-                this.diagram.model.setDataProperty(c.data, 'opacity', 0);
-                this.diagram.model.setDataProperty(c.data, 'template', (c.data.isGroup) ? "HiddenSubNode" : "HiddenLeafNode");
-            });
-
-            // Now determine if we need to hide backward of forward direction too.
+            // Now determine if we need to hide backward or forward direction.
             if (direction) {
                 let links = (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf();
-                this.helper_HideNextHop(links, direction);
+                let propertyName = (direction == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+                this.diagram.model.setDataProperty(rootNodeData, propertyName, true);
+                this.helper_HideDirection(rootNodeData, links, direction);
+            }
+            else {
+                this.diagram.model.setDataProperty(rootNodeData, 'template', "HiddenNode");
+                let hierarchyNodes = rootNode.findSubGraphParts();
+                hierarchyNodes.each(c => {
+                    this.diagram.model.setDataProperty(c.data, 'visible', false);
+                    this.diagram.model.setDataProperty(c.data, 'opacity', 0);
+                    this.diagram.model.setDataProperty(c.data, 'template', (c.data.isGroup) ? "HiddenSubNode" : "HiddenLeafNode");
+                });
             }
 
             this.diagram.commitTransaction("context_hide_node");
         }
     }
 
-    private context_Unhide(e, obj) {
+    private context_UnhideDirection(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let node: any = obj.part.data;
+            let streamKey = node.key as string;
+            let streamNode = this.diagram.findNodeForKey(streamKey);
+            let hideMode = node.hideMode as AssetBrowserApiHopDirection;
+            let heirarchyNodeKey = node.hidingKey as string
+            let hierarchyNode = this.diagram.findNodeForKey(heirarchyNodeKey);
+            let links = (hideMode == AssetBrowserApiHopDirection.Backward) ? hierarchyNode.findLinksInto() : hierarchyNode.findLinksOutOf();
+
+            let propertyName = (hideMode == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+            this.diagram.model.setDataProperty(hierarchyNode.data, propertyName, null);
+
+            if (streamNode) {
+                this.diagram.remove(streamNode);
+                this.helper_UnhideDirection(links, hideMode);
+            }
+        }
+    }
+
+    private context_UnhideNode(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             this.helper_UnhideNode(node);
         }
     }
+
+    private helper_HideDirection(startingHierarchyNode: AssetBrowserTranslationNode, links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
+        let streamKey: string;
+
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        dm.startTransaction("hide_next_hop");
+
+        if (startingHierarchyNode) {
+            streamKey = startingHierarchyNode.hierarchyKey + "_" + direction.toString();
+
+            dm.addNodeData({
+                hideMode: direction,
+                key: streamKey,
+                hidingKey: startingHierarchyNode.hierarchyKey,
+                back: startingHierarchyNode.back,
+                template: "HiddenStreamNode"
+            });
+        }
+
+        links.each(l => {
+
+            if (startingHierarchyNode) {
+                let fromKey: string = (direction == AssetBrowserApiHopDirection.Backward) ? streamKey : l.fromNode.key.toString();
+                let toKey: string = (direction == AssetBrowserApiHopDirection.Backward) ? l.toNode.key.toString() : streamKey;
+                let linkData = {
+                    from: fromKey,
+                    to: toKey
+                }; 
+                dm.addLinkData(linkData);
+
+                if (direction == AssetBrowserApiHopDirection.Forward) {
+                    // We could have other branches that WERE going into this same path we are hiding. Need to connect to the new node above.
+                    l.toNode.findLinksInto().each(nl => {
+                        if (nl.fromNode.key !== l.fromNode.key) {
+                            dm.addLinkData({
+                                from: nl.fromNode.key.toString(),
+                                to: toKey
+                            });
+                        }
+                    });
+                }
+            }
+
+            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
+            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+
+            if (rootNodeData.template == "MoreData") {
+                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
+            }
+            else if (rootNodeData.template == "HiddenStreamNode") {
+                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
+            }
+            else {
+                this.diagram.model.setDataProperty(rootNodeData, 'template', "HiddenNode");
+                this.diagram.model.setDataProperty(rootNodeData, 'visible', false);
+                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
+
+                let hierarchyNodes = rootNode.findSubGraphParts();
+                hierarchyNodes.each(c => {
+                    this.diagram.model.setDataProperty(c.data, 'opacity', 0);
+                    this.diagram.model.setDataProperty(c.data, 'visible', false);
+                    this.diagram.model.setDataProperty(c.data, 'template', (c.data.isGroup) ? "HiddenSubNode" : "HiddenLeafNode");
+                });
+
+                this.helper_HideDirection(
+                    null,
+                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
+                    direction
+                );
+            }
+        });
+
+        dm.commitTransaction("hide_next_hop");
+        this.helper_UpdateDiagramLayout(); 
+    }
+
+    private helper_UnhideDirection(links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
+        let hiddenStreamKeysToRemove: string[] = [];
+
+        links.each(l => {
+            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
+            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+
+            if (rootNodeData.template == "MoreData") {
+                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
+            }
+            else if (rootNodeData.template == "HiddenStreamNode") {
+                hiddenStreamKeysToRemove.push(rootNodeData.key);
+            }
+            else {
+                this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
+                this.diagram.model.setDataProperty(rootNodeData, 'visible', true);
+                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
+
+                let hierarchyNodes = rootNode.findSubGraphParts();
+                hierarchyNodes.each(c => {
+                    this.diagram.model.setDataProperty(c.data, 'opacity', 1);
+                    this.diagram.model.setDataProperty(c.data, 'visible', true);
+                    this.diagram.model.setDataProperty(c.data, 'template', c.data.nonHiddenTemplate);
+                });
+
+                this.helper_UnhideDirection(
+                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
+                    direction
+                );
+            }
+        });
+
+        //Have to do this after we loop through links above, otherwise we get an exception.
+        hiddenStreamKeysToRemove.forEach(k => {
+            let n = this.diagram.findNodeForKey(k);
+            if (n) {
+                this.diagram.remove(n);
+            }
+
+        });
+    }
+
+    private helper_UnhideNode(node: AssetBrowserTranslationNode) {
+
+        let rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
+        let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
+
+        this.diagram.startTransaction("context_unhide_node");
+
+        this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
+
+        let hierarchyNodes = rootNode.findSubGraphParts();
+        hierarchyNodes.each(c => {
+            this.diagram.model.setDataProperty(c.data, 'visible', "true");
+            this.diagram.model.setDataProperty(c.data, 'template', c.data.nonHiddenTemplate);
+        });
+
+        this.diagram.commitTransaction("context_unhide_node");
+    }
+
+    //#endregion
 
     private event_DiagramSelectionChanged(e: go.DiagramEvent) {
         if (e != null && e.subject != null) {
@@ -1040,6 +1177,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.groupTemplateMap.add("HiddenNode", this.template_HiddenNode());
         this.diagram.groupTemplateMap.add("HiddenSubNode", this.template_HiddenSubNode());
         this.diagram.nodeTemplateMap.add("HiddenLeafNode", this.template_HiddenLeafNode());
+        this.diagram.nodeTemplateMap.add("HiddenStreamNode", this.template_HiddenStreamNode());
 
         this.diagram.groupTemplateMap.add("Owners", this.template_OwnersRootNode());
         this.diagram.nodeTemplateMap.add("Owner", this.template_LeafOwnerNode());
@@ -1151,6 +1289,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_PopulateDiagram(): Observable<boolean> {
         let dgmObs: Observable<boolean>;
 
+        this.errorText = "";
+        this.isError = false;
+        this.cdRef.markForCheck();
+
         dgmObs = new Observable(obs => {
             let isLineage: boolean = this.helper_LineageDiagramApplies();
 
@@ -1160,17 +1302,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_ResetDiagramData();
 
             let subscriber = (data: AssetBrowserResponseModel) => {
-                this.diagramData = data;
-                this.loadingText = "Determining links and meaning...";
+                if (data) {
+                    this.diagramData = data;
+                    this.loadingText = "Determining links and meaning...";
 
-                this.helper_ParseTranslatedData(data);
+                    this.helper_ParseTranslatedData(data);
 
-                this.helper_ResizeDiagram();
-                this.helper_ScaleDiagram(1);
-                this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                this.loadingText = "";
-                this.isLoading = false;
-
+                    this.helper_ResizeDiagram();
+                    this.helper_ScaleDiagram(1);
+                    this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                    this.loadingText = "";
+                    this.isLoading = false;
+                }
+                else {
+                    this.errorText = "Unable to retrieve Asset Browser content.";
+                    this.isError = true;
+                    this.isLoading = false;
+                }
                 this.cdRef.markForCheck();
 
                 obs.next(true);
@@ -1444,56 +1592,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             return -1;
         else
             return 0;
-    }
-
-    private helper_UnhideNextHop(links: go.Iterator<go.Link>, direction: AssetBrowserApiHopDirection) {
-        links.each(l => {
-            let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
-            let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
-
-            if (rootNodeData.template == "MoreData") {
-                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
-            }
-            else {
-                this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
-                this.diagram.model.setDataProperty(rootNodeData, 'visible', true);
-                this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
-                let hierarchyNodes = rootNode.findSubGraphParts();
-                hierarchyNodes.each(c => {
-                    this.diagram.model.setDataProperty(c.data, 'opacity', 1);
-                    this.diagram.model.setDataProperty(c.data, 'visible', true);
-                    this.diagram.model.setDataProperty(c.data, 'template', c.data.nonHiddenTemplate);
-                });
-
-                this.helper_UnhideNextHop(
-                    (direction == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf(),
-                    direction
-                );
-            }
-        });
-    }
-
-    private helper_UnhideNode(node: AssetBrowserTranslationNode) {
-
-        let rootNode = this.diagram.findNodeForKey(node.hierarchyKey) as go.Group;
-        let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
-
-        this.diagram.startTransaction("context_show_node");
-        this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
-
-        let hierarchyNodes = rootNode.findSubGraphParts();
-        hierarchyNodes.each(c => {
-            this.diagram.model.setDataProperty(c.data, 'visible', "true");
-            this.diagram.model.setDataProperty(c.data, 'template', c.data.nonHiddenTemplate);
-        });
-
-        // Now determine if we need to hide backward of forward direction too.
-        if (rootNodeData.hideMode) {
-            let links = (rootNodeData.hideMode == AssetBrowserApiHopDirection.Backward) ? rootNode.findLinksInto() : rootNode.findLinksOutOf();
-            this.helper_UnhideNextHop(links, rootNodeData.hideMode);
-        }
-
-        this.diagram.commitTransaction("context_show_node");
     }
 
     private helper_UpdateDiagramLayout() {
@@ -1943,13 +2041,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.context_Hide(e, obj, AssetBrowserApiHopDirection.Backward) },
-                new go.Binding("visible", "", (o) => (!o.part.data.group && this.displayConfiguration.DiagramType !== DiagramType.Impact)).ofObject()
+                new go.Binding("visible", "", (o) => (!o.part.data.group && this.displayConfiguration.DiagramType !== DiagramType.Impact && !o.part.data.upstreamHidden)).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.context_Hide(e, obj, AssetBrowserApiHopDirection.Forward) },
-                new go.Binding("visible", "", (o) => (!o.part.data.group)).ofObject()
+                new go.Binding("visible", "", (o) => (!o.part.data.group && !o.part.data.downstreamHidden)).ofObject()
             )//,
             //this.g(
             //    "ContextMenuButton",
@@ -2101,7 +2199,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private template_HiddenNode(): go.Group {
         return this.g(go.Group, "Auto",
             {
-                click: (e, obj) => this.context_Unhide(e, obj),
+                click: (e, obj) => this.context_UnhideNode(e, obj),
                 cursor: 'pointer'
             },
             new go.Binding("visible", "visible"),
@@ -2134,6 +2232,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.Placeholder,
                     { padding: 0, alignment: go.Spot.TopLeft },
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
+    private template_HiddenStreamNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                click: (e, obj) => this.context_UnhideDirection(e, obj),
+                cursor: 'pointer'
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
+                this.g(
+                    "Shape",
+                    {
+                        alignment: go.Spot.Center,
+                        width: 25,
+                        height: 25
+                    },
+                    new go.Binding("fill", "back"),
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v, this.lightenBoxColor, .15))
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor,
+                        text: this.hideIcon
+                    },
                 )
             )  // end Horizontal Panel
         );
@@ -2737,7 +2870,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 toolTip: this.template_Tooltip()
                             },
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                            new go.Binding("text", "text").makeTwoWay() 
+                            new go.Binding("text", "text").makeTwoWay()
                         )
                     ),  // end Horizontal Panel
                     this.g(

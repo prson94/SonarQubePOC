@@ -4,7 +4,7 @@
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
-                    <input igInput tabindex="1" class="required big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
+                    <input igInput tabindex="1" class="big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
                 </div>
                 <div class="row">
                     <div>
@@ -17,8 +17,8 @@
                             <div class="ig-input-label">
                                 Effective From
                             </div>
-                            <div (click)="pc.toggle()" class="ig-input calendar required">
-                                <p-calendar #pc tabindex="3" appendTo="body" [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                            <div (click)="doToggle($event,pc)" class="ig-input calendar" [ngClass]="{'required': !model.EffectiveDate}" >
+                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate" [baseZIndex]="20000" [(ngModel)]="model.EffectiveDate" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
                         </div>
@@ -37,22 +37,19 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="input-spinner required">
+                            <div class="input-spinner" [ngClass]="{'required': !displayWeight}" >
                                 <p-spinner #weight tabindex="4" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
-                                <span *ngIf="model?.Weight == null || model?.Weight == 0" class="feedback">
-                                    {{invalidWeightMessage}}
-                                </span>
                             </div>
                         </div>
                     </div>
                     <div *ngIf="verb == 'Edit'" class="mesure-info">
                         <i class="fa fa-info-circle"></i>
                         <span *ngIf="scoreData" class="measure-message">
-                            As scoring data has been collected against this measure (effective from {{maxScoreEffectiveDate | date:'shortDate' }}),
+                            As scoring data has been collected against this measure (effective from {{maxScoreEffectiveDate | utcDate | date:'shortDate' }}),
                             any changes you make to this measure will result in a  new version being created, with a new effective date.
                         </span>
                         <span *ngIf="!scoreData" class="measure-message">
-                            Keep an effective date of {{model.EffectiveDate | date:'shortDate' }} to update the current version of the measure.
+                            Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
                             Choose a later date to create a new version of the measure, which will be used in future calculations
                         </span>
                     </div>
@@ -80,7 +77,7 @@
             </simple-accordion>
         </div>
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
-            <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
+            <simple-accordion header="Asset Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
                     <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
                 </div>
