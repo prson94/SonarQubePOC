@@ -4,6 +4,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { ObjectRelationshipCount } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
+import { error } from '@angular/compiler/src/util';
 
 @Component({
     selector: 'd3s-object-relationships',
@@ -23,7 +24,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     readOnly: boolean = false;
     cardinalityShow: boolean = true;
-    hasRelationships: boolean;
+    hasRelationships: boolean = false;
     showAddRelationship: boolean = false;
     showEmptyRelationshipTypes: boolean = true;
     hideDelete: boolean = true;
@@ -72,7 +73,8 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
                 this.isLoading = false;
                 this.updateCardinality();
-            });
+            }
+        );
     }
 
     export() {
