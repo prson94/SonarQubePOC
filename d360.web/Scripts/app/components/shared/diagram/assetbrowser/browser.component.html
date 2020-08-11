@@ -25,8 +25,8 @@
                 </div>
                 <div class="controls-right">
                     <ng-container *ngIf="displayConfiguration.DiagramType == 3 && !isProcessDiagramEmpty()">
-                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')" tooltip="Switch to Diagram View"></button>
-                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')" tooltip="Switch to List View"></button>
+                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')" tooltip="Diagram View"></button>
+                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')" tooltip="List View"></button>
                         <div class="button-spacer"></div>
                         <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="openProcessDiagramInfo()"></button>
                     </ng-container>

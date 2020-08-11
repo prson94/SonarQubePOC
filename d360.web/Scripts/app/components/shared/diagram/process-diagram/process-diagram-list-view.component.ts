@@ -15,7 +15,8 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     @Input() nodeSelection: any;
     @Input() diagram: go.Diagram;
 
-    selected: any[] = [];
+    selected: go.ObjectData[] = [];
+    lastSelectedIndex: number = -1;
     private nodeCount: number = 0;
 
     @ViewChild('dt', { static: false }) tableEl: any;
@@ -58,30 +59,6 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         })
         this.tableEl.reset();
     }
-    onRowSelect($event) {
-        var part = this.getPartByKey($event.data.key);
-        var selection = this.diagram.selection;
-
-        var selectedParts: go.Part[] = [];
-        selection.each(s => selectedParts.push(s));
-        selectedParts.push(part);
-
-        this.diagram.selectCollection(selectedParts);
-    }
-    onRowUnselect($event) {
-        var part = this.getPartByKey($event.data.key);
-        var selection = this.diagram.selection;
-
-        var selectedParts: go.Part[] = [];
-        selection.each(s => {
-            if (s != part)
-                selectedParts.push(s)
-        }
-        );
-
-        this.diagram.selectCollection(selectedParts);
-    }
-
     toggleAll($event) {
         if ($event.checked) {
             var selectedParts: go.Part[] = [];
@@ -113,8 +90,6 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             else if (typeof value1 === 'string' && typeof value2 === 'string' && event.field != 'StepNo')
                 result = value1.localeCompare(value2);
             else if (event.field == 'StepNo') {
-                console.log(+value1);
-                console.log(+value2);
                 result = (+value1 < +value2) ? -1 : (+value1 > +value2) ? 1 : 0;
 
             }
@@ -125,4 +100,77 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         })
 
     }
+    selectSingleItem(event: MouseEvent, item: go.ObjectData, element: ElementRef = null, elIndex = -1) {
+        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+        let isCheckboxClicked = false;
+        if (event && event.target) {
+            var target = event.target as HTMLElement;
+            isCheckboxClicked = target.tagName == 'P-TABLECHECKBOX';
+
+            if (!isCheckboxClicked) {
+                target.childNodes.forEach(cn => {
+                    if (cn.nodeName === 'P-TABLECHECKBOX') {
+                        isCheckboxClicked = true;
+                    }
+                })
+            }
+        }
+
+        if (event && element) {
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+                var index = this.getNodeIndexInSelected(item);
+
+                if (index === -1)
+                    this.selected.push(item);
+
+                if (index !== -1)
+                    this.selected = this.selected.filter(x => x.key != item.key);
+            }
+            else if (event.shiftKey) {
+                var arr = this.tableEl.value as Array<go.ObjectData>;
+                var from = elIndex;
+                var to = this.lastSelectedIndex;
+                if (from > to) {
+                    var temp = from;
+                    from = to;
+                    to = temp;
+                }
+                arr.forEach((item, index) => {
+                    if (index >= from && index <= to) {
+                        this.selected.push(item);
+                    }
+                });
+
+            }
+            else {
+                if (!isCheckboxClicked)
+                    this.selected = [];
+
+                var index = this.getNodeIndexInSelected(item);
+
+                if (index === -1)
+                    this.selected.push(item);
+
+                if (isCheckboxClicked && index !== -1) {
+                    this.selected = this.selected.filter(x => x.key != item.key);
+                }
+
+            }
+
+        }
+
+        var selectedParts: go.Part[] = [];
+
+        this.selected.forEach(d => {
+            selectedParts.push(this.getPartByKey(d.key));
+        })
+        this.diagram.selectCollection(selectedParts);
+        this.lastSelectedIndex = elIndex;
+
+    }
+
+    private getNodeIndexInSelected(data: go.ObjectData) {
+        return this.selected.indexOf(data);
+    }
+
 }

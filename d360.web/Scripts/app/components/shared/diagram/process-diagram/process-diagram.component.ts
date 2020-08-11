@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
-import { Action } from 'rxjs/internal/scheduler/Action';
 import { HeaderActions } from '../../../../models/header.model';
 
 @Component({
@@ -240,7 +239,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram.isReadOnly) {
             this.myDiagram.toolManager.textEditingTool.doCancel();
         }
-        if (this.isEditMode && !this.isPalleteLoaded) {
+        if (this.viewType == 'diagram' && this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
 

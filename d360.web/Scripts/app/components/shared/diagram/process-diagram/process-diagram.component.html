@@ -14,8 +14,8 @@
 
         </div>
         <div class="controls-right">
-            <button igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Switch to Diagram View"></button>
-            <button igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')" tooltip="Switch to List View"></button>
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Diagram View"></button>
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')" tooltip="List View"></button>
             <div class="button-spacer"></div>
             <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
         </div>
@@ -26,7 +26,7 @@
         <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
             <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
         </div>
-        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
+        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
             <div class="gov-accordion">
                 <div id="toolTipDIV-event" class="tooltip-content">
                     <p id="toolTipParagraph-event"></p>
