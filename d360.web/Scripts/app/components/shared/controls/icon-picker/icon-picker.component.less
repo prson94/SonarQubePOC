@@ -2,6 +2,10 @@
 
 
 ig-icon-picker {
+    &:focus {
+        outline-color: #8abddf;
+    }
+
     p-dropdown .ui-dropdown {
         background: #ffffff;
         border: 1px solid #bdbfc6;
@@ -23,6 +27,7 @@ ig-icon-picker {
             margin-right: 3px;
             border-radius: 2px;
             font-size: 10px;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -49,6 +54,7 @@ ig-icon-picker {
             text-align: center;
             font-size: 16px;
             color: #202020;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -58,16 +64,15 @@ ig-icon-picker {
             font-family: "Source Sans Pro", sans-serif;
             background: none;
             height: 30px;
-            line-height: 30px;
             padding-left: 8px;
             padding-right: 32px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+
             &.ui-placeholder {
                 color: #6f7482;
                 position: relative;
-                top: -4px;
                 border-radius: 4px;
             }
         }
@@ -78,7 +83,6 @@ ig-icon-picker {
             height: 32px;
             font-weight: 700;
         }
-
     }
 
     .ui-state-focus {
