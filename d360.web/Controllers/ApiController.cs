@@ -1591,12 +1591,6 @@ where   h.ID <> @t order by h.[Level] desc;
 
         }
 
-        [Route("fusion/technicalmapping")]
-        public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
-        {
-            return Company.Table<MapRuleItemDetail>();
-        }
-
         #region Promotion
 
 

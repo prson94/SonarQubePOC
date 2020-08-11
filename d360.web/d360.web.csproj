@@ -1687,7 +1687,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-technical-mappings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion.module.ts" />
