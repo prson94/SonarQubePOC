@@ -61,9 +61,7 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Plugins.Package> Packages { get; set; }
         public DbSet<d360.core.entities.Plugins.PackageContent> PackageContents { get; set; }
-
-        public DbSet<d360.core.entities.Plugins.EventType> EventTypes { get; set; }
-        
+                
         public DbSet<d360.core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionIntersectType> FusionIntersectTypes { get; set; }

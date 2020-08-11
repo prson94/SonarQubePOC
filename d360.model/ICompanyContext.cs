@@ -103,8 +103,6 @@ namespace d360.model
         DbSet<MapSequence> MapSequences { get; set; }
         DbSet<MapTypeOrder> MapTypeOrders { get; set; }
         DbSet<MapType> MapTypes { get; set; }
-        DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
-        DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
         DbSet<MetricAsset> MetricAssets { get; set; }
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
         DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
