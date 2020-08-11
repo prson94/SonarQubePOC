@@ -635,18 +635,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             var self = this;
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
-                for (var propertyName in formData) {
-                    var currentPropValue = data[propertyName];
-                    var updatedPropValue = formData[propertyName];
+                if (data) {
+                    for (var propertyName in formData) {
+                        var currentPropValue = data[propertyName];
+                        var updatedPropValue = formData[propertyName];
 
-                    var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
+                        var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
 
-                    if (propertyName != 'key' && !bothEmpty) {
-                        m.set(data, propertyName, formData[propertyName].toString());
+                        if (propertyName != 'key' && !bothEmpty) {
+                            m.set(data, propertyName, formData[propertyName].toString());
+                        }
                     }
+                    m.set(data, 'refItemColor', self.getNodeColor(data));
+                    m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
                 }
-                m.set(data, 'refItemColor', self.getNodeColor(data));
-                m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
             }, 'update_model');
         } catch (e) {
             console.log(e);
@@ -974,10 +976,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 try {
                     this.myDiagram.model.commit(function (m) {
-
                         badges.forEach(asset => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
-                            m.set(data, 'relCount', asset.RelationshipCount.toString());
+                            if (data)
+                                m.set(data, 'relCount', asset.RelationshipCount.toString());
                         })
                     }, 'update_model_badge_data');
                 } catch (e) {

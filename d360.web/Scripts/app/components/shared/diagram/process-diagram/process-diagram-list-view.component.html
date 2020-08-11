@@ -1,13 +1,22 @@
-<div class="process-list-view" *ngIf="diagram">
-    <p-table [value]="diagram.model.nodeDataArray"
+<div class="process-list-view" *ngIf="nodeArray">
+    <p-table #dt [value]="nodeArray"
              [paginator]="true"
              [rows]="10"
-             selectionMode="single"
-             [metaKeySelection]="false">
+             [(selection)]="selected" 
+             dataKey="key"
+             selectionMode="multiple"
+             (onRowSelect)="onRowSelect($event)"
+             (onRowUnselect)="onRowUnselect($event)"
+             (onHeaderCheckboxToggle)="toggleAll($event)"
+             styleClass="ig-table treetable"
+             sortField="StepNo"
+             [customSort]="true"
+             (sortFunction)="customSort($event)"
+             >
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 20px;">
-                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                    <p-tableHeaderCheckbox ></p-tableHeaderCheckbox>
                 </th>
                 <th [pSortableColumn]="'StepNo'">
                     Step No
@@ -35,8 +44,8 @@
                 <td>{{item.StepNo}}</td>
                 <td>{{item.Name}}</td>
                 <td>{{item.assetTypeName}}</td>
-                <td>{{item.governanceDisplayValue}}</td>
-            </tr#el>
+                <td>{{item.governanceDisplayValue ? item.governanceDisplayValue : '---'}}</td>
+            </tr>
         </ng-template>
     </p-table>
 </div>

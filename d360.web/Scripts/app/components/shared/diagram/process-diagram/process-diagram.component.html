@@ -87,8 +87,8 @@
                 </div>
             </div>
             <div [hidden]="viewType == 'list'" id="diagram"></div>
-            <div [hidden]="viewType == 'diagram'" id="list-view">
-                <d3s-process-diagram-list-view [diagram]="myDiagram"></d3s-process-diagram-list-view>
+            <div [hidden]="viewType == 'diagram'" id="list-view" *ngIf="myDiagram && myDiagram.model">
+                <d3s-process-diagram-list-view [diagram]="myDiagram" [nodeArray]="myDiagram.model.nodeDataArray" [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
             </div>
         </div>
 
