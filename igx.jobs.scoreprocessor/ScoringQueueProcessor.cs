@@ -58,6 +58,9 @@ namespace igx.jobs.scoreprocessor
                     case ScoreQueueChangeType.MeasureRemoved:
                         process = new MeasureRemovedProcess();
                         break;
+                    case ScoreQueueChangeType.RollupPathChanged:
+                        process = new RollupPathChangedProcess();
+                        break;
                     case ScoreQueueChangeType.RuleResultsChanged:
                         process = new RuleResultsChangedProcess();
                         break;

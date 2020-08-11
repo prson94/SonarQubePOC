@@ -12,6 +12,7 @@ namespace d360.core.queue
         MeasureCreated,
         MeasureChanged,
         MeasureRemoved,
+        RollupPathChanged,
         RuleResultsCreated,
         RuleResultsChanged,
         RuleResultsRemoved,
@@ -51,6 +52,12 @@ namespace d360.core.queue
         // Populated in processing job.
         public Guid? MetricAssetVersionUid { get; set; }
         public Guid? AllocationUid { get; set; }
+        public int? AssetTypeId { get; set; }
+    }
+
+    public class RollupPathChangedModel
+    {
+        public int? IntersectTypeId { get; set; }
         public int? AssetTypeId { get; set; }
     }
 }

@@ -642,6 +642,9 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(relationshiptypes.Count);
 
                 var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -689,6 +692,9 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(relationshiptypes.Count);
 
                 var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -736,6 +742,9 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(relationshiptypes.Count);
 
                 var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
