@@ -1,10 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.extensions;
 using Dapper;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -438,33 +436,6 @@ namespace d360.model
             }
 
             return success;
-        }
-
-        public class AccessTokenResourceCacheModel
-        {
-            public AccessTokenResourceCacheModel()
-            {
-                Companies = new List<int>();
-            }
-
-            public string Username { get; set; }
-            public string Token { get; set; }
-
-            public List<int> Companies { get; set; }
-        }
-
-        public class ApiResourceCacheModel
-        {
-            public ApiResourceCacheModel()
-            {
-                Companies = new List<int>();
-            }
-
-            public string Username { get; set; }
-            public string Key { get; set; }
-            public string Secret { get; set; }
-
-            public List<int> Companies { get; set; }
         }
 
         public Resource ValidateResource(string username, string password)
