@@ -7062,6 +7062,41 @@ d3s-process-diagram {
 
     .process-list-view {
         padding: 16px;
+
+        .search {
+            .fa-search {
+                position: absolute;
+                margin-top: 3px;
+                background-color: #f1f2f3;
+                padding: 6px;
+                border-radius: 4px;
+                margin-left: -29px;
+            }
+        }
+
+        .process-table {
+            thead > tr > th {
+                padding-bottom: 10px !important;
+                padding-top: 10px !important;
+            }
+
+            tbody {
+                color: black;
+
+                td {
+                    padding: 9px 8px !important;
+                }
+            }
+
+            p-tableheadercheckbox, p-tablecheckbox {
+                .ui-chkbox-box {
+                    background: white !important;
+                    color: black;
+                    border: 1px solid #cdd0d2;
+                    border-radius: 2px !important;
+                }
+            }
+        }
     }
 }
 
@@ -7821,28 +7856,4 @@ d3s-process-diagram {
 
 .igx-related-asset-icon:before {
     content: url(\Content\images\related-assets-icon.svg);
-}
-
-.ig-table {
-    thead > tr > th {
-        padding-bottom: 10px !important;
-        padding-top: 10px !important;
-    }
-
-    tbody {
-        color: black;
-
-        td {
-            padding: 9px 8px !important;
-        }
-    }
-
-    p-tableheadercheckbox, p-tablecheckbox {
-        .ui-chkbox-box {
-            background: white !important;
-            color: black;
-            border: 1px solid #cdd0d2;
-            border-radius: 2px !important;
-        }
-    }
 }

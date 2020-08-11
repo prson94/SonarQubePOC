@@ -72,14 +72,14 @@
             </div>
         </div>
         <div #diagram id="process-diagram-placeholder">
-            <div class="empty-overlay" *ngIf="isDiagramLoaded">
-                <div class="content" *ngIf="isCanvasEmpty && isEditMode">
+            <div class="empty-overlay" *ngIf="isDiagramLoaded && isCanvasEmpty">
+                <div class="content" *ngIf="isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-plus"></i>
                     </div>
                     <span>Drag and drop flow objects to start building your diagram</span>
                 </div>
-                <div class="content" *ngIf="isCanvasEmpty && !isEditMode">
+                <div class="content" *ngIf="!isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-pencil"></i>
                     </div>
