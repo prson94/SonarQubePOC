@@ -355,6 +355,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     allowCopy: false,
                     allowUndo: false
                 });
+
         this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
@@ -370,7 +371,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 return this.isEditMode;
             }
         };
-
+        
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
 

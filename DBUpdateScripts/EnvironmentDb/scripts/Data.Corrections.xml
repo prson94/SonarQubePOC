@@ -902,5 +902,14 @@ where		NV.EffectiveDate < V.EffectiveEndDate;
 ]]>
 		</sql>
 	</changeSet>
-
+<changeSet author="TDuric" id="Data.Corrections.GOV-11815">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update api.Execution
+set ProcessingStartedOn = StartedOn,
+Method = 'PUT'
+where Method = 'Process'
+]]>
+		</sql>
+	</changeSet>
  </databaseChangeLog>

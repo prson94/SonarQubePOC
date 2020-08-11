@@ -93,6 +93,13 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
+    deleteUsersFromGroup(groupUid: string, userUid: string): Observable<any> {
+        return this.http.delete(`api/v2/membership/groups/${groupUid}/${userUid}`).pipe(
+            map(response => <any>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
     deleteResourceGroup(
         groupID: number,
         resourceID: number

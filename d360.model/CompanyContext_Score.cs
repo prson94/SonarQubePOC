@@ -212,83 +212,11 @@ namespace d360.model
 
                 #endregion
 
-                List<BulkMetricTemporaryTableModel> results = new List<BulkMetricTemporaryTableModel>();
-
-                int loopSize = 100;
-                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total) / loopSize);
-                int beginItemNumber = 1;
-                int endItemNumber = loopSize;
-
-                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-                {
-                    bool runCompleted = false;
-                    int retryCount = 0;
-
-                    while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
-                    {
-                        using (var trans = Connection.BeginTransaction())
-                        {
-                            try
-                            {
-                                if (Config.GetValue<bool>("UseLegacyScoring"))
-                                {
-                                    #region Load valid items into staging table
-
-                                    Connection.Execute($@"
-merge into  [metrics].StagingScoreItem T
-using       (
-            select      *
-            from        api.ExecutionMetric
-            where       ExecutionID = @ExecutionID 
-                        and ItemNumber between {beginItemNumber} and {endItemNumber}
-                        and Success = 1
-            ) S
-on          (
-                S.AssetUid = T.AssetUid and 
-                S.MetricAssetUid = T.MetricAssetUid and 
-                S.EffectiveDate = T.EffectiveDate
-            )
-when matched and T.Result <> S.Result then
-    update set
-            T.Result = S.Result,
-            T.Archived = 0
-when not matched by target then
-    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
-    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);",
-                                    new { execution.ExecutionID, scoreType },
-                                    transaction: trans);
-
-                                    #endregion      
-                                }
-
-                                results.AddRange(
-                                    Connection.Query<BulkMetricTemporaryTableModel>(
-                                    $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage, IsValidAsset, IsValidMetric, IsValidMetricDate from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-                                    new { execution.ExecutionID },
-                                    transaction: trans)
-                                );
-
-                                trans.Commit();
-
-                                runCompleted = true;
-                            }
-                            catch (Exception ex)
-                            {
-                                trans.Rollback();
-
-                                retryCount++;
-
-                                if (retryCount > API_V2_RETRY_LIMIT)
-                                {
-                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionMetric", ex.GetFullExceptionData(false), 3600);
-                                }
-                            }
-                        }
-                    }
-
-                    beginItemNumber += loopSize;
-                    endItemNumber += loopSize;
-                }
+                var results = Connection.Query<BulkMetricTemporaryTableModel>(
+                    $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage, IsValidAsset, IsValidMetric, IsValidMetricDate from api.ExecutionMetric where ExecutionID = @ExecutionID",
+                    new { execution.ExecutionID }, 
+                    commandTimeout: 1200
+                ).ToList();
 
                 try
                 {
@@ -300,15 +228,15 @@ when not matched by target then
                     // Cleanup
                     Connection.Execute($"delete api.ExecutionMetric where ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
-                    if (!Config.GetValue<bool>("UseLegacyScoring"))
-                    {
-                        var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel { 
-                            AssetUid = r.AssetUid, 
-                            EffectiveDate = r.EffectiveDate, 
-                            MetricAssetUid = r.MetricAssetUid, 
-                            Result = r.Result 
-                        }).ToList();
+                    var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel { 
+                        AssetUid = r.AssetUid, 
+                        EffectiveDate = r.EffectiveDate, 
+                        MetricAssetUid = r.MetricAssetUid, 
+                        Result = r.Result 
+                    }).ToList();
 
+                    if (queueResults.Count > 0)
+                    {
                         SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults);
                     }
                 }

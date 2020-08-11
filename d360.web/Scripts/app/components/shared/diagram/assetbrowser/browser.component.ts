@@ -1316,7 +1316,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.isLoading = false;
                 }
                 else {
-                    this.errorText = "Unable to retrieve Asset Browser content.";
+                    this.errorText = `Unable to retrieve ${(isLineage ? "lineage" : "impact")} content.`;
                     this.isError = true;
                     this.isLoading = false;
                 }

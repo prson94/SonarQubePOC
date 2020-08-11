@@ -19,7 +19,7 @@ import { ModelsService } from '../../services/models.service';
 import { PoliciesService } from '../../services/policies.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
-import { TreeTableModule, TreeTable } from 'primeng/treetable';
+import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 
 @Component({
@@ -37,6 +37,9 @@ import { V2ApiFilters } from '../../models/asset-search.model';
 })
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit {
+
+    rowsPerPage: number = 25;
+
     assetTypeClass: AssetTypeClass;
     assetTypeUid: string;
     objectTypeId: number;
@@ -216,6 +219,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private loadHierarchy() {
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
+                this.isLoading = true;
                 this.modelsService.getModelHierarchy(this.objectTypeId, true, true).subscribe(
                     result => {
                         this.hierarchy = result;
@@ -227,6 +231,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 );
                 break;
             case AssetTypeClass.Policy:
+                this.isLoading = true;
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
@@ -253,7 +258,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 expanded: false,
                 data: root,
                 children: (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.ID))
-            });
+            });            
         }
         return res;
     }
@@ -287,11 +292,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         let nodes: TreeNode[] = [];
 
         // add root nodes
-        for (var i = 0; i < this.treeNodeArray.length; i++) {
+        for (let i = 0; i < this.treeNodeArray.length; i++) {
             if (this.treeNodeArray[i].data.ID && this.treeNodeArray[i].data.ID == id) {
                 this.treeNodeArray.splice(i, 1);
                 return
-            }
+            }            
             nodes.push(this.treeNodeArray[i]);
         }
 
@@ -309,11 +314,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
             //push children
             if (node.children) {
-                for (var i = 0; i < node.children.length; i++) {
+                for (let i = 0; i < node.children.length; i++) {
                     if (node.children[i].data.ID && node.children[i].data.ID == id) {
                         node.children.splice(i, 1);
                         return
-                    }
+                    }                    
                     nodes.push(node.children[i]);
                 }
             }

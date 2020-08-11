@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v3">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -232,8 +232,8 @@ begin
 					A.Object,
 					A.ObjectID,
 					I.ParentID,
-					case @ancestry when 2 then cast(null as varchar(50)) else I.Subject end as ParentObject,
-					case @ancestry when 2 then cast(null as int) else I.SubjectID end as ParentObjectID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID,
 					h.focal,
 					h.[level]+1 as [level]
 			from	h
@@ -246,7 +246,6 @@ begin
 								inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					) I
-			where	(@ancestry = 1) or (@ancestry = 2 and h.[level] < 2)
 		)
 
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
@@ -273,6 +272,11 @@ begin
 					inner join #hopAssets L on L.ID = A.ID
 					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+
+		-- Takes care of case where you have lineage relationships across multiple levels, causing wierd dupes to apppear.
+		delete	T
+		from	#hierarchies T
+				inner join #hierarchies S on S.ParentID = T.ID
 		
 		insert into #hierarchies (Salt, Hop, Uid, ID, [Key], AssetTypeID, focal)
 			select	h.Salt,
