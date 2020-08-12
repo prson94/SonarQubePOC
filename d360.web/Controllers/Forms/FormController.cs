@@ -1735,7 +1735,8 @@ order by Sort, title";
                                     }
                                     else
                                     {
-                                        if (load.LoadColumns.Any(l => l.Name == columnName))
+
+                                        if (load.Action == "P" && load.LoadColumns.Any(l => l.Name == columnName))
                                         {
                                             errorMessages.Add($"Duplicate column found [{columnName}]");
                                         }
