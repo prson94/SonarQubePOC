@@ -18,7 +18,7 @@
                                 Effective From
                             </div>
                             <div (click)="doToggle($event,pc)" class="ig-input calendar" [ngClass]="{'required': !model.EffectiveDate}" >
-                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate | utcDate" [baseZIndex]="20000" [ngModel]="model.EffectiveDate | utcDate" (onModelChange)="model.EffectiveDate = $event" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate | utcDate" [baseZIndex]="20000" [ngModel]="date" (ngModelChange)="date = $event" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
                         </div>
