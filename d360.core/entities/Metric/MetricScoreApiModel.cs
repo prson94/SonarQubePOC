@@ -22,6 +22,7 @@ namespace d360.core.entities.Metric
         public Guid AssetUid { get; set; }
         public List<MetricScoreModel> Scores { get; set; } = new List<MetricScoreModel>();
     }
+
     public class MetricScoreModel
     {
         public DateTime EffectiveDate { get; set; }

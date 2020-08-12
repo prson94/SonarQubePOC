@@ -667,58 +667,56 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
+            else
+                effectiveDate = effectiveDate.Value.ToUniversalTime();
+            string sql = $@"
+declare @lastScoredDate date =  (
+    select      top 1 
+                S.RunDate 
+    from        metrics.score S
+                inner join metrics.Allocation A on A.Uid = S.AllocationUid and S.AssetUid = @assetUid and A.ScoreType = @scoreType 
+    order by    S.RunDate desc
+    )
 
-            string sql = $@"declare @assetTypeUid uniqueidentifier;
-                    select	@assetTypeUid = T.[Uid]
-                    from	dbo.Asset A
-                    		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
+if @effectiveDate > @lastScoredDate
+begin
+    set @effectiveDate = @lastScoredDate
+end
 
-                    declare @lastScoredDate date = (select top 1 RunDate from metrics.score where AssetUid = @assetUid and ScoreType = @scoreType order by RunDate desc)
-
-                    if @effectiveDate > @lastScoredDate
-                    begin
-	                    set @effectiveDate = @lastScoredDate
-                    end
-
-                    select 
-                        ma.[Uid], 
-                        ParentUid,
-                        null,
-                        AV.Name,
-                        AV.Description,
-                        ma.IsGroup,
-                        AV.EffectiveDate, 
-                        COALESCE((SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
-							                            WHERE AV1.AssetUid = ma.Uid 
-							                            and AV1.EffectiveDate > @effectiveDate
-	                        order by EffectiveDate), AV.EffectiveEndDate) 
-                         as [EndDate], 
-                         COALESCE(I.AdjustedWeight, AV.[Weight]) as [Weight],
-                         I.Value,
-                         Al.ScoreType
-                        from metrics.asset ma 
-                                inner join metrics.Allocation Al on Al.Uid = ma.AllocationUid
-                                inner join metrics.AssetVersion AV on AV.AssetUid = ma.uid
-								and AV.EffectiveDate =  (
-                                                        select  max(av1.EffectiveDate) 
-                                                        from    metrics.assetVersion AV1 
-                                                        where   ma.Uid = AV1.AssetUid 
-                                                                and AV1.EffectiveDate <= @effectiveDate
-                                                        )
-								and (AV.EffectiveEndDate is null or AV.EffectiveEndDate >= @EffectiveDate)
-		                        left join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
-                        where   Al.ScoreType = @scoreType 
-						        and Al.AssetTypeUid = @AssetTypeUid 
-						        and (
-								        (
-									        ( endDate >= dateadd(day, 1,@effectiveDate) and I.EffectiveDate <= @effectiveDate) 
-                                            or ma.IsGroup = 1
-                                        )
-								        or ( endDate is null and I.EffectiveDate <= @effectiveDate )
-							        )";
+select  Ma.[Uid], 
+        Ma.ParentUid,
+        null,
+        V.Name,
+        V.Description,
+        Ma.IsGroup,
+        S.EffectiveDate, 
+		S.EndDate,
+        I.AdjustedWeight as Weight,--coalesce(I.AdjustedWeight, V.Weight) as Weight,
+        I.AdjustedMaxWeight,
+		I.Value,
+        A.ScoreType
+from    metrics.Score S 
+		inner join metrics.Allocation A on 
+					A.Uid = S.AllocationUid 
+					and A.ScoreType = @scoreType 
+					--and A.OverrideName is null
+					and S.AssetUid = @assetUid 
+					and S.EffectiveDate <= @effectiveDate 
+					and (S.EndDate >= @effectiveDate or S.EndDate is null)
+		inner join metrics.Asset Ma on Ma.AllocationUid = A.Uid
+		inner join metrics.AssetVersion V on V.AssetUid = Ma.Uid and V.EffectiveDate <= @effectiveDate 
+					and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
+		outer apply (
+			select	Value,
+					AdjustedWeight,
+					AdjustedMaxWeight
+			from	metrics.ScoreItem SI
+					inner join metrics.ScoreItemLink IL on IL.ScoreItemUid = SI.Uid and IL.ScoreUid = S.Uid and SI.AssetVersionUid = V.Uid
+		) I
+where	Ma.IsGroup = 1 or (Ma.IsGroup = 0 and I.Value is not null)";
 
 
-            if (cnn.State != System.Data.ConnectionState.Open)
+            if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
             var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value, scoreType = (int)type }).ToList();
@@ -735,13 +733,11 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
         public List<int> GetScoreTypesForAsset(Guid assetUid)
         {
-            var sql = $@"select distinct ma.scoretype from metrics.Allocation  ma
-                            inner join assettype att on ma.AssetTypeUid = att.[uid]
-                            inner join asset a on att.id = a.AssetTypeID
-							inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = ma.ScoreType
-                        where a.[uid] = @assetUid
-							and ma.[state] = 1
-							and EndDate is null";
+            var sql = $@"
+select  distinct 
+        ma.scoretype 
+from    metrics.Allocation  ma
+		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 and ms.EndDate is null";
             return Company.Query<int>(sql, new { assetUid }).ToList();
         }
 
