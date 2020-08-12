@@ -28,6 +28,7 @@ declare var CurrentResourceID;
                         </div>
                     </div>
                 </main>
+                <ig-browser-warning></ig-browser-warning>
                 <p-toast [baseZIndex]="20000"></p-toast>
               `,
     providers: [MessageService]
@@ -41,6 +42,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     @ViewChild('header', { static: false }) header: ElementRef;
     @ViewChild('sidebar', {static: false, read: ElementRef }) sidebar: ElementRef;
     private timer: any;
+
     constructor(                
         private messagesService: MessagesObservableService,        
         protected headerActionsService: HeaderActionsService,
@@ -76,7 +78,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     private handleMenuChange(v: boolean) {
         this.menuOpen = v;
         this.cookieService.set("MenuState", v + "");
-    }
+    }  
 
     private setMaxHeight() {
         clearTimeout(this.timer);
