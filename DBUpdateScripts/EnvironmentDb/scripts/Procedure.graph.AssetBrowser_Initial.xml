@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v4">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -223,6 +223,8 @@ begin
 					inner join #hopAssets L on L.ID = A.ID
 					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+					left join PredicateIntersect ParentI on ParentI.PredicateType in (3,4) and ParentI.Subject = A.Object and ParentI.SubjectID = A.ObjectID
+			where	ParentI.IntersectID is null
 			union all
 			select	h.Salt,
 					h.Hop,
