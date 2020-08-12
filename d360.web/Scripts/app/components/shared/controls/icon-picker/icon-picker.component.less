@@ -1,5 +1,5 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
-
+@import "../../../../../../Content/styles/_Variables.less";
 
 ig-icon-picker {
     p-dropdown .ui-dropdown {
@@ -12,7 +12,7 @@ ig-icon-picker {
 
     .ui-dropdown {
         .ui-dropdown-trigger {
-            background-color: #f1f1f3;
+            background-color: @igx-grey-t5;
             width: 24px;
             height: 24px;
             line-height: 24px;
@@ -23,6 +23,7 @@ ig-icon-picker {
             margin-right: 3px;
             border-radius: 2px;
             font-size: 10px;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -45,10 +46,11 @@ ig-icon-picker {
             width: 24px;
             height: 24px;
             line-height: 24px;
-            background: #f1f1f3;
+            background: @igx-grey-t5;
             text-align: center;
             font-size: 16px;
             color: #202020;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -64,6 +66,7 @@ ig-icon-picker {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+
             &.ui-placeholder {
                 color: #6f7482;
                 position: relative;
@@ -78,7 +81,6 @@ ig-icon-picker {
             height: 32px;
             font-weight: 700;
         }
-
     }
 
     .ui-state-focus {
@@ -94,7 +96,7 @@ ig-icon-picker {
     height: 24px;
     line-height: 24px;
     text-align: center;
-    background: #f1f2f3;
+    background: @igx-grey-t5;
     color: #202020;
     border-radius: 2px;
     margin-right: 5px;

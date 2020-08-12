@@ -65,8 +65,7 @@ namespace d360.core.entities.Process
         {
             get
             {
-                decimal value = 0;
-                decimal.TryParse(this["StepNo"], out value);
+                decimal.TryParse(this["StepNo"], out decimal value);
                 return value;
             }
         }
