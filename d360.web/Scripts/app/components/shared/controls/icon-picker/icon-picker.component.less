@@ -2,6 +2,10 @@
 @import "../../../../../../Content/styles/_Variables.less";
 
 ig-icon-picker {
+    &:focus {
+        outline-color: @ig-focus-color;
+    }
+
     p-dropdown .ui-dropdown {
         background: #ffffff;
         border: 1px solid #bdbfc6;
@@ -60,7 +64,6 @@ ig-icon-picker {
             font-family: "Source Sans Pro", sans-serif;
             background: none;
             height: 30px;
-            line-height: 30px;
             padding-left: 8px;
             padding-right: 62px;
             white-space: nowrap;
@@ -70,7 +73,6 @@ ig-icon-picker {
             &.ui-placeholder {
                 color: #6f7482;
                 position: relative;
-                top: -4px;
                 border-radius: 4px;
             }
         }
