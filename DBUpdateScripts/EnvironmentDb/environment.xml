@@ -297,7 +297,6 @@
 	<include file="scripts/Function.utility.DeriveIntersectNameWrapper.xml"/>	<!--Function used for computed column-->
 	<include file="scripts/Function.utility.DeriveIntersectTypeName.xml"/>		<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
-	<include file="scripts/View.dbo.MapRuleItemDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationInvitationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationResourceDetail.xml"/>

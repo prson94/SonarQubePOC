@@ -5,6 +5,22 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="MDonato" id="Data.Corrections.GOV-11768">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+drop view if exists [dbo].MapRuleItemDetail;
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+
+		]]>
+    </rollback>
+  </changeSet>
+  
   <changeSet author="MDonato" id="Data.Corrections.GOV-10308">
     <sql dbms="mssql"
             endDelimiter="\nGO"
