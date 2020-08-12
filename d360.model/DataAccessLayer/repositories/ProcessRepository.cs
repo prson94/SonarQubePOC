@@ -161,6 +161,8 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            
+
             var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
                 select apd.Diagram  as json from asset a 
 	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
@@ -205,6 +207,8 @@ namespace d360.model.DataAccessLayer
                 item.Add("icon", "fa-exclamation-triangle");
                 item.Add("category", "deleted-node");
             }
+
+            model.nodeDataArray = model.nodeDataArray.OrderBy(x => x.StepNo).ToList();
 
             return model;
         }

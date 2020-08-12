@@ -764,6 +764,7 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.html" />
@@ -877,6 +878,7 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-label-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.ts" />

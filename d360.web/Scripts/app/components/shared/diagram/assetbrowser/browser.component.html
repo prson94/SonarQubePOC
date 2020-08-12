@@ -12,19 +12,25 @@
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
 
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
-                            <button igButton icon="igx-related-asset-icon" class="top-spacer-4" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
-                            <div class="button-spacer"></div>
-                            <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
-                            <div class="button-spacer"></div>
+                            <ng-container *ngIf="!isProcessDiagramEmpty()">
+                                <button igButton icon="igx-related-asset-icon" class="top-spacer-4" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                                <div class="button-spacer"></div>
+                                <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
+                                <div class="button-spacer"></div>
+                            </ng-container>
                             <button *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" tooltip="Edit Process Diagram" (click)="editProcess()"></button>
                         </ng-container>
                     </div>
 
                 </div>
                 <div class="controls-right">
+                    <ng-container *ngIf="displayConfiguration.DiagramType == 3 && !isProcessDiagramEmpty()">
+                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')" tooltip="Diagram View"></button>
+                        <button igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')" tooltip="List View"></button>
+                        <div class="button-spacer"></div>
+                        <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="openProcessDiagramInfo()"></button>
+                    </ng-container>
                     <div class="asset-browser-button-group">
-                        <button *ngIf="displayConfiguration.DiagramType == 3" type="button" title="Information Panel" aria-label="Information Panel" (click)="openProcessDiagramInfo()" [class]="'icon mr8' + (processDiagramRef && processDiagramRef.isInfoPanelOpened ? ' selected' : '')"><i class="fa fa-info-circle"></i></button>
-
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
                                                  [diagramType]="displayConfiguration.DiagramType"
                                                  [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"

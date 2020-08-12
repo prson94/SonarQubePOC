@@ -61,6 +61,15 @@ namespace d360.core.entities.Process
             }
         }
 
+        public decimal StepNo
+        {
+            get
+            {
+                decimal.TryParse(this["StepNo"], out decimal value);
+                return value;
+            }
+        }
+
         public bool IsNodeValid
         {
             get
