@@ -13,7 +13,7 @@
     <div class="gallery-section">
         <h4>Basic with colors from the DB</h4>
         <div>
-            <ig-color-picker [loadDefaultColors]="true" (selectedColorChange)="onColorSelect($event,1)"></ig-color-picker>
+            <ig-color-picker [colors]="defaultColors" (selectedColorChange)="onColorSelect($event,1)"></ig-color-picker>
             <div>Chosen color: {{selectedColorBasic}}</div>
         </div>
     </div>
@@ -27,17 +27,41 @@
     <div class="gallery-section">
         <h4>Color chosen passed in with colors from the DB</h4>
         <div>
-            <ig-color-picker [loadDefaultColors]="true" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)"></ig-color-picker>
+            <ig-color-picker [colors]="defaultColors" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)"></ig-color-picker>
             <div>Chosen color: {{selectedColorBasic2}}</div>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Color chosen and disabled</h4>
         <div>
-            <ig-color-picker [loadDefaultColors]="true" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)" [disabled]="true"></ig-color-picker>
+            <ig-color-picker [colors]="defaultColors" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)" [disabled]="true"></ig-color-picker>
             <div>Chosen color: Sky(disabled)</div>
         </div>
     </div>
+    <div class="gallery-section">
+        <h4>Tab index</h4>
+        <div>
+            <p>
+                Click on the first input then tab using your tab keys(space bar to open dropdown).
+            </p>
+            <div class="row">
+                <input igInput type="text" tabindex="1" />
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <input igInput type="text" tabindex="2" />
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <ig-color-picker [colors]="defaultColors" [tabindex]="3" [selectedColor]="amodel" ></ig-color-picker>
+                <div>tab index of 3</div>&nbsp;
+            </div>
+            <div class="row">
+                <input igInput type="text" tabindex="4" />
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div class="tile tile-detail">

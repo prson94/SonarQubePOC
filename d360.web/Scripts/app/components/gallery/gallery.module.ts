@@ -23,7 +23,7 @@ import { TableModule } from 'primeng/table';
 import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 import { GalleryInputComponent } from './gallery.input.component';
 import { GalleryColorPickerComponent } from './gallery.color-picker.component';
-import { IgColorPickerModule } from '../shared/small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 
 
 @NgModule({

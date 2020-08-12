@@ -1,0 +1,297 @@
+﻿/*
+   d3s-color-picker
+*/
+
+@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.d3s-color-picker {
+	min-width: 248px;
+	display: inline-flex;
+	
+}
+
+.d3s-color-picker.multi {
+	max-width: unset;
+}
+
+.d3s-color-picker .ui-dropdown,
+.d3s-color-picker .ui-multiselect {
+    background: @ig-white;
+    border: @ig-field-border;
+    height: @ig-field-height;
+     border-radius: @ig-field-border-radius;
+	width: 100%;
+	min-width: 248px;
+}
+
+.d3s-color-picker .ui-dropdown.required{
+    background: @ig-lightblue-t5;
+    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+    border-color: @ig-field-border-color;
+}
+
+.d3s-color-picker .ui-dropdown:not(.ui-state-disabled):hover
+.d3s-color-picker .ui-multiselect:not(.ui-state-disabled):hover {
+    border-color: @ig-white;
+}
+
+.d3s-color-picker .ui-dropdown:not(.ui-state-disabled).ui-state-focus,
+.d3s-color-picker .ui-multiselect:not(.ui-state-disabled).ui-state-focus {
+    outline: 0 none;
+    outline-offset: 0;
+    -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+    -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+    border-color: @ig-midblue;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-label,
+.d3s-color-picker .ui-multiselect .ui-multiselect-label {
+    font-family: 'Source Sans Pro', sans-serif;
+    background: none;
+    height: 24px;
+    line-height: 24px;
+    padding-left: 8px;
+    padding-right: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-trigger,
+.d3s-color-picker .ui-multiselect .ui-multiselect-trigger {
+    background-color: @ig-grey-t5;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    padding: 0;
+    color: @ig-black;
+    margin-top: 3px;
+    margin-right: 3px;
+    border-radius: 2px;
+    font-size: 10px;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-trigger:hover,
+.d3s-color-picker .ui-multiselect .ui-multiselect-trigger:hover {
+    background-color: @ig-grey-t4;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-trigger:active,
+.ui-multiselect .ui-multiselect-trigger:active{
+    background-color: @ig-grey-t3;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-clear-icon  {
+  right: 30px;
+  top: 3px;
+  margin-top: 0;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background: @ig-grey-t5;
+  color:@ig-grey;
+  text-align: center;
+  font-size: 16px;
+  color: @ig-black;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-clear-icon:hover  {
+  background-color: @ig-grey-t4;
+}
+
+.d3s-color-picker .ui-dropdown .ui-dropdown-clear-icon:active {
+    background-color: @ig-grey-t3;
+}
+
+.d3s-color-picker .ui-dropdown.ui-dropdown-clearable .ui-dropdown-label {
+  padding-right: 100px;
+}
+
+body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeholder {
+	color: @ig-placeholder-color !important;
+}
+
+.d3s-color-picker .ui-dropdown-panel, 
+.igx-blue.ui-dropdown-panel,
+.d3s-color-picker .ui-multiselect-panel {
+	padding: 0;
+	border: none;
+	background-color: @ig-white;
+	-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	-moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+	max-width: 600px;
+}
+
+.d3s-color-picker .ui-multiselect .ui-chkbox-box {
+    border: @ig-field-border;
+    background: white;
+    color: @ig-white;
+    line-height: 1px;
+    border-radius: 2px !important;
+}
+.d3s-color-picker .ui-multiselect .ui-chkbox-box .pi{
+    font-size: 1.1em;
+    font-weight: bold;
+    color: @ig-black;
+}
+.d3s-color-picker .ui-multiselect .ui-multiselect-header {
+    display: flex;
+}
+.d3s-color-picker .ui-multiselect .ui-multiselect-header .ui-chkbox {
+    display: flex;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-top: 8px;
+    margin-left: 4px;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container, 
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container {
+  position: relative;
+  padding: 4px;
+  border-bottom: 1px solid @ig-grey-t5;
+  color: @ig-black;
+  background-color: @ig-white;
+  margin: 0;
+  width: 100%;
+  margin-right: 22px;
+}
+.d3s-color-picker .pi {
+    font-size: 1.25em;
+}
+.d3s-color-picker .ui-inputtext:enabled:focus:not(.ui-state-error) {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+    border-color: @ig-midblue;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter,
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container .ui-inputtext {
+  width: 100%;
+  padding-right: 32px;
+   border-radius: @ig-field-border-radius;
+  height: @ig-field-height;
+  padding-left: 8px;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon,
+.igx-blue.ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container .ui-multiselect-filter-icon{
+  width: 24px;
+  height: 24px;
+  line-height: 28px;
+  text-align: center;
+  color: @ig-black;
+  top: 6px;
+  right: 9px;
+  color: @ig-black;
+   border-radius: @ig-field-border-radius;
+  margin-left: auto;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items {
+    padding: 0;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item, 
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item, 
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group{
+  padding: 8px 8px;
+  color: @ig-black;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 0 8px;
+  height: @ig-field-height;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item.ui-state-highlight, 
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group.ui-state-highlight,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item.ui-state-highlight, 
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group.ui-state-highlight,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item.ui-state-highlight, 
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group.ui-state-highlight{
+  color: @ig-black;
+  background-color: @ig-lightblue-t2;
+  border-radius: 0px;
+}
+
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item.ui-state-highlight{
+    border-color: @ig-midblue;
+}
+
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:focus,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:focus{
+    border: none !important;
+    outline: none !important;
+}
+
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.igx-blue.ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover {
+    color: @ig-black;
+    background-color: @ig-lightblue-t4;
+    border-radius: 0px;
+}
+
+.ui-dropdown-empty-message, .ui-multiselect-empty-message {
+  font-family: 'Source Sans Pro', sans-serif;
+  padding-left: 8px;
+  color: @ig-grey;
+}
+
+.d3s-color-picker .ui-corner-all {
+    -moz-border-radius: @ig-field-border-radius;
+    -webkit-border-radius: @ig-field-border-radius;
+     border-radius: @ig-field-border-radius;
+}
+
+.d3s-color-picker .ui-corner-top {
+    -moz-border-radius-topleft: @ig-field-border-radius;
+    -webkit-border-top-left-radius: @ig-field-border-radius;
+    border-top-left-radius: @ig-field-border-radius;
+    -moz-border-radius-topright: @ig-field-border-radius;
+    -webkit-border-top-right-radius: @ig-field-border-radius;
+    border-top-right-radius: @ig-field-border-radius;
+}
+
+.d3s-color-picker .ui-corner-bottom {
+    -moz-border-radius-bottomleft: @ig-field-border-radius;
+    -webkit-border-bottom-left-radius: @ig-field-border-radius;
+    border-bottom-left-radius: @ig-field-border-radius;
+    -moz-border-radius-bottomright: @ig-field-border-radius;
+    -webkit-border-bottom-right-radius: @ig-field-border-radius;
+    border-bottom-right-radius: @ig-field-border-radius;
+}
+
+.d3s-color-picker .ui-corner-left {
+    -moz-border-radius-topleft: @ig-field-border-radius;
+    -webkit-border-top-left-radius: @ig-field-border-radius;
+    border-top-left-radius: @ig-field-border-radius;
+    -moz-border-radius-bottomleft: @ig-field-border-radius;
+    -webkit-border-bottom-left-radius: @ig-field-border-radius;
+    border-bottom-left-radius: @ig-field-border-radius;
+}
+
+.d3s-color-picker .ui-corner-right {
+    -moz-border-radius-topright: @ig-field-border-radius;
+    -webkit-border-top-right-radius: @ig-field-border-radius;
+    border-top-right-radius: @ig-field-border-radius;
+    -moz-border-radius-bottomright: @ig-field-border-radius;
+    -webkit-border-bottom-right-radius: @ig-field-border-radius;
+    border-bottom-right-radius: @ig-field-border-radius;
+}

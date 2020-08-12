@@ -19,7 +19,7 @@ import { TableModule } from 'primeng/table';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { TooltipModule } from 'primeng/tooltip';
-import { IgColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
 import { SynonymsTile } from './synonyms.tile';
 import { FormsModule } from '@angular/forms';
 import { AutoCompleteModule } from 'primeng/autocomplete';

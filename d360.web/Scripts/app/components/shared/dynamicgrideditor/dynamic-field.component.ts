@@ -25,14 +25,13 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
-import { filter } from 'rxjs/operators';
-import { clearLine } from 'readline';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-dynamic-field',
     templateUrl: './dynamic-field.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, TagService]
+    providers: [FieldsObservableService, TagService, AssetService]
 })
 
 export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
@@ -88,10 +87,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
 
     private component_uid: string = '';
+    defaultColorOptions: SelectItem[] = [];
 
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
+        private assetService: AssetService,
         private ref: ChangeDetectorRef,
         private tagService: TagService
     ) {
@@ -346,7 +347,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
 
         if (this.field.FieldType == 'Color') {
+            this.assetService.getAllColors().subscribe(x => {
+                this.defaultColorOptions = x;
+            });
             this.colorValue = this.field.Value;
+
         }
 
         if (this.field.FieldType == 'Relationship') {

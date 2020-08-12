@@ -12,7 +12,7 @@ import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { PipesModule } from '../../pipes/pipes.module';
-import { IgColorPickerModule } from './small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from './controls/color-picker/color-picker.module';
 
 @NgModule({
     declarations: [

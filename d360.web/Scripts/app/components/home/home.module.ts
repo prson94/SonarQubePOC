@@ -24,7 +24,7 @@ import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { IgColorPickerModule } from '../shared/small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 
 
 @NgModule({

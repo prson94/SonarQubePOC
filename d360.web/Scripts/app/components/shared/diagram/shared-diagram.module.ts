@@ -75,7 +75,7 @@ import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-typ
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
-import { IgColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
 import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
 import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
