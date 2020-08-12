@@ -36,10 +36,7 @@ namespace d360.model
         #region Caching Methods
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
-        internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
-        internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
-
+        
         internal string key(string token)
         {
             return string.Format(token, CurrentCompanyID);
@@ -217,11 +214,7 @@ namespace d360.model
         public DbSet<MapType> MapTypes { get; set; }
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-
-        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
-
-        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
-
+        
         public DbSet<MapItem> MapItems { get; set; }
 
         public DbSet<MapRule> MapRules { get; set; }
