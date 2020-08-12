@@ -22,6 +22,7 @@ export class GalleryTagPickerComponent implements OnInit {
 
 
     private value: SelectItem[] = [];
+    private copyOfValue: SelectItem[] = [];
     private formValue;
 
 
@@ -30,6 +31,7 @@ export class GalleryTagPickerComponent implements OnInit {
     constructor(private ref: ChangeDetectorRef) { }
 
     ngOnInit(): void {
+        
         this.properties = new Array();
         this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the tag picker control. Tag values are separated by '|'.", Default: "null" });
         this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "null" });
@@ -41,5 +43,9 @@ export class GalleryTagPickerComponent implements OnInit {
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });
         this.events.push({ Name: "onSelect", Description: "Callback to invoke when a tag suggestion is selected or new tag is added." });
         this.events.push({ Name: "onUnselect", Description: "Callback to invoke when a tag is removed from selection." });
+    }
+
+    basicValueChanged($event) {
+        this.copyOfValue = JSON.parse(JSON.stringify(this.value));
     }
 }
