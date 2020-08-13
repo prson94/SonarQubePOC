@@ -833,6 +833,7 @@ order by r.Name";
         {
             try
             {
+                var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString() };
                 var id = parseIntField(form, "ID");
                 var uid = parseTextField(form, "IntersectTypeUid");
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
@@ -842,7 +843,7 @@ order by r.Name";
 
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type == "Relationship" && i.LookupObjectType == "IntersectType").Count() > 0)
+                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && intersectTypes.Contains(i.Type) && i.LookupObjectType == "IntersectType").Count() > 0)
                     return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
                 if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\""+ uid + "\"")).Count() > 0)                
                 {

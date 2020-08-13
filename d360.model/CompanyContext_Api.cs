@@ -2907,6 +2907,14 @@ where   ExecutionID = @ExecutionID
                                         [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
                                         inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
                                         and 
+					                    EDR.Success is null                                
+
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='RefListRelationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
 					                    EDR.Success is null
 
                             delete  T
@@ -5005,10 +5013,10 @@ from    [Intersect] T
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
                                             new { execution.ExecutionID }, commandTimeout: timeout);
 
-            //check for relationship fields
+            //check for relationship, RefListRelationship fields
             Connection.Execute(@"
                                 update	T
-                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship fields associated with this relationship.',
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' fields associated with this relationship.',
 	                                    T.Success = 0
                                 from	api.ExecutionDeletedRelationshipType T
                                         inner join
@@ -5019,7 +5027,7 @@ from    [Intersect] T
                                             from 
                                                     FieldType FT 
                                                     inner join 
-                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship')
                                                     inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
                                                     and 
 					                                EDR.Success is null
@@ -5027,7 +5035,7 @@ from    [Intersect] T
                                                     EDR.[Cascade]=0
                                             group by ExecutionID, ItemNumber			                                
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
-                                            new { execution.ExecutionID }, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, commandTimeout: timeout);            
 
         }
 
