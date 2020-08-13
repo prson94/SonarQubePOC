@@ -118,7 +118,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         case "Lookup":
                             condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
                             condition.SingleValue = (condition.Values[0].Value);
-                            console.log(condition.lookupOptions);
                             break;
                         case "Date":
                         case "DateTime":
@@ -209,7 +208,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 switch (field.Type) {
                     case 'Lookup':
                         if (field.Values) {
-                            console.log(field.Values);
                             if (field.Values.length > 0) {
                                 if (c.Values) {
                                     if (c.Values[0].Value) {
