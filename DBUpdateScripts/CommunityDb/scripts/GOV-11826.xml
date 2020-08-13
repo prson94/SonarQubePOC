@@ -1,31 +1,30 @@
 <databaseChangeLog
+    
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.reporting.Dates-v2">
-  <comment>GOV-11826</comment>
+  <changeSet author="Puneet Gupta" id="GOV-11826">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Dates')
-BEGIN
-	EXEC sp_rename 'reporting.Dates', 'Dates_backup';
-END
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'plugin' AND TABLE_NAME = 'ClientFusionType')
+			BEGIN
+				exec sp_rename 'plugin.ClientFusionType', 'ClientFusionType_backup';
+			END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Dates_backup')
-BEGIN
-	EXEC sp_rename 'reporting.Dates_backup', 'Dates'
-END
-		]]>
+	<![CDATA[	
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'plugin' AND TABLE_NAME = 'ClientFusionType_backup')
+			BEGIN
+				exec sp_rename 'plugin.ClientFusionType_backup', 'ClientFusionType'
+			END
+]]>
 	</rollback>
   </changeSet>
-
-</databaseChangeLog>
+  </databaseChangeLog>
