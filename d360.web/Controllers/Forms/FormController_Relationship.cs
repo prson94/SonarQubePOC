@@ -833,7 +833,7 @@ order by r.Name";
         {
             try
             {
-                var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString() };
+                var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString(), DataType.FieldFromRelationship.ToString() };
                 var id = parseIntField(form, "ID");
                 var uid = parseTextField(form, "IntersectTypeUid");
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
