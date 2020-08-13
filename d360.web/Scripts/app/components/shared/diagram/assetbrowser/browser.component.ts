@@ -1716,9 +1716,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var highlight = data.text.substring(0, idx);
             var text = data.text.substring(idx, data.text.length);
 
-            if (data.text.length > idx && (data.text[idx] == ' ' || phrase[idx - 1] == ' ')) {
-                m.set(data, 'spacer_visible', true);
-            }
             m.set(data, 'highlight', highlight);
             m.set(data, 'highlight_visible', true);
             m.set(data, 'text', text);
@@ -1747,10 +1744,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (node instanceof go.Node) {
                 var nodeData = node.data;
                 node.isHighlighted = false;
-                if (nodeData.isGroup) {
+                //if (nodeData.assetUid == this.emptyUid) {//.isGroup) {
                     //This is grouping, do nothing with it (AssetType grouping)
-                }
-                else if (phrase != '') {
+                //}
+                //else 
+                if (phrase != '') {
                     self.searchableProps.forEach(prop => {
                         if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
                             foundResults.push(node);
@@ -1800,7 +1798,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 m.set(data, 'highlight', '');
                 m.set(data, 'highlight_visible', false);
-                m.set(data, 'spacer_visible', false);
                 m.set(data, 'text', fullText);
             }, 'update_highlight');
         } catch (e) {
@@ -1923,6 +1920,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
+                    ),
+                    //This TextBlock is placeholder for highlighted text
+                    this.g(
+                        go.TextBlock,
+                        {
+                            editable: false,
+                            font: this.fontLabel,
+                            stroke: this.fontLabelColor,
+                            visible: false,
+                            maxLines: this.textMaxLines,
+                            overflow: this.textOverflowStyle, 
+                            margin: new go.Margin(0,-4,0,0)
+                        },
+                        new go.Binding("text", "highlight").makeTwoWay(),
+                        new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                        new go.Binding("background", "highlight_background").makeTwoWay()
                     ),
                     this.g(
                         go.TextBlock,
@@ -2430,21 +2443,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         stroke: this.fontLabelColor,
                         visible: false,
                         maxLines: this.textMaxLines,
-                        maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.template_Tooltip(),
-                        margin: 0
+                        margin: new go.Margin(0, -1, 0, 0)
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
                     new go.Binding("background", "highlight_background").makeTwoWay()
-                ),
-                //This shape block is for ensuring space between highlighted text and rest of the text
-                //We need this as TextBlock trims spaces
-                this.g(
-                    go.Shape,
-                    { width: 2, height: 0, stroke: "transparent", visible: false },
-                    new go.Binding("visible", "spacer_visible").makeTwoWay()
                 ),
                 this.g(
                     go.TextBlock,
@@ -2505,21 +2509,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         stroke: this.fontLabelColor,
                         visible: false,
                         maxLines: this.textMaxLines,
-                        maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.template_Tooltip(),
-                        margin: 0
+                        margin: new go.Margin(0, -1, 0, 0)
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
                     new go.Binding("background", "highlight_background").makeTwoWay()
-                ),
-                //This shape block is for ensuring space between highlighted text and rest of the text
-                //We need this as TextBlock trims spaces
-                this.g(
-                    go.Shape,
-                    { width: 2, height: 0, stroke: "transparent", visible: false },
-                    new go.Binding("visible", "spacer_visible").makeTwoWay()
                 ),
                 this.g(
                     go.TextBlock,
@@ -2857,6 +2852,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "icon"),
                             new go.Binding("visible", "showIcon")
+                        ),
+                        //This TextBlock is placeholder for highlighted text
+                        this.g(
+                            go.TextBlock,
+                            {
+                                editable: false,
+                                font: this.fontLabel,
+                                stroke: this.fontLabelColor,
+                                visible: false,
+                                maxLines: this.textMaxLines,
+                                overflow: this.textOverflowStyle,
+                                margin: new go.Margin(0, -4, 0, 0)
+                            },
+                            new go.Binding("text", "highlight").makeTwoWay(),
+                            new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                            new go.Binding("background", "highlight_background").makeTwoWay()
                         ),
                         this.g(
                             go.TextBlock,
