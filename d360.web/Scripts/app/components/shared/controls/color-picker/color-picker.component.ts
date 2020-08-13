@@ -1,5 +1,5 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -14,7 +14,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'ig-color-picker',
     template: `
-                <div [ngStyle]="style" [class]="styleClass">
+                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass">
                     <p-dropdown [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors" [disabled]="disabled">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
@@ -34,6 +34,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     providers: [COLORPICKER_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./color-picker.less'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ColorPickerComponent implements ControlValueAccessor, OnInit {
@@ -51,15 +52,17 @@ export class ColorPickerComponent implements ControlValueAccessor, OnInit {
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
+    protected value: string;
 
-    constructor() {
+    constructor(private ref: ChangeDetectorRef) {
     }
 
     writeValue(obj: string): void {
-        
+
         this.selectedColor = obj;
         this.onModelChange(this.selectedColor);
         this.selectedColorChange.emit(this.selectedColor);
+        this.ref.markForCheck();
     }
 
     registerOnChange(fn: any): void {
@@ -76,11 +79,12 @@ export class ColorPickerComponent implements ControlValueAccessor, OnInit {
 
 
     ngOnInit() {
-        this.styleClass = 'd3s-color-picker ' + this.styleClass;
+
     }
 
     private itemChanged(item: any) {
-        this.selectedColorChange.emit(item.value);
+        this.onModelChange(this.selectedColor);
         this.selectedColor = item.value;
+        this.selectedColorChange.emit(item.value);
     }
 };

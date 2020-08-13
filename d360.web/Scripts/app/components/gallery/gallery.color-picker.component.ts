@@ -30,6 +30,9 @@ export class GalleryColorPickerComponent implements OnInit {
     private selectedColorCustom = "no color selected";
     private chosenColor: string = "Sky";
     private selectedColorBasic2 = this.chosenColor;
+
+    private formVal: string;
+
     private customColors: SelectItem[] = [
         { label: "custom label 1", value: "unique value 1", title: "#169b62" },
         { label: "custom label 2", value: "unique value 2", title: "#ffffff" },
