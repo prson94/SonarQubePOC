@@ -54,7 +54,7 @@ export class MetricAssetVersionConditionItemViewModel {
     OperatorText: string;
     IsEditMode: boolean; 
     operatorOptions: any[];
-
+    lookupOptions: any[];
     SingleValue: any; //For non-list fields
 }
 
