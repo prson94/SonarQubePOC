@@ -2917,6 +2917,14 @@ where   ExecutionID = @ExecutionID
                                         and 
 					                    EDR.Success is null
 
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='FieldFromRelationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
+					                    EDR.Success is null
+
                             delete  T
                             from    [Intersect] T
                                     inner join [intersecttype] I on
@@ -5027,7 +5035,7 @@ from    [Intersect] T
                                             from 
                                                     FieldType FT 
                                                     inner join 
-                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship')
+                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship', 'FieldFromRelationship')
                                                     inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
                                                     and 
 					                                EDR.Success is null
