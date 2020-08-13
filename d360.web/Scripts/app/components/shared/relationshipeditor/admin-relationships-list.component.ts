@@ -127,7 +127,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
-        if (changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) {
+        if ((changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue != changes['objectID'].previousValue)) {
             this.getRelationships();
         }
     }
@@ -163,7 +163,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         if (this.objectID && this.objectType) {
             this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
                 .subscribe(result => {
-                    this.relationships = result;
+                    this.relationships = result ?? [];
                     this.isLoading = false;
                     if (this.relationships) {
                         if (this.relationships.length > 0) {
@@ -176,7 +176,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         } else {
             this.relationshipsService.getRelationshipTypes()
                 .subscribe(result => {
-                    this.relationships = result;
+                    this.relationships = result ?? [];
                     this.filterResults();
                     this.isLoading = false;
                     if (this.relationships) {
