@@ -118,7 +118,7 @@ select  Al.AllocationUid,
 		L.*,
         Si.AssetVersionUid as MetricAssetVersionUid,
 		Si.ConditionUid,
-        Si.EffectiveDate,
+        S.EffectiveDate,
 		Si.Value,
 		Si.AdjustedWeight,
 		Si.AdjustedMaxWeight
@@ -147,7 +147,7 @@ from    (
 
 select  distinct 
         L.ScoreItemUid,
-        I.MetricAssetUid,
+        V.AssetUid as MetricAssetUid,
         Al.AssetUid,
         Al.EffectiveDate
 from    (
@@ -157,7 +157,8 @@ from    (
 		) Al
         inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate = Al.EffectiveDate
         inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-        inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid", transaction: trans, commandTimeout: 900);
+        inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+        inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid", transaction: trans, commandTimeout: 900);
                     models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
                     fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
                     allPreviousScoreItems = supportingDataRequest.Read<AssetAllocationPreviousResult>().ToList();
@@ -309,6 +310,27 @@ from	metrics.Asset A
                             l.ScoreUid = assetScore.Uid;
                         });
 
+                        var assetScoreGroupUids = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid, i.MetricAssetVersionUid }).ToList();
+                        assetScoreGroupUids.ForEach(g =>
+                        {
+                            if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
+                            {
+                                // See if there are any child measures that we have. 
+                                // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
+                                if (
+                                    !(
+                                    from am in allMeasures
+                                    join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
+                                    where am.MetricParentAssetUid == g.MetricAssetUid
+                                    select si
+                                    ).Any()
+                                    )
+                                {
+                                    assetScoreItems.RemoveAll(si => si.MetricAssetUid == g.MetricAssetUid);
+                                }
+                            }
+                        });
+
                         // Now add to master collection which will be sent to database.
                         scoreItemLinksToAdd.AddRange(assetScoreItemLinks);
                         scoresItemsToAdd.AddRange(assetScoreItems);
@@ -334,15 +356,10 @@ from	metrics.Asset A
 
                             var scoreItems = new DataTable();
                             scoreItems.Columns.Add("Uid", typeof(Guid));
-                            scoreItems.Columns.Add("ScoreUid", typeof(Guid));
-                            scoreItems.Columns.Add("AssetUid", typeof(Guid));
-                            scoreItems.Columns.Add("MetricAssetUid", typeof(Guid));
-                            scoreItems.Columns.Add("EffectiveDate", typeof(DateTime));
                             scoreItems.Columns.Add("UpdatedOn", typeof(DateTime));
                             scoreItems.Columns.Add("Value", typeof(bool));
                             scoreItems.Columns.Add("AdjustedWeight", typeof(decimal));
                             scoreItems.Columns.Add("RunDate", typeof(DateTime));
-                            scoreItems.Columns.Add("EndDate", typeof(DateTime));
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
@@ -396,20 +413,14 @@ from	metrics.Asset A
                                     Value decimal(5,3) null,
                                     RunDate datetime not null,
                                     EndDate date null,
-                                    ScoreType int not null,
                                     AllocationUid uniqueidentifier null
                                 );
                                 create table #ScoreItems (
 	                                Uid uniqueidentifier NOT NULL,
-                                    ScoreUid uniqueidentifier NOT NULL,
-	                                AssetUid uniqueidentifier NOT NULL,
-	                                MetricAssetUid uniqueidentifier NOT NULL,
-	                                EffectiveDate date NOT NULL,
 	                                UpdatedOn datetime NOT NULL,
 	                                Value bit NOT NULL,
 	                                AdjustedWeight decimal(5, 3) NULL,
 	                                RunDate datetime NULL,
-	                                EndDate date NULL,
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
@@ -522,7 +533,7 @@ from	metrics.Asset A
                                 "on (S.Uid = T.Uid) " +
                                 "when matched then " +
                                 "update set " +
-                                "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.UpdatedOn = S.UpdatedOn, " +
+                                "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
                                 "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.Evidence = S.Evidence, " +
                                 "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
@@ -533,10 +544,10 @@ from	metrics.Asset A
                             await company.ExecuteAsync(
                                 "merge metrics.ScoreItemLink as T " +
                                 "using #ScoreItemLinks as S " +
-                                "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.Uid) " +
+                                "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
                                 "when not matched then " +
                                 "insert (ScoreUid, ScoreItemUid) " +
-                                "values (S.ScoreUid, S.Uid);", transaction: trans);
+                                "values (S.ScoreUid, S.ScoreItemUid);", transaction: trans);
 
                             trans.Commit();
 

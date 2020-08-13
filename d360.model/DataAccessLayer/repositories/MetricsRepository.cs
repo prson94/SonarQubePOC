@@ -669,6 +669,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 effectiveDate = DateTime.UtcNow.Date;
             else
                 effectiveDate = effectiveDate.Value.ToUniversalTime();
+            
             string sql = $@"
 declare @lastScoredDate date =  (
     select      top 1 
@@ -683,37 +684,35 @@ begin
     set @effectiveDate = @lastScoredDate
 end
 
-select  Ma.[Uid], 
-        Ma.ParentUid,
-        null,
-        V.Name,
-        V.Description,
-        Ma.IsGroup,
-        S.EffectiveDate, 
-		S.EndDate,
-        I.AdjustedWeight as Weight,--coalesce(I.AdjustedWeight, V.Weight) as Weight,
-        I.AdjustedMaxWeight,
-		I.Value,
-        A.ScoreType
-from    metrics.Score S 
-		inner join metrics.Allocation A on 
-					A.Uid = S.AllocationUid 
-					and A.ScoreType = @scoreType 
-					--and A.OverrideName is null
-					and S.AssetUid = @assetUid 
-					and S.EffectiveDate <= @effectiveDate 
-					and (S.EndDate >= @effectiveDate or S.EndDate is null)
-		inner join metrics.Asset Ma on Ma.AllocationUid = A.Uid
-		inner join metrics.AssetVersion V on V.AssetUid = Ma.Uid and V.EffectiveDate <= @effectiveDate 
-					and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
-		outer apply (
-			select	Value,
-					AdjustedWeight,
-					AdjustedMaxWeight
-			from	metrics.ScoreItem SI
-					inner join metrics.ScoreItemLink IL on IL.ScoreItemUid = SI.Uid and IL.ScoreUid = S.Uid and SI.AssetVersionUid = V.Uid
-		) I
-where	Ma.IsGroup = 1 or (Ma.IsGroup = 0 and I.Value is not null)";
+select	*
+from	(
+		select  Ma.[Uid], 
+				Ma.ParentUid,
+				V.Name,
+				V.Description,
+				Ma.IsGroup,
+				V.EffectiveDate, 
+				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC) as RowNum,
+				V.EffectiveEndDate as EndDate,
+				SI.AdjustedWeight as [Weight],
+				SI.AdjustedMaxWeight,
+				SI.Value,
+				A.ScoreType
+		from    metrics.Score S 
+				inner join metrics.Allocation A on 
+							A.Uid = S.AllocationUid 
+							and A.ScoreType = @scoreType 
+							and A.OverrideName is null
+							and S.AssetUid = @assetUid 
+							and S.EffectiveDate <= @effectiveDate 
+							and (S.EndDate >= @effectiveDate or S.EndDate is null)
+				inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
+				inner join metrics.ScoreItem SI on SI.Uid = SIL.ScoreItemUid
+				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid and V.EffectiveDate <= @effectiveDate 
+							and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
+				inner join metrics.Asset Ma on Ma.Uid = V.AssetUid
+		) O 
+where	O.RowNum = 1";
 
 
             if (cnn.State != ConnectionState.Open)
@@ -823,21 +822,30 @@ from    metrics.Allocation  ma
         public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var filterAsset = new Asset();
-            int? filterFieldTypeId = null;
 
             var result = new MetricScoreApiModel();
             var parameters = new DynamicParameters();
 
-            ScoreType scoretype = ScoreType.Governance;
-
-            List<string> whereClauses = new List<string>();
-            List<string> scoreFilters = new List<string>();
-            List<string> fieldFilters = new List<string>();
-            whereClauses.Add("AT.uid = @assetTypeUid");
-            parameters.Add("@assetTypeUid", at.uid);
-
+            List<string> outerFilters = new List<string>();
+            List<string> innerFilters = new List<string>();
+            List<string> fieldJoins = new List<string>();
+            
             var dateStart = DateTime.MinValue;
             var dateEnd = DateTime.MinValue;
+            Guid allocationUid = Guid.Empty;
+            MetricAllocation allocation = null;
+
+            if (!queryParams.Any(x => x.Key.ToLower() == "_scoretype") && !queryParams.Any(x => x.Key.ToLower() == "_allocationuid"))
+            {
+                // Look up default Governance score allocation.
+                allocation = Company.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == ScoreType.Governance && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+                if (allocation == null)
+                    return (null, $"Allocation for {ScoreType.Governance} score type and asset type does not exist");
+
+                parameters.Add("@allocationUid", allocation.Uid);
+                allocation = null;
+            }
+
             int customFieldsCounter = 0;
             foreach (var param in queryParams)
             {
@@ -845,29 +853,39 @@ from    metrics.Allocation  ma
                 {
                     case "_pagesize":
                         int pageSize = 0;
+                        
                         if (!int.TryParse(param.Value, out pageSize) || pageSize <= 0)
                             return (null, "Invalid '_pagesize' parameter value");
+                        
                         result.pageSize = pageSize;
                         break;
                     case "_pagenum":
                         int pageNum = 0;
+                        
                         if (!int.TryParse(param.Value, out pageNum) || pageNum <= 0)
                             return (null, "Invalid 'pageNum' parameter value");
+                        
                         result.pageNum = pageNum;
                         break;
                     case "_effectivedatestart":
                         DateTime.TryParse(param.Value, out dateStart);
+                        
                         if (dateStart == DateTime.MinValue)
                             return (null, "Invalid '_effectiveDateStart' parameter value");
+                        
                         parameters.Add("@dateStart", dateStart);
-                        scoreFilters.Add("MS.EffectiveDate >= @dateStart");
+                        innerFilters.Add("IMS.EffectiveDate >= @dateStart");
+                        outerFilters.Add("MS.EffectiveDate >= @dateStart");
                         break;
                     case "_effectivedateend":
                         DateTime.TryParse(param.Value, out dateEnd);
+                        
                         if (dateEnd == DateTime.MinValue)
                             return (null, "Invalid '_effectiveDateEnd' parameter value");
+                        
                         parameters.Add("@dateEnd", dateEnd);
-                        scoreFilters.Add("MS.EffectiveDate <= @dateEnd");
+                        innerFilters.Add("IMS.EffectiveDate <= @dateEnd");
+                        outerFilters.Add("MS.EffectiveDate <= @dateEnd");
                         break;
                     case "_assetuid":
                         Guid assetUid = Guid.Empty;
@@ -875,40 +893,70 @@ from    metrics.Allocation  ma
                             return (null, "Invalid '_assetUid' parameter value");
 
                         var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
+                        
                         if (assetTypeId != at.ID)
                             return (null, "Asset of given asset type Uid does not exists");
-
-                        parameters.Add("@assetUid", assetUid);
-                        if (parameters.ParameterNames.Any(x => x.ToLower() == "customfield"))
+                        
+                        if (queryParams.Any(x => x.Key.ToLower() == "customfield"))
                             return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
 
-                        whereClauses.Add("A.Uid = @assetUid");
+                        parameters.Add("@assetUid", assetUid);
+                        outerFilters.Add("MS.AssetUid = @assetUid");
                         break;
                     case "_scoretype":
+                        ScoreType scoretype;
                         if (!Enum.TryParse(param.Value, out scoretype))
                             return (null, "Invalid '_scoreType' parameter value");
+
+                        if (queryParams.Any(x => x.Key.ToLower() == "_allocationuid"))
+                            return (null, "'_allocationUid' AND '_scoreType' are exclusive filters and may not be combined.");
+
+                        allocation = Company.Filter<MetricAllocation>(a => a.AssetTypeUid == at.uid && a.ScoreType == scoretype && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+
+                        if (allocation == null)
+                            return (null, "Allocation for specified score type and asset type does not exist");
+
+                        parameters.Add("@allocationUid", allocation.Uid);
+                        allocation = null;
                         break;
+                    case "_allocationuid":
+                        if (!Guid.TryParse(param.Value, out allocationUid))
+                            return (null, "Invalid '_allocationUid' parameter value");
+
+                        allocation = Company.GetByUid<MetricAllocation>(allocationUid);
+                        
+                        if (allocation == null)
+                            return (null, "Allocation does not exist");
+
+                        if (allocation.AssetTypeUid != at.uid)
+                            return (null, "Allocation is not associated with the given asset type");
+
+                        if (queryParams.Any(x => x.Key.ToLower() == "_scoretype"))
+                            return (null, "'_allocationUid' AND '_scoreType' are exclusive filters and may not be combined.");
+
+                        parameters.Add("@allocationUid", allocationUid);
+                        allocation = null;
+                        break;
+
                     default:
                         customFieldsCounter++;
                         var fieldName = param.Key;
 
+                        int? filterFieldTypeId = null;
                         filterFieldTypeId = Company.FieldTypes.Where(x => x.AssetTypeID == at.ID && x.Name.ToLower() == param.Key.ToLower()).FirstOrDefault()?.ID;
                         if (filterFieldTypeId == null)
                             return (null, $"Invalid custom field parameter. Field type with name '{param.Key}' does not exists");
 
-                        if (parameters.ParameterNames.Any(x => x.ToLower() == "assetuid"))
+                        if (parameters.ParameterNames.Any(x => x.ToLower() == "_assetuid"))
                             return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
 
-                        fieldFilters.Add($"inner join Field F{customFieldsCounter} on F{customFieldsCounter}.FieldTypeID = @ftId{customFieldsCounter} and F{customFieldsCounter}.AssetID = A.ID and F{customFieldsCounter}.FormattedValue = @ftValue{customFieldsCounter}");
+                        fieldJoins.Add($"inner join Field F{customFieldsCounter} on F{customFieldsCounter}.FieldTypeID = @ftId{customFieldsCounter} and F{customFieldsCounter}.AssetID = A.ID and F{customFieldsCounter}.FormattedValue = @ftValue{customFieldsCounter}");
                         parameters.Add("@ftId" + customFieldsCounter, filterFieldTypeId);
                         parameters.Add("@ftValue" + customFieldsCounter, param.Value);
 
                         break;
                 }
             }
-
-            parameters.Add("@scoreType", (int)scoretype);
-            scoreFilters.Add("MS.ScoreType = @scoreType");
 
             bool takeOnlyLastScore = false;
 
@@ -925,44 +973,49 @@ from    metrics.Allocation  ma
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                whereClauses.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
+                outerFilters.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
             }
 
-            string whereSQl = whereClauses.Count == 0 ? "" : "where " + string.Join(" AND ", whereClauses);
-            string scoreWhereSQl = scoreFilters.Count == 0 ? "" : " and " + string.Join(" AND ", scoreFilters);
+            string outerWhere = outerFilters.Count == 0 ? "" : " and " + string.Join(" and ", outerFilters);
+            string innerWhere = innerFilters.Count == 0 ? "" : " and " + string.Join(" and ", innerFilters);
+            string fieldJoinStatement = string.Join(" ", fieldJoins) + "";
 
-            var countSql = $@"select
-                         count(distinct a.uid)
-                         from metrics.Score MS
-                            inner join Asset A on A.uid = MS.AssetUid
-                            inner join AssetType AT on A.AssetTypeID = AT.ID
-                            {string.Join(" ", fieldFilters)}
-                            {whereSQl}";
+            var countSql = $@"
+select  count(distinct MS.AssetUid) 
+from    metrics.Score MS 
+        inner join Asset A on A.Uid = MS.AssetUid 
+        {fieldJoinStatement} 
+        {outerWhere}";
 
             result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
-            var sql = $@"select LOWER(A.uid) as AssetUid,
-	                    (select {(takeOnlyLastScore ? "top 1" : "")} MS.EffectiveDate, MS.Value as Score, MS.ScoreType
-		                     from metrics.Score MS
-								where AssetUid = a.uid 
-                                {scoreWhereSQl}
-								order by MS.EffectiveDate desc
-		                     for json path) as Scores
-		                from metrics.Score MS
-		                    inner join Asset A on A.uid = MS.AssetUid
-		                    inner join AssetType AT on A.AssetTypeID = AT.ID
-                            {string.Join(" ", fieldFilters)}
-                        {whereSQl}
-                        group by a.uid
-	                    order by a.uid
-	                    offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
-                    for json path
-                    ";
+            var sql = $@"
+select      MS.AssetUid,
+            (
+            select      {(takeOnlyLastScore ? "top 1" : "")} 
+                        IMS.EffectiveDate, 
+                        IMS.Value as Score, 
+                        Al.ScoreType 
+            from        metrics.Score IMS
+                        inner join metrics.Allocation Al on Al.Uid = IMS.AllocationUid 
+		    where       IMS.AllocationUid = @allocationUid and IMS.AssetUid = MS.AssetUid {innerWhere}
+		    order by    IMS.EffectiveDate desc
+		    for json path
+            ) as Scores 
+from        metrics.Score MS
+            inner join Asset A on A.Uid = MS.AssetUid 
+            {fieldJoinStatement}
+where       MS.AllocationUid = @allocationUid {outerWhere}
+group by    MS.AssetUid
+order by    MS.AssetUid
+offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
+for json path";
 
             var itemsJson = string.Join("", Company.Query<string>(sql, parameters).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
+            
             return (result, "");
         }
 

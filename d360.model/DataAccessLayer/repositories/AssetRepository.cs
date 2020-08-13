@@ -2612,20 +2612,25 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
         {
             var scoreSQL = @"
-select  S.AssetUid,
-        S.EffectiveDate,
-        S.EndDate,
-        S.RunDate,
-        case 
-	        when AL.ScoreType = 1 then 'Governance'
-	        when AL.ScoreType = 2 then 'DataQuality'
-        end as ScoreType,
-        S.Value, 
-        AL.LowerThreshold, 
-        AL.UpperThreshold 
-from    metrics.Score S
-        inner join Asset A on A.Uid = S.AssetUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null 
-        inner join metrics.Allocation AL on AL.Uid = S.AllocationUid";
+select	*
+from	(
+		select  S.AssetUid,
+				S.EffectiveDate,
+				S.EndDate,
+				S.RunDate,
+				case 
+					when AL.ScoreType = 1 then 'Governance'
+					when AL.ScoreType = 2 then 'DataQuality'
+				end as ScoreType,
+				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				S.Value, 
+				AL.LowerThreshold, 
+				AL.UpperThreshold 
+		from    metrics.Score S
+				inner join Asset A on A.Uid = S.AssetUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null 
+				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		) O
+where	O.RowNum = 1";
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
