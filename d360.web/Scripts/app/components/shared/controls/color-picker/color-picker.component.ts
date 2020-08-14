@@ -83,8 +83,6 @@ export class ColorPickerComponent implements ControlValueAccessor, OnInit {
     }
 
     private itemChanged(item: any) {
-        this.onModelChange(this.selectedColor);
-        this.selectedColor = item.value;
-        this.selectedColorChange.emit(item.value);
+        this.writeValue(item.value)
     }
 };
