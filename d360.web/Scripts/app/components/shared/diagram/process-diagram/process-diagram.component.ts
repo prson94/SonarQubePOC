@@ -383,7 +383,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.addDiagramListener("ViewportBoundsChanged", function (e: go.DiagramEvent) {
             if (self.diagramOriginalPosition) {
                 var rect = self.diagramOriginalPosition as go.Rect;
-                console.log(rect)
                 e.diagram.scrollToRect(rect);
                 self.diagramOriginalPosition = null;
             }
