@@ -12,6 +12,7 @@ using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -785,16 +786,21 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string,double> metrics = null, int step = 0)
         {
+            var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
-select  F.ID, 
-        F.Value 
-from    Field F 
-        inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
-        inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
-        new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                    select  F.ID, 
+                            F.Value 
+                    from    Field F 
+                            inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+                            inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
+                            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+            if(metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> loadfields", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
 
             //check for 0 fields to update case which often happens when editing from ui since you cant edit json fields.
             if (!fields.Any()) return;
@@ -815,6 +821,10 @@ from    Field F
                 }
 
             }
+
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> iterate properties", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
 
             #region Build data tables for bulk load.
 
@@ -871,6 +881,10 @@ CREATE TABLE #FieldJsonProperty (
 
             bulkCopy.WriteToServer(table);
 
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> bulk load", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
             #endregion
 
             Connection.Execute($@"
@@ -890,6 +904,10 @@ when		not matched by target then
 insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
 values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, @r, @dt, @r, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> merge results", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
         }
 
         private void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600)
@@ -2958,17 +2976,22 @@ where   ExecutionID = @ExecutionID
             return results;
         }
 
-        private void AITrackTrace(TelemetryClient client, ApiExecution execution, string methodName, string logMessage, long ElapsedMilliseconds, bool isLog)
+        private void AddMeasurement(Dictionary<string,double> metrics, string key, double value, int stepNumber)
         {
+            metrics[$"{stepNumber}-{key}"] = value;
+        }
+
+        private void AITrackMetric(TelemetryClient client, ApiExecution execution, string methodName, Dictionary<string,double> metrics, bool isLog)
+        {            
             if (!isLog) return;
 
             var propsToSend = new Dictionary<string, string> {
                 { "MethodName", methodName },
                 { "CompanyID", this.CurrentCompanyID.ToString() },
-               { logMessage, ElapsedMilliseconds.ToString() },
+                { "ExecutionID", execution.ExecutionID.ToString() }
             };
 
-            client.TrackTrace($"API v2 Execution ID[{execution.ExecutionID.ToString()}", propsToSend);
+            client.TrackEvent($"API v2 Execution ID[{execution.ExecutionID}]", propsToSend, metrics);
         }
 
         public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true)
@@ -2979,6 +3002,8 @@ where   ExecutionID = @ExecutionID
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
             var importFields = new Dictionary<int, List<string>>();
+            var metrics = new Dictionary<string, double>();
+            var step = 0;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -3071,7 +3096,8 @@ where   ExecutionID = @ExecutionID
                             );
                         }
 
-                        this.AITrackTrace(client, execution, METHOD_NAME, "BuildDatatable and initialization", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "BuildDatatable and initialization", sw.ElapsedMilliseconds, ++step);
+                                        
                         sw.Restart();
 
                         // Get field types.
@@ -3080,7 +3106,7 @@ where   ExecutionID = @ExecutionID
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
                         hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
-                        this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
 
                         #region Generate data sets
@@ -3111,7 +3137,7 @@ where   ExecutionID = @ExecutionID
                                 }
                             }
                         }
-                        this.AITrackTrace(client, execution, METHOD_NAME, "Get predicateType.HasValue", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "Get predicateType.HasValue", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
                         int i = 1;
 
@@ -3233,7 +3259,9 @@ where   ExecutionID = @ExecutionID
 
                             i++;
                         }
-                        this.AITrackTrace(client, execution, METHOD_NAME, "ValidateFields", sw.ElapsedMilliseconds, isLog);
+
+                        AddMeasurement(metrics, "ValidateFields", sw.ElapsedMilliseconds, ++step);
+                        
                         sw.Restart();
 
                         #endregion
@@ -3305,14 +3333,14 @@ where   ExecutionID = @ExecutionID
 
                         bulkCopy.WriteToServer(fieldTable);
 
-
-                        this.AITrackTrace(client, execution, METHOD_NAME, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                        
                         sw.Restart();
                         #endregion
 
 
                         ResolveColorValues(execution.ExecutionID, timeout);
-                        this.AITrackTrace(client, execution, METHOD_NAME, "ResolveColorValues", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
 
                         if (hasLookupFieldTypes)
@@ -3320,13 +3348,13 @@ where   ExecutionID = @ExecutionID
                             if (lookupFieldsPassedByValue)
                             {
                                 CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
-                                this.AITrackTrace(client, execution, METHOD_NAME, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, isLog);
+                                AddMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);                                
                                 sw.Restart();
                             }
                             else
                             {
                                 ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
-                                this.AITrackTrace(client, execution, METHOD_NAME, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
+                                AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);                                
                                 sw.Restart();
                             }
                         }
@@ -3334,7 +3362,7 @@ where   ExecutionID = @ExecutionID
                         if (at.Class == AssetTypeClass.Rule)
                         {
                             ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, isLog);
+                            AddMeasurement(metrics, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, ++step);                            
                             sw.Restart();
                         }
 
@@ -3355,7 +3383,7 @@ where   ExecutionID = @ExecutionID
                             LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
                         }
 
-                        this.AITrackTrace(client, execution, METHOD_NAME, "Log Errors", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "Log Errors", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
 
                         #region Generate proposed key hash and compare against existing data.
@@ -3387,14 +3415,15 @@ from	api.ExecutionAsset T
 					) S on T.ExecutionID = @ExecutionID and S.ProposedKey = T.ProposedKey and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
-                        this.AITrackTrace(client, execution, METHOD_NAME, "Invalidate repetitious items in load", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "Invalidate repetitious items in load", sw.ElapsedMilliseconds, ++step);
+                        
                         sw.Restart();
                         #endregion
 
                         // Validate permissions
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
-                        this.AITrackTrace(client, execution, METHOD_NAME, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
 
                         generalChecksCompleted = true;
@@ -3507,7 +3536,8 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
-                                                this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Model >> api.ExecutionAsset", sw.ElapsedMilliseconds, isLog);
+                                                AddMeasurement(metrics, $"AssetTypeClass.Model >> api.ExecutionAsset {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                                
                                                 break;
                                             #endregion
                                             case AssetTypeClass.FusionAttribute:
@@ -3550,7 +3580,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 else
                                                 {
@@ -3565,7 +3595,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> Names {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
 
                                                 #region Recalculate the text paths
@@ -3592,7 +3622,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     from	FusionAttribute T
 		    inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);",
                                                 new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 3", sw.ElapsedMilliseconds, isLog);
+                                                AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> Textpaths {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                
                                                 #endregion
 
                                                 break;
@@ -3642,7 +3672,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Diagram - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 else
                                                 {
@@ -3660,7 +3690,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 break;
                                             #endregion
@@ -3704,7 +3734,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 else
                                                 {
@@ -3724,7 +3754,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Rule >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 break;
                                             #endregion
@@ -3766,7 +3796,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 else
                                                 {
@@ -3787,7 +3817,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Reference >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 break;
                                                 #endregion
@@ -3852,39 +3882,39 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                            this.AITrackTrace(client, execution, METHOD_NAME, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                            AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                            
                                         }
 
                                         #endregion
                                         sw.Restart();
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                        AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                        
                                         sw.Restart();
 
                                         if (hasRelationshipFieldTypes)
                                         {
                                             ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                            AddMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                            
                                         }
 
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();
-                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                            MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel, metrics, step);                                            
+                                            AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         }
 
                                         // Must execute BEFORE the Success flag is updated below.
                                         sw.Restart();
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                        AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                        
 
                                         //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
                                         if (hasLookupFieldTypes && !isInsert)
                                         {
                                             sw.Restart();
                                             DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                            AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                            
                                         }
 
                                         sw.Restart();
@@ -3892,7 +3922,7 @@ select [uid] from #ParentChildRelationships",
                                         Connection.Execute(
                                             $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
+                                        metrics.Add($"{++step} Update success flag", sw.ElapsedMilliseconds);                                        
                                         trans.Commit();
 
                                         //Add items after commit, so we dont have dirty data if trans is rolled back
@@ -3936,7 +3966,7 @@ select [uid] from #ParentChildRelationships",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
-                            this.AITrackTrace(client, execution, METHOD_NAME, "results.AddRange >> DatabaseBulkAssetResult", sw.ElapsedMilliseconds, isLog);
+                            AddMeasurement(metrics, $"results.AddRange >> DatabaseBulkAssetResult", sw.ElapsedMilliseconds, ++step);                            
                             OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
                             {
                                 Results = results
@@ -3976,7 +4006,7 @@ select [uid] from #ParentChildRelationships",
 
                                 sw.Restart();
                                 SendAssetGraphEvents(graphResults, changedFields, true);
-                                this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                                AddMeasurement(metrics, $"SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);                                
                             }
                             catch
                             {
@@ -3988,13 +4018,16 @@ select [uid] from #ParentChildRelationships",
                         {
                             sw.Restart();
                             SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "SendWorkflowEvents", sw.ElapsedMilliseconds, isLog);
+                            AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);                            
                         }
                     }
                 }
             }
 
-            this.AITrackTrace(client, execution, METHOD_NAME, "End of Method", swBegin.ElapsedMilliseconds, isLog);
+            AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+            
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
+            
             return results;
         }
 
@@ -4009,6 +4042,8 @@ select [uid] from #ParentChildRelationships",
             CurrentExecutionLocationModel currentLocation = null;
             bool checkCircularRelationships = false;
             bool checkSemanticRelation = false;
+            Dictionary<string, double> metrics = new Dictionary<string, double>();
+            var step = 0;
 
             if ((rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
@@ -4073,7 +4108,7 @@ select [uid] from #ParentChildRelationships",
                     // Get field types.
                     sw.Restart();
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
-                    this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);                    
                     var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
 
                     #region Generate data sets
@@ -4117,7 +4152,7 @@ select [uid] from #ParentChildRelationships",
                             }
                         }
                     }
-                    this.AITrackTrace(client, execution, METHOD_NAME, " Generate data sets", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Generate data sets", sw.ElapsedMilliseconds, ++step);                    
                     #endregion
 
                     if (results.Count > 0) // There are errors already processed.
@@ -4175,8 +4210,8 @@ select [uid] from #ParentChildRelationships",
                     bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
                     bulkCopy.WriteToServer(fieldTable);
-
-                    this.AITrackTrace(client, execution, METHOD_NAME, " Bulk Copy", sw.ElapsedMilliseconds, isLog);
+                                        
+                    AddMeasurement(metrics, "Bulk Copy", sw.ElapsedMilliseconds, ++step);
                     #endregion
                     sw.Restart();
                     if (lookupFieldsPassedByValue)
@@ -4187,10 +4222,10 @@ select [uid] from #ParentChildRelationships",
                     {
                         ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
                     }
-                    this.AITrackTrace(client, execution, METHOD_NAME, " ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);                    
                     sw.Restart();
                     LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
-                    this.AITrackTrace(client, execution, METHOD_NAME, " LogFieldLookupErrors", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);                    
 
                     #region Invalidate duplicates
                     sw.Restart();
@@ -4210,7 +4245,7 @@ select [uid] from #ParentChildRelationships",
                                     and T.SubjectUid = D.SubjectUid and T.ObjectUid = D.ObjectUid
                     ",
                     new { execution.ExecutionID }, commandTimeout: timeout);
-                    this.AITrackTrace(client, execution, METHOD_NAME, " Invalidate duplicates", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Invalidate duplicates", sw.ElapsedMilliseconds, ++step);                    
                     #endregion
 
                     #region Validate subjects/objects
@@ -4266,7 +4301,7 @@ begin
             where T.ExecutionID = @ExecutionID;
 end",
                     new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
-                    this.AITrackTrace(client, execution, METHOD_NAME, " Validate subjects/objects", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Validate subjects/objects", sw.ElapsedMilliseconds, ++step);                    
                     #endregion
 
                     #region Log subject/object resolution errors
@@ -4288,7 +4323,7 @@ set		Success = 0,
 where	ExecutionID = @ExecutionID and SubjectUid = ObjectUid;
 ",
                     new { execution.ExecutionID }, commandTimeout: timeout);
-                    this.AITrackTrace(client, execution, METHOD_NAME, " Log subject/object resolution errors", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Log subject/object resolution errors", sw.ElapsedMilliseconds, ++step);                    
                     #endregion
 
                     #region Cardinality Validation
@@ -4325,7 +4360,7 @@ from	api.ExecutionRelationship T
 					group by ER.ExecutionID, ER.ObjectUid
 					) S on S.ExecutionID = T.ExecutionID and S.ObjectUid = T.ObjectUid and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
-                        this.AITrackTrace(client, execution, METHOD_NAME, " SubjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "SubjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);                        
                     }
 
                     if (rt.ObjectCardinality == Cardinality.One)
@@ -4360,7 +4395,7 @@ from	api.ExecutionRelationship T
 					group by ER.ExecutionID, ER.SubjectUid
 					) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
-                        this.AITrackTrace(client, execution, METHOD_NAME, " ObjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "ObjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, ++step);                        
                     }
 
                     #endregion
@@ -4418,7 +4453,7 @@ begin
                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 end",
                     new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
-                    this.AITrackTrace(client, execution, METHOD_NAME, "  Permissions Validation", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);                    
                     #endregion
 
                     if (checkCircularRelationships)
@@ -4433,8 +4468,7 @@ end",
                                     and T.IsNew = 1 
 		                            and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
                             ", new { execution.ExecutionID, predicateType = rt.Predicate.Type }, commandTimeout: timeout);
-                        this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
-
+                        AddMeasurement(metrics, "Circular Relationships Validation", sw.ElapsedMilliseconds, ++step);                        
                     }
 
                     if (checkSemanticRelation)
@@ -4452,7 +4486,7 @@ end",
 		                            where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
                                     and T.IsNew = 1 
                             ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID }, commandTimeout: timeout);
-                        this.AITrackTrace(client, execution, METHOD_NAME, "  Semantic Relationships Validation", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "Semantic Relationships Validation", sw.ElapsedMilliseconds, ++step);                        
                     }
 
                     generalChecksCompleted = true;
@@ -4520,21 +4554,20 @@ end",
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
                 inner join [Intersect] IT on IT.ID = S.ID
         where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
-                                    this.AITrackTrace(client, execution, METHOD_NAME, "Intersect table merge", sw.ElapsedMilliseconds, isLog);
-
+                                    AddMeasurement(metrics, "Intersect table merge", sw.ElapsedMilliseconds, ++step);                                    
                                     #endregion
                                     fieldTypeUpdates.Clear();
                                     sw.Restart();
                                     fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
-                                    this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields", sw.ElapsedMilliseconds, isLog);
-
+                                    AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);                                    
+                                    
                                     // Update success flag
                                     sw.Restart();
                                     Connection.Execute(
                                         $"update api.ExecutionRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and IntersectID is not null;",
                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                    this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
-
+                                    AddMeasurement(metrics, "Update success flag", sw.ElapsedMilliseconds, ++step);
+                                                                        
                                     trans.Commit();
 
                                     runCompleted = true;
@@ -4550,7 +4583,7 @@ end",
                                     }
                                     catch
                                     {
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "LogLoop Execution Error In Rollback", sw.ElapsedMilliseconds, isLog);
+                                        AddMeasurement(metrics, "LogLoop Execution Error In Rollback", sw.ElapsedMilliseconds, ++step);                                        
                                     }
 
                                     retryCount++;
@@ -4559,7 +4592,7 @@ end",
                                     {
                                         sw.Restart();
                                         LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "LogLoopExecutionError", sw.ElapsedMilliseconds, isLog);
+                                        AddMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);                                        
                                     }
                                     else
                                     {
@@ -4575,8 +4608,8 @@ end",
                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }
                             )
                         );
-                        this.AITrackTrace(client, execution, METHOD_NAME, "results.AddRange >> DatabaseBulkRelationshipResult ", sw.ElapsedMilliseconds, isLog);
-
+                        AddMeasurement(metrics, "results.AddRange >> DatabaseBulkRelationshipResult", sw.ElapsedMilliseconds, ++step);
+                        
                         OnRelationshipsPartiallyProcessed(new RelationshipsPartiallyProcessedEventArgs
                         {
                             Results = results
@@ -4592,17 +4625,18 @@ end",
                     if (sendGraphEvents)
                     {
                         SendAssetGraphEvents(results);
-                        this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                        AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);                        
                         sw.Restart();
                     }
 
                     if (sendWorkflowEvents)
                         SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 
-                    this.AITrackTrace(client, execution, METHOD_NAME, "SendWorkflowEvents", sw.ElapsedMilliseconds, isLog);
+                    AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);                    
                 }
-            }
-            this.AITrackTrace(client, execution, METHOD_NAME, "End Method", swBegin.ElapsedMilliseconds, isLog);
+            }            
+            AddMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
             return results;
         }
 
