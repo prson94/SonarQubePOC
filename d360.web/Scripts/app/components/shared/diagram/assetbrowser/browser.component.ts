@@ -1744,10 +1744,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (node instanceof go.Node) {
                 var nodeData = node.data;
                 node.isHighlighted = false;
-                //if (nodeData.assetUid == this.emptyUid) {//.isGroup) {
-                    //This is grouping, do nothing with it (AssetType grouping)
-                //}
-                //else 
                 if (phrase != '') {
                     self.searchableProps.forEach(prop => {
                         if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
