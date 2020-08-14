@@ -574,7 +574,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Access Denied", "Access Denied."));
 
                 var group = (await Company.QueryAsync<Group>(@"
 select G.* from [Group] G 
