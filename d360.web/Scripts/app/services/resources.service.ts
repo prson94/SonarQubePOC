@@ -63,7 +63,7 @@ export class ResourcesService extends BaseObservableService {
 
     exportResources(params: any) {
         params['_pageNum'] = 1;
-        params['_pageSize'] = 10000;
+        params['_pageSize'] = 100000;
 
         var qString = '';
         if (params) {
