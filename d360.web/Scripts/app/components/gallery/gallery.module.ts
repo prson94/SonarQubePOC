@@ -22,6 +22,8 @@ import { GalleryGuard } from '../../guards/gallery.guard';
 import { TableModule } from 'primeng/table';
 import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 import { GalleryInputComponent } from './gallery.input.component';
+import { GalleryColorPickerComponent } from './gallery.color-picker.component';
+import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 
 
 @NgModule({
@@ -37,6 +39,7 @@ import { GalleryInputComponent } from './gallery.input.component';
         SwitchModule,
         IconPickerModule,
         TagPickerModule,
+        IgColorPickerModule,
 
         TableModule,
 
@@ -47,7 +50,8 @@ import { GalleryInputComponent } from './gallery.input.component';
         GalleryButtonComponent,
         GalleryIconPickerComponent,
         GalleryTagPickerComponent,
-        GalleryInputComponent
+        GalleryInputComponent,
+        GalleryColorPickerComponent
     ],
     providers: [
         GalleryGuard,

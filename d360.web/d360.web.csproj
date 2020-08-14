@@ -721,6 +721,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tag-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
@@ -865,6 +866,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tag-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
@@ -898,9 +900,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-display.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
@@ -1154,6 +1156,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
