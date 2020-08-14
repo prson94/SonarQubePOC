@@ -824,6 +824,30 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             return Company.BulkMetricsImport(model, execution);
         }
 
+        public async Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType)
+        {
+            var sql = @"
+select  *
+from    (
+        select	P.Uid,
+		        P.State,
+		        metrics.CalculateRollupPath(P.Uid) as [Path],
+		        (
+                    select      A.Uid as AssetTypeUid,
+					            A.Name
+                    from        [metrics].[RollupPathSegment] SE
+                                inner join AssetType A on A.ID = SE.AssetTypeID
+                    where       RollupPathUid = P.Uid
+                    order by    [Position]
+                    for json path
+                ) as SegmentsJson
+        from    [metrics].[RollupPath] P
+                inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and S.Position = 1 and P.ScoreType = @scoreType and S.AssetTypeid = @assetTypeId
+        ) P
+order by P.[Path]";
+            return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType });
+        }
+
         public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var filterAsset = new Asset();

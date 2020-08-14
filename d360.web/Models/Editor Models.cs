@@ -58,20 +58,7 @@ namespace d360.web.Models
         public string title { get; set; }
         public string value { get; set; }
     }
-
-    public class SynonymEditModel
-    {
-        public SystemObjects Type { get; set; }
-
-        public int ID { get; set; }
-
-        public string Synonym { get; set; }
-
-        public bool TypeIsSubject { get; set; }
-
-        public int PredicateID { get; set; }
-    }
-    
+   
     public class NymAllocationModel
     {
         public SystemObjects Object { get; set; }
@@ -146,6 +133,34 @@ namespace d360.web.Models
         public bool FusionEnabled { get; set; } = true;
         public int MaxExcelExportRows { get; set; }
 
+    }
+    
+    public class DataQualityResult
+    {
+        public int PassCount { get; set; }
+        public int FailCount { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public DateTime RunDate { get; set; }
+        public int ID { get; set; }
+    }
+
+    public class DataQualityResultItem
+    {
+        public DataQualityResult Result { get; set; }
+        public List<DataQualityAssetMapping> AssetsMappings { get; set; }
+    }
+
+    public class DataQualityAssetMapping
+    {
+        public string AssetPath { get; set; }
+        public Guid? AssetUID { get; set; }
+    }
+
+    public class DataQualityResultModel
+    {            
+        public List<DataQualityResultItem> Results{ get; set; }
+
+        public int? Timeout { get; set; }
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]
@@ -270,29 +285,6 @@ namespace d360.web.Models
         public string OverrideDisplayName { get; set; }
         public int DisplayOrder { get; set; }
         public int? Width { get; set; }
-    }
-
-    public class FieldLookupRelationItem
-    {
-        public int IntersectTypeID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public int RelationType { get; set; }
-        public int Direction { get; set; }
-    }
-
-    public class FieldLookupFieldItem
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public int FieldTypeID { get; set; }
-        public string FieldTypeName { get; set; }
-        public string Filter { get; set; }
-        public string OverrideDisplayName { get; set; }
-        public int DisplayOrder { get; set; }
-        public int SortOrder { get; set; }
-        public bool Show { get; set; } = true;
-        public int? Width { get; set; } = null;
     }
 
     public class FieldValidity
@@ -497,7 +489,6 @@ namespace d360.web.Models
 
         public string regex { get; set; }
     }
-
 
     public class LoginModel
     {
