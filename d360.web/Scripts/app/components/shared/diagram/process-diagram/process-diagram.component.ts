@@ -52,7 +52,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
     private colors: any[] = [];
-    private diagramOriginalPosition: any;
+    private diagramOriginalPosition: any = null;
 
     private isLoaded = false;
     public isDiagramLoaded = false;
@@ -371,7 +371,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 return this.isEditMode;
             }
         };
-        
+
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
 
@@ -380,9 +380,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         });
 
         var self = this;
-        this.myDiagram.addDiagramListener("InitialLayoutCompleted", function (e: go.DiagramEvent) {
+        this.myDiagram.addDiagramListener("ViewportBoundsChanged", function (e: go.DiagramEvent) {
             if (self.diagramOriginalPosition) {
-                e.diagram.position = self.diagramOriginalPosition;
+                var rect = self.diagramOriginalPosition as go.Rect;
+                e.diagram.scrollToRect(rect);
                 self.diagramOriginalPosition = null;
             }
         });
@@ -525,6 +526,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private areNamesUnique: boolean = true;
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
+        this.diagramOriginalPosition = this.myDiagram.viewportBounds.copy();
         this.processDiagramBase64 = this.myDiagram.makeImageData({
             scale: 1,
             maxSize: new go.Size(Infinity, Infinity)
@@ -574,7 +576,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
-        this.diagramOriginalPosition = JSON.parse(JSON.stringify(this.myDiagram.toolManager.panningTool.originalPosition));
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {

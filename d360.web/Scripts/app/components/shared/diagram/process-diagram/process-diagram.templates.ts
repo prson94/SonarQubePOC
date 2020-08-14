@@ -174,7 +174,7 @@ export class ProcessDiagramTemplates {
     public static eventTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -322,7 +322,7 @@ export class ProcessDiagramTemplates {
     public static gatewayTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
