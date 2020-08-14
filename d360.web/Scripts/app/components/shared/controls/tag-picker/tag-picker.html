@@ -14,7 +14,7 @@
                 <div class="tag-value" (mouseout)="leave()" (mouseenter)="enter(item,$event.target)">
                     {{item.title}}
                 </div>
-                <div *ngIf="!disabled && !readOnly" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
+                <div *ngIf="!disabled && !readOnly && canDeleteTag(item.title)" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
                     <i style="padding-left:10px" class="fa fa-times-circle"></i>
                 </div>
             </div>

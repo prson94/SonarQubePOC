@@ -235,7 +235,7 @@
             <d3s-multiselect-grid-v2 *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field"></d3s-multiselect-grid-v2>
 
             <div *ngSwitchCase="'Tag'">
-                <ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>
+                <ig-tag-picker [assetUid]="assetUid" [formControlName]="field.FieldName"></ig-tag-picker>
             </div>
             <div class="error-message" *ngIf="!isValid && isDirty">{{errorMessage}}</div>
         </div>
