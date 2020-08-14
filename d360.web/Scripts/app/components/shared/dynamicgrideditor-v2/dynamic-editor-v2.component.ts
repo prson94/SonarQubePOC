@@ -295,7 +295,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                         f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
                     }
                     else {
-                        f.Value = false;
+                        f.Value = undefined;
                     }
                 }
 
