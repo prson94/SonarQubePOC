@@ -37,6 +37,7 @@ import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 import { TagPickerModule } from '../controls/tag-picker/tag-picker';
+import { SwitchModule } from '../controls/switch/switch';
 
 @NgModule({
     imports: [
@@ -71,6 +72,7 @@ import { TagPickerModule } from '../controls/tag-picker/tag-picker';
         SiteModalModule,
         OverlayPanelModule,
         TagPickerModule,
+        SwitchModule,
 
         NgxJsonViewModule
     ],

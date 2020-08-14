@@ -219,7 +219,7 @@
                 <d3s-color-picker (selectedColorChange)="onColorSelect($event)" [loadDefaultColors]="true" [selectedColor]="field.Value"></d3s-color-picker>
             </div>
             <input placeholder="{{getPlaceholder()}}" *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-            <input placeholder="{{getPlaceholder()}}" *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
+            <ig-switch *ngSwitchCase="'Boolean'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
             <div *ngSwitchCase="'Date'">
                 <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
