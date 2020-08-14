@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
-import { Action } from 'rxjs/internal/scheduler/Action';
 import { HeaderActions } from '../../../../models/header.model';
 
 @Component({
@@ -29,6 +28,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
+
+    public viewType: string = 'diagram';
+
     public myDiagram: go.Diagram;
     private assetDetail: any;
 
@@ -55,7 +57,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isLoaded = false;
     public isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
-    private isCanvasEmpty: boolean = true;
+    public isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
     private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
@@ -76,7 +78,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private nodeNames: string[] = [];
 
     private initialActions = new HeaderActions();
-
 
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
@@ -238,7 +239,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram.isReadOnly) {
             this.myDiagram.toolManager.textEditingTool.doCancel();
         }
-        if (this.isEditMode && !this.isPalleteLoaded) {
+        if (this.viewType == 'diagram' && this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
 
@@ -354,6 +355,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     allowCopy: false,
                     allowUndo: false
                 });
+
         this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
@@ -369,7 +371,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 return this.isEditMode;
             }
         };
-
+        
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
 
@@ -633,18 +635,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             var self = this;
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
-                for (var propertyName in formData) {
-                    var currentPropValue = data[propertyName];
-                    var updatedPropValue = formData[propertyName];
+                if (data) {
+                    for (var propertyName in formData) {
+                        var currentPropValue = data[propertyName];
+                        var updatedPropValue = formData[propertyName];
 
-                    var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
+                        var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
 
-                    if (propertyName != 'key' && !bothEmpty) {
-                        m.set(data, propertyName, formData[propertyName].toString());
+                        if (propertyName != 'key' && !bothEmpty) {
+                            m.set(data, propertyName, formData[propertyName].toString());
+                        }
                     }
+                    m.set(data, 'refItemColor', self.getNodeColor(data));
+                    m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
                 }
-                m.set(data, 'refItemColor', self.getNodeColor(data));
-                m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
             }, 'update_model');
         } catch (e) {
             console.log(e);
@@ -972,10 +976,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 try {
                     this.myDiagram.model.commit(function (m) {
-
                         badges.forEach(asset => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
-                            m.set(data, 'relCount', asset.RelationshipCount.toString());
+                            if (data)
+                                m.set(data, 'relCount', asset.RelationshipCount.toString());
                         })
                     }, 'update_model_badge_data');
                 } catch (e) {
@@ -988,6 +992,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.isErrorModalOpened = false;
         if (this.validationErrors) {
             this.selectFirstInvalidField();
+        }
+    }
+
+    public changeViewType(type: string) {
+        if (type == 'list') {
+            this.viewType = 'list';
+        }
+        else {
+            this.viewType = 'diagram';
         }
     }
 }

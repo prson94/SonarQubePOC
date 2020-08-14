@@ -1,0 +1,49 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.metrics.RollupPathSegment-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPathSegment')
+BEGIN
+	CREATE TABLE [metrics].[RollupPathSegment](
+		[RollupPathUid] uniqueidentifier NOT NULL,
+		[Position] int NOT NULL,
+		[AssetTypeID] int NULL,
+		CONSTRAINT [PK_MetricRollupPathSegment] PRIMARY KEY CLUSTERED ( [RollupPathUid] ASC, [Position] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathSegment_MetricRollupPath')
+BEGIN
+	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath] FOREIGN KEY([RollupPathUid]) REFERENCES [metrics].[RollupPath] ([Uid]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_MetricRollupPath]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathSegment_AssetType')
+BEGIN
+	ALTER TABLE [metrics].[RollupPathSegment]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathSegment_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE SET NULL
+	ALTER TABLE [metrics].[RollupPathSegment] CHECK CONSTRAINT [FK_MetricRollupPathSegment_AssetType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricRollupPathSegment_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_MetricRollupPathSegment_AssetTypeID ON [metrics].RollupPathSegment ( AssetTypeID ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [metrics].[RollupPathSegment]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

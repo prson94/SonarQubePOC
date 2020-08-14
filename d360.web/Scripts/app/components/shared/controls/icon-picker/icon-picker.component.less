@@ -1,7 +1,11 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
-
+@import "../../../../../../Content/styles/_Variables.less";
 
 ig-icon-picker {
+    &:focus {
+        outline-color: @ig-focus-color;
+    }
+
     p-dropdown .ui-dropdown {
         background: #ffffff;
         border: 1px solid #bdbfc6;
@@ -12,7 +16,7 @@ ig-icon-picker {
 
     .ui-dropdown {
         .ui-dropdown-trigger {
-            background-color: #f1f1f3;
+            background-color: @igx-grey-t5;
             width: 24px;
             height: 24px;
             line-height: 24px;
@@ -23,6 +27,7 @@ ig-icon-picker {
             margin-right: 3px;
             border-radius: 2px;
             font-size: 10px;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -45,10 +50,11 @@ ig-icon-picker {
             width: 24px;
             height: 24px;
             line-height: 24px;
-            background: #f1f1f3;
+            background: @igx-grey-t5;
             text-align: center;
             font-size: 16px;
             color: #202020;
+
             &:hover {
                 background-color: #d7d8dc;
             }
@@ -58,16 +64,15 @@ ig-icon-picker {
             font-family: "Source Sans Pro", sans-serif;
             background: none;
             height: 30px;
-            line-height: 30px;
             padding-left: 8px;
-            padding-right: 32px;
+            padding-right: 62px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+
             &.ui-placeholder {
                 color: #6f7482;
                 position: relative;
-                top: -4px;
                 border-radius: 4px;
             }
         }
@@ -78,7 +83,6 @@ ig-icon-picker {
             height: 32px;
             font-weight: 700;
         }
-
     }
 
     .ui-state-focus {
@@ -94,7 +98,7 @@ ig-icon-picker {
     height: 24px;
     line-height: 24px;
     text-align: center;
-    background: #f1f2f3;
+    background: @igx-grey-t5;
     color: #202020;
     border-radius: 2px;
     margin-right: 5px;
@@ -110,6 +114,7 @@ ig-icon-picker {
     overflow: hidden;
     text-overflow: ellipsis;
     color: #202020;
+    white-space: nowrap;
 }
 
 .iconfield-item, .iconfield-item-selected {

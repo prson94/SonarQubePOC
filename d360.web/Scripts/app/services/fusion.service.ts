@@ -355,17 +355,6 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFusionTechnicalMappings(): Observable<MapRuleItemDetail[]> {
-        return this
-            .http
-            .get('api/fusion/technicalmapping')
-            .pipe(
-                map(response => <MapRuleItemDetail[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-
     getFusionFusionAttributeTypes(fusionId: number): Observable<FusionAttributeType[]> {
         return this
             .http
@@ -375,11 +364,6 @@ export class FusionService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
-
-
-
-
-
 
 
     getFusionExecutionErrors(executionId: number): Observable<FusionExecutionError[]> {

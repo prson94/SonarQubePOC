@@ -69,6 +69,8 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
                 el.blur();
             }, 50);
         }
+        if (this.linkLabel == '')
+            this.clearLabel();
     }
     clearLabel() {
         this.linkLabel = '';

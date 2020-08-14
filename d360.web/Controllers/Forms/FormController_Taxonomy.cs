@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -131,6 +132,7 @@ namespace d360.web.Controllers
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.TaxonomyType, id);
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = model.ID });
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }

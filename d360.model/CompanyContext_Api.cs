@@ -2907,6 +2907,22 @@ where   ExecutionID = @ExecutionID
                                         [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
                                         inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
                                         and 
+					                    EDR.Success is null                                
+
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='RefListRelationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
+					                    EDR.Success is null
+
+                                delete FT
+                                from FieldType FT 
+                                        inner join 
+                                        [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='FieldFromRelationship'
+                                        inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
+                                        and 
 					                    EDR.Success is null
 
                             delete  T
@@ -5005,10 +5021,10 @@ from    [Intersect] T
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
                                             new { execution.ExecutionID }, commandTimeout: timeout);
 
-            //check for relationship fields
+            //check for relationship, RefListRelationship fields
             Connection.Execute(@"
                                 update	T
-                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship fields associated with this relationship.',
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' fields associated with this relationship.',
 	                                    T.Success = 0
                                 from	api.ExecutionDeletedRelationshipType T
                                         inner join
@@ -5019,7 +5035,7 @@ from    [Intersect] T
                                             from 
                                                     FieldType FT 
                                                     inner join 
-                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type='Relationship'
+                                                    [IntersectType] IT on FT.LookupObjectID = IT.ID and FT.Type in ('Relationship', 'RefListRelationship', 'FieldFromRelationship')
                                                     inner join [api].[ExecutionDeletedRelationshipType] EDR on EDR.UID=IT.UID and EDR.ExecutionID = @ExecutionID
                                                     and 
 					                                EDR.Success is null
@@ -5027,7 +5043,7 @@ from    [Intersect] T
                                                     EDR.[Cascade]=0
                                             group by ExecutionID, ItemNumber			                                
                                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
-                                            new { execution.ExecutionID }, commandTimeout: timeout);
+                                            new { execution.ExecutionID }, commandTimeout: timeout);            
 
         }
 
@@ -8186,7 +8202,8 @@ WHEN MATCHED
                             row["Name"] = item.Name.Trim();
 
                         row["Description"] = item.Description;
-                        row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
+                        if (item.PrimaryOwnerUid != null)
+                            row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
                         if (item.SecondaryOwnerUid != null)
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
@@ -8254,13 +8271,7 @@ WHEN MATCHED
 		                    [Message] = coalesce([Message], '') + 'Primary Owner Uid provided is not a resource uid;'
                     from [api].[ExecutionGroup] EG 
                     left join [Asset] A on A.[uid] = EG.[PrimaryOwnerUid] and A.Object = 'Resource'
-                    where	ExecutionID = @ExecutionID and A.uid is null;
-
-                    update	[api].[ExecutionGroup]
-                    set		Success = 0,
-		                    [Message] = coalesce([Message], '') + 'No Primary Owner Uid provided;'
-                    from [api].[ExecutionGroup] EG 
-                    where	ExecutionID = @ExecutionID and EG.PrimaryOwnerUid = @emptyUid;
+                    where	ExecutionID = @ExecutionID and coalesce(EG.[PrimaryOwnerUid], @emptyUid) <> @emptyUid and A.uid is null;
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
@@ -8345,7 +8356,9 @@ SO.ObjectID as SecondaryID
                     where EG.ExecutionID = @ExecutionID 
                     and EG.ItemNumber between @beginItemNumber and @endItemNumber
                     and EG.Success is null
-                    and EG.GroupUid is null;
+                    and EG.GroupUid is null
+                    and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
+					and G.PrimaryOwnerResourceID is not null;
 
 	                INSERT INTO [ResourceGroup](GroupID,[ResourceID])
                     SELECT G.ID, G.SecondaryOwnerResourceID
@@ -8374,6 +8387,7 @@ SO.ObjectID as SecondaryID
                                     where EG.ExecutionID = @ExecutionID 
                                     and EG.ItemNumber between @beginItemNumber and @endItemNumber
                                     and EG.Success is null
+                                    and coalesce(EG.PrimaryOwnerUid, 0x0) <> 0x0
                     END
 
                     IF NOT EXISTS    

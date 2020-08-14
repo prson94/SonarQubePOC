@@ -1,0 +1,59 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.metrics.CalculateRollupPath-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION metrics.CalculateRollupPath (	
+	@rollupPathUid uniqueidentifier
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	DECLARE @result nvarchar(max),
+			@maxHop int = 1
+
+	select @maxHop = max(Position) from [metrics].[RollupPathSegment] where RollupPathUid = @rollupPathUid
+
+	select	@result = string_agg(P.PathSegment, ' ')
+	from	(
+			select	top 100 percent 
+					case L.EndPosition 
+							when @maxHop then Ea.Name + ' which is ' + lower(P.Inverse) + ' ' + Sa.Name
+							else Sa.Name + ' which ' + lower(P.Name)
+					end as PathSegment
+			from	[metrics].[RollupPathLink] L
+					inner join [metrics].[RollupPathSegment] Ss on Ss.RollupPathUid = L.RollupPathUid and Ss.Position = L.StartPosition
+					inner join AssetType Sa on Sa.ID = Ss.AssetTypeID
+					inner join [metrics].[RollupPathSegment] Se on Se.RollupPathUid = L.RollupPathUid and Se.Position = L.EndPosition
+					inner join AssetType Ea on Ea.ID = Se.AssetTypeID
+					inner join IntersectType I on I.ID = L.IntersectTypeID
+					inner join [Predicate] P on P.ID = I.PredicateID
+			where	L.RollupPathUid = @rollupPathUid
+			order by L.StartPosition
+			) P
+
+	if @result is null
+	begin
+		set @result = '{PATH NO LONGER VALID}'
+	end
+
+	RETURN @result
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP FUNCTION IF EXISTS metrics.CalculateRollupPath
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

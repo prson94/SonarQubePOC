@@ -314,7 +314,7 @@ namespace d360.web.Controllers.V2
                         {
                             if (bool.TryParse(model.BooleanSetting.Value, out bool val))
                             {
-                                value = val.ToString();
+                                value = (val.ToString() ?? "").ToLower();
                             }
                             else
                             {

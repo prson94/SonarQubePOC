@@ -14,6 +14,9 @@
 
         </div>
         <div class="controls-right">
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Diagram View"></button>
+            <button igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')" tooltip="List View"></button>
+            <div class="button-spacer"></div>
             <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
@@ -23,7 +26,7 @@
         <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
             <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
         </div>
-        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
+        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
             <div class="gov-accordion">
                 <div id="toolTipDIV-event" class="tooltip-content">
                     <p id="toolTipParagraph-event"></p>
@@ -69,21 +72,24 @@
             </div>
         </div>
         <div #diagram id="process-diagram-placeholder">
-            <div class="empty-overlay" *ngIf="isDiagramLoaded">
-                <div class="content" *ngIf="isCanvasEmpty && isEditMode">
+            <div class="empty-overlay" *ngIf="isDiagramLoaded && isCanvasEmpty">
+                <div class="content" *ngIf="isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-plus"></i>
                     </div>
                     <span>Drag and drop flow objects to start building your diagram</span>
                 </div>
-                <div class="content" *ngIf="isCanvasEmpty && !isEditMode">
+                <div class="content" *ngIf="!isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-pencil"></i>
                     </div>
                     <span>Choose Edit to start creating your diagram</span>
                 </div>
             </div>
-            <div id="diagram"></div>
+            <div [hidden]="viewType == 'list'" id="diagram"></div>
+            <div [hidden]="viewType == 'diagram'" id="list-view" *ngIf="myDiagram && myDiagram.model">
+                <d3s-process-diagram-list-view [diagram]="myDiagram" [nodeArray]="myDiagram.model.nodeDataArray" [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
+            </div>
         </div>
 
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">

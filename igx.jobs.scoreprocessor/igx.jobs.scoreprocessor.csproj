@@ -208,13 +208,13 @@
     <Compile Include="ChangeTypes\MeasureCreatedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureRemovedProcess.cs" />
+    <Compile Include="ChangeTypes\RollupPathChangedProcess.cs" />
     <Compile Include="ChangeTypes\RuleResultsCreatedProcess.cs" />
     <Compile Include="ChangeTypes\RuleResultsChangedProcess.cs" />
     <Compile Include="ChangeTypes\RuleResultsRemovedProcess.cs" />
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
     <Compile Include="ChangeTypes\ProcessBase.cs" />
     <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
-    <Compile Include="LegacyScoreProcessor.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

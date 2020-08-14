@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -144,7 +145,7 @@ namespace d360.web.Controllers
                 };
 
                 Company.Add(a);
-
+                
                 Company.Add(new FieldType
                 {
                     ObjectID = a.ID,
@@ -163,6 +164,13 @@ namespace d360.web.Controllers
                 });
 
                 upsertAssetStyle(SystemObjects.RuleType, a.ID, form, a.Name);
+
+                var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == a.ID).FirstOrDefault();
+                if (assetType != null)
+                {
+                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    assetType = null;
+                }
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -190,6 +198,13 @@ namespace d360.web.Controllers
 
                 if (!Company.HasAssetTypePermission(SystemObjects.RuleType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == id).FirstOrDefault();
+                if (assetType != null)
+                {
+                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    assetType = null;
+                }
 
                 Company.Delete(SystemObjects.RuleType, id);
 
@@ -227,6 +242,13 @@ namespace d360.web.Controllers
                 Company.Update(model);
 
                 upsertAssetStyle(SystemObjects.RuleType, model.ID, form, model.Name);
+
+                var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == model.ID).FirstOrDefault();
+                if (assetType != null)
+                {
+                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    assetType = null;
+                }
 
                 Company.CreateOrUpdateTypeDisplayValuesAsync(id, "RuleType");
 

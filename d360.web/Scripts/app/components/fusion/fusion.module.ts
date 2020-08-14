@@ -37,7 +37,6 @@ import { FusionListComponent } from './fusion-list.component';
 import { FusionManualLoadComponent } from './fusion-manual-load.component';
 import { FusionProcessErrorsComponent } from './fusion-process-errors.component';
 import { FusionStatisticsComponent } from './fusion-statistics.component';
-import { FusionTechnicalMappingsComponent } from './fusion-technical-mappings.component';
 import { FusionStructureTreeComponent } from './fusion-structure-tree.component';
 import { FusionAttributeSummaryFiltersComponent } from './fusion-attribute-summary-filters.component';
 import { FusionQueryListComponent } from './fusion-query-list.component';
@@ -139,7 +138,6 @@ export function highchartsFactory() {
         FusionManualLoadComponent,
         FusionProcessErrorsComponent,
         FusionStatisticsComponent,
-        FusionTechnicalMappingsComponent,
         FusionStructureTreeComponent,
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,  

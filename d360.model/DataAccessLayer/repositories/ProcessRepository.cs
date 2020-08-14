@@ -161,6 +161,8 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            
+
             var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
                 select apd.Diagram  as json from asset a 
 	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
@@ -206,6 +208,8 @@ namespace d360.model.DataAccessLayer
                 item.Add("category", "deleted-node");
             }
 
+            model.nodeDataArray = model.nodeDataArray.OrderBy(x => x.StepNo).ToList();
+
             return model;
         }
 
@@ -218,9 +222,9 @@ namespace d360.model.DataAccessLayer
 
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
-            execution.Method = "Process";
-            execution.ProcessingStartedOn = DateTime.UtcNow;
+
             Company.Add(execution);
+            Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var assetsTable = "api.ExecutionDiagramAsset";
             var fieldsTable = "api.ExecutionDiagramAssetField";

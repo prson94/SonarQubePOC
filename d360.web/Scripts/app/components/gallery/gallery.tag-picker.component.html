@@ -16,10 +16,10 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
-            <ig-tag-picker [(ngModel)]="value"></ig-tag-picker>
+            <ig-tag-picker [(ngModel)]="value" (onChange)="basicValueChanged($event)"></ig-tag-picker>
         </div>
         <div>
-            <strong>Selected Value:</strong> <pre>{{value | json}}</pre> 
+            <strong>Selected Value:</strong> <pre>{{value | json}}</pre>
         </div>
     </div>
     <hr />
@@ -29,7 +29,7 @@
             As with all form controls this input can be disabled (enter values in basic example to see result)
         </p>
         <div>
-            <ig-tag-picker [(ngModel)]="value" [disabled]="true"></ig-tag-picker>
+            <ig-tag-picker [(ngModel)]="copyOfValue" [disabled]="true"></ig-tag-picker>
         </div>
     </div>
     <hr />
@@ -39,7 +39,7 @@
             As with all form controls this input can be in read only mode (enter values in basic example to see result)
         </p>
         <div>
-            <ig-tag-picker [(ngModel)]="value" [readOnly]="true"></ig-tag-picker>
+            <ig-tag-picker [(ngModel)]="copyOfValue" [readOnly]="true"></ig-tag-picker>
         </div>
     </div>
     <hr />

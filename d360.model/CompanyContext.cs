@@ -36,10 +36,7 @@ namespace d360.model
         #region Caching Methods
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
-        internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
-        internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
-
+        
         internal string key(string token)
         {
             return string.Format(token, CurrentCompanyID);
@@ -217,11 +214,7 @@ namespace d360.model
         public DbSet<MapType> MapTypes { get; set; }
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-
-        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
-
-        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
-
+        
         public DbSet<MapItem> MapItems { get; set; }
 
         public DbSet<MapRule> MapRules { get; set; }
@@ -1384,43 +1377,11 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                 excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
-            if (limitToClasses == null)
-            {
-                string relationshipsWhere = string.Empty;
-                string additionalApply = string.Empty;
-                if (!Community.IsFusionEnabled())
-                {
-                    List<string> filteredTypes = new List<string>() { SystemObjects.FusionType.ToString(), SystemObjects.FusionAttributeType.ToString(), SystemObjects.FusionQueryAttributeType.ToString() };
-                    dbArgs.Add("@filterTypes", filteredTypes);
-
-                    additionalApply = @"outer apply (select top 1 * from IntersectType where IT.Object = 'IntersectType' and ID = IT.ObjectId)ITObj
-						                outer apply (select top 1 * from IntersectType where IT.Subject = 'IntersectType' and ID = IT.SubjectId)ITSubj";
-
-                    relationshipsWhere += $@" where IT.Object not in @filterTypes 
-                                                and IT.Subject not in @filterTypes 
-                                                and ISNULL(ITObj.Object,'') not in @filterTypes
-                                                and ISNULL(ITObj.Subject,'') not in @filterTypes
-                                                and ISNULL(ITSubj.Object,'') not in @filterTypes
-                                                and ISNULL(ITSubj.Subject,'') not in @filterTypes";
-                }
-
-                noClassLimitSql = $@"
-                UNION
-                SELECT	CAST(IT.ID as int) ID,
-		                'Relationship :: ' + ITypeName.Name AS Name,
-		                'IntersectType' AS Type
-                FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
-                        {additionalApply}
-                        {relationshipsWhere}";
+            if (limitToClasses != null && limitToClasses.Count > 0)
+            { 
+                classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
             }
-            else
-            {
-                if (limitToClasses.Count > 0)
-                {
-                    classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
-                }
-            }
+            
             var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
             string whereStatement = "";

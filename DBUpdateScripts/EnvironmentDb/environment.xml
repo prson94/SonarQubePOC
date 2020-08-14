@@ -82,6 +82,7 @@
 	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDefinition.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeFilteredLookupDisplayField.xml"/>
 	<include file="scripts/Table.dbo.FieldTypeLookup.xml"/>
+	<include file="scripts/Table.dbo.FieldTypeLookup_backup.xml"/>
 	<include file="scripts/Table.dbo.Field.xml"/>
 	<include file="scripts/Table.dbo.FieldJsonProperty.xml"/>
 	<include file="scripts/Table.dbo.FieldValue.xml"/>
@@ -209,6 +210,12 @@
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
 	<include file="scripts/Table.metrics.Rule.xml"/>
+	<include file="scripts/Table.metrics.RollupPath.xml"/>
+	<include file="scripts/Table.metrics.RollupPathLink.xml"/>
+	<include file="scripts/Table.metrics.RollupPathSegment.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionRollupPath.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionRollupPathFilter.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionRollupPathFilterValue.xml"/>
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
@@ -297,7 +304,6 @@
 	<include file="scripts/Function.utility.DeriveIntersectNameWrapper.xml"/>	<!--Function used for computed column-->
 	<include file="scripts/Function.utility.DeriveIntersectTypeName.xml"/>		<!--Function used for computed column-->
 	<include file="scripts/View.dbo.IntersectTypeDetail.xml"/>
-	<include file="scripts/View.dbo.MapRuleItemDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationInvitationDetail.xml"/>
 	<include file="scripts/View.dbo.OrganizationResourceDetail.xml"/>
@@ -390,6 +396,7 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
+	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -462,6 +469,7 @@
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
 	<include file="scripts/Procedure.lineage.GetByObject.xml"/>
+	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>

@@ -81,6 +81,7 @@ import { SharedRelationshipModule } from '../relationship/shared-relationship.mo
 import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 import { DynEditorService } from '../../../services/dyn-editor.service';
+import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
 
 
 @NgModule({
@@ -162,7 +163,8 @@ import { DynEditorService } from '../../../services/dyn-editor.service';
         ModelDiagramComponent,
         ProcessDiagramComponent,
         ProcessDiagramAssetEditorComponent,
-        ProcessDiagramLabelEditorComponent
+        ProcessDiagramLabelEditorComponent,
+        ProcessDiagramListViewComponent
     ],
     exports: [
         AssetBrowserComponent,
