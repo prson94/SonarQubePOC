@@ -386,33 +386,5 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
-
-
-
-        /// <summary>
-        /// Retrieves an process diagram url for Task asset uid
-        /// </summary>
-        /// <param name="assetUid">The asset uid</param>
-        /// <returns></returns>
-        [
-            HttpGet,
-            Route("{assetUid:Guid}/diagramUrl"),
-            SwaggerConsumes("application/json"),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
-        {
-            if (assetUid == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
-
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-            if (asset == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
-
-            var response = Company.GetDiagramUrlForDiagramAsset(assetUid);
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
-
-        }
     }
 }

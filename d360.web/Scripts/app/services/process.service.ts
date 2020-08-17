@@ -74,16 +74,6 @@ export class ProcessService extends BaseObservableService {
             .post(`/api/v2/process/export/${assetUid}`, imageData, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
     }
 
-    public getProcessDiagramUrl(uid: string): Observable<any> {
-        return this
-            .http
-            .get(`/api/v2/process/${uid}/diagramUrl`)
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err, true))
-            );
-    }
-
     public downloadFile(data: Blob, name: string) {
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {

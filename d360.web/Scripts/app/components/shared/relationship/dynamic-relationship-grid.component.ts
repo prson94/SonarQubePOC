@@ -6,12 +6,12 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { BaseComponent } from '../base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { ProcessService } from '../../../services/process.service';
+import { AssetService } from '../../../services/asset.service';
 
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',
-    providers: [GridDefinitionService, RelationshipsService, ProcessService],
+    providers: [GridDefinitionService, RelationshipsService, AssetService],
     templateUrl: './dynamic-relationship-grid.component.html'
 })
 
@@ -64,7 +64,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         private gridDefinitionService: GridDefinitionService,
         protected relationshipsService: RelationshipsService,
         private messagesService: MessagesObservableService,
-        private processService: ProcessService
+        private assetService: AssetService
     ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
@@ -233,7 +233,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
         }
         else {
-            this.processService.getProcessDiagramUrl(item.ObjectUid)
+            this.assetService.getProcessDiagramUrl(item.ObjectUid)
                 .subscribe(res => {
                     this.router.navigateByUrl(res);
                 })
