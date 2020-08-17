@@ -72,6 +72,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public Guid AllocationUid { get; set; }
         public DateTime EffectiveDate { get; set; }
+        public ScoreType ScoreType { get; set; }
+        public CalculationMethod CalculationMethod { get; set; }
+        public bool IsThresholdBased { get; set; }
         public Guid MetricAssetUid { get; set; }
         public Guid? MetricParentAssetUid { get; set; }
         public bool IsGroup { get; set; }
@@ -82,6 +85,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public string Definition { get; set; }
         public string ConditionsJson { get; set; }
         public List<AllocationDataModelCondition> Conditions { get { return JsonConvert.DeserializeObject<List<AllocationDataModelCondition>>(ConditionsJson ?? "[]"); } }
+        public string RollupPathJson { get; set; }
+        public AllocationDataModelRollupPath RollupPath { get { return JsonConvert.DeserializeObject<AllocationDataModelRollupPath>(RollupPathJson ?? "{}"); } }
     }
 
     internal class AllocationDataModelCondition
@@ -107,6 +112,43 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     internal class AllocationDataModelConditionItemValue
     {
         public string Value { get; set; }
+    }
+
+    internal class AllocationDataModelRollupPath
+    {
+        public Guid AssetVersionRollupPathUid { get; set; }
+        public string FilterMatchType { get; set; }
+        public List<AllocationDataModelRollupPathSegmentLink> SegmentLinks { get; set; }
+        public List<AllocationDataModelRollupPathFilter> Filters { get; set; }
+    }
+    internal class AllocationDataModelRollupPathSegmentLink
+    {
+        public int IntersectTypeID { get; set; }
+        public PredicateType PredicateType { get; set; }
+        public int StartPosition { get; set; }
+        public int StartAssetTypeID { get; set; }
+        public AssetTypeClass StartClass { get; set; }
+        public int EndPosition { get; set; }
+        public int EndAssetTypeID { get; set; }
+        public AssetTypeClass EndClass { get; set; }
+    }
+    internal class AllocationDataModelRollupPathFilter
+    {
+        public Guid AssetVersionRollupPathFilterUid { get; set; }
+        public int AssetTypeID { get; set; }
+        public int FieldTypeID { get; set; }
+        public string Operator { get; set; }
+        public List<AllocationDataModelRollupPathFilterValue> Values { get; set; }
+    }
+    internal class AllocationDataModelRollupPathFilterValue
+    {
+        public string Value { get; set; }
+    }
+
+    internal class RollupPathRuleResult
+    {
+        public Guid Uid { get; set; }
+        public float PassFraction { get; set; }
     }
 
 }

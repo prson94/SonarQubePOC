@@ -6500,6 +6500,87 @@ insert into #Keys
 
         }
 
+        async Task<List<AssetMeasureModel>> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
+        {
+            var ruleResults = new DataTable();
+            ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
+            ruleResultUids.ForEach(r => {
+                var dr = ruleResults.NewRow();
+                dr["RuleResultUid"] = r;
+                ruleResults.Rows.Add(dr);
+            });
+
+            if (Database.Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            List<RuleResultChangedRawModel> rawMeasures;
+            using (var trans = Connection.BeginTransaction())
+            {
+                await Connection.ExecuteAsync(@"create table #RuleResults (
+                        RuleResultUid uniqueidentifier not null
+                    )", transaction: trans);
+
+                using (var bulkCopy = new SqlBulkCopy(Connection, SqlBulkCopyOptions.Default, trans))
+                {
+                    bulkCopy.BatchSize = 500;
+                    bulkCopy.DestinationTableName = "#RuleResults";
+                    bulkCopy.BulkCopyTimeout = 3600;
+
+                    bulkCopy.ColumnMappings.Add("RuleResultUid", "RuleResultUid");
+
+                    await bulkCopy.WriteToServerAsync(ruleResults);
+                }
+
+                var rawAssetMeasuresRequest = await Connection.QueryAsync<RuleResultChangedRawModel>(@"
+select	Ea.Uid as AssetUid,
+    Re.EffectiveDate,
+	Ma.Uid as MetricAssetUid,
+	Mav.Uid as MetricAssetVersionUid
+from	AssetResult Re,
+	AssetResultEdge E1,
+	graph.AssetNode Ru,
+	AssetResultEdge E2,
+	graph.AssetNode Ea,
+	graph.AssetEdge Eval,
+	metrics.Allocation Mal,
+	metrics.Asset Ma,
+	metrics.AssetVersion Mav,
+	[metrics].[AssetVersionRollupPath] Mar,
+	[metrics].[RollupPath] Mr,
+	[metrics].[RollupPathSegment] Mrs
+where	match(Ru-(E1)->Re<-(E2)-Ea AND Ru-(Eval)->Ea)
+	and E1.Class = 1
+	and E2.Class = 2
+	and Eval.PredicateType = 2 --evaluation
+	and Mal.AssetTypeUid = Ea.AssetTypeUid and Mal.ScoreType = 2 and Mal.IsExternallyCalculated = 0
+	and Ma.AllocationUid = Mal.Uid
+	and Mav.AssetUid = Ma.Uid
+	and Mar.AssetVersionUid = Mav.Uid
+	and Mr.Uid = Mar.RollupPathUid
+	and Mrs.[RollupPathUid] = Mr.Uid
+	and Ru.AssetTypeId = Mrs.AssetTypeID
+    and Re.Uid in (select RuleResultUid from #RuleResults)", transaction: trans);
+
+                rawMeasures = rawAssetMeasuresRequest.ToList();
+                rawAssetMeasuresRequest = null;
+            }
+
+            var structuredMeasures = rawMeasures
+                .GroupBy(m => new { m.AssetUid, m.EffectiveDate })
+                .Select(m => new AssetMeasureModel
+                {
+                    AssetUid = m.Key.AssetUid,
+                    EffectiveDate = m.Key.EffectiveDate,
+                    Measures = m.Select(o => new AssetMeasureChildModel
+                    {
+                        MetricAssetUid = o.MetricAssetUid,
+                        MetricAssetVersionUid = o.MetricAssetVersionUid
+                    }).ToList()
+                }).ToList();
+
+            return structuredMeasures;
+        }
+
         public List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> import, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DataQualityResponseModel>();
@@ -6744,7 +6825,6 @@ insert into #Keys
                     }
 
                     #endregion
-
 
                     #region Log data errors                    
 
@@ -7069,7 +7149,9 @@ insert into #Keys
                 }
             }
 
-            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsChanged, import);
+            var ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
+            var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
 
             return results;
         }
@@ -7399,8 +7481,10 @@ insert into #Keys
                     var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
 	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
 
-                    string deleteAssetResultSQL = $@"create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
-                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
+                    string deleteAssetResultSQL = $@"
+create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
+CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
+
                                                 merge into AssetResultEdge DARE
                                                 using 
                                                 (select 
@@ -7495,6 +7579,12 @@ insert into #Keys
 
                                                 {updateOnSuccess}
                                                     ";
+                    
+                    // TODO: Gotta figure out how to get asset measure records BEFORe we delete the results above.
+                    
+                    //var ruleResultUids = import.Where(i => i.Uid).Select(i => i.Uid.Value).ToList();
+                    //var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
+                    //SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
@@ -7507,7 +7597,7 @@ insert into #Keys
 
                                 try
                                 {
-                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                    Connection.Execute(deleteAssetResultSQL, new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                     trans.Commit();
                                     runCompleted = true;
 

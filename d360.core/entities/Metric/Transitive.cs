@@ -1,14 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using d360.core.enums;
+﻿using d360.core.enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.Linq;
+using System;
+using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities.Metric
 {
+    public class RuleResultChangedRawModel
+    {
+        public Guid AssetUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public Guid MetricAssetUid { get; set; }
+        public Guid MetricAssetVersionUid { get; set; }
+    }
+
+    public class AssetMeasureModel
+    {
+        public Guid AssetUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public List<AssetMeasureChildModel> Measures { get; set; } = new List<AssetMeasureChildModel>();
+    }
+
+    public class AssetMeasureChildModel
+    {
+        public Guid MetricAssetUid { get; set; }
+        public Guid? MetricAssetVersionUid { get; set; }
+        public bool? Result { get; set; }
+    }
+
+
     public class MetricScoreApiModel
     {
         public int pageSize { get; set; } = 250;
@@ -29,5 +50,4 @@ namespace d360.core.entities.Metric
         [JsonConverter(typeof(StringEnumConverter))]
         public ScoreType ScoreType { get; set; }
     }
-
 }
