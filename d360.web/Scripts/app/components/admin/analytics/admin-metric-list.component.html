@@ -14,7 +14,7 @@
             </ng-template>
             <ng-template pTemplate="body" let-rowNode let-item="rowData">
                 <tr [ttSelectableRow]="rowNode">
-                    <td>
+                    <td class="no-overflow"  [attr.title]="item.Name">
                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         {{item.Name}}
                     </td>
