@@ -12,6 +12,7 @@ const routes: Routes = [
     { path: 'lineage/:objectType/:objectId/:showUsageOnly', component: LineageComponent },
     { path: 'browser/:assetUid', component: BrowserComponent, canDeactivate: [DeactivateGuard] },
     { path: 'browser/:assetUid/:diagramType', component: BrowserComponent, canDeactivate:[DeactivateGuard] },
+    { path: 'browser/:assetUid/:diagramType/:focusKey', component: BrowserComponent, canDeactivate:[DeactivateGuard] },
     { path: 'diagram/:objectId', component: DiagramComponent },
 ];
 

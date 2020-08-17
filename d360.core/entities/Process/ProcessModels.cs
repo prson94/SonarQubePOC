@@ -61,10 +61,11 @@ namespace d360.core.entities.Process
             }
         }
 
-        public decimal StepNo
+        public decimal? StepNo
         {
             get
             {
+                if (!this.ContainsKey("StepNo")) return null;
                 decimal.TryParse(this["StepNo"], out decimal value);
                 return value;
             }

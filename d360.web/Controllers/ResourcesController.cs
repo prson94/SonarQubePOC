@@ -64,14 +64,14 @@ namespace d360.web.Controllers
             var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where id = @id", new { id });
 
             if (string.IsNullOrEmpty(email)) throw new NotFoundException("Cannot find email address associated with specified Govern user.");
-            
+
             MD5 md5Hasher = MD5.Create();
 
             // Convert the input string to a byte array and compute the hash. 
             // 1.  Trim leading and trailing whitespace from an email address
             // 2.  Force all characters to lower-case
             // 3.  md5 hash the final string
-            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ??"").Trim().ToLower()));
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
 
             // Create a new Stringbuilder to collect the bytes  
             // and create a string.  
@@ -183,7 +183,7 @@ from	FollowDetail F
 
             #region Header
 
-            document.SetCellValue(1, 1, "Role");            
+            document.SetCellValue(1, 1, "Role");
             document.SetCellValue(1, 2, "Name");
             document.SetCellValue(1, 3, "Via");
             document.SetCellValue(1, 4, "Asset UID");
@@ -195,7 +195,7 @@ from	FollowDetail F
             foreach (var item in query)
             {
                 r++;
-                document.SetCellValue(r, 1, item.ResponsibilityType);                
+                document.SetCellValue(r, 1, item.ResponsibilityType);
                 document.SetCellValue(r, 2, item.Path);
                 document.SetCellValue(r, 3, item.Via);
                 document.SetCellValue(r, 4, item.UID.ToString());
@@ -251,9 +251,9 @@ from	FollowDetail F
         }
 
         #endregion
-        
+
         #region Partials
-        
+
 
         [HttpGet, Route("Comment/Votes/{commentId:int}/templates/tooltip/{voteAction}")]
         public ContentResult _RenderCommentVoteTooltip(int commentId, string voteAction)
@@ -681,6 +681,11 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                         uid = tag.uid.ToString();
                         res.Add(new FieldTooltipValueModel() { Name = "Use count", Value = useCount.ToString() });
                     }
+                    else if (objectType == "Task")
+                    {
+                        if (det.UID.HasValue)
+                            det.Url = Company.GetDiagramUrlForDiagramAsset(det.UID.Value);
+                    }
 
 
                     var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
@@ -716,7 +721,7 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                     }
                     var colorDataString = @"select ACJ.ColorJSON from Asset A cross apply dbo.GetAssetColorJsonById(A.Id) ACJ where ID = @assetID ";
                     var colorData = Company.Query<string>(colorDataString, new { @assetID = (det != null ? det.AssetID : -1) }).FirstOrDefault();
-                    if(colorData != null)
+                    if (colorData != null)
                     {
                         var color = new FieldTooltipValueModel()
                         {
