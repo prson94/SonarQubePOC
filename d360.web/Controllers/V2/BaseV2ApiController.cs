@@ -192,7 +192,7 @@ namespace d360.web.Controllers.V2
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
                                 {lookupValueJoinCriteria}								
-                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
                                 cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField} FOR JSON PATH),
                                 [Value] = 
