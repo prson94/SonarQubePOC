@@ -196,9 +196,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string, stepId:number): Observable<JsonResult> {
+    reassignObject(itemId: number, workflowId: number, objectId: number, objectType: string, stepId: number, resourceId: number = null): Observable<JsonResult> {
+        let url = `services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`;
+
+        if (!isNaN(resourceId))
+            url += `?resourceId=${resourceId}`;
+
         return this.http
-            .post(`services/workflow/ReassignWorkflowObject/${itemId}/${workflowId}/${objectId}/${objectType}/${stepId}`, null)
+            .post(url, null)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))

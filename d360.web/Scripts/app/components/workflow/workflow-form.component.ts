@@ -44,6 +44,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private objectTypeID: number;
     private typeName: string;
     private hasObjectReassign: boolean = true;
+    private resourceId: number;
 
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
@@ -85,6 +86,8 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             this.workflowId = +params['workflowId'];
             this.workflowItemStepId = +params['stepId'];
             this.workflowItemId = +params['itemId'];
+            this.resourceId = +params['resourceId'];
+
             if (!window.history || window.history.length <= 2) this.hasCloseButton = false;
             this.load();
         });
