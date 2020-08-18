@@ -513,7 +513,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_scoreType", "The type of scores. The default is Governance.", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ScoreType))
+            SwaggerParameter("_allocationUid", "The specific Uid of the measure / asset type allocation you want scores for. When using this query parameter, ensure that you are not also using the _scoreType parameter.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_scoreType", "The type of scores. The default is Governance. When using this query parameter, ensure that you are not also using the _allocationUid parameter.", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ScoreType))
         ]
         public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
         {
@@ -535,7 +536,7 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
-
+                
                 (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
 
                 if (!string.IsNullOrEmpty(errorMessage))
@@ -552,8 +553,6 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
-
-
         }
 
         /// <summary>
