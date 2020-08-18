@@ -328,5 +328,6 @@ namespace d360.model
 
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
         bool LookupFieldHasColorItem(FieldType f);
+        bool SetStateDeleteWorkFlowType(SystemObjects type, int id);
     }
 }
