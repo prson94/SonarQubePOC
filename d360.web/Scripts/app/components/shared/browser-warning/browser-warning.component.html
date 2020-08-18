@@ -1,7 +1,7 @@
 ﻿<div *ngIf="visible" class="browser-warning">
     <div class="content">
         <div>
-            <img src="/content/images/govern-small.svg" style="width: 100%" />
+            <img src="/content/images/govern-small.svg" style="width: 400px; height: 80px" />
         </div>
         <div>
             Sorry, Internet Explorer is no longer a supported browser.
@@ -20,7 +20,7 @@
         <div *ngFor="let alt of alternateBrowsers">
             <a [href]="alt.url" target="_blank">{{alt.label}}</a>
         </div>
-        <div class="spacer"></div>
+        <div class="spacer-large"></div>
         <div class="button">
             <button igButton label="I understand, continue using Internet Explorer for now" (click)="dismiss()"></button>
         </div>
