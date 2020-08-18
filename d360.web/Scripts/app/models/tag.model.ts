@@ -50,3 +50,9 @@ export class TagItem {
     Uid: number;
     Value: string;
 }
+
+export class TagPermissionItem {
+    Uid: number;
+    Value: string;
+    CanDelete: boolean;
+}

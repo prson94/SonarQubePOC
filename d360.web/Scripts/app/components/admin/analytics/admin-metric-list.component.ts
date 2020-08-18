@@ -1,6 +1,6 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef  } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange  } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { TreeNode, MenuItem } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
@@ -38,7 +38,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService, ref: ChangeDetectorRef) {
+    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
     }
 
@@ -56,7 +56,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         }
     }
 
-    load() {
+    load(initiallySelected?: string) {
         this.isLoading = true;
         this.metrics = [];
         this.metricTree = [];
@@ -85,9 +85,16 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
                         if (this.metricTree !== null && this.metricTree.length > 0) {
-                            this.selection = this.metricTree[0].data;
+                            let index = 0;
+                            if (initiallySelected) {
+                                let idx = this.metricTree.findIndex(n => n.data.Name.toLowerCase() === initiallySelected.toLowerCase());
+
+                                if (idx > -1) 
+                                    index = idx;
+                            }
+                            this.selection = this.metricTree[index].data;
                             this.selectionChange.emit(this.selection);
-                            this.selectedNode = this.metricTree[0];
+                            this.selectedNode = this.metricTree[index];
                         } else {
                             this.selectionChange.emit(null);
                         }

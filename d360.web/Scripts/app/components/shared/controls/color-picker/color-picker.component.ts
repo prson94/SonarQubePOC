@@ -1,9 +1,8 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
-import { ViewEncapsulation } from '@angular/compiler/src/compiler_facade_interface';
 
 export const COLORPICKER_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,

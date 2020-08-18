@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, NgModule, ViewChild, ElementRef, forwardRef, ChangeDetectorRef, ViewEncapsulation, OnDestroy, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -6,7 +6,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TagService } from '../../../../services/tag.service';
 import { Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { TagType } from '../../../../models/tag.model';
+import { TagType, TagPermissionItem } from '../../../../models/tag.model';
 import { BaseComponent } from '../../base.component';
 import { SelectItem } from 'primeng/api';
 
@@ -46,6 +46,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Output() onUnselect: EventEmitter<any> = new EventEmitter();
 
+    @Input() assetUid: string = '00000000-0000-0000-0000-000000000000';
+
     protected value: Array<SelectItem> = [];  // this is intentionally NOT public or an input you should be using ngModel..
 
     onModelChange: Function = () => { };
@@ -60,6 +62,9 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
+
+    private arePermissionsLoaded: boolean = false;
+    private tagPermissions: TagPermissionItem[] = [];
 
     constructor(protected changeDetectorRef: ChangeDetectorRef,
         private tagService: TagService,
@@ -85,7 +90,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                 return;
 
             newValue.push(val);
-
+           
+            this.tagPermissions.push({ Value: val.title, Uid: val.value, CanDelete: true });
             this.writeValue(newValue);
         }
     }
@@ -96,6 +102,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         this.value = obj;
         this.onModelChange(this.value);
         this.onChange.emit(this.value);
+        this.checkPermissions();
         this.changeDetectorRef.markForCheck();
     }
 
@@ -232,7 +239,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     enter(tag: SelectItem, element: HTMLElement) {
         if (this.disabled) return;
-        
+
         var box = element.getBoundingClientRect();
         var el = this._el.nativeElement as HTMLElement;
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
@@ -270,6 +277,23 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         var tooltip = el.getElementsByClassName('tooltip-wrapper')[0] as HTMLElement;
         tooltip.style.display = 'none';
         this.changeDetectorRef.markForCheck();
+    }
+
+    checkPermissions() {
+        if (this.arePermissionsLoaded)
+            return;
+
+        this.tagService.getTagPermissions(this.assetUid)
+            .subscribe(permissions => {
+                this.arePermissionsLoaded = true;
+                this.tagPermissions = permissions;
+                this.changeDetectorRef.markForCheck();
+            })
+    }
+
+    canDeleteTag(tagValue: string) {
+        if (!this.arePermissionsLoaded) return false;
+        return this.tagPermissions.some(x => x.Value == tagValue && x.CanDelete == true);
     }
 }
 

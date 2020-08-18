@@ -5,13 +5,76 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.GetObjectStatistics-v1">
-    <comment>GOV-10409</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.GetObjectStatistics-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [dbo].[GetObjectStatistics]
+	@type varchar(50),
+	@id int
+AS
+BEGIN
+	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
+	
+	declare @assetUid uniqueidentifier,
+			@dt datetime = getutcdate();
+
+	select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
+
+	insert into @table
+		select NULL, count(1), 'Followers', '', max(datecreated),null
+		from	Follow F
+		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID
+		where	F.ObjectType = @type and F.ObjectID = @id
+	
+	insert into @table
+		select	NULL, count(1), 'Comments', '', max(datecreated),null
+		from	Comment C
+				inner join CommentRelation R	on R.CommentID = C.ID and C.ParentID is null
+												and R.ObjectType = @type and R.ObjectID = @id
+                                                and C.ParentID is null
+												and C.IsDeleted = 0
+
+	insert into @table 
+		select	NULL, cast(Value * 100 as int), 'Score', '', coalesce(S.RunDate, S.EffectiveDate), null
+		from	metrics.Score S
+				inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.ScoreType = 1 and S.EffectiveDate <= @dt and S.EndDate is null and S.AssetUid = @assetUid
+
+	if @type = 'Artifact' or @type = 'Taxonomy' or @type = 'Rule' or @type = 'Policy'
+	begin
+		insert into @table 
+			select 
+				lower(c.childartifacttypename), 
+				count(1),
+				'Children',
+				'',
+				getutcdate(),
+				c.ChildArtifactTypeID
+			from 
+				asset a
+			cross apply [dbo].[GetArtifactChildByAssetID](a.id) c
+			where a.objectid = @id and a.[object] = 'Artifact' group by c.childartifacttypename, c.ChildArtifactTypeID
+		insert into @table
+			select 
+				'Issue',
+				count(1),
+				'Issues',	
+				'',
+				max(i.CreatedOn),
+				null
+			from workflow.item wi
+				inner join issue i on (wi.objectid = i.id and wi.[object] = 'Issue')
+			where 
+				i.object = @type and i.objectid = @id and wi.completedon is null		
+	end
+	select * from @table
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[GetObjectStatistics]
 	@type varchar(50),
 	@id int
@@ -76,11 +139,6 @@ BEGIN
 	end
 	select * from @table
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

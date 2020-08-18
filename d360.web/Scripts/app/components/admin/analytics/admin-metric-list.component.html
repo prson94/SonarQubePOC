@@ -36,11 +36,11 @@
         </p-treeTable>
         <div *ngIf="metricTree.length == 0" class="no-measure-message">No measures defined</div>
     </div>
-    <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" (onClose)="close()" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Adding">
-        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+    <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding">
+        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event);" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
-    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" (onClose)="close()" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">
-        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load()" (onSave)="formMode = FormMode.Default; load(previousSelectedNode); "></d3s-admin-metric-editor>
+    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing">
+        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event)" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
@@ -50,7 +50,7 @@
                                 [MeasureDisplayValue]="selection?.Name"
                                 [isExternallyCalculated]="isExternallyCalculated"
                                 [metricListFieldTypes]="metricListFieldTypes"
-                                (onClose)="showHistory(false)">
+                                (onClose)="showHistory(false);load(selection?.Name);">
             </d3s-metric-history>
         </div>
     </d3s-modal>
@@ -60,9 +60,9 @@
                      [isModalVisible]="formMode == FormMode.Deleting"
                      [modalTitle]="'Disable Measure'"
                      [deleteButtonText]="'Disable'"
-                     (onCancel)="formMode = FormMode.Default"
-                     (onDeleteSuccess)="formMode = FormMode.Default; load();"
-                     (onDeleteFail)="formMode = FormMode.Default">
+                     (onCancel)="formMode = FormMode.Default;load(selection?.Name);"
+                     (onDeleteSuccess)="formMode = FormMode.Default;load(selection?.Name);"
+                     (onDeleteFail)="formMode = FormMode.Default;load(selection?.Name);">
         <div prompt>
             <div *ngIf="selection.IsGroup">
                 <p>

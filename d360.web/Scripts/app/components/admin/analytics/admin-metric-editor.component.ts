@@ -220,7 +220,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (r) {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-                    this.onSave.emit(); 
+                    this.onSave.emit(this.model.Name); 
                 }
                 else {
                     this.date = prevDate as Date;
@@ -231,9 +231,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     cancel() {
-        this.model = null;
         this.load();
-        this.onCancel.emit();
+        this.onCancel.emit(this.model.Name);
+        this.model = null;
     }
 
     getUTCDate(date: Date): Date {
