@@ -320,15 +320,17 @@ where	ExecutionID = @executionID
             }
         }
 
-        private void LogParentErrors(Guid executionID, int timeout = 3600)
+        private void LogParentErrors(Guid executionID, int timeout = 3600, bool allowEmptyParentUid = false)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 update	api.ExecutionAsset
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Asset does not contain a valid ParentUid value'
 where	ExecutionID = @executionID
         and ParentAssetID is null
-		and ParentUid is not null;",
+		and ParentUid is not null        
+        {(allowEmptyParentUid ? " and ParentUid <> '00000000-0000-0000-0000-000000000000'" : "")}
+;",
             new { executionID }, commandTimeout: timeout);
         }
 
@@ -3170,7 +3172,7 @@ where   ExecutionID = @ExecutionID
                                         errorMessage = "Asset is missing a required ParentUid value";
                                     }
                                 }
-
+                                
                                 if (success && isInsert)
                                 {
                                     if (at.Object == "FusionAttributeType")
@@ -3404,7 +3406,9 @@ where   ExecutionID = @ExecutionID
                         LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
-                        LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
+                        // If you cannot find parent based on Uids provided.
+                        // special case is intratype hierarchy if guid.empty we need to allow this so we later know which items to remove the relationships from
+                        LogParentErrors(execution.ExecutionID, timeout, predicateType == PredicateType.IntraTypeHierarchy);
 
                         if (!isInsert)
                         {
@@ -3516,65 +3520,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                     try
                                     {
                                         switch (at.Class)
-                                        {
-                                            case AssetTypeClass.Model:
-                                                #region
-                                                sw.Restart();
-                                                if (isInsert)
-                                                {
-                                                    Connection.Execute($@"
-                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
-                                                        CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-                                                        merge   [Asset] as T
-                                                        using   (
-                                                                select  A.ItemNumber,
-                                                                        CR.LookupValue as Color
-                                                                from    api.ExecutionAsset A
-                                                                        left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-                                                                where   A.ExecutionID = @ExecutionID
-                                                                        and A.Success is null
-                                                                        and A.ItemNumber between @beginItemNumber and @endItemNumber
-                                                                ) S
-                                                        on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
-                                                        when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D, S.Color)
-                                                        output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
-
-                                                        update  T
-                                                        set     T.Object = 'Taxonomy',
-                                                                T.ObjectID = S.ID,
-                                                                T.IsNew = 1
-                                                        from    api.ExecutionAsset T
-                                                                inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-                                                            
-                                                        {updateAssetInfoOnExecutionRecordsSql}
-
-                                                        {insertGraphAssetNode}",
-                                                        new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-                                                        update	T
-                                                        set		T.UpdatedBy = @R,
-                                                                T.UpdatedOn = @D,
-                                                                T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
-                                                        from	[Asset] T
-                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql}
-                                                        left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-
-
-                                                        update	api.ExecutionAsset
-                                                        set		IsNew = 0
-                                                        where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                AddMeasurement(metrics, $"AssetTypeClass.Model >> api.ExecutionAsset {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                                
-                                                break;
-                                            #endregion
+                                        {                                            
                                             case AssetTypeClass.FusionAttribute:
                                                 #region
                                                 if (isInsert)
@@ -3666,12 +3612,15 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             case AssetTypeClass.BusinessAsset:
                                             case AssetTypeClass.TechnicalAsset:
                                             case AssetTypeClass.Diagram:
+                                            case AssetTypeClass.Model:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
                                                 if (at.Class == AssetTypeClass.Diagram)
                                                     @object = "Task";
+                                                if (at.Class == AssetTypeClass.Model)
+                                                    @object = "Taxonomy";
 
                                                 sw.Restart();
                                                 if (isInsert)
@@ -3707,7 +3656,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
-                                                    AddMeasurement(metrics, $"AssetTypeClass.Diagram - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
+                                                    AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
                                                 }
                                                 else
                                                 {
@@ -3917,7 +3866,28 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                            AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                            
+                                            AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+
+
+                                            // if its an intra type hierarchy models or policies and NOT an insert its possible that parent child relations are being removed IE an item moved to root
+                                            if (predicateType == PredicateType.IntraTypeHierarchy && !isInsert)
+                                            {
+                                                sw.Restart();
+
+                                                Connection.Execute($@"
+drop table if exists #DeletedRelationships;
+create table #DeletedRelationships([ID] int);
+
+delete i output deleted.ID into #DeletedRelationships from [intersect] i inner join  api.ExecutionAsset  ea on (ea.IntersectTypeID = i.intersecttypeid and ea.object = i.object and ea.objectid = i.objectid and ea.ParentUid = '00000000-0000-0000-0000-000000000000')
+    where ea.executionid = @executionid and ea.success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber and ea.IntersectTypeID is not null
+
+delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
+	",
+new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+
+
+                                                AddMeasurement(metrics, $"Parent/Child Delete Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                            }
                                         }
 
                                         #endregion
