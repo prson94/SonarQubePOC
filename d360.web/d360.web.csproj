@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1157,6 +1157,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
+    <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef, ViewEncapsulation } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -18,6 +18,8 @@ import { HeaderActions } from '../../../../models/header.model';
 @Component({
     selector: 'd3s-process-diagram',
     templateUrl: './process-diagram.component.html',
+    styleUrls: ['process-diagram.component.less'],
+    encapsulation: ViewEncapsulation.None,
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -114,7 +116,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
 
-                var nodeHeight = 160;
+                var nodeHeight = 130;
                 var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
                 this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
@@ -135,7 +137,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 140) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 115) + 'px';
         else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
@@ -778,6 +780,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             {
                                 wrappingColumn: 2,
                                 arrangement: go.GridLayout.LeftToRight,
+                                cellSize: new go.Size(80, NaN)
 
                             }
                         ),

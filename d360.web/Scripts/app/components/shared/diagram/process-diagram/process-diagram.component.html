@@ -27,46 +27,48 @@
             <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
         </div>
         <div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
-            <div class="gov-accordion">
-                <div id="toolTipDIV-event" class="tooltip-content">
-                    <p id="toolTipParagraph-event"></p>
-                </div>
-                <div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
-                    <div class="title">
-                        <i class="fa fa-chevron-down"></i>
-                        <i class="fa fa-chevron-right"></i>
+            <div class="pallete-wrapper">
+                <div class="gov-accordion">
+                    <div id="toolTipDIV-event" class="tooltip-content">
+                        <p id="toolTipParagraph-event"></p>
+                    </div>
+                    <div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
+                        <div class="title">
+                            <i class="fa fa-chevron-down"></i>
+                            <i class="fa fa-chevron-right"></i>
 
-                        <span>Events</span>
+                            <span>Events</span>
+                        </div>
+                        <div class="content">
+                            <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
+                        </div>
                     </div>
-                    <div class="content">
-                        <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
+                    <div id="toolTipDIV-activity" class="tooltip-content">
+                        <p id="toolTipParagraph-activity"></p>
                     </div>
-                </div>
-                <div id="toolTipDIV-activity" class="tooltip-content">
-                    <p id="toolTipParagraph-activity"></p>
-                </div>
-                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
-                    <div class="title">
-                        <i class="fa fa-chevron-down"></i>
-                        <i class="fa fa-chevron-right"></i>
-                        <span>Activities</span>
-                    </div>
-                    <div class="content">
+                    <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                        <div class="title">
+                            <i class="fa fa-chevron-down"></i>
+                            <i class="fa fa-chevron-right"></i>
+                            <span>Activities</span>
+                        </div>
+                        <div class="content">
 
-                        <div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
+                            <div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
+                        </div>
                     </div>
-                </div>
-                <div id="toolTipDIV-gateway" class="tooltip-content">
-                    <p id="toolTipParagraph-gateway"></p>
-                </div>
-                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
-                    <div class="title">
-                        <i class="fa fa-chevron-down"></i>
-                        <i class="fa fa-chevron-right"></i>
-                        <span>Gateways</span>
+                    <div id="toolTipDIV-gateway" class="tooltip-content">
+                        <p id="toolTipParagraph-gateway"></p>
                     </div>
-                    <div class="content">
-                        <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
+                    <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                        <div class="title">
+                            <i class="fa fa-chevron-down"></i>
+                            <i class="fa fa-chevron-right"></i>
+                            <span>Gateways</span>
+                        </div>
+                        <div class="content">
+                            <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
