@@ -3575,6 +3575,12 @@ button.tab-scroller {
             position: relative;
             top: -16px;
         }
+
+        .warningMessage {
+            background-color: @ig-lightblue-t5;
+            border: 1px solid @ig-grey-t4;
+            border-radius: 4px;
+        }
     }
 }
 
@@ -7912,20 +7918,25 @@ d3s-process-diagram {
     content: url(\Content\images\related-assets-icon.svg);
 }
 
-.flex-div {
-    display: flex;
-
-    .tile-tools {
-        position: relative;
-        top: 5px;
-        margin-left: 16px;
-        width: 96px;
-        font-size: 15px;
-        line-height: 16px;
-    }
-}
 
 .connector-label-list {
+
+
+    .flex-div {
+        width: 100%;
+        display: inline-flex;
+        min-height: 32px;
+
+        .tile-tools {
+            position: relative;
+            top: 5px;
+            margin-left: 16px;
+            width: 96px;
+            font-size: 15px;
+            line-height: 16px;
+        }
+    }
+
     .search-input {
         width: 100%;
         font-weight: normal;

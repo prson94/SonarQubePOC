@@ -19,7 +19,8 @@ export class WhereUsedComponent implements OnChanges {
 
     private usage: any[] = [];
     private isUsageLoading: boolean = false;
-
+    private hasUsage: boolean = false;
+    private isModalVisible: boolean = false;
     constructor(
         private connectorLabelService: ConnectorLabelService,
         private cdRef: ChangeDetectorRef
@@ -46,19 +47,29 @@ export class WhereUsedComponent implements OnChanges {
     }
     export() {
         if (this.objectType == "ConnectorLabel") {
-            this.connectorLabelService.exportLabelUsage(this.uid, `Connector Label "${this.displayValue}"`)
+            this.connectorLabelService.exportLabelUsage(this.uid, `Where Used report for Connector Label "${this.displayValue}"`)
         }
     }
 
     loadConnectorLabelUsage() {
         this.isUsageLoading = true;
+        this.hasUsage = false;
         this.connectorLabelService.getLabelUsage(this.uid)
             .subscribe(res => {
                 this.usage = res;
+                if (this.usage.length > 0) {
+                    this.hasUsage = true;
+                }
                 this.isUsageLoading = false;
                 this.onLoaded.emit(this.usage);
                 this.cdRef.markForCheck();
             });
+    }
+
+    openUsage() {
+        if (this.hasUsage) {
+            this.isModalVisible = true
+        }
     }
 
 }

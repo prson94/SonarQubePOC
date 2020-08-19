@@ -41,13 +41,13 @@ export class ConnectorLabelsFormComponent implements OnChanges {
             this.load();
         }
         if (changes && changes.isVisible && changes.isVisible.currentValue != changes.isVisible.previousValue) {
-            this.connectorLabelForm.reset();
+            this.load();
             this.setValidators();
         }
     }
 
     private setValidators() {
-        if (!this.value) {
+        if (!this.label) {
             this.connectorLabelForm.controls['value'].setAsyncValidators([this.asyncValidators.labelUniqueValidator()]);
         }
         else {
@@ -57,6 +57,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
 
     load() {
         this.connectorLabelForm.reset();
+        this.selectedValue = null;
         if (this.label)
             this.connectorLabelForm.setValue({ value: this.label.Value });
     }
@@ -101,13 +102,12 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     }
 
     onAutocompleteSelect(event) {
-        var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
+        var obj = this.suggestionResultsArray.filter(x => x.name.toLowerCase().trim() == event.toLowerCase().trim())[0];
         this.autoCompleteSelected(obj);
     }
 
     private autoCompleteSelected($event) {
         this.selectedValue = $event;
-        console.log($event);
     }
 
 }

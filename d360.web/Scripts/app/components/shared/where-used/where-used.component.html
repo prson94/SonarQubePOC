@@ -39,7 +39,7 @@
 </ng-container>
 
 <ng-container *ngIf="showAsModal">
-    <span class="open-usage-dialog-link" (click)="isModalVisible = true">
+    <span class="{{hasUsage ? 'open-usage-dialog-link' : ''}}" (click)="openUsage()">
         <ng-content></ng-content>
     </span>
     <d3s-modal [appendToBody]="true" [title]="'Where Used Report'" [additionalClasses]="'large-dialog'" (onClose)="isModalVisible = false" [isVisible]="isModalVisible">

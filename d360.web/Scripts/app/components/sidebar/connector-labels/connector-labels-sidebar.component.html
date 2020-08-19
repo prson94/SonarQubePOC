@@ -5,7 +5,7 @@
             <header>
                 Connector Labels<br />
                 <div class="flex-div">
-                    <input class="search-input" igInput type="text" [hidden]="!showSimpleFilter" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search labels...">
+                    <input class="search-input" igInput [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search labels...">
                     <div class="grow"></div>
                     <d3s-tile-actions [class]="'tile-tools'" [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
                 </div>
@@ -20,6 +20,7 @@
                      [paginator]="true"
                      [rows]="20"
                      [(selection)]="selected"
+                     selectionMode="single"
                      [loading]="isLoading"
                      [loadingIcon]="'fa fa-spinner fa-spin'">
                 <ng-template pTemplate="header">
@@ -42,17 +43,17 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr #el [pSelectableRow]="item">
-                        <td (click)="selectSingleItem($event,item, el);">
+                        <td>
                             {{item.Value}}
                         </td>
-                        <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
-                        <td (click)="selectSingleItem($event,item, el);">
+                        <td>{{item.UseCount}}</td>
+                        <td>
                             <div class="RowTools">
                                 <d3s-preview-tooltip [objectType]="'ConnectorLabel'"
                                                      [objectId]="item.uid"
                                                      icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
-                                <a style="cursor:pointer;" (click)="openEditor();"><i class="fa fa-pencil"></i></a>
-                                <a style="cursor:pointer;" (click)="openDeleteModal(item.uid);"><i class="fa fa-trash-o"></i></a>
+                                <a style="cursor:pointer;" (click)="openEditor(item);"><i class="fa fa-pencil"></i></a>
+                                <a style="cursor:pointer;" (click)="openDeleteModal(item);"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -69,8 +70,7 @@
                 <div class="row" *ngIf="isInError">
                     <div class="err-message">{{isInErrorMessage}}</div>
                 </div>
-                <d3s-connector-label-form
-                                          [label]="selected[0]"
+                <d3s-connector-label-form [label]="selected"
                                           (onSave)="saveLabel($event)"
                                           (onCancel)="closeEditor()"
                                           [isVisible]="showEditor">
@@ -78,18 +78,7 @@
                 </d3s-connector-label-form>
             </d3s-modal>
 
-            <!--<d3s-dynamic-editor [objectID]="selected[0]?.uid"
-                                [objectType]="'ConnectorLabel'"
-                                [title]="'ConnectorLabel'"
-                                [selection]="selected[0]"
-                                (saveClick)="saveLabel($event)"
-                                [showAsModal]="true"
-                                [modalTitle]="editPopupTitle"
-                                [isModalVisible]="showEditor"
-                                (closeClick)="closeEditor()">
-
-            </d3s-dynamic-editor>-->
-            <d3s-delete-form *ngIf="selected.length != 0"
+            <d3s-delete-form *ngIf="selected"
                              [callback]="theDeleteCallback"
                              [method]="'callback'"
                              [items]="selected"
@@ -103,22 +92,15 @@
                              (onUsageExport)="exportUsage()"
                              [isUsageLoading]="isUsageLoading">
                 <div prompt>
-                    <div *ngIf="selected.length == 1">
-                        <ng-container>
+                    <p>
+                        Please confirm that you wish to delete the connector label '{{this.selected.Value}}'.
+                    </p>
 
-                            <p>
-                                Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
-                            </p>
+                    <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected.uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
 
-                            <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected[0].uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
-
-                            <p>
-                                Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
-                            </p>
-
-                        </ng-container>
-
-                    </div>
+                    <p>
+                        Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
+                    </p>
                 </div>
 
             </d3s-delete-form>

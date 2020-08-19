@@ -1,19 +1,18 @@
 ﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
     <div class="content">
         <label class="ig-input-label">Name</label>
-        <input *ngIf="!label" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
+        <input *ngIf="!label" tabindex="1" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
         <p-autoComplete igAutocomplete *ngIf="label"
                         placeholder="Value required"
                         formControlName="value"
                         (onBlur)="OnBlurTrim()"
                         [suggestions]="suggestionResults"
                         (completeMethod)="onAutocomplete($event)"
-                        (onSelect)="onAutocompleteSelect($event)">
+                        (onSelect)="onAutocompleteSelect($event)"
+                        tabindex="1"
+                        >
         </p-autoComplete>
-        <div *ngIf="value.invalid && (value.dirty || value.touched)" class="error-message">
-            <div *ngIf="value.errors.required">
-                Name is required
-            </div>
+        <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
             <div *ngIf="value.errors.maxlength">
                 Connector label name maximum length of 100 characters exceeded
             </div>

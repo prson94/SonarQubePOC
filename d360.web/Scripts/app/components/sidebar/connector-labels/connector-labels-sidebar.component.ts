@@ -15,7 +15,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
-    selected: ConnectorLabel[] = [];
+    selected: ConnectorLabel;
 
     error: any;
 
@@ -88,124 +88,19 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         }, err => this.error = err);
     }
 
-    private deselectElement(element: any) {
-        element.classList.remove('ui-state-highlight');
-        if (element.querySelector('span.ui-chkbox-icon')) {
-            element.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
-            element.querySelector('span.ui-chkbox-icon').classList.remove('pi');
-            element.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
-        }
-    }
-    private selectElement(element: any) {
-        element.classList.add('ui-state-highlight');
-        if (element.querySelector('span.ui-chkbox-icon')) {
-            element.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
-            element.querySelector('span.ui-chkbox-icon').classList.add('pi');
-            element.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
-        }
-    }
-
-    private clearAllSelectedItems(element: any) {
-        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
-        Array.from(nodeList)
-            .forEach(x => {
-                this.deselectElement(x);
-            });
-        if (nodeList.length == 0)
-            this.selectElement(element);
-
-    }
-
-    selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
-        this.editPopupTitle = 'Edit Connector Label';
-
-
-        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
-        if (event && element) {
-            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                    this.selected = this.selected.filter(x => x.uid != item.uid);
-                    var el = (<any>(event.target)).parentNode;
-                    el = (el.nodeName === "TD") ? el.parentNode : el;
-                    this.deselectElement(el);
-                }
-                else {
-                    this.selected.push(item);
-                    var el = (<any>(event.target)).parentNode;
-                    el = (el.nodeName === "TD") ? el.parentNode : el;
-                    this.selectElement(el);
-                }
-
-                this.lastSelectedElement = item;
-                return;
-            }
-            if (event.shiftKey) {
-                var lastIndex = this.labels.indexOf(this.lastSelectedElement);
-                if (lastIndex == -1 && this.selected.length == 1) {
-                    lastIndex = this.labels.indexOf(this.selected[0]);
-                }
-                var currentIndex = this.labels.indexOf(item);
-
-                if (lastIndex > currentIndex) {
-                    lastIndex += currentIndex;
-                    currentIndex = lastIndex - currentIndex;
-                    lastIndex -= currentIndex;
-                }
-
-                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
-                for (var i = lastIndex; i <= currentIndex; i++) {
-                    if (!tableRows[i].classList.contains('ui-state-highlight')) {
-                        this.selected.push(this.labels[i]);
-                        this.selectElement(tableRows[i]);
-                    }
-                }
-
-                this.lastSelectedElement = item;
-                return;
-            }
-
-        }
-        let target = (<any>(event.target));
-        if (element && target.nodeName !== "P-TABLECHECKBOX") {
-            var el = (<any>(event.target));
-            if (el.nodeName === "I")
-                el = el.parentNode.parentNode.parentNode; //gets <a>-><div>-><td>
-            if (el.nodeName === "A")
-                el = el.parentNode.parentNode; //gets <div>-><td>
-            el = (el.nodeName === "TD") ? el.parentNode : el;
-            this.clearAllSelectedItems(el);
-            this.selected = [];
-            this.selected.push(item);
-            this.lastSelectedElement = item;
-        } else {
-            if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                this.selected = this.selected.filter(x => x.uid != item.uid);
-                var el = (<any>(event.target)).parentNode;
-                el = (el.nodeName === "TD") ? el.parentNode : el;
-                this.deselectElement(el);
-            }
-            else {
-                this.selected.push(item);
-                var el = (<any>(event.target)).parentNode;
-                this.selectElement(el);
-            }
-            this.lastSelectedElement = item;
-        }
-    }
-
-
     closeEditor() {
         this.showEditor = false;
         this.cdRef.markForCheck();
     }
 
-    openEditor() {
+    openEditor(label: ConnectorLabel) {
+        this.selected = label;
         this.showEditor = true;
         this.cdRef.markForCheck();
     }
 
     add() {
-        this.selected = [];
+        this.selected = null;
         this.editPopupTitle = 'Add Connector Label';
         this.showEditor = true;
         this.cdRef.markForCheck();
@@ -236,9 +131,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 }
                 this.labels = this.labels.sort((a, b) => a.Value.localeCompare(b.Value));
 
-                this.selected = [];
+                this.selected = null;
                 event.item.UseCount = 0;
-                this.selected.push(event.item);
+                this.selected = event.item;
 
                 this.showEditor = false;
 
@@ -255,8 +150,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
                     this.getLabels();
                 }
-                this.selected = [];
-                this.selected.push(this.labels[0])
+                this.selected = null;
+                this.selected = this.labels[0];
                 this.showConsolidate = false;
                 this.showEditor = false;
             }, err => {
@@ -268,15 +163,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     deleteLabel() {
-        this.connectorLabelService.deleteLabels(this.selected).
+        this.connectorLabelService.deleteLabels([this.selected]).
             subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.selected.forEach(t => {
-                        this.labels.splice(this.findLabelIndex(t.uid), 1);
-                    })
-                    this.selected = [];
+
+                    this.labels.splice(this.findLabelIndex(this.selected.uid), 1);
+                    this.selected = null;
                 }
                 this.showDelete = false;
                 this.cdRef.markForCheck();
@@ -284,17 +178,20 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     private lastLoadedUid: string = '';
-    openDeleteModal(labelUid: string) {
+    openDeleteModal(label: ConnectorLabel) {
+        this.selected = label;
 
-        if (this.lastLoadedUid != labelUid)
+        if (this.lastLoadedUid != label.uid)
             this.isUsageLoading = true;
 
-        this.lastLoadedUid = labelUid;
+        this.lastLoadedUid = label.uid;
         setTimeout(() => {
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Connector Label' : 'Delete Connector Labels';
-            this.deleteConfirmationText = `Delete the Connector Label '${this.selected[0].Value}'`;
+            this.deletePopupTitle = this.selected ? 'Delete Connector Label' : 'Delete Connector Labels';
+            this.deleteConfirmationText = `Delete the Connector Label '${this.selected.Value}'`;
             this.showDelete = true;
+            this.cdRef.markForCheck();
         }, 100);
+
     }
 
     private usageLoaded(data) {
@@ -319,7 +216,6 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     private exportUsage() {
-        var selected = this.selected[0];
-        this.connectorLabelService.exportLabelUsage(selected.uid, `Connector Label "${selected.Value}"`)
+        this.connectorLabelService.exportLabelUsage(this.selected.uid, `Where Used report for Connector Label "${this.selected.Value}"`)
     }
 }
