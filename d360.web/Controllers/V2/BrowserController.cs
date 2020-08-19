@@ -386,7 +386,7 @@ select	A.TypeName,
 								FROM field fi 
 								cross apply STRING_SPLIT(fi.Value, ',') SPFfi
 								inner join Asset AC on AC.Object = F.LookupObjectType and AC.ObjectID = try_cast(SPFfi.value as int)
-								cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+								cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
 								 where FieldTypeID = F.ID and fi.AssetID = V.AssetID and F.[Type] = 'Lookup' and F.LookupObjectType = 'ReferenceItem'
 								for json path)

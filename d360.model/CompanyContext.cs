@@ -2937,7 +2937,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 FROM field fi
                                 {fieldJoin}
                                 inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
-                                cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+                                cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
                                 where FieldTypeID = {f.ID} and {whereClause}
 								for json path)

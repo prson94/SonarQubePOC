@@ -565,7 +565,7 @@ outer apply(
              FROM field fi
              cross apply STRING_SPLIT(F.Value, ',') SPFfi
              inner join Asset AC on AC.Object = FT.LookupObjectType and AC.ObjectID = try_cast(SPFfi.value as int)
-             cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+             cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
              cross apply GetAssetDisplayValueByID(AC.ID) ADV
              where FieldTypeID = F.fieldTypeID and fi.AssetID = F.AssetID and FT.Type = 'Lookup'
 			for json path)
@@ -714,7 +714,7 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                             }
                         }
                     }
-                    var colorDataString = @"select ACJ.ColorJSON from Asset A cross apply dbo.GetAssetColorJsonById(A.Id) ACJ where ID = @assetID ";
+                    var colorDataString = @"select ACJ.ColorJSON from Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ where ID = @assetID ";
                     var colorData = Company.Query<string>(colorDataString, new { @assetID = (det != null ? det.AssetID : -1) }).FirstOrDefault();
                     if(colorData != null)
                     {

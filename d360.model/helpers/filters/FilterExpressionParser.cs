@@ -30,7 +30,7 @@ namespace d360.model.helpers
             this.parseType = type;
 
             allowedDefaultFields.Add(new DefaultFilter("Code", "Code", SqlFieldType.Text));
-            allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.Id)), '$.Name')", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
 
             if (includeParent)
             {
