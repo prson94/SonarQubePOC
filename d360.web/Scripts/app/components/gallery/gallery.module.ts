@@ -24,7 +24,7 @@ import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 import { GalleryInputComponent } from './gallery.input.component';
 import { GalleryColorPickerComponent } from './gallery.color-picker.component';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
-
+import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
 
 @NgModule({
     imports: [
@@ -51,7 +51,8 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
         GalleryIconPickerComponent,
         GalleryTagPickerComponent,
         GalleryInputComponent,
-        GalleryColorPickerComponent
+        GalleryColorPickerComponent,
+        GalleryColorVariablesComponent
     ],
     providers: [
         GalleryGuard,

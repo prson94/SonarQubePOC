@@ -723,6 +723,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.color-variables.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tag-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.component.html" />
@@ -868,6 +869,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-variables.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tag-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
