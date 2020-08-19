@@ -307,7 +307,7 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return OrganizationInvitation_EditFields(oid);
                 case "POLICY":
-                    return Policy_EditFields(oid);
+                    return Hierarchy_EditFields(SystemObjects.Policy, oid);
                 case "PREDICATE":
                     return Predicate_EditFields(oid);
                 case "REFERENCEITEM":
@@ -331,7 +331,7 @@ namespace d360.web.Controllers
                 case "TASKTYPE":
                     return Diagram_EditFields(oid);
                 case "TAXONOMY":
-                    return Taxonomy_EditFields(oid);
+                    return Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
                 case "VERSION":
                     return CustomAPIServiceEndpointVersion_EditFields(oid);
                 case "URI":
@@ -393,7 +393,7 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return OrganizationInvitation_AddFields(objectID.Value);
                 case "POLICY":
-                    return Policy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    return Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "PREDICATE":
                     return Predicate_AddFields();
                 case "REFERENCEITEM":
@@ -413,7 +413,7 @@ namespace d360.web.Controllers
                 case "TASK":
                     return Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "TAXONOMY":
-                    return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    return Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":
                     return CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
                 case "URI":
@@ -562,9 +562,7 @@ namespace d360.web.Controllers
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);                
-                case "TAXONOMYTYPE":
-                    return DeleteTaxonomyType(form);
+                    return DeleteQuestionType(form);                                
                 case "TAXONOMYTYPELEVEL":
                     return DeleteTaxonomyTypeLevel(form);
                 case "URI":
