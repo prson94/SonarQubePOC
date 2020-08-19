@@ -150,7 +150,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             var diagramPlaceholderWidth = document.getElementById('process-diagram-placeholder').getBoundingClientRect().width;
             this.diagramRef.nativeElement.style.width = diagramPlaceholderWidth + 'px';
             setTimeout(() => {
-                this.myDiagram.redraw();
+                if (this.myDiagram)
+                    this.myDiagram.redraw();
             }, 100);
         }
         this.cdRef.detectChanges();
@@ -191,7 +192,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             else {
                 this.selectedLinkData = null;
             }
-            this.saveState.emit(this.isCurrentStateSaved());
+            if (this.isDiagramLoaded && this.isEditMode)
+                this.saveState.emit(this.isCurrentStateSaved());
         }
 
         if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
