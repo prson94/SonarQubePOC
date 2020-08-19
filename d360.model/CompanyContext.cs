@@ -3031,6 +3031,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.TaskType:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
                     break;
+                case SystemObjects.ConnectorLabel:
+                    objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
                     if (objectId <= 0)

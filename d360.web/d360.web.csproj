@@ -751,6 +751,7 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.less" />
+    <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
@@ -809,6 +810,7 @@
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
+    <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
     <Content Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.html" />
     <Content Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
@@ -1157,6 +1159,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.woff2" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
+    <Content Include="Scripts\app\components\shared\modal\gov-modal.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1431,6 +1434,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\where-used\where-used.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\where-used\where-used.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
@@ -1438,6 +1443,8 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.routes.ts" />
+    <Content Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.routes.ts" />
@@ -1601,6 +1608,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
@@ -1628,6 +1636,7 @@
     <TypeScriptCompile Include="Scripts\app\models\qualifier.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shopping-cart.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\shortcuts.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\connectorLabel.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
@@ -1836,6 +1845,7 @@
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\async-validators.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />

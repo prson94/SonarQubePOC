@@ -319,6 +319,8 @@
 	<include file="scripts/View.utility.ArtifactAssetParent.xml"/>
 	<include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
+	<include file="scripts/View.dbo.ProcessExpandedData.xml"/>
+	
 
 	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
 	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->

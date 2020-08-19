@@ -1,7 +1,7 @@
 
 import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { NgModule, Input, Output, Component, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormMessage } from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
@@ -38,14 +38,19 @@ export class DeleteForm implements OnChanges {
     @Input() isModalVisible: boolean = false;
     private deletingInProgress: boolean = false;
 
-
+    //Ussage
+    @Input() confirmationText: string;
+    private isConfirmed: boolean = false;
+    @Output() onUsageExport = new EventEmitter();
+    @Input() showDownloadWhereUsed: boolean = false;
+    @Input() isUsageLoading: boolean = false;
 
     public message: FormMessage = new FormMessage();
     public isLoading = false;
 
     http: HttpClient;
 
-    constructor(http: HttpClient, private assetTypeService: AssetTypeService) {
+    constructor(http: HttpClient, private assetTypeService: AssetTypeService, private cdRef: ChangeDetectorRef) {
         this.http = http;
     }
 
@@ -151,6 +156,7 @@ export class DeleteForm implements OnChanges {
 
     public cancel(): void {
         this.isLoading = false;
+        this.isConfirmed = false;
         this.onCancel.emit(null);
     }
 }
@@ -159,6 +165,8 @@ export class DeleteForm implements OnChanges {
 import { ButtonModule } from 'primeng/button';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetTypeService } from '../../services/asset-type.service';
+import { FormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     declarations: [
@@ -169,8 +177,9 @@ import { AssetTypeService } from '../../services/asset-type.service';
     ]
     , imports: [
         CommonModule,
-
+        FormsModule,
         ButtonModule,
+        CheckboxModule,
 
         SharedFormMessageModule,
         SiteModalModule

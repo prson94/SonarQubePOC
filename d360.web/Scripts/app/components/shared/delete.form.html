@@ -21,15 +21,23 @@
                     <ng-content select="[prompt]"></ng-content>
                 </div>
                 <ng-template *ngIf="message">
-                    <form-message [message]="message" ></form-message>
+                    <form-message [message]="message"></form-message>
                 </ng-template>
+                <ng-container *ngIf="confirmationText && !isUsageLoading">
+                    <p>
+                        <p-checkbox [(ngModel)]="isConfirmed" [binary]="true" label="{{confirmationText}}"></p-checkbox>
+                    </p>
+
+                </ng-container>
+
             </div>
         </div>
         <div class="action-bar">
-            <ng-container *ngIf="!hideDeleteButton">
+            <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
                 <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
+                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where User Report</button>
                 <span class="grow"></span>
-                <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading">
+                <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">
                     {{deleteButtonText ? deleteButtonText : 'Delete'}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>

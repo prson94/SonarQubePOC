@@ -1,8 +1,127 @@
-<div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail" style="max-width:700px;">
-            <header>Connector Labels</header>
-            Work in progress..
+<div class="row connector-label-list">
+    <div class="col l12 m12 s12">
+
+        <div class="tile tile-detail">
+            <header>
+                Connector Labels<br />
+                <div class="flex-div">
+                    <input class="search-input" igInput type="text" [hidden]="!showSimpleFilter" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search labels...">
+                    <div class="grow"></div>
+                    <d3s-tile-actions [class]="'tile-tools'" [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+                </div>
+            </header>
+            <p-table #dt
+                     [value]="labels"
+                     [globalFilterFields]="['Value','UseCount']"
+                     [rowsPerPageOptions]="[10,20,50,100,200,500]"
+                     sortField="Value"
+                     [sortOrder]="1"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rows]="20"
+                     [(selection)]="selected"
+                     [loading]="isLoading"
+                     [loadingIcon]="'fa fa-spinner fa-spin'">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'Value'" style="width: 60%">
+                            Name
+                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                            Use count
+                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+                        </th>
+                        <th style="width: 110px"></th>
+                    </tr>
+                    <tr [hidden]="showSimpleFilter">
+                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr #el [pSelectableRow]="item">
+                        <td (click)="selectSingleItem($event,item, el);">
+                            {{item.Value}}
+                        </td>
+                        <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+                        <td (click)="selectSingleItem($event,item, el);">
+                            <div class="RowTools">
+                                <d3s-preview-tooltip [objectType]="'ConnectorLabel'"
+                                                     [objectId]="item.uid"
+                                                     icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
+                                <a style="cursor:pointer;" (click)="openEditor();"><i class="fa fa-pencil"></i></a>
+                                <a style="cursor:pointer;" (click)="openDeleteModal(item.uid);"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+
+            <d3s-modal [title]="editPopupTitle"
+                       additionalClasses="modal-dyn-editor medium-dialog"
+                       (onClose)="showEditor=false"
+                       [isVisible]="showEditor">
+                <div class="row" *ngIf="isInError">
+                    <div class="err-message">{{isInErrorMessage}}</div>
+                </div>
+                <d3s-connector-label-form
+                                          [label]="selected[0]"
+                                          (onSave)="saveLabel($event)"
+                                          (onCancel)="closeEditor()"
+                                          [isVisible]="showEditor">
+
+                </d3s-connector-label-form>
+            </d3s-modal>
+
+            <!--<d3s-dynamic-editor [objectID]="selected[0]?.uid"
+                                [objectType]="'ConnectorLabel'"
+                                [title]="'ConnectorLabel'"
+                                [selection]="selected[0]"
+                                (saveClick)="saveLabel($event)"
+                                [showAsModal]="true"
+                                [modalTitle]="editPopupTitle"
+                                [isModalVisible]="showEditor"
+                                (closeClick)="closeEditor()">
+
+            </d3s-dynamic-editor>-->
+            <d3s-delete-form *ngIf="selected.length != 0"
+                             [callback]="theDeleteCallback"
+                             [method]="'callback'"
+                             [items]="selected"
+                             [showAsModal]="true"
+                             [modalCssClasses]="'large-dialog'"
+                             [modalTitle]="deletePopupTitle"
+                             [confirmationText]="deleteConfirmationText"
+                             [isModalVisible]="showDelete"
+                             (onCancel)="showDelete=false;"
+                             [showDownloadWhereUsed]="labelUsage && labelUsage.length > 0"
+                             (onUsageExport)="exportUsage()"
+                             [isUsageLoading]="isUsageLoading">
+                <div prompt>
+                    <div *ngIf="selected.length == 1">
+                        <ng-container>
+
+                            <p>
+                                Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
+                            </p>
+
+                            <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected[0].uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
+
+                            <p>
+                                Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
+                            </p>
+
+                        </ng-container>
+
+                    </div>
+                </div>
+
+            </d3s-delete-form>
         </div>
     </div>
 </div>

@@ -1,0 +1,90 @@
+﻿<ng-container *ngIf="showAsTable && !isUsageLoading && usage.length > 1 && !showAsModal">
+
+    <p>
+        The {{getFriendlyObjectType()}} is used in the following diagrams. All occurences will be removed.
+    </p>
+
+    <p-table #usageTable
+             [value]="usage"
+             [pageLinks]="3"
+             [paginator]="true"
+             [rows]="10"
+             class="ig-table"
+             [loading]="isUsageLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'Diagram'" style="width: 60%">
+                    Diagram
+                    <d3s-sortIcon [field]="'Diagram'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Occurrences'" style="width: 15%">
+                    Label Occurences
+                    <d3s-sortIcon [field]="'Occurrences'"></d3s-sortIcon>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td>
+                    {{item.Diagram}}
+                </td>
+                <td>{{item.Occurrences}}</td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</ng-container>
+
+<ng-container *ngIf="showAsModal">
+    <span class="open-usage-dialog-link" (click)="isModalVisible = true">
+        <ng-content></ng-content>
+    </span>
+    <d3s-modal [appendToBody]="true" [title]="'Where Used Report'" [additionalClasses]="'large-dialog'" (onClose)="isModalVisible = false" [isVisible]="isModalVisible">
+        <div class="content">
+            <div class="row">
+                <p-table #usageTable
+                         [value]="usage"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="10"
+                         class="ig-table"
+                         [loading]="isUsageLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'Diagram'" style="width: 60%">
+                                Diagram
+                                <d3s-sortIcon [field]="'Diagram'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'Occurrences'" style="width: 15%">
+                                Label Occurences
+                                <d3s-sortIcon [field]="'Occurrences'"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr>
+                            <td>
+                                {{item.Diagram}}
+                            </td>
+                            <td>{{item.Occurrences}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+
+            </div>
+        </div>
+        <div class="action-bar">
+            <button igButton label="Download" (click)="export()"></button>
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" (click)="isModalVisible=false" label="Close"></button>
+        </div>
+
+    </d3s-modal>
+</ng-container>

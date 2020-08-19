@@ -681,6 +681,15 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                         uid = tag.uid.ToString();
                         res.Add(new FieldTooltipValueModel() { Name = "Use count", Value = useCount.ToString() });
                     }
+                    else if (objectType == "ConnectorLabel")
+                    {
+                        var connectorLabel = Company.ConnectorLabels.FirstOrDefault(x => x.ID == objectID);
+                        int useCount = Company.Query<int>(@"select count(*) from processexpandeddata where labeluid = @uid", new { connectorLabel.uid }).First();
+                        uid = connectorLabel.uid.ToString();
+                        res.Add(new FieldTooltipValueModel() { Name = "Use count", Value = useCount.ToString() });
+                        dispName = connectorLabel.Value;
+                        typeName = "Connector Label";
+                    }
 
 
                     var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();

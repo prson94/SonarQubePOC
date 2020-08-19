@@ -43,7 +43,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.cdRef.detectChanges();
     }
     search(event) {
-        this.connectorLabelService.getAvailableLabels(this.assetUid, this.linkLabel)
+        this.connectorLabelService.getAvailableLabels(this.linkLabel)
             .subscribe(res => {
                 this.labels = [];
                 res.forEach(x => {

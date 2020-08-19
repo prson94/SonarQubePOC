@@ -2498,6 +2498,45 @@ div.home-image-title-text {
     }
 }
 
+.tile-detail {
+    .tag-list {
+        .tag-item {
+            max-width: 100%;
+            margin-bottom: 4px;
+            display: inline-block;
+
+            button {
+                max-width: 100%;
+                transition-duration: 0.2s;
+
+                &:hover {
+                    max-width: none;
+                }
+
+                span {
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                }
+            }
+        }
+    }
+
+    .warningMessage {
+        background-color: #ffe7b2;
+        border: 1px solid #ffb000;
+        border-radius: 2px;
+        width: 100%;
+        padding: 10px 20px;
+        margin-top: 15px;
+        color: #000;
+        font-weight: normal;
+        font-size: 14px;
+    }
+}
+
 .modal-overlay.show {
     visibility: visible;
     opacity: 1;
@@ -2547,6 +2586,27 @@ div.home-image-title-text {
         }
     }
 
+    .content {
+
+        table {
+            th, td {
+                padding-bottom: 10px;
+                padding-top: 10px;
+            }
+        }
+
+        .ui-chkbox {
+            .ui-chkbox-box.ui-state-active {
+                color: black;
+                background: white;
+            }
+        }
+
+        label {
+            color: black;
+        }
+    }
+
     d3s-dynamic-editor {
         .errorMessage {
             color: #BC1B01;
@@ -2555,6 +2615,12 @@ div.home-image-title-text {
             padding: 0px;
             border: none;
             margin: 0;
+        }
+    }
+
+    form {
+        input {
+            width: 100%;
         }
     }
 }
@@ -3351,12 +3417,18 @@ button.tab-scroller {
     .warningMessage {
         background-color: #ffe7b2;
         border: 1px solid #ffb000;
-        border-radius: 2px;
+        border-radius: 4px;
         width: 100%;
         padding: 10px 20px;
         margin-top: 15px;
         color: #000;
         font-weight: normal;
+
+        .open-usage-dialog-link {
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+        }
     }
 
     .errorMessage {
@@ -3489,6 +3561,21 @@ button.tab-scroller {
             }
         }
     }
+
+    .modal-edit-form {
+        label {
+            margin-bottom: 8px;
+        }
+
+        input, span.ui-autocomplete {
+            width: 100%;
+        }
+
+        .error-message {
+            position: relative;
+            top: -16px;
+        }
+    }
 }
 
 
@@ -3585,6 +3672,10 @@ button.tab-scroller {
         position: absolute;
         transform: translateY(-50%);
         margin-top: 8px;
+
+        .tooltip-content {
+            display: block;
+        }
     }
 
     &.ui-tooltip-right {
@@ -3982,45 +4073,6 @@ button.tab-scroller {
 .enable-pointer-events {
     .ui-chkbox {
         pointer-events: all;
-    }
-}
-
-.tile-detail {
-    .tag-list {
-        .tag-item {
-            max-width: 100%;
-            margin-bottom: 4px;
-            display: inline-block;
-
-            button {
-                max-width: 100%;
-                transition-duration: 0.2s;
-
-                &:hover {
-                    max-width: none;
-                }
-
-                span {
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    width: 100%;
-                    display: inline-block;
-                    overflow: hidden;
-                }
-            }
-        }
-    }
-
-    .warningMessage {
-        background-color: #ffe7b2;
-        border: 1px solid #ffb000;
-        border-radius: 2px;
-        width: 100%;
-        padding: 10px 20px;
-        margin-top: 15px;
-        color: #000;
-        font-weight: normal;
-        font-size: 14px;
     }
 }
 
@@ -7858,4 +7910,31 @@ d3s-process-diagram {
 
 .igx-related-asset-icon:before {
     content: url(\Content\images\related-assets-icon.svg);
+}
+
+.flex-div {
+    display: flex;
+
+    .tile-tools {
+        position: relative;
+        top: 5px;
+        margin-left: 16px;
+        width: 96px;
+        font-size: 15px;
+        line-height: 16px;
+    }
+}
+
+.connector-label-list {
+    .search-input {
+        width: 100%;
+        font-weight: normal;
+        margin-top: 12px;
+    }
+
+
+
+    .ui-table {
+        padding: 0px 12px;
+    }
 }
