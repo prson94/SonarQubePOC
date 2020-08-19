@@ -85,16 +85,24 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
                         if (this.metricTree !== null && this.metricTree.length > 0) {
-                            let index = 0;
+                            let node = this.metricTree[0];
                             if (initiallySelected) {
-                                let idx = this.metricTree.findIndex(n => n.data.Name.toLowerCase() === initiallySelected.toLowerCase());
+                                let found = null;
+                                this.metricTree.forEach(n => {
+                                    if (n.data.Name.toLowerCase() === initiallySelected.toLowerCase())
+                                        found = n;
+                                    else if (n.children && n.children.length > 0) {
+                                        found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase())
+                                    }
 
-                                if (idx > -1) 
-                                    index = idx;
+                                });
+                                if (found) 
+                                    node = found;
+
                             }
-                            this.selection = this.metricTree[index].data;
+                            this.selection = node.data;
                             this.selectionChange.emit(this.selection);
-                            this.selectedNode = this.metricTree[index];
+                            this.selectedNode = node;
                         } else {
                             this.selectionChange.emit(null);
                         }
