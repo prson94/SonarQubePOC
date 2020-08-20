@@ -5,6 +5,8 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service'; 
+import { Spinner } from 'primeng/spinner';
+import { Calendar } from 'primeng/calendar';
 
 
 @Component({
@@ -28,6 +30,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Output() onSave = new EventEmitter();
 
     @ViewChild('weight', { static: false }) weightInput: ElementRef;
+    @ViewChild('pc', { static: false }) calendar: Calendar;
 
     verb = "Add";
     child = "";
@@ -228,6 +231,20 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     this.isLoading = false;
                 }
             });
+    }
+
+    keyEvent(evt: KeyboardEvent) {
+        if (evt && evt.keyCode == 9) {
+            if (this.weightInput) {
+                let spinner = <any>this.weightInput as Spinner;
+                if (this.calendar && this.calendar.overlayVisible) {
+                    spinner.focus = true;
+                    spinner.el.nativeElement.firstChild.firstChild.focus();
+                    this.calendar.toggle();
+                }
+                    
+            }
+        }
     }
 
     cancel() {
