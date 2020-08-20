@@ -1,4 +1,4 @@
-﻿@import "_Variables";
+﻿@import "_Variables.less";
 /* need to import the color-picker styles until the the new dropdown component is completed or the measures screen is not displaying correctly */
 @import "../../Scripts/app/components/shared/controls/color-picker/color-picker.less";
 
@@ -6931,235 +6931,6 @@ table {
     }
 }
 
-d3s-process-diagram {
-    canvas {
-        outline: none;
-    }
-
-    .display {
-        display: block;
-    }
-
-    .hide {
-        display: none;
-    }
-
-
-    .tooltip-content {
-        position: absolute;
-        background: white;
-        z-index: 1000;
-        display: none;
-        margin-left: 0px;
-        transform: translateY(-100%);
-        width: unset;
-        max-width: 400px;
-
-        p {
-            padding: 0px;
-            margin: 0px;
-        }
-    }
-
-
-    .loader {
-        width: 200px;
-        margin: 0 auto;
-        padding: 16px;
-        color: #7d7d7d;
-        text-align: center;
-
-        .text {
-            position: relative;
-            top: -5px;
-            margin-left: 12px;
-        }
-    }
-
-    .diagram-content {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        height: 88%;
-        background-color: #eff2f6;
-    }
-
-    #process-diagram {
-
-        &.fullscreen {
-            margin-top: 40px;
-            position: fixed;
-            top: 0px;
-            left: 0px;
-            background-color: #eff2f6;
-            z-index: 10000;
-            width: 100%;
-            height: 100%;
-            padding: 16px;
-        }
-
-        .menu {
-            margin-bottom: 16px;
-            position: relative;
-        }
-    }
-
-    #process-diagram-placeholder {
-        flex-grow: 1;
-        background-color: white;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-        position: relative;
-
-
-
-        #diagram {
-            width: 100%;
-            height: 100%;
-        }
-    }
-
-    #myPaletteDiv {
-        overflow-y: auto;
-        width: 258px;
-        margin-right: 15px;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-        background-color: white;
-        padding: 8px;
-        height: 100%;
-    }
-
-    .asset-editor {
-        overflow-y: auto;
-        width: 300px;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-        background-color: white;
-        padding: 8px;
-        height: 100%;
-        margin-left: 16px;
-        position: relative;
-
-        .header {
-            .asset-name {
-                color: rgb(2,112,186);
-                display: block;
-                text-overflow: ellipsis;
-                font-size: 22px;
-            }
-
-            .asset-type-name {
-                font-size: 14px;
-                color: black;
-                opacity: 0.3;
-            }
-        }
-
-        .FieldName {
-            color: black;
-        }
-
-        .ui-multiselect {
-            .ui-multiselect-label-container {
-                max-width: 250px;
-                width: 100%;
-                overflow: hidden;
-            }
-        }
-
-        .ui-editor-toolbar {
-            padding: 4px;
-            background: @igx-grey-t5;
-
-            .kebab-tools {
-            }
-
-            .ql-formats {
-                margin-right: 0px;
-
-                &.with-border {
-                    border-right: 1px solid #dde0e3;
-                }
-            }
-        }
-    }
-
-    .empty-overlay {
-        position: absolute;
-        width: 97%;
-        height: 91%;
-
-        .content {
-            text-align: center;
-            top: 100px;
-            position: relative;
-            max-width: 163px;
-            margin: 0 auto;
-            color: #597897;
-
-            span {
-                font-size: 14px;
-                line-height: 18px;
-            }
-
-            .icon-holder {
-                background-color: rgba(89, 120, 151, 0.1);
-                height: 128px;
-                width: 128px;
-                text-align: center;
-                margin: 0 auto;
-                border-radius: 50%;
-                margin-bottom: 16px;
-
-                .fa {
-                    font-size: 56px;
-                    line-height: 128px;
-                }
-            }
-        }
-    }
-
-    .process-list-view {
-        padding: 16px;
-
-        .search {
-            .fa-search {
-                position: absolute;
-                margin-top: 3px;
-                background-color: @igx-grey-t5;
-                padding: 6px;
-                border-radius: 4px;
-                margin-left: -29px;
-            }
-        }
-
-        .process-table {
-            thead > tr > th {
-                padding-bottom: 10px;
-                padding-top: 10px;
-            }
-
-            tbody {
-                color: black;
-
-                td {
-                    padding: 9px 8px;
-                }
-            }
-
-            p-tableheadercheckbox, p-tablecheckbox {
-                .ui-chkbox-box {
-                    background: white;
-                    color: black;
-                    border: 1px solid #cdd0d2;
-                    border-radius: 2px;
-                }
-            }
-        }
-    }
-}
-
 .icon-panel {
 
     .ui-dropdown-item-group {
@@ -7782,22 +7553,23 @@ d3s-process-diagram {
 .gov-accordion {
     .gov-accordion-item {
         .title {
-            padding: 6px 12px;
-            border-bottom: 2px solid #eff2f6;
+            padding: 0px;
+            border-bottom: 2px solid @igx-grey-t5;
             margin-bottom: 6px;
-            font-size: 15.6px;
+            font-size: 14px;
             cursor: pointer;
-            color: #5c5e60;
-            font-weight: bold;
+            color: @ig-black;
 
             .fa {
                 font-weight: 400;
-                font-size: 14px;
+                font-size: 10px;
                 width: 14px;
+                position: relative;
+                top: -2px;
             }
         }
 
-        height: 40px;
+        height: 28px;
         overflow: hidden;
 
         .fa-chevron-down {

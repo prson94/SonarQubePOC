@@ -130,8 +130,6 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
     }
 
     parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        console.log(field.Type);
-        console.log(OperatorText);
         switch (field.Type) {
             case 'Date':
                 switch (OperatorText) {

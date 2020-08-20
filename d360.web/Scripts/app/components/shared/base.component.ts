@@ -927,6 +927,7 @@ export class BaseComponent {
         if (this.breadcrumbsService) {
             currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
         }
+        
         var components: SecondaryNavItem[] = [];
         components.push(this.scoreSidebar);
         components.push(this.dashboardSidebar);
@@ -949,7 +950,7 @@ export class BaseComponent {
                 cmp.active = true;
             }
 
-            if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl)) {
+            if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl || currentComponentUrl.indexOf(x) == 0)) {
                 cmp.active = true;
             }
         });

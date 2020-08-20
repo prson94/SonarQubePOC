@@ -340,7 +340,7 @@ namespace d360.web.Controllers
             var colorjoin = $@"
                                         outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
                                                     from Asset A 
-                                                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                                                    outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
                                         )colorJSON ";
 

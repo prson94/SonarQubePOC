@@ -55,6 +55,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         GalleryTagPickerComponent,
         GalleryInputComponent,
         GalleryColorPickerComponent,
+        GalleryColorVariablesComponent,
         GalleryAutocompleteComponent
     ],
     providers: [

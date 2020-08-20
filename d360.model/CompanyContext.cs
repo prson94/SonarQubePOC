@@ -36,7 +36,7 @@ namespace d360.model
         #region Caching Methods
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
-        
+
         internal string key(string token)
         {
             return string.Format(token, CurrentCompanyID);
@@ -214,7 +214,7 @@ namespace d360.model
         public DbSet<MapType> MapTypes { get; set; }
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
-        
+
         public DbSet<MapItem> MapItems { get; set; }
 
         public DbSet<MapRule> MapRules { get; set; }
@@ -1378,10 +1378,10 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             }
 
             if (limitToClasses != null && limitToClasses.Count > 0)
-            { 
+            {
                 classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
             }
-            
+
             var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
             string whereStatement = "";
@@ -2927,7 +2927,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
                     string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
                     string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
-                    
+
                     columns += $"{name}_T.value as [{name}],";
                     joins += $@" outer apply(
                             select value = (
@@ -2937,7 +2937,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 FROM field fi
                                 {fieldJoin}
                                 inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
-                                cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+                                cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
                                 where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
@@ -3131,6 +3131,24 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
   where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
 
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
+        }
+
+
+        public string GetDiagramUrlForDiagramAsset(Guid assetUid)
+        {
+            var diagramUrl = $@"select 
+                            '/sidebar/visualization/browser/'+lower(cast(a.uid as nvarchar(36)))+'/Process/' + lower(cast(@assetUid as nvarchar(36)))
+                            from AssetProcessDiagram APD
+                            cross apply (SELECT *
+                            FROM OPENJSON(APD.Diagram,'$.nodeDataArray')
+                            WITH (   
+            
+                                          uid uniqueidentifier '$.key'
+                             ) 
+                            )Json
+                            inner join asset a on a.id = apd.AssetID
+                            where json.uid = @assetUid";
+            return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
         }
     }
 }
