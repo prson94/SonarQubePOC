@@ -26,6 +26,7 @@ import { GalleryColorPickerComponent } from './gallery.color-picker.component';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 import { GalleryAutocompleteComponent } from './gallery.autocomplete.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
 
 
 @NgModule({
