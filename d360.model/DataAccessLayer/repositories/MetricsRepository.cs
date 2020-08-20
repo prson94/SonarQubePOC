@@ -287,7 +287,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             }
             else 
             {
-                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
+                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", new { model.Uid }).Single();
                 childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", new { model.Uid }).Single();
 
                 metricAsset.UpdatedBy = Company.CurrentResourceID;
@@ -1335,10 +1335,9 @@ for json path";
 
         private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
         {
-            return Company.Query<DateTime?>(@"SELECT top 1 EffectiveDate
-                      from [metrics].[ScoreItem]
-                      where metricassetuid = @metricVersionUid
-                      order by EffectiveDate desc", new { metricVersionUid = uid }).FirstOrDefault();
+            return Company.Query<DateTime?>(
+                "select max(I.EffectiveDate) as EffectiveDate from metrics.ScoreItem where AssetVersionUid = @metricVersionUid", 
+                new { metricVersionUid = uid }).FirstOrDefault();
         }
 
         public List<string> GetMetricVersionHistory(Guid measureUid)
