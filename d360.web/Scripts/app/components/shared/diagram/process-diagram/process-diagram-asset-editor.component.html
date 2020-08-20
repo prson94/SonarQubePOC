@@ -11,6 +11,7 @@
                                [selectedObject]="'TaskType'"
                                [objectTypeUid]="nodeData.assetTypeUid"
                                [assetUid]="nodeData.isNew ? null : nodeData.key"
+                               [diagramNodeKey]="nodeData.isNew ? nodeData.key : null"
                                [isV2API]="true"
                                [useNonLegacyData]="true"
                                [useModelBinding]="true"

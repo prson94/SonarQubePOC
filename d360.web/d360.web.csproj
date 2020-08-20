@@ -720,6 +720,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-variables.component.html" />
@@ -751,6 +752,7 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.less" />
+    <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
@@ -866,6 +868,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-variables.component.ts" />
