@@ -25,7 +25,7 @@ namespace d360.web.Controllers
         /// <param name="p">ParentID</param>        
         public JsonResult Hierarchy_AddFields(SystemObjects hierarchyType, int t, int p)
         {
-            if (hierarchyType != SystemObjects.PolicyType || hierarchyType != SystemObjects.TaxonomyType)
+            if (hierarchyType != SystemObjects.PolicyType && hierarchyType != SystemObjects.TaxonomyType)
                 throw new Exception("Unsupported hierarchy asset type specified to Hierarchy_AddFields.  Supported types are taxonomytype and policytype.");
 
             if (!Company.HasAssetTypePermission(hierarchyType, t, Permission.ModifyAsset))
@@ -45,7 +45,7 @@ namespace d360.web.Controllers
         /// <param name="id">TaxonomyID or PolicyID</param>        
         public JsonResult Hierarchy_EditFields(SystemObjects hierarchy, int id)
         {
-            if (hierarchy != SystemObjects.Policy || hierarchy != SystemObjects.Taxonomy)
+            if (hierarchy != SystemObjects.Policy && hierarchy != SystemObjects.Taxonomy)
                 throw new Exception("Unsupported hierarchy type specified to Hierarchy_EditFields.  Supported types are taxonomy and policy.");
 
             if (!Company.HasAssetPermission(hierarchy, id, Permission.ModifyAsset))
