@@ -306,12 +306,29 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 }
                 else
                 {
-                    o.AdjustedWeight = o.Value ? o.AdjustedMaxWeight : 0;
+                    if (o.OverrideAdjustmentPercentage.HasValue)
+                    {
+                        // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
+                        o.AdjustedWeight = (o.AdjustedMaxWeight ?? 0) * (decimal)o.OverrideAdjustmentPercentage.Value;
+                    }
+                    else
+                    {
+                        o.AdjustedWeight = o.Value ? (o.AdjustedMaxWeight ?? 0) : 0;
+                    }
                 }
                 scoreValue += o.AdjustedWeight.Value;
             }
 
             return scoreValue;
+        }
+
+        internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)
+        {
+            return new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans) {
+                BatchSize = 500,
+                DestinationTableName = tableName,
+                BulkCopyTimeout = 3600
+            };
         }
     }
 }

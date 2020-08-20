@@ -21,7 +21,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
             var assetMeasures = JsonConvert.DeserializeObject<List<AssetMeasureModel>>(json);
 
-            var finalScoresToAdd = new List<Score>();
+            var scoresToAdd = new List<Score>();
+            var scoresItemsToAdd = new List<ScoreItem>();
+            var scoreItemLinksToAdd = new List<ScoreItemLink>();
 
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
@@ -73,13 +75,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             AssetUid uniqueidentifier not null,
                             EffectiveDate date not null,
                             MetricAssetUid uniqueidentifier not null,
-                            Result bit not null,
+                            Result bit null,
                             MetricAssetVersionUid uniqueidentifier null,
                             AllocationUid uniqueidentifier null,
                             AssetTypeId int null
                         )", transaction: trans);
 
-                    using (var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans) { BatchSize = 500, DestinationTableName = "#AssetAllocations", BulkCopyTimeout = 3600 })
+                    using (var bulkCopy = CreateBulkCopy(company, trans, "#AssetAllocations"))
                     {
                         bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
                         bulkCopy.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
@@ -125,7 +127,7 @@ select  Al.AllocationUid,
 		L.*,
         Si.AssetVersionUid as MetricAssetVersionUid,
 		Si.ConditionUid,
-        Si.EffectiveDate,
+        S.EffectiveDate,
 		Si.Value,
 		Si.AdjustedWeight,
 		Si.AdjustedMaxWeight
@@ -154,7 +156,7 @@ from    (
 
 select  distinct 
         L.ScoreItemUid,
-        I.MetricAssetUid,
+        V.AssetUid as MetricAssetUid,
         Al.AssetUid,
         Al.EffectiveDate
 from    (
@@ -164,7 +166,8 @@ from    (
 		) Al
         inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate = Al.EffectiveDate
         inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-        inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid", transaction: trans, commandTimeout: 900);
+        inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+        inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid", transaction: trans, commandTimeout: 900);
                     models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
                     fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
                     allPreviousScoreItems = supportingDataRequest.Read<AssetAllocationPreviousResult>().ToList();
@@ -186,6 +189,7 @@ select	Al.AllocationUid,
 		V.Threshold,
 		V.MatchConditionsOnly,
 		V.[Definition],
+        V.EffectiveEndDate,
 		(
 			select	C.Uid as ConditionUid,
 					C.MatchType,
@@ -253,7 +257,6 @@ select	Al.AllocationUid,
 					) as Filters
 			from	[metrics].[AssetVersionRollupPath] C
                     inner join [metrics].[RollupPath] RP on RP.Uid = C.RollupPathUid and RP.State = 1 and C.AssetVersionUid = V.Uid
-			order by C.Position asc
 			for json path, WITHOUT_ARRAY_WRAPPER
 		) as RollupPathJson
 from	metrics.Asset A
@@ -271,16 +274,27 @@ from	metrics.Asset A
 
                 var scoreResults = new List<Score>();
                 var scoreItemResults = new List<ScoreItem>();
-                var uniqueAssetCombinations = models.Select(i => new { i.AssetTypeId, i.AllocationUid, i.AssetUid, i.EffectiveDate }).Distinct().ToList();
+                var uniqueAssetCombinations = models
+                    .Where(i => i.AllocationUid.HasValue)
+                    .Select(i => new { 
+                        AllocationUid = i.AllocationUid.Value, 
+                        i.AssetTypeId, 
+                        i.AssetUid, 
+                        i.EffectiveDate 
+                    })
+                    .Distinct()
+                    .ToList();
                 uniqueAssetCombinations.ForEach(assetEffectiveDate =>
                 {
-                    Score assetScoreResult = null;
-                    var assetScoreItemResults = new List<ScoreItem>();
+                    // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
+                    var assetScoreItems = new List<ScoreItem>();
+                    var assetScoreItemLinks = new List<ScoreItemLink>();
 
                     var allMeasures = allocations.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var providedMeasureResults = models.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.AssetUid == assetEffectiveDate.AssetUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var assetFields = company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
-
+                    var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid).ToList();
+                    
                     providedMeasureResults.ForEach(async n =>
                     {
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
@@ -293,14 +307,11 @@ from	metrics.Asset A
                                 var scoreItem = new ScoreItem
                                 {
                                     RawMeasureWeight = conditionValidator.SelectedWeight, // this is the measure/condition weight, which will need to be re-adjusted at the end.
-                                    AssetUid = assetEffectiveDate.AssetUid,
                                     MetricAssetUid = measure.MetricAssetUid,
                                     AssetVersionUid = measure.MetricAssetVersionUid,
-                                    EffectiveDate = assetEffectiveDate.EffectiveDate,
                                     RunDate = DateTime.UtcNow,
                                     UpdatedOn = DateTime.UtcNow,
-                                    ConditionUid = conditionValidator.SelectedConditionUid,
-                                    Uid = Guid.NewGuid()
+                                    ConditionUid = conditionValidator.SelectedConditionUid
                                 };
 
                                 // Now perform analysis based on measure type and check type.
@@ -317,57 +328,70 @@ from	metrics.Asset A
                                         }
                                         else
                                         {
-                                            var columnSql = "select R.Uid, R.PassFraction ";
+                                            var columnSql = "select ROW_NUMBER() over (partition by RE2.$from_id, RE1.$from_id order by R.UpdatedOn desc) as RowNumber, R.Uid, R.PassFraction ";
                                             var tableSql = "from ";
                                             var whereSql = "";
                                             var matchQuery = "";
                                             measure.RollupPath.SegmentLinks.ForEach(s =>
                                             {
-                                                matchQuery += $"N{s.StartAssetTypeID}-(E{s.IntersectTypeID})->";
-
-                                                tableSql += $"graph.AssetNode N{s.StartAssetTypeID}, ";
-                                                tableSql += $"graph.AssetEdge E{s.IntersectTypeID}, ";
-
-                                                whereSql += $"and N{s.StartAssetTypeID}.AssetTypeID = {s.StartAssetTypeID} and E{s.IntersectTypeID}.IntersectTypeID = {s.IntersectTypeID} ";
-
                                                 if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
                                                 {
-                                                    matchQuery += $"N{s.EndAssetTypeID}-(RE)-R";
-                                                    tableSql += $"graph.AssetNode N{s.EndAssetTypeID}, ";
-                                                    tableSql += $"dbo.AssetResultEdge RE, ";
-                                                    tableSql += $"dbo.AssetResult R ";
+                                                    matchQuery += $"<-(E{s.IntersectTypeID})-N{s.EndAssetTypeID} AND  N{s.StartAssetTypeID}-(RE2)->R<-(RE1)-N{s.EndAssetTypeID}";
+                                                    tableSql += $"graph.AssetEdge E{s.IntersectTypeID}, graph.AssetNode N{s.EndAssetTypeID}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
+                                                    whereSql += $" and N{s.EndAssetTypeID}.AssetTypeID = {s.EndAssetTypeID} and E{s.IntersectTypeID}.IntersectTypeID = {s.IntersectTypeID} and E{s.IntersectTypeID}.PredicateType = {(int)s.PredicateType} ";
+                                                }
+                                                else 
+                                                {
+                                                    matchQuery = matchQuery.Replace($"N{s.StartAssetTypeID}", "") +
+                                                                 $"N{s.StartAssetTypeID}-(E{s.IntersectTypeID})->N{s.EndAssetTypeID}";
 
-                                                    whereSql += $"and E{s.IntersectTypeID}.PredicateType = {(int)s.PredicateType} ";
+                                                    tableSql = tableSql.Replace($"graph.AssetNode N{s.StartAssetTypeID}, ", "") +
+                                                               $"graph.AssetNode N{s.StartAssetTypeID}, graph.AssetEdge E{s.IntersectTypeID}, graph.AssetNode N{s.EndAssetTypeID}, ";
+
+                                                    whereSql = whereSql.Replace($"and N{s.StartAssetTypeID}.AssetTypeID = {s.StartAssetTypeID}", "") +
+                                                               $"and N{s.StartAssetTypeID}.AssetTypeID = {s.StartAssetTypeID} and E{s.IntersectTypeID}.IntersectTypeID = {s.IntersectTypeID} and N{s.EndAssetTypeID}.AssetTypeID = {s.EndAssetTypeID}";
                                                 }
                                             });
                                             whereSql += $"and N{assetEffectiveDate.AssetTypeId}.Uid = @AssetUid";
-
-                                            var sql = $"{columnSql} {tableSql} where match({matchQuery}) {whereSql}";
-                                            var rollupPathResultsRequest = await company.QueryAsync<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid });
-                                            var rollupPathResults = rollupPathResultsRequest.ToList();
-
-                                            float resultOperationValue = 0;
-                                            switch (dqDefinition.ResultOperation)
+                                            if (measure.EffectiveEndDate.HasValue)
                                             {
-                                                case MeasureResultOperation.Average:
-                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
-                                                    break;
-                                                case MeasureResultOperation.Max:
-                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
-                                                    break;
-                                                case MeasureResultOperation.Minimum:
-                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
-                                                    break;
+                                                whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
                                             }
 
-                                            if (measure.IsThresholdBased)
+                                            var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
+                                            var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
+
+                                            if (rollupPathResults.Count > 0)
                                             {
-                                                scoreItem.Value = (measure.Threshold <= resultOperationValue);
+                                                float resultOperationValue = 0;
+                                                switch (dqDefinition.ResultOperation)
+                                                {
+                                                    case MeasureResultOperation.Average:
+                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
+                                                        break;
+                                                    case MeasureResultOperation.Max:
+                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
+                                                        break;
+                                                    case MeasureResultOperation.Minimum:
+                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
+                                                        break;
+                                                }
+
+                                                if (measure.IsThresholdBased)
+                                                {
+                                                    scoreItem.Value = (measure.Threshold <= resultOperationValue);
+                                                }
+                                                else
+                                                {
+                                                    // This will be used when adjusting max and actual weights.
+                                                    scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                }
                                             }
-                                            else { 
-                                                //TODO: Figure out how to send the adjustment value along to code below, without having it be overwritten later.
-                                                // For example, pass an adjustment ratio.
+                                            else
+                                            {
+                                                scoreItem.Value = true;
                                             }
+
                                             scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
                                         }
 
@@ -397,20 +421,23 @@ from	metrics.Asset A
                                         break;
                                 }
 
-                                assetScoreItemResults.Add(scoreItem);
+                                // Check to see if we have an existing scoreItem for this recalculated measure result.
+                                var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
+                                scoreItem.Uid = (previousScoreItem != null) ? previousScoreItem.ScoreItemUid : Guid.NewGuid();
+
+                                assetScoreItems.Add(scoreItem);
+                                assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
                             }
                         }
                     });
 
-                    // Perform final score calculations for this asset/effective date combination.
-                    if (assetScoreItemResults.Count > 0)
+                    // Perform final score calculations for this asset/effective date combination. If no data for asset/effective date, then do not even bother to recalculate anything for it.
+                    if (assetScoreItems.Count > 0)
                     {
-                        var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid).ToList();
-
                         allMeasures.ForEach(aM =>
                         {
                             // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
-                            if (!assetScoreItemResults.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid))
+                            if (!assetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid))
                             {
                                 // We need to add a previous result for the missing measure, or create a new one as a failure.
                                 var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
@@ -421,57 +448,71 @@ from	metrics.Asset A
 
                                     var scoreItem = new ScoreItem
                                     {
-                                        RawMeasureWeight = conditionValidator.SelectedWeight,
-                                        EffectiveDate = assetEffectiveDate.EffectiveDate,
-                                        RunDate = DateTime.UtcNow,
-                                        AssetUid = assetEffectiveDate.AssetUid,
-                                        AssetVersionUid = aM.MetricAssetVersionUid,
                                         MetricAssetUid = aM.MetricAssetUid,
+                                        RawMeasureWeight = conditionValidator.SelectedWeight,
+                                        RunDate = DateTime.UtcNow,
+                                        AssetVersionUid = aM.MetricAssetVersionUid,
                                         ConditionUid = conditionValidator.SelectedConditionUid,
                                         UpdatedOn = DateTime.UtcNow,
-                                        Value = (previousScoreItem != null) ? previousScoreItem.Value : false
+                                        Value = (previousScoreItem != null) ? previousScoreItem.Value : false,
+                                        Uid = (previousScoreItem != null) ? previousScoreItem.ScoreItemUid : Guid.NewGuid()
                                     };
-
-                                    var matchingScoreItem = matchingScoreItems.FirstOrDefault(s =>
-                                        s.AssetUid == assetEffectiveDate.AssetUid &&
-                                        s.EffectiveDate == assetEffectiveDate.EffectiveDate &&
-                                        s.MetricAssetUid == scoreItem.MetricAssetUid);
-
-                                    scoreItem.Uid = (matchingScoreItem != null) ? matchingScoreItem.ScoreItemUid : Guid.NewGuid();
-
-                                    if (matchingScoreItem == null && previousScoreItem != null)
-                                    {
-                                        if (previousScoreItem.EffectiveDate == scoreItem.EffectiveDate)
-                                        {
-                                            scoreItem.Uid = previousScoreItem.ScoreItemUid;
-                                        }
-                                    }
-
-                                    assetScoreItemResults.Add(scoreItem);
+                                    assetScoreItems.Add(scoreItem);
+                                    assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
                                 }
                             }
                         });
 
-                        var score = AdjustScoreItemWeights(allMeasures, assetScoreItemResults);
-                        assetScoreResult = new Score
+                        var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
+                        Score assetScore = new Score
                         {
                             EffectiveDate = assetEffectiveDate.EffectiveDate,
-                            ScoreType = ScoreType.Governance,
                             AllocationUid = assetEffectiveDate.AllocationUid,
                             AssetUid = assetEffectiveDate.AssetUid,
                             RunDate = DateTime.UtcNow,
-                            Value = score,
-                            Items = assetScoreItemResults
+                            Value = score
                         };
                         // If there is a macthing score in the system, update the Uid 
                         var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid && s.EffectiveDate == assetEffectiveDate.EffectiveDate);
-                        assetScoreResult.Uid = (matchingScore != null) ? matchingScore.ScoreUid : Guid.NewGuid();
-                        finalScoresToAdd.Add(assetScoreResult);
+                        assetScore.Uid = (matchingScore != null) ? matchingScore.ScoreUid : Guid.NewGuid();
+                        //finalScoresToAdd.Add(assetScoreResult);
+                        
+                        // Update the links with the chosen score Uid.
+                        assetScoreItemLinks.ForEach(l => {
+                            l.ScoreUid = assetScore.Uid;
+                        });
+
+
+                        var assetScoreGroupUids = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid, i.MetricAssetVersionUid }).ToList();
+                        assetScoreGroupUids.ForEach(g =>
+                        {
+                            if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
+                            {
+                                // See if there are any child measures that we have. 
+                                // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
+                                if (
+                                    !(
+                                    from am in allMeasures
+                                    join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
+                                    where am.MetricParentAssetUid == g.MetricAssetUid
+                                    select si
+                                    ).Any()
+                                    )
+                                {
+                                    assetScoreItems.RemoveAll(si => si.MetricAssetUid == g.MetricAssetUid);
+                                }
+                            }
+                        });
+
+                        // Now add to master collection which will be sent to database.
+                        scoreItemLinksToAdd.AddRange(assetScoreItemLinks);
+                        scoresItemsToAdd.AddRange(assetScoreItems);
+                        scoresToAdd.Add(assetScore);
                     }
                 });
 
                 //Now add scores via a transaction.
-                if (finalScoresToAdd.Count > 0)
+                if (scoresToAdd.Count > 0)
                 {
                     using (var trans = company.BeginTransaction())
                     {
@@ -484,26 +525,24 @@ from	metrics.Asset A
                             scores.Columns.Add("Value", typeof(decimal));
                             scores.Columns.Add("RunDate", typeof(DateTime));
                             scores.Columns.Add("EndDate", typeof(DateTime));
-                            scores.Columns.Add("ScoreType", typeof(int));
                             scores.Columns.Add("AllocationUid", typeof(Guid));
 
                             var scoreItems = new DataTable();
                             scoreItems.Columns.Add("Uid", typeof(Guid));
-                            scoreItems.Columns.Add("ScoreUid", typeof(Guid));
-                            scoreItems.Columns.Add("AssetUid", typeof(Guid));
-                            scoreItems.Columns.Add("MetricAssetUid", typeof(Guid));
-                            scoreItems.Columns.Add("EffectiveDate", typeof(DateTime));
                             scoreItems.Columns.Add("UpdatedOn", typeof(DateTime));
                             scoreItems.Columns.Add("Value", typeof(bool));
                             scoreItems.Columns.Add("AdjustedWeight", typeof(decimal));
                             scoreItems.Columns.Add("RunDate", typeof(DateTime));
-                            scoreItems.Columns.Add("EndDate", typeof(DateTime));
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
-                            foreach (var s in finalScoresToAdd)
+                            var scoreItemLinks = new DataTable();
+                            scoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
+                            scoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
+
+                            scoresToAdd.ForEach(s =>
                             {
                                 var scoreRow = scores.NewRow();
                                 scoreRow["Uid"] = s.Uid;
@@ -511,123 +550,101 @@ from	metrics.Asset A
                                 scoreRow["EffectiveDate"] = s.EffectiveDate.Date;
                                 scoreRow["Value"] = s.Value;
                                 scoreRow["RunDate"] = s.RunDate;
-                                scoreRow["ScoreType"] = (int)s.ScoreType;
                                 scoreRow["AllocationUid"] = s.AllocationUid;
                                 scores.Rows.Add(scoreRow);
+                            });
 
-                                foreach (var si in s.Items)
-                                {
-                                    var scoreItemRow = scoreItems.NewRow();
-                                    scoreItemRow["Uid"] = si.Uid;
-                                    scoreItemRow["ScoreUid"] = s.Uid;
-                                    scoreItemRow["AssetUid"] = si.AssetUid;
-                                    scoreItemRow["MetricAssetUid"] = si.MetricAssetUid;
-                                    scoreItemRow["EffectiveDate"] = si.EffectiveDate;
-                                    scoreItemRow["UpdatedOn"] = si.UpdatedOn;
-                                    scoreItemRow["Value"] = si.Value;
-                                    scoreItemRow["AdjustedWeight"] = si.AdjustedWeight;
-                                    scoreItemRow["RunDate"] = si.RunDate;
-                                    if (si.EndDate.HasValue)
-                                        scoreItemRow["EndDate"] = si.EndDate;
-                                    scoreItemRow["AssetVersionUid"] = si.AssetVersionUid;
-                                    scoreItemRow["Evidence"] = si.Evidence ?? "{}";
-                                    if (si.ConditionUid.HasValue)
-                                        scoreItemRow["ConditionUid"] = si.ConditionUid;
-                                    scoreItemRow["AdjustedMaxWeight"] = si.AdjustedMaxWeight;
-                                    scoreItems.Rows.Add(scoreItemRow);
-                                }
-                            }
+                            scoresItemsToAdd.ForEach(s =>
+                            {
+                                var scoreItemRow = scoreItems.NewRow();
+                                scoreItemRow["Uid"] = s.Uid;
+                                scoreItemRow["UpdatedOn"] = s.UpdatedOn;
+                                scoreItemRow["Value"] = s.Value;
+                                scoreItemRow["AdjustedWeight"] = s.AdjustedWeight;
+                                scoreItemRow["RunDate"] = s.RunDate;
+                                scoreItemRow["AssetVersionUid"] = s.AssetVersionUid;
+                                scoreItemRow["Evidence"] = s.Evidence ?? "{}";
+                                if (s.ConditionUid.HasValue)
+                                    scoreItemRow["ConditionUid"] = s.ConditionUid;
+                                scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight;
+                                scoreItems.Rows.Add(scoreItemRow);
+                            });
+
+                            scoreItemLinksToAdd.ForEach(s =>
+                            {
+                                var scoreRow = scoreItemLinks.NewRow();
+                                scoreRow["ScoreUid"] = s.ScoreUid;
+                                scoreRow["ScoreItemUid"] = s.ScoreItemUid;
+                                scoreItemLinks.Rows.Add(scoreRow);
+                            });
 
                             await company.ExecuteAsync(
-                                @"create table #Scores (
+                               @"create table #Scores (
                                     Uid uniqueidentifier not null,
                                     AssetUid uniqueidentifier not null,
                                     EffectiveDate date not null,
                                     Value decimal(5,3) null,
                                     RunDate datetime not null,
                                     EndDate date null,
-                                    ScoreType int not null,
                                     AllocationUid uniqueidentifier null
                                 );
                                 create table #ScoreItems (
 	                                Uid uniqueidentifier NOT NULL,
-                                    ScoreUid uniqueidentifier NOT NULL,
-	                                AssetUid uniqueidentifier NOT NULL,
-	                                MetricAssetUid uniqueidentifier NOT NULL,
-	                                EffectiveDate date NOT NULL,
 	                                UpdatedOn datetime NOT NULL,
 	                                Value bit NOT NULL,
 	                                AdjustedWeight decimal(5, 3) NULL,
 	                                RunDate datetime NULL,
-	                                EndDate date NULL,
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
 	                                AdjustedMaxWeight decimal(5, 3) NULL
+                                );
+                                create table #ScoreItemLinks (
+                                    ScoreUid uniqueidentifier NOT NULL,
+	                                ScoreItemUid uniqueidentifier NOT NULL
                                 );", transaction: trans);
 
-                            var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                            using (var bulkCopy = CreateBulkCopy(company, trans, "#Scores"))
+                            { 
+                                bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+                                bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                                bulkCopy.ColumnMappings.Add("Value", "Value");
+                                bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                                bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
+                                bulkCopy.ColumnMappings.Add("AllocationUid", "AllocationUid");
+
+                                await bulkCopy.WriteToServerAsync(scores);                           
+                            }
+
+                            using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItems"))
                             {
-                                BatchSize = scores.Rows.Count,
-                                DestinationTableName = "#Scores",
-                                BulkCopyTimeout = 3600
-                            };
+                                bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
+                                bulkCopy.ColumnMappings.Add("Value", "Value");
+                                bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
+                                bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                                bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
+                                bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
+                                bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
+                                bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
 
-                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                            bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                            bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                            bulkCopy.ColumnMappings.Add("Value", "Value");
-                            bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
-                            bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
-                            bulkCopy.ColumnMappings.Add("ScoreType", "ScoreType");
-                            bulkCopy.ColumnMappings.Add("AllocationUid", "AllocationUid");
+                                await bulkCopy.WriteToServerAsync(scoreItems);
+                            }
 
-                            await bulkCopy.WriteToServerAsync(scores);
-
-                            bulkCopy = null;
-
-                            bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                            using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinks"))
                             {
-                                BatchSize = scoreItems.Rows.Count,
-                                DestinationTableName = "#ScoreItems",
-                                BulkCopyTimeout = 3600
-                            };
+                                bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
+                                bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
 
-                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                            bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
-                            bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                            bulkCopy.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
-                            bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                            bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
-                            bulkCopy.ColumnMappings.Add("Value", "Value");
-                            bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
-                            bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
-                            bulkCopy.ColumnMappings.Add("EndDate", "EndDate");
-                            bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
-                            bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
-                            bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
-                            bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
-
-                            await bulkCopy.WriteToServerAsync(scoreItems);
-
-                            bulkCopy = null;
-
-                            // Final check to match up existing score items.
-                            await company.ExecuteAsync("update T " +
-                                "set T.Uid = S.Uid " +
-                                "from #ScoreItems T " +
-                                "inner join metrics.ScoreItem S on S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate = T.EffectiveDate", transaction: trans);
-
+                                await bulkCopy.WriteToServerAsync(scoreItemLinks);
+                            }
 
                             // End-date earlier scores and score items.
                             await company.ExecuteAsync("update T " +
                                 "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
                                 "from metrics.Score T " +
                                 "inner join #Scores S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null", transaction: trans);
-                            await company.ExecuteAsync("update T " +
-                                "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
-                                "from metrics.ScoreItem T " +
-                                "inner join #ScoreItems S on S.MetricAssetUid = T.MetricAssetUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null and S.Uid <> T.Uid", transaction: trans);
 
                             // End-date new scores and score items IF the effective date is not the latest effective date.
                             await company.ExecuteAsync("update T " +
@@ -635,48 +652,45 @@ from	metrics.Asset A
                                 "from #Scores T " +
                                 "cross apply (select min(EffectiveDate) as EffectiveDate from metrics.Score where AllocationUid = T.AllocationUid and AssetUid = T.AssetUid and EffectiveDate > T.EffectiveDate) MinS " +
                                 "inner join metrics.Score S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate = MinS.EffectiveDate", transaction: trans);
-                            await company.ExecuteAsync("update T " +
-                                "set T.EndDate = DATEADD(d, -1, S.EffectiveDate) " +
-                                "from #ScoreItems T " +
-                                "cross apply (select min(EffectiveDate) as EffectiveDate from metrics.ScoreItem where MetricAssetUid = T.MetricAssetUid and AssetUid = T.AssetUid and EffectiveDate > T.EffectiveDate) MinS " +
-                                "inner join metrics.ScoreItem S on S.MetricAssetUid = T.MetricAssetUid and S.AssetUid = T.AssetUid and S.EffectiveDate = MinS.EffectiveDate and S.Uid <> T.Uid", transaction: trans);
 
                             // Merge scores.
-                            await company.ExecuteAsync("merge metrics.Score as T " +
+                            await company.ExecuteAsync(
+                                "merge metrics.Score as T " +
                                 "using #Scores as S " +
                                 "on (S.Uid = T.Uid) " +
                                 "when matched then " +
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.Value = S.Value " +
                                 "when not matched then " +
-                                "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate, ScoreType) " +
-                                "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.ScoreType);", transaction: trans);
+                                "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate) " +
+                                "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate);", transaction: trans);
 
                             // Merge score items.
-                            await company.ExecuteAsync("merge metrics.ScoreItem as T " +
+                            await company.ExecuteAsync(
+                                "merge metrics.ScoreItem as T " +
                                 "using #ScoreItems as S " +
-                                //"on (S.AssetUid = T.AssetUid and S.MetricAssetUid = T.MetricAssetUid and S.EffectiveDate = T.EffectiveDate) " +
                                 "on (S.Uid = T.Uid) " +
                                 "when matched then " +
                                 "update set " +
-                                "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.UpdatedOn = S.UpdatedOn, " +
+                                "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
                                 "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.Evidence = S.Evidence, " +
                                 "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight, RunDate, EndDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.UpdatedOn, S.Value, S.AdjustedWeight, S.RunDate, S.EndDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
-                            await company.ExecuteAsync("merge metrics.ScoreItemLink as T " +
-                                "using #ScoreItems as S " +
-                                "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.Uid) " +
+                            await company.ExecuteAsync(
+                                "merge metrics.ScoreItemLink as T " +
+                                "using #ScoreItemLinks as S " +
+                                "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
                                 "when not matched then " +
                                 "insert (ScoreUid, ScoreItemUid) " +
-                                "values (S.ScoreUid, S.Uid);", transaction: trans);
+                                "values (S.ScoreUid, S.ScoreItemUid);", transaction: trans);
 
                             trans.Commit();
 
-                            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, finalScoresToAdd.Select(i => i.Uid).ToList());
+                            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoresToAdd.Select(i => i.Uid).ToList());
                         }
                         catch (Exception ex)
                         {
@@ -686,12 +700,6 @@ from	metrics.Asset A
                     }
                 }
             }
-
-
-
-
-
-
         }
     }
 }

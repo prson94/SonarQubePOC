@@ -6500,7 +6500,7 @@ insert into #Keys
 
         }
 
-        async Task<List<AssetMeasureModel>> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
+        public List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids)
         {
             var ruleResults = new DataTable();
             ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
@@ -6516,7 +6516,7 @@ insert into #Keys
             List<RuleResultChangedRawModel> rawMeasures;
             using (var trans = Connection.BeginTransaction())
             {
-                await Connection.ExecuteAsync(@"create table #RuleResults (
+                Connection.Execute(@"create table #RuleResults (
                         RuleResultUid uniqueidentifier not null
                     )", transaction: trans);
 
@@ -6528,41 +6528,38 @@ insert into #Keys
 
                     bulkCopy.ColumnMappings.Add("RuleResultUid", "RuleResultUid");
 
-                    await bulkCopy.WriteToServerAsync(ruleResults);
+                    bulkCopy.WriteToServer(ruleResults);
                 }
 
-                var rawAssetMeasuresRequest = await Connection.QueryAsync<RuleResultChangedRawModel>(@"
-select	Ea.Uid as AssetUid,
-    Re.EffectiveDate,
-	Ma.Uid as MetricAssetUid,
-	Mav.Uid as MetricAssetVersionUid
+                rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
+select	A.Uid as AssetUid,
+		Re.EffectiveDate,
+		Ma.Uid as MetricAssetUid,
+		Mver.Uid as MetricAssetVersionUid
 from	AssetResult Re,
-	AssetResultEdge E1,
-	graph.AssetNode Ru,
-	AssetResultEdge E2,
-	graph.AssetNode Ea,
-	graph.AssetEdge Eval,
-	metrics.Allocation Mal,
-	metrics.Asset Ma,
-	metrics.AssetVersion Mav,
-	[metrics].[AssetVersionRollupPath] Mar,
-	[metrics].[RollupPath] Mr,
-	[metrics].[RollupPathSegment] Mrs
-where	match(Ru-(E1)->Re<-(E2)-Ea AND Ru-(Eval)->Ea)
-	and E1.Class = 1
-	and E2.Class = 2
-	and Eval.PredicateType = 2 --evaluation
-	and Mal.AssetTypeUid = Ea.AssetTypeUid and Mal.ScoreType = 2 and Mal.IsExternallyCalculated = 0
-	and Ma.AllocationUid = Mal.Uid
-	and Mav.AssetUid = Ma.Uid
-	and Mar.AssetVersionUid = Mav.Uid
-	and Mr.Uid = Mar.RollupPathUid
-	and Mrs.[RollupPathUid] = Mr.Uid
-	and Ru.AssetTypeId = Mrs.AssetTypeID
-    and Re.Uid in (select RuleResultUid from #RuleResults)", transaction: trans);
-
-                rawMeasures = rawAssetMeasuresRequest.ToList();
-                rawAssetMeasuresRequest = null;
+		AssetResultEdge E,
+		graph.AssetNode Ea,
+		[metrics].[RollupPathSegment] Seg,
+		[metrics].[RollupPath] Rol,
+		[metrics].[AssetVersionRollupPath] VerRol,
+		metrics.AssetVersion Mver,
+		metrics.Asset Ma,
+		metrics.Allocation Mal,
+		AssetType T,
+		Asset A
+where	match(Ea-(E)->Re)
+		and E.Class = 2
+		and Seg.AssetTypeID = Ea.AssetTypeID
+		and Rol.Uid = Seg.RollupPathUid
+		and VerRol.RollupPathUid = Rol.Uid
+		and Mver.Uid = VerRol.AssetVersionUid
+		and Ma.Uid = Mver.AssetUid
+		and Mal.Uid = Ma.AllocationUid
+		and Mal.ScoreType = 2
+		and Mal.IsExternallyCalculated = 0
+		and T.Uid = Mal.AssetTypeUid
+		and A.AssetTypeID = T.ID
+        and Re.Uid in (select RuleResultUid from #RuleResults)", transaction: trans).ToList();
             }
 
             var structuredMeasures = rawMeasures
@@ -7150,8 +7147,13 @@ where	match(Ru-(E1)->Re<-(E2)-Ea AND Ru-(Eval)->Ea)
             }
 
             var ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
-            var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+            if (ruleResultUids.Count > 0) {
+                var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
+                if (assetMeasures.Count > 0)
+                {
+                    SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                }
+            }
 
             return results;
         }
@@ -7638,7 +7640,7 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
                 }
             }
 
-            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsRemoved, import);
+            //SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, import);
 
             return results;
         }

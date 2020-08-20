@@ -72,6 +72,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public Guid AllocationUid { get; set; }
         public DateTime EffectiveDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
         public ScoreType ScoreType { get; set; }
         public CalculationMethod CalculationMethod { get; set; }
         public bool IsThresholdBased { get; set; }

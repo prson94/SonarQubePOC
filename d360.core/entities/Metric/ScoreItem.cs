@@ -39,5 +39,13 @@ namespace d360.core.entities.Metric
 
         [IgnoreDataMember, NotMapped]
         public Guid MetricAssetUid { get; set; }
+        
+        /// <summary>
+        /// Used for data quality measures when the score allocation is not threshold-based. 
+        /// We use this value to apply to the adjustedmaxweight in order to get a percentage 
+        /// of that to then contirubute towards the score.
+        /// </summary>
+        [IgnoreDataMember, NotMapped]
+        public float? OverrideAdjustmentPercentage { get; set; }
     }
 }

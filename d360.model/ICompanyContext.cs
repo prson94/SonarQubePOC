@@ -222,6 +222,7 @@ namespace d360.model
         LoadDetail GetLoadDetail(int id);
         IEnumerable<LoadDetail> GetLoadDetails();
         IEnumerable<dynamic> GetLoadItemDetails(int id);
+        List<AssetMeasureModel> GetAssetMeasuresFromRuleResults(List<Guid> ruleResultUids);
         string GetNoReadSqlStatement(string identifier = null);
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);

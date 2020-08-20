@@ -837,7 +837,8 @@ from    (
                     for json path
                 ) as SegmentsJson
         from    [metrics].[RollupPath] P
-                inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and S.Position = 1 and P.ScoreType = @scoreType and S.AssetTypeid = @assetTypeId
+        where   P.ScoreType = @scoreType 
+                and P.AssetTypeid = @assetTypeId
         ) P
 order by P.[Path]";
             return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType });
