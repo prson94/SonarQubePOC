@@ -235,7 +235,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     keyEvent(evt: KeyboardEvent) {
         if (evt && evt.keyCode == 9) {
-            console.log(this.weightInput);
             if (this.weightInput) {
                 let spinner = <any>this.weightInput as Spinner;
                 if (this.calendar && this.calendar.overlayVisible) {
