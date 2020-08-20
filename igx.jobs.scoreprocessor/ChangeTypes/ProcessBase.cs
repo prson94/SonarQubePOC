@@ -324,10 +324,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
         internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)
         {
-            return new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans) {
-                BatchSize = 500,
+            return new SqlBulkCopy(company, SqlBulkCopyOptions.TableLock, trans) {
+                BatchSize = 5000,
                 DestinationTableName = tableName,
-                BulkCopyTimeout = 3600
+                BulkCopyTimeout = 0
             };
         }
     }
