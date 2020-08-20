@@ -22,7 +22,7 @@
                     [options]="filter?.Data?.options"
                     [style]="{width:'100%'}"
                     [ngModel]="filter?.Data?.objectIds"
-                    [selectionLimit]="100"
+                    [selectionLimit]="(filter?.Data?.options?.length > 100 ? 100 : null)"
                     (ngModelChange)="filter.Data.objectIds = $event"></p-multiSelect>
                 <p-selectButton [name]="'relationIncludeType_' + index"
                     [options]="connectors"

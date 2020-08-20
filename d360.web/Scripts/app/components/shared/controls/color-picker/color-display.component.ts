@@ -1,8 +1,6 @@
 ﻿
-import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, Input } from '@angular/core';
 import * as _ from 'lodash';
-import { AssetService } from '../../../../services/asset.service';
 
 @Component({
     selector: 'd3s-color-display',

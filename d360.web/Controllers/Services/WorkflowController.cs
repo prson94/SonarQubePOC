@@ -368,7 +368,7 @@ order by wi.StartedOn desc";
         }
 
         [HttpPost, Route("ReassignWorkflowObject/{itemId:int}/{workflowId:int}/{objectId:int}/{objectType}/{itemStepId:int}")]
-        public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType, int itemStepId)
+        public HttpResponseMessage ReassignWorkflowObject(int itemId, int workflowId, int objectId, string objectType, int itemStepId, int? resourceId)
         {
             try
             {
@@ -392,6 +392,7 @@ order by wi.StartedOn desc";
                 workflowItem.CompletedBy = Company.CurrentResourceID;
                 workflowItem.CompletedOn = DateTime.UtcNow;
 
+
                 //mark the form as completed as well since it was reassisnged
                 var workflowItemStep = Company.WorkflowItemSteps.Where(x => x.ID == itemStepId).FirstOrDefault();
 
@@ -400,11 +401,25 @@ order by wi.StartedOn desc";
                     return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid Workflow item step id.");
                 }
 
+                var isResourceReassignment = objectType.ToLower() == "resource";
+
                 var fieldElement = XElement.Parse(workflowItemStep.Fields);
                 var reassigned = new XElement("Reassigned");
-                reassigned.Add(new XAttribute("reassignType", "Object"));
-                reassigned.Add(new XAttribute("objectId", objectId));
-                reassigned.Add(new XAttribute("objectType", objectType));
+                reassigned.Add(new XAttribute("reassignType", (isResourceReassignment ? "Resource" : "Object")));
+                if (isResourceReassignment)
+                {
+                    reassigned.Add(new XAttribute("toResourceId", objectId));
+                    reassigned.Add(new XAttribute("fromResourceId", resourceId ?? Company.CurrentResourceID));
+                }
+                else
+                {
+                    reassigned.Add(new XAttribute("objectId", objectId));
+                    reassigned.Add(new XAttribute("objectType", objectType));
+                }
+
+                reassigned.Add(new XAttribute("byResourceId", Company.CurrentResourceID.ToString()));
+                reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
+
                 fieldElement.Add(reassigned);
                 workflowItemStep.Fields = fieldElement.ToString();
 

@@ -1,0 +1,49 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Bhoward" id="Function.dbo.GetAssetColorJsonByColor-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetColorJsonByColor]
+(
+	@Color Varchar(100)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+WITH DUAL AS (select 'X' COL)
+select (
+	select * from (
+		select
+			'Custom' as [Name],
+			@Color as [Value]
+		from	DUAL A1 
+		where	(substring(@Color, 1, 1) = '#' or substring(@Color, 1, 3) = 'hsl')
+    union all
+		select
+				C.[Name],
+				C.[Value]
+		from	Color C 
+		where	C.ID = try_cast(@Color as int) and @Color is not null and substring(coalesce(@Color,''), 1, 1) <> '#' and substring(coalesce(@Color,''), 1, 3) <> 'hsl'
+	
+		) C for json path, without_array_wrapper
+	) as ColorJson 
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

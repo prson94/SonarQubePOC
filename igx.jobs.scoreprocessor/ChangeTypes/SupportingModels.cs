@@ -109,4 +109,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public string Value { get; set; }
     }
 
+    internal class ScoreItemLink
+    {
+        public Guid ScoreUid { get; set; }
+        public Guid ScoreItemUid { get; set; }
+    }
+
 }

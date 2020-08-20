@@ -16,7 +16,7 @@ namespace d360.core.entities.Metric
         public Guid AssetUid { get; set; }
 
         [DataMember]
-        public Guid? AllocationUid { get; set; }
+        public Guid AllocationUid { get; set; }
 
         [DataMember]
         public DateTime EffectiveDate { get; set; }
@@ -29,9 +29,6 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public DateTime? EndDate { get; set; }
-
-        [DataMember, JsonConverter(typeof(StringEnumConverter))]
-        public ScoreType ScoreType { get; set; } = ScoreType.Governance;
 
         public ICollection<ScoreItem> Items { get; set; }
     }

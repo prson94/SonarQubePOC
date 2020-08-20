@@ -4,7 +4,6 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { ObjectRelationshipCount } from '../../../models/relationship.model';
 import { DynamicRelationshipGridComponent } from './dynamic-relationship-grid.component';
 import { ResponsibilityTypeRelationPermission } from '../../../models/responsibility-type.model';
-import { error } from '@angular/compiler/src/util';
 
 @Component({
     selector: 'd3s-object-relationships',

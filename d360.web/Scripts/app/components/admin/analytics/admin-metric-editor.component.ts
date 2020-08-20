@@ -5,6 +5,8 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service'; 
+import { Spinner } from 'primeng/spinner';
+import { Calendar } from 'primeng/calendar';
 
 
 @Component({
@@ -28,6 +30,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Output() onSave = new EventEmitter();
 
     @ViewChild('weight', { static: false }) weightInput: ElementRef;
+    @ViewChild('pc', { static: false }) calendar: Calendar;
 
     verb = "Add";
     child = "";
@@ -220,7 +223,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (r) {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-                    this.onSave.emit(); 
+                    this.onSave.emit(this.model.Name); 
                 }
                 else {
                     this.date = prevDate as Date;
@@ -230,10 +233,24 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             });
     }
 
+    keyEvent(evt: KeyboardEvent) {
+        if (evt && evt.keyCode == 9) {
+            if (this.weightInput) {
+                let spinner = <any>this.weightInput as Spinner;
+                if (this.calendar && this.calendar.overlayVisible) {
+                    spinner.focus = true;
+                    spinner.el.nativeElement.firstChild.firstChild.focus();
+                    this.calendar.toggle();
+                }
+                    
+            }
+        }
+    }
+
     cancel() {
-        this.model = null;
         this.load();
-        this.onCancel.emit();
+        this.onCancel.emit(this.model.Name);
+        this.model = null;
     }
 
     getUTCDate(date: Date): Date {

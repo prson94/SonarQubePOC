@@ -328,5 +328,8 @@ namespace d360.model
 
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
         bool LookupFieldHasColorItem(FieldType f);
+
+        string GetDiagramUrlForDiagramAsset(Guid assetUid);
+
     }
 }

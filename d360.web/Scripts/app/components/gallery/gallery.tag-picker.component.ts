@@ -38,6 +38,7 @@ export class GalleryTagPickerComponent implements OnInit {
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "readOnly", Type: "boolean", Description: "Used to set the control to read only state where the user cannot add or remove tags", Default: "false" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
+        this.properties.push({ Name: "assetUid", Type: "guid/string", Description: "Asset UID needed to resolve tag permissions", Default: "00000000-0000-0000-0000-000000000000" });
 
         this.events = new Array();
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });

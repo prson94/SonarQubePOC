@@ -320,15 +320,17 @@ where	ExecutionID = @executionID
             }
         }
 
-        private void LogParentErrors(Guid executionID, int timeout = 3600)
+        private void LogParentErrors(Guid executionID, int timeout = 3600, bool allowEmptyParentUid = false)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 update	api.ExecutionAsset
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Asset does not contain a valid ParentUid value'
 where	ExecutionID = @executionID
         and ParentAssetID is null
-		and ParentUid is not null;",
+		and ParentUid is not null        
+        {(allowEmptyParentUid ? " and ParentUid <> '00000000-0000-0000-0000-000000000000'" : "")}
+;",
             new { executionID }, commandTimeout: timeout);
         }
 
@@ -1624,19 +1626,21 @@ from	IntersectType I
 
                         #region Bulk Copy
 
-                        SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                        {
 
-                        bulkCopy.BatchSize = SqlBulkBatchSize;
-                        bulkCopy.DestinationTableName = "api.ExecutionDeletedAsset";
-                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                            bulkCopy.BatchSize = SqlBulkBatchSize;
+                            bulkCopy.DestinationTableName = "api.ExecutionDeletedAsset";
+                            bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                        bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                            bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                            bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
-                        bulkCopy.WriteToServer(table);
+                            bulkCopy.WriteToServer(table);
+                        }
 
                         #endregion
 
@@ -2373,19 +2377,21 @@ from	IntersectType I
 
                         #region Bulk Copy
 
-                        SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                        {
 
-                        bulkCopy.BatchSize = SqlBulkBatchSize;
-                        bulkCopy.DestinationTableName = "api.ExecutionDeletedAssetType";
-                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                            bulkCopy.BatchSize = SqlBulkBatchSize;
+                            bulkCopy.DestinationTableName = "api.ExecutionDeletedAssetType";
+                            bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                        bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                            bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                            bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
-                        bulkCopy.WriteToServer(table);
+                            bulkCopy.WriteToServer(table);
+                        }
 
                         #endregion
 
@@ -2605,26 +2611,28 @@ from	IntersectType I
 
                     #region Bulk Copy
 
-                    var bulkCopy = new SqlBulkCopy(Connection)
+                    using (var bulkCopy = new SqlBulkCopy(Connection)
                     {
                         BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "api.ExecutionRelationshipType",
                         BulkCopyTimeout = SqlBulkBatchTimeout
-                    };
+                    })
+                    {
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 
-                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
-                    bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
-                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
-                    bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
-                    bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
-                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
-                    bulkCopy.ColumnMappings.Add("uid", "uid");
+                        bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                        bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
+                        bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
+                        bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                        bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
+                        bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+                        bulkCopy.ColumnMappings.Add("uid", "uid");
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -2741,24 +2749,26 @@ where   ExecutionID = @ExecutionID
                             Connection.Open();
 
                         #region Bulk Copy
-                        var bulkCopy = new SqlBulkCopy(Connection)
+                        using (var bulkCopy = new SqlBulkCopy(Connection)
                         {
                             BatchSize = SqlBulkBatchSize,
                             DestinationTableName = "api.ExecutionRelationshipType",
                             BulkCopyTimeout = SqlBulkBatchTimeout
-                        };
+                        })
+                        {
 
-                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
 
-                        bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
-                        bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
-                        bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
-                        bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
-                        bulkCopy.ColumnMappings.Add("uid", "uid");
+                            bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
+                            bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                            bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
+                            bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+                            bulkCopy.ColumnMappings.Add("uid", "uid");
 
-                        bulkCopy.WriteToServer(table);
+                            bulkCopy.WriteToServer(table);
+                        }
 
                         #endregion
 
@@ -2845,21 +2855,23 @@ where   ExecutionID = @ExecutionID
                         Connection.Open();
 
                     #region Bulk Copy
-                    var bulkCopy = new SqlBulkCopy(Connection)
+                    using (var bulkCopy = new SqlBulkCopy(Connection)
                     {
                         BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "api.ExecutionDeletedRelationshipType",
                         BulkCopyTimeout = SqlBulkBatchTimeout
-                    };
+                    })
+                    {
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -3001,7 +3013,7 @@ where   ExecutionID = @ExecutionID
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
             const string METHOD_NAME = "ImportAssets";
-            bool isLog = import.Count() > 1;
+            bool isLog = true; // trace info for all assets is extermely useful
             var results = new List<DatabaseBulkAssetResult>();
             var importFields = new Dictionary<int, List<string>>();
             var metrics = new Dictionary<string, double>();
@@ -3304,64 +3316,82 @@ where   ExecutionID = @ExecutionID
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionAsset";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        using (var transaction = Connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                {
+                                    // assets
+                                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                                    bulkCopy.DestinationTableName = "api.ExecutionAsset";
+                                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
-                    bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
+                                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
+                                    bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
 
-                    bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
-                    bulkCopy.ColumnMappings.Add("ParentObjectType", "ParentObjectType");
-                    bulkCopy.ColumnMappings.Add("ParentObjectTypeID", "ParentObjectTypeID");
+                                    bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
+                                    bulkCopy.ColumnMappings.Add("ParentObjectType", "ParentObjectType");
+                                    bulkCopy.ColumnMappings.Add("ParentObjectTypeID", "ParentObjectTypeID");
 
-                    bulkCopy.ColumnMappings.Add("IntersectTypeUid", "IntersectTypeUid");
-                    bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
+                                    bulkCopy.ColumnMappings.Add("IntersectTypeUid", "IntersectTypeUid");
+                                    bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
 
-                    bulkCopy.WriteToServer(table);
+                                    bulkCopy.WriteToServer(table);
+                                }
 
+                                using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                {
+                                    // asset errors
+                                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                                    bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
+                                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("Message", "Message");
 
-                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+                                    bulkCopy.WriteToServer(errorTable);
+                                }
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                                using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                {
+                                    // fields
+                                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                                    bulkCopy.DestinationTableName = "api.ExecutionField";
+                                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                                    bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
-                    bulkCopy.WriteToServer(errorTable);
+                                    bulkCopy.WriteToServer(fieldTable);
 
+                                    AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
+                                }
+                                transaction.Commit();
 
+                            }
+                            catch (Exception ex)
+                            {
+                                if (transaction != null)
+                                    transaction.Rollback();
 
-                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
-
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionField";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
-
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-                    bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
-
-                    bulkCopy.WriteToServer(fieldTable);
-
-                    AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
-
-                    sw.Restart();
-                    #endregion
+                                throw ex;
+                            }
+                        }
+                        
+                        sw.Restart();
+                        #endregion
 
 
                     ResolveColorValues(execution.ExecutionID, timeout);
@@ -3399,7 +3429,9 @@ where   ExecutionID = @ExecutionID
                     LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                     ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
-                    LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.
+                        // If you cannot find parent based on Uids provided.
+                        // special case is intratype hierarchy if guid.empty we need to allow this so we later know which items to remove the relationships from
+                        LogParentErrors(execution.ExecutionID, timeout, predicateType == PredicateType.IntraTypeHierarchy);
 
                     if (!isInsert)
                     {
@@ -3426,7 +3458,11 @@ where   ExecutionID = @ExecutionID
 
                     #region Invalidate repetitious items in load
 
-                    Connection.Execute($@"
+                        // dont be a tool and look for duplicates in a load of 1 item
+                        if (execution.Total > 1)
+                        {
+
+                            Connection.Execute($@"
 update	T
 set		T.Success = 0,
 		T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset with matching key is already referenced previously. Nodes must be unique within a load.'
@@ -3438,12 +3474,13 @@ from	api.ExecutionAsset T
                     where   ExecutionID = @ExecutionID
 					group by ProposedKey
 					) S on T.ExecutionID = @ExecutionID and S.ProposedKey = T.ProposedKey and S.ItemNumber < T.ItemNumber;",
-                    new { execution.ExecutionID }, commandTimeout: timeout);
+                            new { execution.ExecutionID }, commandTimeout: timeout);
 
-                    AddMeasurement(metrics, "Invalidate repetitious items in load", sw.ElapsedMilliseconds, ++step);
-
-                    sw.Restart();
-                    #endregion
+                            AddMeasurement(metrics, "Invalidate repetitious items in load", sw.ElapsedMilliseconds, ++step);
+                        }
+                        
+                        sw.Restart();
+                        #endregion
 
                     // Validate permissions
                     LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
@@ -3501,75 +3538,17 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                             #endregion
 
-                            using (var trans = Connection.BeginTransaction())
-                            {
-                                try
+                                using (var trans = Connection.BeginTransaction())
                                 {
-                                    switch (at.Class)
+                                    try
                                     {
-                                        case AssetTypeClass.Model:
-                                            #region
-                                            sw.Restart();
-                                            if (isInsert)
-                                            {
-                                                Connection.Execute($@"
-                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
-                                                        CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-                                                        merge   [Asset] as T
-                                                        using   (
-                                                                select  A.ItemNumber,
-                                                                        CR.LookupValue as Color
-                                                                from    api.ExecutionAsset A
-                                                                        left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-                                                                where   A.ExecutionID = @ExecutionID
-                                                                        and A.Success is null
-                                                                        and A.ItemNumber between @beginItemNumber and @endItemNumber
-                                                                ) S
-                                                        on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
-                                                        when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D, S.Color)
-                                                        output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
-
-                                                        update  T
-                                                        set     T.Object = 'Taxonomy',
-                                                                T.ObjectID = S.ID,
-                                                                T.IsNew = 1
-                                                        from    api.ExecutionAsset T
-                                                                inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-                                                            
-                                                        {updateAssetInfoOnExecutionRecordsSql}
-
-                                                        {insertGraphAssetNode}",
-                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                            }
-                                            else
-                                            {
-                                                Connection.Execute($@"
-                                                        update	T
-                                                        set		T.UpdatedBy = @R,
-                                                                T.UpdatedOn = @D,
-                                                                T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
-                                                        from	[Asset] T
-                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql}
-                                                        left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-
-
-                                                        update	api.ExecutionAsset
-                                                        set		IsNew = 0
-                                                        where	{executionAssetWhereSql};",
-                                                new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                            }
-                                            AddMeasurement(metrics, $"AssetTypeClass.Model >> api.ExecutionAsset {currentLoop}", sw.ElapsedMilliseconds, ++step);
-
-                                            break;
-                                        #endregion
-                                        case AssetTypeClass.FusionAttribute:
-                                            #region
-                                            if (isInsert)
-                                            {
-                                                Connection.Execute($@"
+                                        switch (at.Class)
+                                        {                                            
+                                            case AssetTypeClass.FusionAttribute:
+                                                #region
+                                                if (isInsert)
+                                                {
+                                                    Connection.Execute($@"
     create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
@@ -3650,18 +3629,21 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             AddMeasurement(metrics, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> Textpaths {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             #endregion
 
-                                            break;
-                                        #endregion
-                                        case AssetTypeClass.Policy:
-                                        case AssetTypeClass.BusinessAsset:
-                                        case AssetTypeClass.TechnicalAsset:
-                                        case AssetTypeClass.Diagram:
-                                            #region
-                                            string @object = "Artifact";
-                                            if (at.Class == AssetTypeClass.Policy)
-                                                @object = "Policy";
-                                            if (at.Class == AssetTypeClass.Diagram)
-                                                @object = "Task";
+                                                break;
+                                            #endregion
+                                            case AssetTypeClass.Policy:
+                                            case AssetTypeClass.BusinessAsset:
+                                            case AssetTypeClass.TechnicalAsset:
+                                            case AssetTypeClass.Diagram:
+                                            case AssetTypeClass.Model:
+                                                #region
+                                                string @object = "Artifact";
+                                                if (at.Class == AssetTypeClass.Policy)
+                                                    @object = "Policy";
+                                                if (at.Class == AssetTypeClass.Diagram)
+                                                    @object = "Task";
+                                                if (at.Class == AssetTypeClass.Model)
+                                                    @object = "Taxonomy";
 
                                             sw.Restart();
                                             if (isInsert)
@@ -3696,12 +3678,12 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     {updateAssetInfoOnExecutionRecordsSql}
 
     {insertGraphAssetNode}",
-                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"AssetTypeClass.Diagram - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                            }
-                                            else
-                                            {
-                                                Connection.Execute($@"
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);                                                    
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute($@"
     update	T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D,
@@ -3905,10 +3887,31 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
     where   not exists (select 1 from graph.AssetEdge where [uid] = I.[Uid]);
 
 select [uid] from #ParentChildRelationships",
-                                        new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
-                                        .ToList();
-                                        AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                    }
+                                            new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
+                                            .ToList();
+                                            AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+
+
+                                            // if its an intra type hierarchy models or policies and NOT an insert its possible that parent child relations are being removed IE an item moved to root
+                                            if (predicateType == PredicateType.IntraTypeHierarchy && !isInsert)
+                                            {
+                                                sw.Restart();
+
+                                                Connection.Execute($@"
+drop table if exists #DeletedRelationships;
+create table #DeletedRelationships([ID] int);
+
+delete i output deleted.ID into #DeletedRelationships from [intersect] i inner join  api.ExecutionAsset  ea on (ea.IntersectTypeID = i.intersecttypeid and ea.object = i.object and ea.objectid = i.objectid and ea.ParentUid = '00000000-0000-0000-0000-000000000000')
+    where ea.executionid = @executionid and ea.success is null and ea.ItemNumber between @beginItemNumber and @endItemNumber and ea.IntersectTypeID is not null
+
+delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
+	",
+new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+
+
+                                                AddMeasurement(metrics, $"Parent/Child Delete Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                            }
+                                        }
 
                                     #endregion
                                     sw.Restart();
@@ -4192,48 +4195,54 @@ select [uid] from #ParentChildRelationships",
 
                     #region Bulk Copy
                     sw.Restart();
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionRelationship";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionRelationship";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
-                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                        bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 
-                    bulkCopy.WriteToServer(table);
-
-
-                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
-
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionRelationshipError";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
-
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                        bulkCopy.WriteToServer(table);
+                    }
 
 
-                    bulkCopy.WriteToServer(errorTable);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionRelationshipError";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionField";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-                    bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-                    bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
-                    bulkCopy.WriteToServer(fieldTable);
+                        bulkCopy.WriteToServer(errorTable);
+                    }
+
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
+
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionField";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                        bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                        bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+
+                        bulkCopy.WriteToServer(fieldTable);
+                    }
                                         
                     AddMeasurement(metrics, "Bulk Copy", sw.ElapsedMilliseconds, ++step);
                     #endregion
@@ -4253,7 +4262,10 @@ select [uid] from #ParentChildRelationships",
 
                     #region Invalidate duplicates
                     sw.Restart();
-                    Connection.Execute(@"
+
+                    if (execution.Total > 1)
+                    {
+                        Connection.Execute(@"
                             update	T
                             set		T.Message = coalesce(T.Message + '; ', '') + 'This relationship is specified more than once. Each relationship must be unique within a given request.',
 		                            T.Success = 0
@@ -4268,8 +4280,9 @@ select [uid] from #ParentChildRelationships",
 		                    where   T.ExecutionId = @ExecutionID
                                     and T.SubjectUid = D.SubjectUid and T.ObjectUid = D.ObjectUid
                     ",
-                    new { execution.ExecutionID }, commandTimeout: timeout);
-                    AddMeasurement(metrics, "Invalidate duplicates", sw.ElapsedMilliseconds, ++step);                    
+                        new { execution.ExecutionID }, commandTimeout: timeout);
+                        AddMeasurement(metrics, "Invalidate duplicates", sw.ElapsedMilliseconds, ++step);
+                    }
                     #endregion
 
                     #region Validate subjects/objects
@@ -4723,19 +4736,21 @@ end",
 
                 #region Bulk Copy
 
-                SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                {
 
-                bulkCopy.BatchSize = SqlBulkBatchSize;
-                bulkCopy.DestinationTableName = "api.ExecutionDeletedRelationship";
-                bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionDeletedRelationship";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
-                bulkCopy.WriteToServer(table);
+                    bulkCopy.WriteToServer(table);
+                }
 
                 #endregion
 
@@ -5464,23 +5479,25 @@ where   ER.ExecutionID = @ExecutionID
                     Connection.Open();
 
                 #region Bulk Copy
-                var bulkCopy = new SqlBulkCopy(Connection)
+                using (var bulkCopy = new SqlBulkCopy(Connection)
                 {
                     BatchSize = SqlBulkBatchSize,
                     DestinationTableName = "api.ExecutionAssetCrossReference",
                     BulkCopyTimeout = SqlBulkBatchTimeout
-                };
+                })
+                {
 
-                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                bulkCopy.ColumnMappings.Add("uid", "uid");
-                bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
-                bulkCopy.ColumnMappings.Add("Type", "Type");
-                bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
-                bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
+                    bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
+                    bulkCopy.ColumnMappings.Add("Type", "Type");
+                    bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
+                    bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
 
 
-                bulkCopy.WriteToServer(table);
+                    bulkCopy.WriteToServer(table);
+                }
 
                 #endregion
 
@@ -5590,18 +5607,20 @@ where   ER.ExecutionID = @ExecutionID
 
                         #region Bulk Copy
 
-                        SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                        {
 
-                        bulkCopy.BatchSize = SqlBulkBatchSize;
-                        bulkCopy.DestinationTableName = "api.ExecutionDeletedPredicate";
-                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                            bulkCopy.BatchSize = SqlBulkBatchSize;
+                            bulkCopy.DestinationTableName = "api.ExecutionDeletedPredicate";
+                            bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                            bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
 
-                        bulkCopy.WriteToServer(table);
+                            bulkCopy.WriteToServer(table);
+                        }
 
                         #endregion
 
@@ -5826,21 +5845,23 @@ where   ER.ExecutionID = @ExecutionID
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionPredicate";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionPredicate";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Type", "Type");
-                    bulkCopy.ColumnMappings.Add("Name", "Name");
-                    bulkCopy.ColumnMappings.Add("Inverse", "Inverse");
-                    bulkCopy.ColumnMappings.Add("uid", "uid");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Type", "Type");
+                        bulkCopy.ColumnMappings.Add("Name", "Name");
+                        bulkCopy.ColumnMappings.Add("Inverse", "Inverse");
+                        bulkCopy.ColumnMappings.Add("uid", "uid");
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -6142,21 +6163,23 @@ where   ER.ExecutionID = @ExecutionID
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionResponsibilityType";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionResponsibilityType";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Name", "Name");
-                    bulkCopy.ColumnMappings.Add("Description", "Description");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Name", "Name");
+                        bulkCopy.ColumnMappings.Add("Description", "Description");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -6689,26 +6712,28 @@ insert into #Keys
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionAssetResult";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionAssetResult";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
-                    bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
-                    bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                    bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
-                    bulkCopy.ColumnMappings.Add("PassCount", "PassCount");
-                    bulkCopy.ColumnMappings.Add("FailCount", "FailCount");
-                    bulkCopy.ColumnMappings.Add("Message", "Message");
-                    bulkCopy.ColumnMappings.Add("Success", "Success");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
+                        bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
+                        bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                        bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                        bulkCopy.ColumnMappings.Add("PassCount", "PassCount");
+                        bulkCopy.ColumnMappings.Add("FailCount", "FailCount");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
+                        bulkCopy.ColumnMappings.Add("Success", "Success");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -7224,26 +7249,28 @@ insert into #Keys
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionDeleteAssetResult";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionDeleteAssetResult";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                    bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
-                    bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
-                    bulkCopy.ColumnMappings.Add("EffectiveDateStart", "EffectiveDateStart");
-                    bulkCopy.ColumnMappings.Add("EffectiveDateEnd", "EffectiveDateEnd");
-                    bulkCopy.ColumnMappings.Add("RunDateStart", "RunDateStart");
-                    bulkCopy.ColumnMappings.Add("RunDateEnd", "RunDateEnd");
-                    bulkCopy.ColumnMappings.Add("Message", "Message");
-                    bulkCopy.ColumnMappings.Add("Success", "Success");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
+                        bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
+                        bulkCopy.ColumnMappings.Add("EffectiveDateStart", "EffectiveDateStart");
+                        bulkCopy.ColumnMappings.Add("EffectiveDateEnd", "EffectiveDateEnd");
+                        bulkCopy.ColumnMappings.Add("RunDateStart", "RunDateStart");
+                        bulkCopy.ColumnMappings.Add("RunDateEnd", "RunDateEnd");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
+                        bulkCopy.ColumnMappings.Add("Success", "Success");
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -7739,29 +7766,31 @@ insert into #Keys
 
                     #region Bulk Copy
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    {
 
-                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                    bulkCopy.DestinationTableName = "api.ExecutionResponsibilityRule";
-                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
-
-
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("Uid", "uid");
-                    bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
-                    bulkCopy.ColumnMappings.Add("AssetTypeUid", "AssetTypeUid");
-                    bulkCopy.ColumnMappings.Add("Name", "Name");
-                    bulkCopy.ColumnMappings.Add("IsVisible", "IsVisible");
-                    bulkCopy.ColumnMappings.Add("ApplyToType", "ApplyToType");
-                    bulkCopy.ColumnMappings.Add("Context", "Context");
-                    bulkCopy.ColumnMappings.Add("Definition", "Definition");
-                    bulkCopy.ColumnMappings.Add("Success", "Success");
-                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                        bulkCopy.DestinationTableName = "api.ExecutionResponsibilityRule";
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
 
-                    bulkCopy.WriteToServer(table);
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "uid");
+                        bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
+                        bulkCopy.ColumnMappings.Add("AssetTypeUid", "AssetTypeUid");
+                        bulkCopy.ColumnMappings.Add("Name", "Name");
+                        bulkCopy.ColumnMappings.Add("IsVisible", "IsVisible");
+                        bulkCopy.ColumnMappings.Add("ApplyToType", "ApplyToType");
+                        bulkCopy.ColumnMappings.Add("Context", "Context");
+                        bulkCopy.ColumnMappings.Add("Definition", "Definition");
+                        bulkCopy.ColumnMappings.Add("Success", "Success");
+                        bulkCopy.ColumnMappings.Add("Message", "Message");
+
+
+                        bulkCopy.WriteToServer(table);
+                    }
 
                     #endregion
 
@@ -8280,28 +8309,28 @@ WHEN MATCHED
 
                     #region Bulk Copy
 
-                    var bulkCopy = new SqlBulkCopy(Connection)
+                    using (var bulkCopy = new SqlBulkCopy(Connection)
                     {
                         BatchSize = table.Rows.Count,
                         DestinationTableName = "[api].[ExecutionGroup]",
                         BulkCopyTimeout = 3600
-                    };
+                    })
+                    {
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                    bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
-                    bulkCopy.ColumnMappings.Add("Name", "Name");
-                    bulkCopy.ColumnMappings.Add("Description", "Description");
-                    bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
-                    bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
-                    bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
+                        bulkCopy.ColumnMappings.Add("Name", "Name");
+                        bulkCopy.ColumnMappings.Add("Description", "Description");
+                        bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
+                        bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
+                        bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 
 
-                    bulkCopy.WriteToServer(table);
-
-                    bulkCopy = null;
-
+                        bulkCopy.WriteToServer(table);
+                    }
+                    
                     #endregion
 
                     var checkSQL = $@"update	[api].[ExecutionGroup]
@@ -8568,21 +8597,21 @@ SO.ObjectID as SecondaryID
 
                 #region Bulk Copy
 
-                var bulkCopy = new SqlBulkCopy(Connection)
+                using (var bulkCopy = new SqlBulkCopy(Connection)
                 {
                     BatchSize = table.Rows.Count,
                     DestinationTableName = "[api].[ExecutionDeletedGroup]",
                     BulkCopyTimeout = 3600
-                };
+                })
+                {
 
-                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
 
-                bulkCopy.WriteToServer(table);
+                    bulkCopy.WriteToServer(table);
 
-                bulkCopy = null;
-
+                }
                 #endregion
 
                 var checkSQL = $@"update	[api].[ExecutionDeletedGroup]

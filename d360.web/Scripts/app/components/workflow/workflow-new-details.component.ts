@@ -135,7 +135,13 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
 
 
-    private open(item: WorkflowAssignmentDetail) {        
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ItemStepID}/${item.ItemID}`);
+    private open(item: WorkflowAssignmentDetail) {       
+        if (isNaN(this.resourceID)) {
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ItemStepID}/${item.ItemID}`);
+
+        } else {
+            this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.workflowTypeId}/${item.ItemStepID}/${item.ItemID}?resourceId=${this.resourceID}`);
+
+        }
     }
 };

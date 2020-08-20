@@ -375,7 +375,8 @@
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactDisplayValue.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactKeyHashByIdWithParent.xml"/>
-	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>	
+	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>
+	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetFieldHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
