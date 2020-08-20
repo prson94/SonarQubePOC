@@ -62,13 +62,15 @@ namespace d360.core.entities.Metric
 
     public class ExternalScoreResultsApiResultsModel
     {
+        [JsonIgnore]
+        public Guid ScoreUid { get; set; }
         public Guid AssetUid { get; set; }
         public decimal Score { get; set; }
         public DateTime RunDate { get; set; }
         public DateTime EffectiveDate { get; set; }
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }
-        public List<ExternalScoreResultMeasureModel> Measures { get; set; }
+        public List<ExternalScoreResultMeasureModel> Measures { get { return JsonConvert.DeserializeObject<List<ExternalScoreResultMeasureModel>>((string.IsNullOrEmpty(measuresJson)) ? "[]": measuresJson); } }
         [JsonIgnore]
         public string measuresJson { get; set; }
     }
