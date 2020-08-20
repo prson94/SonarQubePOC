@@ -342,14 +342,13 @@
     <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
-    <Compile Include="Controllers\Forms\FormController_Policy.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
     <Compile Include="Controllers\Forms\FormController_Report.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
     <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
     <Compile Include="Controllers\Forms\FormController_Rule.cs" />
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
-    <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
+    <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
