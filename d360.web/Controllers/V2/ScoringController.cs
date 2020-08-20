@@ -606,7 +606,40 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
             }
         }
+
+
+        /// <summary>
+        /// Get the score history by allocation and asset.
+        /// </summary>
+        /// <param name="assetUid">The public identifier for the asset.</param>
+        /// <param name="allocationUid">The allocation identifier of score to return.</param>
+        /// <returns>The score history for a given an asset type Uid and score type.</returns>
+        [
+            HttpGet,
+            Route("history/{allocationUid}/{assetUid}/scores"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset and allocation.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetScoreHistoryByAllocationAndAsset(Guid allocationUid, Guid assetUid)
+        {
+            var model = Company.Query<dynamic>(@"
+	declare @date date = getutcdate()
+
+	select	S.EffectiveDate as [EffectiveDate],
+			S.[EndDate] as [EndDate],
+			cast(S.Value * 100 as decimal(18,1)) as Score
+	from	metrics.Score S
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date
+	union
+	select	cast(@date as date) as [EffectiveDate],
+			null as [EndDate],
+			cast(S.Value * 100 as decimal(18,1)) as Score
+	from	metrics.Score S
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null", 
+            new { allocationUid, assetUid });
+            
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
+        }
     }
-
-
 }
