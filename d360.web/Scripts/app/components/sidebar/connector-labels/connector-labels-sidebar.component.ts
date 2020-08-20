@@ -96,6 +96,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     openEditor(label: ConnectorLabel) {
         this.selected = label;
         this.showEditor = true;
+        this.editPopupTitle = 'Edit Connector Label';
         this.cdRef.markForCheck();
     }
 

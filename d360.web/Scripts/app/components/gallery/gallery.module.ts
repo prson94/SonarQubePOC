@@ -24,6 +24,8 @@ import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 import { GalleryInputComponent } from './gallery.input.component';
 import { GalleryColorPickerComponent } from './gallery.color-picker.component';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
+import { GalleryAutocompleteComponent } from './gallery.autocomplete.component';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 
 @NgModule({
@@ -40,9 +42,10 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
         IconPickerModule,
         TagPickerModule,
         IgColorPickerModule,
+        
 
         TableModule,
-
+        AutoCompleteModule
     ],
     declarations: [
         GalleryComponent,
@@ -51,7 +54,8 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
         GalleryIconPickerComponent,
         GalleryTagPickerComponent,
         GalleryInputComponent,
-        GalleryColorPickerComponent
+        GalleryColorPickerComponent,
+        GalleryAutocompleteComponent
     ],
     providers: [
         GalleryGuard,

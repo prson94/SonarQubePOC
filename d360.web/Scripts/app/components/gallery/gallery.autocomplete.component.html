@@ -1,0 +1,67 @@
+﻿<div class="tile tile-detail">
+    <header>Autocomplete Directive</header>
+    <p>Angular directive that can be applied to <strong>p-Autocomplete</strong> input controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <p-autoComplete igAutocomplete
+                            placeholder="Hint: type 'bmw' or 'audi'"
+                            (completeMethod)="filterItems($event)"
+                            [suggestions]="filteredBrands">
+            </p-autoComplete>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <p-autoComplete igAutocomplete
+                            required
+                            [(ngModel)]="value"
+                            placeholder="Value Required"
+                            (completeMethod)="filterItems($event)"
+                            [suggestions]="filteredBrands">
+            </p-autoComplete>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input igInput type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <p-autoComplete igAutocomplete
+                            placeholder="I am third"
+                            tabindex="3"
+                            (completeMethod)="filterItems($event)"
+                            [suggestions]="filteredBrands">
+            </p-autoComplete>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <strong>* All properties that are available on current version of PrimeNG Autocomplete component</strong>
+</div>
+

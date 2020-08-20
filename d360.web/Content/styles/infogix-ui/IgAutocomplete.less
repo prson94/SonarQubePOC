@@ -1,8 +1,9 @@
 ﻿
 @import './IgUiVariables.less';
+@import '../_Variables.less';
 
 .ig-autocomplete {
-
+    outline:none;
     &.no-margin-btm {
         margin-bottom: 0px;
     }
@@ -42,5 +43,22 @@
     .ui-autocomplete-loader {
         margin-top: -14px;
         margin-right: 6px;
+    }
+
+    .ui-autocomplete ul {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .ui-autocomplete ul li {
+        padding: 0px;
+        margin: 0px;
+        color: black;
+        border: 0px;
+        padding: 10px;
+    }
+
+    .ui-autocomplete ul li.ui-state-highlight {
+        background-color: @igx-lightblue-xlight;
     }
 }

@@ -15,6 +15,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Icon Picker', key: 'icon-picker' },
         { label: 'Tag Picker', key: 'tag-picker' },
         { label: 'Input Directive', key: 'input' },
+        { label: 'Auto Complete', key: 'auto-complete' },
         { label: 'Color Picker', key: 'color-picker' },
     ];
 
