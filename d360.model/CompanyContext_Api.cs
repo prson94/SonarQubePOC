@@ -542,11 +542,13 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
-            Connection.Execute($@"
+            if (shouldCheckExistingFieldValues)
+            {
+                Connection.Execute($@"
                     DELETE Field
                     FROM Field F
-                    	inner join {tableName} E on E.ExecutionID= @executionID
-                    	inner join api.ExecutionField EF on EF.ExecutionId = E.ExecutionId
+                    	inner join {tableName} E on E.ExecutionID = @executionID 
+                    	inner join api.ExecutionField EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
                     	inner join Asset A on A.uid = E.Uid
                     WHERE E.ExecutionID = @executionID
                      and EF.ItemNumber between @beginItemNumber and @endItemNumber
@@ -557,7 +559,9 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                      and F.FieldTypeID = EF.FieldTypeID
                      and EF.FieldValue is null 
                      and EF.LookupValue is null;",
-                     new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+                new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+            }
+
 
             Connection.Execute($@"
 merge       Field as T
