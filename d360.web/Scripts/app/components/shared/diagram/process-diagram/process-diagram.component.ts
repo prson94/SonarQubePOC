@@ -661,7 +661,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram && this.myDiagram.nodes) {
             this.nodeNames = [];
             this.myDiagram.nodes.each(node => {
-                this.nodeNames.push(node.data['Name']);
+                if (node && node.data && node.data['Name'])
+                    this.nodeNames.push(node.data['Name']);
             })
         }
     }

@@ -82,6 +82,7 @@ import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -126,6 +127,7 @@ import { ProcessDiagramListViewComponent } from './process-diagram/process-diagr
         TreeModule,
         DragDropModule,
         AccordionModule,
+        TooltipModule,
         //JSON Viewer module
         NgxJsonViewModule,
         AssetSearchModule,

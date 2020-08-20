@@ -97,6 +97,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
 
+    @Input() diagramNodeKey: string = "";
+
     form: FormGroup;
 
     action: string = "Edit";
