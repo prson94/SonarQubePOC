@@ -30,7 +30,7 @@ namespace d360.model
             await ProcessTypeBasedResponsibilityRelationRules(cnn, ruleID, timeout);
 
             // PASS 2 - Do rules that dont apply to types
-            await ProcessAssetBasedResponsibilityRelationRules(cnn, ruleID, timeout);            
+            await ProcessAssetBasedResponsibilityRelationRules(cnn, ruleID, timeout);
         }
 
         private static async Task ProcessAssetBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
@@ -44,7 +44,7 @@ namespace d360.model
                 try
                 {
                     if (await ShouldRuleRun(cnn, rule.ID) && !rule.ApplyToType)
-                    {                        
+                    {
                         rulesRequiringRun.Add(rule.ID);
 
                         rule.SetDefinitionFromRaw();
@@ -88,7 +88,7 @@ namespace d360.model
 					                                insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
                                             when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
                                                     delete;
-                                ", new { ruleId = rule.ID, appliesToType = rule.ApplyToType}, transaction: transaction);
+                                ", new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
                             }
                             catch (Exception ex)
                             {
@@ -111,7 +111,7 @@ namespace d360.model
         }
 
         private static async Task ProcessTypeBasedResponsibilityRelationRules(SqlConnection cnn, int? ruleID, int timeout)
-        {            
+        {
             IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(cnn, ruleID);
 
             List<int> rulesRequiringRun = new List<int>();
@@ -164,11 +164,11 @@ namespace d360.model
         {
             string sqlToExecute = "";
             try
-            {                
+            {
                 var thenSql = cnn.GetThenResultsSql(rule, false, transaction, false);
                 thenSql = string.Format(thenSql, "");
 
-                    //merge into the asset table 
+                //merge into the asset table 
                 await cnn.ExecuteAsync(@"
                                     merge [dbo].[ResponsibilityRuleResultAsset] as T
 			                using	(
@@ -186,10 +186,10 @@ namespace d360.model
 					                insert (RuleID, AssetTypeID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetTypeID,getutcdate(),0)
                             when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
                                     delete;
-                ", new { ruleId = rule.ID }, transaction:transaction);
+                ", new { ruleId = rule.ID }, transaction: transaction);
 
-                    //merge into the resource table
-                    await cnn.ExecuteAsync($@"
+                //merge into the resource table
+                await cnn.ExecuteAsync($@"
                                     merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 			                using	(
 					                {thenSql}
@@ -220,7 +220,7 @@ namespace d360.model
         {
             return await (cnn.QueryFirstAsync<bool>("exec ResponsibilityRuleShouldRun @id", new { id = ruleId }));
         }
-        
+
         /// <summary>
         /// Load the Responsibility Rules that the rebuild process should run
         /// </summary>
@@ -233,8 +233,8 @@ namespace d360.model
             {
                 return (await cnn.QueryAsync<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule where ID = @id", new { id = ruleID.Value }));
             }
-            
-            return  (await cnn.QueryAsync<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule"));            
+
+            return (await cnn.QueryAsync<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule"));
         }
 
 
@@ -329,11 +329,11 @@ namespace d360.model
                     {
                         if (rc.FieldTypeID > 0)
                         {
-                            var thenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction:transaction).SingleOrDefault();
+                            var thenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
                             thenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
                             if (thenFieldType != null)
                             {
-                                thenSql += (thenFieldType.AllowMultipleValues) ? 
+                                thenSql += (thenFieldType.AllowMultipleValues) ?
                                     $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{tCount}" :
                                     $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}";
                             }
@@ -380,20 +380,20 @@ namespace d360.model
         #endregion
 
         public static async Task RemoveRelationRuleResultsByRule(this DbConnection cnn, int ruleID)
-        {            
+        {
             await (cnn.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
             await (cnn.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
         }
 
         public static void ClearInvalidRelationRuleResults(this DbConnection cnn)
         {
-            cnn.Execute("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
-            cnn.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);            
+            cnn.Execute("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
+            cnn.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
         }
-        
+
         public static IEnumerable<ObjectResult> GetWhenResults(this DbConnection cnn, ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
         {
-            string sql = cnn.GetWhenResultsSql(rule,trans);
+            string sql = cnn.GetWhenResultsSql(rule, trans);
             return cnn.Query<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
         }
 
@@ -424,6 +424,28 @@ namespace d360.model
             }
 
             return cnn.Execute(updateSql.ToString());
+        }
+
+        public static SqlBulkCopy CreateBulkCopy(this SqlConnection company, string tableName, int batchSize = 5000, int timeout = 3600, SqlTransaction trans = null)
+        {
+            if (trans == null)
+            {
+                return new SqlBulkCopy(company)
+                {
+                    BatchSize = batchSize,
+                    DestinationTableName = tableName,
+                    BulkCopyTimeout = timeout
+                };
+            }
+            else
+            {
+                return new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                {
+                    BatchSize = batchSize,
+                    DestinationTableName = tableName,
+                    BulkCopyTimeout = timeout
+                };
+            }
         }
     }
 }
