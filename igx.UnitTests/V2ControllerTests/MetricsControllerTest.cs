@@ -242,7 +242,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetMetricHierarchyByAssetUidAsync()
         {
-            var actionResult = metricsController.GetMetricHierarchyByAssetAsync(d360.core.enums.ScoreType.Governance,Guid.Parse(DataConstants.ValidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var actionResult = metricsController.GetMetricHierarchyByAssetAndScoreTypeAsync(d360.core.enums.ScoreType.Governance,Guid.Parse(DataConstants.ValidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
@@ -255,7 +255,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_GetMetricHierarchyByAssetUidAsync_BadUid()
         {
-            var actionResult = metricsController.GetMetricHierarchyByAssetAsync(d360.core.enums.ScoreType.Governance, Guid.Parse(DataConstants.InvalidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var actionResult = metricsController.GetMetricHierarchyByAssetAndScoreTypeAsync(d360.core.enums.ScoreType.Governance, Guid.Parse(DataConstants.InvalidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
