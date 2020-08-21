@@ -219,8 +219,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     this.tagService.saveTag(tagType)
                         .subscribe(result => {
                             let msg: string = '';
-                            if (event.value == undefined) {
-                                msg = `${event.title} succesfully created`;
+                            if (result.Value != undefined) {
+                                result.message = `${result.Value} succesfully created`;
                             }
                             this.showMessageForResult(this.messagesService, result, msg);
                             this.tryAddValue({ value: result.uid, title: result.Value });

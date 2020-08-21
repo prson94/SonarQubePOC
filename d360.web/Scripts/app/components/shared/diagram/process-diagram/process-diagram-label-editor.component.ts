@@ -75,6 +75,9 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
             this.clearLabel();
     }
     clearLabel() {
+        if (this.createLabelSub)
+            this.createLabelSub.unsubscribe();
+
         this.linkLabel = '';
         this.linkDataChange.emit({ label: { uid: null, Value: null }, data: this.linkData });
     }
