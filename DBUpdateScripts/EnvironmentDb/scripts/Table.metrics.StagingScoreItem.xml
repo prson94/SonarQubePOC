@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.StagingScoreItem-v1">
+  <changeSet author="Pappas" id="Table.metrics.StagingScoreItem-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+drop table if exists [metrics].[StagingScoreItem]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'StagingScoreItem')
 BEGIN
 	CREATE TABLE [metrics].[StagingScoreItem](
@@ -29,11 +34,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricStagingScoreItem
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_MetricStagingScoreItem_Asset_Metric_Date_Include] ON [metrics].[StagingScoreItem] ( [AssetUid] ASC, [MetricAssetUid] ASC, [EffectiveDate] ASC ) INCLUDE([Result]) 
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
