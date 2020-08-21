@@ -10,7 +10,7 @@ import { NG_VALIDATORS, AbstractControl } from '@angular/forms';
 export class InputDirective implements AfterViewInit, OnDestroy {
 
     @Input() tooltip: string;
-
+    public _label: string;
     public _istextarea: boolean;
     private control: AbstractControl;
     constructor(public el: ElementRef) { }
@@ -25,6 +25,29 @@ export class InputDirective implements AfterViewInit, OnDestroy {
 
     getStyleClass(): string {
         return 'ig-input';
+    }
+
+    @Input() get label(): string {
+        return this._label;
+    }
+    set label(val: string) {
+        this._label = val;
+
+        let labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-input-label');
+        if (labelElement) {
+            this.el.nativeElement.removeChild(labelElement);
+        }
+
+        if (this._label) {
+            labelElement = document.createElement("span");
+            labelElement.className = 'ig-input-label';
+            labelElement.appendChild(document.createTextNode(this.label));
+            this.el.nativeElement.parentNode.insertBefore(labelElement, this.el.nativeElement);
+            DomHandler.removeClass(this.el.nativeElement, "ig-input-icon-only");
+        } else {
+            DomHandler.addClass(this.el.nativeElement, "ig-input-icon-only");
+            throw new Error("Infogix Button Component: caption has not been set");
+        }
     }
 
     @Input() get istextarea(): boolean {

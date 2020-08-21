@@ -31,4 +31,4 @@ import { ColorDisplayComponent } from './color-display.component';
         },
     ]
 })
-export class D3SColorPickerModule { }
+export class IgColorPickerModule { }

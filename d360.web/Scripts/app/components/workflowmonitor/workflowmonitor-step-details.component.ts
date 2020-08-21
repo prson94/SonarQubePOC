@@ -107,10 +107,12 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     private get reassignment() {
         if (this.reassignments == null || this.reassignments.length < 1)
             return null;
-        else if (this.reassignments.length == 1)
+        else if (this.reassignments.length == 1 && !this.reassignments[0].IsBulkReassignment)
             return this.reassignments[0];
-        else
+        else if (this.reassignments.length > 1)
             return this.reassignments.find(r => !r.IsBulkReassignment);
+        else
+            return null;
     }
 
     private close() {

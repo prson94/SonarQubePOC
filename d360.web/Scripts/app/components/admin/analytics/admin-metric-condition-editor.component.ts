@@ -107,31 +107,22 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 condition.FieldTypeName = field.Name;
                 condition.FieldType = field;
 
-                if (!condition.Values)
-                    condition.Values = [];
-
-                if (condition.Values.length > 0) {
-                    switch (field.Type) {
-                        case "Boolean":
-                            condition.SingleValue = (condition.Values[0].Value === 'true');
-                            break;
-                        case "Lookup":
-                            condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
-                            condition.SingleValue = (condition.Values[0].Value);
-                            break;
-                        case "Date":
-                        case "DateTime":
-                            if (condition.Values) {
-                                condition.SingleValue = new Date(condition.Values[0].Value as string);
-                            }
-                            break;
-                        default:
-                            condition.SingleValue = condition.Values[0].Value;
-                            break;
-                    }
-                } else {
-                    condition.SingleValue = null;
-                }                
+                switch (field.Type) {
+                    case "Boolean":
+                        condition.SingleValue = null;
+                        break;
+                    case "Lookup":
+                        condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
+                        condition.SingleValue = null;
+                        break;
+                    case "Date":
+                    case "DateTime":
+                        condition.SingleValue = null;;
+                        break;
+                    default:
+                        condition.SingleValue = null;
+                        break;
+                }
             }
             let options = [];
             switch (field.Type) {
@@ -209,23 +200,24 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'Lookup':
                         if (field.Values) {
                             if (field.Values.length > 0) {
-                                if (c.Values) {
+                                if (c.Values && c.Values.length > 0) {
                                     if (c.Values[0].Value) {
                                         let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         if (valueModel) {
-                                            c.SingleValue = +c.Values[0].Value;
+                                            c.SingleValue = c.Values[0].Value;
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
                                 }
                                 c.lookupOptions = field.Values.map(x => { return { label: x.Text, value: x.Value } });
+                                this.ref.markForCheck();
                             }
                         }
                         break;
                     case 'Date':
                     case 'DateTime':
-                        if (c.Values) {
+                        if (c.Values && c.Values.length > 0) {
                             if (c.Values[0].Value) {
                                 c.SingleValue = new Date(c.Values[0].Value);
                                 c.ValuesText = c.Values[0].Value;
@@ -233,7 +225,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         }
                         break;
                     default:
-                        if (c.Values) {
+                        if (c.Values && c.Values.length > 0) {
                             if (c.Values[0].Value) {
                                 c.SingleValue = c.Values[0].Value;
                                 c.ValuesText = c.Values[0].Value;
@@ -340,7 +332,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             this.newCondition = new MetricAssetVersionConditionItemViewModel();
 
             this.checkSelectedFields();
-            
+            this.formatConditions();
             
             this.ref.markForCheck();
         }

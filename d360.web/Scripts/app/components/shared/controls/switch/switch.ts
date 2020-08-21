@@ -44,7 +44,8 @@ export class Switch implements ControlValueAccessor, OnInit  {
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
-    
+
+    private isInitialValueSet: boolean = false;
 
     constructor(
         protected changeDetectorRef: ChangeDetectorRef
@@ -76,11 +77,11 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     writeValue(obj: boolean): void {
         if (this._el) this._el.nativeElement.focus();
-        
+
         if (!this.optional && (obj === this.value)) {     // not optional and current value = previous   
             return;
         }
-        else if (this.optional && (obj === this.value)) {      // optional and current value = previous       
+        else if (this.optional && (obj === this.value) && this.isInitialValueSet) {      // optional and current value = previous  
             this.value = undefined;
         }
         else {
@@ -89,6 +90,7 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
         this.onModelChange(this.value);
         this.onChange.emit(this.value);
+        this.isInitialValueSet = true;
         this.changeDetectorRef.markForCheck();
     }
 

@@ -315,6 +315,48 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Gets a list of paths (asset types and relationship types) that act as options when configuring a measure for various score types.
+        /// </summary>
+        /// <remarks>
+        /// Some score types may never have path options.
+        /// </remarks>
+        /// <param name="assetTypeUid">The Uid of the asset type.</param>
+        /// <param name="scoreType">The scoreType to be returned.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/{scoreType}/pathoptions"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetMetricPathOptionsBy(Guid assetTypeUid, ScoreType scoreType)
+        {
+            var prefix = "Metrics.GetMetricPathOptionsBy => ";
+
+            try
+            {
+                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {assetTypeUid} could not be found."));
+
+                var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+
+        /// <summary>
         /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
         /// </summary>
         /// <param name="assetUid">The Uid of the asset.</param>
@@ -323,7 +365,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{scoreType}/{assetUid:Guid}/pointbreakdown"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
@@ -471,7 +513,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_scoreType", "The type of scores. The default is Governance.", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ScoreType))
+            SwaggerParameter("_allocationUid", "The specific Uid of the measure / asset type allocation you want scores for. When using this query parameter, ensure that you are not also using the _scoreType parameter.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_scoreType", "The type of scores. The default is Governance. When using this query parameter, ensure that you are not also using the _allocationUid parameter.", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ScoreType))
         ]
         public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
         {
@@ -493,7 +536,7 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
-
+                
                 (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
 
                 if (!string.IsNullOrEmpty(errorMessage))
@@ -510,8 +553,6 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
-
-
         }
 
         /// <summary>

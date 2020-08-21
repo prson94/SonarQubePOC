@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v11">
-    <comment>GOV-11857</comment>
+  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v11">
+    <comment>GOV-10916,GOV-11857</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-  create or alter procedure [dbo].[DeleteObject]
+create or alter procedure [dbo].[DeleteObject]
 	  @ObjTemp varchar(50),
 	  @ObjectIDTemp int,
 	  @ResourceIDTemp int
@@ -21,14 +21,14 @@
 	  set nocount on;
  
 	  declare	@Object varchar(50) = @ObjTemp,
-			  @ObjectID int = @ObjectIDTemp,
-			  @ResourceID int = @ResourceIDTemp,
-			  @CurrentDate datetime = getutcdate(),
-			  @predicateType int = 0,
-			  @trans varchar(25) = 'Trans',
-			  @current int = 1,
-			  @max int,
-			  @IsType bit = 0;
+				@ObjectID int = @ObjectIDTemp,
+				@ResourceID int = @ResourceIDTemp,
+				@CurrentDate datetime = getutcdate(),
+				@predicateType int = 0,
+				@trans varchar(25) = 'Trans',
+				@current int = 1,
+				@max int,
+				@IsType bit = 0;
 
 	  drop table if exists #items;
 	  create table #items  (ID bigint, Object varchar(50), ObjectID int, Processed bit null)
@@ -450,6 +450,18 @@
 				  from	graph.AssetNode O
 						  inner join #types I on I.ID = O.AssetTypeID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;		
+
 				  delete	O
 				  from	[Asset] O
 						  inner join #types I on I.ID = O.AssetTypeID;
@@ -533,9 +545,21 @@
 				  from	graph.AssetNode O
 						  inner join #items I on I.ID = O.ID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #items I on I.ID = O.ID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #items I on I.ID = O.ID;		
+
 				  delete	A
-				  from	[Asset] A
-						  inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
+				  from		[Asset] A
+							inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
 				  if @Object = 'Fusion'
 				  begin
@@ -1188,15 +1212,15 @@
 						  inner join #types I on I.ID = A.AssetTypeID;
 
 				  delete	O
-				  from	[metrics].[Allocation] O
-						  inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
-						  inner join #types I on I.ObjectID = A.ObjectID;
+				  from		[metrics].[Allocation] O
+							inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
+							inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O
-				  from	[metrics].[Asset] O
+				  from		[metrics].[Asset] O
 							inner join metrics.Allocation Al on Al.Uid = O.AllocationUid
 							inner join AssetType A on A.Object = @Object and A.Uid = Al.AssetTypeUid
-						  inner join #types I on I.ObjectID = A.ObjectID;
+							inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O
 				  from	AssetTypeLevel O

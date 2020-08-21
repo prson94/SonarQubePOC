@@ -8,14 +8,17 @@ import { ProcessDiagramComponent } from './process-diagram.component';
 export class ProcessDiagramTemplates {
     private static fontColor: string = '#202020';
     private static textFont: string = `14px 'Source Sans Pro',sans-serif`;
-    private static textFont12: string = `13px 'Source Sans Pro',sans-serif`;
+    private static textFont12: string = `12px 'Source Sans Pro',sans-serif`;
 
     //event
-    private static eventNodeRadius = 56;
+    private static eventNodeRadius = 48;
 
     //gateway
     private static sideLength = 42;
 
+
+    private static palleteItemFillColor: string = '#f1f2f3';
+    private static palleteItemStrokeColor: string = '#597897';
 
 
     static activity_BodyPanel(component: ProcessDiagramComponent) {
@@ -174,7 +177,7 @@ export class ProcessDiagramTemplates {
     public static eventTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -322,7 +325,7 @@ export class ProcessDiagramTemplates {
     public static gatewayTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -703,10 +706,10 @@ export class ProcessDiagramTemplates {
                 $(go.Panel, "Auto",
                     $(go.Shape, 'Rectangle',
                         {
-                            fill: "#eff2f6",
+                            fill: this.palleteItemFillColor,
                             strokeWidth: 0,
-                            width: 100,
-                            height: 100,
+                            width: 80,
+                            height: 80,
                             cursor: 'pointer'
                         }
                     ),
@@ -718,7 +721,7 @@ export class ProcessDiagramTemplates {
                                 toLinkable: true,
                                 cursor: "pointer",
                                 fill: 'white',
-                                stroke: '#597897',
+                                stroke: this.palleteItemStrokeColor,
                                 strokeWidth: 2,
                                 width: this.eventNodeRadius,
                                 height: this.eventNodeRadius,
@@ -728,9 +731,9 @@ export class ProcessDiagramTemplates {
                         $(go.TextBlock,
                             {
                                 alignment: go.Spot.Center,
-                                stroke: '#597897',
+                                stroke: this.palleteItemStrokeColor,
                                 textAlign: "center",
-                                font: '32px FontAwesome',
+                                font: '30px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
                             new go.Binding("text", "icon").makeTwoWay())
@@ -739,15 +742,15 @@ export class ProcessDiagramTemplates {
                 ,
                 $(go.TextBlock,
                     {
-                        font: this.textFont,
+                        font: this.textFont12,
                         margin: new go.Margin(8, 4, 4, 4),
                         textAlign: "center",
                         spacingBelow: 3,
-                        maxSize: new go.Size(90, NaN),
+                        maxSize: new go.Size(80, NaN),
                         maxLines: 2,
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
-                        stroke: '#646464'
+                        stroke: this.fontColor
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
             )
@@ -768,20 +771,20 @@ export class ProcessDiagramTemplates {
                 $(go.Panel, "Auto",
                     $(go.Shape, 'Rectangle',
                         {
-                            fill: "#eff2f6",
+                            fill: this.palleteItemFillColor,
                             strokeWidth: 0,
-                            width: 100,
-                            height: 100,
+                            width: 80,
+                            height: 80,
                             cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
                         $(go.Shape, "RoundedRectangle",
                             {
-                                fill: "#597897",
+                                fill: this.palleteItemStrokeColor,
                                 strokeWidth: 0,
-                                width: 66,
-                                height: 60
+                                width: 48,
+                                height: 48
                             }
                         ),
                         $(go.TextBlock,
@@ -789,7 +792,7 @@ export class ProcessDiagramTemplates {
                                 alignment: go.Spot.Center,
                                 stroke: 'white',
                                 textAlign: "center",
-                                font: '32px FontAwesome',
+                                font: '28px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
                             new go.Binding("text", "icon").makeTwoWay())
@@ -798,15 +801,15 @@ export class ProcessDiagramTemplates {
                 ,
                 $(go.TextBlock,
                     {
-                        font: this.textFont,
+                        font: this.textFont12,
                         margin: new go.Margin(8, 4, 4, 4),
                         textAlign: "center",
                         spacingBelow: 3,
-                        maxSize: new go.Size(90, NaN),
+                        maxSize: new go.Size(80, NaN),
                         maxLines: 2,
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
-                        stroke: '#646464'
+                        stroke: this.fontColor
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
             )
@@ -828,30 +831,30 @@ export class ProcessDiagramTemplates {
                 $(go.Panel, "Auto",
                     $(go.Shape, 'Rectangle',
                         {
-                            fill: "#eff2f6",
+                            fill: this.palleteItemFillColor,
                             strokeWidth: 0,
-                            width: 100,
-                            height: 100,
+                            width: 80,
+                            height: 80,
                             cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
                         $(go.Shape, "Rectangle",
                             {
-                                stroke: "#597897",
+                                stroke: this.palleteItemStrokeColor,
                                 strokeWidth: 2,
                                 fill: 'white',
-                                width: 50,
-                                height: 50,
+                                width: 35,
+                                height: 35,
                                 angle: 45
                             }
                         ),
                         $(go.TextBlock,
                             {
                                 alignment: go.Spot.Center,
-                                stroke: '#597897',
+                                stroke: this.palleteItemStrokeColor,
                                 textAlign: "center",
-                                font: '32px FontAwesome',
+                                font: '24px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
                             new go.Binding("text", "icon").makeTwoWay())
@@ -860,15 +863,15 @@ export class ProcessDiagramTemplates {
                 ,
                 $(go.TextBlock,
                     {
-                        font: this.textFont,
+                        font: this.textFont12,
                         margin: new go.Margin(8, 4, 4, 4),
                         textAlign: "center",
                         spacingBelow: 3,
-                        maxSize: new go.Size(90, NaN),
+                        maxSize: new go.Size(80, NaN),
                         maxLines: 2,
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
-                        stroke: '#646464'
+                        stroke: this.fontColor
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
             )
@@ -891,8 +894,8 @@ export class ProcessDiagramTemplates {
                         {
                             fill: 'transparent',
                             strokeWidth: 0,
-                            width: 100,
-                            height: 100,
+                            width: 80,
+                            height: 80,
                         }
                     ))));
     }

@@ -60,6 +60,8 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     onBlur($event) {
+        if ($event && $event.relatedTarget && $event.relatedTarget.className.indexOf('clear-label'))
+            return;
         this.updateConnectorLabelToLink();
     }
     onKeyUp($event: KeyboardEvent) {
@@ -69,6 +71,8 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
                 el.blur();
             }, 50);
         }
+        if (this.linkLabel == '')
+            this.clearLabel();
     }
     clearLabel() {
         this.linkLabel = '';
