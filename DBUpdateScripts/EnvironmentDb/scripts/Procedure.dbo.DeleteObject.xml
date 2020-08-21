@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v11">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v12">
     <comment>GOV-11857</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -450,6 +450,18 @@
 				  from	graph.AssetNode O
 						  inner join #types I on I.ID = O.AssetTypeID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;		
+
 				  delete	O
 				  from	[Asset] O
 						  inner join #types I on I.ID = O.AssetTypeID;
@@ -533,9 +545,21 @@
 				  from	graph.AssetNode O
 						  inner join #items I on I.ID = O.ID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #items I on I.ID = O.ID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #items I on I.ID = O.ID;		
+
 				  delete	A
-				  from	[Asset] A
-						  inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
+				  from		[Asset] A
+							inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
 				  if @Object = 'Fusion'
 				  begin
@@ -1206,6 +1230,18 @@
 				  from	graph.AssetNode O
 						  inner join #types I on I.ID = O.AssetTypeID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;		
+
 				  delete	O
 				  from	[Asset] O
 						  inner join #types I on I.ID = O.AssetTypeID;
@@ -1289,8 +1325,20 @@
 				  from	graph.AssetNode O
 						  inner join #items I on I.ID = O.ID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #items I on I.ID = O.ID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #items I on I.ID = O.ID;		
+
 				  delete	A
-				  from	[Asset] A
+				  from		[Asset] A
 						  inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
 				  if @Object = 'Fusion'
