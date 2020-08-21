@@ -115,7 +115,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
         Array.from(nodeList)
             .forEach(x => {
-                this.deselectElement(x);
+                this.deselectElement(x as HTMLElement);
             });
         if (nodeList.length == 0)
             this.selectElement(element);
