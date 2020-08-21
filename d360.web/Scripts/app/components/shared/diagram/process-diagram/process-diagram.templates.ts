@@ -854,7 +854,7 @@ export class ProcessDiagramTemplates {
                                 alignment: go.Spot.Center,
                                 stroke: this.palleteItemStrokeColor,
                                 textAlign: "center",
-                                font: '32px FontAwesome',
+                                font: '24px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
                             new go.Binding("text", "icon").makeTwoWay())

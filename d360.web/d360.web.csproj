@@ -342,14 +342,13 @@
     <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
-    <Compile Include="Controllers\Forms\FormController_Policy.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
     <Compile Include="Controllers\Forms\FormController_Report.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
     <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
     <Compile Include="Controllers\Forms\FormController_Rule.cs" />
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
-    <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
+    <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
@@ -721,6 +720,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.input.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-variables.component.html" />
@@ -752,6 +752,7 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.less" />
+    <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
@@ -867,6 +868,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-variables.component.ts" />

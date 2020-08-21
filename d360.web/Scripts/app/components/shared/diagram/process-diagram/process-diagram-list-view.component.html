@@ -1,6 +1,6 @@
 <div class="process-list-view" *ngIf="nodeArray">
     <div class="search">
-        <input igInput type="text" placeholder="Search..." name="name" maxlength="250" (input)="dt.filterGlobal($event.target.value, 'contains')" />
+        <input igInput type="text" autocomplete="off" placeholder="Search..." name="name" maxlength="250" (input)="dt.filterGlobal($event.target.value, 'contains')" />
         <i class="fa fa-search"></i>
     </div>
 
@@ -56,5 +56,9 @@
     </p-table>
     <div class="ui-table-summary">
         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+    </div>
+
+    <div class="empty-list-message" *ngIf="!nodeArray || nodeArray.length == 0">
+        Showing no items. Switch to Diagram View to start adding flow objects.
     </div>
 </div>
