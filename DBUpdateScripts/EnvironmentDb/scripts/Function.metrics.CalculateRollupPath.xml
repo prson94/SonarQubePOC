@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.metrics.CalculateRollupPath-v1.1">
+  <changeSet author="Core" id="Function.metrics.CalculateRollupPath-v1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,7 +26,7 @@ BEGIN
 	from	(
 			select	top 100 percent 
 					case L.EndPosition 
-							when @maxHop then Ea.Name + ' which is ' + lower(P.Inverse) + ' ' + Sa.Name
+							when @maxHop then Sa.Name + ' which is ' + lower(P.Inverse) + ' ' + Ea.Name
 							else Sa.Name + ' which ' + lower(P.Name)
 					end as PathSegment
 			from	[metrics].[RollupPathLink] L

@@ -918,13 +918,32 @@ where		NV.EffectiveDate < V.EffectiveEndDate;
 ]]>
 		</sql>
 	</changeSet>
-<changeSet author="TDuric" id="Data.Corrections.GOV-11815">
+
+	<changeSet author="TDuric" id="Data.Corrections.GOV-11815">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
 update api.Execution
 set ProcessingStartedOn = StartedOn,
 Method = 'PUT'
 where Method = 'Process'
+]]>
+		</sql>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-11903-1">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+delete [metrics].[RollupPathLink]
+delete [metrics].[RollupPathSegment]
+delete [metrics].[RollupPath]
+]]>
+		</sql>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-11903-2">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+exec [metrics].[CalculateRollups]
 ]]>
 		</sql>
 	</changeSet>
