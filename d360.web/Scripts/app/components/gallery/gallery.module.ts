@@ -48,8 +48,7 @@ import { TooltipModule } from 'primeng/tooltip';
         
 
         TableModule,
-        TooltipModule
-
+        TooltipModule,
         AutoCompleteModule
     ],
     declarations: [
