@@ -1,0 +1,68 @@
+﻿
+@import './IgUiVariables.less';
+
+.ig-textarea {
+    font-family: @ig-field-font-family;
+    font-size: 14px;
+    color: @ig-black;
+    background: @ig-white;
+    padding: 6px 8px;
+    border: 1px solid rgba(0,0,0,.2);
+    height: 80px;
+    line-height: 18px;
+    border-radius: @ig-field-border-radius;
+    resize: none;
+
+    &::placeholder {
+        color: @ig-grey;
+    }
+
+    &.ig-field-width-large {
+        width: 624px;
+    }
+
+    &.ig-field-width-full {
+        width: 100%;
+    }
+
+    &.resize {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    &:required:not(disabled) {
+        background: @ig-lightblue-t4;
+    }
+
+    &:disabled {
+        opacity: 0.33;
+    }
+
+    &:enabled:focus:not(.ui-state-error) {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+        border-color: @ig-field-border-color;
+    }
+
+    &:enabled:hover:not(.ui-state-error) {
+        border-color: rgba(0,0,0,.2);
+    }
+
+    &.ng-dirty.ng-invalid {
+        background: @ig-lightblue-t5;
+        border-bottom-color: none;
+    }
+
+    &.ng-valid[required], .ng-valid.required {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: none;
+    }
+
+    &.ng-invalid:not(form) {
+        background: @ig-lightblue-t5;
+        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+        border-color: @ig-field-border-color;
+    }
+}

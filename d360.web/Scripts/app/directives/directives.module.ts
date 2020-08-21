@@ -4,6 +4,7 @@ import { CopyClipboardDirective } from './copy-clipboard-directive';
 import { ClickOutsideDirective } from './click-outside-directive';
 import { ButtonDirective } from './ig-button-directive';
 import { InputDirective } from './ig-input-directive';
+import { TextAreaDirective } from './ig-textarea-directive';
 
 
 @NgModule({ 
@@ -14,6 +15,7 @@ import { InputDirective } from './ig-input-directive';
         ClickOutsideDirective,
         ButtonDirective,
         InputDirective,
+        TextAreaDirective,
     ],
     exports: [
         TextHighlightDirective,
@@ -21,6 +23,7 @@ import { InputDirective } from './ig-input-directive';
         ClickOutsideDirective,
         ButtonDirective,
         InputDirective,
+        TextAreaDirective,
     ]
 })
 export class DirectivesModule { }

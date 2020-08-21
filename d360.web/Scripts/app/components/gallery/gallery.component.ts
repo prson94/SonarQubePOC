@@ -17,6 +17,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Input Directive', key: 'input' },
         { label: 'Color Picker', key: 'color-picker' },
         { label: 'Color Variables', key: 'color-variables' },
+        { label: 'Text Area', key: 'textarea' },
     ];
 
     ngOnInit(): void {        

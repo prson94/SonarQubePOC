@@ -729,6 +729,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.icon-picker.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.textarea.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
@@ -752,6 +753,7 @@
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.less" />
+    <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
@@ -877,6 +879,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.textarea.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
@@ -1606,6 +1609,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-textarea-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\deactivate.guard.ts" />
