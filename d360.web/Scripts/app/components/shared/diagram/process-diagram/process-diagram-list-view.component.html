@@ -6,7 +6,6 @@
 
     <p-table #dt [value]="nodeArray"
              [paginator]="true"
-             [rows]="10"
              [(selection)]="selected"
              dataKey="key"
              selectionMode="multiple"
@@ -15,7 +14,11 @@
              sortField="StepNo"
              [customSort]="true"
              (sortFunction)="customSort($event)"
-             [globalFilterFields]="['StepNo','Name','assetTypeName','governanceDisplayValue']">
+             [globalFilterFields]="['StepNo','Name','assetTypeName','governanceDisplayValue']"
+             [rows]="rowsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [scrollable]="true"
+             [scrollHeight]="tableScrollHeight">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 30px;">
@@ -41,7 +44,7 @@
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
             <tr #el [pSelectableRow]="item">
-                <td (click)="selectSingleItem($event,item,el,rowIndex);">
+                <td (click)="selectSingleItem($event,item,el,rowIndex);" style="width:30px">
                     <p-tableCheckbox [value]="item"></p-tableCheckbox>
                 </td>
                 <td (click)="selectSingleItem($event,item,el,rowIndex);">{{item.StepNo}}</td>
