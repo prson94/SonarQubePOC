@@ -5,44 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Bhoward" id="Function.dbo.GetAssetColorJsonById-v3">
+  <changeSet author="Bhoward" id="Function.dbo.GetAssetColorJsonById-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [dbo].[GetAssetColorJsonById]
-(
-	@Id bigint
-)
-RETURNS TABLE 
-AS
-RETURN 
-(
-select (
-	select * from (
-		select
-			'Custom' as [Name],
-			A.Color as [Value]
-		from	Asset A 
-		where	(A.Id = @Id and substring(Color, 1, 1) = '#')
-		union all
-    select
-			'Custom' as [Name],
-			A.Color as [Value]
-		from	Asset A 
-		where	(A.Id = @Id and substring(Color, 1, 3) = 'hsl')
-    union all
-		select
-				C.[Name],
-				C.[Value]
-		from	Asset A 
-				left join Color C on C.ID = try_cast(A.Color as int)
-		where	A.Id = @Id and A.Color is not null and substring(coalesce(Color,''), 1, 1) <> '#' and substring(coalesce(Color,''), 1, 3) <> 'hsl'
-	
-		) C for json path, without_array_wrapper
-	) as ColorJson 
-)
+DROP FUNCTION IF EXISTS [dbo].[GetAssetColorJsonById]
 
 		]]>
     </sql>

@@ -43,9 +43,13 @@
                [innerText]="fieldValue"></a>
         </d3s-preview-tooltip>
     </span>
-    <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}"></span>
+    <ng-container *ngSwitchCase="'path'">
+        <ng-container *ngFor="let segment of segments; let i = index">
+            <span [innerText]="segment"></span>&nbsp;<i *ngIf="(i + 1) < segments?.length" class='fa fa-angle-right'></i>&nbsp;
+        </ng-container>
+    </ng-container>
     <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}"></span>
-    <span *ngSwitchCase="'string'" innerHtml="{{fieldValue}}"></span>
+    <span *ngSwitchCase="'string'" [innerText]="fieldValue"></span>
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
         <ng-template #showJSON>

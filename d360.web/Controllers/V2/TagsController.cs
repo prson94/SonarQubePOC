@@ -17,6 +17,8 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Data.Entity;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -622,6 +624,65 @@ namespace d360.web.Controllers.V2
 
         }
 
+        [HttpGet,
+        Route("permissions/{assetUid:Guid}"),
+        ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult getAssetTagPermissions(Guid assetUid)
+        {
+            try
+            {
+                var result = new List<TagPermissionItem>();
+
+                if (assetUid == null || assetUid == Guid.Empty)
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+                }
+
+                var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                if (asset == null)
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+                }
+                List<AssetTag> assetTags = Company.AssetTags.Where(x => x.AssetID == asset.ID).ToList();
+                int[] tagIDs = assetTags.Select(x => x.TagID).ToArray();
+                var tags = Company.Tags.Where(x => tagIDs.Contains(x.ID)).ToList();
+
+                if (Company.HasAssetPermission(asset.ID, Permission.ModifyAsset) || Company.CurrentResourceIsAdmin)
+                {
+                    foreach (var tag in tags)
+                    {
+                        result.Add(new TagPermissionItem()
+                        {
+                            CanDelete = true,
+                            uid = tag.uid,
+                            Value = tag.Value
+                        });
+                    }
+                }
+                else
+                {
+                    foreach (var tag in tags)
+                    {
+                        result.Add(new TagPermissionItem()
+                        {
+                            CanDelete = tag.CreatedBy == Company.CurrentResourceID,
+                            uid = tag.uid,
+                            Value = tag.Value
+                        });
+                    }
+                }
+
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag permission details", e.Message);
+            }
+
+        }
 
     }
 }

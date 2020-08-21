@@ -63,4 +63,5 @@
   <include file="scripts/GOV-11295.xml"/>  <!-- Rename table CompanyFeature-->  
   <include file="scripts/GOV-11296.xml"/>  <!-- Remove table CompanyFeature_bak-->  
   <include file="scripts/GOV-11826.xml"/>  <!-- Rename table plugin.ClientFusionType-->  
+  <include file="scripts/GOV-11573.xml"/>  <!-- Remove settings GovernanceRoleLabel and GovernanceRoleDescription-->  
 </databaseChangeLog>

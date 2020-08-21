@@ -54,7 +54,7 @@ namespace d360.core.entities
         [DataMember]
         public bool Success { get; set; }
     }
-    
+
 
     public class TagApiDeleteModel
     {
@@ -106,6 +106,13 @@ namespace d360.core.entities
     {
         public Guid uid { get; set; }
         public string Value { get; set; }
+    }
+
+    public class TagPermissionItem
+    {
+        public Guid uid { get; set; }
+        public string Value { get; set; }
+        public bool CanDelete { get; set; }
     }
 
 }

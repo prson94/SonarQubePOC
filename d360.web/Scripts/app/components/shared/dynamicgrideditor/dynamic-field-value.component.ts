@@ -23,6 +23,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     private fieldValue: any;
     private hasColor: boolean;
     private colorText: string;
+    segments: string[] = [];
     constructor(private router: Router) {
         super();
     }
@@ -81,6 +82,14 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = `<div class="score-pill-small score-${this.item[thresholdKey]}"></div><span>${this.fieldValue}</span>`;
         }
 
+        if (this.fieldType == 'path') {
+            if (this.fieldValue !== '' && this.fieldValue !== null) {
+                this.segments = this.fieldValue.split(" > ");
+            } else {
+                this.segments = [];
+            }
+        }
+
         if (this.fieldType == 'Color') {
             let hasValue = this.item[colKey] ? true : false;
             if (hasValue) {
@@ -105,6 +114,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         let replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
         return replacement;
     }
+
 
     private columnDataType(column: GridColumn): string {
         var fields = this.fields.filter(x => x.name == column.datafield);

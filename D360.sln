@@ -45,8 +45,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.workflowsubscriber
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusionloadprocessor", "igx.jobs.fusionloadprocessor\igx.jobs.fusionloadprocessor.csproj", "{09735143-0F52-4A88-9DF2-CD0B6E19D34D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusiondeploymentprocessor", "igx.jobs.fusiondeploymentprocessor\igx.jobs.fusiondeploymentprocessor.csproj", "{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{250BEFFF-E46A-41D1-8421-587E325EAA34}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -85,7 +83,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.core", "d360.core\d360.core.csproj", "{779B4B57-42B9-4478-9464-2A4880ABF27B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -161,10 +159,6 @@ Global
 		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09735143-0F52-4A88-9DF2-CD0B6E19D34D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -244,7 +238,6 @@ Global
 		{795C450D-34F3-441C-BE8C-EC391D374FD9} = {757CF48D-6728-4702-AC12-754629196548}
 		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8} = {757CF48D-6728-4702-AC12-754629196548}
 		{09735143-0F52-4A88-9DF2-CD0B6E19D34D} = {757CF48D-6728-4702-AC12-754629196548}
-		{FAEC7C8E-3C67-45A1-BE1D-F7B268627C9C} = {757CF48D-6728-4702-AC12-754629196548}
 		{CC659834-FB58-41BF-83AA-249FC84D009F} = {757CF48D-6728-4702-AC12-754629196548}
 		{868597A5-9A50-447B-8702-E46EC308BA85} = {757CF48D-6728-4702-AC12-754629196548}
 		{AA54113F-1E7E-4B28-BF89-6FB686E61B46} = {757CF48D-6728-4702-AC12-754629196548}
@@ -263,7 +256,7 @@ Global
 		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal

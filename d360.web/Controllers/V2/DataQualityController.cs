@@ -13,6 +13,7 @@ using System.Data;
 using Swashbuckle.Swagger.Annotations;
 using System.Web.Http.Description;
 using d360.core.enums;
+using d360.web.Models;
 
 namespace d360.web.Controllers.V2
 {
@@ -249,34 +250,5 @@ namespace d360.web.Controllers.V2
                             
                         ", new { u = Company.CurrentResourceID, ruleUid, @class = ResultRelationClass.Owns }, transaction: transaction, commandTimeout: timeout);
         }
-
-        public class DataQualityResultModel
-        {            
-            public List<DataQualityResultItem> Results{ get; set; }
-
-            public int? Timeout { get; set; }
-        }
-
-        public class DataQualityResultItem
-        {
-            public DataQualityResult Result { get; set; }
-            public List<DataQualityAssetMapping> AssetsMappings { get; set; }
-        }
-}
-
-
-    public class DataQualityResult
-    {
-        public int PassCount { get; set; }
-        public int FailCount { get; set; }
-        public DateTime EffectiveDate { get; set; }
-        public DateTime RunDate { get; set; }        
-        public int ID { get; set; }
-    }
-
-    public class DataQualityAssetMapping
-    {
-        public string AssetPath { get; set; }
-        public Guid? AssetUID { get; set; }
     }
 }

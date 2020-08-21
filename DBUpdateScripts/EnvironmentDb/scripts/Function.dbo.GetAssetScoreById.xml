@@ -5,12 +5,36 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetScoreById-v1">
+  <changeSet author="Pappas" id="Function.dbo.GetAssetScoreById-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[GetAssetScoreById]
+(
+	@Id bigint,
+	@scoreType int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select	top 1
+			S.RunDate, 
+			S.EffectiveDate, 
+			S.[Value],
+			case when S.Value is null then ' ' 
+			else cast(cast((S.[Value] * 100) as float) as nvarchar) + '%'
+			end as FormattedValue
+	from	metrics.Score S
+			inner join Asset A on A.[uid] = S.AssetUid and A.Id = @Id and S.EndDate is null
+			inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @scoreType and Al.OverrideName is null
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetAssetScoreById]
 (
 	@Id bigint,
@@ -35,11 +59,6 @@ RETURN
 			and S.ScoreType = @scoreType 
 			and S.EndDate is null
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

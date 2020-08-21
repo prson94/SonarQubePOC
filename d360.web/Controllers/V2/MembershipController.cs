@@ -574,14 +574,14 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", "Access Denied."));
 
                 var group = (await Company.QueryAsync<Group>(@"
 select G.* from [Group] G 
 inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
 where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
-                var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid).ObjectID;
+                var userId = _company.Assets.FirstOrDefault(x => x.Object == "Resource" && x.uid == resourceUid)?.ObjectID ?? 0;
 
                 if (group?.PrimaryOwnerResourceID == userId)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Cannot delete Primary Owner of group."));

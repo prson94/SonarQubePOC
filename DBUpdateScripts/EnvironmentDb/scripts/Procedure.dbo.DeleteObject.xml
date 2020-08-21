@@ -12,7 +12,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-  create or alter procedure [dbo].[DeleteObject]
+create or alter procedure [dbo].[DeleteObject]
 	  @ObjTemp varchar(50),
 	  @ObjectIDTemp int,
 	  @ResourceIDTemp int
@@ -21,14 +21,14 @@
 	  set nocount on;
  
 	  declare	@Object varchar(50) = @ObjTemp,
-			  @ObjectID int = @ObjectIDTemp,
-			  @ResourceID int = @ResourceIDTemp,
-			  @CurrentDate datetime = getutcdate(),
-			  @predicateType int = 0,
-			  @trans varchar(25) = 'Trans',
-			  @current int = 1,
-			  @max int,
-			  @IsType bit = 0;
+				@ObjectID int = @ObjectIDTemp,
+				@ResourceID int = @ResourceIDTemp,
+				@CurrentDate datetime = getutcdate(),
+				@predicateType int = 0,
+				@trans varchar(25) = 'Trans',
+				@current int = 1,
+				@max int,
+				@IsType bit = 0;
 
 	  drop table if exists #items;
 	  create table #items  (ID bigint, Object varchar(50), ObjectID int, Processed bit null)
@@ -1212,15 +1212,15 @@
 						  inner join #types I on I.ID = A.AssetTypeID;
 
 				  delete	O
-				  from	[metrics].[Allocation] O
-						  inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
-						  inner join #types I on I.ObjectID = A.ObjectID;
+				  from		[metrics].[Allocation] O
+							inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
+							inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O
-				  from	[metrics].[Asset] O
+				  from		[metrics].[Asset] O
 							inner join metrics.Allocation Al on Al.Uid = O.AllocationUid
 							inner join AssetType A on A.Object = @Object and A.Uid = Al.AssetTypeUid
-						  inner join #types I on I.ObjectID = A.ObjectID;
+							inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O
 				  from	AssetTypeLevel O

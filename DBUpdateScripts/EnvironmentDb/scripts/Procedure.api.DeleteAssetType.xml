@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.api.DeleteAssetType-v6">
-    <comment>GOV-10731</comment>
+  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v7">
+    <comment>GOV-10916</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -265,8 +265,11 @@ begin
 			
 			delete	T
 			from	[metrics].[ScoreItem] T
-					inner join Asset O on O.Uid = T.AssetUid
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+					inner join metrics.Score S on S.Uid = L.ScoreUid
+					inner join Asset O on O.Uid = S.AssetUid
+					inner join api.ExecutionDeletedAssetType E on E.AssetTypeID = O.AssetTypeID and E.ExecutionID = @executionUid and E.ItemNumber = @itemNumber;
+
 			delete	T
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid
@@ -629,10 +632,6 @@ begin
 					inner join Asset A on A.Uid = T.Uid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
-			delete	T
-			from	AssetDataProfile T
-					inner join Asset A on A.ID = T.AssetID
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
 			from	AssetDisplayValue T
@@ -845,7 +844,7 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
+					
 			update	OrganizationType
 			set		State = 3,
 					UpdatedBy = @resource,

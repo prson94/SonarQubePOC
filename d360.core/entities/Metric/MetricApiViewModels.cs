@@ -161,6 +161,32 @@ namespace d360.core.entities.Metric
         public string Text { get; set; }
     }
 
+    [DataContract]
+    public class MetricPathOptionViewModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        [DataMember] 
+        public State State { get; set; }
+        [DataMember] 
+        public string Path { get; set; }
+        public string SegmentsJson { get; set; }
+        [DataMember] 
+        public List<MetricPathOptionSegmentViewModel> Segments
+        {
+            get
+            {
+                return JsonConvert.DeserializeObject<List<MetricPathOptionSegmentViewModel>>(SegmentsJson ?? "[]");
+            }
+        }
+    }
+
+    public class MetricPathOptionSegmentViewModel
+    {
+        public Guid AssetTypeUid { get; set; }
+        public string Name { get; set; }
+    }
+
     public class MeasureVersionHistoryModel
     {
         public Guid MeasureUid { get; set; }

@@ -75,13 +75,14 @@ import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-typ
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
-import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
 import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
 import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
 import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -102,7 +103,7 @@ import { ProcessDiagramListViewComponent } from './process-diagram/process-diagr
         AssetTypeModalEditorModule,
         SiteModalModule,
         ScoreBadgeModule,
-        D3SColorPickerModule,
+        IgColorPickerModule,
         SharedDynamicGridEditorModuleV2,
         SiteModalModule,
         SharedRelationshipModule,
@@ -126,6 +127,7 @@ import { ProcessDiagramListViewComponent } from './process-diagram/process-diagr
         TreeModule,
         DragDropModule,
         AccordionModule,
+        TooltipModule,
         //JSON Viewer module
         NgxJsonViewModule,
         AssetSearchModule,

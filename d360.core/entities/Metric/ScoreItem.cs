@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -10,16 +9,7 @@ namespace d360.core.entities.Metric
     public class ScoreItem : BaseUidObject
     {
         [DataMember]
-        public Guid AssetUid { get; set; }
-
-        [DataMember]
-        public Guid MetricAssetUid { get; set; }
-
-        [DataMember]
-        public DateTime EffectiveDate { get; set; }
-
-        [DataMember]
-        public Guid? AssetVersionUid { get; set; }
+        public Guid AssetVersionUid { get; set; }
 
         [DataMember]
         public Guid? ConditionUid { get; set; }
@@ -42,12 +32,20 @@ namespace d360.core.entities.Metric
         [DataMember]
         public DateTime? RunDate { get; set; }
 
-        [DataMember]
-        public DateTime? EndDate { get; set; }
-
         public ICollection<Score> Scores { get; set; }
 
         [IgnoreDataMember, NotMapped]
         public decimal? RawMeasureWeight { get; set; }
+
+        [IgnoreDataMember, NotMapped]
+        public Guid MetricAssetUid { get; set; }
+        
+        /// <summary>
+        /// Used for data quality measures when the score allocation is not threshold-based. 
+        /// We use this value to apply to the adjustedmaxweight in order to get a percentage 
+        /// of that to then contirubute towards the score.
+        /// </summary>
+        [IgnoreDataMember, NotMapped]
+        public float? OverrideAdjustmentPercentage { get; set; }
     }
 }

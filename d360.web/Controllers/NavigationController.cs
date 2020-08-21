@@ -38,7 +38,7 @@ namespace d360.web.Controllers
             List<TopNavigationItem> nodes = null;
 
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
-                        
+
             var isFusionEnabled = Community.IsFusionEnabled();
             if (!isFusionEnabled)
             {
@@ -53,7 +53,7 @@ namespace d360.web.Controllers
 
             if (nodes != null)
                 nodes.ForEach(n =>
-                {                    
+                {
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
                         parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)));
@@ -788,7 +788,7 @@ namespace d360.web.Controllers
                 {
                     item.Items = parseXmlNavigationDocument(el.Element("items"));
                 }
-                items.Add(item);                
+                items.Add(item);
             }
 
             return items;
@@ -803,6 +803,16 @@ namespace d360.web.Controllers
             //Static nav
             if (model.AssetUid == null)
             {
+                if (model.ObjectType != null && model.ObjectId != null)
+                {
+                    var assetType = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
+                    if (assetType != null)
+                    {
+                        model.Class = assetType.Class;
+                        responseModel.Uid = assetType.uid;
+                    }
+                }
+
                 if (model.ObjectType == SystemObjects.ArtifactType.ToString())
                 {
                     execProcedure = false;
@@ -934,7 +944,7 @@ namespace d360.web.Controllers
             }
 
 
-                if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
+            if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
             {
                 execProcedure = false;
                 var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
