@@ -766,7 +766,7 @@ namespace d360.web.Controllers.V2
                 var auid = uid;
                 if (!Company.Any<core.entities.Metric.MetricAllocation>(i => i.Uid == auid))
                 {
-                    status.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    status.StatusCode = System.Net.HttpStatusCode.NotFound;
                     status.Message = $"Allocation identifier with value {uid} does not correspond to a valid allocation.";
                 }
             }

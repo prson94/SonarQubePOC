@@ -393,18 +393,20 @@ namespace d360.web.Controllers.V2
                     effectiveDate = DateTime.UtcNow;
                 }
 
-                var allocationUid = (
-                    from a in Company.Filter<AssetDetail>(i => i.uid == assetUid)
-                    join al in Company.MetricAllocations on a.AssetTypeUid equals al.AssetTypeUid
-                    where al.ScoreType == scoreType
-                    where string.IsNullOrEmpty(al.OverrideName)
-                    select al.Uid
+                var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+                if (assetDetail == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found."));
+
+                var allocation = Company.Filter<MetricAllocation>(al => 
+                    al.AssetTypeUid == assetDetail.AssetTypeUid && 
+                    al.ScoreType == scoreType && 
+                    string.IsNullOrEmpty(al.OverrideName)
                     ).FirstOrDefault();
 
-                if (allocationUid == null)
+                if (allocation == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Score Allocation corresponding to asset with identifier of {assetUid} could not be found."));
 
-                var result = MetricsRepository.GetMetricHierarchyByAsset(allocationUid, assetUid, effectiveDate);
+                var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
             catch (Exception ex)
@@ -443,13 +445,13 @@ namespace d360.web.Controllers.V2
                 var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
                 if (allocationStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return ResponseMessage(Request.CreateErrorResponse(allocationStatus.StatusCode, allocationStatus.Message));
+                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, "Bad request", allocationStatus.Message));
                 }
 
                 var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
                 if (assetStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return ResponseMessage(Request.CreateErrorResponse(assetStatus.StatusCode, assetStatus.Message));
+                    return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message));
                 }
 
                 DateTime effectiveDate = DateTime.MinValue;

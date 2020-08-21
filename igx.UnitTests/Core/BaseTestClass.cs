@@ -68,6 +68,11 @@ namespace igx.UnitTests
             var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes);
             mock.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
 
+            var assetDetails = new List<AssetDetail> { new AssetDetail { uid = Guid.Parse(DataConstants.ValidGUID), AssetTypeUid = Guid.Parse(DataConstants.ValidGUID2) } }.AsQueryable();
+            var assetDetailsMock = CreateDbSetMock<AssetDetail>(assetDetails);
+
+            var metricAllocations = new List<MetricAllocation> { new MetricAllocation { ScoreType = ScoreType.Governance, OverrideName = null, AssetTypeUid = Guid.Parse(DataConstants.ValidGUID2) } }.AsQueryable();
+            var metricAllocationsMock = CreateDbSetMock<MetricAllocation>(metricAllocations);
 
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));

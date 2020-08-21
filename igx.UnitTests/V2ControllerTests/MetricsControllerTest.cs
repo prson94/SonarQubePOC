@@ -240,15 +240,15 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetMetricHierarchyByAssetUidAsync()
+        public async void GetMetricHierarchyByAssetUidAllocationAsync_BadUid()
         {
-            var actionResult = metricsController.GetMetricHierarchyByAssetAndScoreTypeAsync(d360.core.enums.ScoreType.Governance,Guid.Parse(DataConstants.ValidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var actionResult = metricsController.GetMetricHierarchyByAssetAndAllocationAsync(DataConstants.ValidGUID2, DataConstants.ValidGUID).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JArray>(str);
+            var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetHierarchyModel), data), XMsg.InvalidJSON);
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 
