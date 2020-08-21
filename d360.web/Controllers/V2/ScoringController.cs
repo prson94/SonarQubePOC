@@ -619,10 +619,42 @@ namespace d360.web.Controllers.V2
             Route("history/{allocationUid}/{assetUid}/scores"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset and allocation.", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not allowed to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that you have passed an incorrectly formatted identifier.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that you have passed an incorrectly formatted identifier.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult GetScoreHistoryByAllocationAndAsset(Guid allocationUid, Guid assetUid)
+        public IHttpActionResult GetScoreHistoryByAllocationAndAsset(string allocationUid, string assetUid)
         {
+            Guid _allocationUid;
+            Guid _assetUid;
+
+            if (!Guid.TryParse(allocationUid, out _allocationUid)) 
+            {
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"allocationUid {allocationUid} is not a correctly formatted identifier."));
+            }
+
+            if (!Guid.TryParse(assetUid, out _assetUid)) 
+            {
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"assetUid {assetUid} is not a correctly formatted identifier."));
+            }
+
+            if (!Company.Any<MetricAllocation>(i => i.Uid == _allocationUid))
+            {
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Allocation identifier with value {_allocationUid} does not correspond to a valid allocation."));
+            }
+
+            var asset = Company.Filter<Asset>(i => i.uid == _assetUid).SingleOrDefault();
+            if (asset == null)
+            {
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset identifier with value {_assetUid} does not correspond to a valid asset."));
+            }
+
+            var canRead = Company.HasAssetPermission(asset.ID, Permission.ReadAsset);
+            if (!canRead)
+            {
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden, $"You do not have permissions to view score history on this asset."));
+            }
+
             var model = Company.Query<dynamic>(@"
 	declare @date date = getutcdate()
 
@@ -637,7 +669,7 @@ namespace d360.web.Controllers.V2
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
 			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null", 
-            new { allocationUid, assetUid });
+            new { allocationUid = _allocationUid, assetUid = _assetUid });
             
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
