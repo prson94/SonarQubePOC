@@ -1335,9 +1335,11 @@ for json path";
 
         private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
         {
-            return Company.Query<DateTime?>(
-                "select max(I.EffectiveDate) as EffectiveDate from metrics.ScoreItem where AssetVersionUid = @metricVersionUid", 
-                new { metricVersionUid = uid }).FirstOrDefault();
+            return Company.Query<DateTime?>(@"
+select  max(S.EffectiveDate) as EffectiveDate 
+from    metrics.ScoreItem I 
+        inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricVersionUid 
+        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }).FirstOrDefault();
         }
 
         public List<string> GetMetricVersionHistory(Guid measureUid)
