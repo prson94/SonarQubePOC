@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter procedure [graph].[AssetBrowser_Initial]
+create or alter procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
