@@ -9,11 +9,13 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
 import { HeaderActions } from '../../../../models/header.model';
+import { Location } from '@angular/common';
+import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -81,9 +83,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private initialActions = new HeaderActions();
 
+    private focusKey: string = '';
+
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
+
+    @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
+
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -91,9 +98,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         private headerActionService: HeaderActionsService,
         private processService: ProcessService,
         public cdRef: ChangeDetectorRef,
-        private router: Router,
+        private route: ActivatedRoute,
         private renderer: Renderer2,
-        public dynEditorService: DynEditorService
+        public dynEditorService: DynEditorService,
+        private location: Location
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -102,6 +110,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
     ngOnInit() {
+
+        this.route.params.subscribe(params => {
+            this.focusKey = params['focusKey'];
+            if (this.focusKey) {
+                let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
+                this.location.replaceState(url);
+                this.isInfoPanelOpened = true;
+            }
+        });
+
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
@@ -391,6 +409,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 self.diagramOriginalPosition = null;
             }
         });
+
+        this.myDiagram.addDiagramListener("BackgroundSingleClicked", function (e: go.DiagramEvent) {
+            if (self.listView) {
+                self.listView.nodeSelectedTrigger(null);
+            }
+        });
+
         var model = this.myDiagram.model as go.GraphLinksModel;
 
         model.linkFromPortIdProperty = "fromPort";
@@ -619,8 +644,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                 }
 
+                this.handleFocusKey();
+
                 this.cdRef.detectChanges();
             });
+    }
+
+    private handleFocusKey() {
+
+        var part = this.myDiagram.findPartForKey(this.focusKey);
+        if (part) {
+            this.myDiagram.select(part);
+
+            this.myDiagram.centerRect(part.actualBounds);
+        }
+        this.focusKey = undefined;
     }
 
     private updateLinkFromForm(formData) {
@@ -661,7 +699,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram && this.myDiagram.nodes) {
             this.nodeNames = [];
             this.myDiagram.nodes.each(node => {
-                this.nodeNames.push(node.data['Name']);
+                if (node && node.data && node.data['Name'])
+                    this.nodeNames.push(node.data['Name']);
             })
         }
     }
@@ -709,6 +748,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
+        if (this.listView) {
+            this.listView.nodeSelectedTrigger(node.data);
+        }
+
         this.cdRef.detectChanges();
     }
 

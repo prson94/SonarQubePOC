@@ -48,6 +48,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
     @Input() assetUid: string;
+    @Input() diagramNodeKey: string;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -106,9 +107,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         super();
         this.component_uid = Math.random().toString(36).substring(2);
         this.dynEditorService.formUpdate.subscribe(res => {
-            if (this.assetUid && this.assetUid == res.assetUid) {
-                if (this.field.FieldName == res.fieldName) {
-                    this.form.controls[res.fieldName].patchValue(res.fieldValue);
+            if (res) {
+                var assetUid = this.assetUid;
+                if (!assetUid)
+                    assetUid = this.diagramNodeKey;
+                if (assetUid && assetUid == res.assetUid) {
+                    if (this.field.FieldName == res.fieldName) {
+                        this.form.controls[res.fieldName].patchValue(res.fieldValue);
+                    }
                 }
             }
         });

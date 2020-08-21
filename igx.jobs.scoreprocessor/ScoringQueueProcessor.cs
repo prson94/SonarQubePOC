@@ -61,15 +61,6 @@ namespace igx.jobs.scoreprocessor
                     case ScoreQueueChangeType.RollupPathChanged:
                         process = new RollupPathChangedProcess();
                         break;
-                    case ScoreQueueChangeType.RuleResultsChanged:
-                        process = new RuleResultsChangedProcess();
-                        break;
-                    case ScoreQueueChangeType.RuleResultsCreated:
-                        process = new RuleResultsCreatedProcess();
-                        break;
-                    case ScoreQueueChangeType.RuleResultsRemoved:
-                        process = new RuleResultsRemovedProcess();
-                        break;
                     case ScoreQueueChangeType.WorkflowCheck:
                         process = new WorkflowCheckProcess();
                         break;

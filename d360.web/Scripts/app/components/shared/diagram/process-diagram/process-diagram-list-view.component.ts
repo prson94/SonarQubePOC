@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, Input, DoCheck, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, DoCheck, ChangeDetectorRef, ElementRef, ViewChild, AfterViewChecked, OnChanges } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -9,21 +9,26 @@ import { SortEvent } from 'primeng/api';
     templateUrl: './process-diagram-list-view.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramListViewComponent extends DiagramBaseComponent implements DoCheck {
+export class ProcessDiagramListViewComponent extends DiagramBaseComponent implements DoCheck, AfterViewChecked {
     @Input() nodeArray: go.ObjectData[] = [];
     @Input() nodeSelection: any;
     @Input() diagram: go.Diagram;
 
+    private rowsPerPage: number = 10;
+    private tableScrollHeight: string = '500px';
+
     selected: go.ObjectData[] = [];
     lastSelectedIndex: number = -1;
     private nodeCount: number = 0;
+
 
     @ViewChild('dt', { static: false }) tableEl: any;
 
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private elRef: ElementRef
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -50,6 +55,15 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             })
         }
         this.cdRef.detectChanges();
+    }
+
+    ngAfterViewChecked() {
+        if (document.getElementById('process-diagram-placeholder')) {
+            var height = document.getElementById('process-diagram-placeholder').clientHeight;
+
+            this.tableScrollHeight = height - 200 + 'px';
+            this.cdRef.markForCheck();
+        }
     }
 
     nodeArrayCountChanged() {
@@ -165,11 +179,25 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         })
         this.diagram.selectCollection(selectedParts);
         this.lastSelectedIndex = elIndex;
-
     }
 
     private getNodeIndexInSelected(data: go.ObjectData) {
         return this.selected.indexOf(data);
     }
+
+
+    public nodeSelectedTrigger(data: go.ObjectData) {
+        if (data) {
+            var index = this.nodeArray.indexOf(data) + 1;
+            var page = Math.ceil(index / this.rowsPerPage);
+
+            this.tableEl['_first'] = (page - 1) * this.rowsPerPage;
+        }
+        else {
+            this.tableEl['_first'] = 0;
+        }
+        this.cdRef.markForCheck();
+    }
+
 
 }

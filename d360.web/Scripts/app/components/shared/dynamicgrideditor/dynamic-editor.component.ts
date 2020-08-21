@@ -581,11 +581,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
 
-        //convert artifact to an asset
+        //convert to an asset
         for (var p in values) {
             if (p.toUpperCase() == "PARENTUID") {
-                if (values[p] != "00000000-0000-0000-0000-000000000000")
-                    asset.ParentUid = values[p];
+                asset.ParentUid = values[p];
             }
             else if (p.toUpperCase() == "UID") {
                 asset.Uid = values[p];

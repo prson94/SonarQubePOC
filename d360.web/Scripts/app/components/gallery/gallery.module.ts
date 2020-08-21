@@ -25,6 +25,8 @@ import { GalleryInputComponent } from './gallery.input.component';
 import { GalleryColorPickerComponent } from './gallery.color-picker.component';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
 import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
+import { GalleryTooltipComponent } from './gallery.tooltip.component';
+import { TooltipModule } from 'primeng/tooltip';
 import { GalleryTextAreaComponent } from './gallery.textarea.component';
 
 @NgModule({
@@ -43,6 +45,7 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
         IgColorPickerModule,
 
         TableModule,
+        TooltipModule
 
     ],
     declarations: [
@@ -54,6 +57,7 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
         GalleryInputComponent,
         GalleryColorPickerComponent,
         GalleryColorVariablesComponent,
+        GalleryTooltipComponent
         GalleryTextAreaComponent,
     ],
     providers: [

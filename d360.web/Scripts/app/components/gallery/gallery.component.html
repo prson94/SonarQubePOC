@@ -1,11 +1,12 @@
-﻿<h3>Controls</h3><h5>Examples of common Govern controls.  Documentation of their usage and properties.  For Govern Angular control best guidelines please see <a href="https://infogix.atlassian.net/wiki/spaces/GOVDEV/pages/985333980/Angular+Control+Library+Standards">Govern control guidelines</a>.</h5>
+﻿<h3>Controls</h3>
+<h5>Examples of common Govern controls.  Documentation of their usage and properties.  For Govern Angular control best guidelines please see <a href="https://infogix.atlassian.net/wiki/spaces/GOVDEV/pages/985333980/Angular+Control+Library+Standards">Govern control guidelines</a>.</h5>
 <br />
 
 <div class="row">
-    <div class="col s2">         
+    <div class="col s2">
         <div class="collection">
             <a *ngFor="let control of controls" (click)="activeControl = control.key;" [class]="(activeControl == control.key ? 'collection-item active' : 'collection-item')">{{control.label}}</a>
-        </div>        
+        </div>
     </div>
     <div class="col s10">
         <gallery-switch *ngIf="(activeControl=='switch')"></gallery-switch>
@@ -15,6 +16,7 @@
         <gallery-input *ngIf="(activeControl=='input')"></gallery-input>
         <gallery-color-picker *ngIf="(activeControl=='color-picker')"></gallery-color-picker>
         <gallery-color-variables *ngIf="(activeControl=='color-variables')"></gallery-color-variables>
+        <gallery-tooltip *ngIf="(activeControl=='tooltip')"></gallery-tooltip>
         <gallery-textarea *ngIf="(activeControl=='textarea')"></gallery-textarea>
     </div>
 </div>

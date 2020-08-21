@@ -90,7 +90,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                 return;
 
             newValue.push(val);
-           
+
             this.tagPermissions.push({ Value: val.title, Uid: val.value, CanDelete: true });
             this.writeValue(newValue);
         }
@@ -219,8 +219,8 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     this.tagService.saveTag(tagType)
                         .subscribe(result => {
                             let msg: string = '';
-                            if (event.value == undefined) {
-                                msg = `${event.title} succesfully created`;
+                            if (result.Value != undefined) {
+                                result.message = `${result.Value} succesfully created`;
                             }
                             this.showMessageForResult(this.messagesService, result, msg);
                             this.tryAddValue({ value: result.uid, title: result.Value });
@@ -282,6 +282,14 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     checkPermissions() {
         if (this.arePermissionsLoaded)
             return;
+
+
+        //If there is no assetUid, asset id in creation so no permission check needed
+        if (!this.assetUid) {
+            this.arePermissionsLoaded = true;
+            this.tagPermissions = [];
+            return;
+        }
 
         this.tagService.getTagPermissions(this.assetUid)
             .subscribe(permissions => {

@@ -259,8 +259,8 @@
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
 	<include file="scripts/Table.api.ExecutionGroup.xml"/>
-	<include file="scripts/Table.api.ExecutionMetric.xml"/>
-	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
+	<include file="scripts/Table.api.ExecutionScore.xml"/>
+	<include file="scripts/Table.api.ExecutionMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipError.xml"/>
@@ -375,7 +375,8 @@
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactDisplayValue.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactKeyHashByIdWithParent.xml"/>
-	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>	
+	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>
+	<include file="scripts/Function.dbo.GetAssetColorJsonByColor.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetFieldHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
