@@ -11,7 +11,7 @@ namespace d360.core.enums
         [
             Name("Asset Graph"),
             QueueSettingName("AssetGraphQueue"),
-            Description("Rebuild Visualization diagrams for assets. This request may take up to thirty minutes, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment.")
+            Description("Rebuild Visualization diagrams for assets. This request may take a significant amount of time to complete, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment.")
         ]
         AssetGraph = 1,
         [
