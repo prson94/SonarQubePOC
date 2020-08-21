@@ -399,7 +399,16 @@ namespace igx.jobs.apiexecutionprocessor
                                 await SaveResultsJsonToAzure(postDataQualityResultsResponse, log, "DataQualityResults", HttpMethod.Post);
 
                                 company.SendApiGraphEvent(Info);
-                                company.SendScoreEventWithPayload(dbExecutionItem.ExecutionID, ScoreQueueChangeType.RuleResultsCreated, postDataQualityResultsRequest);
+
+                                var ruleResultUids = postDataQualityResultsResponse.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
+                                if (ruleResultUids.Count > 0)
+                                {
+                                    var assetMeasures = company.GetAssetMeasuresFromRuleResults(ruleResultUids);
+                                    if (assetMeasures.Count > 0)
+                                    {
+                                        company.SendScoreEventWithPayload(dbExecutionItem.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                                    }
+                                }
 
                                 #endregion
                                 break;

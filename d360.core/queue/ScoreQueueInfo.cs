@@ -13,9 +13,6 @@ namespace d360.core.queue
         MeasureChanged,
         MeasureRemoved,
         RollupPathChanged,
-        RuleResultsCreated,
-        RuleResultsChanged,
-        RuleResultsRemoved,
         WorkflowCheck
     }
 

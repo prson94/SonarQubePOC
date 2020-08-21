@@ -31,4 +31,26 @@ DROP TABLE IF EXISTS [metrics].[RollupPath]
 	</rollback>
   </changeSet> 
 
+  <changeSet author="Pappas" id="Table.metrics.RollupPath-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
+BEGIN
+	alter table [metrics].[RollupPath] add AssetTypeID int null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
+BEGIN
+	ALTER TABLE [metrics].[RollupPath] DROP COLUMN [AssetTypeID]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+
 </databaseChangeLog>

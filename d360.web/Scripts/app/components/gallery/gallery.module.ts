@@ -27,6 +27,8 @@ import { IgColorPickerModule } from '../shared/controls/color-picker/color-picke
 import { GalleryAutocompleteComponent } from './gallery.autocomplete.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
+import { GalleryTooltipComponent } from './gallery.tooltip.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -46,6 +48,8 @@ import { GalleryColorVariablesComponent } from './gallery.color-variables.compon
         
 
         TableModule,
+        TooltipModule
+
         AutoCompleteModule
     ],
     declarations: [
@@ -57,6 +61,7 @@ import { GalleryColorVariablesComponent } from './gallery.color-variables.compon
         GalleryInputComponent,
         GalleryColorPickerComponent,
         GalleryColorVariablesComponent,
+        GalleryTooltipComponent,
         GalleryAutocompleteComponent
     ],
     providers: [
