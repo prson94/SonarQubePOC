@@ -3151,9 +3151,9 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
 					from workflow.[type]  wt
 					inner join @workflowType wft
 					on wt.id = wft.id;";
-        
 
-        Database.Connection.Execute(sql, new { Object = type.ToString(), ObjectID = id }, null, 120);
+
+                Database.Connection.Execute(sql, new { Object = type.ToString(), ObjectID = id }, null, 120);
 
                 return true;
             }
@@ -3161,7 +3161,7 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
             {
                 throw resolveToRealException(ex);
             }
-
+        }
         public string GetDiagramUrlForDiagramAsset(Guid assetUid)
         {
             var diagramUrl = $@"select 
