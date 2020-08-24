@@ -20,7 +20,7 @@ export class ConnectorLabelService extends BaseObservableService {
 
 
     public getAvailableLabels(q: string, isExactValue: boolean = false, getUseCount: boolean = false, excludeUid: number = null): Observable<any[]> {
-        let url = `/api/v2/connectorLabels/search?q=` + q;
+        let url = `/api/v2/connectorLabels/search?q=` + escape(q);
         if (isExactValue) {
             url = url + '&isExact=true';
         }
@@ -123,7 +123,7 @@ export class ConnectorLabelService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    consolidateTags(parentLabel: string, childrenLabels: string[]): Observable<any[]> {
+    consolidateConnectorLabels(parentLabel: string, childrenLabels: string[]): Observable<any[]> {
         let url = `api/v2/connectorLabels/consolidate/${parentLabel}`;
         return this.http.post(url, childrenLabels)
             .pipe(map(response => <any>response),

@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 import { Router } from '@angular/router';
@@ -16,6 +16,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
     selected: ConnectorLabel;
+    rowsPerPage: number = 25;
 
     error: any;
 
@@ -118,10 +119,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = `Connector label succesfully created`;
                 }
                 else {
-                    msg = `${result.Value} succesfully updated`;
+                    msg = `Connector label succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
@@ -142,7 +143,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     consolidateLabels(parentUid: string, childrenUids: string[]) {
-        this.connectorLabelService.consolidateTags(parentUid, childrenUids)
+        this.connectorLabelService.consolidateConnectorLabels(parentUid, childrenUids)
             .subscribe(result => {
 
                 if (result) {
@@ -179,11 +180,23 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     private lastLoadedUid: string = '';
+
+    onRowSelected() {
+
+        if (this.lastLoadedUid != this.selected.uid) {
+            this.isUsageLoading = true;
+            this.lastLoadedUid = this.selected.uid;
+            this.cdRef.markForCheck();
+        }
+    }
+
     openDeleteModal(label: ConnectorLabel) {
         this.selected = label;
 
-        if (this.lastLoadedUid != label.uid)
+        if (this.lastLoadedUid != label.uid) {
+            this.cdRef.markForCheck();
             this.isUsageLoading = true;
+        }
 
         this.lastLoadedUid = label.uid;
         setTimeout(() => {

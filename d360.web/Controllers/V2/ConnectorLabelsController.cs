@@ -83,7 +83,8 @@ namespace d360.web.Controllers.V2
                                     {(getUseCount ? ", Labels.cnt as UseCount" : "")}
                                   FROM [dbo].[ConnectorLabel] cl
                                 {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
-                                where Value like @q and state = 1
+                                where state = 1 
+                                {(!string.IsNullOrEmpty(q) ? " and Value like @q" : "")}
                                 {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
             }

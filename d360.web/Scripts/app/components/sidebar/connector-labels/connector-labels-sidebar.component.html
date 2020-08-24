@@ -1,24 +1,22 @@
-<div class="row connector-label-list">
-    <div class="col l12 m12 s12">
 
+<div class="row connector-label-list">
+    <div class="col s12">
         <div class="tile tile-detail">
             <header>
-                Connector Labels<br />
-                <div class="flex-div">
-                    <input class="search-input" igInput [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search labels...">
-                    <div class="grow"></div>
-                    <d3s-tile-actions [class]="'tile-tools'" [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
-                </div>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
             </header>
+            <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+
             <p-table #dt
                      [value]="labels"
                      [globalFilterFields]="['Value','UseCount']"
-                     [rowsPerPageOptions]="[10,20,50,100,200,500]"
+                     [rowsPerPageOptions]="defaultPagingOptions"
+                     [rows]="rowsPerPage"
                      sortField="Value"
                      [sortOrder]="1"
                      [pageLinks]="3"
                      [paginator]="true"
-                     [rows]="20"
+                     (onRowSelect)="onRowSelected()"
                      [(selection)]="selected"
                      selectionMode="single"
                      [loading]="isLoading"

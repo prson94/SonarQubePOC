@@ -13,7 +13,7 @@ export class AsyncValidatorService {
 
     public labelUniqueValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> => {
-            let url = `/api/v2/connectorLabels/search?q=${control.value}&isExact=true`;
+            let url = `/api/v2/connectorLabels/search?q=${escape(control.value)}&isExact=true`;
             return this
                 .httpClient
                 .get(url)
