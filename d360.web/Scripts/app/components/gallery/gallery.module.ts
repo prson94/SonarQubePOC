@@ -57,7 +57,7 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
         GalleryInputComponent,
         GalleryColorPickerComponent,
         GalleryColorVariablesComponent,
-        GalleryTooltipComponent
+        GalleryTooltipComponent,
         GalleryTextAreaComponent,
     ],
     providers: [
