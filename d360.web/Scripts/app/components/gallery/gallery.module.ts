@@ -24,9 +24,12 @@ import { TagPickerModule } from '../shared/controls/tag-picker/tag-picker';
 import { GalleryInputComponent } from './gallery.input.component';
 import { GalleryColorPickerComponent } from './gallery.color-picker.component';
 import { IgColorPickerModule } from '../shared/controls/color-picker/color-picker.module';
+import { GalleryAutocompleteComponent } from './gallery.autocomplete.component';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
 import { GalleryTooltipComponent } from './gallery.tooltip.component';
 import { TooltipModule } from 'primeng/tooltip';
+
 
 @NgModule({
     imports: [
@@ -42,10 +45,11 @@ import { TooltipModule } from 'primeng/tooltip';
         IconPickerModule,
         TagPickerModule,
         IgColorPickerModule,
+        
 
         TableModule,
-        TooltipModule
-
+        TooltipModule,
+        AutoCompleteModule
     ],
     declarations: [
         GalleryComponent,
@@ -56,7 +60,8 @@ import { TooltipModule } from 'primeng/tooltip';
         GalleryInputComponent,
         GalleryColorPickerComponent,
         GalleryColorVariablesComponent,
-        GalleryTooltipComponent
+        GalleryTooltipComponent,
+        GalleryAutocompleteComponent
     ],
     providers: [
         GalleryGuard,

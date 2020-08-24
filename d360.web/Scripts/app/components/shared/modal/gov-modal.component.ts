@@ -1,5 +1,4 @@
-﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
-import { FocusTrapModule } from 'primeng/focustrap';
+﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterContentInit, OnDestroy } from '@angular/core';
 
 
 @Component({
@@ -7,7 +6,7 @@ import { FocusTrapModule } from 'primeng/focustrap';
     templateUrl: 'gov-modal.component.html'
 })
 
-export class D3SModal implements OnChanges {
+export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @Input() title: string = 'Default Title';
     @Input() additionalClasses: string = '';
     @Input() isVisible: false;
@@ -15,12 +14,24 @@ export class D3SModal implements OnChanges {
     @Input() showTitle: boolean = true;
     @Input() subtitle: string;
 
+    @Input() appendToBody: boolean = false;
+
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
 
     @ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
 
     private display: boolean = false;
+
+    ngAfterContentInit() {
+        if (this.appendToBody) {
+            setTimeout(() => {
+                document.body.append(this.modalDiv.nativeElement);
+
+            });
+        }
+    }
+
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.isVisible !== undefined && (changes.isVisible.previousValue != changes.isVisible.currentValue)) {
@@ -30,6 +41,12 @@ export class D3SModal implements OnChanges {
             else {
                 this.closePopUp();
             }
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.appendToBody) {
+            this.modalDiv.nativeElement.remove();
         }
     }
 
