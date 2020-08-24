@@ -560,13 +560,15 @@ from	metrics.Asset A
                                 scoreItemRow["Uid"] = s.Uid;
                                 scoreItemRow["UpdatedOn"] = s.UpdatedOn;
                                 scoreItemRow["Value"] = s.Value;
-                                scoreItemRow["AdjustedWeight"] = s.AdjustedWeight;
+                                if (s.AdjustedWeight.HasValue)
+                                    scoreItemRow["AdjustedWeight"] = s.AdjustedWeight.Value;
                                 scoreItemRow["RunDate"] = s.RunDate;
                                 scoreItemRow["AssetVersionUid"] = s.AssetVersionUid;
                                 scoreItemRow["Evidence"] = s.Evidence ?? "{}";
                                 if (s.ConditionUid.HasValue)
                                     scoreItemRow["ConditionUid"] = s.ConditionUid;
-                                scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight;
+                                if (s.AdjustedMaxWeight.HasValue)
+                                    scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
                                 scoreItems.Rows.Add(scoreItemRow);
                             });
 

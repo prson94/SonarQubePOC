@@ -3655,8 +3655,9 @@ button.tab-scroller {
 }
 
 .tag-usage-box {
-    display: inline-block;
-    position: relative;
+    position: absolute;
+    display: contents;
+    padding-right: 12px;
 
     .title {
         color: #006FBA;
@@ -3695,6 +3696,7 @@ button.tab-scroller {
     &.ui-tooltip {
         max-width: unset;
         max-width: none;
+        pointer-events: all;
 
         a {
             color: #006FBA;

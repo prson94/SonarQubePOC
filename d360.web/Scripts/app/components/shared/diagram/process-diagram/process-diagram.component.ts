@@ -15,6 +15,7 @@ import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
 import { HeaderActions } from '../../../../models/header.model';
 import { Location } from '@angular/common';
+import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -87,6 +88,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
+
+    @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
+
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -405,6 +409,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 self.diagramOriginalPosition = null;
             }
         });
+
+        this.myDiagram.addDiagramListener("BackgroundSingleClicked", function (e: go.DiagramEvent) {
+            if (self.listView) {
+                self.listView.nodeSelectedTrigger(null);
+            }
+        });
+
         var model = this.myDiagram.model as go.GraphLinksModel;
 
         model.linkFromPortIdProperty = "fromPort";
@@ -737,6 +748,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
+        if (this.listView) {
+            this.listView.nodeSelectedTrigger(node.data);
+        }
+
         this.cdRef.detectChanges();
     }
 

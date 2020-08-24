@@ -1,0 +1,70 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.api.ExecutionMeasure-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionMeasure')
+BEGIN
+	CREATE TABLE api.ExecutionMeasure (
+		ExecutionID uniqueidentifier NOT NULL,
+		ItemNumber int NOT NULL,
+		MetricAssetUid uniqueidentifier NOT NULL,
+		Passed bit NOT NULL,
+
+		IsValidMetric bit NULL,
+		IsValidVersion bit NULL,
+		
+		ScoreUid uniqueidentifier NULL,
+		ScoreItemUid uniqueidentifier NULL,
+		MetricAssetVersionUid uniqueidentifier NULL,
+
+		CONSTRAINT PK_ApiExecutionMeasure PRIMARY KEY CLUSTERED ( ExecutionID ASC, ItemNumber ASC, MetricAssetUid ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionMeasure_ExecutionID_ItemNumber')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_ApiExecutionMeasure_ExecutionID_ItemNumber ON api.ExecutionMeasure ( ExecutionID ASC, ItemNumber ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [api].[ExecutionMeasure]
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.api.ExecutionMetricMeasure-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP TABLE IF EXISTS [api].[ExecutionMetricMeasure]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionMetricMeasure')
+BEGIN
+	CREATE TABLE [api].[ExecutionMetricMeasure](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[MeasureUid] [uniqueidentifier] NOT NULL,
+		[Passed] [bit] NOT NULL
+	)
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
