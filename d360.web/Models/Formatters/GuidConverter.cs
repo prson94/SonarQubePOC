@@ -14,9 +14,7 @@ namespace d360.web.Models.Formatters
 
         public override Guid ReadJson(JsonReader reader, Type objectType, Guid existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            throw new NotImplementedException();
-            //string s = (string)reader.Value;
-            //return Guid.Parse(s);
+            throw new NotImplementedException();            
         }
     }
 }
