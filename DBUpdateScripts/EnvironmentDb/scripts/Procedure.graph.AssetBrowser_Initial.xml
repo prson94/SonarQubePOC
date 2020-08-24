@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v6">
+  <changeSet author="MDonato" id="Procedure.graph.AssetBrowser_Initial-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -118,10 +118,10 @@ begin
 					E.Uid,
 					S.ID,
 					@backSubjectSalt,
-					utility.GetHash(@backSubjectSalt + '|' + cast(S.ID as varchar)),
+					utility.GetHash(@backSubjectSalt + '|A' + cast(S.ID as varchar)),
 					T.ID,
 					@backObjectSalt,
-					utility.GetHash(@backObjectSalt + '|' + cast(T.ID as varchar)),
+					utility.GetHash(@backObjectSalt + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
 					-@currentHop
 			from	graph.AssetNode S,
@@ -144,10 +144,10 @@ begin
 					E.Uid,
 					S.ID,
 					@foreSubjectSalt,
-					utility.GetHash(@foreSubjectSalt + '|' + cast(S.ID as varchar)),
+					utility.GetHash(@foreSubjectSalt + '|A' + cast(S.ID as varchar)),
 					T.ID,
 					@foreObjectSalt,
-					utility.GetHash(@foreObjectSalt + '|' + cast(T.ID as varchar)),
+					utility.GetHash(@foreObjectSalt + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
 					@currentHop
 			from	graph.AssetNode S,
@@ -341,8 +341,8 @@ begin
 		end
 
 		update	H
-		set		H.[Key] = utility.GetHash(H.Salt + '|' + cast(H.ID as varchar)),
-				H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(H.Salt + '|' + cast(H.ParentID as varchar)) end
+		set		H.[Key] = utility.GetHash(H.Salt + '|A' + cast(H.ID as varchar)),
+				H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(H.Salt + '|A' + cast(H.ParentID as varchar)) end
 		from	#hierarchies H;
 	end
 	else if @ancestry = 2	-- direct-ancestry lineage
@@ -352,9 +352,9 @@ begin
 					L.Hop,
 					A.Uid,
 					A.ID,
-					utility.GetHash(L.Salt + '|' + cast(L.ID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(L.ID as varchar)),
 					P.ID ParentID,
-					utility.GetHash(L.Salt + '|' + cast(P.ID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(P.ID as varchar)),
 					A.AssetTypeID,
 					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
 			from	Asset A
@@ -372,7 +372,7 @@ begin
 					h.Hop,
 					P.Uid,
 					P.ID,
-					utility.GetHash(h.Salt + '|' + cast(h.ParentID as varchar)),
+					utility.GetHash(h.Salt + '|A' + cast(h.ParentID as varchar)),
 					P.AssetTypeID,
 					h.focal
 			from	#hierarchies h
@@ -388,8 +388,8 @@ begin
 					A.Uid,
 					A.ID,
 					A.AssetTypeID,
-					utility.GetHash(L.Salt + '|' + cast(A.ID as varchar)),
-					utility.GetHash(L.Salt + '|' + cast(A.AssetTypeID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(A.ID as varchar)),
+					utility.GetHash(L.Salt + '|T' + cast(A.AssetTypeID as varchar)),
 					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
 			from	Asset A
 					inner join #hopAssets L on L.ID = A.ID;
@@ -430,7 +430,7 @@ begin
 			select		O.Salt,
 						O.Hop,
 						O.AssetTypeID,
-						utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar)),
+						utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar)),
 						CAST(0x0 AS UNIQUEIDENTIFIER),
 						O.focal
 			from		#hierarchies O
@@ -447,7 +447,7 @@ begin
 			select		O.Salt,
 						O.Hop,
 						O.AssetTypeID,
-						utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar)),
+						utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar)),
 						CAST(0x0 AS UNIQUEIDENTIFIER)
 			from		#hierarchies O
 						left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
@@ -458,7 +458,7 @@ begin
 
 		-- Update parent key for single-level assets with key for asset type records added above.
 		update	O
-		set		O.ParentKey = utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar))
+		set		O.ParentKey = utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar))
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
