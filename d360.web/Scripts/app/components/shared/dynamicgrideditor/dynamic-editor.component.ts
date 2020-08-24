@@ -336,11 +336,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             } else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
-
-                    if (field.FieldType == "DateTime") {
-                        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-                    }
-
                     field.Value = date;
                 }
 
