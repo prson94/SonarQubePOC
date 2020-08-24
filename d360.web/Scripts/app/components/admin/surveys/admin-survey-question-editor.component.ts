@@ -1,15 +1,16 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
 import { SurveyQuestionTypeDetails } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
+import { NgForm, FormGroup } from '@angular/forms';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',
     template: ` 
                <header>{{action}} Question</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <div class="row" *ngIf="!isLoading">
+                <div class="row" [hidden]="isLoading">
                     <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">
                         <div class="col s6">
                             <div class="FieldName">Name</div>
@@ -37,9 +38,11 @@ import * as _ from 'lodash';
                             <div class="row">
                                 <div class="col s6">
                                     <input style="width: 100%;margin-bottom:5px;" required [name]="'item_' + i" type="text" [(ngModel)]="option.Name" maxlength="250">
+                                    <div *ngIf="questionEditorForm.form.errors && questionEditorForm.form.errors.duplicate_option && questionEditorForm.form.errors.duplicate_option == option.Name" class="error-message">Please enter unique option value</div>
                                 </div>
                                 <div class="col s6">
                                     <input style="width: 100%;" required [name]="'value_' + i" type="number" [(ngModel)]="option.Value">
+                                    <div *ngIf="questionEditorForm.form.errors && questionEditorForm.form.errors.duplicate_identifiers && questionEditorForm.form.errors.duplicate_identifiers.toString() === option.Value.toString()" class="error-message">Please enter unique option identifier</div>
                                 </div>
                             </div>
                             <div class="spacer"></div>
@@ -62,13 +65,14 @@ export class AdminSurveyQuestionEditorEditor {
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
     error: any;
-    editedQuestion: SurveyQuestionTypeDetails;
+    editedQuestion: SurveyQuestionTypeDetails = new SurveyQuestionTypeDetails();
     isLoading: boolean = false;
 
     displayStyles: DropdownOption[] = [{ title: "Radio List", value: "1" }, { title: "Check List", value: "3" }];
 
-
-    constructor(private surveysService: SurveysService) { }
+    @ViewChild('questionEditorForm', { static: true }) formGroup: NgForm;
+    constructor(private surveysService: SurveysService) {
+    }
 
     ngOnInit() {
 
@@ -92,6 +96,8 @@ export class AdminSurveyQuestionEditorEditor {
             });
             this.action = "New";
         }
+
+        this.formGroup.form.setValidators(this.duplicatesValidator);
     }
 
     onSubmit() {
@@ -101,5 +107,43 @@ export class AdminSurveyQuestionEditorEditor {
 
     addItem() {
         this.editedQuestion.Items.push({ Name: '', Value: 0, ID: 0, IsChecked: false });
+    }
+
+    private duplicatesValidator(form: FormGroup) {
+
+        function hasDuplicates(array): string {
+            var valuesSoFar = Object.create(null);
+            for (var i = 0; i < array.length; ++i) {
+                var value = array[i];
+                if (value in valuesSoFar) {
+                    return value;
+                }
+                valuesSoFar[value] = true;
+            }
+            return '';
+        }
+
+        if (form.value) {
+            var keys = Object.keys(form.value);
+            var options: string[] = []
+            var option_values: string[] = []
+            keys.forEach(key => {
+                if (key.indexOf('item_') == 0) {
+                    options.push(form.value[key]);
+                }
+                if (key.indexOf('value_') == 0) {
+                    option_values.push('no_' + form.value[key]);
+                }
+            });
+
+
+            if (hasDuplicates(options)) {
+                return { "duplicate_option": hasDuplicates(options) };
+            }
+            if (hasDuplicates(option_values)) {
+                return { "duplicate_identifiers": hasDuplicates(option_values).replace('no_', '') };
+            }
+        }
+        return null;
     }
 };
