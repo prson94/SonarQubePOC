@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v11">
-    <comment>GOV-10916</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v12">
+    <comment>GOV-11857</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -35,6 +35,7 @@ create or alter procedure [dbo].[DeleteObject]
 	  drop table if exists #types;
 	  create table #types (ID int, Object varchar(50), ObjectID int, Processed bit null)
 	  declare	@workflowItem table (ItemId int)
+	  declare	@workflowType table (id int)
 	  declare	@ClearComments bit = 1,
 			  @ClearIntersects bit = 1,
 			  @ClearFavorites bit = 1,
@@ -92,6 +93,18 @@ create or alter procedure [dbo].[DeleteObject]
 					  inner join Issue i on i.id = wi.objectid and wi.object = 'Issue'
 			  where	i.object = @Object and i.objectid = @ObjectID;
 
+	  if @IsType = 1
+	  begin
+		  insert into @workflowType
+		  select distinct wt.id 
+		  from workflow.[type] wt
+		  inner join [workflow].[EventRegistration] we
+		  on we.typeid = wt.id
+		  where wt.State <> 3 
+		  and we.object = @Object
+		  and we.objectid = @ObjectID;
+	  end
+	  
 		  if @Object = 'Artifact' or @Object = 'ArtifactType' or @Object = 'FusionAttribute' or @Object = 'FusionAttributeType' or @Object = 'ReferenceItem' or @Object = 'ReferenceItemType' or @Object = 'Rule'
 		  begin
 			  set @predicateType = 3
@@ -764,6 +777,14 @@ create or alter procedure [dbo].[DeleteObject]
 			  where	ID in (Select wfi.ItemID from @workflowItem wfi)
 		  end;
  
+		  if @IsType = 1 and exists(Select 1 from @workflowType)
+		  begin
+			  update wt
+			  set State = 3
+			  from workflow.[type]  wt
+			  inner join @workflowType wft
+			  on wt.id = wft.id;
+		  end
 		  commit transaction @trans;
 	  end try
 	  begin catch
@@ -1209,6 +1230,18 @@ create or alter procedure [dbo].[DeleteObject]
 				  from	graph.AssetNode O
 						  inner join #types I on I.ID = O.AssetTypeID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #types I on I.ID = O.AssetTypeID;		
+
 				  delete	O
 				  from	[Asset] O
 						  inner join #types I on I.ID = O.AssetTypeID;
@@ -1292,8 +1325,20 @@ create or alter procedure [dbo].[DeleteObject]
 				  from	graph.AssetNode O
 						  inner join #items I on I.ID = O.ID;
 
+					delete	T
+					from	[metrics].[ScoreItem] T
+							inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+							inner join metrics.Score S on S.Uid = L.ScoreUid
+							inner join Asset O on O.Uid = S.AssetUid
+							inner join #items I on I.ID = O.ID;
+
+					delete	T
+					from	[metrics].[Score] T
+							inner join Asset O on O.Uid = T.AssetUid
+							inner join #items I on I.ID = O.ID;		
+
 				  delete	A
-				  from	[Asset] A
+				  from		[Asset] A
 						  inner join #items I on A.[Object] = I.Object and I.ObjectID = A.ObjectID;
 				
 				  if @Object = 'Fusion'

@@ -339,6 +339,8 @@ namespace d360.web.Controllers
                 Company.FieldTypes.RemoveRange(customFields);
                 Company.Delete<IssueType>(i => i.ID == id);
 
+                Company.SetStateDeleteWorkFlowType(SystemObjects.IssueType, id);
+
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
