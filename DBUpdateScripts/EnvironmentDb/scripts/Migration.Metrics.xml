@@ -4,7 +4,18 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
- 
+
+  <changeSet author="kmcnamee" id="Migration.Metrics-scorecleanup-v1">
+    <comment>GOV-11956 - cleanup scores for deleted asset types will cause migration to fail if not run first.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+					delete ms from [metrics].[score] ms
+						where not exists( select 1 from [metrics].[Allocation] ma where ma.uid = ms.AllocationUid)
+							and not exists ( select 1 from [asset] a where a.uid = ms.AssetUid)
+      ]]>
+    </sql>    
+  </changeSet>
+  
 	<changeSet author="Pappas" id="Migration.Metrics-v1">
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
