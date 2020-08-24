@@ -661,7 +661,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             return model;
         }
 
-        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
+        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
 
@@ -672,11 +672,11 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             
             string sql = $@"
 declare @lastScoredDate date =  (
-    select      top 1 
-                S.RunDate 
-    from        metrics.score S
-                inner join metrics.Allocation A on A.Uid = S.AllocationUid and S.AssetUid = @assetUid and A.ScoreType = @scoreType 
-    order by    S.RunDate desc
+    select  top 1 
+            RunDate 
+    from    metrics.Score
+    where   AllocationUid = @allocationUid and AssetUid = @assetUid 
+    order by    RunDate desc
     )
 
 if @effectiveDate > @lastScoredDate
@@ -699,18 +699,15 @@ from	(
 				SI.Value,
 				A.ScoreType
 		from    metrics.Score S 
-				inner join metrics.Allocation A on 
-							A.Uid = S.AllocationUid 
-							and A.ScoreType = @scoreType 
-							and A.OverrideName is null
-							and S.AssetUid = @assetUid 
-							and S.EffectiveDate <= @effectiveDate 
-							and (S.EndDate >= @effectiveDate or S.EndDate is null)
-				inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
+				inner join metrics.Allocation A on A.Uid = S.AllocationUid
+                inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
 				inner join metrics.ScoreItem SI on SI.Uid = SIL.ScoreItemUid
-				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid and V.EffectiveDate <= @effectiveDate 
-							and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
+				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid
 				inner join metrics.Asset Ma on Ma.Uid = V.AssetUid
+        where   S.AllocationUid = @allocationUid 
+                and S.AssetUid = @assetUid 
+				and S.EffectiveDate <= @effectiveDate 
+				and (S.EndDate >= @effectiveDate or S.EndDate is null)
 		) O 
 where	O.RowNum = 1";
 
@@ -718,15 +715,10 @@ where	O.RowNum = 1";
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value, scoreType = (int)type }).ToList();
+            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }).ToList();
 
             var model = new MetricAssetHierarchyModels();
-
-            foreach (var i in results)
-            {
-                model.Add(i);
-            }
-
+            results.ForEach(i => { model.Add(i); });
             return model;
         }
 

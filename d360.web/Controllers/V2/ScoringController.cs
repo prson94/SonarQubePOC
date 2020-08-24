@@ -628,31 +628,16 @@ namespace d360.web.Controllers.V2
             Guid _allocationUid;
             Guid _assetUid;
 
-            if (!Guid.TryParse(allocationUid, out _allocationUid)) 
+            var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
+            if (allocationStatus.StatusCode != HttpStatusCode.OK)
             {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"allocationUid {allocationUid} is not a correctly formatted identifier."));
+                return ResponseMessage(Request.CreateErrorResponse(allocationStatus.StatusCode, allocationStatus.Message));
             }
 
-            if (!Guid.TryParse(assetUid, out _assetUid)) 
+            var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
+            if (assetStatus.StatusCode != HttpStatusCode.OK)
             {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"assetUid {assetUid} is not a correctly formatted identifier."));
-            }
-
-            if (!Company.Any<MetricAllocation>(i => i.Uid == _allocationUid))
-            {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Allocation identifier with value {_allocationUid} does not correspond to a valid allocation."));
-            }
-
-            var asset = Company.Filter<Asset>(i => i.uid == _assetUid).SingleOrDefault();
-            if (asset == null)
-            {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset identifier with value {_assetUid} does not correspond to a valid asset."));
-            }
-
-            var canRead = Company.HasAssetPermission(asset.ID, Permission.ReadAsset);
-            if (!canRead)
-            {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden, $"You do not have permissions to view score history on this asset."));
+                return ResponseMessage(Request.CreateErrorResponse(assetStatus.StatusCode, assetStatus.Message));
             }
 
             var model = Company.Query<dynamic>(@"
