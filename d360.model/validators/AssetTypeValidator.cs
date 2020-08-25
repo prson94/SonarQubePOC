@@ -353,5 +353,23 @@ namespace d360.core.validators
             }
             return true;
         }
+        
+        public bool IsValidGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            if (queryParams.Any(x => x.Key.Trim().ToLower() == "_assetuid"))
+            {
+                List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
+
+                if (assetUids.Any(x => x == Guid.Empty))
+                    return false;
+            }
+            return true;
+        }
     }
 }
