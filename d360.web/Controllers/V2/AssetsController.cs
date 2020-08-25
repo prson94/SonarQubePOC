@@ -1971,6 +1971,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("executions/{executionUid:Guid}/status"),
+            SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
@@ -1979,9 +1980,18 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Assets.GetExecutionStatus => ";
             var errorMessage = "";
+            var summaryOnly = false;
+            var queryParams = Request.GetQueryNameValuePairs();
+
+
             try
             {
-                var res = AssetRepository.GetExecutionStatusModel(executionUid);
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
+                {
+                    bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
+                }
+
+                var res = AssetRepository.GetExecutionStatusModel(executionUid, !summaryOnly);
                 if (res == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
