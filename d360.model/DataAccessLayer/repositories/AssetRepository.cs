@@ -2682,7 +2682,7 @@ where	O.RowNum = 1";
             return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
         }
 
-        public dynamic GetExecutionStatusModel(Guid executionUid, bool includeResults = true)
+        public async Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true)
         {
             ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
 
@@ -2699,8 +2699,7 @@ where	O.RowNum = 1";
             {
                 try
                 {
-                    var resultsJson = StorageProvider.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
-                    results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+                    results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<DatabaseBulkAssetResult>>(info.StorageFolder, info.ResponseFileName);
                 }
                 catch
                 {

@@ -1063,7 +1063,7 @@ namespace d360.web.Controllers.V2
                 
                 if (!summaryOnly)
                 {
-                    results = RelationshipRepository.GetBulkResults(info);
+                    results = await RelationshipRepository.GetBulkResults(info);
                 }
 
                 var statusModel = new ApiExecutionStatusModel

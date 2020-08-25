@@ -1991,7 +1991,7 @@ namespace d360.web.Controllers.V2
                     bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
                 }
 
-                var res = AssetRepository.GetExecutionStatusModel(executionUid, !summaryOnly);
+                var res = await AssetRepository.GetExecutionStatusModel(executionUid, !summaryOnly);
                 if (res == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));

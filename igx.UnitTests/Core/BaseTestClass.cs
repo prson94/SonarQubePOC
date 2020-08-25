@@ -281,7 +281,8 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
             mockRepo.Setup(x => x.GetExecutionStatusModel(It.IsAny<Guid>(), It.IsAny<bool>()))
-               .Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ? new
+                .Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ?
+               Task.FromResult<dynamic>(new
                {
                    Total = 1,
                    Processed = 1,
@@ -290,8 +291,8 @@ namespace igx.UnitTests
                    StartedOn = DateTime.Now,
                    CompletedOn = DateTime.Now,
                    Results = new List<DatabaseBulkAssetResult>()
-               } : null
-               );
+               }) 
+               : Task.FromResult<dynamic>(null));
             return mockRepo.Object;
         }
 
@@ -441,7 +442,8 @@ namespace igx.UnitTests
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>()));
 
             mock.Setup(x => x.GetBulkResults(It.IsAny<ApiExecutionInfo>()))
-                .Returns(new List<DatabaseBulkAssetResult>());
+                .Returns(Task.FromResult(new List<DatabaseBulkAssetResult>()));
+
             mock.Setup(x => x.GetExportModel(It.IsAny<int>()))
                 .Returns(DataConstants.GetExcelModel());
 
