@@ -83,7 +83,11 @@ namespace d360.model.DataAccessLayer.repositories
                 }
 
                 if (f.Type == "Link")
+                { 
                     valueColumn = "Value";
+                    defaultVal = f.DefaultValue;
+                }
+                    
 
                 if (f.Type == "Score")
                     joinPrefix = "outer";
