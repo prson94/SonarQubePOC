@@ -241,6 +241,115 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogPolicyHierMaxLimitErrors(Guid executionID, bool isInsert, int? intersectTypeID, int maxlevel, int timeout = 3600)
+        {
+            Connection.Execute(@"
+
+            drop table if exists #tempdata;
+            drop table if exists #tempdistparent;
+            drop table if exists #tempdistparentresult;
+            drop table if exists #tempdistchild;
+            drop table if exists #tempdistchildresult;
+
+            select distinct itemnumber,parentuid,uid, 0 TotalLevel
+            Into #tempdata
+            from api.ExecutionAsset a
+            where a.ExecutionID = @executionID;
+
+            create nonclustered index ix_tempdataitemnumber on #tempdata (itemnumber asc);
+            create nonclustered index ix_tempdataparentuid on #tempdata (parentuid asc);
+            create nonclustered index ix_tempdatauid on #tempdata (uid asc);
+
+            select distinct parentuid
+            Into #tempdistparent
+            from #tempdata
+            where parentuid is not null and ParentUid <> '00000000-0000-0000-0000-000000000000';
+
+            with h as 
+            (select 
+                    p.parentuid,
+                    A.object subject,
+	                A.objectid SubjectId,
+		            1 [Level]
+             from #tempdistparent P
+             inner join Asset A
+             on A.uid = p.parentuid
+             union all
+            select  H.parentuid,
+                    I.subject,
+	                I.SubjectId,
+		            H.[Level] + 1 [Level]
+            from H
+            inner join [Intersect] I
+             on I.[object] = h.Subject
+             and I.ObjectID = h.SubjectID
+             and I.IntersectTypeID = @intersectTypeID
+             where H.[Level] <= @maxlevel + 1
+              )
+            select parentuid,isnull(max([Level]),0) [HLevel]
+            into #tempdistparentresult
+            from H
+            group by parentuid;
+
+            create nonclustered index ix_tempdistparentresultparentuid on #tempdistparentresult (parentuid asc);
+
+            update d
+            set d.TotalLevel = d.TotalLevel + t.HLevel
+            from #tempdata d
+            inner join #tempdistparentresult t
+            on d.parentuid = t.parentuid;
+            
+            if (@isInsert = 0)
+                begin
+                select distinct uid,0 CLevel
+                Into #tempdistchild
+                from #tempdata;
+
+                with h as 
+                (select c.uid,
+                        A.object,
+	                    A.objectid,
+		                1 [Level]
+                 from #tempdistchild C
+                 inner join Asset A
+                 on a.uid = c.uid
+                 union all
+                select H.uid,
+                        I.Object,
+	                    I.ObjectId,
+		                H.[Level] + 1 [Level]
+                from H
+                inner join [Intersect] I
+                 on I.[Subject] = h.object
+                 and I.SubjectID = h.objectID
+                 and I.IntersectTypeID = @intersectTypeID
+                 where H.[Level] <= @maxlevel + 1
+                  )
+                select uid,isnull(max([Level]),0) [CLevel]
+                into #tempdistchildresult
+                from H
+                group by uid;
+
+                create nonclustered index ix_tempdistchildresultuid on #tempdistchildresult (uid asc);
+
+                update d
+                set d.TotalLevel = d.TotalLevel + t1.CLevel
+                from #tempdata d
+                inner join #tempdistchildresult t1
+                on d.uid = t1.uid;
+            end
+
+            update ea
+            set		ea.Success = 0,
+            ea.[Message] = coalesce(ea.[Message] + '; ', '') + 'Maximum hierarchy level allowed is less than or equal to ' + cast(@maxlevel as varchar(20)) + '.'
+            from api.ExecutionAsset ea
+            inner join #tempdata d 
+            on ea.ExecutionID =  @executionID and ea.itemnumber = d.itemnumber
+            where	(@isInsert = 0 and  d.TotalLevel > @maxlevel)
+					or (@isInsert = 1  and  d.TotalLevel >= @maxlevel);
+            ", new {executionID, intersectTypeID, maxlevel, isInsert }, commandTimeout: timeout);
+        }
+
         private void LogNullIsRequiredFields(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -3443,6 +3552,14 @@ where   ExecutionID = @ExecutionID
                         LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
                     }
+
+                    //Policy/Model Check maximum hierarchy maximum level allowed 
+
+                    if (at.Class == AssetTypeClass.Policy || at.Class == AssetTypeClass.Model)
+                    {
+                        LogPolicyHierMaxLimitErrors(execution.ExecutionID, isInsert, intersectTypeID, at.HierarchyMaximumDepth,  timeout);
+                    }
+
 
                     AddMeasurement(metrics, "Log Errors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
