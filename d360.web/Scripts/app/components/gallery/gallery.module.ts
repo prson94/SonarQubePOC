@@ -29,6 +29,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { GalleryColorVariablesComponent } from './gallery.color-variables.component';
 import { GalleryTooltipComponent } from './gallery.tooltip.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { GalleryTextAreaComponent } from './gallery.textarea.component';
 
 
 @NgModule({
@@ -61,7 +62,8 @@ import { TooltipModule } from 'primeng/tooltip';
         GalleryColorPickerComponent,
         GalleryColorVariablesComponent,
         GalleryTooltipComponent,
-        GalleryAutocompleteComponent
+        GalleryAutocompleteComponent,
+        GalleryTextAreaComponent
     ],
     providers: [
         GalleryGuard,

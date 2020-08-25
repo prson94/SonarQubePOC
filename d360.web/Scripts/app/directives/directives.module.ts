@@ -5,6 +5,7 @@ import { ClickOutsideDirective } from './click-outside-directive';
 import { ButtonDirective } from './ig-button-directive';
 import { InputDirective } from './ig-input-directive';
 import { AutocompleteDirective } from './ig-autocomplete-directive';
+import { TextAreaDirective } from './ig-textarea-directive';
 
 
 @NgModule({ 
@@ -15,6 +16,7 @@ import { AutocompleteDirective } from './ig-autocomplete-directive';
         ClickOutsideDirective,
         ButtonDirective,
         InputDirective,
+        TextAreaDirective,
         AutocompleteDirective
     ],
     exports: [
@@ -23,6 +25,7 @@ import { AutocompleteDirective } from './ig-autocomplete-directive';
         ClickOutsideDirective,
         ButtonDirective,
         InputDirective,
+        TextAreaDirective,
         AutocompleteDirective
     ]
 })
