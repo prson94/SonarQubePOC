@@ -258,6 +258,10 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOwnersGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
 
+                if (!validator.IsValidGetAssets(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset Uid in parameters!"));
+
+
                 if (!validator.IsValidRelationFilter(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
