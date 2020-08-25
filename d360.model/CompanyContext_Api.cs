@@ -241,7 +241,7 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
-        private void LogPolicyHierMaxLimitErrors(Guid executionID, int isInsert, int? intersectTypeID, int maxlevel, int timeout = 3600)
+        private void LogPolicyHierMaxLimitErrors(Guid executionID, bool isInsert, int? intersectTypeID, int maxlevel, int timeout = 3600)
         {
             Connection.Execute(@"
 
@@ -3557,8 +3557,7 @@ where   ExecutionID = @ExecutionID
 
                     if (at.Class == AssetTypeClass.Policy || at.Class == AssetTypeClass.Model)
                     {
-                        int isInsertInt = Convert.ToInt16(isInsert);
-                        LogPolicyHierMaxLimitErrors(execution.ExecutionID, isInsertInt, intersectTypeID, at.HierarchyMaximumDepth,  timeout);
+                        LogPolicyHierMaxLimitErrors(execution.ExecutionID, isInsert, intersectTypeID, at.HierarchyMaximumDepth,  timeout);
                     }
 
 
