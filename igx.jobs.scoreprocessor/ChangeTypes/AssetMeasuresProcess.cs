@@ -17,9 +17,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     public class AssetMeasuresProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {
-            var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
-            var assetMeasures = JsonConvert.DeserializeObject<List<AssetMeasureModel>>(json);
+        {            
+            var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
 
             var scoresToAdd = new List<Score>();
             var scoresItemsToAdd = new List<ScoreItem>();
