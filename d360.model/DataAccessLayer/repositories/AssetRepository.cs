@@ -570,7 +570,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (assetUids.Any(x => x == Guid.Empty))
-                    throw new Exception("Invalid asset Uid in parameters!");
+                    throw new ArgumentException("Invalid asset Uid in parameters!");
 
                 if (assetUids.Count > 0)
                 {
