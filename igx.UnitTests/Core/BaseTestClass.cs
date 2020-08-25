@@ -281,7 +281,7 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
             mockRepo.Setup(x => x.GetExecutionStatusModel(It.IsAny<Guid>(), It.IsAny<bool>()))
-               .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new
+               .Returns((Guid uid, bool includeResults) => uid == Guid.Parse(DataConstants.ValidGUID) ? new
                {
                    Total = 1,
                    Processed = 1,
