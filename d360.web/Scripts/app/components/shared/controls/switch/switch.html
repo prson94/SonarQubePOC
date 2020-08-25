@@ -3,6 +3,6 @@
      [attr.id]="inputId" [attr.tabindex]="(disabled ? -1 : tabindex)" 
      [ngStyle]="style" [class]="styleClass" role="checkbox" [attr.aria-checked]="(value===undefined? 'indeterminate' : value)"
      (keydown.space)="toggle($event)" [attr.aria-labelledby]="ariaLabelledBy" >
-    <button tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
-    <button tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>
+    <button type="button" tabindex="-1" (click)="tryChangeValue(true)" class="check">{{trueLabel}}</button>
+    <button type="button" tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>
 </div>
