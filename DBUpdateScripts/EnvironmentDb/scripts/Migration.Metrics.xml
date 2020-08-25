@@ -4,7 +4,18 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
- 
+
+  <changeSet author="kmcnamee" id="Migration.Metrics-scorecleanup-v1">
+    <comment>GOV-11956 - cleanup scores for deleted asset types will cause migration to fail if not run first.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+					delete ms from [metrics].[score] ms
+						where not exists( select 1 from [metrics].[Allocation] ma where ma.uid = ms.AllocationUid)
+							and not exists ( select 1 from [asset] a where a.uid = ms.AssetUid)
+      ]]>
+    </sql>    
+  </changeSet>
+  
 	<changeSet author="Pappas" id="Migration.Metrics-v1">
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -609,6 +620,41 @@ ALTER TABLE [metrics].[ScoreItemLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricScor
 GO
 
 ALTER TABLE [metrics].[ScoreItemLink] CHECK CONSTRAINT [FK_MetricScoreItemLink_MetricScoreItem]
+GO
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-11924-1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+delete [metrics].[ScoreItemLink] where ScoreUid in (select Uid from metrics.Score_Backup)
+delete [metrics].[ScoreItemLink] where ScoreItemUid in (select Uid from metrics.ScoreItem_Backup)
+GO
+
+insert into [metrics].[ScoreItemLink]
+	select	S.Uid as ScoreUid,
+			I.Uid as ScoreItemUid
+	from	metrics.Score_Backup S
+			inner join Asset A on A.Uid = S.AssetUid
+			inner join AssetType T on T.ID = A.AssetTypeID
+			inner join metrics.Allocation Al on Al.ScoreType = S.ScoreType and Al.AssetTypeUid = T.Uid and Al.OverrideName is null
+			inner join metrics.ScoreItem_Backup I on I.AssetUid = S.AssetUid 
+				and ( (S.EffectiveDate between I.EffectiveDate and I.EndDate) or (S.EffectiveDate >= I.EffectiveDate and I.EndDate is null) ) 
+			inner join metrics.Asset Ma on Ma.Uid = I.MetricAssetUid and Ma.AllocationUid = Al.Uid
+			inner join metrics.Score SS on SS.Uid = S.Uid
+			inner join metrics.ScoreItem SSI on SSI.Uid = I.Uid
+	order by S.AssetUid, S.EffectiveDate
+GO
+
+delete metrics.ScoreItem where Uid not in (select ScoreItemUid from metrics.ScoreItemLink)
+GO
+delete metrics.Score where Uid not in (select ScoreUid from metrics.ScoreItemLink)
 GO
 		]]>
 		</sql>

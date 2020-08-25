@@ -58,28 +58,7 @@ namespace d360.web.Models
     [DataContract(Name = "artifact", Namespace = constants.NAMESPACE)]
     [Serializable]
     public class ArtifactModelRequest : Dictionary<string, object> { }
-
-    public class AssetTypeTopLevelUiViewModel
-    {
-        public int ID { get; set; }
-        public int? ParentID { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool AutoDisplayDescription { get; set; }
-        public bool CanOwnFusion { get; set; }
-        public string DisplayFormat { get; set; }
-        public int? CreatedBy { get; set; }
-        public DateTime? CreatedOn { get; set; }
-        public int? UpdatedBy { get; set; }
-        public DateTime? UpdatedOn { get; set; }
-        public int AssetTypeID { get; set; }
-        public AssetTypeClass Class { get; set; }
-        public string ClassName { get { return Class.GetName(); } }
-        public int Count { get; set; }
-        public bool expanded { get; set; }
-        public string uid { get; set; }
-    }
-
+    
     public class AttributeNode
     {
         public AttributeNode()
@@ -96,17 +75,6 @@ namespace d360.web.Models
         public string ObjectType { get; set; }
         public bool IsFolderAttribute { get; set; }
         public List<AttributeNode> Children { get; set; }
-    }
-
-    public class BreadcrumbItem
-    {
-        public BreadcrumbItem()
-        {
-            Active = false;
-        }
-        public string Name { get; set; }
-        public string Url { get; set; }
-        public bool Active { get; set; }
     }
 
     public class CommentData
@@ -431,30 +399,11 @@ namespace d360.web.Models
         public string apiName { get; set; }
     }
 
-    public class ListIntItem
-    {
-        public string title { get; set; }
-        public int? value { get; set; }
-    }
     public class ListUidItem
     {
         public string title { get; set; }
         public Guid? value { get; set; }
     }
-
-    public class SourceTargetIntersectModels
-    {
-        public List<SourceTargetIntersectModel> Items { get; set; }
-    }
-
-    public class SourceTargetIntersectModel
-    {
-        public int SourceIntersectID { get; set; }
-        public string SourceDiagramKey { get; set; }
-        public int TargetIntersectID { get; set; }
-        public string TargetDiagramKey { get; set; }
-    }
-
 
     [DataContract(Namespace = constants.NAMESPACE)]
     public class ReadOnlyFieldValue
@@ -502,17 +451,6 @@ namespace d360.web.Models
 
             return value;
         }
-    }
-
-    [DataContract(Namespace = constants.NAMESPACE)]
-    public class RuleQualifierTypeField
-    {
-        [DataMember]
-        public string Field { get; set; }
-
-        [DataMember]
-        public string Header { get; set; }
-
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

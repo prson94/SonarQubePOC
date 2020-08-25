@@ -8,7 +8,6 @@ using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -141,8 +140,7 @@ namespace d360.web.Controllers.V2
                 //if the css is not empty or null create a new css
                 if (!string.IsNullOrWhiteSpace(UpdateCss.css))
                 {
-                    //update the company setting to sya where the files is 
-
+                    //update the company setting to say where the files is 
 
                     if (stylesSetting == null)
                     {

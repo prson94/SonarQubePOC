@@ -315,7 +315,7 @@ namespace d360.model
                                             VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
                                     WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
                                         THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID } );
 
 
                     }
@@ -3031,6 +3031,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.TaskType:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
                     break;
+                case SystemObjects.ConnectorLabel:
+                    objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
                     if (objectId <= 0)
@@ -3130,7 +3133,38 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
         }
 
+        public bool SetStateDeleteWorkFlowType(SystemObjects type, int id)
+        {
+            try
+            {
 
+                var sql = $@"declare	@workflowType table (id int)
+
+					insert into @workflowType
+					select distinct wt.id 
+					from workflow.[type] wt
+					inner join [workflow].[EventRegistration] we
+					on we.typeid = wt.id
+					where wt.State <> 3 
+					and we.object = @Object
+					and we.objectid = @ObjectID;
+
+					update wt
+					set State = 3
+					from workflow.[type]  wt
+					inner join @workflowType wft
+					on wt.id = wft.id;";
+
+
+                Database.Connection.Execute(sql, new { Object = type.ToString(), ObjectID = id }, null, 120);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw resolveToRealException(ex);
+            }
+        }
         public string GetDiagramUrlForDiagramAsset(Guid assetUid)
         {
             var diagramUrl = $@"select 

@@ -175,7 +175,7 @@ namespace d360.model.DataAccessLayer
 					JSON_VALUE(nda.value, '$.labelUid') AS LabelUid
                 FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
                 select links.*, CL.Value from links
-				 inner join ConnectorLabel CL on CL.uid = links.labeluid
+				 inner join ConnectorLabel CL on CL.uid = links.labeluid and CL.State <> 3
 				where labeluid is not null", new { assetUid }).ToList();
 
             foreach (var item in linksExpandedData)

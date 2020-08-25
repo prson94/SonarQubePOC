@@ -1,0 +1,43 @@
+﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
+    <div class="content">
+        <label class="ig-input-label">Name</label>
+        <input *ngIf="!label" tabindex="1" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
+        <p-autoComplete igAutocomplete *ngIf="label"
+                        placeholder="Value required"
+                        formControlName="value"
+                        (onBlur)="OnBlurTrim()"
+                        [suggestions]="suggestionResults"
+                        (completeMethod)="onAutocomplete($event)"
+                        (onSelect)="onAutocompleteSelect($event)"
+                        tabindex="1"
+                        >
+        </p-autoComplete>
+        <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
+            <div *ngIf="value.errors.maxlength">
+                Connector label name maximum length of 100 characters exceeded
+            </div>
+            <div *ngIf="value.errors.alreadyExists">
+                Please enter a unique name
+            </div>
+        </div>
+
+
+        <div *ngIf="selectedValue && label" class="warningMessage">
+            <h4>Consolidate Labels?</h4>
+            <p>
+                A label with the name '{{selectedValue.name}}' already exists, used in
+                <d3s-where-used [displayValue]="selectedValue.name" [uid]="selectedValue.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{selectedValue.UseCount}} diagrams</d3s-where-used>
+                <br />
+                Choose <strong>Consolidate</strong> to replace the label '{{label.Value}}' with '{{selectedValue.name}}', in
+                <d3s-where-used [displayValue]="label.name" [uid]="label.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{label.UseCount}} diagram.</d3s-where-used>
+                <br />
+                The label '{{label.Value}}' will then be deleted.
+            </p>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button igButton label="Cancel" (click)="onCancel.emit()"></button>
+        <div class="grow"></div>
+        <button igButton type="submit" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{(selectedValue ? 'Consolidate' : (label ? 'Save' : 'Create'))}}"></button>
+    </div>
+</form>

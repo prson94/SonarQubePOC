@@ -940,7 +940,18 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Rules";
                     responseModel.Items.HasAudit = true;
                 }
+                if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Diagram Assets";
+                    responseModel.MainTabTitle = "Diagram Asset Types";
+                    responseModel.Items.HasAudit = true;
+                    var govRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
 
+                    responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
+                }
             }
 
 

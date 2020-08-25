@@ -369,11 +369,12 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
-            SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(ScoreType scoreType, Guid assetUid)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndScoreTypeAsync(ScoreType scoreType, Guid assetUid)
         {
-            var prefix = "Metrics.GetMetricHierarchyByAssetAsync => ";
+            var prefix = "Metrics.GetMetricHierarchyByAssetAndScoreTypeAsync => ";
 
             try
             {
@@ -392,13 +393,83 @@ namespace d360.web.Controllers.V2
                     effectiveDate = DateTime.UtcNow;
                 }
 
+                var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+                if (assetDetail == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found."));
 
-                var asset = AssetRepository.GetAssetByUID(assetUid);
+                var allocation = Company.Filter<MetricAllocation>(al => 
+                    al.AssetTypeUid == assetDetail.AssetTypeUid && 
+                    al.ScoreType == scoreType && 
+                    string.IsNullOrEmpty(al.OverrideName)
+                    ).FirstOrDefault();
 
-                if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+                if (allocation == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Score Allocation corresponding to asset with identifier of {assetUid} could not be found."));
 
-                var result = MetricsRepository.GetMetricHierarchyByAsset(assetUid, effectiveDate, scoreType);
+                var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        /// <summary>
+        /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
+        /// </summary>
+        /// <param name="allocationUid">The allocation to be returned.</param>
+        /// <param name="assetUid">The Uid of the asset.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{allocationUid}/assets/{assetUid}/pointbreakdown"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false)
+        ]
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
+        {
+            var prefix = "Metrics.GetMetricHierarchyByAssetAndAllocationAsync => ";
+
+            try
+            {
+                Guid _allocationUid;
+                Guid _assetUid;
+
+                var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
+                if (allocationStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, "Bad request", allocationStatus.Message));
+                }
+
+                var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
+                if (assetStatus.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message));
+                }
+
+                DateTime effectiveDate = DateTime.MinValue;
+                var param = Request.GetQueryNameValuePairs();
+                if (param.Any(x => x.Key.ToLower() == "effectivedate"))
+                {
+                    var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
+                    if (!DateTime.TryParse(value, out effectiveDate))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Effective date provided!"));
+                    }
+                }
+                else
+                {
+                    effectiveDate = DateTime.UtcNow;
+                }
+
+                var result = MetricsRepository.GetMetricHierarchyByAsset(_allocationUid, _assetUid, effectiveDate);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
