@@ -43,7 +43,7 @@ namespace d360.model.validators
 
                 #region Name Validation
 
-                if (!IsFieldNameAllowed(field.Name.Trim()))
+                if (!IsFieldNameAllowed(field.Name.Trim(), relationshipTypeIdentifierInfoModel != null))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Name cannot be [{field.Name.Trim().ToUpper()}].");
                 }
@@ -279,7 +279,7 @@ namespace d360.model.validators
 
                 #endregion
 
-                
+
                 if (assetTypeIdentifierInfoModel != null && field?.Type?.Json != null)
                 {
                     if (field.Type.Json.Validation != null)
@@ -294,7 +294,7 @@ namespace d360.model.validators
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
-                    
+
                     if (field.Type.ComputedOwnershipLookup != null)
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
 
@@ -520,10 +520,13 @@ namespace d360.model.validators
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        private static bool IsFieldNameAllowed(string fieldApiName)
+        private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false)
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
+            if (isRelationshipType)
+                disallowedFieldNames.Add("source");
+
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
 
@@ -618,7 +621,7 @@ namespace d360.model.validators
             }
             if (defaultValue.HasValue)
             {
-                if(defaultValue > validation?.MaximumValue || defaultValue < validation?.MinimumValue)
+                if (defaultValue > validation?.MaximumValue || defaultValue < validation?.MinimumValue)
                 {
                     errMsg = string.Format(FieldErrors.DefaultValueError, validation?.MaximumValue, validation?.MinimumValue);
                     return false;
