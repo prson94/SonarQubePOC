@@ -31,6 +31,7 @@ import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
 import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
+import { BrowserWarningModule } from './components/shared/browser-warning/browser-warning.component';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -87,6 +88,7 @@ export function localeInitializer(localeId: string) {
         RightsidebarModule,
         SiteMenuModule,
         HeaderModule,
+        BrowserWarningModule,
     ],
     bootstrap: [AppComponent],
     providers: [
@@ -108,7 +110,7 @@ export function localeInitializer(localeId: string) {
         PreviewpopupSingletonService,
         StateService,
         CookieService,
-        SiteMenuService,        
+        SiteMenuService,
         { provide: LOCALE_ID, useFactory: localeIdFactory },
         {
             provide: APP_INITIALIZER,

@@ -96,7 +96,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.7.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
@@ -111,7 +111,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Text.Encoding.CodePages, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.4.7.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
+      <HintPath>..\packages\System.Text.Encoding.CodePages.4.7.1\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
@@ -147,6 +147,7 @@
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
     <Compile Include="DataAccessLayer\IProcessRepository.cs" />
+    <Compile Include="DataAccessLayer\IConnectorLabelRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -163,6 +164,7 @@
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ConnectorLabelRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
@@ -179,6 +181,7 @@
     <Compile Include="QueryConstants.cs" />
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="validators\AssetTypeValidator.cs" />
+    <Compile Include="validators\ConnectorLabelValidator.cs" />
     <Compile Include="validators\FieldApiModelValidator.cs" />
     <Compile Include="validators\ISurveyApiModelValidator.cs" />
     <Compile Include="validators\IWorkflowApiModelValidator.cs" />

@@ -40,6 +40,7 @@ export class GroupResourceInfo {
     LastName: string;
     Email: string;
     Owner: string;
+    uid: string;
 }
 
 export class Group {

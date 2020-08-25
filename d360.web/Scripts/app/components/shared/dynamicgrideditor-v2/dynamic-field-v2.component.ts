@@ -27,15 +27,15 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
-import { filter } from 'rxjs/operators';
-import { clearLine } from 'readline';
 import { DynEditorService } from '../../../services/dyn-editor.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
     templateUrl: './dynamic-field-v2.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, TagService]
+    providers: [FieldsObservableService, TagService, AssetService]
+
 })
 
 export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
@@ -48,6 +48,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
     @Input() assetUid: string;
+    @Input() diagramNodeKey: string;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -91,13 +92,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private doesAssetExists: boolean = false;
 
     private useColorMultiSelect: boolean = false;
-
+    defaultColorOptions: SelectItem[] = [];
 
     private component_uid: string = '';
 
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
+        private assetService: AssetService,
         private ref: ChangeDetectorRef,
         private tagService: TagService,
         public dynEditorService: DynEditorService
@@ -105,9 +107,14 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         super();
         this.component_uid = Math.random().toString(36).substring(2);
         this.dynEditorService.formUpdate.subscribe(res => {
-            if (this.assetUid && this.assetUid == res.assetUid) {
-                if (this.field.FieldName == res.fieldName) {
-                    this.form.controls[res.fieldName].patchValue(res.fieldValue);
+            if (res) {
+                var assetUid = this.assetUid;
+                if (!assetUid)
+                    assetUid = this.diagramNodeKey;
+                if (assetUid && assetUid == res.assetUid) {
+                    if (this.field.FieldName == res.fieldName) {
+                        this.form.controls[res.fieldName].patchValue(res.fieldValue);
+                    }
                 }
             }
         });
@@ -356,6 +363,9 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
 
         if (this.field.FieldType == 'Color') {
+            this.assetService.getAllColors().subscribe(x => {
+                this.defaultColorOptions = x;
+            });
             this.colorValue = this.field.Value;
         }
 

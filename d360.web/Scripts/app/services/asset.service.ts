@@ -222,4 +222,15 @@ export class AssetService extends BaseObservableService {
             anchor.click();
         }
     }
+
+
+    public getProcessDiagramUrl(uid: string): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/assets/${uid}/diagramUrl`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
 }

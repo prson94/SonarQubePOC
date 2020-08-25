@@ -40,7 +40,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
 
-    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService, ) {
+    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService,) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Tags";
         this.setCommonItems();
@@ -55,7 +55,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/Tag/0`;
         }
-        this.getTags(); 
+        this.getTags();
 
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.theConsolidateCallback = this.consolidateTags.bind(this);
@@ -78,32 +78,44 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.tagsService.getTagsList().subscribe(res => {
             if (res && res.length > 0) {
-                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));                
+                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
             }
             this.isLoading = false;
         }, err => this.error = err);
     }
 
-    private deselectElement(element: any) {
-        element.classList.remove('ui-state-highlight');
-        element.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
-        element.querySelector('span.ui-chkbox-icon').classList.remove('pi');
-        element.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
+    private deselectElement(element: HTMLElement) {
+        var trElement = this.getTrElement(element);
+
+        trElement.classList.remove('ui-state-highlight');
+        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
+        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi');
+        trElement.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
 
     }
-    private selectElement(element: any) {
-        element.classList.add('ui-state-highlight');
-        element.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
-        element.querySelector('span.ui-chkbox-icon').classList.add('pi');
-        element.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
+    private selectElement(element: HTMLElement) {
+        var trElement = this.getTrElement(element);
 
+        trElement.classList.add('ui-state-highlight');
+        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
+        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi');
+        trElement.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
+
+    }
+
+    private getTrElement(element: HTMLElement) {
+        if (element.tagName === "TR")
+            return element;
+
+        else
+            return this.getTrElement(element.parentElement);
     }
 
     private clearAllSelectedItems(element: any) {
         var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
         Array.from(nodeList)
             .forEach(x => {
-                this.deselectElement(x);
+                this.deselectElement(x as HTMLElement);
             });
         if (nodeList.length == 0)
             this.selectElement(element);
@@ -116,7 +128,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
-            if ((event.ctrlKey || event.metaKey)&& !event.shiftKey) {
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                 if (this.selected.filter(x => x.uid == item.uid).length > 0) {
                     this.selected = this.selected.filter(x => x.uid != item.uid);
                     var el = (<any>(event.target)).parentNode;
@@ -188,8 +200,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 
-    closeEditor() {        
-        this.showEditor = false;        
+    closeEditor() {
+        this.showEditor = false;
     }
 
     openEditor() {

@@ -570,7 +570,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (assetUids.Any(x => x == Guid.Empty))
-                    throw new Exception("Invalid asset Uid in parameters!");
+                    throw new ArgumentException("Invalid asset Uid in parameters!");
 
                 if (assetUids.Count > 0)
                 {
@@ -769,7 +769,7 @@ namespace d360.model.DataAccessLayer
                     if (assetType.Class == AssetTypeClass.Reference)
                     {
                         simpleFilters.Add($"A.Code like @simpleFilter");
-                        simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.ID)), '$.Name') like @simpleFilter");
+                        simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name') like @simpleFilter");
                     }
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
@@ -879,7 +879,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
-                {(includeColor ? "cross apply dbo.GetAssetColorJsonById(A.Id) ACJ" : "")}
+                {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {hierarchyParentUidSelect}
                 {(includeParent ? parentApplySQL : "")}
@@ -2570,7 +2570,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                 (SELECT F.FormattedValue as name,
                                 COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
 								FROM Asset ACF    
-								cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
+								cross apply dbo.GetAssetColorJsonByColor(ACF.Color) ACJF
 								WHERE ACF.Object = ft.LookupObjectType and ACF.ObjectID = TRY_PARSE(F.Value as int)
                             )StatusColor(FormattedValue)
                 WHERE A.ID = @id
@@ -2611,24 +2611,26 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
         private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
         {
-            var scoreSQL = @"select S.AssetUid,
-S.EffectiveDate,
-S.EndDate,
-S.RunDate,
-case 
-	when S.ScoreType = 1 then 'Governance'
-	when S.ScoreType = 2 then 'DataQuality'
-end as ScoreType,
-S.Value, 
-AL.LowerThreshold, 
-AL.UpperThreshold 
-from metrics.Score S
-inner join Asset A on A.Uid = S.AssetUid
-inner join AssetType AT on AT.Id = A.AssetTypeID
-inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
-where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
-
-
+            var scoreSQL = @"
+select	*
+from	(
+		select  S.AssetUid,
+				S.EffectiveDate,
+				S.EndDate,
+				S.RunDate,
+				case 
+					when AL.ScoreType = 1 then 'Governance'
+					when AL.ScoreType = 2 then 'DataQuality'
+				end as ScoreType,
+				ROW_NUMBER() OVER(PARTITION BY AL.ScoreType ORDER BY S.EffectiveDate DESC) as RowNum,
+				S.Value, 
+				AL.LowerThreshold, 
+				AL.UpperThreshold 
+		from    metrics.Score S
+				inner join Asset A on A.Uid = S.AssetUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null 
+				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
+		) O
+where	O.RowNum = 1";
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
@@ -2822,7 +2824,7 @@ from    Asset A
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
         {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
-        cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+        cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
         outer apply (
             select  T.[uid]
             from    graph.AssetNode S,

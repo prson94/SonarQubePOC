@@ -4,9 +4,7 @@ using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
-using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
-using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -16,7 +14,14 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Linq;
-using System.Text.RegularExpressions;
+using d360.web.Models.Attributes;
+using SpreadsheetLight;
+using System.IO;
+using Newtonsoft.Json;
+using d360.core.entities.Process;
+using Dapper;
+using d360.core.enums;
+using System.Data;
 
 namespace d360.web.Controllers.V2
 {
@@ -32,10 +37,12 @@ namespace d360.web.Controllers.V2
     public class ConnectorLabelsController : BaseV2ApiController
     {
 
-        public ConnectorLabelsController(ICommunityContext community, ICompanyContext company)
+        IConnectorLabelRepository ConnectorLabelRepository;
+
+        public ConnectorLabelsController(ICommunityContext community, ICompanyContext company, IConnectorLabelRepository connectorLabelRepository)
             : base(community, company)
         {
-
+            this.ConnectorLabelRepository = connectorLabelRepository;
         }
 
 
@@ -54,23 +61,95 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetLabels(string q = null)
+        public async Task<IHttpActionResult> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null)
         {
-
-            if (!string.IsNullOrEmpty(q))
-                q = $"%{q}%";
-
-            var labelsSql = $@"SELECT top 10 uid, Value
-                                  FROM [dbo].[ConnectorLabel]
-                                where Value like @q and state = 1
+            string labelsSql;
+            if (isExact)
+            {
+                labelsSql = $@"SELECT top 10 uid, Value
+                                {(getUseCount ? ", Labels.cnt as UseCount" : "")}
+                                  FROM [dbo].[ConnectorLabel] cl 
+                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
+                                where Value = @q and state = 1 
+                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(q))
+                    q = $"%{q}%";
 
-            var response = Company.Query<dynamic>(labelsSql, new { q });
+                labelsSql = $@"SELECT top 10 uid, Value                                
+                                    {(getUseCount ? ", Labels.cnt as UseCount" : "")}
+                                  FROM [dbo].[ConnectorLabel] cl
+                                {(getUseCount ? "cross apply (select count(*) from ProcessExpandedData where LabelUid = cl.uid)Labels(cnt)" : "")}
+                                where state = 1 
+                                {(!string.IsNullOrEmpty(q) ? " and Value like @q" : "")}
+                                {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
+                                order by Value";
+            }
+            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid });
 
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
 
+        /// <summary>
+        /// Retrieves a connector label usage by connector label uid
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{labelUid:Guid}/usage"),
+            SwaggerConsumes("application/json", "application/json", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.OK, "The list of connector labels."),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetUsage(Guid labelUid)
+        {
+            try
+            {
+                if (labelUid == null || labelUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid connector label UID passed in the request"));
+                }
+
+                var label = Company.ConnectorLabels.FirstOrDefault(x => x.uid == labelUid);
+                if (label == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Connector label with UID '{labelUid}' does not exist!"));
+                }
+
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                IEnumerable<dynamic> response = ConnectorLabelRepository.GetConnectorLabelUsage(labelUid);
+
+                if (isStreamResponse)
+                {
+                    (byte[] bytes, string filename) = ConnectorLabelRepository.GetExcelFromConnectorLabelUsage(label, response);
+                    var fileResponse = createFileResponseMessage(HttpStatusCode.OK, $"{filename}.xlsx", bytes);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(fileResponse));
+
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "ConnectorLabel.GetUsage" },
+                    { "LabelUid", labelUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
         /// <summary>
         /// Create or get label by label name
         /// Used by connector label autocomplete control in Process Designer
@@ -78,7 +157,7 @@ namespace d360.web.Controllers.V2
         /// <returns></returns>
         [
             HttpPost,
-            Route(""),
+            Route("insertOrGet"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of connector labels."),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
@@ -115,6 +194,360 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
 
         }
+
+        /// <summary>
+        /// Retrieves a list of all connector labels.
+        /// </summary>                
+        [
+            HttpGet, MapToApiVersion("2.0"), Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("uid", "The Uid of a specific connector label to return.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of connector labels.", typeof(List<ConnectorLabelApiModelWrapper>)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> Get()
+        {
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                string isValid = isPageSizeAndNumValid(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
+                var res = await ConnectorLabelRepository.GetLabels(queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while fetching connector labels", ex.Message);
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a connector label with the properties provided in the model.
+        /// </summary>        
+        /// <param name="model">The connector label to be created.</param>
+        /// <returns>The created connector label.</returns>
+        [
+            HttpPost,
+            Route(""),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified label was saved, returns the properties of the created connector label.", typeof(ConnectorLabelApiModel)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult PostTag(ConnectorLabelPostModel model)
+        {
+            if (model == null)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+
+            ConnectorLabelApiModel result = new ConnectorLabelApiModel();
+            try
+            {
+                ConnectorLabelValidator.ValidateForPost(model);
+
+                //make sure no tag with the same name exists
+                if (ConnectorLabelRepository.DoesLabelExists(model.Value))
+                {
+                    throw new Exception("Invalid connector label specified [same connector label already exists].");
+                }
+
+
+                result = ConnectorLabelRepository.CreateConnectorLabel(model);
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating connector label", e.Message);
+            }
+
+            return ResponseMessage(Request.CreateResponse<ConnectorLabelApiModel>(HttpStatusCode.OK, result));
+        }
+
+
+
+        /// <summary>
+        /// Updates the specified connector label with the values provided in the model.
+        /// </summary>
+        /// <param name="labelUid">The Uid of the connector label to be updated.</param>        
+        /// <param name="model">The new definition of the connector label to be used for the update.</param>
+        /// <returns>A connector label model representing the updated connector label.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("{labelUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(ConnectorLabelApiModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult Put(Guid labelUid, ConnectorLabelPostModel model)
+        {
+            if (!ConnectorLabelRepository.DoesLabelExists(labelUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error updating connector label", $"Connector label with uid {labelUid} not found.");
+
+
+            ConnectorLabelApiModel result = new ConnectorLabelApiModel();
+            try
+            {
+
+                ConnectorLabelValidator.ValidateForPut(labelUid, model);
+
+                var existingLabel = Company.ConnectorLabels.FirstOrDefault(x => x.uid == labelUid);
+
+                if (existingLabel == null)
+                {
+                    throw new Exception("Invalid uid! No connector label exists with the specified uid.");
+                }
+
+                if (ConnectorLabelRepository.DoesLabelExists(labelUid, model))
+                {
+                    throw new Exception("Invalid connector label specified [same connector label already exists].");
+                }
+
+                result = ConnectorLabelRepository.UpdateConnectorLabel(labelUid, model, existingLabel);
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
+            }
+
+            return ResponseMessage(Request.CreateResponse<ConnectorLabelApiModel>(HttpStatusCode.OK, result));
+        }
+
+        /// <summary>
+        /// Deletes a connector label based on the provided Uid.
+        /// </summary>
+        /// <param name="connectorLabelUid">The uid of the connector label to be removed.</param>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route("{connectorLabelUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the connector label provided is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the connector label was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteByUid(Guid connectorLabelUid)
+        {
+            if (!ConnectorLabelRepository.DoesLabelExists(connectorLabelUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", $"Connector Label with uid {connectorLabelUid} not found.");
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            try
+            {
+                if (!ConnectorLabelRepository.DeleteConnectorLabels(new List<ConnectorLabelApiDeleteModel>() { new ConnectorLabelApiDeleteModel { uid = connectorLabelUid, cascade = true } }))
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", "Connector label not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting connector label", ex.Message);
+
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Connector label removed.", "Connector label successfully removed.");
+        }
+
+        /// <summary>
+        /// GET a list of connector labels.
+        /// </summary>
+        /// <returns>A excel file containing connector labels.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("export"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported connector labels to Excel.", typeof(List<ConnectorLabelApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ExportToExcel()
+        {
+
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            var labels = await ConnectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
+
+            var document = new SLDocument();
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Uid");
+            document.SetCellValue(1, index++, "Name");
+            document.SetCellValue(1, index++, "Use Count");
+            document.SetCellValue(1, index++, "Created On");
+            document.SetCellValue(1, index++, "Created By");
+            document.SetCellValue(1, index++, "Updated On");
+            document.SetCellValue(1, index++, "Updated By");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in labels)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, row.uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.Value.ToString());
+                document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedBy.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedBy.ToString());
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = string.Format("Connector Labels {0}.xlsx", System.DateTime.Now.ToShortDateString())
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+        }
+
+
+        /// <summary>
+        /// Consolidates connector lables
+        /// </summary>
+        /// <param name="parentUid">The unique identifier of the parent connector label.</param>        
+        /// <param name="childrenUids">The list of children connector labels which we want to consolidate.</param>
+        /// <returns>A status for the POST request.</returns>
+        [
+            HttpPost,
+            Route("consolidate/{parentUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ConnectorLabelApiModel>)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public IHttpActionResult ConsolidateLabels(string parentUid, List<string> childrenUids)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+
+                if (Guid.Parse(parentUid) == Guid.Empty)
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", $"{parentUid} is not valid uid!");
+
+                foreach (var item in childrenUids)
+                {
+                    if (Guid.Parse(item) == Guid.Empty)
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", $"{item} is not valid uid!");
+                }
+
+                if (childrenUids.Contains(parentUid))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", "Parent connector label should not be included in children connector labels!");
+                var parentGuid = Guid.Parse(parentUid);
+
+                var parentLabel = Company.ConnectorLabels.FirstOrDefault(x => x.uid == parentGuid);
+                if (parentLabel == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating connector labels", $"Connector label with UID '{parentUid}' does not exist!");
+                }
+
+                //Get diagram usage
+                List<Guid> children = childrenUids.Select(x => Guid.Parse(x)).ToList();
+                List<long> assetUids = Company.Query<long>($@"select a.id from processexpandeddata ped
+                                            inner join asset a on a.uid = ped.diagramassetuid
+                                            where labeluid in @children", new { children }).ToList();
+
+                var processes = Company.AssetProcessDiagrams.AsNoTracking().Where(x => assetUids.Contains(x.AssetId)).ToList();
+
+                if (Company.Database.Connection.State != ConnectionState.Open)
+                    Company.Connection.Open();
+
+                using (var trans = Company.Connection.BeginTransaction())
+                {
+                    var conn = trans.Connection;
+                    try
+                    {
+
+
+                        foreach (var process in processes)
+                        {
+                            if (process.Diagram != null)
+                            {
+                                var model = JsonConvert.DeserializeObject<ProcessDiagramModel>(process.Diagram);
+                                foreach (var link in model.linkDataArray.Where(x => x.labelUid.HasValue))
+                                {
+                                    if (children.Contains(link.labelUid.Value))
+                                    {
+                                        link.labelUid = parentGuid;
+                                    }
+                                }
+
+
+                                conn.Execute($@"
+                                update AssetProcessDiagram
+                                    set Diagram = @updatedDiagram
+                                where ID = @diagramId",
+                                    new
+                                    {
+                                        diagramId = process.ID,
+                                        updatedDiagram = JsonConvert.SerializeObject(model),
+                                        resourceId = Company.CurrentResourceID
+                                    }, transaction: trans);
+                            }
+                        }
+                        conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
+                        trans.Commit();
+
+                    }
+                    catch (Exception ex)
+                    {
+                        if (trans != null)
+                            trans.Rollback();
+
+                        throw ex;
+                    }
+                }
+                var result = "Connector labels consolidated successfully";
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while consolidating tags", ex.Message);
+
+            }
+
+        }
+
+
     }
 }
 

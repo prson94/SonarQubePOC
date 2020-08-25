@@ -18,7 +18,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -1375,68 +1374,5 @@ where   A.Deleted = 0";
 
             return response;
         }
-
-        [HttpGet, Route("list")]
-        public List<StorageFileInfo> GetList(int typeId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return null;
-                        
-            var container = constants.AZURE_CLOUD_FUSION_CONTAINER;
-
-            Storage.CreateFolder(container);
-            var folder = string.Format("{2}/{0}.{1}", Company.CurrentCompanyID,typeId, constants.AZURE_CLOUD_FUSION_CONTAINER);
-            
-            return Storage.ListFiles(folder);            
-        }
-
-        [HttpPost, Route("uploadfile")]
-        public async Task<IHttpActionResult> PostUploadFile()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(HttpStatusCode.Forbidden);
-
-            if (!Request.Content.IsMimeMultipartContent())
-                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-
-            var prefix = "Fusion.PostUploadFile => ";
-
-            Trace.TraceInformation("{0}{1}", prefix, "Starting to upload cloud fusion files.");
-
-            try {                
-                var provider = new MultipartMemoryStreamProvider();
-                await Request.Content.ReadAsMultipartAsync(provider);
-
-                var typeid = Request.Headers.GetValues("fusionTypeId").FirstOrDefault();
-
-                foreach (var file in provider.Contents)
-                {
-                    if (file.IsFormData() || string.IsNullOrEmpty(file.Headers.ContentDisposition.FileName)) continue;
-                    var filename = file.Headers.ContentDisposition.FileName.Trim('\"');
-                    filename = filename.Replace('\\', '/').ToLower();
-                    var contents = await file.ReadAsStringAsync();
-                    //prepend the company id and fusion type to the file name
-                    string newFileName = string.Format("{0}.{1}/{2}", Company.CurrentCompanyID, typeid, filename);
-                    Trace.TraceInformation("{0}{1}{2}", prefix, "Saving To Cloud fusion... ", newFileName);
-                    Storage.CreateFile(constants.AZURE_CLOUD_FUSION_CONTAINER, newFileName, contents);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError(ex.GetFullExceptionData());
-
-                var msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);
-                msg.ReasonPhrase = ex.InnerException != null ? ex.InnerException.Message.Replace(@"\n", "; ") : ex.Message.Replace(@"\n", "; ");
-                throw new HttpResponseException(msg);
-            }
-
-            Trace.TraceInformation("{0}{1}", prefix, "Completed upload of cloud fusion files.");
-
-            return Ok();
-        }
-
-
-
     }
 }

@@ -5,28 +5,45 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.RuleResultQualifier-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.RuleResultQualifier-v3">
+    <comment>GOV-9704</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifier')
-BEGIN
-	exec sp_rename 'dbo.RuleResultQualifier', 'RuleResultQualifier_bak';
-END
-
-IF EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifier_RuleResult')
-BEGIN	
-	ALTER TABLE [dbo].[RuleResultQualifier_bak] DROP CONSTRAINT [FK_RuleResultQualifier_RuleResult]
-END
-
-IF EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifier_RuleResultQualifierType')
-BEGIN	
-	ALTER TABLE [dbo].[RuleResultQualifier_bak] DROP CONSTRAINT [FK_RuleResultQualifier_RuleResultQualifierType]
-END
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifier_bak')
+			BEGIN
+				DROP TABLE RuleResultQualifier_bak;
+			END
 		]]>
     </sql>
-  </changeSet>
+	<rollback>
+	<![CDATA[
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifier_bak')
+			BEGIN
+				CREATE TABLE [dbo].[RuleResultQualifier_bak](
+					[RuleResultID] [int] NOT NULL,
+					[RuleResultQualifierTypeID] [int] NOT NULL,
+					[Value] [nvarchar](1000) NULL,
+					[ResolvedObject] [varchar](50) NULL,
+					[ResolvedObjectID] [int] NULL,
+					[EventNotificationSent] [bit] CONSTRAINT [DF_RuleResultQualifier_EventNotificationSent] DEFAULT (0) NOT NULL,
+					[UpdatedOn] [datetime] NULL,
+					[UpdatedBy] [int] NULL,
+					[CreatedOn] [datetime] NULL,
+					[CreatedBy] [int] NULL,
+				 CONSTRAINT [PK_RuleResultQualifier] PRIMARY KEY NONCLUSTERED 
+				(
+					[RuleResultID] ASC,
+					[RuleResultQualifierTypeID] ASC
+				)
+				)
+			END
+			
+			
 
+		    ]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

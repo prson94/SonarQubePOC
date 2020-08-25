@@ -6,11 +6,12 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { BaseComponent } from '../base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetService } from '../../../services/asset.service';
 
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',
-    providers: [GridDefinitionService, RelationshipsService],
+    providers: [GridDefinitionService, RelationshipsService, AssetService],
     templateUrl: './dynamic-relationship-grid.component.html'
 })
 
@@ -51,13 +52,20 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     selected: any = null;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    isGridLoading: boolean = false;
+    isDataLoading: boolean = false;
     theDeleteCallback: Function;
 
     private showTechnical: boolean = false;
 
     @ViewChild('dt', { static: false }) datatable;
 
-    constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesObservableService) {
+    constructor(private router: Router,
+        private gridDefinitionService: GridDefinitionService,
+        protected relationshipsService: RelationshipsService,
+        private messagesService: MessagesObservableService,
+        private assetService: AssetService
+    ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
@@ -86,19 +94,21 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     getFieldsDefinition() {
-
+        this.isGridLoading = true;
         this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType).subscribe(
             result => {
+                this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.readOnly = result.IsReadOnly;
-                this.readOnlyChange.emit(this.readOnly);                
+                this.readOnlyChange.emit(this.readOnly);
             }
         );
+        this.isGridLoading = false;
     }
 
     getData(forceEditorOpen: boolean = false) {
-        this.isLoading = true;
+        this.isDataLoading = true;
         this.relationshipsService.getObjectRelationships(
             this.objectType,
             this.objectID,
@@ -109,11 +119,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             !this.isSubject)
             .subscribe(result => {
                 this.relations = result;
-                this.isLoading = false;
                 if (this.relations.length > 0) this.selected = this.relations[0];
                 this.relationshipAdded.emit({ count: result.length });
                 if (this.shouldShowEditor() && !forceEditorOpen) this.closeEditor();
-            });
+                this.isDataLoading = false;
+            },
+                () => { this.isDataLoading = false; });
     }
 
     private shouldShowEditor(): boolean {
@@ -183,57 +194,66 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                     this.getData(true);
                 }
             });
-}
-
-deleteItem(item) {
-    let model: any[] = [];
-    let deleteItem: any = {};
-
-    deleteItem['Cascade'] = true;
-    deleteItem['uid'] = item;
-    model.push(deleteItem);
-
-    this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
-        .subscribe(res => {
-          
-            this.showMessageForApiResults(this.messagesService, res, ' Relationship succesfully deleted!');
-            if (!res.some(x => x.Success != true)) {
-                this.relations = this.relations.filter(x => x.Uid != item);
-                this.relationshipRemoved.emit();
-            }
-            this.showDelete = false;
-            this.deleteOff.emit();
-        });
-
-}
-
-doDelete() {
-    this.deleteOn.emit();
-    this.showDelete = true;
-}
-
-cancelDelete() {
-    this.deleteOff.emit();
-    this.showDelete = false;
-}
-
-selectObject(item) {
-    this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
-}
-
-onFilter(event: any) {
-
-    let count = 0;
-    let qstring: string = "";
-
-    for (var key in event.filters) {
-        var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
-        qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
-        count++;
     }
-    qstring += '&filterscount=' + count;
-    this.onFilterChange.emit(qstring);
 
-}
+    deleteItem(item) {
+        let model: any[] = [];
+        let deleteItem: any = {};
+
+        deleteItem['Cascade'] = true;
+        deleteItem['uid'] = item;
+        model.push(deleteItem);
+
+        this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
+            .subscribe(res => {
+
+                this.showMessageForApiResults(this.messagesService, res, ' Relationship succesfully deleted!');
+                if (!res.some(x => x.Success != true)) {
+                    this.relations = this.relations.filter(x => x.Uid != item);
+                    this.relationshipRemoved.emit();
+                }
+                this.showDelete = false;
+                this.deleteOff.emit();
+            });
+
+    }
+
+    doDelete() {
+        this.deleteOn.emit();
+        this.showDelete = true;
+    }
+
+    cancelDelete() {
+        this.deleteOff.emit();
+        this.showDelete = false;
+    }
+
+    selectObject(item) {
+        if (item.Object != 'Task') {
+            this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
+        }
+        else {
+            this.assetService.getProcessDiagramUrl(item.ObjectUid)
+                .subscribe(res => {
+                    this.router.navigateByUrl(res);
+                })
+
+        }
+    }
+
+    onFilter(event: any) {
+
+        let count = 0;
+        let qstring: string = "";
+
+        for (var key in event.filters) {
+            var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
+            qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
+            count++;
+        }
+        qstring += '&filterscount=' + count;
+        this.onFilterChange.emit(qstring);
+
+    }
 
 }

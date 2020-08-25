@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -812,6 +813,8 @@ order by r.Name";
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+
                 return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
@@ -830,6 +833,7 @@ order by r.Name";
         {
             try
             {
+                var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString(), DataType.FieldFromRelationship.ToString() };
                 var id = parseIntField(form, "ID");
                 var uid = parseTextField(form, "IntersectTypeUid");
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
@@ -839,7 +843,7 @@ order by r.Name";
 
                 if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && i.Type == "Relationship" && i.LookupObjectType == "IntersectType").Count() > 0)
+                if (Company.Filter<FieldType>(i => i.LookupObjectID == id && intersectTypes.Contains(i.Type) && i.LookupObjectType == "IntersectType").Count() > 0)
                     return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
                 if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\""+ uid + "\"")).Count() > 0)                
                 {
@@ -850,6 +854,8 @@ order by r.Name";
                 if (model == null) throw new NotFoundException("relationship type");
 
                 Company.Delete(SystemObjects.IntersectType, id);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -905,6 +911,7 @@ order by r.Name";
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 Company.UpsertIntersectType(model, lineageVersion);
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }

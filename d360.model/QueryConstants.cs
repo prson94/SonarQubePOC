@@ -1621,6 +1621,28 @@ select
 					IAR.Email
                 when S.ActivityType = 3 and IST.CompletedOn is null and VSSettings.MessageRecipientType = 'SpecificUser' then
 					VSSettings.MessageToUser
+				when S.ActivityType = 3 and IST.CompletedOn is null and VSSettings.MessageRecipientType = 'Group' then
+					(select STRING_AGG(CONCAT(R.FirstName, ' ', R.LastName), ', ')
+						from (
+							select rg.ResourceID FROM [resourcegroup] rg
+							inner join dbo.Asset a on a.[Object] = 'Group' and rg.groupid = a.[ObjectId]
+							where A.uid = VSSettings.MessageToGroup
+							and rg.ResourceID NOT IN (
+											select 
+								r.value('@fromResourceId','int')
+								from workflow.itemstep
+								cross apply Fields.nodes('/fields[1]/Reassigned') AS x(r)
+								where StepID = IST.StepID
+								)
+							UNION ALL
+							select 
+								r.value('@toResourceId','int')
+								from workflow.itemstep
+								cross apply Fields.nodes('/fields[1]/Reassigned') AS x(r)
+								where StepID = IST.StepID
+						) subq
+						INNER JOIn reporting.Global_Resource R on R.ResourceID = subq.ResourceID
+					)
 				when S.ActivityType = 3 and IST.CompletedOn is not null then
 					Forms.Responses
 				else
@@ -1644,7 +1666,8 @@ select
 				select
 					coalesce(convert(xml,convert(nvarchar(max),Settings)).value('/settings[1]/WaitForAllTransitions[1]/text()[1]','nvarchar(max)'), 'false') as WaitForAllTransitions,
 					convert(xml,convert(nvarchar(max),Settings)).value('/settings[1]/MessageRecipientType[1]/text()[1]','nvarchar(max)') as MessageRecipientType,
-					coalesce(convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','nvarchar(max)'), '[unknown]') as MessageToUser
+					coalesce(convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageToUser[1]/text()[1]','nvarchar(max)'), '[unknown]') as MessageToUser,
+					coalesce(convert(xml,convert(nvarchar(max),S.Settings)).value('/settings[1]/MessageToGroup[1]/text()[1]','nvarchar(max)'), '[unknown]') as MessageToGroup
 				from workflow.VersionStep where ID = S.ID
 			) VSSettings
 			inner join workflow.[Version] V on V.ID = S.VersionID

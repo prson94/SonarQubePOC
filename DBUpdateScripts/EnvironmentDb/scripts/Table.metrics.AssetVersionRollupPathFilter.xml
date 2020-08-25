@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionRollupPathFilter-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionRollupPathFilter')
+BEGIN
+	CREATE TABLE [metrics].[AssetVersionRollupPathFilter] (
+		[Uid] uniqueidentifier NOT NULL,
+		[AssetVersionRollupPathUid] uniqueidentifier NOT NULL,
+		[AssetTypeID] int NOT NULL,
+		[FieldTypeID] int not null,
+		[Operator] varchar(10) not null,
+		CONSTRAINT [PK_AssetVersionRollupPathFilter] PRIMARY KEY CLUSTERED ( [Uid] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionRollupPathFilter_MetricAssetVersionRollupPath')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter]  WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_MetricAssetVersionRollupPath] FOREIGN KEY([AssetVersionRollupPathUid]) REFERENCES [metrics].[AssetVersionRollupPath] ([Uid]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter] CHECK CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_MetricAssetVersionRollupPath]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionRollupPathFilter_AssetType')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter]  WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE NO ACTION
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter] CHECK CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_AssetType]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionRollupPathFilter_FieldType')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter]  WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE NO ACTION
+	ALTER TABLE [metrics].[AssetVersionRollupPathFilter] CHECK CONSTRAINT [FK_MetricAssetVersionRollupPathFilter_FieldType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_MetricAssetVersionRollupPathFilter_AssetVersionRollupPath')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_MetricAssetVersionRollupPathFilter_AssetVersionRollupPath ON [metrics].AssetVersionRollupPathFilter ( AssetVersionRollupPathUid ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [metrics].[AssetVersionRollupPathFilter]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

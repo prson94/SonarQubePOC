@@ -36,9 +36,6 @@ namespace d360.model
         #region Caching Methods
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
-        internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
-        internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
 
         internal string key(string token)
         {
@@ -218,10 +215,6 @@ namespace d360.model
 
         public DbSet<MapTypeOrder> MapTypeOrders { get; set; }
 
-        public DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
-
-        public DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
-
         public DbSet<MapItem> MapItems { get; set; }
 
         public DbSet<MapRule> MapRules { get; set; }
@@ -322,7 +315,7 @@ namespace d360.model
                                             VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
                                     WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
                                         THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID } );
 
 
                     }
@@ -1384,43 +1377,11 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                 excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
-            if (limitToClasses == null)
+            if (limitToClasses != null && limitToClasses.Count > 0)
             {
-                string relationshipsWhere = string.Empty;
-                string additionalApply = string.Empty;
-                if (!Community.IsFusionEnabled())
-                {
-                    List<string> filteredTypes = new List<string>() { SystemObjects.FusionType.ToString(), SystemObjects.FusionAttributeType.ToString(), SystemObjects.FusionQueryAttributeType.ToString() };
-                    dbArgs.Add("@filterTypes", filteredTypes);
-
-                    additionalApply = @"outer apply (select top 1 * from IntersectType where IT.Object = 'IntersectType' and ID = IT.ObjectId)ITObj
-						                outer apply (select top 1 * from IntersectType where IT.Subject = 'IntersectType' and ID = IT.SubjectId)ITSubj";
-
-                    relationshipsWhere += $@" where IT.Object not in @filterTypes 
-                                                and IT.Subject not in @filterTypes 
-                                                and ISNULL(ITObj.Object,'') not in @filterTypes
-                                                and ISNULL(ITObj.Subject,'') not in @filterTypes
-                                                and ISNULL(ITSubj.Object,'') not in @filterTypes
-                                                and ISNULL(ITSubj.Subject,'') not in @filterTypes";
-                }
-
-                noClassLimitSql = $@"
-                UNION
-                SELECT	CAST(IT.ID as int) ID,
-		                'Relationship :: ' + ITypeName.Name AS Name,
-		                'IntersectType' AS Type
-                FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
-                        {additionalApply}
-                        {relationshipsWhere}";
+                classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
             }
-            else
-            {
-                if (limitToClasses.Count > 0)
-                {
-                    classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
-                }
-            }
+
             var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
             string whereStatement = "";
@@ -2966,7 +2927,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     string fieldJoin = f.AllowMultipleValues ? "cross apply STRING_SPLIT(fi.Value, ',') SPFfi" : "";
                     string fieldclause = f.AllowMultipleValues ? "try_cast(SPFfi.value as int)" : "fi.Value";
                     string whereClause = (type == SystemObjects.Intersect.ToString()) ? $@" fi.ObjectID = A.ID and fi.ObjectType = '{type}'" : "fi.AssetID = A.Id";
-                    
+
                     columns += $"{name}_T.value as [{name}],";
                     joins += $@" outer apply(
                             select value = (
@@ -2976,7 +2937,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 FROM field fi
                                 {fieldJoin}
                                 inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = {fieldclause}
-                                cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+                                cross apply dbo.GetAssetColorJsonByColor(AC.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
                                 where FieldTypeID = {f.ID} and {whereClause}
 								for json path)
@@ -3069,6 +3030,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
                 case SystemObjects.TaskType:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
+                    break;
+                case SystemObjects.ConnectorLabel:
+                    objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
@@ -3167,6 +3131,55 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
   where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
 
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
+        }
+
+        public bool SetStateDeleteWorkFlowType(SystemObjects type, int id)
+        {
+            try
+            {
+
+                var sql = $@"declare	@workflowType table (id int)
+
+					insert into @workflowType
+					select distinct wt.id 
+					from workflow.[type] wt
+					inner join [workflow].[EventRegistration] we
+					on we.typeid = wt.id
+					where wt.State <> 3 
+					and we.object = @Object
+					and we.objectid = @ObjectID;
+
+					update wt
+					set State = 3
+					from workflow.[type]  wt
+					inner join @workflowType wft
+					on wt.id = wft.id;";
+
+
+                Database.Connection.Execute(sql, new { Object = type.ToString(), ObjectID = id }, null, 120);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw resolveToRealException(ex);
+            }
+        }
+        public string GetDiagramUrlForDiagramAsset(Guid assetUid)
+        {
+            var diagramUrl = $@"select 
+                            '/sidebar/visualization/browser/'+lower(cast(a.uid as nvarchar(36)))+'/Process/' + lower(cast(@assetUid as nvarchar(36)))
+                            from AssetProcessDiagram APD
+                            cross apply (SELECT *
+                            FROM OPENJSON(APD.Diagram,'$.nodeDataArray')
+                            WITH (   
+            
+                                          uid uniqueidentifier '$.key'
+                             ) 
+                            )Json
+                            inner join asset a on a.id = apd.AssetID
+                            where json.uid = @assetUid";
+            return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
         }
     }
 }

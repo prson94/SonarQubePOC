@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.model;
 using Dapper;
 using Newtonsoft.Json;
@@ -192,7 +193,7 @@ namespace d360.web.Controllers.V2
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
                                 {lookupValueJoinCriteria}								
-                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
                                 cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField} FOR JSON PATH),
                                 [Value] = 
@@ -751,5 +752,59 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
+        internal WorkHttpStatus validateScoreAllocation(string allocationUid, out Guid uid)
+        {
+            var status = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+
+            if (!Guid.TryParse(allocationUid, out uid))
+            {
+                status.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                status.Message = $"allocationUid {allocationUid} is not a correctly formatted identifier.";
+            }
+            else
+            {
+                var auid = uid;
+                if (!Company.Any<core.entities.Metric.MetricAllocation>(i => i.Uid == auid))
+                {
+                    status.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    status.Message = $"Allocation identifier with value {uid} does not correspond to a valid allocation.";
+                }
+            }
+
+            return status;
+        }
+
+        internal WorkHttpStatus validateAsset(string assetUid, Permission permission, out Guid uid)
+        {
+            var status = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+
+            if (!Guid.TryParse(assetUid, out uid))
+            {
+                status.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                status.Message = $"assetUid {assetUid} is not a correctly formatted identifier.";
+            }
+            else
+            {
+                var auid = uid;
+                var asset = Company.Filter<Asset>(i => i.uid == auid).SingleOrDefault();
+
+                if (asset == null)
+                {
+                    status.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    status.Message = $"Asset identifier with value {uid} does not correspond to a valid asset.";
+                }
+                else 
+                {
+                    var canRead = Company.HasAssetPermission(asset.ID, permission);
+                    if (!canRead)
+                    {
+                        status.StatusCode = System.Net.HttpStatusCode.Forbidden;
+                        status.Message = $"You do not have permissions to view score history on this asset.";
+                    }               
+                }
+            }
+
+            return status;
+        }
     }
 }

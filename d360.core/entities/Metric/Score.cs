@@ -16,7 +16,7 @@ namespace d360.core.entities.Metric
         public Guid AssetUid { get; set; }
 
         [DataMember]
-        public Guid? AllocationUid { get; set; }
+        public Guid AllocationUid { get; set; }
 
         [DataMember]
         public DateTime EffectiveDate { get; set; }
@@ -29,9 +29,6 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public DateTime? EndDate { get; set; }
-
-        [DataMember, JsonConverter(typeof(StringEnumConverter))]
-        public ScoreType ScoreType { get; set; } = ScoreType.Governance;
 
         public ICollection<ScoreItem> Items { get; set; }
     }
@@ -65,13 +62,15 @@ namespace d360.core.entities.Metric
 
     public class ExternalScoreResultsApiResultsModel
     {
+        [JsonIgnore]
+        public Guid ScoreUid { get; set; }
         public Guid AssetUid { get; set; }
         public decimal Score { get; set; }
         public DateTime RunDate { get; set; }
         public DateTime EffectiveDate { get; set; }
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }
-        public List<ExternalScoreResultMeasureModel> Measures { get; set; }
+        public List<ExternalScoreResultMeasureModel> Measures { get { return JsonConvert.DeserializeObject<List<ExternalScoreResultMeasureModel>>((string.IsNullOrEmpty(measuresJson)) ? "[]": measuresJson); } }
         [JsonIgnore]
         public string measuresJson { get; set; }
     }

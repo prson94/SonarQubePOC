@@ -21,8 +21,7 @@ namespace d360.model
         CompanySsoModel CurrentCompanySsoModel { get; set; }
         DbSet<DatabaseServer> DatabaseServers { get; set; }
         DbSet<DomainCertificate> DomainCertificates { get; set; }
-        DbSet<DomainSetting> DomainSettings { get; set; }
-        DbSet<EventType> EventTypes { get; set; }
+        DbSet<DomainSetting> DomainSettings { get; set; }        
         DbSet<FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
         DbSet<core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
         DbSet<FusionIntersectType> FusionIntersectTypes { get; set; }

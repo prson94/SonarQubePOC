@@ -16,65 +16,81 @@
 @ig-orange: #FFAA00;
 @ig-coral: #ff7155;
 
-@ig-grey-s3: mix(black, @ig-grey-s2, 18%);
-@ig-grey-s1: mix(white, @ig-grey-s2, 18%);
-@ig-grey: mix(white, @ig-grey-s2, 34%); // tweaked for contrast compliance
-@ig-grey-t1: mix(white, @ig-grey, 18%);
-@ig-grey-t2: mix(white, @ig-grey, 34%); // tweaked for contrast compliance
-@ig-grey-t3: mix(white, @ig-grey, 54%);
-@ig-grey-t4: mix(white, @ig-grey, 72%);
-@ig-grey-t5: mix(white, @ig-grey, 90%);
+//Additional colors
+@ig-slate: #597897;
 
-@ig-midblue-t1: mix(white, @ig-midblue, 22%); // tweaked for contrast compliance
-@ig-midblue-t2: mix(white, @ig-midblue, 36%);
-@ig-midblue-t3: mix(white, @ig-midblue, 54%);
-@ig-midblue-t4: mix(white, @ig-midblue, 72%);
-@ig-midblue-t5: mix(white, @ig-midblue, 90%);
-@ig-midblue-s1: mix(black, @ig-midblue, 18%);
-@ig-midblue-s2: mix(black, @ig-midblue, 36%);
-@ig-midblue-s3: mix(black, @ig-midblue, 54%);
+//Tints and shades
+@ig-grey-s3: #1e2435; //mix(black, @ig-grey-s2, 18%);
+@ig-grey-s1: #4c5263; //mix(white, @ig-grey-s2, 18%);
+@ig-grey: #6f7482; //mix(white, @ig-grey-s2, 34%); // tweaked for contrast compliance
+@ig-grey-t1: #898d99; //mix(white, @ig-grey, 18%);
+@ig-grey-t2: #a0a3ad; //mix(white, @ig-grey, 34%); // tweaked for contrast compliance
+@ig-grey-t3: #bdbfc6; //mix(white, @ig-grey, 54%);
+@ig-grey-t4: #d7d8dc; //mix(white, @ig-grey, 72%);
+@ig-grey-t5: #f1f1f3; //mix(white, @ig-grey, 90%);
+@ig-midblue-t1: #388fc9; //mix(white, @ig-midblue, 22%); // tweaked for contrast compliance
+@ig-midblue-t2: #5ca3d3; //mix(white, @ig-midblue, 36%);
+@ig-midblue-t3: #8abddf; //mix(white, @ig-midblue, 54%);
+@ig-midblue-t4: #b8d7ec; //mix(white, @ig-midblue, 72%);
+@ig-midblue-t5: #e6f1f8; //mix(white, @ig-midblue, 90%);
+@ig-midblue-s1: #005b99; //mix(black, @ig-midblue, 18%);
+@ig-midblue-s2: #004777; //mix(black, @ig-midblue, 36%);
+@ig-midblue-s3: #003356; //mix(black, @ig-midblue, 54%);
+@ig-lightblue-t1: #afe1eb; //mix(white, @ig-lightblue, 18%);
+@ig-lightblue-t2: #c0e7ef; //mix(white, @ig-lightblue, 36%);
+@ig-lightblue-t3: #d2eef4; //mix(white, @ig-lightblue, 54%);
+@ig-lightblue-t4: #e4f5f8; //mix(white, @ig-lightblue, 72%);
+@ig-lightblue-t5: #f5fbfd; //mix(white, @ig-lightblue, 90%);
+@ig-lightblue-s1: #81b3bd; //mix(black, @ig-lightblue, 18%);
+@ig-lightblue-s2: #689098; //mix(black, @ig-lightblue, 34%); // tweaked for contrast compliance
+@ig-lightblue-s3: #48646a; //mix(black, @ig-lightblue, 54%);
+@ig-red-t1: #d73961; //mix(white, @ig-red, 14%); // tweaked for contrast compliance
+@ig-red-t2: #e26c89; //mix(white, @ig-red, 36%);
+@ig-red-t3: #ea95aa; //mix(white, @ig-red, 54%);
+@ig-red-t4: #f2bfcb; //mix(white, @ig-red, 72%);
+@ig-red-t5: #fae8ed; //mix(white, @ig-red, 90%);
+@ig-red-s1: #ab153a; //mix(black, @ig-red, 18%);
+@ig-red-s2: #86102d; //mix(black, @ig-red, 36%);
+@ig-red-s3: #600c21; //mix(black, @ig-red, 54%);
+@ig-green-t1: #2e9b61; //mix(white, @ig-green, 18%);
+@ig-green-t2: #5cb183; //mix(white, @ig-green, 36%);
+@ig-green-t3: #8ac7a6; //mix(white, @ig-green, 54%);
+@ig-green-t4: #b8ddc9; //mix(white, @ig-green, 72%);
+@ig-green-t5: #e6f3ec; //mix(white, @ig-green, 90%);
+@ig-green-s1: #006d33; //mix(black, @ig-green, 18%);
+@ig-green-s2: #005528; //mix(black, @ig-green, 36%);
+@ig-green-s3: #003d1d; //mix(black, @ig-green, 54%);
+@ig-orange-t1: #ffb92e; //mix(white, @ig-orange, 18%);
+@ig-orange-t2: #ffc95c; //mix(white, @ig-orange, 36%);
+@ig-orange-t3: #ffd88a; //mix(white, @ig-orange, 54%);
+@ig-orange-t4: #ffe7b8; //mix(white, @ig-orange, 72%);
+@ig-orange-t5: #fff2d9; //mix(white, @ig-orange, 85%); // tweaked for balance
+@ig-orange-s1: #d18b00; //mix(black, @ig-orange, 18%);
+@ig-orange-s2: #9e6900; //mix(black, @ig-orange, 38%); // tweaked for contrast compliance
+@ig-orange-s3: #754e00; //mix(black, @ig-orange, 54%);
+@ig-coral-t1: #ff8b74; //mix(white, @ig-coral, 18%);
+@ig-coral-t2: #ffa492; //mix(white, @ig-coral, 36%);
+@ig-coral-t3: #ffbeb1; //mix(white, @ig-coral, 54%);
+@ig-coral-t4: #ffd7cf; //mix(white, @ig-coral, 72%);
+@ig-coral-t5: #fff1ee; //mix(white, @ig-coral, 90%);
+@ig-coral-s1: #db6149; //mix(black, @ig-coral, 14%); // tweaked for contrast compliance
+@ig-coral-s2: #a34836; //mix(black, @ig-coral, 36%);
+@ig-coral-s3: #753427; //mix(black, @ig-coral, 54%);
 
-@ig-lightblue-t1: mix(white, @ig-lightblue, 18%);
-@ig-lightblue-t2: mix(white, @ig-lightblue, 36%);
-@ig-lightblue-t3: mix(white, @ig-lightblue, 54%);
-@ig-lightblue-t4: mix(white, @ig-lightblue, 72%);
-@ig-lightblue-t5: mix(white, @ig-lightblue, 90%);
-@ig-lightblue-s1: mix(black, @ig-lightblue, 18%);
-@ig-lightblue-s2: mix(black, @ig-lightblue, 34%); // tweaked for contrast compliance
-@ig-lightblue-s3: mix(black, @ig-lightblue, 54%);
-
-@ig-red-t1: mix(white, @ig-red, 14%); // tweaked for contrast compliance
-@ig-red-t2: mix(white, @ig-red, 36%);
-@ig-red-t3: mix(white, @ig-red, 54%);
-@ig-red-t4: mix(white, @ig-red, 72%);
-@ig-red-t5: mix(white, @ig-red, 90%);
-@ig-red-s1: mix(black, @ig-red, 18%);
-@ig-red-s2: mix(black, @ig-red, 36%);
-@ig-red-s3: mix(black, @ig-red, 54%);
-
-@ig-green-t1: mix(white, @ig-green, 18%);
-@ig-green-t2: mix(white, @ig-green, 36%);
-@ig-green-t3: mix(white, @ig-green, 54%);
-@ig-green-t4: mix(white, @ig-green, 72%);
-@ig-green-t5: mix(white, @ig-green, 90%);
-@ig-green-s1: mix(black, @ig-green, 18%);
-@ig-green-s2: mix(black, @ig-green, 36%);
-@ig-green-s3: mix(black, @ig-green, 54%);
-
-@ig-orange-t1: mix(white, @ig-orange, 18%);
-@ig-orange-t2: mix(white, @ig-orange, 36%);
-@ig-orange-t3: mix(white, @ig-orange, 54%);
-@ig-orange-t4: mix(white, @ig-orange, 72%);
-@ig-orange-t5: mix(white, @ig-orange, 85%); // tweaked for balance
-@ig-orange-s1: mix(black, @ig-orange, 18%);
-@ig-orange-s2: mix(black, @ig-orange, 38%); // tweaked for contrast compliance
-@ig-orange-s3: mix(black, @ig-orange, 54%);
-
-@ig-coral-t1: mix(white, @ig-coral, 18%);
-@ig-coral-t2: mix(white, @ig-coral, 36%);
-@ig-coral-t3: mix(white, @ig-coral, 54%);
-@ig-coral-t4: mix(white, @ig-coral, 72%);
-@ig-coral-t5: mix(white, @ig-coral, 90%);
-@ig-coral-s1: mix(black, @ig-coral, 14%); // tweaked for contrast compliance
-@ig-coral-s2: mix(black, @ig-coral, 36%);
-@ig-coral-s3: mix(black, @ig-coral, 54%);
+// text and link colors
+@ig-color-text: @ig-black;
+@ig-color-placeholder-text: @ig-grey;
+@ig-color-link: @ig-midblue;
+@ig-color-link-hover: @ig-midblue-s1;
+@ig-color-link-active: @ig-midblue-s2;
+// field colors
+@ig-color-field-required: @ig-lightblue-t4;
+@ig-color-field-invalid: @ig-red-t5;
+@ig-color-field-invalid-message: @ig-red-s1;
+@ig-color-field-border: rgba(0, 0, 0, 0.21);
+@ig-color-field-button: rgba(0, 0, 0, 0.07);
+@ig-color-field-button-hover: rgba(0, 0, 0, 0.14);
+@ig-color-field-button-active: rgba(0, 0, 0, 0.21);
+// menu/table/dropdown colors
+@ig-color-item-hover: @ig-orange-t4;
+@ig-color-item-active: @ig-orange-t3;

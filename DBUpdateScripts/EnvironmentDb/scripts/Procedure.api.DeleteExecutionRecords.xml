@@ -5,60 +5,59 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.api.DeleteExecutionRecords-v1">
-    <comment>GOV-11608</comment>
+  <changeSet author="Pappas" id="Procedure.api.DeleteExecutionRecords-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure api.DeleteExecutionRecords 
-@numberOfDaysOlderThan int = 30
-as
+			CREATE OR ALTER procedure [api].[DeleteExecutionRecords] 
+			@numberOfDaysOlderThan int = 30
+			as
 
-begin
-	BEGIN TRANSACTION;
-	SAVE TRANSACTION ApiDeleteSavePoint;
+			begin
+				BEGIN TRANSACTION;
+				SAVE TRANSACTION ApiDeleteSavePoint;
 
-	BEGIN TRY
-		-- delete records from child tables
-		delete from api.ExecutionAsset where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionAssetCrossReference where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionAssetError where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionAssetResult where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeleteAssetResult where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedAsset where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedAssetType where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedGroup where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedPredicate where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedRelationship where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDeletedRelationshipType where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDiagramAsset where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionDiagramAssetField where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionField where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionGroup where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionMetric where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionMetricMeasure where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionPredicate where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionRelationship where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionRelationshipError where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionRelationshipType where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionResponsibilityRule where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
-		delete from api.ExecutionResponsibilityType where executionid in (select ExecutionID from api.Execution e where DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+				BEGIN TRY
+					-- delete records from child tables
+					delete from api.ExecutionAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan) 
+					delete from api.ExecutionAssetCrossReference where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionAssetError where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionAssetResult where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeleteAssetResult where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedAssetType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedGroup where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedPredicate where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedRelationship where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedRelationshipType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDiagramAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDiagramAssetField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionGroup where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionScore where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionMeasure where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionPredicate where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationship where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationshipError where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationshipType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionResponsibilityRule where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionResponsibilityType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
 
-		-- finally delete the api.execution records themselves
-		delete from api.Execution where DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+					-- finally delete the api.execution records themselves
+					delete from api.Execution where [route] is not null and [route] != 'BULK' and DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan
 
-		COMMIT TRANSACTION 
-	END TRY
-	BEGIN CATCH
-        IF @@TRANCOUNT > 0
-        BEGIN
-            ROLLBACK TRANSACTION ApiDeleteSavePoint; -- rollback to MySavePoint
-        END
-    END CATCH
-end
-		]]>
+					COMMIT TRANSACTION 
+				END TRY
+				BEGIN CATCH
+							IF @@TRANCOUNT > 0
+							BEGIN
+									ROLLBACK TRANSACTION ApiDeleteSavePoint; -- rollback to MySavePoint
+							END
+					END CATCH
+			end
+]]>
     </sql>
 	<rollback>
 		<sql dbms="mssql"
@@ -66,6 +65,52 @@ end
 				splitStatements="true"
 				stripComments="false">
 			<![CDATA[	
+			CREATE OR ALTER procedure [api].[DeleteExecutionRecords] 
+			@numberOfDaysOlderThan int = 30
+			as
+
+			begin
+				BEGIN TRANSACTION;
+				SAVE TRANSACTION ApiDeleteSavePoint;
+
+				BEGIN TRY
+					-- delete records from child tables
+					delete from api.ExecutionAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan) 
+					delete from api.ExecutionAssetCrossReference where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionAssetError where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionAssetResult where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeleteAssetResult where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedAssetType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedGroup where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedPredicate where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedRelationship where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDeletedRelationshipType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDiagramAsset where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionDiagramAssetField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionField where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionGroup where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionMetric where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionMetricMeasure where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionPredicate where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationship where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationshipError where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionRelationshipType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionResponsibilityRule where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+					delete from api.ExecutionResponsibilityType where executionid in (select ExecutionID from api.Execution e where [route] is not null and [route] != 'BULK' and DATEDIFF(day, e.CompletedOn, getutcdate()) > @numberOfDaysOlderThan)
+
+					-- finally delete the api.execution records themselves
+					delete from api.Execution where [route] is not null and [route] != 'BULK' and DATEDIFF(day, CompletedOn, getutcdate()) > @numberOfDaysOlderThan
+
+					COMMIT TRANSACTION 
+				END TRY
+				BEGIN CATCH
+							IF @@TRANCOUNT > 0
+							BEGIN
+									ROLLBACK TRANSACTION ApiDeleteSavePoint; -- rollback to MySavePoint
+							END
+					END CATCH
+			end
 		]]>
 		</sql>
 	</rollback>

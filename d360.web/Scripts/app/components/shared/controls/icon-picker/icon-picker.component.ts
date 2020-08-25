@@ -31,13 +31,14 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     @Input() disabled: boolean = false;
     @Input() required;
     @Input() style: any;
-    private isRequired = false;
+
     @Output() ngModelChange = new EventEmitter();
 
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
 
-    private categories: any = [];
+    protected isRequired = false;
+    protected categories: any = [];
 
     constructor(private iconService: IconService) {
         super();

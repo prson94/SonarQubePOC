@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { ObjectRelationshipCount } from '../../../models/relationship.model';
@@ -23,7 +23,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     readOnly: boolean = false;
     cardinalityShow: boolean = true;
-    hasRelationships: boolean;
+    hasRelationships: boolean = false;
     showAddRelationship: boolean = false;
     showEmptyRelationshipTypes: boolean = true;
     hideDelete: boolean = true;
@@ -33,7 +33,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     @ViewChild(DynamicRelationshipGridComponent, {static:false}) private relGrid: DynamicRelationshipGridComponent;
 
-    constructor(protected relationshipsService: RelationshipsService) {
+    constructor(protected relationshipsService: RelationshipsService, private changeDetectorRef: ChangeDetectorRef) {
         super();
     }
 
@@ -72,7 +72,9 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
                 this.isLoading = false;
                 this.updateCardinality();
-            });
+                this.changeDetectorRef.markForCheck();
+            }
+        );
     }
 
     export() {

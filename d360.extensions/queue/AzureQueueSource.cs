@@ -210,10 +210,10 @@ namespace d360.extensions.queue
 
             }
 
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
 
             foreach (var batch in batches)
-            {
-                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            {                
                 client.SendBatch(batch);
             }
         }
@@ -249,9 +249,10 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+
             foreach (var batch in batches)
-            {
-                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            {                
                 await client.SendBatchAsync(batch);
             }
         }
@@ -300,9 +301,10 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
-            foreach(var batch in batches)
-            {
-                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+
+            foreach (var batch in batches)
+            {                
                 client.SendBatch(batch);
             }
 
@@ -321,9 +323,10 @@ namespace d360.extensions.queue
                 batchSize = AddMessageToBatch(bm, batches, batchSize);
             }
 
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+
             foreach (var batch in batches)
-            {
-                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            {                
                 await client.SendBatchAsync(batch);
             }
 

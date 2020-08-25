@@ -258,6 +258,10 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOwnersGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
 
+                if (!validator.IsValidGetAssets(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid asset Uid in parameters!"));
+
+
                 if (!validator.IsValidRelationFilter(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
@@ -319,13 +323,13 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
-                        
+
                         bool isHierachyItem = false;
                         var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
                         bool.TryParse(value, out isHierachyItem);
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
 
-                        
+
                         SLDocument results;
                         if (isHierachyItem)
                         {
@@ -351,6 +355,11 @@ namespace d360.web.Controllers.V2
 
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+            catch (ArgumentException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", errorMessage));
             }
             catch (FilterExpressionParserException ex)
             {
@@ -640,6 +649,8 @@ namespace d360.web.Controllers.V2
 
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                
                 var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -775,6 +786,8 @@ namespace d360.web.Controllers.V2
 
                 //update affected display values
                 Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
 
                 var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
@@ -1931,6 +1944,7 @@ namespace d360.web.Controllers.V2
 
                 var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
 
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = type.ID });
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -2520,6 +2534,34 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
             }
 
+
+        }
+
+
+
+        /// <summary>
+        /// Retrieves an process diagram url for Task asset uid
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/diagramUrl"),
+            SwaggerConsumes("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+
+            var response = Company.GetDiagramUrlForDiagramAsset(assetUid);
+
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
     }

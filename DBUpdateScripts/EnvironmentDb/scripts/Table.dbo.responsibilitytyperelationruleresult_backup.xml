@@ -5,12 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.responsibilitytyperelationruleresult_backup-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.responsibilitytyperelationruleresult_backup-v2">
+    <comment>GOV-11826</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'responsibilitytyperelationruleresult_backup')
+			BEGIN
+				DROP TABLE [dbo].[responsibilitytyperelationruleresult_backup]
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'responsibilitytyperelationruleresult_backup')
 BEGIN
 	CREATE TABLE [dbo].[responsibilitytyperelationruleresult_backup](
@@ -63,11 +72,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRela
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationRuleResult_SecurityAssetSecurityAssetIDOverridenInclude] ON [dbo].[responsibilitytyperelationruleresult_backup] ( [SecurityAsset] ASC, [SecurityAssetID] ASC, [Overridden] ASC ) INCLUDE([RuleID],[ResponsibilityTypeID],[AssetID],[AssetTypeID],[Context],[ApplyToType],[PermissionsBitMask],[IsVisible],[OverrideID])
 END 
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -15,6 +15,7 @@ using System.Data.Entity;
 using System.Net;
 using System.Web.Mvc;
 using d360.core.helpers;
+using d360.core.queue;
 
 namespace d360.web.Controllers
 {
@@ -162,10 +163,14 @@ namespace d360.web.Controllers
                 var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
                 if (assetType == null) throw new NotFoundException("artifact type");
 
+                var assetTypeId = assetType.ID;
+
                 if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.ArtifactType, id);
+
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetTypeId });
 
                 dynamic custom = new
                 {
@@ -490,6 +495,7 @@ namespace d360.web.Controllers
                 }
 
                 Company.Delete(ot, at.ObjectID);
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = id });
 
                 dynamic custom = new
                 {

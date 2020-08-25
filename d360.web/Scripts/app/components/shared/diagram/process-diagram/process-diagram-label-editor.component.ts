@@ -43,7 +43,8 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.cdRef.detectChanges();
     }
     search(event) {
-        this.connectorLabelService.getAvailableLabels(this.assetUid, this.linkLabel)
+        var q = this.linkLabel ? this.linkLabel : '';
+        this.connectorLabelService.getAvailableLabels(q)
             .subscribe(res => {
                 this.labels = [];
                 res.forEach(x => {
@@ -60,6 +61,8 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     onBlur($event) {
+        if ($event && $event.relatedTarget && $event.relatedTarget.className.indexOf('clear-label'))
+            return;
         this.updateConnectorLabelToLink();
     }
     onKeyUp($event: KeyboardEvent) {
@@ -69,8 +72,13 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
                 el.blur();
             }, 50);
         }
+        if (this.linkLabel == '')
+            this.clearLabel();
     }
     clearLabel() {
+        if (this.createLabelSub)
+            this.createLabelSub.unsubscribe();
+
         this.linkLabel = '';
         this.linkDataChange.emit({ label: { uid: null, Value: null }, data: this.linkData });
     }

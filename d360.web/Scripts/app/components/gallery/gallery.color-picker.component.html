@@ -1,0 +1,128 @@
+﻿<div class="tile tile-detail">
+    <header>Color Picker Control</header>
+    <p>A color picker control that allows users to choose color(s) from a list.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic with colors from the DB</h4>
+        <div>
+            <ig-color-picker [colors]="defaultColors" (selectedColorChange)="onColorSelect($event,1)"></ig-color-picker>
+            <div>Chosen color: {{selectedColorBasic}}</div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Basic with colors user provided</h4>
+        <div>
+            <ig-color-picker [colors]="customColors" (selectedColorChange)="onColorSelect($event,2)"></ig-color-picker>
+            <div>Chosen color: {{selectedColorCustom}}</div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Color chosen passed in with colors from the DB</h4>
+        <div>
+            <ig-color-picker [colors]="defaultColors" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)"></ig-color-picker>
+            <div>Chosen color: {{selectedColorBasic2}}</div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Color chosen and disabled</h4>
+        <div>
+            <ig-color-picker [colors]="defaultColors" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)" [disabled]="true"></ig-color-picker>
+            <div>Chosen color: Sky(disabled)</div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab index</h4>
+        <div>
+            <p>
+                Click on the first input then tab using your tab keys(space bar to open dropdown).
+            </p>
+            <div class="row">
+                <input igInput type="text" tabindex="1" />
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <input igInput type="text" tabindex="2" />
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <ig-color-picker [colors]="defaultColors" [tabindex]="3" [selectedColor]="amodel"></ig-color-picker>
+                <div>tab index of 3</div>&nbsp;
+            </div>
+            <div class="row">
+                <input igInput type="text" tabindex="4" />
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Form Validation</h4>
+        <p>The color-picker supports Angular native form validation.  Validators such as required can be used and styles can be specified on the control to meet your needs.</p>
+        <form #form="ngForm">
+            <div class="row">
+                <ig-color-picker name="colorpicker" [colors]="defaultColors" [(ngModel)]="formVal" #colorpicker="ngModel" required [placeholder]="'required'" [styleClass]="colorpicker?.errors?.required ? 'required' : ''"></ig-color-picker>
+                <span *ngIf="colorpicker.invalid && (colorpicker.dirty || colorpicker.touched)" class="error-message">
+                    <span *ngIf="colorpicker.errors.required">
+                        Value required
+                    </span>
+                </span>
+            </div>
+            <div class="row">value: {{formVal}}</div>
+            <div class="row">
+                <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

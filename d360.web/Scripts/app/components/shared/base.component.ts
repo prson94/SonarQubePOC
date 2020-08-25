@@ -841,8 +841,7 @@ export class BaseComponent {
                 }
             }
             var area = "";
-
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets']
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets', 'Connector Labels']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
@@ -928,6 +927,7 @@ export class BaseComponent {
         if (this.breadcrumbsService) {
             currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
         }
+        
         var components: SecondaryNavItem[] = [];
         components.push(this.scoreSidebar);
         components.push(this.dashboardSidebar);
@@ -943,13 +943,14 @@ export class BaseComponent {
         components.push(this.fieldNav);
         components.push(this.ruleResultSidebar);
         components.push(this.governanceRolesSidebar);
+        components.push(this.connectorLabels);
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {
                 cmp.active = true;
             }
 
-            if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl)) {
+            if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl || currentComponentUrl.indexOf(x) == 0)) {
                 cmp.active = true;
             }
         });

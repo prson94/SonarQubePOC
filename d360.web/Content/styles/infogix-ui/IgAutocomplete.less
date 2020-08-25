@@ -1,0 +1,64 @@
+﻿
+@import './IgUiVariables.less';
+@import '../_Variables.less';
+
+.ig-autocomplete {
+    outline:none;
+    &.no-margin-btm {
+        margin-bottom: 0px;
+    }
+
+    &.big {
+        width: 60%;
+    }
+
+    &:enabled:focus:not(.ui-state-error) input {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+        border-color: @ig-field-border-color;
+    }
+
+    &:enabled:hover:not(.ui-state-error) input {
+        border-color: @ig-field-border-color;
+    }
+
+    &.ng-dirty.ng-invalid input {
+        background: @ig-lightblue-t5;
+        border-bottom-color: none;
+    }
+
+    &.ng-valid[required], .ng-valid.required input {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: none;
+    }
+
+    &.ng-invalid:not(form) input {
+        background: @ig-lightblue-t5;
+        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+        border-color: @ig-field-border-color;
+    }
+
+    .ui-autocomplete-loader {
+        margin-top: -14px;
+        margin-right: 6px;
+    }
+
+    .ui-autocomplete ul {
+        margin: 0px;
+        padding: 0px;
+    }
+
+    .ui-autocomplete ul li {
+        padding: 0px;
+        margin: 0px;
+        color: black;
+        border: 0px;
+        padding: 10px;
+    }
+
+    .ui-autocomplete ul li.ui-state-highlight {
+        background-color: @igx-lightblue-xlight;
+    }
+}

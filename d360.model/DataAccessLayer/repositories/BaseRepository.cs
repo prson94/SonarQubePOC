@@ -83,7 +83,11 @@ namespace d360.model.DataAccessLayer.repositories
                 }
 
                 if (f.Type == "Link")
+                { 
                     valueColumn = "Value";
+                    defaultVal = f.DefaultValue;
+                }
+                    
 
                 if (f.Type == "Score")
                     joinPrefix = "outer";
@@ -387,7 +391,7 @@ namespace d360.model.DataAccessLayer.repositories
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
                                 {lookupValueJoinCriteria}								
-                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
                                 cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH),
                                 [Value] = 

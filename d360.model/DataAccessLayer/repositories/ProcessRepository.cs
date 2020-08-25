@@ -161,6 +161,8 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            
+
             var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
                 select apd.Diagram  as json from asset a 
 	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
@@ -173,7 +175,7 @@ namespace d360.model.DataAccessLayer
 					JSON_VALUE(nda.value, '$.labelUid') AS LabelUid
                 FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
                 select links.*, CL.Value from links
-				 inner join ConnectorLabel CL on CL.uid = links.labeluid
+				 inner join ConnectorLabel CL on CL.uid = links.labeluid and CL.State <> 3
 				where labeluid is not null", new { assetUid }).ToList();
 
             foreach (var item in linksExpandedData)
@@ -206,6 +208,8 @@ namespace d360.model.DataAccessLayer
                 item.Add("category", "deleted-node");
             }
 
+            model.nodeDataArray = model.nodeDataArray.OrderBy(x => x.StepNo).ToList();
+
             return model;
         }
 
@@ -218,9 +222,9 @@ namespace d360.model.DataAccessLayer
 
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
-            execution.Method = "Process";
-            execution.ProcessingStartedOn = DateTime.UtcNow;
+
             Company.Add(execution);
+            Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var assetsTable = "api.ExecutionDiagramAsset";
             var fieldsTable = "api.ExecutionDiagramAssetField";

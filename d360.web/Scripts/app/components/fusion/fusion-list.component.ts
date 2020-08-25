@@ -11,7 +11,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-fusion-list',        
     template: ` 
-                    <div class="row" *ngIf="!showTechnicalMappings">
+                    <div class="row">
                         <div class="col l6 s12">
                             <d3s-fusion-configuration></d3s-fusion-configuration>
                         </div>
@@ -29,18 +29,12 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             </div>
                         </div>
                     </div>
-                    <div class="row" *ngIf="showTechnicalMappings">
-                        <div class="col s12">   
-                            <d3s-fusion-technical-mappings></d3s-fusion-technical-mappings>
-                        </div>
-                    </div>
                 `
 })
 
 export class FusionListComponent extends BaseComponent implements OnInit, OnDestroy {
     results: any[] = [];
     result: any;
-    showTechnicalMappings = false;
     sub: any;
     
 
@@ -58,12 +52,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.clearSidebar();
-                //this.secondaryNavService.showItem(new SecondaryNavItem('Technical Mappings','technical'));
 
-                this.sub = this.secondaryNavService.rightSidebarClicked$.subscribe(s => {
-                    if (s.tag == 'technical')
-                        this.showTechnicalMappings = s.active
-                });
                 this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Fusion List');
                 this.secondaryNavService.showHeader(true);
             });

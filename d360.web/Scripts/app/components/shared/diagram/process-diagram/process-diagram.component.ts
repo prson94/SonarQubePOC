@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef, ViewEncapsulation } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -9,16 +9,19 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
-import { Action } from 'rxjs/internal/scheduler/Action';
 import { HeaderActions } from '../../../../models/header.model';
+import { Location } from '@angular/common';
+import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
 
 @Component({
     selector: 'd3s-process-diagram',
     templateUrl: './process-diagram.component.html',
+    styleUrls: ['process-diagram.component.less'],
+    encapsulation: ViewEncapsulation.None,
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -29,6 +32,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
+
+    public viewType: string = 'diagram';
+
     public myDiagram: go.Diagram;
     private assetDetail: any;
 
@@ -50,12 +56,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
     private colors: any[] = [];
-    private diagramOriginalPosition: any;
+    private diagramOriginalPosition: any = null;
 
     private isLoaded = false;
     public isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
-    private isCanvasEmpty: boolean = true;
+    public isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
     private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
@@ -77,10 +83,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private initialActions = new HeaderActions();
 
+    private focusKey: string = '';
 
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
+
+    @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
+
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -88,9 +98,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         private headerActionService: HeaderActionsService,
         private processService: ProcessService,
         public cdRef: ChangeDetectorRef,
-        private router: Router,
+        private route: ActivatedRoute,
         private renderer: Renderer2,
-        public dynEditorService: DynEditorService
+        public dynEditorService: DynEditorService,
+        private location: Location
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -99,6 +110,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
     ngOnInit() {
+
+        this.route.params.subscribe(params => {
+            this.focusKey = params['focusKey'];
+            if (this.focusKey) {
+                let url: string = `/sidebar/visualization/browser/${params['assetUid']}/${params['diagramType']}`;
+                this.location.replaceState(url);
+                this.isInfoPanelOpened = true;
+            }
+        });
+
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
@@ -113,7 +134,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
 
-                var nodeHeight = 160;
+                var nodeHeight = 130;
                 var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
                 this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
@@ -134,7 +155,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 140) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 115) + 'px';
         else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
@@ -147,7 +168,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             var diagramPlaceholderWidth = document.getElementById('process-diagram-placeholder').getBoundingClientRect().width;
             this.diagramRef.nativeElement.style.width = diagramPlaceholderWidth + 'px';
             setTimeout(() => {
-                this.myDiagram.redraw();
+                if (this.myDiagram)
+                    this.myDiagram.redraw();
             }, 100);
         }
         this.cdRef.detectChanges();
@@ -188,7 +210,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             else {
                 this.selectedLinkData = null;
             }
-            this.saveState.emit(this.isCurrentStateSaved());
+            if (this.isDiagramLoaded && this.isEditMode)
+                this.saveState.emit(this.isCurrentStateSaved());
         }
 
         if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
@@ -238,7 +261,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram.isReadOnly) {
             this.myDiagram.toolManager.textEditingTool.doCancel();
         }
-        if (this.isEditMode && !this.isPalleteLoaded) {
+        if (this.viewType == 'diagram' && this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
 
@@ -354,6 +377,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     allowCopy: false,
                     allowUndo: false
                 });
+
         this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
@@ -378,12 +402,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         });
 
         var self = this;
-        this.myDiagram.addDiagramListener("InitialLayoutCompleted", function (e: go.DiagramEvent) {
+        this.myDiagram.addDiagramListener("ViewportBoundsChanged", function (e: go.DiagramEvent) {
             if (self.diagramOriginalPosition) {
-                e.diagram.position = self.diagramOriginalPosition;
+                var rect = self.diagramOriginalPosition as go.Rect;
+                e.diagram.scrollToRect(rect);
                 self.diagramOriginalPosition = null;
             }
         });
+
+        this.myDiagram.addDiagramListener("BackgroundSingleClicked", function (e: go.DiagramEvent) {
+            if (self.listView) {
+                self.listView.nodeSelectedTrigger(null);
+            }
+        });
+
         var model = this.myDiagram.model as go.GraphLinksModel;
 
         model.linkFromPortIdProperty = "fromPort";
@@ -523,6 +555,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private areNamesUnique: boolean = true;
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
+        this.diagramOriginalPosition = this.myDiagram.viewportBounds.copy();
         this.processDiagramBase64 = this.myDiagram.makeImageData({
             scale: 1,
             maxSize: new go.Size(Infinity, Infinity)
@@ -572,7 +605,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
-        this.diagramOriginalPosition = JSON.parse(JSON.stringify(this.myDiagram.toolManager.panningTool.originalPosition));
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
@@ -612,8 +644,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                 }
 
+                this.handleFocusKey();
+
                 this.cdRef.detectChanges();
             });
+    }
+
+    private handleFocusKey() {
+
+        var part = this.myDiagram.findPartForKey(this.focusKey);
+        if (part) {
+            this.myDiagram.select(part);
+
+            this.myDiagram.centerRect(part.actualBounds);
+        }
+        this.focusKey = undefined;
     }
 
     private updateLinkFromForm(formData) {
@@ -633,18 +678,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             var self = this;
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
-                for (var propertyName in formData) {
-                    var currentPropValue = data[propertyName];
-                    var updatedPropValue = formData[propertyName];
+                if (data) {
+                    for (var propertyName in formData) {
+                        var currentPropValue = data[propertyName];
+                        var updatedPropValue = formData[propertyName];
 
-                    var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
+                        var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
 
-                    if (propertyName != 'key' && !bothEmpty) {
-                        m.set(data, propertyName, formData[propertyName].toString());
+                        if (propertyName != 'key' && !bothEmpty) {
+                            m.set(data, propertyName, formData[propertyName].toString());
+                        }
                     }
+                    m.set(data, 'refItemColor', self.getNodeColor(data));
+                    m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
                 }
-                m.set(data, 'refItemColor', self.getNodeColor(data));
-                m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
             }, 'update_model');
         } catch (e) {
             console.log(e);
@@ -652,7 +699,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.myDiagram && this.myDiagram.nodes) {
             this.nodeNames = [];
             this.myDiagram.nodes.each(node => {
-                this.nodeNames.push(node.data['Name']);
+                if (node && node.data && node.data['Name'])
+                    this.nodeNames.push(node.data['Name']);
             })
         }
     }
@@ -700,6 +748,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
+        if (this.listView) {
+            this.listView.nodeSelectedTrigger(node.data);
+        }
+
         this.cdRef.detectChanges();
     }
 
@@ -773,6 +825,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             {
                                 wrappingColumn: 2,
                                 arrangement: go.GridLayout.LeftToRight,
+                                cellSize: new go.Size(80, NaN)
 
                             }
                         ),
@@ -972,10 +1025,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 try {
                     this.myDiagram.model.commit(function (m) {
-
                         badges.forEach(asset => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
-                            m.set(data, 'relCount', asset.RelationshipCount.toString());
+                            if (data)
+                                m.set(data, 'relCount', asset.RelationshipCount.toString());
                         })
                     }, 'update_model_badge_data');
                 } catch (e) {
@@ -988,6 +1041,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.isErrorModalOpened = false;
         if (this.validationErrors) {
             this.selectFirstInvalidField();
+        }
+    }
+
+    public changeViewType(type: string) {
+        if (type == 'list') {
+            this.viewType = 'list';
+        }
+        else {
+            this.viewType = 'diagram';
         }
     }
 }

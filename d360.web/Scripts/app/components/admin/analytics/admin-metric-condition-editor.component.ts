@@ -5,7 +5,6 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
 import { SelectItem } from 'primeng/api';
-import { forEach } from 'core-js/fn/dict';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -51,36 +50,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnInit() {
-        //Set defaults;
-        this.metricConditionEditorFieldTypes.forEach(ft => {
-            ft.Disabled = false;
-        });
         if (!this.conditionItems)
             this.conditionItems = [];
 
-        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeID }) : [];
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
         this.conditionsValid = true;
-        this.usedFieldTypes.forEach(i => {
-            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
-            if (ft) {
-                if (this.newCondition) {
-                    if (this.newCondition.ConditionFieldTypeID !== +i) {
-                        ft.Disabled = true; 
-                    }
-                }
-                else {
-                    ft.Disabled = true;
-                }
-            }
-        });
 
-        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.map((x) => { return { value: x.ID, label: x.Name, disabled: x.Disabled } });
+        this.checkSelectedFields();
+        
         this.load();
-    }
-
-    getLookupValues(condition: MetricAssetVersionConditionItemViewModel) {
-        return this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
     }
 
     load() {
@@ -109,6 +87,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 this.usedFieldTypes = [ ...this.usedFieldTypes ];//workaroud so the angular filter pipe detects changes
             }
         }
+        this.checkSelectedFields();
         this.ref.markForCheck();
     }
 
@@ -121,35 +100,29 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     selectFieldType(condition: MetricAssetVersionConditionItemViewModel) {
-       
+        
         if (condition.ConditionFieldTypeID) {
             let field = this.metricConditionEditorFieldTypes.find(f => f.ID === +condition.ConditionFieldTypeID); 
             if (field) {
                 condition.FieldTypeName = field.Name;
                 condition.FieldType = field;
-                if (!condition.Values) {
-                    condition.Values = [];
-                }
 
-                if (condition.Values.length > 0) {
-                    switch (field.Type) {
-                        case "Boolean":
-                            condition.SingleValue = (condition.Values[0].Value === 'true');
-                            break;
-                        case "Lookup":
-                            condition.SingleValue = (condition.Values[0].Value);
-                            break;
-                        case "Date":
-                        case "DateTime":
-                            if (condition.Values) {
-                                condition.SingleValue = new Date(condition.Values[0].Value as string);
-                            }
-                            break;
-                        default:
-                            condition.SingleValue = condition.Values[0].Value;
-                            break;
-                    }
-                }                
+                switch (field.Type) {
+                    case "Boolean":
+                        condition.SingleValue = null;
+                        break;
+                    case "Lookup":
+                        condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
+                        condition.SingleValue = null;
+                        break;
+                    case "Date":
+                    case "DateTime":
+                        condition.SingleValue = null;;
+                        break;
+                    default:
+                        condition.SingleValue = null;
+                        break;
+                }
             }
             let options = [];
             switch (field.Type) {
@@ -180,9 +153,33 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 let fieldIds = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
                 this.conditionsValid = !fieldIds.some((item, inx) => { return fieldIds.indexOf(item) != inx });
             }
+            this.checkSelectedFields();
 
             this.ref.markForCheck();
         }
+    }
+
+    checkSelectedFields() {
+        //Set defaults;
+        this.metricConditionEditorFieldTypes.forEach(ft => {
+            ft.Disabled = false;
+        });
+        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeID }) : [];
+        this.usedFieldTypes.forEach(i => {
+            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
+            if (ft) {
+                if (this.newCondition) {
+                    if (this.newCondition.ConditionFieldTypeID !== +i) {
+                        ft.Disabled = true;
+                    }
+                }
+                else {
+                    ft.Disabled = true;
+                }
+            }
+        });
+
+        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.map((x) => { return { value: x.ID, label: x.Name, disabled: x.Disabled } });
     }
 
     getLocaleDateString(): string {
@@ -198,27 +195,29 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             if (field) {
                 c.FieldTypeName = field.Name;
                 c.FieldType = field;
-
+                this.ref.markForCheck();
                 switch (field.Type) {
                     case 'Lookup':
                         if (field.Values) {
                             if (field.Values.length > 0) {
-                                if (c.Values) {
+                                if (c.Values && c.Values.length > 0) {
                                     if (c.Values[0].Value) {
                                         let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         if (valueModel) {
-                                            c.SingleValue = +c.Values[0].Value;
+                                            c.SingleValue = c.Values[0].Value;
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
                                 }
+                                c.lookupOptions = field.Values.map(x => { return { label: x.Text, value: x.Value } });
+                                this.ref.markForCheck();
                             }
                         }
                         break;
                     case 'Date':
                     case 'DateTime':
-                        if (c.Values) {
+                        if (c.Values && c.Values.length > 0) {
                             if (c.Values[0].Value) {
                                 c.SingleValue = new Date(c.Values[0].Value);
                                 c.ValuesText = c.Values[0].Value;
@@ -226,7 +225,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         }
                         break;
                     default:
-                        if (c.Values) {
+                        if (c.Values && c.Values.length > 0) {
                             if (c.Values[0].Value) {
                                 c.SingleValue = c.Values[0].Value;
                                 c.ValuesText = c.Values[0].Value;
@@ -330,9 +329,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             this.newCondition.Operator = "eq";
             this.selectFieldType(this.newCondition);
             this.conditionItems.push({ ...this.newCondition });
-            this.usedFieldTypes = [...this.usedFieldTypes, this.newCondition.ConditionFieldTypeID];
-            
             this.newCondition = new MetricAssetVersionConditionItemViewModel();
+
+            this.checkSelectedFields();
+            this.formatConditions();
             
             this.ref.markForCheck();
         }

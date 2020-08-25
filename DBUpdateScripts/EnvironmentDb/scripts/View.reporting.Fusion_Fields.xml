@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Fusion_Fields-v1">
-    <sql dbms="mssql"
+  <changeSet author="Puneet Gupta" id="View.reporting.Fusion_Fields-v2">
+    <comment>GOV-11735</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+			drop view if exists [reporting].[Fusion_Fields];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
  CREATE OR ALTER VIEW [reporting].[Fusion_Fields] AS
     select  O.ID, 
 			F.AssetID,
@@ -24,11 +30,6 @@
 	from	FusionAttribute O 
 			inner join Field F on F.ObjectType = 'FusionAttribute' and F.ObjectID = O.ID
 			inner join FieldType FT on FT.ID = F.FieldTypeID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

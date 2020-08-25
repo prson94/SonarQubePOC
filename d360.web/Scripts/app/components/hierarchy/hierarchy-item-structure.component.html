@@ -1,8 +1,6 @@
 ﻿<div class="row">
-    <div class="col s12">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
-        <div class="tile tile-detail"
-             *ngIf="!isLoading">
+    <div class="col s12">        
+        <div class="tile tile-detail">
             <header *ngIf="!showDelete && !showEditor">
                 &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
                                          [hasExport]="true"
@@ -13,6 +11,10 @@
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
             <p-treeTable #treeTable
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
                          *ngIf="!showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
@@ -20,7 +22,11 @@
                          styleClass="breadcrumbTree treetable"
                          [style]="{'line-height':'25px'}"
                          [globalFilterFields]="filterColumns"
-                         (onFilter)="expandNodes()">
+                         (onFilter)="expandNodes()"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"  
+                         dataKey="ID"
+                         >
                 <ng-template pTemplate="caption">
                     <div>
                         <input type="text" #inputBox pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
@@ -80,6 +86,11 @@
                             </div>
                         </td>
                     </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="treeTable.first"
+                                          [rows]="treeTable.rows"
+                                          [totalRecords]="treeTable.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-treeTable>
             <d3s-asset-delete-editor *ngIf="showDelete"

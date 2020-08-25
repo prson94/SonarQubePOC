@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.metrics.RollupPath-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath')
+BEGIN
+	CREATE TABLE [metrics].[RollupPath](
+		[Uid] uniqueidentifier NOT NULL,
+		[ScoreType] int not null,
+		[State] int NOT NULL,
+		[PathHash] varchar(50) not null,
+		--[Path] as metrics.CalculateRollupPathWrapper(Uid),
+		CONSTRAINT [PK_MetricRollupPath] PRIMARY KEY CLUSTERED ( [Uid] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [metrics].[RollupPath]
+		]]>
+	</rollback>
+  </changeSet> 
+
+  <changeSet author="Pappas" id="Table.metrics.RollupPath-v1.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
+BEGIN
+	alter table [metrics].[RollupPath] add AssetTypeID int null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RollupPath' AND COLUMN_NAME = 'AssetTypeID')
+BEGIN
+	ALTER TABLE [metrics].[RollupPath] DROP COLUMN [AssetTypeID]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+
+</databaseChangeLog>

@@ -147,7 +147,7 @@ namespace d360.web.Controllers
                                             {
                                                 ro.DataType = "color";
                                                 var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({(detail != null ? detail.AssetID : 0)}) ").FirstOrDefault();
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).FirstOrDefault();
                                                 var obj = JObject.Parse(colorData ?? "{}");
 
                                                 ro.Values.Add(new ReadOnlyFieldValue
@@ -245,7 +245,7 @@ namespace d360.web.Controllers
                                                 var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
                                                 var detail = Company.GetObjectDetail(ft.LookupObjectType, val);
                                                 var otherAssetsHaveColor = Company.Assets.Any(x => x.AssetTypeID == detail.AssetTypeID && x.Color != null);
-                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({(detail != null ? detail.AssetID : 0)})").FirstOrDefault();
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).FirstOrDefault();
                                                 if (colorData != null || otherAssetsHaveColor)
                                                 {
                                                     JObject obj = null;
@@ -1589,12 +1589,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 join fusion.[rule] r on r.id = @ruleID and f.[object] = r.[objecttype] and f.objectid = r.objectid", new { ruleID });
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
-        }
-
-        [Route("fusion/technicalmapping")]
-        public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
-        {
-            return Company.Table<MapRuleItemDetail>();
         }
 
         #region Promotion
@@ -2993,7 +2987,7 @@ order by    Name
                                 cross apply STRING_SPLIT(F.Value, ',') SPF
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
-                                cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
+                                cross apply dbo.GetAssetColorJsonByColor(ACf.Color) ACJ
                                 cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
@@ -5897,7 +5891,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
 							SELECT flv.Text as name,
 							 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
 							from Asset A 
-                            outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                            outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 							where A.Object = flv.LookupObjectType and A.ObjectID = flv.Value 
 							FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
 						)colorJSON";

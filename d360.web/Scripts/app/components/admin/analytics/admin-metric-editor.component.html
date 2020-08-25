@@ -17,8 +17,8 @@
                             <div class="ig-input-label">
                                 Effective From
                             </div>
-                            <div (click)="doToggle($event,pc)" class="ig-input calendar" [ngClass]="{'required': !model.EffectiveDate}" >
-                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate" [baseZIndex]="20000" [(ngModel)]="model.EffectiveDate" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                            <div (click)="doToggle($event,pc)" class="ig-input calendar" [ngClass]="{'required': !model.EffectiveDate}" (keyup)="keyEvent($event)" >
+                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate | utcDate" [baseZIndex]="20000" [ngModel]="date" (ngModelChange)="date = $event" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
                         </div>
@@ -37,15 +37,16 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="input-spinner" [ngClass]="{'required': !displayWeight}" >
+                            <div class="input-spinner" [ngClass]="{'required': !displayWeight}">
                                 <p-spinner #weight tabindex="4" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
                             </div>
                         </div>
                     </div>
                     <div *ngIf="verb == 'Edit'" class="mesure-info">
                         <i class="fa fa-info-circle"></i>
-                        <span *ngIf="scoreData" class="measure-message">
-                            As scoring data has been collected against this measure (effective from {{maxScoreEffectiveDate | utcDate | date:'shortDate' }}),
+                        <span *ngIf="scoreData
+                              " class="measure-message">
+                            As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
                             any changes you make to this measure will result in a  new version being created, with a new effective date.
                         </span>
                         <span *ngIf="!scoreData" class="measure-message">

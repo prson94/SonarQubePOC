@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="View.dbo.ProcessExpandedData-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [dbo].[ProcessExpandedData] 
+AS
+select 
+ A.uid as DiagramAssetUid,
+ AT.uid as DiagramAssetTypeUid,
+ Json.FromUid,
+ Json.ToUid,
+ Json.LabelUid,
+ FAT.uid as 'FromAssetTypeUid',
+ TaT.uid as 'ToAssetTypeUid'
+from AssetProcessDiagram APD
+cross apply (SELECT *
+FROM OPENJSON(APD.Diagram,'$.linkDataArray')
+WITH (   
+            
+              FromUid uniqueidentifier '$.from',
+			  ToUid uniqueidentifier '$.to',
+              LabelUid uniqueidentifier '$.labelUid' 
+ ) 
+)Json
+inner join Asset A on A.ID = APD.AssetID
+inner join AssetType AT on AT.id = A.AssetTypeId
+inner join Asset F on F.Uid = JSON.FromUid
+inner join AssetType FAT on FAT.ID = F.AssetTypeID
+inner join Asset T on T.Uid = JSON.ToUid
+inner join AssetType TAT on TAT.ID = T.AssetTypeID
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -5,6 +5,8 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service'; 
+import { Spinner } from 'primeng/spinner';
+import { Calendar } from 'primeng/calendar';
 
 
 @Component({
@@ -28,6 +30,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Output() onSave = new EventEmitter();
 
     @ViewChild('weight', { static: false }) weightInput: ElementRef;
+    @ViewChild('pc', { static: false }) calendar: Calendar;
 
     verb = "Add";
     child = "";
@@ -40,6 +43,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
     currentEffectiveDate: Date;
+    private date: Date;
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. ' 
                                 + 'Only those assets matching the conditions will be scored using these measures. '
                                 + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
@@ -65,7 +69,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     ngOnInit() {
         this.load();
     }
-
+    
     load() {
         if (!this.model)
             this.model = new MetricAssetViewModel();
@@ -76,7 +80,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (this.uid) {
             this.verb = "Edit"
             if (this.model.EffectiveDate !== null) {
-                this.model.EffectiveDate = new Date(this.model.EffectiveDate);
+                this.date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = this.model.EffectiveDate;
             }
 
@@ -143,7 +147,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
             }
 
-            if (this.model.EffectiveDate === null)
+            if (this.date === null)
                 valid = false;
 
             if (!this.isExternallyCalculated) {
@@ -181,9 +185,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         var prevDate: string | Date = null;
         var previousConditions = [...this.model.ConditionGroups];
 
-        if (this.model.EffectiveDate !== null) {
-            prevDate = this.model.EffectiveDate;
-            let d = new Date(this.model.EffectiveDate);
+        if (this.date !== null) {
+            prevDate = this.date;
+            let d = new Date(this.date);
             let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate;
@@ -219,27 +223,43 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (r) {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-                    this.onSave.emit(); 
+                    this.onSave.emit(this.model.Name); 
                 }
                 else {
-                    this.model.EffectiveDate = prevDate as Date;
+                    this.date = prevDate as Date;
                     this.model.ConditionGroups = [...previousConditions];
                     this.isLoading = false;
                 }
             });
     }
 
+    keyEvent(evt: KeyboardEvent) {
+        if (evt && evt.keyCode == 9) {
+            if (this.weightInput) {
+                let spinner = <any>this.weightInput as Spinner;
+                if (this.calendar && this.calendar.overlayVisible) {
+                    spinner.focus = true;
+                    spinner.el.nativeElement.firstChild.firstChild.focus();
+                    this.calendar.toggle();
+                }
+                    
+            }
+        }
+    }
+
     cancel() {
-        this.model = null;
         this.load();
-        this.onCancel.emit();
+        this.onCancel.emit(this.model.Name);
+        this.model = null;
     }
 
     getUTCDate(date: Date): Date {
         date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         return date;
     }
-
+    private utcToLocal(date: Date): Date {
+        return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+    }
     getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
     }

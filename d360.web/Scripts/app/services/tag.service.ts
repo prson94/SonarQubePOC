@@ -1,6 +1,6 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType, TagApiModel } from '../models/tag.model';
+import { Tag, TagType, TagApiModel, TagPermissionItem } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
@@ -213,5 +213,12 @@ export class TagService extends BaseObservableService {
         return obs;
     }
 
+    getTagPermissions(assetUid: string): Observable<TagPermissionItem[]> {
+        let url = `api/v2/tags/permissions/${assetUid}`;
+
+        return this.http.get(url)
+            .pipe(map(response => <TagPermissionItem[]>response),
+                catchError(err => this.handleError(err)));
+    }
 
 }
