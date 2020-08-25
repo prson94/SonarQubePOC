@@ -8,7 +8,7 @@ import {
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
-    Direction    
+    Direction
 } from '../../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -1004,6 +1004,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (fieldname == '*') {
             this.validationErrors.clear();
         }
+      
         if (fieldname == '*' || fieldname == "NameTaken") {
             this.setValidation('name_already_taken', 'API Name already in use.', (() => {
                 if (this.model.FieldType.Name && this.actionName == 'Add') {
@@ -1017,6 +1018,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return false;
                 }
 
+            })());
+        }
+
+        if (fieldname == '*' || fieldname == 'NameTaken') {
+            this.setValidation('name_already_taken', 'API Name not allowed.', (() => {
+                if (this.model.FieldType.Name) {
+                    var dissallowedFields: string[] = ['id', 'uid', 'assetid', 'assetuid', 'assettypeid', 'assettypeuid', 'createdon', 'updatedon', 'parentdisplayname', 'parentassetuid', 'keypath'];
+                    if (this.objectType === 'IntersectType') {
+                        dissallowedFields.push('source');
+                    }
+
+                    if (dissallowedFields.some(x => x == this.model.FieldType.Name.toLowerCase().trim())) {
+                        return true;
+                    }
+                    return false;
+                }
             })());
         }
 
@@ -1198,7 +1215,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
         }
-        
+
         if (this.currentType == 'Lookup') {
             this.setValidation('AllowAllLabel_text', 'Please specify a label for ALL Value Selection.', (() => {
                 if (this.model.FieldType.Type[this.currentType].AllowAllValue) {
@@ -1354,7 +1371,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
-                RelationType: ComplexLookupRelationType[x.ReferenceType], 
+                RelationType: ComplexLookupRelationType[x.ReferenceType],
                 Direction: Direction[x.Direction]
             };
 
