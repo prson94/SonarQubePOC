@@ -758,7 +758,9 @@
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
     <Content Include="Content\styles\infogix-ui\IgDatePicker.less" />
+    <Content Include="Scripts\app\components\shared\controls\date\date.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
@@ -895,6 +897,7 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
