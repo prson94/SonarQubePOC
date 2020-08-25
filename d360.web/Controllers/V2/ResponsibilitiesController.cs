@@ -713,6 +713,112 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.  By default 5 assets are returned at a time the max page size is 250 assets.  Please keep in mind that assets with lots of owners will impact response time / size.
+        /// </summary>   
+        /// <permission>Admin or Ownership read required</permission>
+        /// <returns>Returns a list of assets and there corresponding ownership information.</returns>
+        [
+            HttpGet,
+            Route("assignments/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(AssetResponsibilityItemModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetOwnershipOfAsset(Guid assetUid)
+        {
+            var prefix = "Responsibilities.GetOwnershipOfAsset => ";
+            var errorMessage = "";
+
+            try
+            {
+
+                
+                var queryParams = Request.GetQueryNameValuePairs();
+                AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, "", "", assetUid.ToString(), "", 10, 1, 250);
+
+
+                var responsibilityUidFilter = "";
+                var assigneeUidFilter = "";
+                var assetUidFilter = "";
+                var assetTypeUidFilter = "";
+                string pageSize = "5";
+                string pageNum = "1";
+                int _pageSize;
+                int _pageNum;
+                var timeout = 300;
+
+
+                queryParams.ToList().ForEach(q =>
+                {
+                    var key = q.Key.ToLower();
+
+                    if (key.StartsWith("_"))
+                    {
+                        switch (key)
+                        {
+                            case "_pagesize":
+                                pageSize = q.Value;
+                                break;
+                            case "_pagenum":
+                                pageNum = q.Value;
+                                break;
+                            case "_responsibilitytypeuid":
+                                responsibilityUidFilter = q.Value;
+                                break;
+                            case "_assigneeuid":
+                                assigneeUidFilter = q.Value;
+                                break;
+                            case "_assettypeuid":
+                                assetTypeUidFilter = q.Value;
+                                break;
+                            case "_assetuid":
+                                assetUidFilter = q.Value;
+                                break;
+                            case "_timeout":
+                                if (int.TryParse(q.Value, out timeout))
+                                {
+                                    if (timeout < 1) timeout = 30; // min timeout
+                                }
+                                break;
+                        }
+                    }
+                });
+
+                Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+                string isValid = isPageSizeAndNumValid(pageParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, isValid);
+                }
+
+                //validation dont allow assigneeuid filter across entire universe
+
+                if (!string.IsNullOrEmpty(assigneeUidFilter) && string.IsNullOrEmpty(assetTypeUidFilter) && string.IsNullOrEmpty(assetUidFilter))
+                {
+                    return ReturnApiError(HttpStatusCode.InternalServerError, "In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified.");
+                }
+
+                int.TryParse(pageSize, out _pageSize);
+                int.TryParse(pageNum, out _pageNum);
+
+                //AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, _pageSize, _pageNum, timeout);
+
+                return Request.CreateResponse(HttpStatusCode.OK, res);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Inserts responsibility types of a given responsibility types list.
         /// </summary>
         /// <param name="responsibilityTypes">The list of responsibility types for insertion.</param>
