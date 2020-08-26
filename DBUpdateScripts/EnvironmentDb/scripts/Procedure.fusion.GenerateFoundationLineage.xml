@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.fusion.GenerateFoundationLineage-v1">
+  <changeSet author="sDooley" id="Procedure.fusion.GenerateFoundationLineage-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP PROCEDURE IF EXISTS [fusion].[GenerateFoundationLineage];  
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [fusion].[GenerateFoundationLineage]
 	@fusionId int
 as
@@ -65,12 +70,6 @@ begin
 											and M.Object = T.Object and M.ObjectID = T.ObjectID
 		where	M.IntersectTypeID is not null 
 				and T.ID is null;
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
