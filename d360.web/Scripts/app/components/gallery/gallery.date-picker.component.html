@@ -1,6 +1,6 @@
 ﻿<div class="tile tile-detail">
-    <header>Text Area Directive</header>
-    <p>Angular directive that can be applied to Html input controls.</p>
+    <header>Date Field</header>
+    <p>Angular control that allows picking dates.</p>
 </div>
 
 <div class="tile tile-detail">
@@ -13,31 +13,49 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
-            <textarea igTextArea></textarea>
-        </div>
-    </div>
-    <div class="gallery-section">
-        <h4>Large (624px)</h4>
-        <div>
-            <textarea igTextArea class="ig-field-width-large"></textarea>
+            <ig-date></ig-date>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Required</h4>
         <div>
-            <textarea igTextArea required></textarea>
+            <ig-date required="true"></ig-date>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Disabled</h4>
         <div>
-            <textarea igTextArea disabled></textarea>
+            <ig-date disabled="true"></ig-date>
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Resizeable</h4>
+        <h4>Binding</h4>
         <div>
-            <textarea igTextArea class="resize"></textarea>
+            <ig-date [(ngModel)]="val"></ig-date>
+        </div>
+        <div>
+            Selected value: {{val}}
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Invalid</h4>
+        <div>
+            Form driven validation. Choose a date after today.
+        </div>
+        <div>
+            <form *ngIf="form != null" [formGroup]="form">
+                <div class="row">
+                    <ig-date name="myDate"
+                             [form]="form"
+                             errorLabel="Please choose a future date"
+                             required="true">
+                    </ig-date>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -64,3 +82,25 @@
     </p-table>
 </div>
 
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

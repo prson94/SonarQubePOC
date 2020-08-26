@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IconPickerModule } from '../shared/controls/icon-picker/icon-picker.component';
 import { SwitchModule } from '../shared/controls/switch/switch'
 import { CoreModule } from '../shared/core.module';
+import { IgDateModule } from '../shared/controls/date/date';
 
 
 import { GalleryComponent } from './gallery.component';
@@ -40,6 +41,7 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         RouterModule,
         CoreModule,
         FormsModule,
+        ReactiveFormsModule,
 
         GalleryRoutingModule,
 
@@ -47,7 +49,7 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         IconPickerModule,
         TagPickerModule,
         IgColorPickerModule,
-        
+        IgDateModule,
 
         TableModule,
         TooltipModule,

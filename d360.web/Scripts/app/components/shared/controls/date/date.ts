@@ -10,6 +10,8 @@
     ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CalendarModule } from 'primeng/calendar';
+import { FormsModule, ReactiveFormsModule, FormGroup, AbstractControl } from '@angular/forms';
 
 
 @Component({
@@ -22,6 +24,7 @@ import { CommonModule } from '@angular/common';
 export class IgDate implements OnInit  {        
     @Input() ngModel: Date;
     @Input() style: string;
+    @Input() errorLabel: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;
     @Input() inputStyleClass: string;
@@ -33,8 +36,11 @@ export class IgDate implements OnInit  {
     @Input() maxDate: Date;
     @Input() dateFormat: string = "mm/dd/yy";
     @Input() name: string;
+    @Input() label: string;
+    @Input() form: FormGroup;
 
     @Output() ngModelChange = new EventEmitter<Date>()
+    protected formControl: AbstractControl;
 
     constructor(
         protected ref: ChangeDetectorRef
@@ -43,19 +49,42 @@ export class IgDate implements OnInit  {
     }
     
     ngOnInit(): void {        
-
+        this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
     }
 
     get getStyleClass(): string {
         return this.styleClass == null ? 'ig-date' : this.styleClass + ' ig-date';
     }
 
+    get getInputStyleClass(): string {
+        return this.inputStyleClass == null ? 'ig-date ig-input' : this.inputStyleClass + ' ig-date ig-input';
+
+    }
+
+    get formControlError(): boolean {
+        if (this.form != null && this.form.contains(this.name)) {
+            let control = this.form.get(this.name);
+            return (!control.valid && control.dirty && control.touched);
+        }
+
+        return false;
+
+    }
 }
 
 @NgModule({
-    imports: [CommonModule],
-    declarations: [IgDate],
-    exports: [IgDate]
+    imports: [
+        CommonModule,
+        CalendarModule,
+        FormsModule,
+        ReactiveFormsModule,
+    ],
+    declarations: [
+        IgDate
+    ],
+    exports: [
+        IgDate
+    ],
 })
 
 export class IgDateModule { }
