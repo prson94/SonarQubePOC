@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, OnInit } from '@angular/core';
+﻿import { Component, Input, ElementRef } from '@angular/core';
 import { TagService } from '../../../services/tag.service';
 
 
@@ -15,7 +15,8 @@ export class TagUsageInfoBox {
 
     private isTooltipVisibe: boolean = false;
     private isMouseOnTooltip: boolean = false;
-    constructor(private tagsService: TagService) {
+
+    constructor(private tagsService: TagService, private elRef: ElementRef) {
 
     }
 
@@ -51,6 +52,14 @@ export class TagUsageInfoBox {
 
         if (!this.isMouseOnTooltip)
             this.isTooltipVisibe = false;
+    }
+
+    private getTop() {
+        if (this.elRef) {
+            var box = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect();
+            return box.top;
+        }
+        return 0;
     }
 }
 
