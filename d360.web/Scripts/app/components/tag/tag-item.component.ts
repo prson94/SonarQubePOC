@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -14,7 +14,6 @@ import { TagService } from '../../services/tag.service';
 import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
-import { Permission } from '../../models/responsibility-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 
 
@@ -181,7 +180,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     formatValue(item: TagDetail) {
-        return item.AssetType.replace(' ', ` <i class='fa fa-angle-right'></i> `);
+        return item.AssetType.replace(':', ` <i class='fa fa-angle-right'></i> `);
     }
 
     openTagPage(item: TagItem) {

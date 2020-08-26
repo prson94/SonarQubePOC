@@ -339,6 +339,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         public List<AssetTagList> GetAssetsPathForTag(Guid tagUid)
         {
             string sql = @"select D.DisplayValue ,
+                        A.uid,
 						AST.Object,
 						A.ObjectID as AssetId,
 						AST.ObjectID as AssetTypeId,
@@ -379,7 +380,12 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Rule} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/quality/rule/{item.AssetTypeId}/{item.AssetId}";
                         break;
+                    case "TaskType":
+                        atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Task} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Url = companyContext.GetDiagramUrlForDiagramAsset(item.uid);
+                        break;
                 }
+
             }
 
             return ret;
@@ -744,6 +750,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
 							WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
 							WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
+							WHEN AST.Object = 'TaskType' THEN '{CommonNames.AssetTypeClass_Task.CleanForSql()} : '
 							ELSE ''
 						END + AST.Name AS AssetType, 
                         A.Object,

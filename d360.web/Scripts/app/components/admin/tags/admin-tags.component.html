@@ -101,7 +101,7 @@
                             <table class="table-borderless table">
                                 <tr *ngFor="let t of selected">
                                     <td>{{t.Value}}</td>
-                                    <td *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
+                                    <td style="width:160px;" *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
                                 </tr>
                             </table>
                         </div>
