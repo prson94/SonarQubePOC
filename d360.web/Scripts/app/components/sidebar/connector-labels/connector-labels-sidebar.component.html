@@ -69,6 +69,7 @@
                     <div class="err-message">{{isInErrorMessage}}</div>
                 </div>
                 <d3s-connector-label-form [label]="selected"
+                                          [isSaving]="isSaving"
                                           (onSave)="saveLabel($event)"
                                           (onCancel)="closeEditor()"
                                           [isVisible]="showEditor">
