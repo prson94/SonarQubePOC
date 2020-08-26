@@ -16,6 +16,7 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using static d360.core.entities.Resource;
 using System.Web.Http.Description;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -379,6 +380,88 @@ for json path";
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix  }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Creates a workflow action type
+        /// </summary>
+        /// <param name="model">The information of the workflow action type to be created</param>
+        [
+            Route("type"),
+            HttpPost,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Workflow Action Type successfully created.", typeof(AddIssueTypeApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> AddWorkflowActionType(AddWorkFlowAction model)
+        {
+            var prefix = "Issues.AddWorkflowActionType => ";
+            AddIssueTypeApiModel result = new AddIssueTypeApiModel();
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+                if (model.Uid != null)
+                {
+                    var validUid = Company.IssueTypes.Any(i => i.uid == model.Uid);
+
+                    if (validUid)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Uid provided already in use."));
+                }
+
+                if (string.IsNullOrEmpty(model.Name.Trim()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty."));
+
+                if (model.Name.Trim().Length > 250)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length."));
+
+                var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
+
+                if (validName)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name"));
+
+                if (model.Uid == null || model.Uid == Guid.Empty)
+                    model.Uid = Guid.NewGuid();
+
+                var res = await Company.Database.Connection.ExecuteAsync(@" insert into [dbo].[IssueType]([Name],[Description],[IsSystem],[UpdatedOn]
+                ,[UpdatedBy],[uid]) values(@name,@desc,0,@date,@user,@uid)",
+                new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+
+
+                if (res > 0)
+                {
+                    var issueType = Company.IssueTypes.Where(i => i.Name.ToLower() == model.Name.ToLower()).FirstOrDefault();
+                    Company.Add(new FieldType
+                    {
+                        ObjectID = issueType.ID,
+                        Object = SystemObjects.IssueType.ToString(),
+                        IsListable = true,
+                        IsRequired = true,
+                        IsEditable = true,
+                        FriendlyName = "Description",
+                        Name = "ProblemDesc",
+                        SortOrder = 1,
+                        Type = DataType.Html.ToString()
+                    });
+                }
+
+                result.Uid = (Guid)model.Uid;
+                result.Message = "Action Type is created";
+                result.Success = true;
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
