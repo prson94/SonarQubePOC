@@ -32,6 +32,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     private deleteConfirmationText: string = '';
     private labelUsage: any;
     public theDeleteCallback: Function;
+    private isSaving: boolean = false;
 
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: ConnectorLabel;
@@ -108,6 +109,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.cdRef.markForCheck();
     }
     saveLabel(event) {
+        this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
             let arr: string[] = [];
             arr.push(event.item.uid);
@@ -138,6 +140,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.selected = event.item;
 
                 this.showEditor = false;
+                this.isSaving = false;
 
             });
     }
@@ -156,11 +159,12 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.selected = this.labels[0];
                 this.showConsolidate = false;
                 this.showEditor = false;
+                this.isSaving = false;
             }, err => {
                 this.showMessageForResult(this.messagesService, err);
                 this.showConsolidate = false;
                 this.showEditor = false;
-
+                this.isSaving = false;
             });
     }
 
