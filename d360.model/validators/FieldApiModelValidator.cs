@@ -133,6 +133,32 @@ namespace d360.model.validators
                     }
                 }
 
+                #region IsDisplayable   
+                if (field.Type.ComputedOwnershipLookup != null)
+                {
+                    if (field.Type.ComputedOwnershipLookup.IsDisplayable == false)
+                    { 
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Ownership Lookup.");
+                    }
+                }
+
+                if (field.Type.ComputedRelationshipLookup != null)
+                {
+                    if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Relation Lookup.");
+                    }
+                }
+
+                if (field.Type.ComputedRelationshipReferenceList != null)
+                {
+                    if (field.Type.ComputedRelationshipReferenceList.IsDisplayable == false)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Reference Item List from Relationship.");
+                    }
+                }
+                #endregion
+
                 if (field.Type.JsonElement != null)
                 {
                     if (existingFieldTypes != null)
