@@ -3458,20 +3458,23 @@ where   ExecutionID = @ExecutionID
                                     bulkCopy.WriteToServer(table);
                                 }
 
-                                using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                if (errorTable.Rows.Count > 0)
                                 {
-                                    // asset errors
-                                    bulkCopy.BatchSize = SqlBulkBatchSize;
-                                    bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-                                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                    {
+                                        // asset errors
+                                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                                        bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                        bulkCopy.ColumnMappings.Add("Message", "Message");
 
-                                    bulkCopy.WriteToServer(errorTable);
+                                        bulkCopy.WriteToServer(errorTable);
+                                    }
                                 }
 
                                 using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
