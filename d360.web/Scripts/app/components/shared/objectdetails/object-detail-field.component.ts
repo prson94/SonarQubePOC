@@ -55,6 +55,12 @@ export class ObjectDetailFieldComponent {
             && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
     }
 
+    private get isAlreadyUTC(): boolean {
+        if (this.field && this.field.Value && this.field.Value.endsWith('Z'))
+            return true;
+        return false;
+    }
+
     private get fieldDataType(): string {
         if (this.field == null || this.field.DataType == null)
             return null;

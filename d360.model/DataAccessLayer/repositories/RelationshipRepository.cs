@@ -497,13 +497,12 @@ from	IntersectType I
             return companyContext.Any<Predicate>(i => i.UID == uid);
         }
 
-        public List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info)
+        public async Task<List<DatabaseBulkAssetResult>> GetBulkResults(ApiExecutionInfo info)
         {
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                var resultsJson = Storage.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
-                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+                results = await Storage.DeserializeJsonObjectFromBlobAsync<List<DatabaseBulkAssetResult>>(info.StorageFolder, info.ResponseFileName);
             }
             catch
             {

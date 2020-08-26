@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, AfterContentInit } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -7,7 +7,7 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
-    providers: [RelationshipsService],    
+    providers: [RelationshipsService],
     template: `
                 <header *ngIf="!showEditor && !showDelete">Relationship Types
                     <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
@@ -99,17 +99,17 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
                 <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipID]="selected?.Id" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>
-            `    
+            `
 })
 
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: RelationshipType[] = [];
-    
+
     @Input() filterToName: string;
 
     @Input() objectType: string;
     @Input() objectID: number;
-    
+
     @Input() selected: RelationshipType;
     @Output() selectedChange = new EventEmitter();
 
@@ -117,18 +117,27 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     showDelete: boolean = false;
     theDeleteCallback: Function;
     private gridStorageKey: string = "admin-relationships-grid";
-    constructor(private messagesService: MessagesObservableService, private relationshipsService: RelationshipsService) {   
-        super();     
+    constructor(private messagesService: MessagesObservableService,
+        private relationshipsService: RelationshipsService,
+        private cdRef: ChangeDetectorRef
+    ) {
+        super();
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 
-    ngOnInit() {        
+    ngOnInit() {
         this.getRelationships();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {        
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if ((changes['filterToName'] && changes['filterToName'].currentValue != changes['filterToName'].previousValue) || (changes['objectID'] && changes['objectID'].currentValue != changes['objectID'].previousValue)) {
             this.getRelationships();
+        }
+    }
+
+    private updateStorageKey() {
+        if (this.objectType && this.objectID) {
+            this.gridStorageKey = `admin-relationships-grid_${this.objectType}_${this.objectID}`;
         }
     }
 
@@ -159,6 +168,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     getRelationships() {
+        this.updateStorageKey();
         this.isLoading = true;
         if (this.objectID && this.objectType) {
             this.relationshipsService.getRelationshipTypesById(this.objectID, this.objectType)
@@ -196,6 +206,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
             if (gridData.filters && Object.keys(gridData.filters).filter(x => x != "global").length > 0)
                 this.showSimpleFilter = false;
+
+            this.cdRef.detectChanges();
         }
     }
 

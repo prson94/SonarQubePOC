@@ -1,6 +1,6 @@
 <div class="process-list-view" *ngIf="nodeArray">
     <div class="search">
-        <input igInput type="text" autocomplete="off" placeholder="Search..." name="search-filter" maxlength="250" (input)="dt.filterGlobal($event.target.value, 'contains')" />
+        <input igInput [(ngModel)]="searchValue" type="text" autocomplete="off" placeholder="Search..." name="search-filter" maxlength="250" (input)="dt.filterGlobal($event.target.value, 'contains')" />
         <i class="fa fa-search"></i>
     </div>
 
@@ -8,6 +8,7 @@
              [paginator]="true"
              [(selection)]="selected"
              dataKey="key"
+             [pageLinks]="3"
              selectionMode="multiple"
              (onHeaderCheckboxToggle)="toggleAll($event)"
              styleClass="process-table treetable"

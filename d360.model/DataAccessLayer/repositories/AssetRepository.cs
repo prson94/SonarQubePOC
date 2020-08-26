@@ -570,7 +570,7 @@ namespace d360.model.DataAccessLayer
                     }).ToList();
 
                 if (assetUids.Any(x => x == Guid.Empty))
-                    throw new Exception("Invalid asset Uid in parameters!");
+                    throw new ArgumentException("Invalid asset Uid in parameters!");
 
                 if (assetUids.Count > 0)
                 {
@@ -2682,7 +2682,7 @@ where	O.RowNum = 1";
             return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
         }
 
-        public dynamic GetExecutionStatusModel(Guid executionUid)
+        public async Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true)
         {
             ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
 
@@ -2694,15 +2694,20 @@ where	O.RowNum = 1";
             var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
             List<DatabaseBulkAssetResult> results = null;
-            try
+
+            if (includeResults)
             {
-                var resultsJson = StorageProvider.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
-                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+                try
+                {
+                    results = await StorageProvider.DeserializeJsonObjectFromBlobAsync<List<DatabaseBulkAssetResult>>(info.StorageFolder, info.ResponseFileName);
+                }
+                catch
+                {
+                }
             }
-            catch
-            {
-            }
+
             var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
+
             return new
             {
                 Total = dbExecutionItem.Total,

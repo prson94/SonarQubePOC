@@ -1031,6 +1031,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("executions/{executionUid:Guid}/status"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
@@ -1039,9 +1040,16 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Relationships.GetExecutionStatus => ";
             var errorMessage = "";
+            var summaryOnly = false;
+            var queryParams = Request.GetQueryNameValuePairs();
 
             try
             {
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "summaryonly"))
+                {
+                    bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
+                }
+
                 var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
 
                 if (dbExecutionItem == null)
@@ -1051,7 +1059,12 @@ namespace d360.web.Controllers.V2
 
                 var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
 
-                List<DatabaseBulkAssetResult> results = RelationshipRepository.GetBulkResults(info);
+                List<DatabaseBulkAssetResult> results = null;
+                
+                if (!summaryOnly)
+                {
+                    results = await RelationshipRepository.GetBulkResults(info);
+                }
 
                 var statusModel = new ApiExecutionStatusModel
                 {
