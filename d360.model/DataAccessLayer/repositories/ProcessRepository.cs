@@ -918,7 +918,7 @@ from #nodes n
 left join #links l on l.FromUid = n.AssetUid 	
 )
 select 
-cast(f1_step.FormattedValue as decimal(15,3)) as 'Step No',
+try_cast(f1_step.FormattedValue as decimal(15,3)) as 'Step No',
 f1_name.FormattedValue as 'Name',
 f1_gov.FormattedValue as 'Governance Role',
 case at1.FlowObjectType
@@ -928,7 +928,7 @@ case at1.FlowObjectType
                     end as 'Flow Object Type',
 at1.Name as 'Diagram Asset Type',
 CL.Value as 'Next Asset Connector Label',
-cast(f2_step.FormattedValue as decimal(15,3)) as 'Next Asset Step No',
+try_cast(f2_step.FormattedValue as decimal(15,3)) as 'Next Asset Step No',
 f2_name.FormattedValue as 'Next Asset Name',
 lower(a1.uid) as 'Asset UID',
 a1.id as 'Asset ID',
@@ -946,7 +946,7 @@ left join Asset a2 on a2.uid = l.ToUid
 left join FieldDetail f2_name on f2_name.Name = 'Name' and f2_name.AssetId = a2.id 
 left join FieldDetail f2_step on f2_step.Name = 'StepNo' and f2_step.AssetId = a2.id 
 left join ConnectorLabel CL on CL.uid = l.labeluid
-order by cast (f1_step.FormattedValue as decimal(15,3)) asc, f1_name.FormattedValue
+order by try_cast (f1_step.FormattedValue as decimal(15,3)) asc, f1_name.FormattedValue
 ";
 
             List<string> diagramFields = new List<string>() {
