@@ -685,6 +685,7 @@
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-details.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
