@@ -790,4 +790,10 @@ namespace d360.core.entities
         public Guid? ExternalKey { get; set; }
     }
 
+    public class FieldValidationFieldProperties
+    {
+        public bool ContainsColorField { get; set; }
+        public int JsonFieldCount { get; set; }
+    }
+
 }
