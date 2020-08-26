@@ -845,7 +845,8 @@ from	IntersectType I
 	                        [Object] varchar(20) not null,
 	                        [ObjectID] int not null,
 	                        [Subject] varchar(20) not null,
-	                        [SubjectID] int not null
+	                        [SubjectID] int not null,
+                            [Owner] varchar(100) null
                         )
 
                         create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([Object],[ObjectID],[Subject],[SubjectID])
@@ -853,13 +854,14 @@ from	IntersectType I
                          -- add intersect info into temp table
 
                          insert into #TempIntersectInfo
-	                        (IntersectUid, [Object],[ObjectID], [Subject], [SubjectID])
+	                        (IntersectUid, [Object],[ObjectID], [Subject], [SubjectID],[Owner])
                            select 
 	                        I.[UID],
 	                        I.[Object],
 	                        I.[ObjectID],
 	                        I.[Subject],
-	                        I.[SubjectID]
+	                        I.[SubjectID],
+                            I.[Owner]
                            from [intersect] I 
                            where I.IntersectTypeID = @intersectTypeID
                             Order by I.ID OFFSET @offset ROWS 
@@ -882,7 +884,7 @@ from	IntersectType I
 		                        asset a
 		                        INNER JOIN #TempIntersectInfo t ON a.[object] = t.[object] and a.[objectid] = t.[objectid];
 
-	                        select IntersectUid as RelationshipUid,ObjectUid,SubjectUid from #TempIntersectInfo
+	                        select IntersectUid as RelationshipUid,ObjectUid,SubjectUid,Owner from #TempIntersectInfo
 
 
                         end";
