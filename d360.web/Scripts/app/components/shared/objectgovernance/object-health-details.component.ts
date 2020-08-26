@@ -495,7 +495,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.loadDefinition();
     }
 
-    private chartInstance: Highcharts.ChartObject;
+    private chartInstance: Highcharts.Chart;
     getChartInstance(chartInstance) {
         this.chartInstance = chartInstance;
     }
