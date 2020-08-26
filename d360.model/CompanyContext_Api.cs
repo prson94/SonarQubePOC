@@ -1403,7 +1403,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     if (success)
                                     {
-                                        fieldValue = dtTest.ToString();
+                                        fieldValue = dtTest.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); ;
                                     }
                                     break;
                                 case "Decimal":
