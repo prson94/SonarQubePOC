@@ -409,29 +409,30 @@ for json path";
 
                 if (model.Uid != null)
                 {
-                    var validUid = Company.IssueTypes.Where(i => i.uid == model.Uid).FirstOrDefault();
+                    var validUid = Company.IssueTypes.Any(i => i.uid == model.Uid);
 
-                    if (validUid != null)
+                    if (validUid)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Uid provided already in use."));
                 }
 
-                if (string.IsNullOrEmpty(model.Name))
+                if (string.IsNullOrEmpty(model.Name.Trim()))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty."));
 
-                if (model.Name.Length > 250)
+                if (model.Name.Trim().Length > 250)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length."));
 
-                var validName = Company.IssueTypes.Where(i => i.Name.ToLower() == model.Name.ToLower()).FirstOrDefault();
+                var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower());
 
-                if (validName != null)
+                if (validName)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name"));
 
-                if (model.Uid == null)
+                if (model.Uid == null || model.Uid == Guid.Empty)
                     model.Uid = Guid.NewGuid();
 
                 var res = await Company.Database.Connection.ExecuteAsync(@" insert into [dbo].[IssueType]([Name],[Description],[IsSystem],[UpdatedOn]
-                ,[UpdatedBy],[uid]) values(@name,@desc,0,SYSDATETIME(),@user,@uid)",
-                new { name = model.Name, desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid });
+                ,[UpdatedBy],[uid]) values(@name,@desc,0,@date,@user,@uid)",
+                new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
+
 
                 if (res > 0)
                 {
