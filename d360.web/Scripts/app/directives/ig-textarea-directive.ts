@@ -23,7 +23,7 @@ export class TextAreaDirective implements AfterViewInit {
         if (this.required == null) {
             this.el.nativeElement.setAttribute("placeholder", "Optional");
         } else {
-            this.el.nativeElement.setAttribute("placeholder", "Value Required");
+            this.el.nativeElement.setAttribute("placeholder", "Value required");
             this.el.nativeElement.setAttribute("aria-required", true);
 
         }
