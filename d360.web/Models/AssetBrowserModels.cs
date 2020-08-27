@@ -47,6 +47,13 @@ namespace d360.web.Models
         public string backColor { get; set; }
     }
 
+    public class AddWorkFlowAction
+    {
+        public Nullable<Guid> Uid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+
     #endregion
 
     #region Asset

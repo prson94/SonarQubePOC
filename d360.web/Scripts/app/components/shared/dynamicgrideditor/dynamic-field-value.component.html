@@ -18,7 +18,8 @@
         </span>
     </span>
     <span *ngSwitchCase="'datetime'">
-        <span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span>
+        <span *ngIf="fieldValue && isDateUTC">{{fieldValue | date:'medium'}}</span>
+        <span *ngIf="fieldValue && !isDateUTC">{{fieldValue | utcDate | date:'medium'}}</span>
     </span>
     <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">

@@ -321,6 +321,8 @@ namespace d360.core.entities
 
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+        [DataMember]
+        public string Owner { get; set; }
     }
 
     [JsonArray]
@@ -365,7 +367,9 @@ namespace d360.core.entities
         public Guid? SubjectUid { get; set; }
 
         [DataMember]
-        public Guid? ObjectUid { get; set; }        
+        public Guid? ObjectUid { get; set; }
+        [DataMember]
+        public string Owner { get; set; }
     }
 
     public class RelationshipUidResult

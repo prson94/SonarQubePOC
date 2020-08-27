@@ -24,4 +24,16 @@ namespace d360.core.entities
         [DataMember]
         public bool IsSystem { get; set; }
     }
+
+    public class AddIssueTypeApiModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+
+        [DataMember]
+        public bool Success { get; set; }
+    }
 }
