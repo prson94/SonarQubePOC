@@ -4,7 +4,6 @@ using d360.extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.core.enums;
 using d360.model;
@@ -16,8 +15,7 @@ using Newtonsoft.Json;
 using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
-using DocumentFormat.OpenXml.Office.CustomUI;
-using Microsoft.ApplicationInsights;
+
 
 namespace d360.model.DataAccessLayer
 {
@@ -585,7 +583,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
             var sql = @"
                     drop table if exists #tbl
-                    create table #tbl ([Uid] uniqueidentifier, VersionUid uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date, Description nvarchar(500))
+                    create table #tbl ([Uid] uniqueidentifier, VersionUid uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date, Description nvarchar(4000))
                     
                     insert into #tbl 
                     	select	A.[Uid],
