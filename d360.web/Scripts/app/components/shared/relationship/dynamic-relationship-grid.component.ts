@@ -123,6 +123,15 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.relationshipAdded.emit({ count: result.length });
                 if (this.shouldShowEditor() && !forceEditorOpen) this.closeEditor();
                 this.isDataLoading = false;
+
+                //Update name fields to contain full path for table filtering
+                if (this.columns.some(x => x['apiName'] == 'Name')) {
+                    var nameField = this.columns.filter(x => x['apiName'] == 'Name')[0];
+
+                    this.relations.forEach(rel => {
+                        rel[nameField.datafield] = rel.Name;
+                    });
+                }
             },
                 () => { this.isDataLoading = false; });
     }
