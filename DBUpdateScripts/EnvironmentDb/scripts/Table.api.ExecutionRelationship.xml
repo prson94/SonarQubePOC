@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionRelationship-v1">
+  <changeSet author="TDuric" id="Table.api.ExecutionRelationship-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -23,6 +23,7 @@ BEGIN
 		[Object] [varchar](50) NULL,
 		[ObjectID] [int] NULL,
 		[IntersectID] [int] NULL,
+		[Owner] [nvarchar](100) NULL,
 		[Message] [nvarchar](2500) NULL,
 		[Success] [bit] NULL,
 		[IsNew] [bit] NULL,
@@ -46,11 +47,19 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationsh
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionRelationship_Success] ON [api].[ExecutionRelationship] ( [ExecutionID] DESC, [Success] ASC ) INCLUDE([ItemNumber])
 END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
+BEGIN
+  ALTER TABLE [api].[ExecutionRelationship] ADD Owner [nvarchar](100) NULL
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
+BEGIN
+  ALTER TABLE [api].[ExecutionRelationship] DROP COLUMN Owner
+END
 		]]>
 	</rollback>
   </changeSet>
