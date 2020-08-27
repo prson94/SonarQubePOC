@@ -743,7 +743,6 @@ from	IntersectType I
                 document.SetCellValue(3, 2, results.GetValue("total").ToString());
             }
 
-
             document.SelectWorksheet(relationshipSheetName);
 
             var items = results.GetValue("items");
