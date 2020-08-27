@@ -15,6 +15,15 @@
       ]]>
     </sql>    
   </changeSet>
+
+  <changeSet author="kmcnamee" id="Migration.Metrics-scoreitemcleanup-v1">
+    <comment>GOV-11983 - cleanup score item records for deleted asset and deleted measures as this data exists and the migration script fails if its not removed first.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+					delete si from [metrics].scoreitem si where not exists ( select 1 from [metrics].[AssetVersion] av where av.Uid = si.AssetVersionUid)
+      ]]>
+    </sql>
+  </changeSet>
   
 	<changeSet author="Pappas" id="Migration.Metrics-v1">
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">

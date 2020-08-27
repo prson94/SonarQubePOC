@@ -1,7 +1,7 @@
 ﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
     <div class="content">
         <label class="ig-input-label">Name</label>
-        <input *ngIf="!label" tabindex="1" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
+        <input *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
         <p-autoComplete igAutocomplete *ngIf="label"
                         placeholder="Value required"
                         formControlName="value"
@@ -9,7 +9,7 @@
                         [suggestions]="suggestionResults"
                         (completeMethod)="onAutocomplete($event)"
                         (onSelect)="onAutocompleteSelect($event)"
-                        tabindex="1"
+                        tabindex="10"
                         >
         </p-autoComplete>
         <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
@@ -36,8 +36,8 @@
         </div>
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="onCancel.emit()"></button>
+        <button igButton type="button" label="Cancel" (click)="onCancel.emit()"></button>
         <div class="grow"></div>
-        <button igButton type="submit" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{(selectedValue ? 'Consolidate' : (label ? 'Save' : 'Create'))}}"></button>
+        <button igButton type="submit" [loading]="isSaving" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{(selectedValue ? 'Consolidate' : (label ? 'Save' : 'Create'))}}"></button>
     </div>
 </form>

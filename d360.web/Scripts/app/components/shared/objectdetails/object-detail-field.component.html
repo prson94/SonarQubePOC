@@ -30,7 +30,8 @@
                 </ng-container>
                 <ng-container *ngSwitchCase="'datetime'">
                     <div class="FieldDisplayContent">
-                        <div>{{(field.Value | utcDate |  date:'medium')}}</div>
+                        <div *ngIf="!isAlreadyUTC">{{(field.Value | utcDate | date:'medium')}}</div>
+                        <div *ngIf="isAlreadyUTC">{{(field.Value | date:'medium')}}</div>
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'bool'">

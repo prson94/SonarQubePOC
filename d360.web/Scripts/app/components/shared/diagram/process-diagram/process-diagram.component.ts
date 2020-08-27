@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -25,7 +25,7 @@ import { ProcessDiagramListViewComponent } from './process-diagram-list-view.com
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy, OnChanges {
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
     @Input() assetUid: string = '';
@@ -108,6 +108,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.breadcrumbsService = breadcrumbService;
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes && changes.isEditMode.currentValue != changes.isEditMode.previousValue) {
+            if (this.listView) {
+                this.listView.clearSearchValue();
+            }
+        }
+    }
 
     ngOnInit() {
 

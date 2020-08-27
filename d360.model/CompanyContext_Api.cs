@@ -677,7 +677,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             Connection.Execute($@"
 merge       Field as T
 using       (
-            select  distinct 
+            select 
                     {objectSqlSyntax},
                     {objectIdSqlSyntax}, 
                     F.FieldTypeID,
@@ -1403,7 +1403,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     if (success)
                                     {
-                                        fieldValue = dtTest.ToString();
+                                        fieldValue = dtTest.ToUniversalTime().ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"); ;
                                     }
                                     break;
                                 case "Decimal":
@@ -3458,21 +3458,24 @@ where   ExecutionID = @ExecutionID
                                 bulkCopy.WriteToServer(table);
                             }
 
-                            using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
-                            {
-                                // asset errors
-                                bulkCopy.BatchSize = SqlBulkBatchSize;
-                                bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-                                bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                                if (errorTable.Rows.Count > 0)
+                                {
+                                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                                    {
+                                        // asset errors
+                                        bulkCopy.BatchSize = SqlBulkBatchSize;
+                                        bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                                bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                                bulkCopy.ColumnMappings.Add("Message", "Message");
+                                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                        bulkCopy.ColumnMappings.Add("Message", "Message");
 
-                                bulkCopy.WriteToServer(errorTable);
-                            }
+                                        bulkCopy.WriteToServer(errorTable);
+                                    }
+                                }
 
                             using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
                             {
@@ -4190,6 +4193,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             CurrentExecutionLocationModel currentLocation = null;
             bool checkCircularRelationships = false;
             bool checkSemanticRelation = false;
+            bool relationshipTypeHasFieldTypes = false;
+            bool relationshipTypeHasLookupFieldTypes = false;
             Dictionary<string, double> metrics = new Dictionary<string, double>();
             var step = 0;
 
@@ -4274,6 +4279,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
                     AddMeasurement(metrics, "Get field types", sw.ElapsedMilliseconds, ++step);
                     var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
+                    relationshipTypeHasFieldTypes = fieldTypes.Any();
+                    relationshipTypeHasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
                     #region Generate data sets
                     sw.Restart();
@@ -4367,37 +4374,44 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         bulkCopy.WriteToServer(errorTable);
                     }
 
-                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                    // if there are no field types on this relationship type dont waste time bulk writting to the executionfield table 0 rows.
+                    if (relationshipTypeHasFieldTypes)
                     {
+                        using (SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection))
+                        {
 
-                        bulkCopy.BatchSize = SqlBulkBatchSize;
-                        bulkCopy.DestinationTableName = "api.ExecutionField";
-                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                            bulkCopy.BatchSize = SqlBulkBatchSize;
+                            bulkCopy.DestinationTableName = "api.ExecutionField";
+                            bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                        bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
-                        bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
-                        bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
+                            bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                            bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                            bulkCopy.ColumnMappings.Add("FieldName", "FieldName");
+                            bulkCopy.ColumnMappings.Add("FieldValue", "FieldValue");
+                            bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
-                        bulkCopy.WriteToServer(fieldTable);
+                            bulkCopy.WriteToServer(fieldTable);
+                        }
                     }
-
+                                        
                     AddMeasurement(metrics, "Bulk Copy", sw.ElapsedMilliseconds, ++step);
                     #endregion
                     sw.Restart();
-                    if (lookupFieldsPassedByValue)
+                    if (relationshipTypeHasLookupFieldTypes)
                     {
-                        CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                        if (lookupFieldsPassedByValue)
+                        {
+                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                        }
+                        else
+                        {
+                            ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
+                        }
+                        AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                        LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
+                        AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                     }
-                    else
-                    {
-                        ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
-                    }
-                    AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
-                    LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
-                    AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
 
                     #region Invalidate duplicates
                     sw.Restart();
@@ -4734,10 +4748,14 @@ end",
                                     AddMeasurement(metrics, "Intersect table merge", sw.ElapsedMilliseconds, ++step);
                                     #endregion
                                     fieldTypeUpdates.Clear();
-                                    sw.Restart();
-                                    fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
-                                    AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
-
+                                    
+                                    if (relationshipTypeHasFieldTypes)
+                                    {
+                                        sw.Restart();
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
+                                    }
+                                    
                                     // Update success flag
                                     sw.Restart();
                                     Connection.Execute(

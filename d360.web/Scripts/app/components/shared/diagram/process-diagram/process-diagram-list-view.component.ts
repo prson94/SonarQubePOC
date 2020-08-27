@@ -20,7 +20,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     selected: go.ObjectData[] = [];
     lastSelectedIndex: number = -1;
     private nodeCount: number = 0;
-
+    private searchValue: string = '';
 
     @ViewChild('dt', { static: false }) tableEl: any;
 
@@ -72,10 +72,12 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         })
         this.tableEl.reset();
     }
+
+
     toggleAll($event) {
         if ($event.checked) {
             var selectedParts: go.Part[] = [];
-            this.nodeArray.forEach(data => {
+            this.getTableCurrentData().forEach(data => {
                 selectedParts.push(this.getPartByKey(data.key));
             })
             this.diagram.selectCollection(selectedParts);
@@ -185,13 +187,20 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         return this.selected.indexOf(data);
     }
 
+    private getTableCurrentData(): go.ObjectData[] {
+        if (this.tableEl && this.tableEl['filteredValue']) {
+            return this.tableEl['filteredValue'] as go.ObjectData[];
+        }
+        return this.nodeArray;
+
+    }
 
     public nodeSelectedTrigger(data: go.ObjectData) {
         if (data) {
-            var index = this.nodeArray.indexOf(data) + 1;
-            var page = Math.ceil(index / this.rowsPerPage);
-
-            this.tableEl['_first'] = (page - 1) * this.rowsPerPage;
+            var rows = this.tableEl['_rows'];
+            var index = this.getTableCurrentData().indexOf(data) + 1;
+            var page = Math.ceil(index / rows);
+            this.tableEl['_first'] = (page - 1) * rows;
         }
         else {
             this.tableEl['_first'] = 0;
@@ -199,5 +208,12 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
         this.cdRef.markForCheck();
     }
 
+
+    public clearSearchValue() {
+        if (this.searchValue) {
+            this.searchValue = '';
+            this.tableEl.filterGlobal(this.searchValue, 'contains')
+        }
+    }
 
 }

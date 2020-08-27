@@ -1,4 +1,4 @@
-﻿import { Component, OnChanges, Input, SimpleChanges, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnChanges, Input, SimpleChanges, Output, EventEmitter, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { AsyncValidatorService } from '../../../services/async-validators.service';
@@ -12,7 +12,7 @@ import { ConnectorLabel } from '../../../models/connectorLabel.model';
 export class ConnectorLabelsFormComponent implements OnChanges {
     @Input() label: any;
     @Input() isVisible: boolean = false;
-
+    @Input() isSaving: boolean = false;
 
     @Output() onSave = new EventEmitter<any>();
     @Output() onCancel = new EventEmitter<any>();
@@ -31,7 +31,8 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     constructor(
         private asyncValidators: AsyncValidatorService,
         private cdRef: ChangeDetectorRef,
-        private connectorLabelService: ConnectorLabelService
+        private connectorLabelService: ConnectorLabelService,
+        private elRef: ElementRef
     ) {
 
     }
@@ -60,6 +61,13 @@ export class ConnectorLabelsFormComponent implements OnChanges {
         this.selectedValue = null;
         if (this.label)
             this.connectorLabelForm.setValue({ value: this.label.Value });
+
+        var htmlEl = this.elRef.nativeElement as HTMLElement;
+        var input = htmlEl.getElementsByTagName('input');
+        if (input && input.length != 0) {
+            input[0].focus();
+        }
+
     }
 
     onSubmit() {
