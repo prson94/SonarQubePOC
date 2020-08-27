@@ -18,7 +18,7 @@
                             <td style="padding-bottom: 4px;">
                                 <label>
                                     <input style="top: 1px;" type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}" />
-                                    {{tag.Value}}
+                                    <div class="table-tag-value ig-elide" title="{{tag.Value}}">{{tag.Value}}</div>
                                 </label>
                             </td>
                             <td style="padding-bottom: 4px;width:160px;"><span *ngIf="tag.UseCount > 0" class="tag-desc"><d3s-tag-usage [uid]="tag.uid">{{tag.UseCount}} assets</d3s-tag-usage> tagged</span></td>

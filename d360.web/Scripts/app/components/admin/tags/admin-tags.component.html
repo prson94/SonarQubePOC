@@ -8,65 +8,65 @@
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading">
-                <input  [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt 
-                             [value]="tags" 
-                             [globalFilterFields]="['Value','UseCount']" 
-                             [rowsPerPageOptions]="defaultPagingOptions"
-                             sortField="Value" 
-                             [sortOrder]="1" 
-                             [pageLinks]="3" 
-                             [paginator]="true"
-                             [rows]="25" 
-                             [(selection)]="selected">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 20px;">
-                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                                </th>
-                                <th [pSortableColumn]="'Value'" style="width: 60%">
-                                    Name
-                                    <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                    Use count
-                                    <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
-                                </th>
-                                <th style="width: 110px"></th>
-                            </tr>
-                            <tr [hidden]="showSimpleFilter">
-                                <th></th>
-                                <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
-                                <th></th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-item>
-                            <tr #el [pSelectableRow]="item">
-                                <td (click)="selectSingleItem($event,item,el);" class="enable-pointer-events">
-                                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                                </td>
-                                <td (click)="selectSingleItem($event,item, el);">
-                                    <a class="mid-blue" (click)="openTagDetails(item);">
-                                        {{item.Value}}
-                                    </a>
-                                </td>
-                                <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
-                                <td (click)="selectSingleItem($event,item, el);">
-                                    <div class="RowTools">
-                                        <d3s-preview-tooltip [objectType]="'Tag'"
-                                                             [objectId]="item.uid"
-                                                             icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
-                                        <a style="cursor:pointer;" (click)="openEditor();"><i class="fa fa-pencil"></i></a>
-                                        <a style="cursor:pointer;" (click)="openDeleteModal();"><i class="fa fa-trash-o"></i></a>
-                                    </div>
-                                </td>
-                            </tr>
-                        </ng-template>
-                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                        </ng-template>
-                    </p-table>
+                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt
+                         [value]="tags"
+                         [globalFilterFields]="['Value','UseCount']"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         sortField="Value"
+                         [sortOrder]="1"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="25"
+                         [(selection)]="selected">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 20px;">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th [pSortableColumn]="'Value'" style="width: 60%">
+                                Name
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                Use count
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+                            </th>
+                            <th style="width: 110px"></th>
+                        </tr>
+                        <tr [hidden]="showSimpleFilter">
+                            <th></th>
+                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr #el [pSelectableRow]="item">
+                            <td (click)="selectSingleItem($event,item,el);" class="enable-pointer-events">
+                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                            </td>
+                            <td (click)="selectSingleItem($event,item, el);">
+                                <a class="mid-blue" (click)="openTagDetails(item);">
+                                    {{item.Value}}
+                                </a>
+                            </td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">
+                                <div class="RowTools">
+                                    <d3s-preview-tooltip [objectType]="'Tag'"
+                                                         [objectId]="item.uid"
+                                                         icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
+                                    <a style="cursor:pointer;" (click)="openEditor();"><i class="fa fa-pencil"></i></a>
+                                    <a style="cursor:pointer;" (click)="openDeleteModal();"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
             </span>
 
             <d3s-dynamic-editor [objectID]="selected[0]?.uid"
@@ -90,7 +90,7 @@
                              (onCancel)="showDelete=false;">
                 <div prompt>
                     <div *ngIf="selected.length == 1">
-                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}' 
+                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
                         <ng-container *ngIf="this.selected[0].UseCount > 0">
                             (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
                         </ng-container>
@@ -100,7 +100,9 @@
                         <div style="max-height: 75vh; overflow-y: auto;">
                             <table class="table-borderless table">
                                 <tr *ngFor="let t of selected">
-                                    <td>{{t.Value}}</td>
+                                    <td>
+                                        <div class="table-tag-value ig-elide" title="{{t.Value}}">{{t.Value}}</div>
+                                    </td>
                                     <td style="width:160px;" *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
                                 </tr>
                             </table>
