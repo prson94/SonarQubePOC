@@ -61,13 +61,6 @@ export class ConnectorLabelsFormComponent implements OnChanges {
         this.selectedValue = null;
         if (this.label)
             this.connectorLabelForm.setValue({ value: this.label.Value });
-
-        var htmlEl = this.elRef.nativeElement as HTMLElement;
-        var input = htmlEl.getElementsByTagName('input');
-        if (input && input.length != 0) {
-            input[0].focus();
-        }
-
     }
 
     onSubmit() {

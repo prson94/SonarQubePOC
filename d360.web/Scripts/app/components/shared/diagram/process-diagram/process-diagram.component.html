@@ -2,12 +2,12 @@
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
 
-            <button pTooltip="Exit Designer" tooltipPosition="top" tooltipStyleClass="ig-tooltip"  igButton icon="fa-chevron-circle-left" label="Exit Designer" title="Exit Designer" (click)="doControlledAction('switchModes')"></button>
+            <button pTooltip="Exit Designer" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-chevron-circle-left" label="Exit Designer" title="Exit Designer" (click)="doControlledAction('switchModes')"></button>
             <div class="button-spacer"></div>
 
             <button pTooltip="Save" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" tooltip="Save changes" [disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip"  igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
+            <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
             <button pTooltip="View and edit related assets for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="igx-related-asset-icon" class="top-spacer-4" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!isExportEnabled()" (click)="doControlledAction('export')"></button>
@@ -163,7 +163,7 @@
     </div>
     <div class="action-bar">
         <div class="grow"></div>
-        <button #closeSaveButton igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
+        <button igAutoFocus igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
 
     </div>
 </d3s-modal>
@@ -179,7 +179,7 @@
         <span class="spacer"></span>
         <button igButton label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
         <div class="grow"></div>
-        <button igButton class="ig-button-primary" label="Save Changes" #saveChangesButton tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
+        <button igAutoFocus igButton class="ig-button-primary" label="Save Changes" tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
 
     </div>
 </d3s-modal>
@@ -210,7 +210,7 @@
         </div>
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" #deleteCancelButton tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
+        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
         <div class="grow"></div>
         <button igButton class="ig-button-primary" label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
 

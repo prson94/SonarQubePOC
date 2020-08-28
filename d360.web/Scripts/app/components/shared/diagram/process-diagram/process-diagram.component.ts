@@ -85,10 +85,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private focusKey: string = '';
 
-    @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
-    @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
-    @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
-
     @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
 
 
@@ -337,7 +333,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     onDeleteClick() {
         this.promptDeleteOpened = true;
-        setTimeout(() => this.deleteCancelButton.nativeElement.focus(), 100);
         this.cdRef.detectChanges();
     }
 
@@ -577,7 +572,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                     this.updateValidationData();
                     this.isErrorModalOpened = true;
-                    setTimeout(() => this.closeSaveButton.nativeElement.focus(), 250);
 
                     this.cdRef.detectChanges();
                 }
@@ -973,7 +967,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             switch (actionName) {
                 case 'switchModes':
                     this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
-                    setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
                         this.switchModes();
                         this.actionAfterSaved = null;
@@ -983,7 +976,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 case 'open-related-assets':
                     this.actionMessage = 'Please save your changes to the diagram before opening Related Assets.';
                     this.showDiscardChanges = false;
-                    setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
                         this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
                         this.actionAfterSaved = null;
