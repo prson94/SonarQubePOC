@@ -1251,17 +1251,17 @@ where T.ExecutionId = @executionid;
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
-            DataTable fieldTable, out bool success, out string errorMessage,
+            DataTable fieldTable, out bool success, out string errorMessage,            
             bool useFriendlyNames = false,
-            bool allowTagFields = false
+            bool allowTagFields = false,
+            FieldValidationFieldProperties validationFieldProperties = null
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
             string errorDelimiter = ". ";
             success = true;
-            errorMessage = string.Empty;
-
+            errorMessage = string.Empty;            
             FieldType fieldType = null;
 
             // Contains all required fields?
@@ -1303,6 +1303,7 @@ where T.ExecutionId = @executionid;
                             errorMessages.Add($"The Color field must be a seven character RGB code or the name of a Govern color");
                             success = false;
                         }
+                        if(validationFieldProperties != null) validationFieldProperties.ContainsColorField = true;
                     }
                     else if (ot == "FusionAttributeType")
                     {
@@ -1328,7 +1329,7 @@ where T.ExecutionId = @executionid;
                                 {
                                     errorMessages.Add($"The Icon field must be fifty characters or less in length and start with 'fa-'");
                                     success = false;
-                                }
+                                }                                
                                 break;
                             case "referenceitemtypeid":
                                 break;
@@ -1444,6 +1445,7 @@ where T.ExecutionId = @executionid;
                                         success = false;
                                         errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
                                     }
+                                    validationFieldProperties.JsonFieldCount++;
                                     break;
                                 default: // Html, Text
                                     if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
@@ -3132,6 +3134,7 @@ where   ExecutionID = @ExecutionID
             var metrics = new Dictionary<string, double>();
             var step = 0;
             bool hasDuplicateUids = false;
+            FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -3296,8 +3299,8 @@ where   ExecutionID = @ExecutionID
                         if (i > currentLocation.HighestItemNumber)
                         {
                             bool success;
-                            string errorMessage;
-                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
+                            string errorMessage;                            
+                            var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
 
                             if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                             {
@@ -3497,6 +3500,7 @@ where   ExecutionID = @ExecutionID
                             transaction.Commit();
 
                         }
+
                         catch (Exception ex)
                         {
                             if (transaction != null)
@@ -3510,9 +3514,12 @@ where   ExecutionID = @ExecutionID
                     #endregion
 
 
-                    ResolveColorValues(execution.ExecutionID, timeout);
-                    AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
+                    if (fieldLoadProperties.ContainsColorField)
+                    {
+                        ResolveColorValues(execution.ExecutionID, timeout);
+                        AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
 
                     if (hasLookupFieldTypes)
                     {
@@ -4049,7 +4056,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         AddMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-                                    if (jsonFieldTypes.Count > 0)
+                                    // only populate json properties IF there are 1 json fields on the asset type, AND values have been specified for JSON fields IE if they didnt provide any optional json fields disregard.
+                                    if (jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
                                         MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel, metrics, step);
@@ -4292,7 +4300,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             var model = import[i - 1];
 
                             bool success;
-                            string errorMessage;
+                            string errorMessage;                            
                             var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
 
                             if (success)
