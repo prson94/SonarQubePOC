@@ -167,6 +167,7 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { FormsModule } from '@angular/forms';
 import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../../directives/directives.module';
 
 @NgModule({
     declarations: [
@@ -182,7 +183,8 @@ import { CheckboxModule } from 'primeng/checkbox';
         CheckboxModule,
 
         SharedFormMessageModule,
-        SiteModalModule
+        SiteModalModule,
+        DirectivesModule
     ]
 
 })

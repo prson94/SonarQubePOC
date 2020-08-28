@@ -1,0 +1,45 @@
+﻿<div class="tile tile-detail">
+    <header>Text Area Directive</header>
+    <p>Angular directive that can be applied to any HTML element.</p>
+    <p>
+        AutoFocuses element when container is visible for the first time.
+        Works similiar like HTML autofocus attr., but autofocus attribute works only on pageload which causes elements that are hidden with <strong>*ngIf</strong> or in <strong>modal popup</strong> not being autofocused when element is visible.
+    </p>
+
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <button igAutoFocus igButton label="Autofocused"></button>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>In model</h4>
+        <button igButton label="Open Modal" (click)="showModal=true"></button>
+        <div>
+            <d3s-modal [title]="'Test modal'" additionalClasses="medium-dialog" (onClose)="showModal=false" [isVisible]="showModal">
+                <div class="content">
+                    <div class="row">
+                        Close this modal and reopen, autofocus will happen again!
+                        You can close by pressing ESC key, or by clicking on any button here
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button igButton label="Not Focused" tabindex="1001" (click)="showModal=false;"></button>&nbsp;&nbsp;&nbsp;
+                    <button igAutoFocus igButton label="Focused" tabindex="1000" (click)="showModal=false;"></button>&nbsp;&nbsp;&nbsp;
+                    <button igButton label="Not Focused" tabindex="1001" (click)="showModal=false;"></button>&nbsp;&nbsp;&nbsp;
+
+                </div>
+            </d3s-modal>
+        </div>
+    </div>
+</div>
+

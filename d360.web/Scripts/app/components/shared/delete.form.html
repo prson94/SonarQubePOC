@@ -34,7 +34,7 @@
         </div>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
-                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
+                <button igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
                 <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where Used Report</button>
                 <span class="grow"></span>
                 <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">

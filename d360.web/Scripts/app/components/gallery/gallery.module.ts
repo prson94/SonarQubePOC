@@ -30,6 +30,8 @@ import { GalleryColorVariablesComponent } from './gallery.color-variables.compon
 import { GalleryTooltipComponent } from './gallery.tooltip.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { GalleryTextAreaComponent } from './gallery.textarea.component';
+import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 
 @NgModule({
@@ -50,7 +52,8 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
 
         TableModule,
         TooltipModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+        SiteModalModule
     ],
     declarations: [
         GalleryComponent,
@@ -63,7 +66,8 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
         GalleryColorVariablesComponent,
         GalleryTooltipComponent,
         GalleryAutocompleteComponent,
-        GalleryTextAreaComponent
+        GalleryTextAreaComponent,
+        GalleryAutoFocusComponent
     ],
     providers: [
         GalleryGuard,
