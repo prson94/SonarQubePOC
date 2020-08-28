@@ -194,7 +194,7 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/${tagUid}/tooltip`;
 
         if (!tagUid) {
-            url = `api/v2/tags/tooltipByName?tagName=${value}`;
+            url = `api/v2/tags/tooltipByName?tagName=${encodeURIComponent(value)}`;
             if (assetUid != null)
                 url += `&assetUid=${assetUid}`;
         }

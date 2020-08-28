@@ -799,16 +799,10 @@ namespace d360.web.Controllers
         internal List<EditableField> loadDynamicFields(string @object, int objectID, List<EditableField> list, List<FieldType> fieldTypes, List<FieldWithRelation> fields, int startRow = 10, bool decode = false)
         {
             var row = startRow;
-            bool includeTagField = false;
-            if (@object == "Task")
-            {
-                this.limitedFieldTypes = this.limitedFieldTypes.Where(x => x != "Tag").ToList();
-                includeTagField = true;
-            }
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable || (includeTagField && ft.Type == "Tag"))
+                if (ft.IsEditable || ft.Type == "Tag")
                 {
                     #region Is Editable
 
@@ -1071,15 +1065,6 @@ namespace d360.web.Controllers
                                 fld.Value = ft.DefaultValue;
                             }
                         }
-
-                        if (ft.Type == "Tag" && includeTagField)
-                        {
-                            fld.Value = Company.Query<string>(@"select STRING_AGG(t.Value,'|') as value from asset a
-                            inner join assettag at on a.id = at.assetid
-                            inner join tag t on at.tagid = t.id
-                            where a.object = @obj and a.ObjectId = @objId", new { obj = @object, objId = objectID }).FirstOrDefault();
-                        }
-
 
                         list.Add(fld);
 
