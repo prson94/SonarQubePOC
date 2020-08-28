@@ -802,7 +802,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable || ft.Type == "Tag")
+                if (ft.IsEditable && ft.Type != "Tag")
                 {
                     #region Is Editable
 
