@@ -161,9 +161,10 @@ export class ProcessDiagramTemplates {
 
 
     private static linkValidation(fromnode: go.Node, fromport, tonode: go.Node, toport) {
+
         var doesLinkExist: boolean = false;
         try {
-            var links = fromnode.diagram.links;
+            var links = fromnode.diagram.links.filter(x => x.data);
             doesLinkExist = links.any(x => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
                 || (x.data.from == tonode.data.key && x.data.to == fromnode.data.key));
         }
@@ -177,7 +178,7 @@ export class ProcessDiagramTemplates {
     public static eventTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if ((node as go.Node).diagram.isReadOnly) {
+            if (node.diagram && (node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -273,7 +274,7 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
-            if ((node as go.Node).diagram.isReadOnly) {
+            if (node.diagram && (node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -325,7 +326,7 @@ export class ProcessDiagramTemplates {
     public static gatewayTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
-            if ((node as go.Node).diagram.isReadOnly) {
+            if (node.diagram && (node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {

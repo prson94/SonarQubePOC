@@ -299,6 +299,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.isSavingChangesModalOpened = false;
             this.isErrorModalOpened = false;
             this.actionAfterSaved = null;
+            this.saveState.emit(this.isCurrentStateSaved());
         }
     }
 
@@ -830,10 +831,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     layout:
                         $(go.GridLayout,
                             {
-                                wrappingColumn: 2,
-                                arrangement: go.GridLayout.LeftToRight,
-                                cellSize: new go.Size(80, NaN)
-
+                                wrappingColumn: 2
                             }
                         ),
                     'toolManager.hoverDelay': 100
