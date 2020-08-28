@@ -44,11 +44,7 @@
                [innerText]="fieldValue"></a>
         </d3s-preview-tooltip>
     </span>
-    <ng-container *ngSwitchCase="'path'">
-        <ng-container *ngFor="let segment of segments; let i = index">
-            <span [innerText]="segment"></span>&nbsp;<i *ngIf="(i + 1) < segments?.length" class='fa fa-angle-right'></i>&nbsp;
-        </ng-container>
-    </ng-container>
+    <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}"></span>
     <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}"></span>
     <span *ngSwitchCase="'string'" [innerText]="fieldValue"></span>
     <span *ngSwitchCase="'JSON'">
