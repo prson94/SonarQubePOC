@@ -38,16 +38,74 @@
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Invalid</h4>
-        <div>
-            Form driven validation. Choose a date after today.
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys. Use Esc to close the calendar picker.
+        </p>
+        <div class="row">
+            <input igInput type="text" tabindex="1" />
         </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-date [tabindex]="3"></ig-date>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Date Ranges</h4>
+        <p>
+            Selection limited to next 7 days
+        </p>
+        <div class="row">
+            <ig-date [minDate]="today" 
+                     [maxDate]="nextWeek">
+            </ig-date>
+        </div>
+
+    </div>
+    <div class="gallery-section">
+        <h4>Validation</h4>
         <div>
+            Form validation.
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #myForm="ngForm">
+                <div class="row">
+                    <b>Template driven forms</b>
+                </div>
+                <div class="row">
+                    <ig-date name="myDate" [(ngModel)]="formVal" #myDate="ngModel" required="true"></ig-date>
+                    <span *ngIf="myDate.invalid && (myDate.dirty || myDate.touched)">
+                        <span *ngIf="myDate.errors.required" style="color: maroon">
+                            Please select a date
+                        </span>
+                    </span>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
+                </div>
+            </form>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <div class="row">
+                <b>Reactive forms with custom validation</b>
+            </div>
             <form *ngIf="form != null" [formGroup]="form">
                 <div class="row">
                     <ig-date name="myDate"
                              [form]="form"
-                             errorLabel="Please choose a future date"
+                             errorLabel="Please choose a date in the future"
                              required="true">
                     </ig-date>
                 </div>

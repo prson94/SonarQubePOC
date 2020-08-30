@@ -1,6 +1,7 @@
 ﻿<ng-container *ngIf="form != null" [formGroup]="form">
-    <div class="control-container">
+    <div class="control-container" tabindex="-1">
         <p-calendar #control
+                    [tabindex]="tabindex"
                     [ngModel]="ngModel"
                     (ngModelChange)="ngModelChange.emit($event)"
                     [name]="name"
@@ -27,8 +28,9 @@
     </div>
 </ng-container>
 <ng-container *ngIf="form == null">
-    <div class="control-container">
-        <p-calendar [ngModel]="ngModel"
+    <div class="control-container"  tabindex="-1">
+        <p-calendar [tabindex]="tabindex"
+                    [ngModel]="ngModel"
                     (ngModelChange)="ngModelChange.emit($event)"
                     [name]="name"
                     [style]="style"

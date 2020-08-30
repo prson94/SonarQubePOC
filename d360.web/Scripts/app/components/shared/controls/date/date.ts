@@ -7,21 +7,36 @@
     NgModule,
     ChangeDetectorRef,
     ViewEncapsulation,
-    ChangeDetectionStrategy
+    ChangeDetectionStrategy,
+    forwardRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
-import { FormsModule, ReactiveFormsModule, FormGroup, AbstractControl } from '@angular/forms';
+import {
+    FormsModule,
+    ReactiveFormsModule,
+    FormGroup,
+    AbstractControl,
+    NG_VALUE_ACCESSOR,
+    ControlValueAccessor
+} from '@angular/forms';
+
+export const IG_DATE_VALUE_ACCESSOR: any = {
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => IgDate),
+    multi: true
+};
 
 
 @Component({
     selector: 'ig-date',
     templateUrl: 'date.html',
     encapsulation: ViewEncapsulation.None,
+    providers: [IG_DATE_VALUE_ACCESSOR],
     styleUrls: ['./date.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IgDate implements OnInit  {        
+export class IgDate implements ControlValueAccessor, OnInit  {        
     @Input() ngModel: Date;
     @Input() style: string;
     @Input() errorLabel: string;
@@ -32,12 +47,19 @@ export class IgDate implements OnInit  {
     @Input() disabled: boolean = false;
     @Input() required: boolean = false;
     @Input() appendTo: string;
+    @Input() tabindex: number = 0;
     @Input() minDate: Date;
     @Input() maxDate: Date;
     @Input() dateFormat: string = "mm/dd/yy";
     @Input() name: string;
     @Input() label: string;
     @Input() form: FormGroup;
+
+    protected value = null;
+
+    onModelChange: Function = () => { };
+
+    onModelTouched: Function = () => { };
 
     @Output() ngModelChange = new EventEmitter<Date>()
     protected formControl: AbstractControl;
@@ -69,6 +91,30 @@ export class IgDate implements OnInit  {
 
         return false;
 
+    }
+
+    tryChangeValue(val: boolean) {
+        if (!this.disabled) {
+            this.writeValue(val);
+        }
+    }
+
+    writeValue(obj: any): void {
+        this.value = obj;
+        this.onModelChange(this.value);
+        this.ref.markForCheck();
+    }
+
+    registerOnChange(fn: any): void {
+        this.onModelChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onModelTouched = fn;
+    }
+
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled = isDisabled
     }
 }
 

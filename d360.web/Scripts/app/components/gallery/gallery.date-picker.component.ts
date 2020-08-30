@@ -24,6 +24,10 @@ export class GalleryDatePickerComponent implements OnInit {
     protected sampleUsage: string = '<ig-date></ig-date>';
     protected form: FormGroup = null;
     protected val: any;
+    protected formVal: any;
+
+    protected today: Date = new Date();
+    protected nextWeek: Date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     ngOnInit(): void {
         this.form = new FormGroup({}, []);
