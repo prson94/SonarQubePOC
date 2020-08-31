@@ -5,6 +5,39 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="Pappas" id="Migration.Metrics-Allocation-RegenerateMissing">
+    <comment>GOV-11999 - Adds any missing allocations based on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+INSERT INTO [metrics].[Allocation] ([ScoreType], [AssetTypeUid], [IsExternallyCalculated], [IsThresholdBased])
+	select	Sc.ScoreType,
+			T.Uid as AssetTypeUid,
+			iif (Sc.ScoreType = 2, 1, 0) as IsExternallyCalculated,
+			0 as IsThresholdBased
+	from	metrics.Score Sc
+			inner join Asset A on A.Uid = Sc.AssetUid
+			inner join AssetType T on T.ID = A.AssetTypeID
+			left join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+	where	Al.Uid is null
+	group by T.Uid, Sc.ScoreType
+      ]]>
+    </sql>    
+  </changeSet>
+
+  <changeSet author="Pappas" id="Migration.Metrics-Score-Update">
+    <comment>GOV-11999 - Update AllocationUid on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+update	Sc
+set		Sc.AllocationUid = Al.Uid
+from	metrics.Score Sc
+		inner join Asset A on A.Uid = Sc.AssetUid
+		inner join AssetType T on T.ID = A.AssetTypeID
+		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+      ]]>
+    </sql>    
+  </changeSet>
+
   <changeSet author="kmcnamee" id="Migration.Metrics-scorecleanup-v1">
     <comment>GOV-11956 - cleanup scores for deleted asset types will cause migration to fail if not run first.</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
@@ -12,6 +45,24 @@
 					delete ms from [metrics].[score] ms
 						where not exists( select 1 from [metrics].[Allocation] ma where ma.uid = ms.AllocationUid)
 							and not exists ( select 1 from [asset] a where a.uid = ms.AssetUid)
+      ]]>
+    </sql>    
+  </changeSet>
+
+  <changeSet author="Pappas" id="Migration.Metrics-ScoreItem-LoadVersionUid">
+    <comment>GOV-11999 - Updates missing AssetVersionUid column to ScoreItem table. To also account for script below.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+update	Si
+set		Si.AssetVersionUid = V.Uid
+from	metrics.ScoreItem Si
+		cross apply (
+			select	max(EffectiveDate) as EffectiveDate
+			from	metrics.AssetVersion
+			where	AssetUid = Si.MetricAssetUid 
+					and EffectiveDate <= Si.EffectiveDate
+		) Mx
+		inner join metrics.AssetVersion V on V.AssetUid = Si.MetricAssetUid and V.EffectiveDate = Mx.EffectiveDate
       ]]>
     </sql>    
   </changeSet>
