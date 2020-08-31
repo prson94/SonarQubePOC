@@ -63,7 +63,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'ExportTemplate'" [title]="'Export Template'" [selection]="selected" (saveClick)="saveExportTemplate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                         <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
-                            [itemId]="selected?.ID"
+                            [itemUid]="selected?.uid"
                             [method]="'callback'"
                             [prompt]="'Are you sure you want to delete the selected item?'"                                         
                             (onCancel)="showDelete=false;"
@@ -141,7 +141,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.areaName = "Export Templates";
         this.setCommonItems();
                 
-        this.setCommonSecondaryNavTabs(false);        
+        this.setCommonSecondaryNavTabs(false);
         this.theDeleteCallback = this.deleteExportTemplate.bind(this);
     }
     
@@ -168,8 +168,8 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         });
     }
 
-    public deleteExportTemplate(id: number) {
-        this.exportTemplateService.deleteExportTemplates(id).subscribe(result => {            
+    public deleteExportTemplate(uid: string) {
+            this.exportTemplateService.deleteExportTemplates(uid).subscribe(result => {            
             this.showDelete = false;
             this.selected = null;
             this.load();
@@ -184,11 +184,11 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     }
 
     public saveFields(event) {
-        this.selected.IncludeFields = event;
+        this.selected.IncludeFieldTypes = event.IncludeFieldTypes;
         this.exportTemplateService.saveExportTemplate(this.selected).subscribe(result => {           
             for (let i = 0; i < this.exportTemplates.length; i++) {
                 if (this.exportTemplates[i].ID == this.selected.ID) {
-                    this.exportTemplates[i].IncludeFields = this.selected.IncludeFields;
+                    this.exportTemplates[i].IncludeFieldTypes = this.selected.IncludeFieldTypes;
                 }
             }
         });

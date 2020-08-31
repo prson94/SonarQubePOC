@@ -735,16 +735,16 @@ namespace d360.web.Controllers.V2
         {
             var oldFields = new List<FieldType>(fieldTypes);
             //if include fields is specified only include field ids from list
-            if (!string.IsNullOrEmpty(template.IncludeFields))
+            if (template.IncludeFieldTypes != null && template.IncludeFieldTypes.Length > 0)
             {
-                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+                var fieldNameList = template.IncludeFieldTypes;
 
                 fieldTypes.Clear();
 
                 //done this way to set order of fields in spreadsheet to the order specified in include fields.
-                foreach (var fieldId in fieldIdList)
+                foreach (var fieldName in fieldNameList)
                 {
-                    var field = oldFields.Find(x => x.ID == fieldId);
+                    var field = oldFields.Find(x => x.Name.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase));
                     if (field != null) fieldTypes.Add(field);
                 }
             }

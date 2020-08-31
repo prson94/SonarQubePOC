@@ -28,21 +28,30 @@ export class ExportTemplateService extends BaseObservableService {
             catchError(err => this.handleError(err)));
     }
 
-    public deleteExportTemplates(id: number): Observable<any> {
-        return this.http.delete(`/api/v2/exporttemplates/${id}`)
-            .pipe(catchError(err => this.handleError(err)));            
+    public deleteExportTemplates(templateUID: String): Observable<any> {
+        return this.http.delete(`/api/v2/exporttemplates/${templateUID}`)
+            .pipe( map ((res:any) => {
+                    this.messages.showInfoMessage("Success", "Template Deleted Successfully")
+                 }),
+                catchError(err => this.handleError(err)));            
     }
 
     public saveExportTemplate(exportTemplate: ExportTemplate): Observable<ExportTemplate> {
-        if (exportTemplate.ID > 0) {
-            return this.http.put(`/api/v2/exporttemplates/${exportTemplate.ID}`, exportTemplate).pipe(
-                map(item => { return <ExportTemplate>item }),
+        if (exportTemplate.uid) {
+            return this.http.put(`/api/v2/exporttemplates/${exportTemplate.uid}`, exportTemplate).pipe(
+                map(item => {
+                    this.messages.showInfoMessage("Success", `Export Template '${exportTemplate.Name}' Updated.`);
+                    return <ExportTemplate>item
+                }),
                 catchError(err => this.handleError(err)),);
         }
         
         return this.http
                 .post<ExportTemplate>(`/api/v2/exporttemplates`, exportTemplate).pipe(
-                map(item => { return <ExportTemplate>item }),
+                    map(item => {
+                        this.messages.showInfoMessage("Success", `Export Template '${exportTemplate.Name}' Created.`);
+                        return <ExportTemplate>item
+                    }),
                 catchError(err => this.handleError(err)),);
         
     }

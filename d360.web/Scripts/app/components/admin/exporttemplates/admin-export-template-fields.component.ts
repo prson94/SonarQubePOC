@@ -145,14 +145,13 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     public setInitialFields(available): FieldDefinition[] {
         //reset the template fields back to original state
         let order: number = 0;
-        this.selectedFields = [];
+        this.selectedFields = [];        
 
-        if (this.exportTemplate.IncludeFields) {
-            let selectedFieldIds = this.exportTemplate.IncludeFields.split(',').map(Number);
-
-            for (let j = 0; j < selectedFieldIds.length; j++) {
+        if (this.exportTemplate.IncludeFieldTypes) {
+            let selectedFieldNames = this.exportTemplate.IncludeFieldTypes;
+            for (let j = 0; j < selectedFieldNames.length; j++) {
                 for (let k = 0; k < available.length; k++) {
-                    if (selectedFieldIds[j] == available[k].ID) {
+                    if (selectedFieldNames[j] == available[k].Name) {
                         this.selectedFields[this.selectedFields.length] = available[k];
                         available[k].ExtOrder = order++;
                     }
@@ -169,13 +168,15 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
     public save() {
         let fields = "";
+        let fieldTypes = [];
+        fieldTypes = this.selectedFields.map(a => a.Name);
         var sel = _.sortBy(this.selectedFields, "ExtOrder");
-        sel.forEach(function (s) {
+        sel.forEach(function (s) {            
             if (fields.length != 0) fields += ",";
             fields += s.ID;
         })
         //trigger save event
-        this.saveFieldsClick.emit(fields);
+        this.saveFieldsClick.emit({ IncludeFieldTypes: fieldTypes });
     }
 
     public top(event, field: FieldDefinition) {

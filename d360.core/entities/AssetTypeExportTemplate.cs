@@ -20,10 +20,10 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
-        public string UsageNotes { get; set; }
-        
+        public string UsageNotes { get; set; }        
+
         [DataMember]
-        public string IncludeFields { get; set; }
+        public string[] IncludeFieldTypes { get; set; }
 
         [DataMember]
         public bool IncludeUrl { get; set; }

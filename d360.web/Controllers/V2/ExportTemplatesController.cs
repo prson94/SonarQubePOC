@@ -7,6 +7,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
+using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -23,7 +24,6 @@ using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/exporttemplates"), Authorize
@@ -48,18 +48,16 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse))
         ]
-        public async Task<IEnumerable<dynamic>> Get()
+        public async Task<IHttpActionResult> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
-            return (await Company.QueryAsync<dynamic>("" +
-                "select t.ID, t.uid, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
-                "from AssetTypeExportTemplate t " +
-                "left join AssetType a ON t.AssetTypeID = a.ID " +
-                "order by t.Name, t.ID"));
+            List<AssetTypeExportTemplate> templateList = (await assetRepository.GetExportTemplates());
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList));
         }
 
         /// <summary>
@@ -69,16 +67,19 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"), Route("{assetTypeUID}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>))
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
+            SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse))
         ]
-        public async Task<IEnumerable<dynamic>> Get(Guid assetTypeUID)
-        {
-            return (await Company.QueryAsync<dynamic>("" +
-                "select t.ID, t.uid, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
-                "from AssetTypeExportTemplate t " +
-                "left join AssetType a ON t.AssetTypeID = a.ID " +
-                "where a.uid = @assetTypeUID " +
-                "order by t.Name, t.ID ",  new { assetTypeUID = assetTypeUID.ToString() }));
+        public async Task<IHttpActionResult> Get(Guid assetTypeUID)
+        {           
+            List<AssetTypeExportTemplate> templateList = await assetRepository.GetExportTemplates(assetTypeUid: assetTypeUID);
+
+            if (templateList.Count == 0)
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template not found.",  "No Templates found for the UID provided.");
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList));
         }
 
         /// <summary>
@@ -88,21 +89,29 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             MapToApiVersion("2.0"),
-            Route("{id}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(AssetTypeExportTemplate)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
+            Route("{templateUid}"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Template succesfully deleted.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Template not found matching Uid Provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> DeleteById(int id)
+        public async Task<IHttpActionResult> DeleteTemplateByUid(Guid templateUid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
-            var res = await Company.Database.Connection.ExecuteAsync("delete AssetTypeExportTemplate where id = @id", new { id = id });
+            var res = await Company.Database.Connection.ExecuteAsync("delete AssetTypeExportTemplate where uid = @uid", new { uid = templateUid });
 
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
+            if (res > 0)
+            {
+                return successMessageResponse(HttpStatusCode.OK, "Template Deleted.", "Template Deleted Successfully."); // deleted
+            }else if (res == 0){
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");
+            }else
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Deleting Template",  $"Error encountered while deleteing template {templateUid}.");
+            }
         }
 
         /// <summary>
@@ -114,37 +123,74 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route(""),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Template Created Successfully", typeof(AssetTypeExportTemplate)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Item already exists", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))            
         ]
-        public async Task<AssetTypeExportTemplate> Post(AssetTypeExportTemplate model)
-        {
+        public async Task<IHttpActionResult> AddTemplate(AssetTypeExportTemplate model)
+        {            
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);            
 
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+            
             model.AssetTypeID = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID)?.ID ?? 0;
 
             //validate the model input
-            if (model.ID > 0 || string.IsNullOrEmpty(model.Name) || model.AssetTypeID <= 0)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
-
-            //validate the assettype id is a valid asset typeid
-            if (!Company.AssetTypes.Any(x => x.uid == model.AssetTypeUID))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing Asset Type."));
-
-            //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("insert into AssetTypeExportTemplate (Name, Description, AssetTypeID, IncludeFields,ExportViewType,IncludeUrl,IncludeParent,UpdatedBy,UpdatedOn,UsageNotes) values(@n,@d,@atID,@i,@e,@url,@parent,@upd,@updOn,@notes)", new { atID = model.AssetTypeID, n = model.Name, d = model.Description, i = model.IncludeFields, e = model.ExportViewType, url = model.IncludeUrl, parent = model.IncludeParent, upd = Company.CurrentResourceID, updOn = DateTime.UtcNow, notes = model.UsageNotes });
-
-            if (res <= 0)
+            if (string.IsNullOrEmpty(model.Name))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "Item already exists"));
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "Name is a required field.");
+            }
+            if (model.ID > 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "ID should not be specified when creating new template.");
+            }
+            if (model.AssetTypeID <= 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetType not found for the UID provided.");
             }
 
-            return model;
+            if(model.IncludeFieldTypes != null && model.IncludeFieldTypes.Length > 0)
+            {
+                foreach(string fieldName in model.IncludeFieldTypes)
+                {
+                    if (!Company.FieldTypes.Any(x=>x.AssetTypeID == model.AssetTypeID && x.Name==fieldName))
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request",  $"Field '{fieldName}' is not valid for Asset Type specified.");
+                    }
+                }                
+            }            
+
+            var existingTemplateSQL = "select 1 from AssetTypeExportTemplate where Name = @name";
+
+            if (Company.Database.Connection.ExecuteScalar<bool>(existingTemplateSQL, new { name = model.Name })){
+                return errorMessageResponse(HttpStatusCode.Conflict, "Conflict", $"Template named '{model.Name}' already exists.");
+            }
+
+            var createExportTemplateSQL = $@"insert into AssetTypeExportTemplate 
+                                                (Name, Description, AssetTypeID, ExportViewType,IncludeUrl,IncludeParent,UpdatedBy,UpdatedOn,UsageNotes) 
+                                                OUTPUT INSERTED.Id
+                                            values
+                                                (@n,@d,@atID,@e,@url,@parent,@upd,@updOn,@notes)";
+
+            var templateId = await Company.Database.Connection.ExecuteScalarAsync<int>(createExportTemplateSQL, new { atID = model.AssetTypeID, n = model.Name, d = model.Description, e = model.ExportViewType, url = model.IncludeUrl, parent = model.IncludeParent, upd = Company.CurrentResourceID, updOn = DateTime.UtcNow, notes = model.UsageNotes });
+
+            var res = templateId;
+            if (templateId > 0 && model.IncludeFieldTypes != null && model.IncludeFieldTypes.Length > 0)
+            {
+                res = SetIncludedFieldTypes(model.ID, model.IncludeFieldTypes, true);               
+            }
+            
+            if (res <= 0)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template",  "An unknown error occurred while processing this request.");
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
         }
 
         /// <summary>
@@ -157,7 +203,8 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("Styles/{templateId:int}"),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public IEnumerable<AssetTypeExportTemplateStyle> GetStyles(int templateId)
         {
@@ -185,7 +232,8 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("Style"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<AssetTypeExportTemplateStyle> SaveTemplateStyle(AssetTypeExportTemplateStyle model)
         {
@@ -220,7 +268,8 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotAcceptable, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<AssetTypeExportTemplateStyle> UpdateTemplateStyle(int id, AssetTypeExportTemplateStyle model)
         {
@@ -264,7 +313,8 @@ namespace d360.web.Controllers.V2
             Route("Style/{id}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> DeleteStyle(int id)
         {
@@ -289,7 +339,8 @@ namespace d360.web.Controllers.V2
             Route("TemplateFile/{templateId}"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "Error while opening file.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "Error while opening file.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> PostTemplateFile(int templateId)
         {
@@ -330,42 +381,73 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{id}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Export Template not found to update.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotAcceptable, "AssetType does not support Export Template.", typeof(ErrorResponse))
+            Route("{templateUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),            
+            SwaggerResponse(HttpStatusCode.OK, "Template Updated Successfully", typeof(AssetTypeExportTemplate)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Export Template not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<AssetTypeExportTemplate> Put(int id, AssetTypeExportTemplate model)
+        public async Task<IHttpActionResult> UpdateTemplate(Guid templateUid, AssetTypeExportTemplate model)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
             //Validate and map asset type uid to to id
             if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
+
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
+
             model.AssetTypeID = assetType?.ID ?? 0;
-            if(assetType.Class != core.enums.AssetTypeClass.BusinessAsset 
-                && assetType.Class != core.enums.AssetTypeClass.TechnicalAsset
-                && assetType.Class != core.enums.AssetTypeClass.Rule)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "AssetType does not support Export Template."));
+            if(assetType.Class != AssetTypeClass.BusinessAsset 
+                && assetType.Class != AssetTypeClass.TechnicalAsset
+                && assetType.Class != AssetTypeClass.Rule)
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetType does not support Export Template.");
 
             //validate the model input
-            if (model.ID <= 0 || string.IsNullOrEmpty(model.Name) || model.AssetTypeID <= 0)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
+            //if (model.ID <= 0 || string.IsNullOrEmpty(model.Name) || model.AssetTypeID <= 0)
+            //    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "Model does not contain required fields.");
+
+            if (string.IsNullOrEmpty(model.Name))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "Name is a required field.");
+            }
+            if (model.ID <= 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "ID is a required field.");
+            }
+            if (model.AssetTypeID <= 0)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetType not found for the UID provided.");
+            }
 
             //check that there is a export template exists
-            if (!Company.AssetTypeExportTemplates.Any(x => x.ID == model.ID))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain a valid existing export template."));
+            if (!Company.AssetTypeExportTemplates.Any(x => x.uid == templateUid))
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found",  "Export Template not found matching the Uid Provided.");
+            }
+            else if (!Company.AssetTypeExportTemplates.Any(x => x.uid == templateUid && x.ID == model.ID))
+            {
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found", "Export Template ID does not match the Uid Provided.");
+            }                           
+            
+            var res = await Company.Database.Connection.ExecuteAsync("update AssetTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent, UsageNotes =@notes,AssetTypeID=@ty  where id = @id", new { ty = model.AssetTypeID, url = model.IncludeUrl, parent = model.IncludeParent, name = model.Name, id = model.ID, desc = model.Description, exp = model.ExportViewType, notes = model.UsageNotes });
 
-            //create the new record
-            var res = await Company.Database.Connection.ExecuteAsync("update AssetTypeExportTemplate set Name = @name,Description = @desc, ExportViewType = @exp, IncludeUrl = @url, IncludeParent = @parent,IncludeFields = @incl, UsageNotes =@notes,AssetTypeID=@ty  where id = @id", new { ty = model.AssetTypeID, url = model.IncludeUrl, parent = model.IncludeParent, name = model.Name, id = id, desc = model.Description, exp = model.ExportViewType, incl = model.IncludeFields, notes = model.UsageNotes });
+            if (res > 0)
+            {
+                res = SetIncludedFieldTypes(model.ID, model.IncludeFieldTypes);
+            }
 
-            if (res > 0) return model; // updated
-
-            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template not found to update."));
+            if (res >= 0)
+            {
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+            }
+            else
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Updating Template", "An unknown error occurred while processing this request.");                
+            }            
         }
 
         /// <summary>
@@ -496,5 +578,41 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
+        private int SetIncludedFieldTypes(int templateId, string[] fieldTypes, bool isInsert = false)
+        {
+            var deleteIncludeFieldTypeList = $@"
+                                            delete from AssetTypeExportTemplateField where TemplateID = @templateId";
+
+            var createIncludeFieldTypeList = $@"                                          
+                                            insert into AssetTypeExportTemplateField 
+                                                (TemplateID, FieldTypeId, [Order])
+                                            select 
+                                                ATET.ID, FT.ID, @order
+                                            from 
+                                                AssetTypeExportTemplate ATET
+                                                INNER JOIN
+                                                FieldType FT on ATET.AssetTypeID = FT.AssetTypeID and ATET.ID = @templateId and FT.Name = @name";
+
+            var parameters = new List<DynamicParameters>();
+
+            for (int i = 0; i < fieldTypes.Length; i++)
+            {
+                var p = new DynamicParameters();
+                p.Add("@templateId", templateId);
+                p.Add("@order", i + 1);
+                p.Add("@name", fieldTypes[i]);
+
+                parameters.Add(p);
+            }
+
+            int result = 0;
+
+            if (!isInsert)
+            {
+                result = Company.Database.Connection.ExecuteAsync(deleteIncludeFieldTypeList, new { templateId }).Result;
+            }
+
+            return result < 0 ? result : Company.Database.Connection.ExecuteAsync(createIncludeFieldTypeList, parameters).Result;
+        }
     }
 }
