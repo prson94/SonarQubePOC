@@ -103,11 +103,14 @@
             </div>
             <form *ngIf="form != null" [formGroup]="form">
                 <div class="row">
-                    <ig-date name="myDate"
-                             [form]="form"
-                             errorLabel="Please choose a date in the future"
+                    <ig-date formControlName="myDate"
                              required="true">
                     </ig-date>
+                    <span *ngIf="form.get('myDate').invalid && (form.get('myDate').dirty || form.get('myDate').touched)">
+                        <span *ngIf="form.get('myDate').errors.invalidDate" style="color: maroon">
+                            Please select a date in the future
+                        </span>
+                    </span>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">

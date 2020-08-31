@@ -1,51 +1,21 @@
-﻿<ng-container *ngIf="form != null" [formGroup]="form">
-    <div class="control-container" tabindex="-1">
-        <p-calendar #control
-                    [tabindex]="tabindex"
-                    [ngModel]="ngModel"
-                    (ngModelChange)="ngModelChange.emit($event)"
-                    [name]="name"
-                    [style]="style"
-                    [styleClass]="getStyleClass"
-                    [inputStyle]="inputStyle"
-                    [inputStyleClass]="getInputStyleClass"
-                    [placeholder]="placeholder"
-                    [appendTo]="appendTo"
-                    [minDate]="minDate"
-                    [maxDate]="maxDate"
-                    [required]="required ? 'true' : null"
-                    [disabled]="disabled"
-                    [dateFormat]="dateFormat"
-                    [showIcon]="true"
-                    icon="fa fa-calendar"
-                    [formControlName]="name">
-        </p-calendar>
-    </div>
-    <div *ngIf="errorLabel && formControlError">
-        <span class="ig-error-label">
-            {{errorLabel}}
-        </span>
-    </div>
-</ng-container>
-<ng-container *ngIf="form == null">
-    <div class="control-container"  tabindex="-1">
-        <p-calendar [tabindex]="tabindex"
-                    [ngModel]="ngModel"
-                    (ngModelChange)="ngModelChange.emit($event)"
-                    [name]="name"
-                    [style]="style"
-                    [styleClass]="getStyleClass"
-                    [inputStyle]="inputStyle"
-                    [inputStyleClass]="getInputStyleClass"
-                    [placeholder]="placeholder"
-                    [appendTo]="appendTo"
-                    [minDate]="minDate"
-                    [maxDate]="maxDate"
-                    [required]="required ? 'true' : null"
-                    [disabled]="disabled"
-                    [dateFormat]="dateFormat"
-                    [showIcon]="true"
-                    icon="fa fa-calendar">
-        </p-calendar>
-    </div>
-</ng-container>
+﻿<div class="control-container"  tabindex="-1">
+    <p-calendar [tabindex]="tabindex"
+                [ngModel]="ngModel"
+                (ngModelChange)="tryChangeValue($event)"
+                [name]="name"
+                [style]="style"
+                [styleClass]="getStyleClass"
+                [inputStyle]="inputStyle"
+                [inputStyleClass]="getInputStyleClass"
+                [placeholder]="placeholder"
+                [appendTo]="appendTo"
+                [minDate]="minDate"
+                [maxDate]="maxDate"
+                [required]="required ? 'true' : null"
+                [disabled]="disabled"
+                [dateFormat]="dateFormat"
+                [showIcon]="true"
+                icon="fa fa-calendar">
+    </p-calendar>
+</div>
+

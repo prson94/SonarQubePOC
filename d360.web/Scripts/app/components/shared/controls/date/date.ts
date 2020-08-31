@@ -7,7 +7,7 @@
     NgModule,
     ChangeDetectorRef,
     ViewEncapsulation,
-    ChangeDetectionStrategy,
+    ChangeDetectionStrategy,
     forwardRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -15,8 +15,6 @@ import { CalendarModule } from 'primeng/calendar';
 import {
     FormsModule,
     ReactiveFormsModule,
-    FormGroup,
-    AbstractControl,
     NG_VALUE_ACCESSOR,
     ControlValueAccessor
 } from '@angular/forms';
@@ -37,9 +35,7 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class IgDate implements ControlValueAccessor, OnInit  {        
-    @Input() ngModel: Date;
     @Input() style: string;
-    @Input() errorLabel: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;
     @Input() inputStyleClass: string;
@@ -53,16 +49,13 @@ export class IgDate implements ControlValueAccessor, OnInit  {
     @Input() dateFormat: string = "mm/dd/yy";
     @Input() name: string;
     @Input() label: string;
-    @Input() form: FormGroup;
+
 
     protected value = null;
 
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
-
-    @Output() ngModelChange = new EventEmitter<Date>()
-    protected formControl: AbstractControl;
 
     constructor(
         protected ref: ChangeDetectorRef
@@ -80,16 +73,6 @@ export class IgDate implements ControlValueAccessor, OnInit  {
 
     get getInputStyleClass(): string {
         return this.inputStyleClass == null ? 'ig-date ig-input' : this.inputStyleClass + ' ig-date ig-input';
-
-    }
-
-    get formControlError(): boolean {
-        if (this.form != null && this.form.contains(this.name)) {
-            let control = this.form.get(this.name);
-            return (!control.valid && control.dirty && control.touched);
-        }
-
-        return false;
 
     }
 
