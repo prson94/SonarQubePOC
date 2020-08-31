@@ -20,7 +20,7 @@ export class ConnectorLabelService extends BaseObservableService {
 
 
     public getAvailableLabels(q: string, isExactValue: boolean = false, getUseCount: boolean = false, excludeUid: number = null): Observable<any[]> {
-        let url = `/api/v2/connectorLabels/search?q=` + escape(q);
+        let url = `/api/v2/connectorLabels/search?q=` + encodeURIComponent(q);
         if (isExactValue) {
             url = url + '&isExact=true';
         }
