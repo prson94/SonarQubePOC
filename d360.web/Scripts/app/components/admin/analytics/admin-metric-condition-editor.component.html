@@ -21,7 +21,7 @@
         </p-dropdown>
         <div class="input-container">
             <div *ngIf="condition?.FieldType?.Type == 'Text'">
-                <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" />
+                <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" maxlength="250" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
                 <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [dataKey]="'value'" [options]="condition.lookupOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
