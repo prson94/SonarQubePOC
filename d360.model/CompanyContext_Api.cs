@@ -901,7 +901,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string,double> metrics = null, int step = 0)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string, double> metrics = null, int step = 0)
         {
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
@@ -913,7 +913,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                             inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
                             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-            if(metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> loadfields", sw.ElapsedMilliseconds, ++step);
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> loadfields", sw.ElapsedMilliseconds, ++step);
 
             sw.Restart();
 
@@ -985,7 +985,8 @@ CREATE TABLE #FieldJsonProperty (
                 BatchSize = SqlBulkBatchSize,
                 DestinationTableName = "#FieldJsonProperty",
                 BulkCopyTimeout = SqlBulkBatchTimeout
-            }){
+            })
+            {
 
                 bulkCopy.ColumnMappings.Add("FieldID", "FieldID");
                 bulkCopy.ColumnMappings.Add("Name", "Name");
@@ -1251,7 +1252,7 @@ where T.ExecutionId = @executionid;
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
-            DataTable fieldTable, out bool success, out string errorMessage,            
+            DataTable fieldTable, out bool success, out string errorMessage,
             bool useFriendlyNames = false,
             bool allowTagFields = false,
             FieldValidationFieldProperties validationFieldProperties = null
@@ -1261,7 +1262,7 @@ where T.ExecutionId = @executionid;
             List<string> errorMessages = new List<string>();
             string errorDelimiter = ". ";
             success = true;
-            errorMessage = string.Empty;            
+            errorMessage = string.Empty;
             FieldType fieldType = null;
 
             // Contains all required fields?
@@ -1303,7 +1304,7 @@ where T.ExecutionId = @executionid;
                             errorMessages.Add($"The Color field must be a seven character RGB code or the name of a Govern color");
                             success = false;
                         }
-                        if(validationFieldProperties != null) validationFieldProperties.ContainsColorField = true;
+                        if (validationFieldProperties != null) validationFieldProperties.ContainsColorField = true;
                     }
                     else if (ot == "FusionAttributeType")
                     {
@@ -1329,7 +1330,7 @@ where T.ExecutionId = @executionid;
                                 {
                                     errorMessages.Add($"The Icon field must be fifty characters or less in length and start with 'fa-'");
                                     success = false;
-                                }                                
+                                }
                                 break;
                             case "referenceitemtypeid":
                                 break;
@@ -3105,12 +3106,12 @@ where   ExecutionID = @ExecutionID
             return results;
         }
 
-        private void AddMeasurement(Dictionary<string,double> metrics, string key, double value, int stepNumber)
+        private void AddMeasurement(Dictionary<string, double> metrics, string key, double value, int stepNumber)
         {
             metrics[$"{stepNumber}-{key}"] = value;
         }
 
-        private void AITrackMetric(TelemetryClient client, ApiExecution execution, string methodName, Dictionary<string,double> metrics, bool isLog)
+        private void AITrackMetric(TelemetryClient client, ApiExecution execution, string methodName, Dictionary<string, double> metrics, bool isLog)
         {
             if (!isLog) return;
 
@@ -3173,7 +3174,7 @@ where   ExecutionID = @ExecutionID
             }
 
             // Only start processing if the duplication checks have passed
-            if(!hasDuplicateUids)
+            if (!hasDuplicateUids)
             {
                 var sw = Stopwatch.StartNew();
 
@@ -3299,7 +3300,7 @@ where   ExecutionID = @ExecutionID
                         if (i > currentLocation.HighestItemNumber)
                         {
                             bool success;
-                            string errorMessage;                            
+                            string errorMessage;
                             var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
 
                             if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
@@ -3461,24 +3462,24 @@ where   ExecutionID = @ExecutionID
                                 bulkCopy.WriteToServer(table);
                             }
 
-                                if (errorTable.Rows.Count > 0)
+                            if (errorTable.Rows.Count > 0)
+                            {
+                                using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
                                 {
-                                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
-                                    {
-                                        // asset errors
-                                        bulkCopy.BatchSize = SqlBulkBatchSize;
-                                        bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-                                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+                                    // asset errors
+                                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                                    bulkCopy.DestinationTableName = "api.ExecutionAssetError";
+                                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
-                                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                                        bulkCopy.ColumnMappings.Add("Message", "Message");
+                                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("Message", "Message");
 
-                                        bulkCopy.WriteToServer(errorTable);
-                                    }
+                                    bulkCopy.WriteToServer(errorTable);
                                 }
+                            }
 
                             using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
                             {
@@ -3567,7 +3568,7 @@ where   ExecutionID = @ExecutionID
 
                     if (at.Class == AssetTypeClass.Policy || at.Class == AssetTypeClass.Model)
                     {
-                        LogPolicyHierMaxLimitErrors(execution.ExecutionID, isInsert, intersectTypeID, at.HierarchyMaximumDepth,  timeout);
+                        LogPolicyHierMaxLimitErrors(execution.ExecutionID, isInsert, intersectTypeID, at.HierarchyMaximumDepth, timeout);
                     }
 
 
@@ -4300,7 +4301,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             var model = import[i - 1];
 
                             bool success;
-                            string errorMessage;                            
+                            string errorMessage;
                             var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
 
                             if (success)
@@ -4401,7 +4402,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             bulkCopy.WriteToServer(fieldTable);
                         }
                     }
-                                        
+
                     AddMeasurement(metrics, "Bulk Copy", sw.ElapsedMilliseconds, ++step);
                     #endregion
                     sw.Restart();
@@ -4756,14 +4757,14 @@ end",
                                     AddMeasurement(metrics, "Intersect table merge", sw.ElapsedMilliseconds, ++step);
                                     #endregion
                                     fieldTypeUpdates.Clear();
-                                    
+
                                     if (relationshipTypeHasFieldTypes)
                                     {
                                         sw.Restart();
                                         fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
                                     }
-                                    
+
                                     // Update success flag
                                     sw.Restart();
                                     Connection.Execute(
@@ -5218,6 +5219,21 @@ from    [Intersect] T
                                                         inner join [Predicate] P on P.ID = I.PredicateID
                                                     where I.Uid = ER.[UID] and P.[TYPE]  in @disallowEditIds)
                           ", new { executionID = execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
+
+
+            //Check for diagram relationships
+            Connection.Execute(@"
+                                    Update ER
+                                    Set Success=0,
+                                    Message='Relationship type has existing relationships' 
+                                    from [api].[ExecutionDeletedRelationshipType] ER
+                                    where  ER.ExecutionID=@executionID and ER.[Cascade] =0 and
+                                    ER.Success is null
+                                    and  exists (select it.id from processexpandeddata ped
+                                inner join IntersectType it on it.uid = ER.Uid
+                                where ped.DiagramAssetTypeUid = it.SubjectUid 
+                                and (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid) )
+                            ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
 
             Connection.Execute(@"
@@ -6662,7 +6678,8 @@ insert into #Keys
         {
             var ruleResults = new DataTable();
             ruleResults.Columns.Add("RuleResultUid", typeof(Guid));
-            ruleResultUids.ForEach(r => {
+            ruleResultUids.ForEach(r =>
+            {
                 var dr = ruleResults.NewRow();
                 dr["RuleResultUid"] = r;
                 ruleResults.Rows.Add(dr);
@@ -7305,7 +7322,8 @@ where	match(Ea-(E)->Re)
             }
 
             var ruleResultUids = results.Where(i => i.Success).Select(i => i.Uid.Value).ToList();
-            if (ruleResultUids.Count > 0) {
+            if (ruleResultUids.Count > 0)
+            {
                 var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
                 if (assetMeasures.Count > 0)
                 {

@@ -315,7 +315,7 @@ namespace d360.model
                                             VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
                                     WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
                                         THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID } );
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
 
 
                     }
@@ -3180,6 +3180,14 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             inner join asset a on a.id = apd.AssetID
                             where json.uid = @assetUid";
             return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
+        }
+        public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
+        {
+            return Query<int>(@"select count(*) from processexpandeddata ped
+                            inner join IntersectType it on it.uid = @intersectTypeUid
+                            where ped.DiagramAssetTypeUid = it.SubjectUid and 
+                            (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
+                            new { intersectTypeUid }).FirstOrDefault() > 0;
         }
     }
 }
