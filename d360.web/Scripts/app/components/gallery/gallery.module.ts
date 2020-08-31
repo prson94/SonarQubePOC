@@ -70,7 +70,7 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         GalleryTooltipComponent,
         GalleryAutocompleteComponent,
         GalleryTextAreaComponent,
-        GalleryAutoFocusComponent
+        GalleryAutoFocusComponent,
         GalleryDatePickerComponent,
     ],
     providers: [
