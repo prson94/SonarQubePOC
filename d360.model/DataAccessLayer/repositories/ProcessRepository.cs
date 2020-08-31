@@ -57,7 +57,7 @@ namespace d360.model.DataAccessLayer
 						A.[State] = 1 and A.ObjectID != 0 and Class = 15
 						order by Name ";
 
-            var nodes = await Company.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram });
+            var nodes = await Company.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram }, ApiTimeout);
             return nodes;
         }
 
@@ -121,7 +121,7 @@ namespace d360.model.DataAccessLayer
 						) as Fields
 						for json path
 	                    )field(json)
-                    where A.uid in @assetUids", new { assetUids }).ToList();
+                    where A.uid in @assetUids", new { assetUids }, ApiTimeout).ToList();
 
             var badges = GetDiagramAssetBadges(assetUid);
 
@@ -176,7 +176,7 @@ namespace d360.model.DataAccessLayer
                 FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
                 select links.*, CL.Value from links
 				 inner join ConnectorLabel CL on CL.uid = links.labeluid and CL.State <> 3
-				where labeluid is not null", new { assetUid }).ToList();
+				where labeluid is not null", new { assetUid }, ApiTimeout).ToList();
 
             foreach (var item in linksExpandedData)
             {
@@ -645,7 +645,7 @@ new
 				)Rels(cnt)
             group by a.uid";
 
-            var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid });
+            var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid }, ApiTimeout);
             return response;
         }
 
@@ -722,7 +722,7 @@ new
                 inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
                 inner join AssetType AT on AT.Id = O.AssetTypeID
                 order by FD.FormattedValue,FD2.FormattedValue
-                ", new { assetUid = asset.uid });
+                ", new { assetUid = asset.uid }, ApiTimeout);
 
             foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
             {
@@ -855,7 +855,7 @@ new
                 select at.uid as AssetTypeUid, at.Name as AssetTypeName, string_agg(cast(a.uid as nvarchar(36)),',') as assets from links
                 inner join Asset A on a.uid = links.AssetUid
                 inner join AssetType at on at.id = a.AssetTypeID
-                group by at.uid, at.name", new { assetUid = asset.uid });
+                group by at.uid, at.name", new { assetUid = asset.uid }, ApiTimeout);
 
             foreach (var type in types)
             {
@@ -955,7 +955,7 @@ order by try_cast (f1_step.FormattedValue as decimal(15,3)) asc, f1_name.Formatt
             "Next Asset Name","Asset UID","Asset ID","Asset URL",
             "Next Asset UID","Next Asset ID","Next Asset URL"
             };
-            var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid });
+            var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid }, ApiTimeout);
             int index = 1;
 
             foreach (var field in diagramFields)

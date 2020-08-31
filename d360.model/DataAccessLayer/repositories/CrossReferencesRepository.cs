@@ -71,29 +71,29 @@ namespace d360.model.DataAccessLayer
             {
                 sql += " where " + string.Join(" and ", queryFilters);
             }
-            var assetCrossReferences = await CompanyContext.QueryAsync<AssetCrossReference>(sql, dbArgs);
+            var assetCrossReferences = await CompanyContext.QueryAsync<AssetCrossReference>(sql, dbArgs, ApiTimeout);
             return assetCrossReferences;
         }
 
         public async Task<IEnumerable<AssetCrossReference>> GetByAssetUid(string assetUid)
         {
-            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where uid = @assetUid", new { assetUid });
+            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where uid = @assetUid", new { assetUid }, ApiTimeout);
         }
 
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByTypeId(string type, string externalId)
         {
-            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type and [ExternalID] = @externalId", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true }, externalId });
+            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type and [ExternalID] = @externalId", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true }, externalId }, ApiTimeout);
         }
 
 
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByType(string type)
         {
-            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true } }); 
+            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true } }, ApiTimeout); 
         }
 
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByDataSource(string dataSource)
         {
-            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [datasource] = @dataSource", new { dataSource = new DbString { Value = dataSource, IsFixedLength = true, Length = 250, IsAnsi = true } });
+            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [datasource] = @dataSource", new { dataSource = new DbString { Value = dataSource, IsFixedLength = true, Length = 250, IsAnsi = true } }, ApiTimeout);
         }
 
 

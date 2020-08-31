@@ -647,7 +647,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
             var model = new MetricAssetTypeHierarchyModels();
             var builder = new MetricHierarchyBuilder();
 
@@ -713,7 +713,7 @@ where	O.RowNum = 1";
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
 
             var model = new MetricAssetHierarchyModels();
             results.ForEach(i => { model.Add(i); });
@@ -727,7 +727,7 @@ select  distinct
         ma.scoretype 
 from    metrics.Allocation  ma
 		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 and ms.EndDate is null";
-            return Company.Query<int>(sql, new { assetUid }).ToList();
+            return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricStructureFragments(Guid allocationUid)
@@ -782,7 +782,7 @@ from    metrics.Allocation  ma
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
-                    for		json path", new { allocationUid }).ToList();
+                    for		json path", new { allocationUid }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricFieldFragments(Guid assetTypeUid)
@@ -801,7 +801,7 @@ from    metrics.Allocation  ma
                             		) as [Values]
                             from	AssetType A
                             		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
-                            for		json path", new { assetTypeUid }).ToList();
+                            for		json path", new { assetTypeUid }, ApiTimeout).ToList();
         }
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
@@ -831,7 +831,7 @@ from    (
                 and P.AssetTypeid = @assetTypeId
         ) P
 order by P.[Path]";
-            return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType });
+            return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType }, ApiTimeout);
         }
 
         public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -1002,7 +1002,7 @@ from    metrics.Score MS
         {fieldJoinStatement} 
         {outerWhere}";
 
-            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
+            result.total = Company.Query<int>(countSql, parameters, ApiTimeout).FirstOrDefault();
 
             var sql = $@"
 select      MS.AssetUid,
@@ -1026,7 +1026,7 @@ order by    MS.AssetUid
 offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
 for json path";
 
-            var itemsJson = string.Join("", Company.Query<string>(sql, parameters).ToList());
+            var itemsJson = string.Join("", Company.Query<string>(sql, parameters, ApiTimeout).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
@@ -1213,8 +1213,8 @@ for json path";
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);
 
-            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters).FirstOrDefault();
-            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters).ToList();
+            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
+            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
             
             if (result.items == null)
             {
@@ -1238,7 +1238,7 @@ for json path";
 	                                    and 
 	                                    AR.Uid = @Uid";
 
-            return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters).ToList();
+            return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters, ApiTimeout).ToList();
         }
 
         public List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> request, ApiExecution execution)
@@ -1329,7 +1329,7 @@ for json path";
 select  max(S.EffectiveDate) as EffectiveDate 
 from    metrics.ScoreItem I 
         inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricVersionUid 
-        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }).FirstOrDefault();
+        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }, ApiTimeout).FirstOrDefault();
         }
 
         public List<string> GetMetricVersionHistory(Guid measureUid)
@@ -1379,7 +1379,7 @@ from    metrics.ScoreItem I
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate
 					where A.Uid = @measureUid
 					Order by version
-                    for		json path", new { measureUid }).ToList();
+                    for		json path", new { measureUid }, ApiTimeout).ToList();
         }
     }
 }

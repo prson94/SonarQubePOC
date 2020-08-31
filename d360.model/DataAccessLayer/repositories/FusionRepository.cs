@@ -12,16 +12,18 @@ using d360.core.queue;
 using d360.extensions;
 using Newtonsoft.Json;
 using d360.core;
+using d360.model.DataAccessLayer.repositories;
 
 namespace d360.model.DataAccessLayer
 {
-    public class FusionRepository : IFusionRepository
+    public class FusionRepository : BaseRepository, IFusionRepository
     {
         internal ICompanyContext CompanyContext;
         internal IStorageProvider StorageProvider;
         internal IQueueSource QueueSource;
 
         public FusionRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider)
+            : base(context)
         {
             this.CompanyContext = context;
             this.StorageProvider = storageProvider;

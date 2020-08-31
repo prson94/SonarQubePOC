@@ -201,7 +201,7 @@ namespace d360.web.Controllers.V2
 
                 sql += " " + orderBySql + " " + offsetSql;
 
-                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs);
+                var query = Company.Query<AssetAuditApiItemModel>(sql, dbArgs, ApiTimeout);
 
                 if (isStreamResponse)
                 {
@@ -218,7 +218,7 @@ namespace d360.web.Controllers.V2
                 else
                 {
                     var model = new AssetsApiViewModel();
-                    model.total = Company.Query<int>(countSql, dbArgs).First();
+                    model.total = Company.Query<int>(countSql, dbArgs, ApiTimeout).First();
                     model.pageNum = pageNum;
                     model.pageSize = pageSize;
                     model.items = query;
@@ -250,21 +250,21 @@ namespace d360.web.Controllers.V2
         public dynamic GetLegacyObjectDetails(Guid assetUid)
         {
             dynamic result;
-            result = Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
+            result = Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             if (result == null)
-                result = Company.Query<dynamic>($@"select Object,ObjectId,Name as DisplayValue from AssetType where uid = @assetUid", new { assetUid }).FirstOrDefault();
+                result = Company.Query<dynamic>($@"select Object,ObjectId,Name as DisplayValue from AssetType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             if (result == null)
-                result = Company.Query<dynamic>($@"select 'Tag' as Object, ID as ObjectId,Value as DisplayValue from Tag where uid = @assetUid", new { assetUid }).FirstOrDefault();
+                result = Company.Query<dynamic>($@"select 'Tag' as Object, ID as ObjectId,Value as DisplayValue from Tag where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             if (result == null)
-                result = Company.Query<dynamic>($@"select 'IssueType' as Object, ID as ObjectId, Name as DisplayValue from IssueType where uid = @assetUid", new { assetUid }).FirstOrDefault();
+                result = Company.Query<dynamic>($@"select 'IssueType' as Object, ID as ObjectId, Name as DisplayValue from IssueType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             if (result == null)
                 result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, itn.name as DisplayValue
                     from dbo.[IntersectType] IT
-                    CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }).FirstOrDefault();
+                    CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
             
             return result;
@@ -319,7 +319,7 @@ namespace d360.web.Controllers.V2
                 sql = base.applySortSuffix(sql, Request, "Date", "desc", stFieldType);
                 sql = base.applyPagingSuffix(sql, Request);
 
-                var query = Company.Query<dynamic>(sql, dbArgs);
+                var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { total, results = query })));
             }
@@ -364,7 +364,7 @@ namespace d360.web.Controllers.V2
             dbArgs.Add("objId", id);
 
 
-            var query = Company.Query<dynamic>(sql, dbArgs);
+            var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
             var document = GetExcelDocumentFromQuery(query);
 
             var stream = new MemoryStream();

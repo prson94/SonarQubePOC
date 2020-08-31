@@ -102,7 +102,7 @@ namespace d360.model.DataAccessLayer
                                                                             from[Predicate] P
                                                                             outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
                                                                             {whereClause}          
-                                                                            order by[Type], Name", dbArgs);
+                                                                            order by[Type], Name", dbArgs, ApiTimeout);
             return allPredicates.Where(x => x.Type.AsInfoModel().LineageVersionsSupported.Contains(currentLineageversion));
         }
 
@@ -145,7 +145,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-                        fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
+                        fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }, ApiTimeout).ToList();
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
@@ -307,7 +307,7 @@ select	@pageSize as 'pageSize',
 		) as 'items'
 for json path, WITHOUT_ARRAY_WRAPPER";
 
-            var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
+            var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
 
           return models;
         }
@@ -407,7 +407,7 @@ from	IntersectType I
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
         {whereClause} for json path";
 
-            var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
+            var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs, ApiTimeout);
 
             return models;
         }
@@ -465,7 +465,7 @@ from	IntersectType I
                     PredicateName 
                 from 
                     intersectdetail 
-                where intersecttypeid = @id", new { id = id });
+                where intersecttypeid = @id", new { id }, ApiTimeout);
         }
 
         public IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns)
@@ -483,7 +483,7 @@ from	IntersectType I
                 "select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
                 "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , i.SubjectUid, i.ObjectUid, " + CteColumnName +
                 " from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
-            var models = companyContext.Query<dynamic>(sql, new { id = id });
+            var models = companyContext.Query<dynamic>(sql, new { id }, ApiTimeout);
             return models;
         }
 
@@ -813,7 +813,7 @@ from	IntersectType I
             return companyContext.Query<dynamic>(
                 @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
-				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
         }
 
         public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal)
@@ -829,7 +829,7 @@ from	IntersectType I
                         where 
 	                        i.IntersectTypeID = @intersectTypeID";
 
-                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID });
+                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID }, ApiTimeout);
             }
 
             var sql = @"
@@ -888,7 +888,7 @@ from	IntersectType I
 
                         end";
 
-            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize } );
+            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize }, ApiTimeout);
 
             return new RelationshipUidResult { Total = total, Results = results };
         }

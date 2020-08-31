@@ -250,8 +250,8 @@ namespace d360.web.Controllers.V2
                 string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
                 finalSql += offsetSql;
 
-                var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
-                var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
+                var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
+                var countResults = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
@@ -489,8 +489,8 @@ namespace d360.web.Controllers.V2
             model.pageSize = _pageSize;
             string offsetSql = $" Order by gr.ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
             finalSql += offsetSql;
-            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
-            var count = await Company.QueryAsync<int>(countSql, dbArgs);
+            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs, ApiTimeout);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
@@ -506,7 +506,7 @@ namespace d360.web.Controllers.V2
         {
             string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
 
-            var results = await Company.QueryAsync<dynamic>(sql);
+            var results = await Company.QueryAsync<dynamic>(sql, ApiTimeout);
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 

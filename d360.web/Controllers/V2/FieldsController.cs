@@ -1077,7 +1077,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 list.AddRange(
-                    await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid })
+                    await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid }, ApiTimeout)
                 );
 
                 return Request.CreateResponse(HttpStatusCode.OK, list);
@@ -1336,7 +1336,7 @@ namespace d360.web.Controllers.V2
                     objectType,
                     objectId
                 };
-                var list = await Company.QueryAsync<dynamic>(sql, parms);
+                var list = await Company.QueryAsync<dynamic>(sql, parms, ApiTimeout);
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new
                 {
@@ -1385,7 +1385,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid)", new { assetTypeUid });
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid)", new { assetTypeUid }, ApiTimeout);
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
@@ -1428,7 +1428,7 @@ select	cast(C.uid as varchar(36)) + '|' +  cast(C.ObjectUid as varchar(36)) + '|
 		C.ObjectName as title
 from	IntersectType I
 		inner join IntersectTypeDetail C on C.Subject = 'IntersectType' and C.SubjectID = I.ID
-where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
+where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
@@ -1483,6 +1483,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 var intersectTypes = await Company.QueryAsync<dynamic>(
                     $@"select cast(uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|' + @direction as value, SubjectName as title from IntersectTypeDetail where PredicateType = @pt and ObjectUid = @assetTypeUid",
                     new { pt = (int)PredicateType.InterTypeHierarchy, assetTypeUid, direction = ((int)FieldTypeComplexLookupRelationDirection.Back).ToString() }
+                    , ApiTimeout
                 );
 
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
@@ -1541,6 +1542,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 var intersectTypes = await Company.QueryAsync<dynamic>(
                     $@"select cast(uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|' + @direction as value, ObjectName as title from IntersectTypeDetail where PredicateType = @pt and SubjectUid = @assetTypeUid",
                     new { pt = (int)PredicateType.InterTypeHierarchy, assetTypeUid, direction = ((int)FieldTypeComplexLookupRelationDirection.Forward).ToString() }
+                    , ApiTimeout
                 );
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
@@ -1929,7 +1931,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
 
                 var types = Company.Query<int>(
                     "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @assetTypeUid and [State] = 1"
-                    , new { assetTypeUid }).ToList();
+                    , new { assetTypeUid }, ApiTimeout).ToList();
 
                 foreach (var type in types)
                 {

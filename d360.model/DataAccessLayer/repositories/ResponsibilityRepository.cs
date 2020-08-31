@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class ResponsibilityRepository : IResponsibilityRepository
+    public class ResponsibilityRepository : BaseRepository, IResponsibilityRepository
     {
         ICompanyContext Company;
         public ResponsibilityRepository(ICompanyContext companyContext)
+            : base(companyContext)
         {
             this.Company = companyContext;
         }
@@ -74,7 +76,7 @@ namespace d360.model.DataAccessLayer
 	                                    inner join [dbo].OrganizationResource og on (og.OrganizationID = rsa.SecurityAssetID and rsa.SecurityAsset = 'O')
                                     where rtr.[uid] = @uid
                                     ) a
-                            ", new { uid = responsibilityTypeRuleUid.ToString() });
+                            ", new { uid = responsibilityTypeRuleUid.ToString() }, commandTimeout: ApiTimeout);
 
             responsibilityTypeRuleStats.AssignedAssets = await Company.Database.Connection.QueryFirstOrDefaultAsync<int>(@"                            
                                     select sum(a.cnt) from 
@@ -94,7 +96,7 @@ namespace d360.model.DataAccessLayer
 	                                    where
 		                                    rtr.ApplyToType = 1 and rtr.[uid] = @uid
                                     ) a                                    
-                            ", new { uid = responsibilityTypeRuleUid.ToString() });
+                            ", new { uid = responsibilityTypeRuleUid.ToString() }, commandTimeout: ApiTimeout);
             return responsibilityTypeRuleStats;
         }
 
@@ -117,7 +119,7 @@ namespace d360.model.DataAccessLayer
 	                            inner join [dbo].[AssetType] att on (rtr.[Object] = att.[Object] and rtr.ObjectID = att.ObjectID)
                             where 
 	                            r.[uid] = @uid 
-                            ", new { uid = responsibilityTypeUid.ToString() });
+                            ", new { uid = responsibilityTypeUid.ToString() }, ApiTimeout);
         }
 
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid)
@@ -136,7 +138,7 @@ namespace d360.model.DataAccessLayer
                                 cross apply dbo.GetAssetTypeTextPathById(att.ID, ' / ') P
                             where
 	                            rt.[uid] = @uid
-                            ", new { uid = responsibilityTypeUid.ToString() });
+                            ", new { uid = responsibilityTypeUid.ToString() }, ApiTimeout);
         }
 
         public async Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypesByAssetUid(Guid assetTypeUid)
@@ -153,21 +155,21 @@ namespace d360.model.DataAccessLayer
                             where
 	                            att.[uid] = @uid
                             order by [Name] asc
-                            ", new { uid = assetTypeUid });
+                            ", new { uid = assetTypeUid }, ApiTimeout);
         }
 
         public async Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypes()
         {
             return await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
                             select [Name], [Description], [uid], [UpdatedOn] from [dbo].[responsibilitytype] order by [Name] asc
-                            ");
+                            ", ApiTimeout);
         }
 
         public async Task<dynamic> GetResponsibilityType(Guid uid)
         {
             return await Company.QueryFirstOrDefaultAsync<dynamic>($@"
                             select [ID], [Name], [Description], [uid], [UpdatedOn] from [dbo].[responsibilitytype] WHERE [uid] = '{uid.ToString()}'
-                            ");
+                            ", ApiTimeout);
         }
 
         private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, string responsibilityUidFilter, string assigneeUidFilter, int timeout = 300)
@@ -660,7 +662,7 @@ where 1=1
                     inner join ResponsibilityType RT on rt.uid = @responsibilityUid
                     inner join Asset MainAsset on MainAsset.uid = @assetUid
                     left join ResponsibilityTypeRelationOverrideItem RTO ON RTO.ResponsibilityTypeId = RT.Id and RTO.AssetId = mainasset.id and RTO.securityassetid = a.objectid
-                    where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }).ToList();
+                    where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
         }
 
         public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
