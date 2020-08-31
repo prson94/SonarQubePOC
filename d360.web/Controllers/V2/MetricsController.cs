@@ -555,7 +555,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(model.Count);
                 List<BulkMetricTemporaryTableModel> results = MetricsRepository.BulkMetricsImport(model, execution);
 
-                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (GenericException ex)
             {

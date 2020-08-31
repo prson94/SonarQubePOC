@@ -55,6 +55,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     {
                         int conditionsMetCount = 0;
 
+                        if (c.Items == null)
+                        {
+                            c.Items = new List<AllocationDataModelConditionItem>();
+                        }
+
                         c.Items.ForEach(i =>
                         {
                             var assetField = assetFields.SingleOrDefault(f => f.FieldTypeID == i.ConditionFieldTypeID);
