@@ -1,10 +1,7 @@
-﻿using d360.core.entities.Metric;
-using d360.core.queue;
-using Newtonsoft.Json;
+﻿using d360.core.queue;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
@@ -12,9 +9,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     public class ExternalScoresCreatedProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {
-            var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
-            var scoreUids = JsonConvert.DeserializeObject<List<Guid>>(json);
+        {            
+            var scoreUids = await Storage.DeserializeJsonObjectFromBlobAsync<List<Guid>>(Info.StorageFolder, Info.StorageFile);
 
             var Db = GetCompanyContext();
 
