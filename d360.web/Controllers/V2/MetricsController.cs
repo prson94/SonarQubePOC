@@ -177,6 +177,14 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (model.Description != null)
+            {
+                if (model.Description?.Length > 4000)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
+                }
+            }
+
             model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
             if (model.IsGroup && model.ConditionGroups.Count > 0)
             {

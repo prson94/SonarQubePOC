@@ -31,6 +31,8 @@ import { GalleryColorVariablesComponent } from './gallery.color-variables.compon
 import { GalleryTooltipComponent } from './gallery.tooltip.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { GalleryTextAreaComponent } from './gallery.textarea.component';
+import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { GalleryDatePickerComponent } from './gallery.date-picker.component';
 
 
@@ -53,7 +55,8 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
 
         TableModule,
         TooltipModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+        SiteModalModule
     ],
     declarations: [
         GalleryComponent,
@@ -67,6 +70,7 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         GalleryTooltipComponent,
         GalleryAutocompleteComponent,
         GalleryTextAreaComponent,
+        GalleryAutoFocusComponent
         GalleryDatePickerComponent,
     ],
     providers: [

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.GetPath-DependencyDrop-v1">
+  <changeSet author="Pappas" id="Function.graph.GetPath-DependencyDrop-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,13 +24,54 @@ drop view if exists graph.AssetNodeDisplayPath;
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Function.graph.GetPath-v4">
+  <changeSet author="MDonato" id="Function.graph.GetPath-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<comment>Any time you update this function, you must also increment version of dependent item(s) listed in changeset above, and update the version of the above changeset.</comment>
 		<![CDATA[
+create or alter function [graph].[GetPath] 
+(
+	@segments xml,
+	@levelDelimiter nvarchar(50),
+	@keyDelimiter nvarchar(50)
+)
+returns nvarchar(850) WITH SCHEMABINDING
+as
+begin
+	declare @path nvarchar(850)
+	
+	if @segments is null
+	begin
+		set @path = ''
+	end
+	else
+	begin
+		select	@path = string_agg(V, @levelDelimiter)
+		from	(
+				select	string_agg(Val, @keyDelimiter) within group(order by P) as  V
+				from	(
+						select	X.p.value('./@level', 'int') as L,
+								X.p.value('./@position', 'int') as P,
+								(select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+						from	@segments.nodes('/path/segment') X(p)
+						) O
+				group by L
+				) O
+		
+		if @path is null
+		begin
+			set @path = '[ERROR:KEY_FIELDS_NULL]'
+		end
+	end
+	
+	return @path
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [graph].[GetPath] 
 (
 	@segments xml,
@@ -66,35 +107,6 @@ begin
 		end
 	end
 	
-	return @path
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter function graph.GetPath
-(
-	@segments xml,
-	@levelDelimiter nvarchar(50),
-	@keyDelimiter nvarchar(50)
-)
-returns nvarchar(max)
-as
-begin
-	declare @path nvarchar(max)
-
-	select	@path = string_agg(V, @levelDelimiter)
-	from	(
-			select	string_agg(Val, @keyDelimiter) within group(order by P) as  V
-			from	(
-					select	X.p.value('./@level', 'int') as L,
-							X.p.value('./@position', 'int') as P,
-							X.p.value('.', 'nvarchar(250)') as Val
-					from	@segments.nodes('/path/segment') X(p)
-					) O
-			group by L
-			) O
-
 	return @path
 end
 		]]>

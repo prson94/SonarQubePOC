@@ -1,0 +1,112 @@
+﻿@{
+    Layout = null;
+
+    var VersionNumber = ViewData["VersionNumber"].ToString();
+    var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
+    var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
+
+    var baseUrl = "";
+    if ((useCdn ?? "").ToLower() == "true") {
+        baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
+    }
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Browser Unsupported</title>
+
+    <style>
+
+        .browser-warning {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            font-size: 14px;
+            color: #898d99;
+        }
+
+        .browser-warning .content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 50vw;
+            margin: 0 auto;
+            position: relative;
+            top: -20px;
+        }
+
+        .browser-warning .content div {
+            color: #6985A1;
+        }
+
+        .browser-warning .content .spacer {
+            display: block;
+            height: 20px;
+        }
+
+        .browser-warning .content .spacer-large {
+            display: block;
+            height: 32px;
+        }
+
+        .browser-warning .content .button {
+            color: #000;
+        }
+    </style>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/primeng.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
+    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/theme.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
+</head>
+<body>
+    <div class="browser-warning">
+        <div class="content">
+            <div>
+                <img src="/content/images/govern-small.svg" style="width: 400px; height: 80px" />
+            </div>
+            <div>
+                Sorry, Internet Explorer is no longer a supported browser.
+            </div>
+            <div class="spacer"></div>
+            <div>
+                Please contact your system administrator or switch to one of the supported browsers:
+            </div>
+            <div>
+                <a href="https://www.google.com/chrome/" target="_blank">Chrome (latest stable version)</a>
+            </div>
+            <div>
+                <a href="https://www.microsoft.com/en-us/edge" target="_blank">Microsoft Edge (latest Chromium based version)</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2005-<span id="year">2020</span> Infogix, Inc. All rights reserved.
+    </div>
+
+    <script>
+        (function () {
+            document.getElementById('year').innerText = (new Date().getFullYear()).toString();
+        })();
+    </script>
+</body>
+</html>

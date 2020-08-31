@@ -685,6 +685,7 @@
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-details.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
@@ -719,6 +720,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autocomplete.component.html" />
@@ -875,6 +877,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
@@ -920,6 +923,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
+    <None Include="Views\Shared\Unsupported.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
@@ -1622,6 +1628,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-autofocus.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-textarea-directive.ts" />

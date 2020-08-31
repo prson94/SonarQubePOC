@@ -24,6 +24,14 @@ namespace d360.web.Controllers
 
         #endregion
 
+
+        [ValidateContracts(Ignore = true), Authorize, Route("unsupported")]
+        public ActionResult Unsupported()
+        {
+            ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+            return View("Unsupported");
+        }
+
         /// <summary>
         /// Angular SPA
         /// </summary>

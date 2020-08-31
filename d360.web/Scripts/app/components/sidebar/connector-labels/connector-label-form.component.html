@@ -1,8 +1,8 @@
 ﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
     <div class="content">
         <label class="ig-input-label">Name</label>
-        <input *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
-        <p-autoComplete igAutocomplete *ngIf="label"
+        <input igAutoFocus *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
+        <p-autoComplete igAutoFocus igAutocomplete *ngIf="label"
                         placeholder="Value required"
                         formControlName="value"
                         (onBlur)="OnBlurTrim()"

@@ -6,6 +6,7 @@ import { ButtonDirective } from './ig-button-directive';
 import { InputDirective } from './ig-input-directive';
 import { AutocompleteDirective } from './ig-autocomplete-directive';
 import { TextAreaDirective } from './ig-textarea-directive';
+import { AutoFocusDirective } from './ig-autofocus.directive';
 
 
 @NgModule({ 
@@ -17,7 +18,8 @@ import { TextAreaDirective } from './ig-textarea-directive';
         ButtonDirective,
         InputDirective,
         TextAreaDirective,
-        AutocompleteDirective
+        AutocompleteDirective,
+        AutoFocusDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -26,7 +28,8 @@ import { TextAreaDirective } from './ig-textarea-directive';
         ButtonDirective,
         InputDirective,
         TextAreaDirective,
-        AutocompleteDirective
+        AutocompleteDirective,
+        AutoFocusDirective
     ]
 })
 export class DirectivesModule { }
