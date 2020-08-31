@@ -6,34 +6,40 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="Pappas" id="Migration.Metrics-Allocation-RegenerateMissing">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="Score" columnName="ScoreType" />
+	</preConditions>
     <comment>GOV-11999 - Adds any missing allocations based on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
-    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+	<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
       <![CDATA[
-INSERT INTO [metrics].[Allocation] ([ScoreType], [AssetTypeUid], [IsExternallyCalculated], [IsThresholdBased])
-	select	Sc.ScoreType,
-			T.Uid as AssetTypeUid,
-			iif (Sc.ScoreType = 2, 1, 0) as IsExternallyCalculated,
-			0 as IsThresholdBased
-	from	metrics.Score Sc
-			inner join Asset A on A.Uid = Sc.AssetUid
-			inner join AssetType T on T.ID = A.AssetTypeID
-			left join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
-	where	Al.Uid is null
-	group by T.Uid, Sc.ScoreType
+	INSERT INTO [metrics].[Allocation] ([ScoreType], [AssetTypeUid], [IsExternallyCalculated], [IsThresholdBased])
+		select	Sc.ScoreType,
+				T.Uid as AssetTypeUid,
+				iif (Sc.ScoreType = 2, 1, 0) as IsExternallyCalculated,
+				0 as IsThresholdBased
+		from	metrics.Score Sc
+				inner join Asset A on A.Uid = Sc.AssetUid
+				inner join AssetType T on T.ID = A.AssetTypeID
+				left join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+		where	Al.Uid is null
+		group by T.Uid, Sc.ScoreType
       ]]>
     </sql>    
   </changeSet>
 
   <changeSet author="Pappas" id="Migration.Metrics-Score-Update">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="Score" columnName="ScoreType" />
+	</preConditions>
     <comment>GOV-11999 - Update AllocationUid on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
       <![CDATA[
-update	Sc
-set		Sc.AllocationUid = Al.Uid
-from	metrics.Score Sc
-		inner join Asset A on A.Uid = Sc.AssetUid
-		inner join AssetType T on T.ID = A.AssetTypeID
-		inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+	update	Sc
+	set		Sc.AllocationUid = Al.Uid
+	from	metrics.Score Sc
+			inner join Asset A on A.Uid = Sc.AssetUid
+			inner join AssetType T on T.ID = A.AssetTypeID
+			inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
       ]]>
     </sql>    
   </changeSet>
@@ -50,19 +56,22 @@ from	metrics.Score Sc
   </changeSet>
 
   <changeSet author="Pappas" id="Migration.Metrics-ScoreItem-LoadVersionUid">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="ScoreItem" columnName="MetricAssetUid" />
+	</preConditions>
     <comment>GOV-11999 - Updates missing AssetVersionUid column to ScoreItem table. To also account for script below.</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
       <![CDATA[
-update	Si
-set		Si.AssetVersionUid = V.Uid
-from	metrics.ScoreItem Si
-		cross apply (
-			select	max(EffectiveDate) as EffectiveDate
-			from	metrics.AssetVersion
-			where	AssetUid = Si.MetricAssetUid 
-					and EffectiveDate <= Si.EffectiveDate
-		) Mx
-		inner join metrics.AssetVersion V on V.AssetUid = Si.MetricAssetUid and V.EffectiveDate = Mx.EffectiveDate
+	update	Si
+	set		Si.AssetVersionUid = V.Uid
+	from	metrics.ScoreItem Si
+			cross apply (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = Si.MetricAssetUid 
+						and EffectiveDate <= Si.EffectiveDate
+			) Mx
+			inner join metrics.AssetVersion V on V.AssetUid = Si.MetricAssetUid and V.EffectiveDate = Mx.EffectiveDate
       ]]>
     </sql>    
   </changeSet>
