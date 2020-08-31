@@ -8,13 +8,15 @@ using d360.core.entities;
 using System.Linq.Expressions;
 using System.Data.Entity.Infrastructure;
 using Dapper;
+using d360.model.DataAccessLayer.repositories;
 
 namespace d360.model.DataAccessLayer
 {
-    public class IssueRepository : IIssueRepository
+    public class IssueRepository : BaseRepository, IIssueRepository
     {
         ICompanyContext companyContext;
         public IssueRepository(ICompanyContext context)
+            :base(context)
         {
             this.companyContext = context;
         }
@@ -39,7 +41,7 @@ namespace d360.model.DataAccessLayer
                 inner join IssueType I on I.ID = R.IssueTypeID
                 {whereClause}";
 
-            var allocations = await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs);
+            var allocations = await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
             return allocations;
         }
 

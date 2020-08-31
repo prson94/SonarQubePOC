@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -12,11 +13,12 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class TagRepository : ITagRepository
+    public class TagRepository : BaseRepository, ITagRepository
     {
         ICompanyContext companyContext;
         ICommunityContext communityContext;
         public TagRepository(ICompanyContext company, ICommunityContext community)
+            : base(company)
         {
             this.companyContext = company;
             this.communityContext = community;
@@ -159,11 +161,11 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
             results.pageNum = pageNum;
             results.pageSize = pageSize;
-            results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
+            results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
 
             if (results.total > 0)
             {
-                results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs));
+                results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
             }
 
             return results;
@@ -245,7 +247,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                             {whereClause}";
 
 
-            return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
+            return await companyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 
         }
 
@@ -353,7 +355,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                 where t.uid = @uid
                 ";
 
-            var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }).ToList();
+            var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }, ApiTimeout).ToList();
 
             var ret = new List<AssetTagList>();
             foreach (var item in result)
@@ -523,7 +525,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         where State = 1 and T.Value like @value and T.uid != @exceptUid";
             }
 
-            return companyContext.Query<dynamic>(sql, new { value, exceptUid }).ToList();
+            return companyContext.Query<dynamic>(sql, new { value, exceptUid }, ApiTimeout).ToList();
         }
 
 
@@ -767,7 +769,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         {pagingSql}
                         for json path";
 
-            var data = string.Join("", companyContext.Query<string>(sql, dbArgs).ToList());
+            var data = string.Join("", companyContext.Query<string>(sql, dbArgs, ApiTimeout).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
             if (result.items == null) result.items = new List<TagDetail>();
@@ -803,7 +805,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             }
 
 
-            var result = companyContext.Query<dynamic>(sql, new { tagUid, assetUid });
+            var result = companyContext.Query<dynamic>(sql, new { tagUid, assetUid }, ApiTimeout);
             return result;
         }
 

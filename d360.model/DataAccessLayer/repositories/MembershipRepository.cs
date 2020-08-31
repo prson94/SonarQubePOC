@@ -12,15 +12,17 @@ using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using d360.core.entities;
 using d360.core;
+using d360.model.DataAccessLayer.repositories;
 
 namespace d360.model.DataAccessLayer
 {
-    public class MembershipRepository : IMembershipRepository
+    public class MembershipRepository : BaseRepository, IMembershipRepository
     {
         internal ICompanyContext CompanyContext;
         internal ICommunityContext CommunityContext;
         internal IAssetRepository AssetRepository;
         public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository)
+            : base(companyContext)
         {
             this.CompanyContext = companyContext;
             this.CommunityContext = communityContext;
@@ -74,10 +76,10 @@ namespace d360.model.DataAccessLayer
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
                 {whereStatements}  ";
 
-            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
 
-            var results = await this.CompanyContext.QueryAsync<GroupApiModel>(sql, dbArgs);
+            var results = await this.CompanyContext.QueryAsync<GroupApiModel>(sql, dbArgs, ApiTimeout);
 
             return new GroupApiModels() { items = results, Total = count };
 
@@ -885,7 +887,7 @@ where		f.ObjectID is null
 ) q
 order by	q.SortOrder";
 
-            var results = await CompanyContext.QueryAsync<FavoriteApiViewModel>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<FavoriteApiViewModel>(sql, dbArgs, ApiTimeout);
 
             return results.ToList();
         }
@@ -922,7 +924,7 @@ where		f.ObjectID is null
 ) q
 order by	q.SortOrder";
 
-            var results = await CompanyContext.QueryFirstOrDefaultAsync<FavoriteApiViewModel>(sql, dbArgs);
+            var results = await CompanyContext.QueryFirstOrDefaultAsync<FavoriteApiViewModel>(sql, dbArgs, ApiTimeout);
 
             return results;
         }

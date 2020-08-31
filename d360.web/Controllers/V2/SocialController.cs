@@ -65,7 +65,7 @@ namespace d360.web.Controllers.V2
                         group by Type, TypeName, TypeID) T
                         left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
                         left join AssetTypeStyle S on S.ID = A.ID
-                        order by TypeName", new { r = id });
+                        order by TypeName", new { r = id }, ApiTimeout);
 
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
@@ -109,7 +109,7 @@ namespace d360.web.Controllers.V2
         		                ) R on R.[Type] = T.Object and R.TypeID = T.ObjectID
         						";
 
-            var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID });
+            var query = await Company.QueryAsync<dynamic>(sql, new { r = id, rt = responsibilityTypeID }, ApiTimeout);
 
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
@@ -152,7 +152,7 @@ namespace d360.web.Controllers.V2
                                 order by    { QueryConstants.HighLevelTypeCaseStatement} + T.Name
         						";
         
-            var query = await Company.QueryAsync<dynamic>(sql, new { id });
+            var query = await Company.QueryAsync<dynamic>(sql, new { id }, ApiTimeout);
             
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }
