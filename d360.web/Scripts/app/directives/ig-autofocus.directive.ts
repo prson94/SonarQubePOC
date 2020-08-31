@@ -32,7 +32,7 @@ export class AutoFocusDirective implements DoCheck {
     private focusElement() {
         var htmlElement = (this.el.nativeElement as HTMLElement);
         var tagName = htmlElement.tagName;
-        if (tagName === 'P-AUTOCOMPLETE') {
+        if (tagName === 'P-AUTOCOMPLETE' || tagName === 'P-CHECKBOX') {
             var inputF = htmlElement.getElementsByTagName('input');
             if (inputF && inputF.length != 0) {
                 inputF[0].focus();
