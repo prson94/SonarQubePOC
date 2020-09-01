@@ -38,11 +38,6 @@ namespace d360.core.entities
         public string Password { get; set; }
 
         [DataMember]
-        [Required(ErrorMessageResourceType = typeof(d360.core.resources.Fields), ErrorMessageResourceName = "ResourceType_ErrorRequired")]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ResourceType_Name", Description = "ResourceType_Description")]
-        public int ResourceTypeID { get; set; }
-
-        [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Username_Name", Description = "Username_Description")]
         public string Username { get; set; }
 
@@ -54,8 +49,6 @@ namespace d360.core.entities
 
         #endregion
 
-        public virtual ResourceType ResourceType { get; set; }
-
         public ICollection<CompanyResource> CompanyResources { get; set; }
 
         public string FormatDisplayName()
@@ -65,7 +58,7 @@ namespace d360.core.entities
 
         public FieldsObjectModel GetFieldsObjectInfo()
         {
-            return new FieldsObjectModel { Type = SystemObjects.ResourceType, Object = SystemObjects.Resource, TypeID = ResourceTypeID };
+            return new FieldsObjectModel { Type = SystemObjects.ResourceType, Object = SystemObjects.Resource, TypeID = 1 };
         }
 
         public class ResourceApiViewModel

@@ -1944,7 +1944,6 @@ namespace d360.model
 						            R.Email, 
                                     R.LastLoggedInOn,
 						            R.LastLoggedInOn as DateLastLoggedIn, 
-						            1 as ResourceTypeID, 
 						            R.[State],
 						            case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
 				            from	reporting.Global_Resource R where isadministrator = 1 and R.[State] = 1");
@@ -1971,7 +1970,6 @@ namespace d360.model
 						    R.Email, 
                             R.LastLoggedInOn,
                             R.LastLoggedInOn as DateLastLoggedIn, 
-						    1 as ResourceTypeID, 
                             R.[State],
 						    case R.[State] when 1 then 'Active' else 'Inactive' end as [Status] 
 				    from	reporting.Global_Resource R

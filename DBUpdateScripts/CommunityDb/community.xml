@@ -65,4 +65,5 @@
   <include file="scripts/GOV-11826.xml"/>  <!-- Rename table plugin.ClientFusionType-->  
   <include file="scripts/GOV-11573.xml"/>  <!-- Remove settings GovernanceRoleLabel and GovernanceRoleDescription-->  
   <include file="scripts/GOV-11795.xml"/>  <!-- Add ApiTimeout setting -->  
+  <include file="scripts/GOV-11988.xml"/>  <!-- Default value set 1 for Resource table and resourcetypeid column-->  
 </databaseChangeLog>

@@ -56,7 +56,6 @@ namespace d360.model
         public DbSet<HelpResource> HelpResources { get; set; }
         public DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
         public DbSet<Resource> Resources { get; set; }
-        public DbSet<ResourceType> ResourceTypes { get; set; }
         public DbSet<Setting> Settings { get; set; }
 
         public DbSet<d360.core.entities.Plugins.Package> Packages { get; set; }

@@ -5,12 +5,35 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetEmailStepRecipients-v1">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetEmailStepRecipients-v2">
+    <comment>GOV-11988</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER Function [dbo].[GetEmailStepRecipients]
+(
+	@workflowItemStepID int	
+)
+RETURNS varchar(max)
+BEGIN
+	declare @tbl table (ResourceID int, FirstName nvarchar(250), LastName nvarchar(250), Email nvarchar(500), Username nvarchar(500), DateLastLoggedIn datetime null, Status nvarchar(25))
+	
+	insert into @tbl
+		select 
+			R.ResourceID, R.FirstName, R.LastName, R.Email, R.Email, R.LastLoggedInOn as DateLastLoggedIn, case R.State when 1 then 'Active' else 'Inactive' end as [Status]
+		from workflow.itemstep s 
+			outer apply s.settings.nodes('settings/emails/email') as m(c) 
+			inner join reporting.Global_Resource R  on trim(m.c.value('@address', 'varchar(max)')) = R.email
+		where id = @workflowItemStepID
+
+	return (select string_agg(FirstName + ' ' + LastName,', ') as Resources from @tbl)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER Function [dbo].[GetEmailStepRecipients]
 (
 	@workflowItemStepID int	
@@ -29,11 +52,6 @@ BEGIN
 
 	return (select string_agg(FirstName + ' ' + LastName,', ') as Resources from @tbl)
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
