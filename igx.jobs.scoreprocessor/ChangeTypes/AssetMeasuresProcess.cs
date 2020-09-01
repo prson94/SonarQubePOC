@@ -60,7 +60,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 List<FieldType> fieldTypes = null;
                 List<AssetAllocationPreviousResult> allPreviousScoreItems = null;
                 List<MatchingScoreModel> matchingScores = null;
-                List<MatchingScoreItemModel> matchingScoreItems = null;
                 List<ExternalMeasureResultsCreatedModel> models = null;
 
                 if (company.State != ConnectionState.Open)
@@ -120,27 +119,40 @@ select * from #AssetAllocations;
 
 select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);
 
-select  Al.AllocationUid,
-        Al.AssetUid,
-		V.AssetUid as MetricAssetUid,
-		L.*,
-        Si.AssetVersionUid as MetricAssetVersionUid,
-		Si.ConditionUid,
-        S.EffectiveDate,
-		Si.Value,
-		Si.AdjustedWeight,
-		Si.AdjustedMaxWeight
+select  *
 from    (
-			select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-			from		#AssetAllocations		
-			group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-		) Al
-        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid 
-            and S.AssetUid = Al.AssetUid 
-            and ( (Al.EffectiveDate between S.EffectiveDate and S.EndDate) or (Al.EffectiveDate >= S.EffectiveDate and S.EndDate is null) ) 
-        inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-        inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
-		inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid;
+        select  Al.AllocationUid,
+                Al.AssetUid,
+		        V.AssetUid as MetricAssetUid,
+                ROW_NUMBER() OVER(PARTITION BY Al.AssetUid, Al.EffectiveDate, Si.AssetVersionUid ORDER BY S.EffectiveDate DESC) as RowNum,
+		        L.*,
+                Si.AssetVersionUid as MetricAssetVersionUid,
+		        Si.ConditionUid,
+                S.EffectiveDate,
+                S.EndDate,
+		        Si.Value,
+		        Si.AdjustedWeight,
+		        Si.AdjustedMaxWeight,
+                iif(U.UseCount > 0, cast(1 as bit), cast(0 as bit)) as UsedInOtherScores
+        from    (
+			        select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+			        from		#AssetAllocations		
+			        group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
+		        ) Al
+                inner join metrics.Score S on S.AllocationUid = Al.AllocationUid 
+                    and S.AssetUid = Al.AssetUid 
+                    and ( (Al.EffectiveDate between S.EffectiveDate and S.EndDate) or (Al.EffectiveDate >= S.EffectiveDate and S.EndDate is null) ) 
+                inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+                inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
+		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid
+                cross apply (
+                    select  count(1) as UseCount
+                    from    metrics.ScoreItemLink
+                    where   ScoreUid <> S.Uid
+                            and ScoreItemUid = Si.Uid
+                ) U
+        ) O
+where   O.RowNum = 1;
 
 select  S.Uid as ScoreUid,
         Al.AllocationUid,
@@ -151,27 +163,11 @@ from    (
 			from		#AssetAllocations		
 			group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
 		) Al
-        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate = Al.EffectiveDate;
-
-select  distinct 
-        L.ScoreItemUid,
-        V.AssetUid as MetricAssetUid,
-        Al.AssetUid,
-        Al.EffectiveDate
-from    (
-			select		AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-			from		#AssetAllocations		
-			group by	AllocationUid, AssetUid, EffectiveDate, AssetTypeId
-		) Al
-        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate = Al.EffectiveDate
-        inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-        inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
-        inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid", transaction: trans, commandTimeout: 900);
+        inner join metrics.Score S on S.AllocationUid = Al.AllocationUid and S.AssetUid = Al.AssetUid and S.EffectiveDate = Al.EffectiveDate;", transaction: trans, commandTimeout: 900);
                     models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
                     fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
                     allPreviousScoreItems = supportingDataRequest.Read<AssetAllocationPreviousResult>().ToList();
                     matchingScores = supportingDataRequest.Read<MatchingScoreModel>().ToList();
-                    matchingScoreItems = supportingDataRequest.Read<MatchingScoreItemModel>().ToList();
 
                     // Get the full list of relevant measures based on the allocations and effective dates.
                     var allocationRequest = await company.QueryAsync<AllocationDataModel>(@"
@@ -292,7 +288,7 @@ from	metrics.Asset A
                     var allMeasures = allocations.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var providedMeasureResults = models.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.AssetUid == assetEffectiveDate.AssetUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var assetFields = company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
-                    var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid).ToList();
+                    var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
                     
                     providedMeasureResults.ForEach(async n =>
                     {
@@ -422,7 +418,28 @@ from	metrics.Asset A
 
                                 // Check to see if we have an existing scoreItem for this recalculated measure result.
                                 var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
-                                scoreItem.Uid = (previousScoreItem != null) ? previousScoreItem.ScoreItemUid : Guid.NewGuid();
+                                Guid scoreItemUid = Guid.NewGuid();
+                                if (previousScoreItem != null)
+                                {
+                                    if (previousScoreItem.Value == scoreItem.Value)
+                                    {
+                                        // Since value is the same, just link the existing score item to score.
+                                        scoreItemUid = previousScoreItem.ScoreItemUid;
+                                    }
+                                    else 
+                                    {
+                                        if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date)
+                                        {
+                                            // The value for an existing effective date is the now different.
+                                            if (!previousScoreItem.UsedInOtherScores)
+                                            {
+                                                // Not used in any other score, so we are OK to update the value on this score item.
+                                                scoreItemUid = previousScoreItem.ScoreItemUid;
+                                            }
+                                        }
+                                    }
+                                }
+                                scoreItem.Uid = scoreItemUid;
 
                                 assetScoreItems.Add(scoreItem);
                                 assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
