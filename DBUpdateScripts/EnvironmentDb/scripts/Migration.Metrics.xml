@@ -648,6 +648,21 @@ GO
 		</rollback>
 	</changeSet>
 
+
+
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-11998">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+alter table [metrics].[ScoreItem] alter column [Value] bit null
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
 	<changeSet author="Pappas" id="Migration.Metrics-GOV-10887-LoadGroupsRecalcScore">
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
