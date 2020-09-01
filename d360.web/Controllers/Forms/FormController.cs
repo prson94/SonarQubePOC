@@ -2205,7 +2205,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var row = 1;
             //resolve the color correctly from the Id or hex value
-            var color = Company.Query<string>($@"SELECT top 1 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Name'), '') as Text FROM Asset A cross apply dbo.GetAssetColorJsonByColor({a.Color}) ACJ  WHERE A.ID = {a.ID}").SingleOrDefault();
+            var color = Company.Query<string>($@"SELECT top 1 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Name'), '') as Text FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ  WHERE A.ID = {a.ID}").SingleOrDefault();
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString(), Value = color });
