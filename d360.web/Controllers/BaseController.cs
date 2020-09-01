@@ -562,16 +562,13 @@ namespace d360.web.Controllers
             };
         }
 
-        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10, bool allowTagField = false)
+        internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
         {
             var row = startRow;
 
-            if (allowTagField)
-                limitedFieldTypes = limitedFieldTypes.Where(x => x != "Tag").ToList();
-
             fields.ForEach(f =>
             {
-                if (f.IsEditable || (f.Type == "Tag" && allowTagField))
+                if (f.IsEditable && f.Type != "Tag")
                 {
                     #region Is Editable
 

@@ -33,7 +33,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1, true);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
