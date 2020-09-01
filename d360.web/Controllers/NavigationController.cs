@@ -25,12 +25,11 @@ namespace d360.web.Controllers
     {
         #region DI
         IStorageProvider Storage;
-        IAssetRepository AssetRepository;
-        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository)
+
+        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
             : base(community, company)
         {
             Storage = storage;
-            AssetRepository = assetRepository;
         }
 
         #endregion
