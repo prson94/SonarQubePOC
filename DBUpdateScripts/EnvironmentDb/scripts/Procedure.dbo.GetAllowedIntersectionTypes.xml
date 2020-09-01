@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetAllowedIntersectionTypes-v2">
+  <changeSet author="TDuric" id="Procedure.dbo.GetAllowedIntersectionTypes-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -52,8 +52,8 @@ BEGIN
 				end AS SourceType,
 				RT.uid
 		FROM	IntersectTypeDetail RT
-		WHERE	(RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
-				(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID)
+		WHERE	RT.PredicateType <> 15 and ((RT.Subject = @SourceType and RT.SubjectID = @SourceTypeID) OR 
+				(RT.Object = @SourceType and RT.ObjectID = @SourceTypeID))
 				
 	
 			insert into @tbl
@@ -105,6 +105,7 @@ BEGIN
 					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
 					when TargetType = 'RuleType' then 'Rules: '
 					when TargetType = 'PolicyType' then 'Policies: '
+					when TargetType = 'TaskType' then 'Diagram Asset: '
 					when TargetType = 'Maptype' then 'Map: ' + SourceName
 					else ''
 				end + ' : ' + TargetName as TargetName, 
@@ -122,6 +123,7 @@ BEGIN
 					when TargetType = 'ArtifactType' and AT.Class = 8 then 'Technical Asset: '
 					when TargetType = 'RuleType' then 'Rules: '
 					when TargetType = 'PolicyType' then 'Policies: '
+                    when TargetType = 'TaskType' then 'Diagram Asset: '
 					when TargetType = 'Maptype' then 'Map: ' + SourceName
 					else ''
 				end + ' : ' + TargetName
