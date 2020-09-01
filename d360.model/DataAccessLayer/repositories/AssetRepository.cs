@@ -238,7 +238,7 @@ namespace d360.model.DataAccessLayer
 
             // If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
 
-            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
+            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor", timeout: ApiTimeout);
         }
 
         //UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
@@ -506,7 +506,7 @@ namespace d360.model.DataAccessLayer
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
 
-            var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
+            var restrictions = (await CompanyContext.QueryAsync<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
                      then 1
@@ -522,7 +522,9 @@ namespace d360.model.DataAccessLayer
                      then 1
                      else 0
                     end as HasAssetPermission
-                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
+                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }
+                    , ApiTimeout))
+                    .FirstOrDefault();
 
 
             if ((restrictions.HasAssetRestriction && !useAsAdmin) || restrictions.HasAssetPermission)
@@ -555,7 +557,7 @@ namespace d360.model.DataAccessLayer
 
             if (assetType.Class == AssetTypeClass.FusionAttribute)
             {
-                if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
+                if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID }, commandTimeout: ApiTimeout)) > 0)
                     fusionAttributeWithParent = true;
             }
 
@@ -890,11 +892,11 @@ namespace d360.model.DataAccessLayer
             int? count = null;
             if (includeTotal)
             {
-                var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+                var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
                 count = countResults.First();
             }
 
-            var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 
             if (includeRelationships)
             {
@@ -1014,10 +1016,10 @@ namespace d360.model.DataAccessLayer
             int? total = null;
             if (includeTotal)
             {
-                total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
+                total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
             }
 
-            var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs, ApiTimeout);
 
             return new AssetPathResults
             {
@@ -1489,7 +1491,7 @@ namespace d360.model.DataAccessLayer
                                             From AssetTypeLevel ATL
                                             inner join AssetType AT on AT.Id = ATL.AssetTypeID
                                             WHERE  [object]='PolicyType' and ObjectId=@ObjectId
-                                            order by Level", new { ObjectId = id }).AsQueryable();
+                                            order by Level", new { ObjectId = id }, ApiTimeout).AsQueryable();
         }
 
         private IQueryable<dynamic> GetTaxonomyTypeLevels(int id)
@@ -1498,7 +1500,7 @@ namespace d360.model.DataAccessLayer
                                             From AssetTypeLevel ATL
                                             inner join AssetType AT on AT.Id = ATL.AssetTypeID
                                             WHERE  [object]='TaxonomyType' and ObjectId=@ObjectId
-                                            order by Level", new { ObjectId = id }).AsQueryable();
+                                            order by Level", new { ObjectId = id }, ApiTimeout).AsQueryable();
         }
 
         private List<Guid> GetAllFamilyForAssetUid(List<dynamic> uids)
@@ -1549,7 +1551,7 @@ namespace d360.model.DataAccessLayer
                 uid as AssetUid from family_cte
                 select * from #family";
 
-            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }).AsList();
+            return CompanyContext.Query<Guid>(sql, new { assetUid = uids }, ApiTimeout).AsList();
         }
 
 
@@ -1667,9 +1669,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@pageNum", model.pageNum - 1);
             dbArgs.Add("@pageSize", model.pageSize);
 
-            var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var total = count.First();
-            var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs, ApiTimeout);
 
             returnModel.items = results;
             returnModel.pageNum = model.pageNum;
@@ -2453,8 +2455,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                           INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
                           LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
                         ";
-            var executions = await CompanyContext.QueryAsync<dynamic>(sql);
-            var count = await CompanyContext.QueryAsync<int>(countSQL);
+            var executions = await CompanyContext.QueryAsync<dynamic>(sql, ApiTimeout);
+            var count = await CompanyContext.QueryAsync<int>(countSQL, ApiTimeout);
 
             var items = executions.Select(x =>
             {
@@ -2577,7 +2579,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             ";
             var res = new
             {
-                AssetDetail = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs),
+                AssetDetail = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs, ApiTimeout),
                 Scores = await GetAssetScores(asset.uid)
             };
             return res;
@@ -2589,7 +2591,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@assetUid", assetUid.ToString());
 
             var sql = $@"SELECT	Segments FROM graph.AssetNode WHERE Uid = @assetUid";
-            string segment = CompanyContext.Query<string>(sql, dbArgs).FirstOrDefault();
+            string segment = CompanyContext.Query<string>(sql, dbArgs, ApiTimeout).FirstOrDefault();
             return GetPathFromSegments(segment);
         }
 
@@ -2606,7 +2608,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         where       A.[State] = 1 and A.Uid = @typeUid
                     ";
 
-            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs, ApiTimeout);
         }
 
         private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
@@ -2632,7 +2634,7 @@ from	(
 		) O
 where	O.RowNum = 1";
 
-            return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
+            return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow }, ApiTimeout);
         }
 
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
@@ -2674,12 +2676,12 @@ where	O.RowNum = 1";
                          at.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by at.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
         {
-            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
+            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid }, ApiTimeout);
         }
 
         public async Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true)
@@ -2844,7 +2846,7 @@ from    Asset A
 where   A.[uid] = @assetUid";
 
 
-            return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs)).FirstOrDefault();
+            return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
         }
 
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)

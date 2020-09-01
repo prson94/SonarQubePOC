@@ -571,6 +571,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+                tagName = tagName.Replace("&amp;", "&");
                 var tag = tagRepository.GetTagByName(tagName);
                 return GetTagTooltipData(tag.uid.ToString(), assetUid);
 

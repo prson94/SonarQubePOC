@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
 using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -14,12 +15,13 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class FieldsRepository : IFieldsRepository
+    public class FieldsRepository : BaseRepository, IFieldsRepository
     {
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         public FieldsRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+            : base(companyContext)
         {
             this.Company = companyContext;
             this.QueueSource = queueSource;
@@ -515,7 +517,7 @@ select	@pageSize as 'pageSize',
         ) as 'items'
 for json path, WITHOUT_ARRAY_WRAPPER";
 
-            var model = await Company.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs);
+            var model = await Company.GetDatabaseJsonAsObjectAsync<FieldTypesApiViewModel>(sql, dbArgs, ApiTimeout);
             return new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(model, workHttpStatus);
         }
 
@@ -1591,7 +1593,7 @@ from	IntersectType I
             return Company.Query<string>(
                 @"select distinct  f.FriendlyName   as Name from fieldtype f  
 				inner join field f2 on f2.fieldtypeid = f.id 
-				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId });
+				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId }, ApiTimeout);
         }
 
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)

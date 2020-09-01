@@ -826,7 +826,7 @@ namespace d360.extensions.search
             {
                 Name = GetHighlightedNameValueIfExists(h),
                 DisplayName = GetDisplayName(h),
-                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description"),
+                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description") ?? GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "description"),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
                 ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
@@ -1300,7 +1300,7 @@ namespace d360.extensions.search
             {
                 Name = GetHighlightedNameValueIfExists(h),
                 DisplayName = GetDisplayName(h),
-                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description"),
+                Description = GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "Description") ?? GetHighlightedPropertyValueIfExists(h, DYNAMIC_FIELD_PREFIX + "description"),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
                 ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
@@ -1701,7 +1701,7 @@ namespace d360.extensions.search
             {
                 Name = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Name"),
                 DisplayName = GetDisplayName(h),
-                Description = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Description"),
+                Description = GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "Description") ?? GetPropertyValue<string>(h._source, DYNAMIC_FIELD_PREFIX + "description"),
                 Group = MapCategoryToFriendlyName(h.d3sCategory),
                 ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),

@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.entities.SurveyModels;
 using d360.core.enums;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -12,10 +13,11 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class SurveyRepository : ISurveyRepository
+    public class SurveyRepository : BaseRepository, ISurveyRepository
     {
         ICompanyContext companyContext;
         public SurveyRepository(ICompanyContext context)
+            : base(context)
         {
             this.companyContext = context;
         }
@@ -36,7 +38,7 @@ namespace d360.model.DataAccessLayer
                  @" select distinct [value] 
                     from    QuestionTypeOption O 
                             inner join QuestionType T on T.ID = O.QuestionTypeID 
-                            and T.UID = @uid", new { uid })).ToList();
+                            and T.UID = @uid", new { uid }, ApiTimeout)).ToList();
         }
 
 
@@ -101,7 +103,7 @@ namespace d360.model.DataAccessLayer
                                     {additionalWhereClause}
                                      ";
 
-            response.total = companyContext.Query<int>(countQuery, new { surveyTypeUID = surveyUid }).FirstOrDefault();
+            response.total = companyContext.Query<int>(countQuery, new { surveyTypeUID = surveyUid }, ApiTimeout).FirstOrDefault();
 
             var query = $@"select S.Uid as Uid,
                         	a.uid as AssetUid,
@@ -131,7 +133,7 @@ namespace d360.model.DataAccessLayer
                         {pagingSql}
                         for json path";
 
-            var itemsJson = string.Join("", companyContext.Query<string>(query, new { surveyTypeUID = surveyUid }).ToList());
+            var itemsJson = string.Join("", companyContext.Query<string>(query, new { surveyTypeUID = surveyUid }, ApiTimeout).ToList());
 
             response.items = JsonConvert.DeserializeObject<List<SurveyApiModel>>(itemsJson) ?? new List<SurveyApiModel>();
             return response;
@@ -215,7 +217,7 @@ namespace d360.model.DataAccessLayer
                                             inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
                                             left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
                                                 on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
-            response.total = companyContext.Query<int>(countQuery, sqlParams).FirstOrDefault();
+            response.total = companyContext.Query<int>(countQuery, sqlParams, ApiTimeout).FirstOrDefault();
 
             string QuestionsCTE = @"select 
 		                                ST.Id as TypeId,
@@ -256,7 +258,7 @@ namespace d360.model.DataAccessLayer
                                 {pagingSql}
                                 for json path";
 
-            var itemsJson = string.Join("", companyContext.Query<string>(query, sqlParams).ToList());
+            var itemsJson = string.Join("", companyContext.Query<string>(query, sqlParams, ApiTimeout).ToList());
 
             response.items = JsonConvert.DeserializeObject<List<SurveyTypeApiModel>>(itemsJson) ?? new List<SurveyTypeApiModel>();
             return response;
@@ -331,7 +333,7 @@ namespace d360.model.DataAccessLayer
                                 inner join SurveyType ST on S.SurveyTypeID = ST.ID
                                 where ST.uid = @surveyTypeUid
                                 {countWhereClause}";
-            response.total = companyContext.Query<int>(countQuery, new { surveyTypeUid }).FirstOrDefault();
+            response.total = companyContext.Query<int>(countQuery, new { surveyTypeUid }, ApiTimeout).FirstOrDefault();
 
             if (whereClauses.Count > 0)
                 additionalWhereClause = "WHERE " + string.Join(" and ", whereClauses);
@@ -384,7 +386,7 @@ namespace d360.model.DataAccessLayer
                             {pagingSql}
 	                        for json path";
 
-            var itemsJson = string.Join("", companyContext.Query<string>(sql, new { surveyTypeUid }).ToList());
+            var itemsJson = string.Join("", companyContext.Query<string>(sql, new { surveyTypeUid }, ApiTimeout).ToList());
 
             response.items = JsonConvert.DeserializeObject<List<SurveyResultSummaryApiModel>>(itemsJson) ?? new List<SurveyResultSummaryApiModel>();
             return response;
@@ -407,7 +409,7 @@ namespace d360.model.DataAccessLayer
 					                    and S.CreatedOn > DATEADD(day, (ST.ValidForDays * -1), getdate())
 					                    and B.[uid] = @assetUid
 		                    )"
-            , new { assetUid, resourceId = companyContext.CurrentResourceID})).ToList();
+            , new { assetUid, resourceId = companyContext.CurrentResourceID}, ApiTimeout)).ToList();
 
             if (!surveys?.Any() ?? true)
                 return null;

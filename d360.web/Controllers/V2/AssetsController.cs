@@ -1045,7 +1045,7 @@ namespace d360.web.Controllers.V2
         ]
         public dynamic GetUIDetails(Guid assetUid)
         {
-            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
+            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
         /// <summary>
@@ -1167,6 +1167,7 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        
         /// <summary>
         /// Retrieves a list of all asset types and asset counts for current user.
         /// </summary>
@@ -1580,8 +1581,9 @@ namespace d360.web.Controllers.V2
 ";
 
                 var results = Company.Query<dynamic>(
-             sql,
-             new { id = assetType.ObjectID, assetType.Object });
+             sql
+             , new { id = assetType.ObjectID, assetType.Object }
+             , ApiTimeout);
 
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -2342,7 +2344,7 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
-                var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
+                var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color", ApiTimeout);
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Name, title = x.Value }))));
             }
             catch (Exception ex)

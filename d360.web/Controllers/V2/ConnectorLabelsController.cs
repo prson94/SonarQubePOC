@@ -88,7 +88,7 @@ namespace d360.web.Controllers.V2
                                 {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
             }
-            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid });
+            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
 
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
@@ -393,13 +393,13 @@ namespace d360.web.Controllers.V2
             #region Header
 
             int index = 1;
-            document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Name");
             document.SetCellValue(1, index++, "Use Count");
             document.SetCellValue(1, index++, "Created On");
             document.SetCellValue(1, index++, "Created By");
             document.SetCellValue(1, index++, "Updated On");
             document.SetCellValue(1, index++, "Updated By");
+            document.SetCellValue(1, index++, "Label UID");
 
             #endregion
 
@@ -408,13 +408,13 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Value.ToString());
                 document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
                 document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
                 document.SetCellValue(rowNumber, index++, row.CreatedBy.ToString());
                 document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
                 document.SetCellValue(rowNumber, index++, row.UpdatedBy.ToString());
+                document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }
 
             #endregion

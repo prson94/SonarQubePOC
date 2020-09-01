@@ -84,7 +84,7 @@ namespace d360.web.Controllers.V2
 		                            and A.[uid] = @uid) I
                             inner join Asset A on A.[uid] = I.AssetUid
                             cross apply dbo.CalculatePassedPropertyForAssetResult(I.[uid]) P
-                        ", new { rule.uid }).AsQueryable();
+                        ", new { rule.uid }, ApiTimeout).AsQueryable();
 
         }
 

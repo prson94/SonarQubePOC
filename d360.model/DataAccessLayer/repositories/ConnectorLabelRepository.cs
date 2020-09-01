@@ -133,11 +133,11 @@ namespace d360.model.DataAccessLayer
 
             results.pageNum = pageNum;
             results.pageSize = pageSize;
-            results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
+            results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
 
             if (results.total > 0)
             {
-                results.items = (await companyContext.QueryAsync<ConnectorLabelApiModel>(sql, dbArgs));
+                results.items = (await companyContext.QueryAsync<ConnectorLabelApiModel>(sql, dbArgs, ApiTimeout));
             }
 
             return results;
@@ -287,9 +287,9 @@ namespace d360.model.DataAccessLayer
                         t.uid,
                         t.Value,
                         t.CreatedOn,
-                        grc.uid as CreatedBy,
+                        grc.FirstName + ' ' +grc.LastName as CreatedBy,
                         t.UpdatedOn,
-                        gru.uid as UpdatedBy
+                        gru.FirstName + ' ' +gru.LastName as UpdatedBy
                         from ConnectorLabel t
                           left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
                           left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
@@ -297,7 +297,7 @@ namespace d360.model.DataAccessLayer
                         {whereClause}
                         {sortClause}";
 
-            return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
+            return await companyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
 
         }
 
@@ -316,7 +316,7 @@ namespace d360.model.DataAccessLayer
                     from usage u
                     inner join graph.assetnode an on an.uid = u.diagramassetuid";
 
-            var response = companyContext.Query<dynamic>(labelsSql, new { labelUid });
+            var response = companyContext.Query<dynamic>(labelsSql, new { labelUid }, ApiTimeout);
             return response;
         }
 

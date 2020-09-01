@@ -56,6 +56,14 @@ namespace d360.model
 
         bool IsEventingEnabled = false;
 
+        public int ApiTimeout
+        {
+            get
+            {
+                return this.Community.GetCompanySettingByKey<int>("ApiTimeout");
+            }
+        }
+
         #region Ctors
 
         public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
@@ -72,7 +80,7 @@ namespace d360.model
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
-
+            
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -1948,9 +1956,9 @@ where	I.ID is null";
             }
         }
 
-        public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs)
+        public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90)
         {
-            var jsonStrings = await QueryAsync<string>(query, dbArgs);
+            var jsonStrings = await QueryAsync<string>(query, dbArgs, timeout);
             var json = string.Join("", jsonStrings);
 
             return JsonConvert.DeserializeObject<T>(json);

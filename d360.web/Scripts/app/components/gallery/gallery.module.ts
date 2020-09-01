@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IconPickerModule } from '../shared/controls/icon-picker/icon-picker.component';
 import { SwitchModule } from '../shared/controls/switch/switch'
 import { CoreModule } from '../shared/core.module';
+import { IgDateModule } from '../shared/controls/date/date';
 
 
 import { GalleryComponent } from './gallery.component';
@@ -32,6 +33,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { GalleryTextAreaComponent } from './gallery.textarea.component';
 import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { GalleryDatePickerComponent } from './gallery.date-picker.component';
 
 
 @NgModule({
@@ -41,6 +43,7 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         RouterModule,
         CoreModule,
         FormsModule,
+        ReactiveFormsModule,
 
         GalleryRoutingModule,
 
@@ -48,7 +51,7 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         IconPickerModule,
         TagPickerModule,
         IgColorPickerModule,
-        
+        IgDateModule,
 
         TableModule,
         TooltipModule,
@@ -67,7 +70,8 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
         GalleryTooltipComponent,
         GalleryAutocompleteComponent,
         GalleryTextAreaComponent,
-        GalleryAutoFocusComponent
+        GalleryAutoFocusComponent,
+        GalleryDatePickerComponent,
     ],
     providers: [
         GalleryGuard,

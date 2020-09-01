@@ -57,7 +57,7 @@ namespace d360.model.DataAccessLayer
 						A.[State] = 1 and A.ObjectID != 0 and Class = 15
 						order by Name ";
 
-            var nodes = await Company.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram });
+            var nodes = await Company.QueryAsync<dynamic>(sql, new { assetUid, predicateType = (int)PredicateType.Diagram }, ApiTimeout);
             return nodes;
         }
 
@@ -109,19 +109,11 @@ namespace d360.model.DataAccessLayer
 						select * from (
 							select ft.Name, f.Value from Field f 
 							inner join FieldType ft on f.FieldTypeID = ft.ID and ft.Type <> 'Tag'
-							where assetid = a.id 
-							union 
-							   select ft.Name, STRING_AGG(T.Value, '|') as Value 
-							   from Asset asset
-							     inner join fieldtype ft on ft.assettypeid = at.id and ft.type = 'Tag'
-								 inner join AssetTag atag on atag.AssetID = asset.ID
-								 inner join Tag T on T.ID = atag.TagID
-							where asset.id = a.id
-							group by ft.Name
+							where assetid = a.id
 						) as Fields
 						for json path
 	                    )field(json)
-                    where A.uid in @assetUids", new { assetUids }).ToList();
+                    where A.uid in @assetUids", new { assetUids }, ApiTimeout).ToList();
 
             var badges = GetDiagramAssetBadges(assetUid);
 
@@ -176,7 +168,7 @@ namespace d360.model.DataAccessLayer
                 FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
                 select links.*, CL.Value from links
 				 inner join ConnectorLabel CL on CL.uid = links.labeluid and CL.State <> 3
-				where labeluid is not null", new { assetUid }).ToList();
+				where labeluid is not null", new { assetUid }, ApiTimeout).ToList();
 
             foreach (var item in linksExpandedData)
             {
@@ -455,48 +447,6 @@ merge Field as T
 	values		(S.AssetId,S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FormattedValue, @resourceId, getutcdate());
 
 
-drop table if exists #tagMap
-create table #tagMap(
-	AssetId int,
-	TagId int,
-	IsAdd bit,
-	IsDelete bit
-)
-
-;with tags_cte as (select eda.Uid, edaf.formattedvalue 
-from api.executiondiagramasset eda
-inner join api.executiondiagramassetfield edaf on edaf.ExecutionItemUid = eda.ExecutionItemUid 
-inner join FieldType ft on edaf.FieldTypeID = ft.id and ft.Type = 'Tag'
-where eda.executionid = @executionId and edaf.executionid = @executionId)
-    insert into #tagMap
-    select a.ID as AssetId, 
-    T.Id as TagId,
-    CASE When AT.Id is null and T.Id is not null then 1
-    else 0 end as IsAdd,
-    0 as IsDelete
-    from tags_cte
-    cross apply string_split(FormattedValue,'|')Tag
-    inner join Asset A on A.uid = tags_cte.uid
-    left join Tag T on T.Value = Tag.value
-    left join AssetTag AT on AT.AssetID = A.ID AND at.TagID = t.ID
-
-insert into #tagMap
-select distinct at.AssetID, at.TagId,0,1
-from AssetTag at
-inner join #tagMap tm on tm.assetid = at.assetid 
-left join #tagMap tag on tag.assetid = at.assetid and tag.tagid = at.tagid
-where tag.assetid is null
-
-insert into AssetTag (AssetID, TagID, CreatedOn, CreatedBy)
-select AssetId, TagId, getutcdate(),@resourceId
-from #tagMap where IsAdd = 1
-
-delete assetTag
-from AssetTag assetTag
-inner join #tagMap tm on tm.AssetId = assetTag.AssetID and tm.TagId = assetTag.TagID
-where tm.IsDelete = 1
-
-
 merge       AssetDisplayValue as T
 using       (
                 select  A.Id as ID,
@@ -645,7 +595,7 @@ new
 				)Rels(cnt)
             group by a.uid";
 
-            var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid });
+            var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid }, ApiTimeout);
             return response;
         }
 
@@ -722,7 +672,7 @@ new
                 inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
                 inner join AssetType AT on AT.Id = O.AssetTypeID
                 order by FD.FormattedValue,FD2.FormattedValue
-                ", new { assetUid = asset.uid });
+                ", new { assetUid = asset.uid }, ApiTimeout);
 
             foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
             {
@@ -855,7 +805,7 @@ new
                 select at.uid as AssetTypeUid, at.Name as AssetTypeName, string_agg(cast(a.uid as nvarchar(36)),',') as assets from links
                 inner join Asset A on a.uid = links.AssetUid
                 inner join AssetType at on at.id = a.AssetTypeID
-                group by at.uid, at.name", new { assetUid = asset.uid });
+                group by at.uid, at.name", new { assetUid = asset.uid }, ApiTimeout);
 
             foreach (var type in types)
             {
@@ -955,7 +905,7 @@ order by try_cast (f1_step.FormattedValue as decimal(15,3)) asc, f1_name.Formatt
             "Next Asset Name","Asset UID","Asset ID","Asset URL",
             "Next Asset UID","Next Asset ID","Next Asset URL"
             };
-            var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid });
+            var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid }, ApiTimeout);
             int index = 1;
 
             foreach (var field in diagramFields)

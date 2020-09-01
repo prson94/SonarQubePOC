@@ -1,0 +1,21 @@
+﻿<div class="control-container"  tabindex="-1">
+    <p-calendar [tabindex]="tabindex"
+                [ngModel]="ngModel"
+                (ngModelChange)="tryChangeValue($event)"
+                [name]="name"
+                [style]="style"
+                [styleClass]="getStyleClass"
+                [inputStyle]="inputStyle"
+                [inputStyleClass]="getInputStyleClass"
+                [placeholder]="placeholder"
+                [appendTo]="appendTo"
+                [minDate]="minDate"
+                [maxDate]="maxDate"
+                [required]="required ? 'true' : null"
+                [disabled]="disabled"
+                [dateFormat]="dateFormat"
+                [showIcon]="true"
+                icon="fa fa-calendar">
+    </p-calendar>
+</div>
+

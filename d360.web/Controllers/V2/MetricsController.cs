@@ -555,7 +555,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(model.Count);
                 List<BulkMetricTemporaryTableModel> results = MetricsRepository.BulkMetricsImport(model, execution);
 
-                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (GenericException ex)
             {
@@ -675,7 +675,7 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
         {
             int type = (int)scoreType;
-            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type });
+            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type }, ApiTimeout);
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 

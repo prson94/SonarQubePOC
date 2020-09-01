@@ -1,9 +1,5 @@
-﻿using d360.core.queue;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
@@ -11,9 +7,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     public class WorkflowCheckProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {
-            var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
-            var scoreUids = JsonConvert.DeserializeObject<List<Guid>>(json);
+        {            
+            var scoreUids = await Storage.DeserializeJsonObjectFromBlobAsync<List<Guid>>(Info.StorageFolder, Info.StorageFile);
             await Task.Delay(100);
             //var Db = GetCompanyContext();
 

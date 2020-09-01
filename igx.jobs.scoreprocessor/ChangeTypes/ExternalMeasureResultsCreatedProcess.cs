@@ -4,7 +4,6 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.model;
 using Dapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -18,9 +17,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     public class ExternalMeasureResultsCreatedProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {
-            var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
-            var models = JsonConvert.DeserializeObject<List<ExternalMeasureResultsCreatedModel>>(json);
+        {            
+            var models = await Storage.DeserializeJsonObjectFromBlobAsync<List<ExternalMeasureResultsCreatedModel>>(Info.StorageFolder, Info.StorageFile);
 
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
