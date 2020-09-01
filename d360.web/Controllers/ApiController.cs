@@ -2266,8 +2266,7 @@ order by    rnk, [Name]";
         [Route("{type}/{id:int}/relationshiptypes")]
         public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
         {
-            var res = await Company.GetAllowedIntersectionTypes(type.ToString(), id);
-            return res.Where(x => x.TargetType != SystemObjects.TaskType.ToString());
+            return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
         }
 
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
