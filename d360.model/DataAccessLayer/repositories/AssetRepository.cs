@@ -2696,8 +2696,9 @@ where	O.RowNum = 1";
             var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
             List<DatabaseBulkAssetResult> results = null;
+            bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
 
-            if (includeResults)
+            if (includeResults && finished)
             {
                 try
                 {
