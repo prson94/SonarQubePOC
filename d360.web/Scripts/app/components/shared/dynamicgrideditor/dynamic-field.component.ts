@@ -349,6 +349,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field.FieldType == 'Color') {
             this.assetService.getAllColors().subscribe(x => {
                 this.defaultColorOptions = x;
+                this.ref.markForCheck();
             });
             this.colorValue = this.field.Value;
 
