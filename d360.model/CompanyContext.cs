@@ -3065,11 +3065,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         public int? GetAssetScore(long assetId, ScoreType type)
         {
-            string sql = $@"SELECT top 1
-                            cast(S.Value * 100 as int) as 'Score'                            
-                            from Asset A                            
-                            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE S.ScoreType = @type and A.ID = @assetId order by S.EffectiveDate desc";
+            string sql = $@"
+select      top 1
+            cast(S.Value * 100 as int) as 'Score'                            
+from        Asset A                            
+            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
+            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
+where       A.ID = @assetId 
+order by    S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
