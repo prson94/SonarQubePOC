@@ -74,9 +74,6 @@
             <d3s-field-definition-tile [objectName]="selectedRow?.name" [objectType]="'TaskType'" [assetTypeUid]="selectedRow?.uid" [supportsPrimaryFilterOption]="true"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.ID"></d3s-admin-allocation>
-        </div>
-        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-admin-relationships-list [filterToName]="selectedRow?.Name" [objectType]="objectType" [objectID]="selectedRow?.ID"></d3s-admin-relationships-list>
         </div>
     </div>

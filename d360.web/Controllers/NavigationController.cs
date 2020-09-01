@@ -16,6 +16,7 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 using d360.core.resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -24,10 +25,12 @@ namespace d360.web.Controllers
     {
         #region DI
         IStorageProvider Storage;
-        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage)
+        IAssetRepository AssetRepository;
+        public NavigationController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository)
             : base(community, company)
         {
             Storage = storage;
+            AssetRepository = assetRepository;
         }
 
         #endregion
@@ -839,6 +842,15 @@ namespace d360.web.Controllers
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
                     responseModel.ObjectID = model.ObjectId ?? 0;
 
+                    if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
+                    {
+                        var assetType = Company.AssetTypes.Where(x => x.Object == model.ObjectType).OrderBy(x => x.Name).FirstOrDefault();
+                        if (assetType != null)
+                        {
+                            responseModel.Uid = assetType.uid;
+                        }
+                    }
+
                     responseModel.Items.HasAudit = true;
                     responseModel.DisplayValue = "Diagram Assets";
                     responseModel.MainTabTitle = "Diagram Asset Types";
@@ -949,7 +961,14 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Diagram Asset Types";
                     responseModel.Items.HasAudit = true;
                     var govRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
-
+                    if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
+                    {
+                        var assetType = Company.AssetTypes.Where(x => x.Object == SystemObjects.TaskType.ToString()).OrderBy(x => x.Name).FirstOrDefault();
+                        if (assetType != null)
+                        {
+                            responseModel.Uid = assetType.uid;
+                        }
+                    }
                     responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
                 }
             }

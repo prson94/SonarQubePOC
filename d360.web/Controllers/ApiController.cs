@@ -158,7 +158,7 @@ namespace d360.web.Controllers
                                                     TooltipType = ft.LookupObjectType,
                                                     TooltipUrl = (detail == null ? "" : detail.Url)
                                                 });
-                                                
+
                                             }
                                         }
                                         else
@@ -249,7 +249,7 @@ namespace d360.web.Controllers
                                                 if (colorData != null || otherAssetsHaveColor)
                                                 {
                                                     JObject obj = null;
-                                                    if(colorData != null)
+                                                    if (colorData != null)
                                                     {
                                                         obj = JObject.Parse(colorData);
                                                         ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
@@ -818,7 +818,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Lookup":
                         var lookupType = item.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : item.LookupObjectType;
                         var foundColorOnList = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && item.LookupObjectID == x.AssetType.ObjectID);
-                        if(foundColorOnList) fieldType = "ListColor";
+                        if (foundColorOnList) fieldType = "ListColor";
                         break;
                 }
             }
@@ -910,7 +910,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
                 inner join AssetType T on T.Id = FT.AssetTypeID
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
-                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id}).ToList();
+                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id }).ToList();
 
             switch (type)
             {
@@ -918,7 +918,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     #region
                     bool showParent = true;
                     var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
-                    if(assetType != null)
+                    if (assetType != null)
                     {
                         showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
                     }
@@ -2098,7 +2098,7 @@ order by    rnk, [Name]";
         private bool AnyComplexLookupGridValues(string type, int id, int fieldTypeId)
         {
             bool any = false;
-            
+
             try
             {
                 any = Company.Query<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly",
@@ -2214,7 +2214,7 @@ order by    rnk, [Name]";
                             inner join [Intersect] I on ( (I.Object = '{ty}' and ASS.ObjectID = I.ObjectID) ) and I.IntersectTypeID = @intersectTypeId
                             cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
                             order by disp.TextPath";
-                    break;                
+                    break;
                 case SystemObjects.ReferenceItemType:
                     if (id != 0)
                     {
@@ -2251,7 +2251,7 @@ order by    rnk, [Name]";
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
                             order by D.DisplayValue";
-                    break;                                
+                    break;
             }
 
             if (string.IsNullOrEmpty(sql)) return null;
@@ -2266,7 +2266,8 @@ order by    rnk, [Name]";
         [Route("{type}/{id:int}/relationshiptypes")]
         public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
         {
-            return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
+            var res = await Company.GetAllowedIntersectionTypes(type.ToString(), id);
+            return res.Where(x => x.TargetType != SystemObjects.TaskType.ToString());
         }
 
         [Route("{focal}/{focalID:int}/sources/{obj}/{objID:int}/rules")]
@@ -2979,7 +2980,8 @@ order by    Name
             if (string.IsNullOrEmpty(status))
                 status = fieldType.DefaultFormattedValue;
 
-            if (LookupFieldHasColorItem(fieldType)) {
+            if (LookupFieldHasColorItem(fieldType))
+            {
                 string colorAndStatusSql = $@"(SELECT F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
@@ -2991,7 +2993,7 @@ order by    Name
                                 cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
-                if(!string.IsNullOrEmpty( colorAndStatus))
+                if (!string.IsNullOrEmpty(colorAndStatus))
                 {
                     return colorAndStatus;
                 }
