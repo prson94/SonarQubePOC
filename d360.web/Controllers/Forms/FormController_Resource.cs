@@ -35,7 +35,6 @@ namespace d360.web.Controllers
 
             var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
 
-            list.Add(new EditableField { FieldName = "ResourceTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });//@"^([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})$", null, null, "be an email address") });
@@ -73,7 +72,7 @@ namespace d360.web.Controllers
                     SystemObjects.Resource.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(),
+                    Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
                     4
                 )
@@ -97,7 +96,7 @@ namespace d360.web.Controllers
                     SystemObjects.Resource.ToString(),
                     id,
                     list,
-                    Company.GetFieldTypesByObject(SystemObjects.ResourceType, a.ResourceTypeID).ToList(),
+                    Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(),
                     Company.GetFieldRelationsByObject(SystemObjects.Resource, id).ToList(),
                     2
                 )
@@ -144,7 +143,6 @@ namespace d360.web.Controllers
                 {
                     a = new Resource
                     {
-                        ResourceTypeID = typeID,
                         FirstName = parseNameField(form, "FirstName"),
                         LastName = parseNameField(form, "LastName"),
                         Email = parseTextField(form, "Email"),
@@ -376,7 +374,7 @@ namespace d360.web.Controllers
                 Company.Update(gr);
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
 
@@ -410,7 +408,7 @@ namespace d360.web.Controllers
                 model.UpdatedOn = DateTime.UtcNow;
 
                 // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, model.ResourceTypeID).ToList(), form, Server, false);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(), form, Server, false);
                 Company.AddOrUpdateFields(fields);
 
                 Community.Update<Resource>(model);

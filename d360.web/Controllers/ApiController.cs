@@ -2845,7 +2845,7 @@ from    (
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
             }
 
-            var model = Community.GetById<Resource>(id, i => i.ResourceType);
+            var model = Community.GetById<Resource>(id);
 
             if (model == null)
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
