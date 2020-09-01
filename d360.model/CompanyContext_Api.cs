@@ -5222,12 +5222,14 @@ from    [Intersect] T
 
 
             //Check for diagram relationships
-            Connection.Execute(@"
+            Connection.Execute($@"
                                     Update ER
                                     Set Success=0,
                                     Message='Relationship type has existing relationships' 
                                     from [api].[ExecutionDeletedRelationshipType] ER
-                                    where  ER.ExecutionID=@executionID and ER.[Cascade] =0 and
+									inner join IntersectType it on er.Uid = it.uid
+									inner join [Predicate] p on it.PredicateID = p.ID
+                                    where  ER.ExecutionID=@executionID and p.Type = {((int)PredicateType.Diagram)}  and
                                     ER.Success is null
                                     and  exists (select it.id from processexpandeddata ped
                                 inner join IntersectType it on it.uid = ER.Uid
