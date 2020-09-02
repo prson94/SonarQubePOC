@@ -39,7 +39,11 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr [pSelectableRow]="item">
-                        <td>{{item.Diagram}}</td>
+                        <td>
+                            <a href="{{item.url}}" target="_blank" class="mid-blue">
+                                {{item.Diagram}}
+                            </a>
+                        </td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>{{item.Occurrences}}</td>
                         <td>

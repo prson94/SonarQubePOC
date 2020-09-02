@@ -303,34 +303,101 @@ namespace d360.model.DataAccessLayer
 
         }
 
-        public IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid)
+        public IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
+            var dbArgs = new DynamicParameters();
+            List<string> whereClauses = new List<string>();
+            string sortField = "";
+            string sortOrder = "";
+            string whereOperater = " and ";
+            int useCount = 0;
+            dbArgs.Add("labelUid", labelUid);
+            foreach (var qitem in queryParams.Where(x => !string.IsNullOrEmpty(x.Value)))
+            {
+                switch (qitem.Key.ToLower())
+                {
+                    case "globalsearch":
+                        dbArgs.Add("global", $"%{qitem.Value.ToLower()}%");
+                        whereClauses.Add("Path.Diagram like @global");
+                        whereClauses.Add("Type.AssetTypeName like @global");
+                        whereClauses.Add("STR(Count) like @global");
+
+                        whereOperater = " or ";
+
+                        break;
+                    case "diagram":
+                        dbArgs.Add("diagram", $"%{qitem.Value.ToLower()}%");
+                        whereClauses.Add("Path.Diagram like @diagram");
+
+                        break;
+                    case "occurrences":
+                        if (int.TryParse(qitem.Value, out useCount))
+                        {
+                            dbArgs.Add("occurrences", $"%{qitem.Value.ToLower()}%");
+                            whereClauses.Add("STR(Count) like @occurrences");
+                        }
+
+                        break;
+                    case "assettypename":
+                        if (int.TryParse(qitem.Value, out useCount))
+                        {
+                            dbArgs.Add("assettypename", $"%{qitem.Value.ToLower()}%");
+                            whereClauses.Add("Type.AssetTypeName like @assettypename");
+                        }
+                        break;
+                    case "sortby":
+                        if (qitem.Value.ToLower() == "diagram") sortField = "Path.Diagram";
+                        if (qitem.Value.ToLower() == "assettypename") sortField = "Type.AssetTypeName";
+                        if (qitem.Value.ToLower() == "occurrences") sortField = "count";
+                        break;
+                    case "sortorder":
+                        int val = int.Parse(qitem.Value);
+                        if (val >= 0) sortOrder = "ASC";
+                        else sortOrder = "DESC";
+                        break;
+                }
+            }
+
+            string sortClause = !string.IsNullOrEmpty(sortField) ? $"ORDER BY {sortField} {sortOrder}" : "";
+
+            string whereClause = $"";
+            if (whereClauses.Count > 0)
+            {
+                whereClause += $"where ({string.Join(whereOperater, whereClauses)})";
+            }
+
             var labelsSql = $@";with usage as(
                     select DiagramAssetUid, count(*) as count from dbo.processexpandeddata ped
                     where ped.labeluid = @labelUid
                     group by ped.DiagramAssetUid)
                     select
-                    graph.GetPath(an.Segments, ' > ', ' / ') as Diagram,
+                    Path.Diagram,
                     Count as Occurrences,
                     u.diagramassetuid as AssetUid,
                     an.ID as AssetId,
                     'asset/' + lower(cast(an.uid as nvarchar(36))) as url,
-					CASE 
-							WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}'
-							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'
-                            WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'
-							WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'
-							WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'
-							ELSE ''
-						END AS Class, 
-                   AST.Name as AssetTypeName
+					Type.AssetTypeName,
+                    a.Object,
+                    a.ObjectID
                     from usage u
                     inner join graph.assetnode an on an.uid = u.diagramassetuid
                     inner join asset a on a.uid = an.uid
                     inner join assettype ast on a.assettypeid = ast.id
-";
+                    cross apply (select graph.GetPath(an.Segments, ' > ', ' / ') as Diagram)Path
+                    cross apply (
+					    select 
+					        CASE 
+							    WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}' + ' > ' +  AST.Name
+							    WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'+  ' > ' + AST.Name
+                                WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'+  ' > ' + AST.Name
+							    WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'+  ' > ' + AST.Name
+							    WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'+  ' > ' + AST.Name
+							    ELSE ''+ AST.Name
+						   END AS AssetTypeName)Type
+                    {whereClause}
+                    {sortClause}";
 
-            var response = companyContext.Query<dynamic>(labelsSql, new { labelUid }, ApiTimeout);
+            var response = companyContext.Query<dynamic>(labelsSql, dbArgs, ApiTimeout);
             return response;
         }
 
@@ -339,6 +406,7 @@ namespace d360.model.DataAccessLayer
             var fileName = $"Where Used report for Connector Label '{label.Value}'";
             var fields = new List<FieldType>();
             fields.Add(new FieldType { Type = "string", Name = "Diagram", FriendlyName = "Diagram" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetTypeName", FriendlyName = "Asset Type" });
             fields.Add(new FieldType { Type = "string", Name = "Occurrences", FriendlyName = "Label Occurrence" });
             fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "string", Name = "AssetId", FriendlyName = "Asset ID" });
@@ -372,7 +440,6 @@ namespace d360.model.DataAccessLayer
                         var val = rowValues[field.Name];
                         setCellValueFromField(document, rowNumber, index, field, val);
                     }
-
                     index++;
                 }
             }

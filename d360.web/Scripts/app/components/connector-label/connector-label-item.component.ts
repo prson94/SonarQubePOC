@@ -39,7 +39,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
     private theDeleteCallback: Function;
 
-    filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurences: '' };
+    filters: any = { globalSearch: '', Diagram: '', AssetTypeName: '', Occurrences: '' };
     sort: any;
 
     constructor(
@@ -118,11 +118,12 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
                     if (this.isAdmin) {
 
-                        this.setCommonSecondaryNavTabs(true);
+                        this.setCommonSecondaryNavTabs(false);
 
-                        if (this.auditSidebar) {
-                            this.auditSidebar.url = `/sidebar/audit/ConnectorLabel/${this.labelUid}`;
-                        }
+                        //Coming soon
+                        //if (this.auditSidebar) {
+                        //    this.auditSidebar.url = `/sidebar/audit/ConnectorLabel/${this.labelUid}`;
+                        //}
                     }
                     else {
                         this.setCommonSecondaryNavTabs(false);
@@ -135,9 +136,6 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                     this.connectorLabelService.getLabelUsage(this.label.uid)
                         .subscribe(data => {
                             this.usage = data;
-                            this.usage.forEach(item => {
-                                item.AssetTypeName = item.Class + ' : ' + item.AssetTypeName;
-                            });
                             this.isLoading = false;
                         });
 
@@ -174,7 +172,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     }
 
     formatValue(item: ConnectorLabelUsage) {
-        return item.AssetTypeName.replace(':', ` <i class='fa fa-angle-right'></i> `);
+        return item.AssetTypeName.replace('>', ` <i class='fa fa-angle-right'></i> `);
     }
 
     setActions() {
@@ -270,5 +268,8 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     }
     openConnectorLabelPageByUID(uid: string) {
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
+    }
+    private export() {
+        this.connectorLabelService.exportLabelUsage(this.label.uid, `Connector Labes`, this.sort, this.filters)
     }
 };

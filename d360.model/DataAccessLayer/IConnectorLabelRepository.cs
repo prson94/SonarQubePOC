@@ -15,7 +15,7 @@ namespace d360.model.DataAccessLayer
         Task<ConnectorLabelApiModelWrapper> GetLabels(IEnumerable<KeyValuePair<string, string>> queryParams);
         ConnectorLabelApiModel UpdateConnectorLabel(Guid uid, ConnectorLabelPostModel model, ConnectorLabel existingLabel);
         Task<dynamic> GetConnectorLabelsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
-        IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid);
+        IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         (byte[], string) GetExcelFromConnectorLabelUsage(ConnectorLabel label, IEnumerable<dynamic> response);
         bool IsAuthorizedToEditConnectorLabel(Guid tagUid);
     }

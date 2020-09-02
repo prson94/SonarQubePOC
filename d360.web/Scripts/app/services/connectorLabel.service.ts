@@ -82,8 +82,19 @@ export class ConnectorLabelService extends BaseObservableService {
     }
 
 
-    exportLabelUsage(labelUid: string, fileName: string) {
+    exportLabelUsage(labelUid: string, fileName: string, sort: any = null, filters: any = null) {
         let url = `api/v2/connectorLabels/` + labelUid + `/usage`;
+
+        if (filters && sort) {
+            var params = "?globalSearch=" + filters.globalSearch;
+            params += "&diagram=" + filters.Diagram;
+            params += "&assettypename=" + filters.AssetTypeName;
+            params += "&occurrences=" + filters.Occurrences;
+            params += "&sortBy=" + sort.field;
+            params += "&sortOrder=" + sort.order;
+            url = url + params;
+        }
+
         this.
             http
             .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
