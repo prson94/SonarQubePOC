@@ -48,6 +48,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public Guid MetricAssetVersionUid { get; set; }
         public Guid? ConditionUid { get; set; }
         public DateTime EffectiveDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public bool UsedInOtherScores { get; set; }
         public bool Value { get; set; }
         public decimal AdjustedWeight { get; set; }
         public decimal AdjustedMaxWeight { get; set; }

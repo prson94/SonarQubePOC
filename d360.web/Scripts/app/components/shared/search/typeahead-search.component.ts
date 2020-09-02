@@ -30,6 +30,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     private defaultSearchOptions: string[];
     private endSearchAllOption: SearchResult;
     private endSearchAllTypeToken: string = '__SHOWALL__';
+    private options: string[];
 
     private typeAheadQuery$ = new Subject<string>();
 
@@ -51,8 +52,13 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.result.Name = this.defaultValue;
         }
 
-        let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-        this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, options)
+        this.options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
+        this.createSubscription();
+    }
+
+    createSubscription() {
+        if (this.searchSub) this.searchSub.unsubscribe();
+        this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, this.options)
             .subscribe(data => {
                 this.results = data;
                 if (this.results.length > 0) {
@@ -67,6 +73,10 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (changes['defaultValue']) {
             this.result = new SearchResult();
             this.result.Name = this.defaultValue;
+        }
+        if (changes['searchOptions']) {
+            this.options = this.searchOptions;
+            this.createSubscription();
         }
     }
 

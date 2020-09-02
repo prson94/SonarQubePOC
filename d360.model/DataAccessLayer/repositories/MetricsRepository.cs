@@ -700,7 +700,8 @@ from	(
 				V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC) as RowNum,
 				V.EffectiveEndDate as EndDate,
-				SI.AdjustedWeight as [Weight],
+				SI.AdjustedMaxWeight as [Weight],
+				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
 				SI.Value,
 				A.ScoreType
