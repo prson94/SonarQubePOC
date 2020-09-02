@@ -5,6 +5,45 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="Pappas" id="Migration.Metrics-Allocation-RegenerateMissing">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="Score" columnName="ScoreType" />
+	</preConditions>
+    <comment>GOV-11999 - Adds any missing allocations based on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
+	<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+	INSERT INTO [metrics].[Allocation] ([ScoreType], [AssetTypeUid], [IsExternallyCalculated], [IsThresholdBased])
+		select	Sc.ScoreType,
+				T.Uid as AssetTypeUid,
+				iif (Sc.ScoreType = 2, 1, 0) as IsExternallyCalculated,
+				0 as IsThresholdBased
+		from	metrics.Score Sc
+				inner join Asset A on A.Uid = Sc.AssetUid
+				inner join AssetType T on T.ID = A.AssetTypeID
+				left join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+		where	Al.Uid is null
+		group by T.Uid, Sc.ScoreType
+      ]]>
+    </sql>    
+  </changeSet>
+
+  <changeSet author="Pappas" id="Migration.Metrics-Score-Update">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="Score" columnName="ScoreType" />
+	</preConditions>
+    <comment>GOV-11999 - Update AllocationUid on the scores present in the metrics.Score table. To also account for GOV-11956 below.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+	update	Sc
+	set		Sc.AllocationUid = Al.Uid
+	from	metrics.Score Sc
+			inner join Asset A on A.Uid = Sc.AssetUid
+			inner join AssetType T on T.ID = A.AssetTypeID
+			inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = Sc.ScoreType
+      ]]>
+    </sql>    
+  </changeSet>
+
   <changeSet author="kmcnamee" id="Migration.Metrics-scorecleanup-v1">
     <comment>GOV-11956 - cleanup scores for deleted asset types will cause migration to fail if not run first.</comment>
     <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
@@ -12,6 +51,27 @@
 					delete ms from [metrics].[score] ms
 						where not exists( select 1 from [metrics].[Allocation] ma where ma.uid = ms.AllocationUid)
 							and not exists ( select 1 from [asset] a where a.uid = ms.AssetUid)
+      ]]>
+    </sql>    
+  </changeSet>
+
+  <changeSet author="Pappas" id="Migration.Metrics-ScoreItem-LoadVersionUid">
+    <preConditions onFail="MARK_RAN">
+		<columnExists schemaName="metrics" tableName="ScoreItem" columnName="MetricAssetUid" />
+	</preConditions>
+    <comment>GOV-11999 - Updates missing AssetVersionUid column to ScoreItem table. To also account for script below.</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+      <![CDATA[
+	update	Si
+	set		Si.AssetVersionUid = V.Uid
+	from	metrics.ScoreItem Si
+			cross apply (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = Si.MetricAssetUid 
+						and EffectiveDate <= Si.EffectiveDate
+			) Mx
+			inner join metrics.AssetVersion V on V.AssetUid = Si.MetricAssetUid and V.EffectiveDate = Mx.EffectiveDate
       ]]>
     </sql>    
   </changeSet>
@@ -388,6 +448,7 @@ delete	metrics.AssetVersionCondition where Uid in (select RemoveUid from #cleanu
 	</changeSet>
 
 	<changeSet author="Pappas" id="Migration.Metrics-GOV-10887">
+		<validCheckSum>7:cecd28359670d6e847fa115e7a81027d</validCheckSum>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score_Backup')
@@ -433,93 +494,6 @@ GO
 
 -- Rebuild group measure instances. Figure out which measure groups need to be added to score item table.
 delete metrics.ScoreItem where MetricAssetUid in (select Uid from metrics.Asset where IsGroup = 1);
-
-drop table if exists #groupItems;
-select		distinct
-			G.Uid as GroupUid,
-			I.AssetUid,
-			I.EffectiveDate,
-			I.EndDate,
-			GV.EffectiveDate as GroupEffectiveDate,
-			GV.[Weight] as RawWeight,
-			cast(null as decimal(5,3)) as AdjustedWeight,
-			cast(null as decimal(5,3)) as AdjustedMaxWeight
-into		#groupItems
-from		metrics.ScoreItem I
-			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
-			inner join metrics.Asset G on G.Uid = A.ParentUid
-			cross apply (
-				select	max(EffectiveDate) as EffectiveDate
-				from	metrics.AssetVersion
-				where	AssetUid = G.Uid
-						and EffectiveDate <= I.EffectiveDate
-			) GVD
-			inner join metrics.AssetVersion GV on GV.AssetUid = G.Uid and GV.EffectiveDate = GVD.EffectiveDate;
-
-alter table #groupItems add ScoreItemUid uniqueidentifier default(newid()) not null;
-
-drop table if exists #rootItems;
-select		distinct
-			I.AssetUid,
-			I.EffectiveDate,
-			I.MetricAssetUid,
-			IV.Weight as RawWeight,
-			I.AdjustedWeight,
-			I.AdjustedMaxWeight
-into		#rootItems
-from		metrics.ScoreItem I
-			inner join metrics.Asset A on A.Uid = I.MetricAssetUid and A.ParentUid is null
-			cross apply (
-				select	max(EffectiveDate) as EffectiveDate
-				from	metrics.AssetVersion
-				where	AssetUid = A.Uid
-						and EffectiveDate <= I.EffectiveDate
-			) IVD
-			inner join metrics.AssetVersion IV on IV.AssetUid = A.Uid and IV.EffectiveDate = IVD.EffectiveDate;
-
-update	T
-set		T.AdjustedMaxWeight = round(T.RawWeight / (T.RawWeight+Gt.Total+It.Total),3)    --select *, round(T.RawWeight / (T.RawWeight+Gt.Total+It.Total),3) as PossibleAdjustedMaxWeight
-from	#groupItems T
-		cross apply (
-			select	coalesce(sum(RawWeight),0) as Total
-			from	#groupItems
-			where	AssetUid = T.AssetUid
-					and EffectiveDate = T.EffectiveDate
-					and GroupUid <> T.GroupUid
-		) Gt
-		cross apply (
-			select	coalesce(sum(RawWeight),0) as Total
-			from	#rootItems
-			where	AssetUid = T.AssetUid
-					and EffectiveDate = T.EffectiveDate
-		) It;
-
-update	T
-set		T.AdjustedWeight = round(T.AdjustedMaxWeight * It.Total,3)		-- select	*, T.AdjustedMaxWeight * It.Total,
-from	#groupItems T
-		cross apply (
-			select	coalesce(sum(case I.Value when 1 then I.AdjustedWeight else 0 end),0) as Total
-			from	metrics.ScoreItem I
-					inner join metrics.Asset A on A.Uid = I.MetricAssetUid and A.ParentUid = T.GroupUid and I.AssetUid = T.AssetUid and I.EffectiveDate = T.EffectiveDate
-		) It;
-
-alter table metrics.ScoreItem alter column Value bit null
-
-declare @dt datetime = getutcdate()
-
-INSERT INTO [metrics].[ScoreItem] ([Uid], [AssetUid], [MetricAssetUid], [EffectiveDate], [UpdatedOn], [AdjustedWeight], [RunDate], [EndDate], [AdjustedMaxWeight])
-	select	ScoreItemUid,
-			AssetUid,
-			GroupUid,
-			EffectiveDate,
-			@dt,
-			AdjustedWeight,
-			@dt,
-			EndDate,
-			AdjustedMaxWeight
-	from	#groupItems;
-
-
 
 -- Add constraint to Score table.
 if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScore')
@@ -665,6 +639,156 @@ delete metrics.ScoreItem where Uid not in (select ScoreItemUid from metrics.Scor
 GO
 delete metrics.Score where Uid not in (select ScoreUid from metrics.ScoreItemLink)
 GO
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
+
+
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-11998">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+alter table [metrics].[ScoreItem] alter column [Value] bit null
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-10887-LoadGroupsRecalcScore">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+drop table if exists #groupItems;
+
+select		distinct
+			S.Uid as ScoreUid,
+			G.Uid as GroupUid,
+			GV.Uid as AssetVersionUid,
+			GV.[Weight] as RawWeight,
+			cast(null as decimal(5,3)) as AdjustedWeight,
+			cast(null as decimal(5,3)) as AdjustedMaxWeight
+into		#groupItems
+from		metrics.ScoreItem I
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid
+			inner join metrics.Score S on S.Uid = L.ScoreUid
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+			inner join metrics.Asset A on A.Uid = V.AssetUid
+			inner join metrics.Asset G on G.Uid = A.ParentUid
+			cross apply (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.AssetVersion
+				where	AssetUid = G.Uid
+						and EffectiveDate <= S.EffectiveDate
+			) GVD
+			inner join metrics.AssetVersion GV on GV.AssetUid = G.Uid and GV.EffectiveDate = GVD.EffectiveDate and GV.Uid not in (select AssetVersionUid from metrics.ScoreItem)
+GO
+
+alter table #groupItems add ScoreItemUid uniqueidentifier default(newid()) not null
+GO
+
+drop table if exists #rootItems
+GO
+
+select		distinct
+			S.Uid as ScoreUid,
+			I.AssetVersionUid,
+			V.Weight as RawWeight,
+			I.AdjustedWeight,
+			I.AdjustedMaxWeight
+into		#rootItems
+from		metrics.ScoreItem I
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid
+			inner join metrics.Score S on S.Uid = L.ScoreUid			
+			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
+GO
+
+update	T
+set		T.AdjustedMaxWeight = round(T.RawWeight / (T.RawWeight+Gt.Total+It.Total),3)    --select *, round(T.RawWeight / (T.RawWeight+Gt.Total+It.Total),3) as PossibleAdjustedMaxWeight
+from	#groupItems T
+		cross apply (
+			select	coalesce(sum(RawWeight),0) as Total
+			from	#groupItems
+			where	ScoreUid = T.ScoreUid
+					and AssetVersionUid <> T.AssetVersionUid
+		) Gt
+		cross apply (
+			select	coalesce(sum(RawWeight),0) as Total
+			from	#rootItems
+			where	ScoreUid = T.ScoreUid
+		) It
+GO
+
+update	T
+set		T.AdjustedWeight = round(T.AdjustedMaxWeight * It.Total,3)
+from	#groupItems T
+		cross apply (
+			select	coalesce(sum(case I.Value when 1 then I.AdjustedWeight else 0 end),0) as Total
+			from	metrics.ScoreItem I
+					inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid and L.ScoreUid = T.ScoreUid
+					inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+					inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid = T.GroupUid
+		) It
+GO
+
+alter table #groupItems add ShouldAdd bit default(1) not null
+GO
+
+update	T
+set		T.ShouldAdd = 0
+from	#groupItems T
+		cross apply (
+			select	count(1) as [Count]
+			from	metrics.ScoreItem I
+					inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid and L.ScoreUid = T.ScoreUid
+					inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+					inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid = T.GroupUid --and I.AssetUid = T.AssetUid and I.EffectiveDate = T.EffectiveDate
+		) It
+where	It.[Count] = 0
+GO
+
+INSERT INTO [metrics].[ScoreItem] ([Uid], [AssetVersionUid], [AdjustedWeight], [RunDate], [AdjustedMaxWeight], [UpdatedOn])
+	select	ScoreItemUid,
+			AssetVersionUid,
+			AdjustedWeight,
+			getutcdate(),
+			AdjustedMaxWeight,
+			getutcdate()
+	from	#groupItems
+	where	ShouldAdd = 1
+GO
+
+INSERT INTO [metrics].[ScoreItemLink] ([ScoreUid], [ScoreItemUid])
+	select	distinct 
+			ScoreUid,
+			ScoreItemUid
+	from	#groupItems
+	where	ShouldAdd = 1
+GO
+
+update	T
+set		T.Value = coalesce(S.Value, 0)
+from	metrics.Score T 
+		inner join (
+					select	S.Uid,
+							sum(I.AdjustedWeight) as [Value]
+					from	metrics.Score S
+							inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+							inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+							inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+							inner join metrics.Asset A on A.Uid = V.AssetUid
+							inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
+					where	A.ParentUid is null
+					group by S.Uid
+					) S on S.Uid = T.Uid
 		]]>
 		</sql>
 		<rollback>

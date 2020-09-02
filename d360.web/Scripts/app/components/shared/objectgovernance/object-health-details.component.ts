@@ -304,6 +304,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             case ScoreType.Governance:
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
+                this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadDefinition();
                 this.loadSeriesData();
@@ -313,6 +314,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
+                this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadDefinition();
                 this.loadSeriesData();

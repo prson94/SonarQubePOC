@@ -25,7 +25,7 @@
                 </ng-template>
                 <ng-container *ngIf="confirmationText && !isUsageLoading">
                     <p>
-                        <p-checkbox [(ngModel)]="isConfirmed" [binary]="true" label="{{confirmationText}}"></p-checkbox>
+                        <p-checkbox igAutoFocus [(ngModel)]="isConfirmed" [binary]="true" label="{{confirmationText}}"></p-checkbox>
                     </p>
 
                 </ng-container>
@@ -34,7 +34,8 @@
         </div>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
-                <button igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
+                <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
+                <button *ngIf="confirmationText" class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
                 <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where Used Report</button>
                 <span class="grow"></span>
                 <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">

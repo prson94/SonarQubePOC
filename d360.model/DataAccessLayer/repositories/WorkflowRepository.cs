@@ -8,16 +8,18 @@ using d360.core.entities;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
-    public class WorkflowRepository : IWorkflowRepository
+    public class WorkflowRepository : BaseRepository, IWorkflowRepository
     {
         private ICompanyContext CompanyContext;
         public WorkflowRepository(ICompanyContext CompanyContext)
+            : base(CompanyContext)
         {
             this.CompanyContext = CompanyContext;
         }
@@ -145,7 +147,7 @@ namespace d360.model.DataAccessLayer
 				{whereClause}
 				order by t.Name asc";
 
-            var workflowTypes = await this.CompanyContext.QueryAsync<WorkflowTypeApiViewModel>(sql, dbArgs);
+            var workflowTypes = await this.CompanyContext.QueryAsync<WorkflowTypeApiViewModel>(sql, dbArgs, ApiTimeout);
             return workflowTypes;
         }
 
@@ -206,10 +208,10 @@ namespace d360.model.DataAccessLayer
 				{whereSql}
                 {string.Join("\n", pagingSql)}";
 
-            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
 
-            var results = await CompanyContext.QueryAsync<WorkflowVersionApiViewModel>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<WorkflowVersionApiViewModel>(sql, dbArgs, ApiTimeout);
 
             model.items = results;
             model.total = count;
@@ -360,7 +362,7 @@ namespace d360.model.DataAccessLayer
 	            left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
 	            {whereClause}"; 
 
-            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs);
+            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs, ApiTimeout);
 
             workflowVersionSteps.ToList().ForEach(x => {
                 x.Settings = new { settings = this.XmlToDynamic(x.SettingsXml), fields = this.XmlToDynamic(x.FieldsXml) };
@@ -408,7 +410,7 @@ namespace d360.model.DataAccessLayer
                                 left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
                                  where item.uid=@uid";
 
-            var workflowInstances = await this.CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs);
+            var workflowInstances = await this.CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);
 
             workflowInstances.ToList().ForEach(x => {
 
@@ -444,7 +446,7 @@ namespace d360.model.DataAccessLayer
         {
 
             var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
-            var assignments =   this.CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql).ToList();
+            var assignments =   this.CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
             return assignments;
 
         }
@@ -765,10 +767,10 @@ namespace d360.model.DataAccessLayer
 				{whereSql}
                 {string.Join("\n", pagingSql)}";
 
-            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
 
-            var results = await CompanyContext.QueryAsync<WorkflowApiViewModel>(sql, dbArgs);
+            var results = await CompanyContext.QueryAsync<WorkflowApiViewModel>(sql, dbArgs, ApiTimeout);
 
             model.items = results;
             model.total = count;

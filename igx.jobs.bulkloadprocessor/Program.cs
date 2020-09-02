@@ -1056,8 +1056,8 @@ when matched then
 		T.LastName = S.LastName,
 		T.Status = S.UserStatus
 when not matched by target then
-    insert  (ResourceTypeID, Username, [Password], LastName, FirstName, Email, [Status])
-    values  (1, S.Email, 'not set', S.LastName, S.FirstName, S.Email, S.UserStatus)
+    insert  (Username, [Password], LastName, FirstName, Email, [Status])
+    values  (S.Email, 'not set', S.LastName, S.FirstName, S.Email, S.UserStatus)
 output S.LoadID, S.RowIndex, inserted.ID, inserted.[uid], $action into #UsersResult;", transaction: trans);
 
                     community.Execute(@"

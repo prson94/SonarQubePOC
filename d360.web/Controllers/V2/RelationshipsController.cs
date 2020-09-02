@@ -1060,8 +1060,9 @@ namespace d360.web.Controllers.V2
                 var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
 
                 List<DatabaseBulkAssetResult> results = null;
-                
-                if (!summaryOnly)
+                bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
+
+                if (!summaryOnly && finished)
                 {
                     results = await RelationshipRepository.GetBulkResults(info);
                 }

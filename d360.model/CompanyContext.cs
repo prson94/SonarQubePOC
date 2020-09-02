@@ -56,6 +56,14 @@ namespace d360.model
 
         bool IsEventingEnabled = false;
 
+        public int ApiTimeout
+        {
+            get
+            {
+                return this.Community.GetCompanySettingByKey<int>("ApiTimeout");
+            }
+        }
+
         #region Ctors
 
         public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
@@ -72,7 +80,7 @@ namespace d360.model
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
-
+            
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -315,7 +323,7 @@ namespace d360.model
                                             VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
                                     WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
                                         THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID } );
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
 
 
                     }
@@ -1948,9 +1956,9 @@ where	I.ID is null";
             }
         }
 
-        public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs)
+        public async Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90)
         {
-            var jsonStrings = await QueryAsync<string>(query, dbArgs);
+            var jsonStrings = await QueryAsync<string>(query, dbArgs, timeout);
             var json = string.Join("", jsonStrings);
 
             return JsonConvert.DeserializeObject<T>(json);
@@ -3057,11 +3065,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         public int? GetAssetScore(long assetId, ScoreType type)
         {
-            string sql = $@"SELECT top 1
-                            cast(S.Value * 100 as int) as 'Score'                            
-                            from Asset A                            
-                            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE S.ScoreType = @type and A.ID = @assetId order by S.EffectiveDate desc";
+            string sql = $@"
+select      top 1
+            cast(S.Value * 100 as int) as 'Score'                            
+from        Asset A                            
+            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
+            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
+where       A.ID = @assetId 
+order by    S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
@@ -3180,6 +3191,14 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             inner join asset a on a.id = apd.AssetID
                             where json.uid = @assetUid";
             return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
+        }
+        public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
+        {
+            return Query<int>(@"select count(*) from processexpandeddata ped
+                            inner join IntersectType it on it.uid = @intersectTypeUid
+                            where ped.DiagramAssetTypeUid = it.SubjectUid and 
+                            (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
+                            new { intersectTypeUid }).FirstOrDefault() > 0;
         }
     }
 }

@@ -59,7 +59,7 @@ namespace d360.web.Controllers.V2
                 "select t.ID, t.uid, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
                 "from AssetTypeExportTemplate t " +
                 "left join AssetType a ON t.AssetTypeID = a.ID " +
-                "order by t.Name, t.ID"));
+                "order by t.Name, t.ID", ApiTimeout));
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace d360.web.Controllers.V2
                 "from AssetTypeExportTemplate t " +
                 "left join AssetType a ON t.AssetTypeID = a.ID " +
                 "where a.uid = @assetTypeUID " +
-                "order by t.Name, t.ID ",  new { assetTypeUID = assetTypeUID.ToString() }));
+                "order by t.Name, t.ID ",  new { assetTypeUID = assetTypeUID.ToString() }, ApiTimeout));
         }
 
         /// <summary>

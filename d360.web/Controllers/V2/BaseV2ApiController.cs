@@ -26,6 +26,13 @@ namespace d360.web.Controllers.V2
             _company = company;
         }
 
+        public int ApiTimeout
+        {
+            get
+            {
+                return Company.ApiTimeout;
+            }
+        }
         public void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>

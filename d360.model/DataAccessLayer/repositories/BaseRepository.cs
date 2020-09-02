@@ -23,6 +23,15 @@ namespace d360.model.DataAccessLayer.repositories
         {
             this.CompanyContext = ctx;
         }
+
+        public int ApiTimeout
+        {
+            get
+            {
+                return this.CompanyContext.ApiTimeout;
+            }
+        }
+
         #region Private
 
         private bool DoesIntersectHasRefList(IntersectType intersectType)

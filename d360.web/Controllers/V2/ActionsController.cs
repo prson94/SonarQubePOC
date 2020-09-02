@@ -250,8 +250,8 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
-            var count = await Company.QueryAsync<int>(countSql, dbArgs);
-            var results = await Company.QueryAsync<dynamic>(resultsSql, dbArgs);
+            var count = await Company.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
+            var results = await Company.QueryAsync<dynamic>(resultsSql, dbArgs, ApiTimeout);
             model.total = count.FirstOrDefault();
             model.items = results;
 
