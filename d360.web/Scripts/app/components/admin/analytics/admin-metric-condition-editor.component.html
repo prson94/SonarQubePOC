@@ -1,6 +1,6 @@
 ﻿<div class="row condtions" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
-        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes: condition.ConditionFieldTypeID " (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes: condition.ConditionFieldTypeName " (ngModelChange)="condition.ConditionFieldTypeName=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeName" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
@@ -51,7 +51,7 @@
     </div>
     <div class="feedback" *ngIf="!conditionsValid">Condition fields must be unique*</div>
     <div class="condition-row d3s-color-picker" *ngIf="fieldTypeDropdownOptions.length > 0">
-        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [ngClass]="{'required': !newCondition.ConditionFieldTypeID}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [ngClass]="{'required': !newCondition.ConditionFieldTypeName}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeName=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeName" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
