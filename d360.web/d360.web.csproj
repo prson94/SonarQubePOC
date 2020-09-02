@@ -625,6 +625,7 @@
     <Content Include="Content\primeng\v9.1.0\primeng.css" />
     <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
     <Content Include="Content\primeng\v9.1.0\theme.less" />
+    <Content Include="Content\primeng\v9.1.0\theme.min.css" />
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />
