@@ -35,7 +35,8 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, ISecurityContextProvider secProvider)
+        IConnectorLabelRepository connectorLabelRepository;
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
@@ -43,6 +44,7 @@ namespace d360.web.Controllers
 #endif
             SecProvider = secProvider;
             this.tagRepository = tagRepository;
+            this.connectorLabelRepository = connectorLabelRepository;
         }
 
         #endregion
@@ -4697,6 +4699,17 @@ where v.id = {0}", id)).FirstOrDefault();
             {
                 List<PermissionInfo> ret = new List<PermissionInfo>();
                 if (tagRepository.IsAuthorizedToEditTag(uid))
+                {
+                    ret.AddRange(Permission.DeleteAsset.GetList());
+                }
+
+                return ret;
+            }
+
+            if (type == SystemObjects.ConnectorLabel)
+            {
+                List<PermissionInfo> ret = new List<PermissionInfo>();
+                if (connectorLabelRepository.IsAuthorizedToEditConnectorLabel(uid))
                 {
                     ret.AddRange(Permission.DeleteAsset.GetList());
                 }

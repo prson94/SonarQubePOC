@@ -17,5 +17,6 @@ namespace d360.model.DataAccessLayer
         Task<dynamic> GetConnectorLabelsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
         IEnumerable<dynamic> GetConnectorLabelUsage(Guid labelUid);
         (byte[], string) GetExcelFromConnectorLabelUsage(ConnectorLabel label, IEnumerable<dynamic> response);
+        bool IsAuthorizedToEditConnectorLabel(Guid tagUid);
     }
 }

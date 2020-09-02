@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -827,6 +827,7 @@
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
     <Content Include="Scripts\app\components\sidebar\dashboard\dashboard.component.html" />
     <Content Include="Scripts\app\components\sidebar\dashboard\powerbi-viewer.component.html" />
+    <Content Include="Scripts\app\components\connector-label\connector-label-item.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -1465,6 +1466,7 @@
     <Content Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.ts" />
@@ -1600,6 +1602,10 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
     <Content Include="Scripts\app\components\tag\tag-item.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />

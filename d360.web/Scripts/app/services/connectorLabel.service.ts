@@ -5,7 +5,7 @@ import { catchError, map } from "rxjs/operators";
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import { ConnectorLabel } from '../models/connectorLabel.model';
+import { ConnectorLabel, ConnectorLabelUsage } from '../models/connectorLabel.model';
 
 
 @Injectable()
@@ -63,12 +63,20 @@ export class ConnectorLabelService extends BaseObservableService {
 
     }
 
-    getLabelUsage(labelUid: string): Observable<any[]> {
-        let url = `api/v2/connectorLabels/` + labelUid + `/usage`;
+    getLabelByUid(uid: string): Observable<ConnectorLabel> {
+        let url = `api/v2/connectorLabels/?uid=` + uid;
 
         return this.http.get(url)
             .pipe(map(response => <any>response),
-                map(items => <any[]>items),
+                map(items => <ConnectorLabel>items.items[0]),
+                catchError(err => this.handleError(err)));
+    }
+
+    getLabelUsage(labelUid: string): Observable<ConnectorLabelUsage[]> {
+        let url = `api/v2/connectorLabels/` + labelUid + `/usage`;
+
+        return this.http.get(url)
+            .pipe(map(items => <ConnectorLabelUsage[]>items),
                 catchError(err => this.handleError(err)));
 
     }

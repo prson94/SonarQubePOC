@@ -10,6 +10,16 @@
     TooltipID: number;
 }
 
+export class ConnectorLabelUsage {
+    Diagram: string;
+    Occurrences: number;
+    AssetUid: string;
+    AssetId: number;
+    url: string;
+    Class: string;
+    AssetTypeName: string;
+}
+
 export enum ConnectorLabelState {
     Unknown = -1,
     PendingAdd = 0,

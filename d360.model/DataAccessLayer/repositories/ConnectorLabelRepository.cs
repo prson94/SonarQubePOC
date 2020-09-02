@@ -1,5 +1,7 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using SpreadsheetLight;
@@ -94,7 +96,7 @@ namespace d360.model.DataAccessLayer
             string whereClause = $"WHERE t.State = 1";
             if (queryFilters.Count > 0)
             {
-                whereClause += $" and ({string.Join("AND", queryFilters)})";
+                whereClause += $" and ({string.Join(" AND ", queryFilters)})";
             }
 
             var sql = $@"drop table if exists #labelUidMap
@@ -312,9 +314,21 @@ namespace d360.model.DataAccessLayer
                     Count as Occurrences,
                     u.diagramassetuid as AssetUid,
                     an.ID as AssetId,
-                    'asset/' + lower(cast(an.uid as nvarchar(36))) as url
+                    'asset/' + lower(cast(an.uid as nvarchar(36))) as url,
+					CASE 
+							WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}'
+							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'
+                            WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'
+							WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'
+							WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'
+							ELSE ''
+						END AS Class, 
+                   AST.Name as AssetTypeName
                     from usage u
-                    inner join graph.assetnode an on an.uid = u.diagramassetuid";
+                    inner join graph.assetnode an on an.uid = u.diagramassetuid
+                    inner join asset a on a.uid = an.uid
+                    inner join assettype ast on a.assettypeid = ast.id
+";
 
             var response = companyContext.Query<dynamic>(labelsSql, new { labelUid }, ApiTimeout);
             return response;
@@ -367,6 +381,14 @@ namespace d360.model.DataAccessLayer
             var stream = new MemoryStream();
             document.SaveAs(stream);
             return (stream.ToArray(), fileName);
+        }
+
+        public bool IsAuthorizedToEditConnectorLabel(Guid connectorLabelUid)
+        {
+            var connectorLabel = companyContext.ConnectorLabels.FirstOrDefault(x => x.uid == connectorLabelUid);
+            if (connectorLabel == null) return false;
+            if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == connectorLabel.CreatedBy) return true;
+            return false;
         }
     }
 }

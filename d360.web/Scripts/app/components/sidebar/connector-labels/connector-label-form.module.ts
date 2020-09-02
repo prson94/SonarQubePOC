@@ -26,7 +26,6 @@ import { WhereUsedModule } from '../../shared/where-used/where-used.module';
 import { ConnectorLabelsFormComponent } from './connector-label-form.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ConnectorLabelFormModule } from './connector-label-form.module';
 
 @NgModule({
     imports: [
@@ -34,10 +33,6 @@ import { ConnectorLabelFormModule } from './connector-label-form.module';
         FormsModule,
         ReactiveFormsModule,
         HttpClientModule,
-        RouterModule,
-
-        //routing 
-        ConnectorLabelsRoutingModule,
 
         //d3s        
         CoreModule,
@@ -59,18 +54,19 @@ import { ConnectorLabelFormModule } from './connector-label-form.module';
         TilesModule,
         SiteModalModule,
         WhereUsedModule,
-        AutoCompleteModule,
-
-        ConnectorLabelFormModule
+        AutoCompleteModule
     ],
     declarations: [
-        ConnectorLabelsComponent
+        ConnectorLabelsFormComponent
+    ],
+    exports: [
+        ConnectorLabelsFormComponent
     ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true
-        }    ]
+        }]
 })
-export class ConnectorLabelsModule { }
+export class ConnectorLabelFormModule { }
