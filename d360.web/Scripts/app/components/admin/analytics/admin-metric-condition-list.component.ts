@@ -23,7 +23,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     @Output() formModeChange = new EventEmitter();
 
-    private usedFieldTypes: number[] = [];
+    private usedFieldTypes: string[] = [];
     private selection: MetricAssetVersionConditionItemViewModel = null;
     private selectedIndex = -1;
     private formMode = FormMode.Default;
@@ -62,7 +62,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     }
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.metricConditionListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            const field = this.metricConditionListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
             c.OperatorText = this.parseOperator(field, c.OperatorText);
 
@@ -181,7 +181,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         // Clear out the selected field type IDs, and reload.
         this.usedFieldTypes = [];
         this.conditions.forEach(c => {
-            this.usedFieldTypes.push(c.ConditionFieldTypeID);
+            this.usedFieldTypes.push(c.ConditionFieldTypeName);
         });
     }
 };

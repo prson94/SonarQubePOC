@@ -42,8 +42,8 @@ export class MetricAssetVersionConditionViewModel {
 export class MetricAssetVersionConditionItemViewModel {
     Uid: string;
     ConditionType: MetricConditionType;
-    ConditionFieldTypeID: number;
-    ConditionIntersectTypeID: number;
+    ConditionFieldTypeName: string;
+    ConditionIntersectTypeUid: string;
     Operator: string;
     Values: MetricAssetVersionConditionItemValueViewModel[] = [];
 
@@ -59,7 +59,7 @@ export class MetricAssetVersionConditionItemViewModel {
 }
 
 export class MetricFieldTypeViewModel {
-    ID: number;
+    ApiName: string;
     Name: string;
     Type: string;
     Disabled = false;

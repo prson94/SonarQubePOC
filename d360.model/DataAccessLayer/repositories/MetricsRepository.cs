@@ -65,7 +65,10 @@ namespace d360.model.DataAccessLayer
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
         {
             var model = (
-                        from a in Company.MetricAssets.Include("Allocation").Include("Versions.Conditions.Items.Values")
+                        from a in Company.MetricAssets.Include("Allocation")
+                            .Include("Versions.Conditions.Items.Values")
+                            .Include("Versions.Conditions.Items.ConditionFieldType")
+                            .Include("Versions.Conditions.Items.ConditionIntersectType")
                         from v in a.Versions
                         where a.Uid == uid
                         where (
@@ -78,7 +81,9 @@ namespace d360.model.DataAccessLayer
                             ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
                                 ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
                                     ConditionFieldTypeID = i.ConditionFieldTypeID,
+                                    ConditionFieldTypeName = (i.ConditionFieldType != null) ? i.ConditionFieldType.Name : null,
                                     ConditionIntersectTypeID = i.ConditionIntersectTypeID,
+                                    ConditionIntersectTypeUid = (i.ConditionIntersectType != null) ? i.ConditionIntersectType.uid : new Nullable<Guid>(),
                                     ConditionType = i.ConditionType,
                                     Operator = i.Operator,
                                     Uid = i.Uid,
@@ -178,9 +183,10 @@ namespace d360.model.DataAccessLayer
                     {
                         var fieldType = new FieldType();
 
-                        if (condition.ConditionFieldTypeID.HasValue)
+                        if (!string.IsNullOrEmpty(condition.ConditionFieldTypeName))
                         {
-                            fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.ConditionFieldTypeID.Value);
+                            condition.ConditionFieldTypeName = condition.ConditionFieldTypeName.Trim();
+                            fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == condition.ConditionFieldTypeName);
                         }
 
                         if (fieldType == null)
@@ -203,6 +209,8 @@ namespace d360.model.DataAccessLayer
                             operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
                         }
 
+                        condition.ConditionFieldTypeID = fieldType.ID;
+
                         bool tempBool;
                         decimal tempDecimal;
                         DateTime tempDate;
@@ -221,7 +229,7 @@ namespace d360.model.DataAccessLayer
                             case "Date":
                                 if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                                condition.Values[0].Value = tempDate.ToShortDateString();
+                                condition.Values[0].Value = tempDate.ToUniversalTime().ToShortDateString();
                                 break;
                             case "Number":
                                 if (!int.TryParse(condition.Values[0].Value, out tempInt))
@@ -388,7 +396,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                                             orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
                                             select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
                     string existingConditionHash = string.Join("|", existingHashItems);
-                    existingConditionHash = newConditionHash.GetD3sHashString();
+                    existingConditionHash = existingConditionHash.GetD3sHashString();
                     if (newConditionHash != existingConditionHash)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
@@ -755,7 +763,9 @@ from    metrics.Allocation  ma
 												select	CI.Uid,
 														CI.ConditionType,
 														CI.ConditionFieldTypeID,
+                                                        FT.Name as ConditionFieldTypeName,
 														CI.ConditionIntersectTypeID,
+                                                        IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
 														(
 															select	[Value]
@@ -764,6 +774,8 @@ from    metrics.Allocation  ma
 															for json path
 														) as [Values]
 												from	metrics.AssetVersionConditionItem CI
+                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
+                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
 												for json path
 											) as ConditionItems
@@ -790,6 +802,7 @@ from    metrics.Allocation  ma
             return Company.Query<string>($@"
                             select	F.ID,
                             		F.FriendlyName as Name,
+                                    F.Name as ApiName,
                             		F.Type,
                             		(
                             			select	Value,
@@ -1353,7 +1366,9 @@ from    metrics.ScoreItem I
 												select	CI.Uid,
 														CI.ConditionType,
 														CI.ConditionFieldTypeID,
+                                                        FT.Name as ConditionFieldTypeName,
 														CI.ConditionIntersectTypeID,
+                                                        IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
 														(
 															select	[Value]
@@ -1362,6 +1377,8 @@ from    metrics.ScoreItem I
 															for json path
 														) as [Values]
 												from	metrics.AssetVersionConditionItem CI
+                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
+                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
 												for json path
 											) as ConditionItems

@@ -11,7 +11,7 @@ namespace d360.core.entities.Metric
         [Key, Column(Order = 1)]
         public Guid Uid { get; set; }
         
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember, Key, Column(Order = 2), MaxLength(250, ErrorMessage = "Condition Value cannot exceed 250 characters.")]
         public string Value { get; set; }
 
         [IgnoreDataMember, ForeignKey("Uid")]
