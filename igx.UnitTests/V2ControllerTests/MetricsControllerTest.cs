@@ -66,7 +66,7 @@ namespace igx.UnitTests.V2ControllerTests
                 new MetricAssetVersionConditionViewModel() { 
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() { 
                         new MetricAssetVersionConditionItemViewModel { 
-                            ConditionFieldTypeID = 1 
+                            ConditionFieldTypeName = "Name" 
                         } 
                     } 
                 } 

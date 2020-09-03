@@ -6,12 +6,13 @@ import { BaseObservableService } from './baseObservable.service';
 import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, PredicateDropdown } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
-
 
 @Injectable()
 export class RelationshipsService extends BaseObservableService {
+
+    private MAX_SYNCHRONOUS_API_ITEM_COUNT: number = 250;
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
@@ -32,10 +33,36 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
-        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err, true))
-        );
+        if (model.length > this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
+            var models: any[] = [];
+            for (var i = 0; i < model.length; i += this.MAX_SYNCHRONOUS_API_ITEM_COUNT) {
+                models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
+            }
+            var obsArr: Observable<ApiResult[]>[] = [];
+            models.forEach(m => {
+                obsArr.push(this.saveRelationships(intersectTypeUid, m));
+            });
+            return forkJoin(obsArr).pipe(
+                map(response => {
+                    var origResponse: ApiResult[] = [];
+                    response.forEach(res => {
+                        res.forEach(r =>
+                            origResponse.push(r))
+                    });
+                    for (let i = 0; i < response.length; i++) {
+                        origResponse[i].ItemNumber = i + 1;
+                    }
+                    return origResponse;
+                }),
+                catchError(err => this.handleError(err, true))
+            );
+        }
+        else {
+            return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
+                map(response => response),
+                catchError(err => this.handleError(err, true))
+            );
+        }
     }
 
     saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
@@ -49,7 +76,7 @@ export class RelationshipsService extends BaseObservableService {
     deleteSingleRelationshipV2(intersectTypeUid: string, intersectUid: string): Observable<ApiResult[]> {
         const model = [{
             Cascade: true,
-            Uid:intersectUid
+            Uid: intersectUid
         }];
 
         const httpHeaders = {

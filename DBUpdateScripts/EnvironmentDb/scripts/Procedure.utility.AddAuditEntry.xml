@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="Procedure.utility.AddAuditEntry-v6">
-  <comment>GOV-11409, GOV-11410</comment>
+  <changeSet author="TDuric" id="Procedure.utility.AddAuditEntry-v7">
+  <comment>GOV-12060</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -383,6 +383,18 @@ begin
 		insert into @tbl  select 0, 'IconBackColor', IconBackColor, 0, 0 from AssetTypeStyle where ID = @AssetTypeID	
 		insert into @tbl  select 0, 'IconForeColor', IconForeColor, 0, 0 from AssetTypeStyle where ID = @AssetTypeID		
  
+	end
+	
+	if @MainObject = 'TaskType'
+	begin
+		select	@MainObjectTypeName = 'Task Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
 	end
 		
 	if @MainObject in ('Artifact', 'Attribute', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Rule', 'Policy', 'Taxonomy', 'ReferenceItem') and @DependentObject = @MainObject
@@ -764,7 +776,7 @@ begin
 	
 	if @MainObject = 'Policy'
 	begin
-		select	@MainObjectTypeName = 'Policy',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
@@ -877,7 +889,7 @@ begin
 	
 	if @MainObject = 'Rule'
 	begin		
-		select	@MainObjectTypeName = 'Rule',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
@@ -897,7 +909,7 @@ begin
 	
 	if @MainObject = 'Taxonomy'
 	begin
-		select	@MainObjectTypeName = A.TypeName + ' model',
+		select	@MainObjectTypeName = A.TypeName,
 				@MainObjectName = A.DisplayValue
 		from	AssetDetail A				
 		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
