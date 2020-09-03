@@ -148,11 +148,11 @@ nav.top, .left-side-nav {
         color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
-            background: #4093CB;
+            background: @igx-light-blue-2;
         }
 
         &:not(:disabled):active, &.active {
-            background: #66A9D6;
+            background: @igx-blue-xlight;
         }
     }
 
@@ -1415,7 +1415,7 @@ a.breadcrumb {
     }
 
     .ui-autocomplete-panel .ui-state-highlight {
-        background-color: #DFF3F7 !important;
+        background-color: @igx-lightblue-xlight !important;
     }
 
     .ui-autocomplete-panel .ui-autocomplete-list-item {
@@ -1432,7 +1432,7 @@ a.breadcrumb {
     cursor: pointer;
 
     &:focus {
-        border: 1px solid #54a4da;
+        border: 1px solid @igx-menu-level1;
         cursor: text;
     }
 }
@@ -1700,7 +1700,7 @@ a.breadcrumb {
         font-size: 14px !important;
 
         &::placeholder {
-            color: #73808a;
+            color: @igx-grey-light;
             opacity: 1;
         }
     }
@@ -1801,7 +1801,7 @@ a.breadcrumb {
         background: rgba(255, 255, 255, 0.4);
 
         .fa {
-            color: #54fffb;
+            color: @igx-button-active-color;
         }
     }
 
@@ -2525,8 +2525,8 @@ div.home-image-title-text {
     }
 
     .warningMessage {
-        background-color: #ffe7b2;
-        border: 1px solid #ffb000;
+        background-color: @igx-orange-xlight;
+        border: 1px solid @igx-orange-light;
         border-radius: 2px;
         width: 100%;
         padding: 10px 20px;
@@ -2609,7 +2609,7 @@ div.home-image-title-text {
 
     d3s-dynamic-editor {
         .errorMessage {
-            color: #BC1B01;
+            color: @d3s-primary-red;
             font-weight: bold;
             background: none;
             padding: 0px;
@@ -2796,8 +2796,8 @@ modal-overlay .modal-dialog .content {
         height: 32px;
         line-height: 32px;
         font-size: 15px;
-        background: #4e5466;
-        color: white;
+        background: @igx-left-side-nav;
+        color: @ig-white;
         border-radius: 3px;
         text-align: center;
         flex-shrink: 0;
@@ -3408,15 +3408,15 @@ button.tab-scroller {
                 padding: 10px;
 
                 &.ui-state-highlight {
-                    background-color: #DFF3F7;
+                    background-color: @igx-lightblue-xlight;
                 }
             }
         }
     }
 
     .warningMessage {
-        background-color: #ffe7b2;
-        border: 1px solid #ffb000;
+        background-color: @igx-orange-xlight;
+        border: 1px solid @igx-orange-light;
         border-radius: 4px;
         width: 100%;
         padding: 10px 20px;
@@ -3431,8 +3431,8 @@ button.tab-scroller {
     }
 
     .errorMessage {
-        background-color: #ffc6bb;
-        border: 1px solid #c44d36;
+        background-color: @igx-coral-xlight;
+        border: 1px solid @igx-coral;
         border-radius: 2px;
         width: 100%;
         padding: 10px 20px;
@@ -3906,11 +3906,11 @@ button.tab-scroller {
 
             &:not(.disabled):not(.separator) {
                 &:hover, &.hover {
-                    background: #dff3f7;
+                    background: @igx-lightblue-xlight;
                 }
 
                 &:active, &.active {
-                    background: #bde6ee;
+                    background: @igx-lightblue-light;
                 }
             }
 
@@ -4005,8 +4005,8 @@ button.tab-scroller {
     }
 
     &.required {
-        background: #ffe7b2;
-        border: 1px solid #d99600;
+        background: @igx-orange-xlight;
+        border: 1px solid @igx-orange;
     }
 
     &.error {
@@ -4138,7 +4138,7 @@ button.tab-scroller {
 .action-tile-span {
     padding-right: 5px;
     cursor: pointer;
-    color: #66A9D6;
+    color: @igx-blue-xlight;
     font-weight: normal;
     font-size: 14px;
 }
@@ -4509,7 +4509,7 @@ button.tab-scroller {
                         &.description {
                             max-height: 110px;
                             overflow-y: hidden;
-                            color: #676c7a;
+                            color: @igx-darkblue-xlight;
                         }
 
                         .path {
@@ -4529,7 +4529,7 @@ button.tab-scroller {
                             }
 
                             &.asset-path {
-                                color: #676c7a;
+                                color: @igx-darkblue-xlight;
                                 word-break: break-all;
                             }
                         }
@@ -4547,7 +4547,7 @@ button.tab-scroller {
                                 padding: 0px 8px !important;
 
                                 .tag-item-wrapper {
-                                    color: #515667;
+                                    color: @igx-blue-light;
                                 }
                             }
                         }
@@ -4627,11 +4627,11 @@ button.tab-scroller {
 
 .kebabmenu li.ui-menuitem {
     &:hover {
-        background-color: #dff3f7;
+        background-color: @igx-lightblue-xlight;
     }
 
     &:active {
-        background-color: #bde6ee;
+        background-color: @igx-lightblue-light;
     }
 }
 
@@ -4667,7 +4667,7 @@ button.tab-scroller {
 
         .title, .title a {
             font-size: 18px;
-            color: #4093cb;
+            color: @igx-light-blue-2;
         }
 
         .panel-row {
@@ -5401,7 +5401,7 @@ a.mid-blue {
         position: absolute;
         right: 25px;
         top: 7px;
-        color: #ffb000;
+        color: @igx-orange-light;
 
         .toggle-warning:hover {
             .warning-list {
@@ -5443,7 +5443,7 @@ a.mid-blue {
         position: absolute;
         right: 25px;
         top: 7px;
-        color: #ffb000;
+        color: @igx-orange-light;
 
         .toggle-warning:hover {
             .warning-list {
@@ -5676,8 +5676,8 @@ a.mid-blue {
     }
 
     .no-results {
-        background-color: #ffe7b2;
-        border: 1px solid #ffb000;
+        background-color: @igx-orange-xlight;
+        border: 1px solid @igx-orange-light;
         border-radius: 2px;
         width: 100%;
         padding: 10px 20px;
@@ -6073,7 +6073,7 @@ a.mid-blue {
                 border-radius: 4px;
                 border: solid 2px @igx-grey-lightscoring;
                 background-color: @igx-grey-lightscoring;
-                color: #515667;
+                color: @igx-blue-light;
 
                 &.selected {
                     background-color: @ig-white;
@@ -6114,7 +6114,7 @@ a.mid-blue {
                 }
 
                 .table-caption {
-                    color: #73808A;
+                    color: @igx-grey-light;
                     position: relative;
                     top: 10px;
                 }
@@ -6133,8 +6133,8 @@ a.mid-blue {
 
     &.empty {
         padding: 24px;
-        background: #dbe2ec;
-        color: #515667;
+        background: @igx-grey-lightscoring;
+        color: @igx-blue-light;
         text-align: center;
         font-weight: bold;
     }
@@ -6367,7 +6367,7 @@ a.mid-blue {
     clear: both;
 
     &.hr-dark {
-        background-color: #dbe2ec;
+        background-color: @igx-grey-lightscoring;
     }
 }
 
@@ -6514,7 +6514,7 @@ a.mid-blue {
 
     .value {
         font-size: 14px;
-        color: #4093cb;
+        color: @igx-light-blue-2;
         text-decoration: underline;
         font-weight: normal;
     }
@@ -6608,7 +6608,7 @@ a.mid-blue {
 
 .score-pill-small-label {
     display: inline-block;
-    color: #646464;
+    color: @d3s-primary-gray;
 }
 
 
@@ -6665,7 +6665,7 @@ a.mid-blue {
     }
 
     .row {
-        border-bottom: 1px solid #dbe2ec;
+        border-bottom: 1px solid @igx-grey-lightscoring;
         line-height: 38px;
     }
 
@@ -6703,13 +6703,13 @@ a.mid-blue {
             cursor: default;
 
             &:hover {
-                background-color: #dff3f7;
+                background-color: @igx-lightblue-xlight;
                 font-weight: bold;
                 cursor: pointer;
             }
 
             &.selected {
-                background-color: #dff3f7;
+                background-color: @igx-lightblue-xlight;
                 font-weight: bold;
             }
 
@@ -6724,8 +6724,8 @@ a.mid-blue {
         }
 
         &::-webkit-scrollbar-thumb {
-            background-color: #dbe2ec;
-            outline: 1px solid #dbe2ec;
+            background-color: @igx-grey-lightscoring;
+            outline: 1px solid @igx-grey-lightscoring;
             border-radius: 10px;
         }
     }
@@ -7231,7 +7231,7 @@ table {
                     padding: 0.5em 0.5em 0.5em 2em;
                     font-weight: normal;
                     text-transform: none;
-                    color: #5c5e60;
+                    color: @d3s-gray-1;
                     font-size: 1em;
                 }
             }
