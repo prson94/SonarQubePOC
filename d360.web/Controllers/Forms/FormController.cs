@@ -260,7 +260,7 @@ namespace d360.web.Controllers
                     objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
                 case "EXPORTTEMPLATE":
-                    objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.uid == uid).ID;
+                    objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
                 default:
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))

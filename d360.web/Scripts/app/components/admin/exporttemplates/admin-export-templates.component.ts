@@ -18,7 +18,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                     </header>                    
                     <span>                        
                         <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
+                        <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (selectionChange)="selectNode($event)">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'Name'">
@@ -63,7 +63,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'ExportTemplate'" [title]="'Export Template'" [selection]="selected" (saveClick)="saveExportTemplate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                         <d3s-delete-form *ngIf="showDelete"
                             [callback]="theDeleteCallback"
-                            [itemUid]="selected?.uid"
+                            [itemUid]="selected?.Uid"
                             [method]="'callback'"
                             [prompt]="'Are you sure you want to delete the selected item?'"                                         
                             (onCancel)="showDelete=false;"
@@ -98,7 +98,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                 </div>
                                 <div class="col s12">&nbsp;</div>                        
                                 <div class="col s2">                                    
-                                    <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.ID"
+                                    <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.Uid"
                                         accept=".xls,.xlsx" maxFileSize="10000000" auto="auto"></p-fileUpload>                                                                         
                                 </div>     
                                 <div class="col s12">
@@ -160,10 +160,12 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
                 this.selected = this.exportTemplates[0];
             else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
-                let item = this.exportTemplates.filter(x => x.ID == this.selected.ID);
+                let item = this.exportTemplates.filter(x => x.Uid == this.selected.Uid);
                 if (item != null && item.length != 0)
                     this.selected = item[0];
             }
+
+            this.getSelectedTemplateID();
             this.isLoading = false;
         });
     }
@@ -187,7 +189,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
         this.selected.IncludeFieldTypes = event.IncludeFieldTypes;
         this.exportTemplateService.saveExportTemplate(this.selected).subscribe(result => {           
             for (let i = 0; i < this.exportTemplates.length; i++) {
-                if (this.exportTemplates[i].ID == this.selected.ID) {
+                if (this.exportTemplates[i].Uid == this.selected.Uid) {
                     this.exportTemplates[i].IncludeFieldTypes = this.selected.IncludeFieldTypes;
                 }
             }
@@ -196,6 +198,18 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
 
     public closeEditor() {
         this.showEditor = false;
+    }
+
+    public selectNode(e: any) {
+        if (e == null)
+            return;
+        if (!this.selected.ID) {
+            this.getSelectedTemplateID();
+        }            
+    }
+
+    public getSelectedTemplateID() {
+        this.exportTemplateService.getExportTemplateId(this.selected.Uid).subscribe(item => { this.selected.ID = item });
     }
 
 

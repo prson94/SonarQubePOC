@@ -64,11 +64,13 @@ namespace d360.core.entities
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseCreatedAndUpdatedUidObject : BaseUidObject, IUpdatedMetadata, ICreatedMetadata
     {
+        [DataMember]
         public int? CreatedBy { get; set; } = 0;
 
         [DataMember]
         public DateTime? CreatedOn { get; set; } = DateTime.UtcNow;
 
+        [DataMember]
         public int? UpdatedBy { get; set; } = 0;
 
         [DataMember]

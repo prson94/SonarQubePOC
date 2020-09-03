@@ -5,11 +5,13 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class AssetTypeExportTemplate : BaseCreatedAndUpdatedIntObject
+    public class AssetTypeExportTemplate : BaseCreatedAndUpdatedObject
     {
         #region Properties
 
@@ -32,16 +34,17 @@ namespace d360.core.entities
         public bool IncludeParent { get; set; }
 
         [DataMember]
+        [JsonConverter(typeof(StringEnumConverter))]
         public ExportView ExportViewType { get; set; }
 
-        [DataMember]
+        [IgnoreDataMember]
         public int AssetTypeID { get; set; }
 
         [DataMember]
         public byte[] TemplateFile { get; set; }
 
         [DataMember]
-        public Guid uid { get; set; }
+        public Guid Uid { get; set; }
 
         #endregion
         [NotMapped, DataMember]
@@ -49,8 +52,16 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual AssetType AssetType { get; set; }
-        
+
         [IgnoreDataMember, ForeignKey("AssetTypeExportTemplateID")]
         public virtual ICollection<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
+
+        [
+        IgnoreDataMember,
+        Key,
+        DatabaseGenerated(DatabaseGeneratedOption.Identity),
+        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        ]
+        public int ID { get; set; }
     }
 }

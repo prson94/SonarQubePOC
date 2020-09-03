@@ -169,12 +169,8 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     public save() {
         let fields = "";
         let fieldTypes = [];
-        fieldTypes = this.selectedFields.map(a => a.Name);
-        var sel = _.sortBy(this.selectedFields, "ExtOrder");
-        sel.forEach(function (s) {            
-            if (fields.length != 0) fields += ",";
-            fields += s.ID;
-        })
+        fieldTypes = this.selectedFields.sort((a, b) => a.ExtOrder - b.ExtOrder).map(a => a.Name);
+
         //trigger save event
         this.saveFieldsClick.emit({ IncludeFieldTypes: fieldTypes });
     }
