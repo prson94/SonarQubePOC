@@ -107,7 +107,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (event instanceof NavigationEnd) {
                         this.previousUrl = event.url;
                         if (event.url.indexOf('/admin/scoring/') > -1) {
-                            this.isScoringScreen = true; 
+                            this.isScoringScreen = true;
                         }
                         else {
                             this.isScoringScreen = false;
@@ -137,8 +137,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
-            let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
-            let lastTab = this.tabScroller.first.nativeElement.lastChild.getBoundingClientRect().right;
+            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastChild);
             this.showScrollButtons = lastTab > maxWidth;
         }
         this.checkScrollPos();
@@ -149,12 +149,19 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             let currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
             this.disableScrollLeft = currentPosition == 0;
 
-            let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
-            let lastTab = this.tabScroller.first.nativeElement.lastChild.getBoundingClientRect().right;
+            let maxWidth = this.getElementRightPosition(this.tabScroller.first.nativeElement.parentElement);
+            let lastTab = this.getElementRightPosition(this.tabScroller.first.nativeElement.lastChild);
             this.disableScrollRight = lastTab <= maxWidth;
 
             this.ref.markForCheck();
         }
+    }
+
+    private getElementRightPosition(element) {
+        if (element && element.getBoundingClientRect) {
+            return element.getBoundingClientRect().right
+        }
+        return NaN;
     }
 
     scroll(direction: string) {

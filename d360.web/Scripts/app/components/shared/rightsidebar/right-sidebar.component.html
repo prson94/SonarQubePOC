@@ -57,7 +57,7 @@
             </d3s-score-badge>
         </span>
     </div>
-    <div *ngIf="items && items.length > 0" class="tab-view">
+    <div class="tab-view">
         <div class="tab-bar-outer">
             <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
                 <i class="fa fa-chevron-circle-left"></i>
