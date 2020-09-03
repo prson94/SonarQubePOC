@@ -68,7 +68,7 @@ input {
 
 nav.top {
     line-height: 40px;
-    color: #fff;
+    color: @ig-white;
     height: 40px;
     background: @igx-nav-color;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
@@ -77,7 +77,7 @@ nav.top {
     min-width: 800px;
 
     ul a {
-        color: #fff;
+        color: @ig-white;
     }
 
     .header-profile-panel a, .header-search-panel a {
@@ -90,7 +90,7 @@ nav.top {
     }
 
     a.help {
-        color: #fff;
+        color: @ig-white;
     }
 }
 
@@ -144,7 +144,7 @@ nav.top, .left-side-nav {
     }
 
     &.primary {
-        background: #006FBA;
+        background: @ig-midblue;
         color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
@@ -701,7 +701,7 @@ d3s-navbar-item {
 
 .d3s-badge {
     background-color: #848484;
-    color: #fff;
+    color: @ig-white;
     display: inline-block;
     padding-left: 5px;
     padding-right: 5px;
@@ -886,7 +886,7 @@ div.powerbi iframe {
 /* raise issue*/
 
 .issue-button {
-    background: #ff7155;
+    background: @ig-coral;
     border: none;
     border-radius: 3px;
     line-height: 25px;
@@ -895,11 +895,11 @@ div.powerbi iframe {
     white-space: nowrap;
 
     &:hover {
-        background: mix(black, #ff7155, 7%)
+        background: mix(black, @ig-coral, 7%)
     }
 
     &:active {
-        background: mix(black, #ff7155, 14%)
+        background: mix(black, @ig-coral, 14%)
     }
 }
 
@@ -1166,7 +1166,7 @@ div.breadcrumbs {
     }
 
     .active, .sep {
-        color: #fff;
+        color: @ig-white;
     }
 
     .active, .inactive {
@@ -1966,7 +1966,7 @@ label {
 /* favorites styles*/
 .favorite {
     font-size: 1.2em;
-    color: #fff;
+    color: @ig-white;
     padding: 0 15px;
 }
 
@@ -2001,8 +2001,8 @@ label {
         border-left: 1px solid #ddd;
         border-top: 1px solid #ddd;
         border-right: 1px solid #ddd;
-        border-bottom: 3px solid #fff;
-        background-color: #fff;
+        border-bottom: 3px solid @ig-white;
+        background-color: @ig-white;
     }
 }
 
@@ -2090,7 +2090,7 @@ li.shortcut {
     margin: 12px;
     box-sizing: border-box;
     border: none;
-    color: #FFF;
+    color: @ig-white;
     background: @ig-grey-s2;
     padding-top: 10px;
     min-height: 120px;
@@ -2335,7 +2335,7 @@ div.home-image-title-text {
     button:focus {
         outline: 0 none;
         outline-offset: 0;
-        box-shadow: 0 0 0 2px #8abddf;
+        box-shadow: 0 0 0 2px @ig-midblue-t3;
     }
 
     button.button.primary {
@@ -2353,7 +2353,7 @@ div.home-image-title-text {
     }
 
     button.button.accent {
-        background: #ff7155;
+        background: @ig-coral;
         color: @ig-white;
     }
 
@@ -2362,7 +2362,7 @@ div.home-image-title-text {
     }
 
     button.button.accent:not(:disabled):active, button.button.accent.active {
-        background: #db6149;
+        background: @ig-coral-s1;
     }
 
     button.button.negative {
@@ -3657,7 +3657,7 @@ button.tab-scroller {
     display: inline-block;
 
     .title {
-        color: #006FBA;
+        color: @ig-midblue;
         padding: 0px;
         display: inline-block;
     }
@@ -3696,7 +3696,7 @@ button.tab-scroller {
         pointer-events: all;
 
         a {
-            color: #006FBA;
+            color: @ig-midblue;
             cursor: pointer;
 
             &:hover {
@@ -3872,7 +3872,7 @@ button.tab-scroller {
     display: inline-block;
     position: relative;
     box-sizing: border-box;
-    background: #fff;
+    background: @ig-white;
     border-radius: 3px;
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
 
@@ -4233,7 +4233,7 @@ button.tab-scroller {
         display: block;
         margin-left: 6px;
         cursor: pointer;
-        color: #006FBA;
+        color: @ig-midblue;
     }
 }
 
@@ -4815,7 +4815,7 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
         font-weight: 600;
         line-height: 1.27;
         text-align: center;
-        color: #252c41;
+        color: @ig-grey-s2;
 
         .nomast& {
             width: 80px;
@@ -5144,7 +5144,7 @@ a.mid-blue {
 
         .ui-chkbox-box.ui-state-active {
             border: 1px solid @ig-midblue;
-            background: #fff;
+            background: @ig-white;
             color: @ig-midblue;
         }
     }
@@ -6890,7 +6890,7 @@ table {
     text-align: center;
     white-space: nowrap;
     background: #f0f0f0;
-    color: #202020;
+    color: @ig-black;
     border: none;
     border-radius: 3px;
     line-height: normal;
@@ -6913,7 +6913,7 @@ table {
 .icon-panel {
 
     .ui-dropdown-item-group {
-        color: #898d99;
+        color: @ig-grey-t1;
         height: 32px;
         line-height: 32px;
         padding: 0 8px;
@@ -6929,18 +6929,18 @@ table {
         &.ui-inputtext {
             font-family: "Source Sans Pro", sans-serif;
             font-size: 14px;
-            color: #202020;
-            background: #ffffff;
+            color: @ig-black;
+            background: @ig-white;
             padding: 0 8px;
-            border: 1px solid #bdbfc6;
+            border: 1px solid @ig-grey-t3;
             height: 32px;
             line-height: 30px;
 
             &:enabled:focus:not(.ui-state-error) {
                 outline: 0 none;
                 outline-offset: 0;
-                box-shadow: 0 0 0 2px #8abddf;
-                border-color: #006fba;
+                box-shadow: 0 0 0 2px @ig-midblue-t3;
+                border-color: @ig-midblue;
             }
 
             &:enabled:hover:not(.ui-state-error) {
@@ -6954,16 +6954,16 @@ table {
 
         .ui-dropdown-item {
             &:not(.ui-state-highlight):not(.ui-state-disabled):hover {
-                color: #202020;
-                background-color: #e4f5f8;
+                color: @ig-black;
+                background-color: @ig-lightblue-t4;
             }
 
             &.ui-state-highlight {
-                color: #202020;
-                background-color: #c0e7ef;
+                color: @ig-black;
+                background-color: @ig-lightblue-t2;
             }
 
-            color: #202020;
+            color: @ig-black;
             font-family: "Source Sans Pro", sans-serif;
             padding: 0 8px;
             height: 32px;
@@ -6977,7 +6977,7 @@ table {
         position: relative;
         padding: 4px 4px 4px 4px;
         border-bottom: 1px solid @ig-grey-t5;
-        color: #202020;
+        color: @ig-black;
         background-color: #ffffff;
         margin: 0;
 
@@ -6986,7 +6986,7 @@ table {
             height: 24px;
             line-height: 24px;
             text-align: center;
-            color: #202020;
+            color: @ig-black;
             top: 9px;
             right: 9px;
             font-size: 1.25em;
@@ -7109,7 +7109,7 @@ table {
 
         .input-spinner {
             margin-top: 0px;
-            border: 1px solid #bdbfc6;
+            border: 1px solid @ig-grey-t3;
             width: 220px;
             border-radius: 4px;
             padding: 4px;
@@ -7135,14 +7135,14 @@ table {
             }
 
             &.required {
-                background: #f5fbfd;
+                background: @ig-lightblue-t5;
             }
 
             &:focus-within:not(.ui-state-error) {
                 outline: 0 none;
                 outline-offset: 0;
-                box-shadow: 0 0 0 2px #8abddf;
-                border-color: #006fba;
+                box-shadow: 0 0 0 2px @ig-midblue-t3;
+                border-color: @ig-midblue;
             }
 
             &:hover:not(.ui-state-error) {
@@ -7160,11 +7160,11 @@ table {
                 border-bottom: 0 none;
                 border-left: 0 none;
                 border-right: 0 none;
-                background: #fff;
+                background: @ig-white;
                 margin-top: 16px;
 
                 &.ui-state-active {
-                    background: #fff;
+                    background: @ig-white;
                     border-left: 0 none;
                     border-right: 0 none;
                     border-radius: 0;
@@ -7200,7 +7200,7 @@ table {
                                 left: -16px;
                                 font-size: 14px;
                                 width: initial;
-                                color: #5ca3d3;
+                                color: @ig-midblue-t2;
                                 line-height: 11px;
                                 background: none;
                                 padding: 12px;
@@ -7322,7 +7322,7 @@ table {
 
                 .ui-radiobutton-box {
                     border: 1px solid black;
-                    background: #fff;
+                    background: @ig-white;
                     color: black;
                 }
             }
@@ -7365,7 +7365,7 @@ table {
             height: 24px;
             line-height: 24px;
             text-align: center;
-            color: #202020;
+            color: @ig-black;
             margin-top: 3px;
             margin-right: 3px;
             border-radius: 2px;
@@ -7374,15 +7374,15 @@ table {
         }
 
         &.required {
-            background: #f5fbfd;
+            background: @ig-lightblue-t5;
             border-color: #212121;
         }
 
         &:focus-within:not(.ui-state-error) {
             outline: 0 none;
             outline-offset: 0;
-            box-shadow: 0 0 0 2px #8abddf;
-            border-color: #006fba;
+            box-shadow: 0 0 0 2px @ig-midblue-t3;
+            border-color: @ig-midblue;
         }
 
         &:hover:not(.ui-state-error) {
