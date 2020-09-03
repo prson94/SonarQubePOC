@@ -795,7 +795,7 @@ main {
 .governance-value {
     font-weight: bold;
     font-size: 2em;
-    color: @igx-gov-color;
+    color: @d3s-primary-gray;
 
     .title {
         /*font-family: @headings-font-family !important;*/
@@ -1741,7 +1741,7 @@ a.breadcrumb {
     }
 
     .ui-autocomplete-loader {
-        color: @igx-dark-blue;
+        color: @ig-grey-s2;
     }
 
     li.ui-autocomplete-list-item {
@@ -2091,7 +2091,7 @@ li.shortcut {
     box-sizing: border-box;
     border: none;
     color: #FFF;
-    background: @igx-dark-blue;
+    background: @ig-grey-s2;
     padding-top: 10px;
     min-height: 120px;
     max-height: 120px;
@@ -2862,19 +2862,19 @@ button.button, a.link-button {
     }
 
     &.primary {
-        background: @igx-blue;
+        background: @ig-midblue;
         color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
-            background: mix(black, @igx-blue, 7%)
+            background: mix(black, @ig-midblue, 7%)
         }
 
         &:not(:disabled):active, &.active {
-            background: mix(black, @igx-blue, 14%)
+            background: mix(black, @ig-midblue, 14%)
         }
 
         &:disabled, &.hover {
-            background: mix(black, @igx-blue, 21%)
+            background: mix(black, @ig-midblue, 21%)
         }
     }
 
@@ -3067,13 +3067,13 @@ button.tab, button.tab-scroller {
     background: none;
     border: none;
     border-radius: 0;
-    color: @igx-blue;
+    color: @ig-midblue;
     border-bottom: 3px solid transparent;
     border-top: 3px solid transparent;
 
     &:focus, &.focused {
         box-shadow: none;
-        outline: 1px solid fade(@igx-blue, 20%);
+        outline: 1px solid fade(@ig-midblue, 20%);
         outline-offset: -1px;
     }
 
@@ -3137,7 +3137,7 @@ button.tab-scroller {
 
         &.selected {
             border-bottom: none;
-            border-top: 3px solid @igx-blue;
+            border-top: 3px solid @ig-midblue;
         }
     }
 }
@@ -3177,7 +3177,7 @@ button.tab-scroller {
     }
 
     &.bad {
-        background: @igx-coral-light;
+        background: @ig-coral;
     }
 
     &.ok {
@@ -3185,16 +3185,16 @@ button.tab-scroller {
     }
 
     &.good {
-        background: @igx-green-light;
+        background: @ig-green;
     }
 
     &.fail {
-        background: @igx-red-light;
+        background: @ig-red;
     }
 
 
     &.primary {
-        background: @igx-blue;
+        background: @ig-midblue;
     }
 
     &.light {
@@ -3496,7 +3496,7 @@ button.tab-scroller {
                         margin-left: auto;
                         height: 24px;
                         width: 24px;
-                        background-color: @igx-grey-t5;
+                        background-color: @ig-grey-t5;
                         line-height: 24px;
                         text-align: center;
                         border-radius: 2px;
@@ -4239,7 +4239,7 @@ button.tab-scroller {
 
 .ui-treetable-table {
     th {
-        background-color: @igx-dark-blue !important;
+        background-color: @ig-grey-s2 !important;
     }
 
     tbody > tr:nth-child(odd):not(.ui-state-highlight) {
@@ -5033,15 +5033,15 @@ a.mid-blue {
     }
 
     .ui-multiselect.ui-state-focus .ui-multiselect-label {
-        background: @igx-grey-t5;
+        background: @ig-grey-t5;
     }
 
     .ui-multiselect {
-        background: @igx-grey-t5;
+        background: @ig-grey-t5;
         width: 200px;
         height: 56px;
         border-radius: 4px 0px 0px 4px;
-        background-color: @igx-grey-t5;
+        background-color: @ig-grey-t5;
 
         .ui-multiselect-panel {
             margin-top: -1px;
@@ -5069,7 +5069,7 @@ a.mid-blue {
         }
 
         .ui-widget-header {
-            border-bottom: 1px solid @igx-grey-t5;
+            border-bottom: 1px solid @ig-grey-t5;
         }
 
         .ui-multiselect-label {
@@ -5143,9 +5143,9 @@ a.mid-blue {
         }
 
         .ui-chkbox-box.ui-state-active {
-            border: 1px solid @igx-blue;
+            border: 1px solid @ig-midblue;
             background: #fff;
-            color: @igx-blue;
+            color: @ig-midblue;
         }
     }
 
@@ -6059,7 +6059,7 @@ a.mid-blue {
                 line-height: 1.6;
                 padding: 8px 0px 8px 8px;
                 border-radius: 4px;
-                color: @igx-blue;
+                color: @ig-midblue;
 
                 &:hover {
                     text-decoration: underline;
@@ -6105,7 +6105,7 @@ a.mid-blue {
                     line-height: 42px;
                     font-size: 16px;
                     font-weight: 600;
-                    color: @igx-darkblue;
+                    color: @ig-grey-s2;
                     padding-left: 8px;
                 }
 
@@ -6976,7 +6976,7 @@ table {
     .ui-dropdown-filter-container {
         position: relative;
         padding: 4px 4px 4px 4px;
-        border-bottom: 1px solid @igx-grey-t5;
+        border-bottom: 1px solid @ig-grey-t5;
         color: #202020;
         background-color: #ffffff;
         margin: 0;
@@ -7360,7 +7360,7 @@ table {
         }
 
         .fa {
-            background-color: @igx-grey-t5;
+            background-color: @ig-grey-t5;
             width: 24px;
             height: 24px;
             line-height: 24px;
@@ -7533,7 +7533,7 @@ table {
     .gov-accordion-item {
         .title {
             padding: 0px;
-            border-bottom: 2px solid @igx-grey-t5;
+            border-bottom: 2px solid @ig-grey-t5;
             margin-bottom: 6px;
             font-size: 14px;
             cursor: pointer;
