@@ -11,15 +11,46 @@
 <div class="tile tile-detail">
     <header>Examples</header>
     <div class="gallery-section">
-        <h4>Basic</h4>
-        <div>
-            <input igInput type="text" [disabled]="disabledState" />
+        <h4>Basic with sizes</h4>
+        <div class="row">
+            small(150px)
+            <input igInput type="text" igSize="small" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            medium(308px)
+            <input igInput type="text" igSize="medium" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            large(624px)
+            <input igInput type="text" igSize="large" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            full(100%)
+            <input igInput type="text" igSize="full" />
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Required</h4>
+        <h4>Errors</h4>
         <div>
-            <input igInput type="text" required />
+            <input igInput type="text" [invalid]="val1 == 'show error'" [(ngModel)]="val1" required />
+            {{val1}}
+        </div>
+        <br />
+        <div>
+            <input igInput type="text" [invalid]="val2 == 'show error'" [(ngModel)]="val2" validationMessage="im a custom validation message!!" required />
+            {{val2}}
+        </div>
+
+    </div>
+    <div class="gallery-section">
+        <h4>Form Validation</h4>
+        <div>
+            <form #form="ngForm">
+                <input igInput type="text" [(ngModel)]="formValue" required name="someinput" #someinput="ngModel" />
+            </form>
         </div>
     </div>
     <div class="gallery-section">
@@ -41,6 +72,12 @@
         <div class="row">&nbsp;</div>
         <div class="row">
             <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div class="row">
+            <input igInput type="text" disabled />
         </div>
     </div>
 </div>

@@ -447,7 +447,11 @@
     transform: rotate(360deg);
   }
 }
-.ig-input {
+.ig-input-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+.ig-input-wrapper .ig-input {
   font-family: 'Source Sans Pro', sans-serif;
   font-size: 14px;
   color: #202020;
@@ -457,44 +461,81 @@
   height: 32px;
   line-height: 30px;
   border-radius: 4px;
-  margin-bottom: 16px;
-  width: 220px;
+  margin-bottom: 14px;
 }
-.ig-input.text-area {
+.ig-input-wrapper .ig-input.text-area {
   height: 64px;
   max-width: 720px;
   width: 720px;
   resize: none;
 }
-.ig-input.no-margin-btm {
+.ig-input-wrapper .ig-input.no-margin-btm {
   margin-bottom: 0px;
 }
-.ig-input.big {
-  width: 60%;
+.ig-input-wrapper .ig-input.ig-input-small {
+  width: 150px !important;
 }
-.ig-input:enabled:focus:not(.ui-state-error) {
+.ig-input-wrapper .ig-input.ig-input-medium {
+  width: 308px !important;
+}
+.ig-input-wrapper .ig-input.ig-input-large {
+  width: 624px !important;
+}
+.ig-input-wrapper .ig-input.ig-input-full {
+  width: 100% !important;
+}
+.ig-input-wrapper .ig-input:enabled:focus:not(.ui-state-error) {
   outline: 0 none;
   outline-offset: 0;
   box-shadow: 0 0 0 2px #8abddf;
   border-color: #bdbfc6;
 }
-.ig-input:enabled:hover:not(.ui-state-error) {
-  border-color: #bdbfc6;
-}
-.ig-input.ng-dirty.ng-invalid {
-  background: #f5fbfd;
+.ig-input-wrapper .ig-input.ng-dirty.ng-invalid {
+  background: #e4f5f8;
   border-bottom-color: none;
 }
-.ig-input.ng-valid[required],
-.ig-input .ng-valid.required {
+.ig-input-wrapper .ig-input.ng-valid[required],
+.ig-input-wrapper .ig-input .ng-valid.required {
   outline: 0 none;
   outline-offset: 0;
   box-shadow: none;
 }
-.ig-input.ng-invalid:not(form) {
-  background: #f5fbfd;
-  box-shadow: 0 0 0 2px #8abddf;
+.ig-input-wrapper .ig-input.ng-invalid[required],
+.ig-input-wrapper .ig-input .ng-invalid.required,
+.ig-input-wrapper .ig-input .required {
+  background: #e4f5f8;
   border-color: #bdbfc6;
+}
+.ig-input-wrapper .ig-input.invalid {
+  background: #fae8ed !important;
+}
+.ig-input-wrapper .ig-input.disabled {
+  opacity: 0.33;
+}
+.ig-input-wrapper .ig-input ::placeholder {
+  color: #6f7482;
+  opacity: 1;
+}
+.ig-input-wrapper .ig-input :-ms-input-placeholder {
+  color: #6f7482;
+}
+.ig-input-wrapper .ig-input ::-webkit-input-placeholder {
+  color: #6f7482;
+}
+.ig-input-wrapper .ig-input ::-ms-input-placeholder {
+  color: #6f7482;
+}
+.ig-input-wrapper .ig-text-required {
+  background: #b21a3e;
+  padding: 2px 7px;
+  font-size: 12px;
+  color: white;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  width: auto;
+  margin: -12px 0px 4px 0px;
+  display: flex;
+  align-self: flex-start;
 }
 .ig-textarea {
   font-family: 'Source Sans Pro', sans-serif;

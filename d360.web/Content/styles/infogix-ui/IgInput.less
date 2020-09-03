@@ -1,59 +1,109 @@
 ﻿
 @import './IgUiVariables.less';
+.ig-input-wrapper {
+    display: flex;
+    flex-direction: column;
 
-.ig-input {
-    font-family: @ig-field-font-family;
-    font-size: 14px;
-    color: @ig-black;
-    background: @ig-white;
-    padding: 0 8px;
-    border: 1px solid #bdbfc6;
-    height: @ig-field-height;
-    line-height: 30px;
-    border-radius: @ig-field-border-radius;
-    margin-bottom: 16px;
-    width: 220px;
+    .ig-input {
+        font-family: @ig-field-font-family;
+        font-size: 14px;
+        color: @ig-black;
+        background: @ig-white;
+        padding: 0 8px;
+        border: 1px solid #bdbfc6;
+        height: @ig-field-height;
+        line-height: 30px;
+        border-radius: @ig-field-border-radius;
+        margin-bottom: 14px;
 
-    &.text-area {
-        height: 64px;
-        max-width: 720px;
-        width: 720px;
-        resize: none;
+        &.text-area {
+            height: 64px;
+            max-width: 720px;
+            width: 720px;
+            resize: none;
+        }
+
+        &.no-margin-btm {
+            margin-bottom: 0px;
+        }
+
+        &.ig-input-small {
+            width: @ig-field-width-small !important;
+        }
+
+        &.ig-input-medium {
+            width: @ig-field-width-medium !important;
+        }
+
+        &.ig-input-large {
+            width: @ig-field-width-large !important;
+        }
+
+
+        &.ig-input-full {
+            width: @ig-field-width-full !important;
+        }
+
+        &:enabled:focus:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+            border-color: @ig-field-border-color;
+        }
+
+        &.ng-dirty.ng-invalid {
+            background: @ig-lightblue-t4;
+            border-bottom-color: none;
+        }
+
+        &.ng-valid[required], .ng-valid.required {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: none;
+        }
+
+        &.ng-invalid[required], .ng-invalid.required, .required {
+            background: @ig-lightblue-t4;
+            border-color: @ig-field-border-color;
+        }
+
+        &.invalid {
+            background: @ig-red-t5 !important;
+        }
+
+        &.disabled {
+            opacity: 0.33;
+        }
+
     }
+        ::placeholder { 
+            color: @ig-grey;
+            opacity: 1; 
+        }
 
-    &.no-margin-btm {
-        margin-bottom: 0px;
-    }
+        :-ms-input-placeholder { 
+            color: @ig-grey;
+        }
 
-    &.big {
-        width: 60%;
-    }
+        ::-webkit-input-placeholder {
+            color: @ig-grey;
+        }
 
-    &:enabled:focus:not(.ui-state-error) {
-        outline: 0 none;
-        outline-offset: 0;
-        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-        border-color: @ig-field-border-color;
-    }
+        ::-ms-input-placeholder { 
+            color: @ig-grey;
+        }
 
-    &:enabled:hover:not(.ui-state-error) {
-        border-color: @ig-field-border-color;
-    }
 
-    &.ng-dirty.ng-invalid {
-        background: @ig-lightblue-t5;
-        border-bottom-color: none;
-    }
-
-    &.ng-valid[required], .ng-valid.required {
-        outline: 0 none;
-        outline-offset: 0;
-        box-shadow: none;
-    }
-
-    &.ng-invalid:not(form) {
-        background: @ig-lightblue-t5;
-        box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-        border-color: @ig-field-border-color;
+    .ig-text-required {
+        background: #b21a3e;
+        padding: 2px 7px;
+        font-size: 12px;
+        color: white;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+        width: auto;
+        margin: -12px 0px 4px 0px;
+        display: flex;
+        align-self: flex-start;
     }
 }
