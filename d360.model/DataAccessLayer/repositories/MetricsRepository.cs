@@ -1005,9 +1005,16 @@ order by P.[Path]";
                 outerFilters.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
             }
 
-            string outerWhere = outerFilters.Count == 0 ? "" : " and " + string.Join(" and ", outerFilters);
+            outerFilters.Add("MS.AllocationUid = @allocationUid");
+
+            string outerWhere = string.Join(" and ", outerFilters);
             string innerWhere = innerFilters.Count == 0 ? "" : " and " + string.Join(" and ", innerFilters);
             string fieldJoinStatement = string.Join(" ", fieldJoins) + "";
+
+            if (!string.IsNullOrEmpty(outerWhere))
+            {
+                outerWhere = "where " + outerWhere;
+            }
 
             var countSql = $@"
 select  count(distinct MS.AssetUid) 
@@ -1033,8 +1040,7 @@ select      MS.AssetUid,
             ) as Scores 
 from        metrics.Score MS
             inner join Asset A on A.Uid = MS.AssetUid 
-            {fieldJoinStatement}
-where       MS.AllocationUid = @allocationUid {outerWhere}
+            {fieldJoinStatement} {outerWhere}
 group by    MS.AssetUid
 order by    MS.AssetUid
 offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
