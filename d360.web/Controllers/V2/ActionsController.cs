@@ -405,7 +405,7 @@ for json path";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
 
                 if (model.Uid != null)
                 {
