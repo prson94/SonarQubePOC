@@ -163,9 +163,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (this.model.ConditionGroups.length && !this.model.IsGroup) {
                     let conditions = this.model.ConditionGroups[0].ConditionItems;
                     if (conditions && conditions.length > 0) {
-                        let fieldIds = conditions.map(x => { return x.ConditionFieldTypeID });
+                        let fieldIds = conditions.map(x => { return x.ConditionFieldTypeName });
                         conditions.forEach(x => {
-                            if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
+                            if (!x.ConditionFieldTypeName || !x.Operator || !x.SingleValue) {
                                 valid = false;
                             }
                         });

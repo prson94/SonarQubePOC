@@ -2254,6 +2254,20 @@ order by    rnk, [Name]";
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID) and I.IntersectTypeID = @intersectTypeId
                             order by D.DisplayValue";
                     break;
+                case SystemObjects.TaskType:
+                    sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'TaskType' as [Type] , ASS.Uid
+							from AssetType ATT
+							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')                            
+                            inner join [Intersect] I on ( (I.Subject = 'Task' and ASS.ObjectID = I.SubjectID and I.IntersectTypeID = @intersectTypeId)) 
+							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+							union
+							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'TaskType' as [Type] , ASS.Uid
+                            from AssetType ATT
+							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaskType')     
+                            inner join [Intersect] I on ( (I.Object = 'Task' and ASS.ObjectID = I.ObjectID and I.IntersectTypeID = @intersectTypeId) ) 
+                            cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
+                            order by disp.DisplayValue";
+                    break;
             }
 
             if (string.IsNullOrEmpty(sql)) return null;
@@ -2847,7 +2861,7 @@ from    (
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
             }
 
-            var model = Community.GetById<Resource>(id, i => i.ResourceType);
+            var model = Community.GetById<Resource>(id);
 
             if (model == null)
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));

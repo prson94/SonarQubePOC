@@ -64,4 +64,26 @@ END
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Table.workflow.ItemAssignment-v3">
+    <comment>GOV-12043</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_ItemAssignment_resourceobject_resourceobjectid')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_ItemAssignment_resourceobject_resourceobjectid] ON [workflow].[ItemAssignment] (resourceobject,resourceobjectid) INCLUDE (itemid,itemstepid);
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			IF EXISTS (select * from sys.indexes where name = 'IX_ItemAssignment_resourceobject_resourceobjectid')
+			BEGIN
+				DROP INDEX [IX_ItemAssignment_resourceobject_resourceobjectid] ON [workflow].[ItemAssignment]
+			END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

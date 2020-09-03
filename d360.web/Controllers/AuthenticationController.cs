@@ -306,7 +306,6 @@ namespace d360.web.Controllers
                                 FirstName = firstName,
                                 LastName = lastName,
                                 Password = Community.createRandomPassword(),
-                                ResourceTypeID = 1,
                                 Username = userName
                             };
                             Community.Add(resource);
@@ -1025,7 +1024,6 @@ namespace d360.web.Controllers
                                         FirstName = model.FirstName,
                                         LastName = model.LastName,
                                         Password = Community.HashPassword(Guid.NewGuid().ToString()),
-                                        ResourceTypeID = 1,
                                         Username = model.Email
                                     };
                                     Community.Add(resource);
@@ -1175,7 +1173,6 @@ namespace d360.web.Controllers
                                             FirstName = model.FirstName,
                                             LastName = model.LastName,
                                             Password = Community.HashPassword(model.Password),
-                                            ResourceTypeID = 1,
                                             Username = model.Email
                                         };
                                         Community.Add(resource);
@@ -1255,7 +1252,6 @@ namespace d360.web.Controllers
                                         FirstName = model.FirstName,
                                         LastName = model.LastName,
                                         Password = Community.HashPassword(Guid.NewGuid().ToString()),
-                                        ResourceTypeID = 1,
                                         Username = model.Email
                                     };
                                     Community.Add(resource);

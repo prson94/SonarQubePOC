@@ -332,6 +332,7 @@ namespace d360.model
         bool SetStateDeleteWorkFlowType(SystemObjects type, int id);
 
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
+        bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
 
-   }
+    }
 }

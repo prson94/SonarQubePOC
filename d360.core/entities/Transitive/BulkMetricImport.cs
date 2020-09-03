@@ -76,6 +76,12 @@ namespace d360.core.entities
         public decimal Weight { get; set; }
 
         [DataMember]
+        public decimal AdjustedWeight { get; set; }
+
+        [DataMember]
+        public decimal AdjustedMaxWeight { get; set; }
+
+        [DataMember]
         public bool Value { get; set; }
         [DataMember]
         public ScoreType ScoreType { get; set; }

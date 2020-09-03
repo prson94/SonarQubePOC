@@ -679,7 +679,6 @@ namespace d360.model.DataAccessLayer
 
                             var resource = new Resource()
                             {
-                                ResourceTypeID = 1,
                                 FirstName = user.FirstName,
                                 LastName = user.LastName,
                                 Email = user.Username,

@@ -323,7 +323,7 @@ namespace d360.model
                                             VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
                                     WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
                                         THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID } );
+                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
 
 
                     }
@@ -3065,11 +3065,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         public int? GetAssetScore(long assetId, ScoreType type)
         {
-            string sql = $@"SELECT top 1
-                            cast(S.Value * 100 as int) as 'Score'                            
-                            from Asset A                            
-                            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE S.ScoreType = @type and A.ID = @assetId order by S.EffectiveDate desc";
+            string sql = $@"
+select      top 1
+            cast(S.Value * 100 as int) as 'Score'                            
+from        Asset A                            
+            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
+            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
+where       A.ID = @assetId 
+order by    S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
@@ -3188,6 +3191,14 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             inner join asset a on a.id = apd.AssetID
                             where json.uid = @assetUid";
             return Query<string>(diagramUrl, new { assetUid }).FirstOrDefault();
+        }
+        public bool HasRelationshipInProcessDiagram(Guid intersectTypeUid)
+        {
+            return Query<int>(@"select count(*) from processexpandeddata ped
+                            inner join IntersectType it on it.uid = @intersectTypeUid
+                            where ped.DiagramAssetTypeUid = it.SubjectUid and 
+                            (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
+                            new { intersectTypeUid }).FirstOrDefault() > 0;
         }
     }
 }

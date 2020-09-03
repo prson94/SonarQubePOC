@@ -68,8 +68,12 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.isLoading = true;
         this.diagramService.getCatalogDiagram(this.id).subscribe(
             data => {
+                let root = data.find(x => x.parent === null);
+                if (root) {
+                    delete root.parent;
+                }
+
                 this.items = data;
-                delete this.items[0].parent;
 
                 this.diagram.model = new go.TreeModel(this.items);
                 this.isLoading = false;

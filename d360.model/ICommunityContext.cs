@@ -31,7 +31,6 @@ namespace d360.model
         DbSet<PackageContent> PackageContents { get; set; }
         DbSet<Package> Packages { get; set; }
         DbSet<Resource> Resources { get; set; }
-        DbSet<ResourceType> ResourceTypes { get; set; }
         DbSet<Setting> Settings { get; set; }
 
         new bool Add<T>(T item) where T : BaseObject;
