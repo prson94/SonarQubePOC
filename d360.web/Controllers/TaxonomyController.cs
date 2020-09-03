@@ -2,6 +2,8 @@
 using d360.model;
 using d360.web.Models.Attributes;
 using d360.core.enums;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace d360.web.Controllers
 {
@@ -70,6 +72,13 @@ where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.
             // get the dynamic fields set as listable for this taxonomy
             getDynamicFieldJoinStatements(id, "Taxonomy", out joins, out columns, false, false, true, fields, "A.ObjectID");
 
+            List<string> orderFields = fields.Where(x => x.SortOrder > 0 && x.IsListable == true)
+                .OrderBy(x => x.SortOrder).ThenBy(x => x.Name)
+                .Select(f => "Field" + f.ID.ToString())
+                .ToList();
+            orderFields.Add("DisplayValue");
+            string orderBySql = "order by " + string.Join(", ", orderFields.ToArray());
+
             var editRightsColumnStatement = "cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete,";
             var editRightsJoinStatement = "";
 
@@ -108,7 +117,7 @@ where   A.Type = 'TaxonomyType'
         and A.[State] = 1 
         and A.ID not in ({GetNoReadSqlStatement()}) 
         and A.AssetTypeID not in ({GetAssetTypeNoReadSqlStatement()})
-order by DisplayValue ";
+{orderBySql} ";
  
             var models = Company.Query<dynamic>(sql, new { id, r = Company.CurrentResourceID });
 
