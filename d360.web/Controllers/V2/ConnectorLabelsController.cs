@@ -88,7 +88,7 @@ namespace d360.web.Controllers.V2
                                 {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
             }
-            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid });
+            var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
 
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 

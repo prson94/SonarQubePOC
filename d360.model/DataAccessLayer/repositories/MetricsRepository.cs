@@ -65,7 +65,10 @@ namespace d360.model.DataAccessLayer
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
         {
             var model = (
-                        from a in Company.MetricAssets.Include("Allocation").Include("Versions.Conditions.Items.Values")
+                        from a in Company.MetricAssets.Include("Allocation")
+                            .Include("Versions.Conditions.Items.Values")
+                            .Include("Versions.Conditions.Items.ConditionFieldType")
+                            .Include("Versions.Conditions.Items.ConditionIntersectType")
                         from v in a.Versions
                         where a.Uid == uid
                         where (
@@ -78,7 +81,9 @@ namespace d360.model.DataAccessLayer
                             ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
                                 ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
                                     ConditionFieldTypeID = i.ConditionFieldTypeID,
+                                    ConditionFieldTypeName = (i.ConditionFieldType != null) ? i.ConditionFieldType.Name : null,
                                     ConditionIntersectTypeID = i.ConditionIntersectTypeID,
+                                    ConditionIntersectTypeUid = (i.ConditionIntersectType != null) ? i.ConditionIntersectType.uid : new Nullable<Guid>(),
                                     ConditionType = i.ConditionType,
                                     Operator = i.Operator,
                                     Uid = i.Uid,
@@ -178,9 +183,10 @@ namespace d360.model.DataAccessLayer
                     {
                         var fieldType = new FieldType();
 
-                        if (condition.ConditionFieldTypeID.HasValue)
+                        if (!string.IsNullOrEmpty(condition.ConditionFieldTypeName))
                         {
-                            fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.ConditionFieldTypeID.Value);
+                            condition.ConditionFieldTypeName = condition.ConditionFieldTypeName.Trim();
+                            fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == condition.ConditionFieldTypeName);
                         }
 
                         if (fieldType == null)
@@ -203,6 +209,8 @@ namespace d360.model.DataAccessLayer
                             operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
                         }
 
+                        condition.ConditionFieldTypeID = fieldType.ID;
+
                         bool tempBool;
                         decimal tempDecimal;
                         DateTime tempDate;
@@ -221,7 +229,7 @@ namespace d360.model.DataAccessLayer
                             case "Date":
                                 if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                                condition.Values[0].Value = tempDate.ToShortDateString();
+                                condition.Values[0].Value = tempDate.ToUniversalTime().ToShortDateString();
                                 break;
                             case "Number":
                                 if (!int.TryParse(condition.Values[0].Value, out tempInt))
@@ -388,7 +396,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                                             orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
                                             select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
                     string existingConditionHash = string.Join("|", existingHashItems);
-                    existingConditionHash = newConditionHash.GetD3sHashString();
+                    existingConditionHash = existingConditionHash.GetD3sHashString();
                     if (newConditionHash != existingConditionHash)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
@@ -647,7 +655,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
             var model = new MetricAssetTypeHierarchyModels();
             var builder = new MetricHierarchyBuilder();
 
@@ -692,7 +700,8 @@ from	(
 				V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC) as RowNum,
 				V.EffectiveEndDate as EndDate,
-				SI.AdjustedWeight as [Weight],
+				SI.AdjustedMaxWeight as [Weight],
+				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
 				SI.Value,
 				A.ScoreType
@@ -713,7 +722,7 @@ where	O.RowNum = 1";
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
 
             var model = new MetricAssetHierarchyModels();
             results.ForEach(i => { model.Add(i); });
@@ -727,7 +736,7 @@ select  distinct
         ma.scoretype 
 from    metrics.Allocation  ma
 		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 and ms.EndDate is null";
-            return Company.Query<int>(sql, new { assetUid }).ToList();
+            return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricStructureFragments(Guid allocationUid)
@@ -755,7 +764,9 @@ from    metrics.Allocation  ma
 												select	CI.Uid,
 														CI.ConditionType,
 														CI.ConditionFieldTypeID,
+                                                        FT.Name as ConditionFieldTypeName,
 														CI.ConditionIntersectTypeID,
+                                                        IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
 														(
 															select	[Value]
@@ -764,6 +775,8 @@ from    metrics.Allocation  ma
 															for json path
 														) as [Values]
 												from	metrics.AssetVersionConditionItem CI
+                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
+                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
 												for json path
 											) as ConditionItems
@@ -782,7 +795,7 @@ from    metrics.Allocation  ma
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
-                    for		json path", new { allocationUid }).ToList();
+                    for		json path", new { allocationUid }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricFieldFragments(Guid assetTypeUid)
@@ -790,6 +803,7 @@ from    metrics.Allocation  ma
             return Company.Query<string>($@"
                             select	F.ID,
                             		F.FriendlyName as Name,
+                                    F.Name as ApiName,
                             		F.Type,
                             		(
                             			select	Value,
@@ -801,7 +815,7 @@ from    metrics.Allocation  ma
                             		) as [Values]
                             from	AssetType A
                             		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
-                            for		json path", new { assetTypeUid }).ToList();
+                            for		json path", new { assetTypeUid }, ApiTimeout).ToList();
         }
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
@@ -831,7 +845,7 @@ from    (
                 and P.AssetTypeid = @assetTypeId
         ) P
 order by P.[Path]";
-            return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType });
+            return await Company.QueryAsync<MetricPathOptionViewModel>(sql, new { assetTypeId, scoreType = (int)scoreType }, ApiTimeout);
         }
 
         public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -1002,7 +1016,7 @@ from    metrics.Score MS
         {fieldJoinStatement} 
         {outerWhere}";
 
-            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
+            result.total = Company.Query<int>(countSql, parameters, ApiTimeout).FirstOrDefault();
 
             var sql = $@"
 select      MS.AssetUid,
@@ -1026,7 +1040,7 @@ order by    MS.AssetUid
 offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
 for json path";
 
-            var itemsJson = string.Join("", Company.Query<string>(sql, parameters).ToList());
+            var itemsJson = string.Join("", Company.Query<string>(sql, parameters, ApiTimeout).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
@@ -1213,8 +1227,8 @@ for json path";
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);
 
-            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters).FirstOrDefault();
-            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters).ToList();
+            result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
+            result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
             
             if (result.items == null)
             {
@@ -1238,7 +1252,7 @@ for json path";
 	                                    and 
 	                                    AR.Uid = @Uid";
 
-            return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters).ToList();
+            return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters, ApiTimeout).ToList();
         }
 
         public List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> request, ApiExecution execution)
@@ -1329,7 +1343,7 @@ for json path";
 select  max(S.EffectiveDate) as EffectiveDate 
 from    metrics.ScoreItem I 
         inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricVersionUid 
-        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }).FirstOrDefault();
+        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }, ApiTimeout).FirstOrDefault();
         }
 
         public List<string> GetMetricVersionHistory(Guid measureUid)
@@ -1353,7 +1367,9 @@ from    metrics.ScoreItem I
 												select	CI.Uid,
 														CI.ConditionType,
 														CI.ConditionFieldTypeID,
+                                                        FT.Name as ConditionFieldTypeName,
 														CI.ConditionIntersectTypeID,
+                                                        IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
 														(
 															select	[Value]
@@ -1362,6 +1378,8 @@ from    metrics.ScoreItem I
 															for json path
 														) as [Values]
 												from	metrics.AssetVersionConditionItem CI
+                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
+                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
 												for json path
 											) as ConditionItems
@@ -1379,7 +1397,7 @@ from    metrics.ScoreItem I
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate
 					where A.Uid = @measureUid
 					Order by version
-                    for		json path", new { measureUid }).ToList();
+                    for		json path", new { measureUid }, ApiTimeout).ToList();
         }
     }
 }

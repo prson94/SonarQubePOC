@@ -426,17 +426,15 @@ select	A.TypeName,
                 S.EndDate,
                 S.RunDate,
                 case 
-	                when S.ScoreType = 1 then 'Governance'
-	                when S.ScoreType = 2 then 'DataQuality'
+	                when AL.ScoreType = 1 then 'Governance'
+	                when AL.ScoreType = 2 then 'DataQuality'
                 end as ScoreType,
                 S.Value, 
                 AL.LowerThreshold, 
                 AL.UpperThreshold 
                 from metrics.Score S
                 inner join Asset A on A.Uid = S.AssetUid
-                inner join AssetType AT on AT.Id = A.AssetTypeID
-                inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
-                where S.AssetUid = @uid and EndDate is null and EffectiveDate <= getUtcDate()
+                inner join metrics.Allocation AL on AL.Uid = S.AllocationUid and S.AssetUid = @uid and S.EndDate is null and S.EffectiveDate <= getUtcDate()
 			for json path
 		) as Scores,
 		(

@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,11 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public class ScoringRepository : IScoringRepository
+    public class ScoringRepository : BaseRepository, IScoringRepository
     {
         ICompanyContext companyContext;
         public ScoringRepository(ICompanyContext companyContext)
+            : base(companyContext)
         {
             this.companyContext = companyContext;
         }
@@ -180,7 +182,7 @@ namespace d360.model.DataAccessLayer
                         order by P.[Path]
                         ";
 
-            List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs).ToList();
+            List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs, ApiTimeout).ToList();
             return allocations;
         }
 
@@ -315,7 +317,7 @@ namespace d360.model.DataAccessLayer
 		                        and
 	                        not exists (select 1 from [metrics].Allocation a where a.[state] = 1 and a.assettypeuid = att.[uid] and a.scoretype = @scoreType)";
 
-            return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
+            return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs, ApiTimeout)).ToList();
 
         }
 

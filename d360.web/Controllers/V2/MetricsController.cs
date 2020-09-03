@@ -195,24 +195,32 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var item in cond.ConditionItems)
                 {
-                    if (item.ConditionFieldTypeID.HasValue && item.ConditionIntersectTypeID.HasValue)
+                    if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeID and ConditionIntersectTypeID within a single condition.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
                     }
-                    else if (!item.ConditionFieldTypeID.HasValue && !item.ConditionIntersectTypeID.HasValue)
+                    else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeID or ConditionIntersectTypeID within a condition.");
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
                     }
                     else
                     {
-                        if (item.ConditionFieldTypeID.HasValue && item.ConditionFieldTypeID <= 0)
+                        if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
                         {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeID must be greater than 0.");
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeName must not be empty.");
                         }
 
-                        if (item.ConditionIntersectTypeID.HasValue && item.ConditionIntersectTypeID <= 0)
+                        if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
                         {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeID must be greater than 0.");
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeUid must be valid.");
+                        }
+                    }
+
+                    if (item.Values != null)
+                    {
+                        if (item.Values.Any(v => !string.IsNullOrEmpty(v.Value) && v.Value.Length > 250))
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Condition Value must not be longer than 250 characters.");
                         }
                     }
                 }
@@ -555,7 +563,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(model.Count);
                 List<BulkMetricTemporaryTableModel> results = MetricsRepository.BulkMetricsImport(model, execution);
 
-                return ResponseMessage(Request.CreateResponse<List<BulkMetricTemporaryTableModel>>(HttpStatusCode.OK, results));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
             }
             catch (GenericException ex)
             {
@@ -675,7 +683,7 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
         {
             int type = (int)scoreType;
-            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type });
+            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type }, ApiTimeout);
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 

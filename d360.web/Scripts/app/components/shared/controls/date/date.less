@@ -1,0 +1,249 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+
+ig-date {
+
+    .ig-error-label {
+        background: @ig-red-s1;
+        color: @ig-white;
+        border-radius: 2px;
+        position: relative;
+        top: -14px;
+        padding: 2px 4px;
+    }
+
+    .control-container {
+        display: inline-block;
+        padding: 2px;
+        outline: none;
+
+        > p-calendar.ng-invalid.ng-touched.ng-dirty .ig-input {
+            background: @ig-red-t5;
+        }
+    }
+}
+
+
+.ig-date {
+
+    .ig-input {
+        width: 150px;
+        max-width: 100%;
+        background: @ig-white;
+        height: 32px;
+        border-radius: @ig-field-border-radius;
+        border-bottom-right-radius: @ig-field-border-radius !important;
+        border-top-right-radius: @ig-field-border-radius !important;
+        padding: 0 8px;
+
+        &:required:invalid {
+            background: @ig-lightblue-t4;
+        }
+
+        &:disabled {
+            opacity: 0.33;
+        }
+    }
+
+
+    .ui-datepicker {
+        border-radius: @ig-field-border-radius;
+        box-shadow: 0 1px 4px rgba(0,0,0,.5);
+
+        .ui-datepicker-group {
+            padding: 8px;
+            border-radius: @ig-field-border-radius;
+
+            .ui-datepicker-header {
+                background: @ig-white;
+                border: none;
+
+                a {
+                    &.ui-datepicker-next {
+                        border-radius: @ig-field-border-radius;
+                        height: 24px;
+                        width: 24px;
+                        right: 4px !important;
+                        top: 4px;
+
+                        span {
+                            margin-left: -0.5em;
+                            margin-top: -0.5em;
+                        }
+
+                        &:focus {
+                            outline: 0 none;
+                            outline-offset: 0;
+                            -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                            -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                            box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                        }
+                    }
+
+                    &.ui-datepicker-prev {
+                        border-radius: @ig-field-border-radius;
+                        height: 24px;
+                        width: 24px;
+                        left: 4px !important;
+                        top: 4px;
+
+                        span {
+                            margin-right: -0.5em;
+                            margin-top: -0.5em;
+                        }
+
+                        &:focus {
+                            outline: 0 none;
+                            outline-offset: 0;
+                            -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                            -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                            box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+                        }
+                    }
+                }
+
+                .ui-datepicker-title {
+                    color: @ig-black;
+                    text-transform: none;
+                    text-shadow: none;
+                }
+            }
+
+            .ui-datepicker-calendar-container {
+
+                .ui-datepicker-today a.ui-state-highlight {
+                    border: none !important;
+                    background: @ig-grey-t4;
+                    border-radius: 2px;
+                }
+
+                .ui-datepicker-current-day a {
+                    background: @ig-orange-t3 !important;
+                    border-radius: 2px;
+                    color: @ig-black !important;
+                }
+
+                table {
+                    thead {
+                        border: none;
+                    }
+
+                    th {
+                        background: @ig-white;
+                        color: @ig-black !important;
+                        border: none !important;
+                        text-shadow: none;
+                    }
+
+                    td {
+                        border: none;
+
+                        span.ui-state-default {
+                            border: none !important;
+                            width: 40px;
+                            height: 32px;
+                            border-radius: 2px;
+                            font-weight: normal !important;
+                            font-size: 14px;
+
+                            &.ui-state-disabled {
+                                background: none;
+                            }
+                        }
+
+                        &.ui-datepicker-other-month {
+                            border: none;
+                            color: @ig-grey;
+                        }
+
+                        &.ui-datepicker-today {
+                            border: none !important;
+                            background: @ig-grey-t4;
+                            border-radius: 2px;
+
+                            &.ui-state-disabled {
+                                background: none;
+                            }
+                        }
+
+                        a {
+                            text-decoration: none;
+
+                            &:focus {
+                                outline: 0 none;
+                                outline-offset: 0;
+                                -webkit-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+                                -moz-box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+                                box-shadow: inset 0 0 0 @ig-focus-width @ig-focus-color;
+                            }
+
+
+
+                            &.ui-state-highlight .ui-datepicker-today {
+                                border: none !important;
+                                background: @ig-grey-t4;
+                                border-radius: 2px;
+                            }
+
+                            &.ui-state-default {
+                                background: @ig-white;
+                                border: none;
+                                width: 40px;
+                                height: 32px;
+                                border-radius: 2px;
+                                font-weight: normal !important;
+                                font-size: 14px;
+                                line-height: 32px;
+
+
+                                &:hover {
+                                    background: @ig-orange-t4;
+                                }
+
+                                &:active {
+                                    background: @ig-orange-t3;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    button.ui-calendar-button {
+        color: @ig-black;
+        background: rgba(0,0,0,0.07);
+        border-radius: 2px;
+        position: relative;
+        left: -29px;
+        height: 24px;
+        width: 24px;
+
+        &.ui-button-icon-only .ui-button-icon-left {
+            font-weight: normal !important;
+        }
+
+        &:hover {
+            &:not(:disabled) {
+                background: rgba(0,0,0,0.14);
+            }
+
+            &:disabled {
+                background: rgba(0,0,0,0.07);
+            }
+        }
+
+        &:active {
+
+            &:not(:disabled) {
+                background: rgba(0,0,0,0.21);
+            }
+
+            &:disabled {
+                background: rgba(0,0,0,0.07);
+            }
+        }
+    }
+}

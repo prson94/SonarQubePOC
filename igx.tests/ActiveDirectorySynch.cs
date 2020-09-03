@@ -265,8 +265,8 @@ using   (
 when    matched then
 update  set T.Status = 'Active'
 when    not matched by target then 
-        insert (ResourceTypeID, Username, Password, LastName, FirstName, Email, Status) 
-        values (1, S.Username, 'Auto-populated junk', S.LastName, S.FirstName, S.Username, 'Active')
+        insert (Username, Password, LastName, FirstName, Email, Status) 
+        values (S.Username, 'Auto-populated junk', S.LastName, S.FirstName, S.Username, 'Active')
 output  inserted.ID, S.Username into #UserResult;
 
 merge   [CompanyResource] as T 

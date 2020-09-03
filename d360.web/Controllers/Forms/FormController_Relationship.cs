@@ -835,17 +835,27 @@ order by r.Name";
             {
                 var intersectTypes = new List<string> { DataType.Relationship.ToString(), DataType.RefListRelationship.ToString(), DataType.FieldFromRelationship.ToString() };
                 var id = parseIntField(form, "ID");
-                var uid = parseTextField(form, "IntersectTypeUid");
+                var uid = Guid.Parse(parseTextField(form, "IntersectTypeUid"));
                 if (!form.HasKeys()) throw new NoFormDataException("relationship type");
 
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
+                var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == uid);
+
+                if (intersectType.Predicate.Type != PredicateType.Diagram)
+                {
+                    if (Company.Filter<Intersect>(i => i.IntersectTypeID == id).Count() > 0)
+                        return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
+                }
+                else if (Company.HasRelationshipInProcessDiagram(intersectType.uid))
+                {
                     return jsonException(FormInfo.InUse_Error_Delete, HttpStatusCode.Conflict);
+                }
+
                 if (Company.Filter<FieldType>(i => i.LookupObjectID == id && intersectTypes.Contains(i.Type) && i.LookupObjectType == "IntersectType").Count() > 0)
                     return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
-                if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\""+ uid + "\"")).Count() > 0)                
+                if (Company.Filter<FieldTypeLookup>(i => i.Definition.Contains("\"IntersectTypeUid\":\"" + uid + "\"")).Count() > 0)
                 {
                     return jsonException(FormInfo.InUse_RelationShipType_Error_Delete, HttpStatusCode.Conflict);
                 }

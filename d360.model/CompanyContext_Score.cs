@@ -41,7 +41,10 @@ namespace d360.model
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool useAllocation = false)
         {
-            //Set effective date for any results that do not have a date set.
+            Add(execution);
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+            
+            // Set effective date for any results that do not have a date set.
             model.ForEach(m =>
             {
                 if (!m.EffectiveDate.HasValue)
@@ -57,9 +60,6 @@ namespace d360.model
 
             if (dupes)
             {
-                Add(execution);
-                SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
                 var message = "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.";
                 execution.Error = 1;
                 execution.Processed = 0;
@@ -74,14 +74,8 @@ namespace d360.model
             }
             else
             {
-
-                Add(execution);
-                SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
                 var table = new DataTable();
 
-                table.Columns.Add("ExecutionID", typeof(Guid));
-                table.Columns.Add("ItemNumber", typeof(int));
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("MetricAssetUid", typeof(Guid));
                 table.Columns.Add("EffectiveDate", typeof(DateTime));
@@ -89,20 +83,15 @@ namespace d360.model
 
                 #region Generate data sets
 
-                int itemNumber = 1;
                 foreach (var item in model)
                 {
                     var row = table.NewRow();
-                    row["ExecutionID"] = execution.ExecutionID;
-                    row["ItemNumber"] = itemNumber;
                     row["AssetUid"] = item.AssetUid;
                     row["MetricAssetUid"] = item.MetricAssetUid;
                     row["EffectiveDate"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
                     row["Result"] = item.Result;
 
                     table.Rows.Add(row);
-
-                    itemNumber++;
                 }
 
                 #endregion
@@ -110,129 +99,142 @@ namespace d360.model
                 if (Connection.State != ConnectionState.Open)
                     Connection.Open();
 
-                #region Bulk Copy
-
-                var bulkCopy = new SqlBulkCopy(Connection)
-                {
-                    BatchSize = table.Rows.Count,
-                    DestinationTableName = "[api].[ExecutionMetric]",
-                    BulkCopyTimeout = 3600
-                };
-
-                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                bulkCopy.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
-                bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
-                bulkCopy.ColumnMappings.Add("Result", "Result");
-
-                bulkCopy.WriteToServer(table);
-
-                bulkCopy = null;
-
-                #endregion
-
-                #region Validation
-
-                // Resolve Asset
-                Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
-
-                // Resolve Metric
-                Connection.Execute(@"update T set T.IsValidMetric = IIF(S.[Uid] is not null, 1, 0) from api.ExecutionMetric T left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
-
-                // Resolve Metric Group/Item Effective Date
-                Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
-                left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
-                outer apply (
-                            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-                            ) M_M
-                where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
-
-
-                if (useAllocation)
-                {
-                    Connection.Execute(@"
-                    update  M
-                    set     M.IsValidAllocation = 0,
-                            M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated; '
-                    from    api.ExecutionMetric M
-                            left join AssetWithType A on A.uid = M.assetUid
-                            left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
-                    where   L.Uid is null and M.ExecutionID = @executionID
-                ", new { execution.ExecutionID, scoreType });
-
-
-                    Connection.Execute(@"
-                    update  M
-                    set     M.IsValidAllocation = 0,
-                            M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated for internal scores; '
-                    from    api.ExecutionMetric M
-                            left join AssetWithType A on A.uid = M.assetUid
-                            left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 0
-                    where   L.Uid is null and M.ExecutionID = @executionID
-                ", new { execution.ExecutionID, scoreType });
-
-                }
-
-
-                // Log errors
-                Connection.Execute(@"
-    update  api.ExecutionMetric
-    set     Success = case 
-                        when IsValidAsset = 0 then 0
-                        when IsValidMetric = 0 then 0
-                        when IsValidMetricDate = 0 then 0
-                        when IsValidAllocation = 0 then 0
-                        else 1
-                      end 
-    where   ExecutionID = @ExecutionID;
-
-    update  api.ExecutionMetric
-    set     Message = coalesce(Message, '') + 'Invalid asset specified; '
-    where   ExecutionID = @ExecutionID 
-            and IsValidAsset = 0;
-
-    update  api.ExecutionMetric
-    set     Message = coalesce(Message, '') + 'Invalid metric specified; '
-    where   ExecutionID = @ExecutionID 
-            and IsValidMetric = 0;
-
-    update  api.ExecutionMetric
-    set     Message = coalesce(Message, '') + 'Invalid metric specified for the date provided; '
-    where   ExecutionID = @ExecutionID 
-            and IsValidMetricDate = 0;
-
-    update  api.ExecutionMetric
-    set     Success = 0,
-            Message = coalesce(Message, '') + 'Effective date cannot be in the future; '
-    where   ExecutionID = @ExecutionID and EffectiveDate > getutcdate();
-
-    update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
-
-
-                #endregion
-
-                var results = Connection.Query<BulkMetricTemporaryTableModel>(
-                    $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage, IsValidAsset, IsValidMetric, IsValidMetricDate from api.ExecutionMetric where ExecutionID = @ExecutionID",
-                    new { execution.ExecutionID }, 
-                    commandTimeout: 1200
-                ).ToList();
+                var trans = Connection.BeginTransaction();
+                List<BulkMetricTemporaryTableModel> results = null;
 
                 try
                 {
+                    Connection.Execute(@"
+DROP TABLE IF EXISTS #InternalMeasures;
+
+CREATE TABLE #InternalMeasures (
+	RowNumber int identity, 
+    AssetUid uniqueidentifier NOT NULL,
+	MetricAssetUid uniqueidentifier NOT NULL,
+	EffectiveDate date NOT NULL,
+	Result bit NOT NULL,
+
+    IsValidAllocation bit NULL,
+	IsValidAsset bit NULL,
+	IsValidMeasure bit NULL,
+	IsValidEffectiveDate bit NULL,
+	
+    Success bit NULL,
+	[Message] nvarchar(2500) NULL,
+
+	PRIMARY KEY ( RowNumber ASC )
+);
+
+CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_AssetUid] ON #InternalMeasures ( [AssetUid] ASC );
+CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_MetricAssetUid] ON #InternalMeasures ( [MetricAssetUid] ASC, EffectiveDate DESC );
+CREATE NONCLUSTERED INDEX [IX_TempInternalMeasures_Success] ON #InternalMeasures ( [Success] ASC )", transaction: trans);
+
+                    using (var bulk = Connection.CreateBulkCopy("#InternalMeasures", trans: trans))
+                    {
+                        bulk.ColumnMappings.Add("AssetUid", "AssetUid");
+                        bulk.ColumnMappings.Add("MetricAssetUid", "MetricAssetUid");
+                        bulk.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                        bulk.ColumnMappings.Add("Result", "Result");
+
+                        bulk.WriteToServer(table);
+                    }
+
+                    #region Validation
+
+                    // Resolve Allocation
+                    Connection.Execute(@"
+update  M
+set     M.IsValidAllocation = 0,
+        M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated; '
+from    #InternalMeasures M
+        left join AssetWithType A on A.uid = M.assetUid
+        left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
+where   L.Uid is null;
+
+update  M
+set     M.IsValidAllocation = 0,
+        M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated for internal scores; '
+from    #InternalMeasures M
+        inner join AssetWithType A on A.uid = M.assetUid
+        inner join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 1",
+            new { scoreType = (int)scoreType }, transaction: trans);
+
+                    // Resolve Asset
+                    Connection.Execute(@"
+update  T 
+set     T.IsValidAsset = IIF(S.ID is not null, 1, 0) 
+from    #InternalMeasures T 
+        left join Asset S on S.[uid] = T.AssetUid", transaction: trans);
+
+                    // Resolve Measure
+                    Connection.Execute(@"
+update  T 
+set     T.IsValidMeasure = IIF(S.[Uid] is not null, 1, 0) 
+from    #InternalMeasures T 
+        left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
+
+                    // Resolve Metric Group/Item Effective Date
+                    Connection.Execute(@"
+update  T 
+set     T.IsValidEffectiveDate = IIF(M_M.EffectiveDate is not null, 1, 0) 
+from    #InternalMeasures T 
+        left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
+        outer apply (
+                    select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
+                    ) M_M", transaction: trans);
+
+                    // Log errors
+                    Connection.Execute(@"
+    update  #InternalMeasures
+    set     Success = case 
+                        when IsValidAllocation = 0 then 0
+                        when IsValidAsset = 0 then 0
+                        when IsValidMeasure = 0 then 0
+                        when IsValidEffectiveDate = 0 then 0
+                        else 1
+                      end;
+
+    update  #InternalMeasures
+    set     Message = coalesce(Message, '') + 'Invalid asset specified; '
+    where   IsValidAsset = 0;
+
+    update  #InternalMeasures
+    set     Message = coalesce(Message, '') + 'Invalid measure specified; '
+    where   IsValidMeasure = 0;
+
+    update  #InternalMeasures
+    set     Message = coalesce(Message, '') + 'Invalid measure specified for the date provided; '
+    where   IsValidEffectiveDate = 0;
+
+    update  #InternalMeasures
+    set     Success = 0,
+            Message = coalesce(Message, '') + 'Effective date cannot be in the future; '
+    where   EffectiveDate > getutcdate();
+
+    update #InternalMeasures set Message = null where Success = 1;", new { execution.ExecutionID }, transaction: trans);
+
+
+                    #endregion
+
+                    results = Connection.Query<BulkMetricTemporaryTableModel>(
+                        $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage from #InternalMeasures",
+                        new { execution.ExecutionID },
+                        commandTimeout: 1200, transaction: trans
+                    ).ToList();
+
+                    trans.Commit();
+
                     execution.Error = results.Count(i => !i.IsSuccess);
                     execution.Processed = results.Count(i => i.IsSuccess);
                     execution.CompletedOn = DateTime.UtcNow;
                     Update(execution);
 
-                    // Cleanup
-                    Connection.Execute($"delete api.ExecutionMetric where ExecutionID = @ExecutionID", new { execution.ExecutionID });
-
-                    var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel { 
-                        AssetUid = r.AssetUid, 
-                        EffectiveDate = r.EffectiveDate, 
-                        MetricAssetUid = r.MetricAssetUid, 
-                        Result = r.Result 
+                    var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel
+                    {
+                        AssetUid = r.AssetUid,
+                        EffectiveDate = r.EffectiveDate,
+                        MetricAssetUid = r.MetricAssetUid,
+                        Result = r.Result
                     }).ToList();
 
                     if (queueResults.Count > 0)
@@ -242,12 +244,16 @@ namespace d360.model
                 }
                 catch (Exception ex)
                 {
+                    trans.Rollback();
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
                     execution.CompletedOn = DateTime.UtcNow;
                     Update(execution);
                 }
+                finally 
+                {
+                    Connection.Close();
+                }
 
-                Connection.Close();
 
                 return results;
             }
@@ -367,7 +373,7 @@ set     T.IsValidAllocation = iif(Al.Uid is null, 0, 1),
 from    api.ExecutionScore T 
         left join dbo.Asset A on A.Uid = T.AssetUid
         left join dbo.AssetType Ast on Ast.ID = A.AssetTypeID
-        left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.ScoreType = T.ScoreType and (Al.OverrideName is null or Al.OverrideName = '')
+        left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.ScoreType = T.ScoreType and (Al.OverrideName is null or Al.OverrideName = '') and Al.IsExternallyCalculated = 1
         left join metrics.Score S on S.AllocationUid = Al.Uid and S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate
 where   T.ExecutionID = @ExecutionID
 
@@ -600,7 +606,7 @@ where   E.ExecutionID = @ExecutionID
 
                             if (retryCount > API_V2_RETRY_LIMIT)
                             {
-                                LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionMetric", ex.GetFullExceptionData(false), timeout);
+                                LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionScore", ex.GetFullExceptionData(false), timeout);
                             }
                         }
                     }
@@ -697,6 +703,7 @@ where   E.ExecutionID = @ExecutionID
             Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(item));
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
+        
         #endregion
     }
 

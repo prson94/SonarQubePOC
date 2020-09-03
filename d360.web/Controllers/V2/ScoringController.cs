@@ -654,7 +654,7 @@ namespace d360.web.Controllers.V2
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
 			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null", 
-            new { allocationUid = _allocationUid, assetUid = _assetUid });
+            new { allocationUid = _allocationUid, assetUid = _assetUid }, ApiTimeout);
             
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }

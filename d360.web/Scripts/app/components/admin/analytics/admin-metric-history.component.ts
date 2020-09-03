@@ -81,7 +81,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.metricListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
             c.OperatorText = this.parseOperator(field, c.OperatorText);
 

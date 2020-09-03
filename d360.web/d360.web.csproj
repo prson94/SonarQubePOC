@@ -624,10 +624,8 @@
     <Content Include="Content\primeng\v9.1.0\images\password-meter.png" />
     <Content Include="Content\primeng\v9.1.0\primeng.css" />
     <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
-    <Content Include="Content\primeng\v9.1.0\theme.css" />
-    <Content Include="Content\primeng\v9.1.0\theme.min.css">
-      <DependentUpon>theme.css</DependentUpon>
-    </Content>
+    <Content Include="Content\primeng\v9.1.0\theme.less" />
+    <Content Include="Content\primeng\v9.1.0\theme.min.css" />
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />
@@ -732,6 +730,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.icon-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.textarea.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.date-picker.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
@@ -758,7 +757,9 @@
     <Content Include="Content\styles\infogix-ui\IgTooltip.less" />
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
+    <Content Include="Scripts\app\components\shared\controls\date\date.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
@@ -875,6 +876,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autocomplete.component.ts" />
@@ -895,6 +897,7 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />

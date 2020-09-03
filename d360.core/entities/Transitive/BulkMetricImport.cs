@@ -37,12 +37,6 @@ namespace d360.core.entities
         public DateTime EffectiveDate { get; set; }
         [DataMember]
         public bool Result { get; set; }
-
-        public bool IsValidAsset { get; set; }
-        public bool IsValidMetric { get; set; }
-        public bool IsValidMetricDate { get; set; }
-        public bool IsValidAllocation { get; set; }
-
         [DataMember]
         public bool IsSuccess { get; set; }
         [DataMember]
@@ -80,6 +74,12 @@ namespace d360.core.entities
 
         [DataMember]
         public decimal Weight { get; set; }
+
+        [DataMember]
+        public decimal AdjustedWeight { get; set; }
+
+        [DataMember]
+        public decimal AdjustedMaxWeight { get; set; }
 
         [DataMember]
         public bool Value { get; set; }
