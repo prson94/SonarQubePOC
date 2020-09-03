@@ -2846,6 +2846,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var template = Company.AssetTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
 
+            string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
+
+            template.IncludeFieldTypes = Company.Database.Connection.Query<string>(templateFieldTypesSQL, new { templateId = template.ID }).ToArray();
+
             var list = new List<EditableField>();
             var assetPaths = Company.GetAssetTypePathsByAssetClasses(
                 new List<int>()
@@ -2854,7 +2858,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     { (int)AssetTypeClass.TechnicalAsset },
                     { (int) AssetTypeClass.Rule }
                 });
-            list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });           
+            list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", Name = "Uid", FieldType = DataType.Hidden.ToString(), Value = template.Uid.ToString() });
             list.Add(new EditableField { FieldName = "IncludeFieldTypes", Name = "IncludeFieldTypes", FieldType = DataType.Hidden.ToString(), Value = template.IncludeFieldTypes == null ? template.IncludeFieldTypes.ToString() : null });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });

@@ -191,6 +191,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
             for (let i = 0; i < this.exportTemplates.length; i++) {
                 if (this.exportTemplates[i].Uid == this.selected.Uid) {
                     this.exportTemplates[i].IncludeFieldTypes = this.selected.IncludeFieldTypes;
+                    this.getSelectedTemplateID();
                 }
             }
         });

@@ -90,7 +90,8 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route("{templateUid}/details"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetTypeExportTemplate)),
-            SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetTemplateByUid(Guid templateUid)
         {
@@ -112,7 +113,8 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route("{templateUid}/id"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetTypeExportTemplate)),
-            SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetTemplateId(Guid templateUid)
         {
@@ -181,7 +183,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
             //Validate and map asset type uid to to id
-            if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()))
+            if (string.IsNullOrEmpty(model.AssetTypeUID.ToString()) || model.AssetTypeUID == Guid.Empty)
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "AssetTypeUid is a required field");
 
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
@@ -373,17 +375,16 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "Error while opening file.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<HttpResponseMessage> PostTemplateFile(Guid templateUid)
+        public async Task<IHttpActionResult> PostTemplateFile(Guid templateUid)
         {
             var context = Request.Properties["MS_HttpContext"] as System.Web.HttpContextWrapper;
 
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
 
             if (!Company.AssetTypeExportTemplates.Any(x => x.Uid == templateUid))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Template not found"));
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template Not Found", "Template not found matching Uid Provided.");            
 
             byte[] template = null;
             try
@@ -395,15 +396,19 @@ namespace d360.web.Controllers.V2
                     file.InputStream.CopyTo(target);
                     template = target.ToArray();
                 }
+                else
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "A Template file is required.");
+                }
             }
             catch
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Error while opening file"));
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template", "Error while opening file.");               
             }
 
             var res = await Company.Database.Connection.ExecuteAsync("update AssetTypeExportTemplate set TemplateFile = @t where uid = @uid", new { @t = template, @uid = templateUid });
 
-            return Request.CreateResponse(HttpStatusCode.OK, "updated");
+            return successMessageResponse(HttpStatusCode.OK, "Success", "File Successfully uploaded");
         }
 
 
@@ -475,7 +480,7 @@ namespace d360.web.Controllers.V2
 
             var res = await Company.Database.Connection.ExecuteAsync(updateTemplateSQL, new { ty = template.AssetTypeID, url = model.IncludeUrl, parent = model.IncludeParent, name = model.Name, id = template.ID, desc = model.Description, exp = model.ExportViewType, notes = model.UsageNotes, updatedBy = Company.CurrentResourceID, updatedOn = DateTime.UtcNow });
 
-            if (res > 0)
+            if (res > 0 && model.IncludeFieldTypes != null)
             {
                 res = SetIncludedFieldTypes(template.ID, model.IncludeFieldTypes);
             }
@@ -658,6 +663,12 @@ namespace d360.web.Controllers.V2
 
         private WorkHttpStatus validateTemplate(AssetTypeExportTemplate template, AssetType assetType)
         {
+            if(assetType ==null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "A valid AssetTypeUid is required.");
+            }
+
+
             if (assetType.Class != AssetTypeClass.BusinessAsset
                && assetType.Class != AssetTypeClass.TechnicalAsset
                && assetType.Class != AssetTypeClass.Rule)
@@ -695,6 +706,6 @@ namespace d360.web.Controllers.V2
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }        
+        }
     }
 }

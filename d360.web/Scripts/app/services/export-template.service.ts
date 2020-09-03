@@ -63,7 +63,7 @@ export class ExportTemplateService extends BaseObservableService {
                     .post<ApiResult>(`/api/v2/exporttemplates`, exportTemplate).pipe(
                     map(item => {
                         this.messages.showInfoMessage("Success", `Export Template '${exportTemplate.Name}' Created.`);
-                        return this.getExportTemplateByTemplateUid(item.uid)[0];
+                        return this.getExportTemplateByTemplateUid(item.uid);
                     }),
                 catchError(err => this.handleError(err)),);
         

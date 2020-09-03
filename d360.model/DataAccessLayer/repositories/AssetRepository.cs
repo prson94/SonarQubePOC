@@ -2962,6 +2962,11 @@ where   A.[uid] = @assetUid";
                                                 ATET.ExportViewType,
                                                 ATET.IncludeUrl,
                                                 ATET.IncludeParent,
+                                                ATET.IncludeUrl,
+                                                ATET.CreatedBy,
+	                                            ATET.CreatedOn,
+	                                            ATET.UpdatedBy,
+	                                            ATET.UpdatedOn,
                                                 ATET.UsageNotes,
                                                 CASE WHEN ATET.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile
                                             from 
@@ -2970,13 +2975,13 @@ where   A.[uid] = @assetUid";
                                             {whereSQL}
                                             order by ATET.Name, ATET.ID";
 
-                templateList = (await CompanyContext.QueryAsync<AssetTypeExportTemplate>(exportTemplateSQL)).ToList();
+                templateList = (await CompanyContext.QueryAsync<AssetTypeExportTemplate>(exportTemplateSQL, timeout: ApiTimeout)).ToList();
 
                 foreach (var template in templateList)
                 {
                     string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
 
-                    template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID })).ToArray();
+                    template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
                 }
             }
             

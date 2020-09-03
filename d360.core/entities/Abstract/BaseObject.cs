@@ -158,8 +158,10 @@ namespace d360.core.entities
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseCreatedAndUpdatedObject : BaseObject
     {
+        [DataMember]
         public int? CreatedBy { get; set; }
 
+        [DataMember]
         public DateTime? CreatedOn
         {
             get
@@ -174,8 +176,10 @@ namespace d360.core.entities
 
         private DateTime? createdon = null;
 
+        [DataMember]
         public int? UpdatedBy { get; set; }
 
+        [DataMember]
         public DateTime? UpdatedOn
         {
             get
