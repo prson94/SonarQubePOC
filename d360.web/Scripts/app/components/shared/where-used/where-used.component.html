@@ -1,9 +1,7 @@
-﻿<ng-container *ngIf="showAsTable && !isUsageLoading && usage.length > 0 && !showAsModal">
-
+﻿<div #tableHolder *ngIf="showAsTable && !isUsageLoading && usage.length > 0 && !showAsModal">
     <p>
         The {{getFriendlyObjectType()}} is used in the following diagrams. All occurences will be removed.
     </p>
-
     <p-table #usageTable
              [value]="usage"
              [pageLinks]="3"
@@ -36,7 +34,7 @@
             <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
         </ng-template>
     </p-table>
-</ng-container>
+</div>
 
 <ng-container *ngIf="showAsModal">
     <span class="{{hasUsage ? 'open-usage-dialog-link' : ''}}" (click)="openUsage()">
