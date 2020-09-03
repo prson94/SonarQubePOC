@@ -72,6 +72,31 @@ namespace d360.core.entities
         }
     }
 
+    [DataContract(Namespace = NAMESPACE)]
+    public class OwnershipApiModel : BaseObject
+    {
+        [DataMember]
+        public string ResponsibilityName { get; set; }
+
+        [DataMember]
+        public Guid ResponsibilityUid { get; set; }
+
+        [DataMember]
+        public string Resource { get; set; }
+
+        [DataMember]
+        public Guid ResourceUid { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public string Group { get; set; }
+
+        [DataMember]
+        public string AssignedBy { get; set; }
+    }
+
 
     [DataContract(Namespace = NAMESPACE)]
     public class AssetResponsibilityItemModel : BaseObject
