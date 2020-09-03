@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj" />
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj" />
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj" />
   </ItemGroup>
   <ItemGroup>
