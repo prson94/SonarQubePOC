@@ -708,7 +708,8 @@ from	(
 				and S.EffectiveDate <= @effectiveDate 
 				and (S.EndDate >= @effectiveDate or S.EndDate is null)
 		) O 
-where	O.RowNum = 1";
+where	O.RowNum = 1
+order by ParentUid, Name";
 
 
             if (cnn.State != ConnectionState.Open)
@@ -783,6 +784,7 @@ from    metrics.Allocation  ma
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
+                    order by A.ParentUid, V.Name
                     for		json path", new { allocationUid }, ApiTimeout).ToList();
         }
 
