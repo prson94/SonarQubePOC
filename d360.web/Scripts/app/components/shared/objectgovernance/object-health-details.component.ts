@@ -31,8 +31,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private historicalData: any[];
     private calculatedScoreText: string = 'Calculating...';
     private pointBreakdown: PointBreakdown[] = [];
-    private pointBreakdownTree: TreeNode[] = [];
-    private scoreDefinition: any;
     private ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes: number[] = [];
@@ -174,7 +172,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                             this.selectPointOnGraph();
                                             this.loadPoints();
-                                            this.loadDefinition();
                                         }
                                     }
                                 }
@@ -229,45 +226,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 .subscribe(res => {
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
-                    this.pointBreakdownTree = [];
-                    let tree = (node: any) => {
-                        let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
-
-                        node.leaf = true;
-                        node.children = null;
-
-                        if (childItems != null && childItems.length > 0) {
-
-                            node.leaf = false;
-                            node.children = [];
-
-                            childItems.forEach(c => {
-
-                                var child = {
-                                    data: c,
-                                    expanded: true,
-                                    leaf: true
-                                };
-
-                                tree(child);
-
-                                node.children.push(child);
-                            });
-                        }
-                    };
-
-                    this.pointBreakdown.filter(p => !p.ParentUid).forEach(p => {
-                        var root = {
-                            data: p,
-                            leaf: false,
-                            expanded: true,
-                            children: []
-                        };
-
-                        tree(root);
-                        this.pointBreakdownTree.push(root);
-                    });
-
+                     
                     if (isTabChange) {
                         this.scoreDate = new Date().toDateString();
                     }
@@ -282,16 +241,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
-    private loadDefinition() {
-        if (this.uid) {
-            this.loadingDefinition = true;
-            this.scoreService.getScoreitemDetails(this.uid, this.scoreDate).subscribe(res => { this.scoreDefinition = res; this.loadingDefinition = false; });
-        }
-    }
+
     hasAnyExpanders() {
         clearTimeout(this.handle);
         this.handle = window.setTimeout(() => {
-            if (this.OHDitems && !this.loadingDefinition && !this.loadingHistory && !this.loadingPoints) {
+            if (this.OHDitems && !this.loadingHistory && !this.loadingPoints) {
                 this.showExpandAndCollapse = this.OHDitems.filter(x => {
                     return x.expandable;
                 }).length > 0;
@@ -306,7 +260,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = false;
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.Governance;
-                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints(true);
                 this.isDQAndNoItems();
@@ -316,7 +269,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = true;
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.DataQuality;
-                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints(true);
                 this.isDQAndNoItems();
@@ -488,13 +440,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.scoreDate = item.EffectiveDate;
         this.tableSelectedIDX = this.scoresPoints.indexOf(item);
         this.loadPoints();
-        this.loadDefinition();
     }
 
     private onCarouselScoreClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.loadPoints();
-        this.loadDefinition();
     }
 
     private chartInstance: Highcharts.Chart;

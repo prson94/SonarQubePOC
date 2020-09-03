@@ -45,23 +45,26 @@ namespace d360.core.entities
 
     #region Used in Metrics API to display the metric results by asset.
 
-    [JsonArray]
-    [DataContract(Name = "metrics")]
-    public class MetricAssetHierarchyModels : List<MetricAssetHierarchyModel>
+    [DataContract]
+    public class MetricAssetHierarchyConditionModel 
     {
-
+        [DataMember]
+        public string FieldName { get; set; }
+        
+        [DataMember]
+        public string Operator { get; set; }
+        
+        [DataMember]
+        public string Value { get; set; }
     }
 
-    [DataContract(Name = "metric")]
-    public class MetricAssetHierarchyModel : BaseObject
+    public class BaseMetricAssetHierarchyModel : BaseObject
     {
         [DataMember]
         public Guid Uid { get; set; }
 
         [DataMember]
         public Guid? ParentUid { get; set; }
-
-        public int Level { get; set; }
 
         [DataMember]
         public bool IsGroup { get; set; }
@@ -83,12 +86,38 @@ namespace d360.core.entities
 
         [DataMember]
         public bool Value { get; set; }
+
         [DataMember]
         public ScoreType ScoreType { get; set; }
+
         [DataMember]
         public DateTime? EffectiveDate { get; set; }
+
         [DataMember]
         public DateTime? EndDate { get; set; }
+
+
+    }
+
+    [DataContract(Name = "metric")]
+    public class ChildMetricAssetHierarchyModel : BaseMetricAssetHierarchyModel
+    {
+        [DataMember]
+        public List<MetricAssetHierarchyConditionModel> Conditions { get; set; }
+    }
+
+    [DataContract(Name = "metric")]
+    public class RootMetricAssetHierarchyModel : BaseMetricAssetHierarchyModel
+    {
+        public string ConditionsJson { get; set; }
+
+        public string MeasuresJson { get; set; }
+
+        [DataMember]
+        public List<MetricAssetHierarchyConditionModel> Conditions { get { return string.IsNullOrEmpty(ConditionsJson) ? null : JsonConvert.DeserializeObject<List<MetricAssetHierarchyConditionModel>>(ConditionsJson ?? "[]"); } }
+
+        [DataMember]
+        public List<ChildMetricAssetHierarchyModel> Measures { get { return string.IsNullOrEmpty(MeasuresJson) ? null : JsonConvert.DeserializeObject<List<ChildMetricAssetHierarchyModel>>(MeasuresJson ?? "[]"); } }
     }
 
     #endregion

@@ -5,6 +5,7 @@ import { TreeNode } from 'primeng/api';
 import { ScoreType } from '../../../models/metrics.model';
 import { expand } from 'rxjs/operators';
 import { clearTimeout } from 'timers';
+import { PointBreakdown } from '../../../models/score.model';
 
 
 @Component({
@@ -14,8 +15,7 @@ import { clearTimeout } from 'timers';
 })
 
 export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges, AfterViewInit {
-    @Input() item: TreeNode;
-    @Input() definition: any[];
+    @Input() item: PointBreakdown;
     @Input() isloading: boolean = false;
     @Input() showtype: ScoreType;
     @Output() checkExpander = new EventEmitter();
@@ -39,37 +39,21 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
-        for (let p in changes) {
-            if (p == 'definition') {
-                requiresLoad = (changes['definition'].currentValue != changes['definition'].previousValue) && changes['definition'] != undefined;
-            }
-            if (p == 'item') {
-                requiresLoad = (changes['item'].currentValue != changes['item'].previousValue) && changes['item'] != undefined;
-            }
-        }
-        if (requiresLoad) {
-            this.isLoading = true;
-            this.loadItemDetails();
-        }
+        //for (let p in changes) {
+        //    if (p == 'definition') {
+        //        requiresLoad = (changes['definition'].currentValue != changes['definition'].previousValue) && changes['definition'] != undefined;
+        //    }
+        //    if (p == 'item') {
+        //        requiresLoad = (changes['item'].currentValue != changes['item'].previousValue) && changes['item'] != undefined;
+        //    }
+        //}
+        //if (requiresLoad) {
+        //    this.isLoading = true;
+        //}
     }
 
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
-    }
-
-    private loadItemDetails() {
-        if (this.definition)
-            this.getCurrentItemDetails();
-    }
-
-    private getCurrentItemDetails() {
-        if (this.definition) {
-            var definitionItem = this.definition.filter(x => { return x.Uid == this.item.data.Uid })[0];
-            if (definitionItem) {
-                this.currentItemDetails = definitionItem;
-            }
-        }
-        this.isLoading = false;
     }
 
     public setCollapsed(val: boolean) {
@@ -112,29 +96,16 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
         return s;   
     }
 
-    GetChildPropertValue(parent, child, property) {
-        if (this.definition && parent && child) {
-            let parentItem = this.definition.filter(x => { return x.Uid == parent.Uid })[0];
-            if (parentItem && parentItem.Metrics.length > 0) {
-                let childItem = parentItem.Metrics.filter(y => { return y.Uid == child.Uid })[0];
-                return childItem[property];
-            }
-        }
-    }
     private checkExpanders() {
         clearTimeout(this.handle);
         this.handle = window.setTimeout(() => {
-            if (this.item && this.item.data && this.currentItemDetails) {
+            if (this.item && this.item) {
                 if (this.showtype == ScoreType.Governance) {
-                    this.expandable = !(!this.item.data.Description && !this.item.children && !this.currentItemDetails.Conditions);
-                    if (this.item.children) {
-                        this.item.children.forEach(x => {
-                            let expandable = !(
-                                !x.data.Description
-                                && !x.children
-                                && !(this.GetChildPropertValue(this.item, x, 'Conditions') && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
-                            )
-                            x.data.expandable = expandable;
+                    this.expandable = !(!this.item.Description && !this.item.Measures);// && !this.currentItemDetails.Conditions);
+                    if (this.item.Measures) {
+                        this.item.Measures.forEach(x => {
+                            let expandable: boolean = ((x.Description != undefined && x.Description !== "") || (x.Conditions && x.Conditions.length > 0)); //!(!x.Description && !x.Conditions && !(x.Conditions.length > 0));
+                            x.expandable = expandable;
                         });
                     }
                     this.checkExpander.emit();

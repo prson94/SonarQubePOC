@@ -33,7 +33,7 @@
         <div class="row" *ngIf="!loadingPoints && !loadingDefinition; else pointsLoading">
             <div class="col s12">
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
-                    <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="loadingPoints" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
+                    <d3s-object-health-details-item *ngFor="let item of pointBreakdown" [item]="item" [showtype]="selectedScoreType" [isloading]="loadingPoints" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
                 </div>
                 <ng-template #emptyMessage>
                     <div class="scorecards-container">

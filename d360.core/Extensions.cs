@@ -169,6 +169,21 @@ namespace d360.core
         }
 
 
+        public static byte[] GetSha1Hash(this string inputString)
+        {
+            HashAlgorithm algorithm = SHA1.Create();  //or use SHA256.Create();
+            return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+        }
+
+        public static string GetSha1HashString(this string inputString)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (byte b in GetSha1Hash(inputString))
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
+        }
+
         public static byte[] GetD3sHash(this string inputString)
         {
             HashAlgorithm algorithm = SHA256.Create();  //or use SHA256.Create();

@@ -667,7 +667,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             return model;
         }
 
-        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate)
+        public List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
 
@@ -690,20 +690,24 @@ begin
     set @effectiveDate = @lastScoredDate
 end
 
+drop table if exists #results;
 select	*
+into    #results
 from	(
 		select  Ma.[Uid], 
 				Ma.ParentUid,
+				V.Uid as VersionUid,
 				V.Name,
 				V.Description,
 				Ma.IsGroup,
 				V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC) as RowNum,
 				V.EffectiveEndDate as EndDate,
-				SI.AdjustedMaxWeight as [Weight],
+				V.[Weight],
 				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
 				SI.Value,
+				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType
 		from    metrics.Score S 
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
@@ -717,17 +721,66 @@ from	(
 				and (S.EndDate >= @effectiveDate or S.EndDate is null)
 		) O 
 where	O.RowNum = 1
-order by ParentUid, Name";
+order by ParentUid, Name
 
+select		R.*,
+			(
+			select		M.*,
+						(
+                    	select	F.FriendlyName as FieldName,
+                    			CI.Operator,
+                    			(
+									case when F.Type = 'Lookup' then 
+										(
+											select	top 1
+													[Text]
+											from	FieldLookupValue
+											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and [Value] = CIV.Value
+										)
+									ELSE CIV.Value 
+								end
+								) as [Value]
+                    	from	[metrics].[AssetVersionCondition] C
+                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+                                inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                    	where	C.AssetVersionUid = M.VersionUid
+                    	for json path							
+						) as Conditions
+			from		#results M
+			where		M.ParentUid = R.Uid
+			order by	M.[Name]
+			for json path
+			) as MeasuresJson,
+						(
+                    	select	F.FriendlyName as FieldName,
+                    			CI.Operator,
+                    			(
+									case when F.Type = 'Lookup' then 
+										(
+											select	top 1
+													[Text]
+											from	FieldLookupValue
+											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and [Value] = CIV.Value
+										)
+									ELSE CIV.Value 
+								end
+								) as [Value]
+                    	from	[metrics].[AssetVersionCondition] C
+                                inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+                                inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid 
+                    			inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+                    	where	C.AssetVersionUid = R.VersionUid
+                    	for json path
+						) as ConditionsJson
+from		#results R
+where		R.ParentUid is null
+order by	R.[Name]";
 
             if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
-
-            var model = new MetricAssetHierarchyModels();
-            results.ForEach(i => { model.Add(i); });
-            return model;
+            return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
         }
 
         public List<int> GetScoreTypesForAsset(Guid assetUid)
