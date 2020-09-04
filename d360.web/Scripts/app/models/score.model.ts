@@ -3,15 +3,26 @@
 export class PointBreakdown {
     Uid: string;
     ParentUid: string;
-    Level: number;
     IsGroup: boolean;
     Name: string;
     Description: string;
     Weight: number;
+    AdjustedWeight: number;
+    AdjustedMaxWeight: number;
     Value: boolean;
     EffectiveDate: string;
     EndDate: string;
-    ScoreType: ScoreType;
+    ScoreType: ScoreType; 
+    Conditions: PointBreakdownCondition[];
+    Measures: PointBreakdown[];
+    expandable: boolean = true;
+    IsCollapsed: boolean = false;
+}
+
+export class PointBreakdownCondition {
+    FieldName: string;
+    Operator: string;
+    Value: string;
 }
 
 export class ScorePoint {

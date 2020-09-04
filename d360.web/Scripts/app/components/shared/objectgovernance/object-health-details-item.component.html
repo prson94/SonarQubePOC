@@ -7,22 +7,22 @@
         <div class="heading-content">
             <div class="heading-item large">
                 <div class="heading-title" title="Measure">Measure</div>
-                <div class="heading-value">{{item?.data?.Name}}</div>
+                <div class="heading-value">{{item.Name}}</div>
             </div>
             <div class="heading-item med-lg">
                 <div class="heading-title" title="Measure Effective Dates">Effective Dates</div>
-                <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
+                <div class="heading-value">{{item.EffectiveDate | utcDate | date:'shortDate'}} - {{item.EndDate ? (item.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item med" title="Defined Weight">
                 <div class="heading-title">Defined Weight</div>
-                <div class="heading-value">{{getAsPrecentage(currentItemDetails?.Weight)}}</div>
+                <div class="heading-value">{{getAsPrecentage(item.Weight)}}</div>
             </div>
             <div class="heading-item med">
                 <div class="heading-title" title="Adjusted Weight">Adjusted Weight</div>
-                <div class="heading-value">{{getAsPrecentage(item?.data?.Weight)}}</div>
+                <div class="heading-value">{{getAsPrecentage(item.AdjustedMaxWeight)}}</div>
             </div>
             <div class="heading-item sm badge">
-                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item?.data?.Value, 'rd': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+                <span *ngIf="!item.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item.Value, 'rd': !item.Value}">{{item.Value ? "Pass":"Fail"}}</span>
             </div>
         </div>
     </div>
@@ -32,10 +32,10 @@
             </div>
             <div class="heading-content">
                 <div class="heading-item desc large">
-                    <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
-                    <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text">{{item?.data?.Description}}</div>
+                    <div *ngIf="item.Description && item.Description != ''" class="heading-title">Description</div>
+                    <div *ngIf="item.Description && item.Description != ''" class="heading-value block-with-text">{{item.Description}}</div>
                 </div>
-                <div *ngIf="currentItemDetails?.Conditions && currentItemDetails?.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
+                <div *ngIf="item.Conditions && item.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
                     <div class="heading-title condition">Conditions</div>
                     <div class="heading-value">
                         <table class="condition-table">
@@ -47,7 +47,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr *ngFor="let con of currentItemDetails?.Conditions">
+                                <tr *ngFor="let con of item.Conditions">
                                     <td>{{con.FieldName}}</td>
                                     <td>{{getReadableValue(con.Operator)}}</td>
                                     <td>{{con.Value}}</td>
@@ -60,73 +60,72 @@
                 <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
             </div>
         </div>
-
-        <div *ngIf="item?.data?.IsGroup" class="card-groupings">
-            <div *ngFor="let child of item?.children">
+        <div *ngIf="item.IsGroup" class="card-groupings">
+            <div *ngFor="let child of item?.Measures">
                 <div class="separator"></div>
                 <div class="heading-content">
-                    <div *ngIf="child?.data.expandable; else noclckGutterSM" class="expander-gutter small no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
-                        <i class="fa fa-caret-down sm-icon expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
+                    <div *ngIf="child.expandable; else noclckGutterSM" class="expander-gutter small no-padding" (click)="child.IsCollapsed = !child.IsCollapsed">
+                        <i class="fa fa-caret-down sm-icon expander" [ngClass]="{'icon-right': child.IsCollapsed, 'icon-down': !child.IsCollapsed}"></i>
                     </div>
                     <ng-template #noclckGutterSM><div class="expander-gutter"></div></ng-template>
                     <div class="scorecard-heading" [ngClass]="{'collapsed': isCollapsed}">
                         <div class="heading-item large">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{child?.data?.Name}}</div>
+                            <div class="heading-value">{{child.Name}}</div>
                         </div>
                         <div class="heading-item med-lg">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{child?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{child?.data?.EndDate ? (child?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
+                            <div class="heading-value">{{child.EffectiveDate | utcDate | date:'shortDate'}} - {{child.EndDate ? (child.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
                         </div>
                         <div class="heading-item med">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{getAsPrecentage(GetChildPropertValue(item?.data,child?.data,'Weight'))}}</div>
+                            <div class="heading-value">{{getAsPrecentage(child.Weight)}}</div>
                         </div>
                         <div class="heading-item med">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{getAsPrecentage(child?.data?.Weight)}}</div>
+                            <div class="heading-value">{{getAsPrecentage(child.AdjustedMaxWeight)}}</div>
                         </div>
                         <div class="heading-item sm badge">
-                            <span *ngIf="item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': child?.data?.Value, 'rd': !child?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
+                            <span *ngIf="item.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': child.Value, 'rd': !child.Value}">{{child.Value ? "Pass":"Fail"}}</span>
                         </div>
                     </div>
                 </div>
-                <div *ngIf="child?.data.expandable" class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': child.data.IsCollapsed}">
-                    <div class="description-line">
-                        <div class="expander-gutter">
-                        </div>
-                        <div class="heading-content">
-                            <div class="heading-item desc large">
-                                <div *ngIf="child?.data?.Description && child?.data?.Description != ''" class="heading-title">Description</div>
-                                <div *ngIf="child?.data?.Description && child?.data?.Description != ''" class="heading-value block-with-text">{{child?.data?.Description}}</div>
+                    <div *ngIf="child.expandable" class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': child.IsCollapsed}">
+                        <div class="description-line">
+                            <div class="expander-gutter">
                             </div>
-                            <div *ngIf="GetChildPropertValue(item?.data,child?.data,'Conditions') && GetChildPropertValue(item?.data,child?.data,'Conditions').length > 0; else showmdlg" class="heading-item med-lg lg">
-                                <div class="heading-title">Conditions</div>
-                                <div class="heading-value">
-                                    <table class="condition-table">
-                                        <thead>
-                                            <tr>
-                                                <td>Field Name</td>
-                                                <td>Operator</td>
-                                                <td>Value</td>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr *ngFor="let con of GetChildPropertValue(item?.data,child?.data,'Conditions')">
-                                                <td>{{con.FieldName}}</td>
-                                                <td>{{getReadableValue(con.Operator)}}</td>
-                                                <td>{{con.Value}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                            <div class="heading-content">
+                                <div class="heading-item desc large">
+                                    <div *ngIf="child.Description && child.Description != ''" class="heading-title">Description</div>
+                                    <div *ngIf="child.Description && child.Description != ''" class="heading-value block-with-text">{{child.Description}}</div>
                                 </div>
+                                <div *ngIf="child.Conditions && child.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
+                                    <div class="heading-title">Conditions</div>
+                                    <div class="heading-value">
+                                        <table class="condition-table">
+                                            <thead>
+                                                <tr>
+                                                    <td>Field Name</td>
+                                                    <td>Operator</td>
+                                                    <td>Value</td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let con of child.Conditions">
+                                                    <td>{{con.FieldName}}</td>
+                                                    <td>{{getReadableValue(con.Operator)}}</td>
+                                                    <td>{{con.Value}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>
+                                <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
                             </div>
-                            <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>
-                            <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
 </div>
@@ -139,18 +138,18 @@
         <div class="heading-content">
             <div class="heading-item large">
                 <div class="heading-title" title="Measure">Measure</div>
-                <div class="heading-value">{{item?.data?.Name}}</div>
+                <div class="heading-value">{{item.Name}}</div>
             </div>
             <div class="heading-item desc large">
-                <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
-                <div #DQDescription *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text DQ" [ngClass]="{'collapsed': isCollapsed}">{{item?.data?.Description}}</div>
+                <div *ngIf="item.Description && item.Description != ''" class="heading-title">Description</div>
+                <div #DQDescription *ngIf="item.Description && item.Description != ''" class="heading-value block-with-text DQ" [ngClass]="{'collapsed': isCollapsed}">{{item.Description}}</div>
             </div>
             <div class="heading-item med-lg">
                 <div class="heading-title" title="Measure Effective Dates">Effective Dates</div>
-                <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
+                <div class="heading-value">{{item.EffectiveDate | utcDate | date:'shortDate'}} - {{item.EndDate ? (item.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item sm badge">
-                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item?.data?.Value, 'rd': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+                <span *ngIf="!item.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item.Value, 'rd': !item.Value}">{{item.Value ? "Pass":"Fail"}}</span>
             </div>
         </div>
     </div>

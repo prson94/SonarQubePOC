@@ -61,6 +61,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public Guid AllocationUid { get; set; }
         public Guid AssetUid { get; set; }
         public DateTime EffectiveDate { get; set; }
+        public string VersionValueHash { get; set; }
     }
     internal class MatchingScoreItemModel
     {

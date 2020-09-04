@@ -344,7 +344,7 @@ namespace d360.web.Controllers.V2
             Route("{assetTypeUid:Guid}/{scoreType}/pathoptions"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetMetricPathOptionsBy(Guid assetTypeUid, ScoreType scoreType)
@@ -383,7 +383,7 @@ namespace d360.web.Controllers.V2
             Route("{scoreType}/{assetUid:Guid}/pointbreakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
             SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false),
             ApiExplorerSettings(IgnoreApi = true)
@@ -445,7 +445,7 @@ namespace d360.web.Controllers.V2
             Route("{allocationUid}/assets/{assetUid}/pointbreakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
             SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false)
         ]
@@ -649,7 +649,7 @@ namespace d360.web.Controllers.V2
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            HttpGet,
+            HttpGet, Obsolete,
             Route("{uid}/definitionFromAsset"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
