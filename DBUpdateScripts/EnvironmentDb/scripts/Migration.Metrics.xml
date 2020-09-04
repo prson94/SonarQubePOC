@@ -535,8 +535,8 @@ from	metrics.ScoreItem Si
 		left join metrics.AssetVersionCondition C on C.AssetVersionUid = V.Uid;
 
 -- Update non-group score items.
-update metrics.ScoreItem set AdjustedMaxWeight = AdjustedWeight where Uid not in (select ScoreItemUid from #groupItems);
-update metrics.ScoreItem set AdjustedWeight = case Value when 1 then AdjustedWeight else 0 end where Uid not in (select ScoreItemUid from #groupItems);
+update metrics.ScoreItem set AdjustedMaxWeight = AdjustedWeight;
+update metrics.ScoreItem set AdjustedWeight = case Value when 1 then AdjustedWeight else 0 end;
 
 -- First, clear out the link table to prepare for reload.
 truncate table [metrics].[ScoreItemLink]
@@ -664,6 +664,7 @@ alter table [metrics].[ScoreItem] alter column [Value] bit null
 	</changeSet>
 
 	<changeSet author="Pappas" id="Migration.Metrics-GOV-10887-LoadGroupsRecalcScore">
+		<validCheckSum>7:f11202cf20f02e2013b575bc70a4faab</validCheckSum>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
 drop table if exists #groupItems;
@@ -772,23 +773,6 @@ INSERT INTO [metrics].[ScoreItemLink] ([ScoreUid], [ScoreItemUid])
 			ScoreItemUid
 	from	#groupItems
 	where	ShouldAdd = 1
-GO
-
-update	T
-set		T.Value = coalesce(S.Value, 0)
-from	metrics.Score T 
-		inner join (
-					select	S.Uid,
-							sum(I.AdjustedWeight) as [Value]
-					from	metrics.Score S
-							inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-							inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
-							inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
-							inner join metrics.Asset A on A.Uid = V.AssetUid
-							inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
-					where	A.ParentUid is null
-					group by S.Uid
-					) S on S.Uid = T.Uid
 		]]>
 		</sql>
 		<rollback>
