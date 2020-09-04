@@ -32,7 +32,7 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
     }
 
     ngAfterViewChecked() {
-        var modal = this.getParentModal(this.elRef.nativeElement);
+        var modal = (this.elRef.nativeElement as HTMLElement).closest('D3S-MODAL');
         if (modal) {
             //substract modal header & footer from window height to set max height of table
             var height = window.innerHeight - 400;
@@ -41,18 +41,6 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
                 (this.tableHolder.nativeElement as HTMLElement).style.overflowY = 'auto';
             }
         }
-    }
-
-    private getParentModal(el: HTMLElement) {
-        if (el) {
-            if (el.tagName === 'D3S-MODAL') {
-                return el;
-            }
-            else {
-                return this.getParentModal(el.parentElement);
-            }
-        }
-        return null;
     }
 
     ngOnChanges(changes: SimpleChanges) {
