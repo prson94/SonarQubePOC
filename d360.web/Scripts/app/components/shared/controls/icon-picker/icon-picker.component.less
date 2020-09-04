@@ -8,7 +8,7 @@ ig-icon-picker {
 
     p-dropdown .ui-dropdown {
         background: #ffffff;
-        border: 1px solid #bdbfc6;
+        border: 1px solid @ig-field-border-color;
         height: 32px;
         width: 100%;
         border-radius: 4px;
@@ -16,31 +16,31 @@ ig-icon-picker {
 
     .ui-dropdown {
         .ui-dropdown-trigger {
-            background-color: @igx-grey-t5;
+            background-color: @ig-grey-t5;
             width: 24px;
             height: 24px;
             line-height: 24px;
             text-align: center;
             padding: 0;
-            color: #202020;
+            color: @ig-black;
             margin-top: 3px;
             margin-right: 3px;
             border-radius: 2px;
             font-size: 10px;
 
             &:hover {
-                background-color: #d7d8dc;
+                background-color: @ig-grey-t4;
             }
         }
 
         &:not(.ui-state-disabled):hover {
-            border-color: #898d99;
+            border-color: @ig-grey-t1;
         }
 
         &:not(.ui-state-disabled):focus {
             outline: 0 none;
             outline-offset: 0;
-            box-shadow: 0 0 0 2px #8abddf;
+            box-shadow: 0 0 0 2px @ig-midblue-t3;
         }
 
         .ui-dropdown-clear-icon {
@@ -50,13 +50,13 @@ ig-icon-picker {
             width: 24px;
             height: 24px;
             line-height: 24px;
-            background: @igx-grey-t5;
+            background: @ig-grey-t5;
             text-align: center;
             font-size: 16px;
-            color: #202020;
+            color: @ig-black;
 
             &:hover {
-                background-color: #d7d8dc;
+                background-color: @ig-grey-t4;
             }
         }
 
@@ -71,7 +71,7 @@ ig-icon-picker {
             text-overflow: ellipsis;
 
             &.ui-placeholder {
-                color: #6f7482;
+                color: @ig-grey;
                 position: relative;
                 border-radius: 4px;
             }
@@ -79,7 +79,7 @@ ig-icon-picker {
 
         .ui-dropdown-panel .ui-dropdown-item-group {
             font-size: 14px;
-            color: #898d99;
+            color: @ig-grey-t1;
             height: 32px;
             font-weight: 700;
         }
@@ -98,8 +98,8 @@ ig-icon-picker {
     height: 24px;
     line-height: 24px;
     text-align: center;
-    background: @igx-grey-t5;
-    color: #202020;
+    background: @ig-grey-t5;
+    color: @ig-black;
     border-radius: 2px;
     margin-right: 5px;
     font-size: 1em;
@@ -113,7 +113,7 @@ ig-icon-picker {
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: #202020;
+    color: @ig-black;
     white-space: nowrap;
 }
 
