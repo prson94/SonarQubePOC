@@ -546,7 +546,9 @@ from	FollowDetail F
                     {
 
                         var sql = @"
-select  COALESCE(Color.value,FormattedValue,' ') as Value,
+with FieldValueDet as (
+select  FT.ColumnOrder,
+        COALESCE(Color.value,FormattedValue,' ') as Value,
 	    F.FriendlyName as Name,
         case 
 		    when Color.value is not null then 'Color' 
@@ -572,7 +574,8 @@ outer apply(
 		)Color(value)
 where   F.[Object]= @o and F.ObjectID = @oid and F.[Name] != 'Description' and F.[Type] not in ('JsonElement', 'Score')
 union
-select	p.[Value],
+select	RT.ColumnOrder,
+		p.[Value],
 		RT.FriendlyName as [Name],
         RT.[Type]
 from	FieldType RT 
@@ -581,7 +584,8 @@ from	FieldType RT
 		inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path] 
 where   RT.Object = @type and RT.ObjectID = @typeID
 union
-select	S.FormattedValue as [Value],
+select	RT.ColumnOrder,
+		S.FormattedValue as [Value],
 		RT.FriendlyName as [Name],
         RT.[Type] 
 from	FieldType RT
@@ -589,6 +593,10 @@ from	FieldType RT
 		outer apply dbo.GetAssetScoreById(A.ID, RT.ScoreType) S
 where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
 		and (S.[Value] is not null or RT.ShowIfEmpty = 1)
+)
+Select [Value],[Name],[Type]
+from FieldValueDet
+Order by ColumnOrder,Name
 ";
 
                         res = Company.Query<FieldTooltipValueModel>(sql, new { oid = objectID, o = objectType, type = det.Type, typeID = det.TypeID }).ToList();
