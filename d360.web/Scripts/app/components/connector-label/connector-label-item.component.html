@@ -11,7 +11,16 @@
                 </d3s-tile-actions>
                 <div class="clearfix"></div>
             </header>
-            <p-table #dt [value]="usage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Diagram','AssetTypeName','Occurrences']" sortField="Diagram" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
+            <p-table #dt [value]="usage"
+                     selectionMode="single"
+                     [metaKeySelection]="true"
+                     [globalFilterFields]="['Diagram','AssetTypeName','Occurrences']"
+                     sortField="Diagram"
+                     [sortOrder]="1"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rowsPerPageOptions]="defaultPagingOptions"
+                     [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Diagram'" style="width: 20%">
