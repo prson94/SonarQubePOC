@@ -654,15 +654,32 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid, DateTime? effectiveDate = null)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid, string effectiveDate = null)
         {
-            var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+            var asset = Company.Filter<Asset>(x => x.uid == uid, x => x.AssetType).FirstOrDefault();
             if (asset == null)
-                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {asset.uid.ToString()} not found.");
-            var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
-            if (assetType == null)
-                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
-            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid, effectiveDate);
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {uid} not found.");
+
+            DateTime? effDate = null;
+            if (!string.IsNullOrEmpty(effectiveDate))
+            {
+                DateTime edt;
+                if (DateTime.TryParse(effectiveDate, out edt))
+                {
+                    if (edt.Year < 1900 || edt.Year > DateTime.UtcNow.Year)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"The value {effectiveDate} is not a valid date. The year must be between 1900 and the current year.");
+                    }
+
+                    effDate = edt;
+                }
+                else
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"The value {effectiveDate} is not a valid date.");
+                }
+            }
+
+            return await GetMetricHierarchyByAssetTypeAsync(asset.AssetType.uid, effDate);
         }
 
 

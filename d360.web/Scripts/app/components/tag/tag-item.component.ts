@@ -203,6 +203,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.actions.showDelete = false;
         this.actions.showEdit = false;
         this.actions.showBack = true;
+        this.actions.type = 'TAG';
 
         this.actions.backCallback = this.onActionBackClick.bind(this);
 

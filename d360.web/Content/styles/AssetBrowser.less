@@ -22,7 +22,7 @@
     }
 
     .asset-browser-header {
-        background-color: @igx-grey-t5;
+        background-color: @ig-grey-t5;
         display: flex;
         flex-direction: row;
         padding: 12px 16px;
@@ -82,7 +82,7 @@
                         margin-left: auto;
                         height: 24px;
                         width: 24px;
-                        background-color: @igx-grey-t5;
+                        background-color: @ig-grey-t5;
                         line-height: 24px;
                         text-align: center;
                         border-radius: 2px;
@@ -149,7 +149,7 @@
 
         .asset-browser-window-header {
             width: 100%;
-            background-color: #FFF;
+            background-color: @ig-white;
             border-top: 1px solid #ccc;
             border-right: 1px solid #ccc;
             border-left: 1px solid #ccc;
@@ -172,7 +172,7 @@
                     font-style: normal;
                     line-height: 1.14;
                     letter-spacing: normal;
-                    color: #202020;
+                    color: @ig-black;
                 }
 
                 .asset-name {
@@ -184,7 +184,7 @@
                     font-style: normal;
                     line-height: 0.89;
                     letter-spacing: normal;
-                    color: #4093cb;
+                    color: @igx-light-blue-2;
                     word-break: break-word;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -200,7 +200,7 @@
 
             .windowtabs {
                 height: 32px;
-                background-color: #FFF;
+                background-color: @ig-white;
 
                 button.tab {
                     box-sizing: border-box;
@@ -211,11 +211,11 @@
                     background: none;
                     border: none;
                     border-radius: 0;
-                    color: #006FBA;
-                    box-shadow: inset 0 -2px 0 0 #ffffff;
+                    color: @ig-midblue;
+                    box-shadow: inset 0 -2px 0 0 @ig-white;
 
                     &:not(:disabled):hover, &.hover {
-                        box-shadow: inset 0 -2px 0 0 #202020 !important;
+                        box-shadow: inset 0 -2px 0 0 @ig-black !important;
                     }
 
                     &:disabled {
@@ -233,8 +233,8 @@
                     background: none;
                     border: none;
                     border-radius: 0;
-                    box-shadow: inset 0 -2px 0 0 #202020;
-                    color: #202020;
+                    box-shadow: inset 0 -2px 0 0 @ig-black;
+                    color: @ig-black;
                 }
 
                 .saved-filter-controls {
@@ -257,7 +257,7 @@
 
             section {
                 padding: 8px 16px 8px 16px;
-                background-color: #fff;
+                background-color: @ig-white;
                 border-radius: 4px;
 
                 .scroll-panel {
@@ -279,7 +279,7 @@
                         font-style: normal;
                         line-height: normal;
                         letter-spacing: normal;
-                        color: #202020;
+                        color: @ig-black;
                     }
 
                     .filter-row-short-label {
@@ -299,7 +299,7 @@
                         font-style: normal;
                         line-height: normal;
                         letter-spacing: normal;
-                        color: #202020;
+                        color: @ig-black;
                         padding-bottom: 9px;
 
                         .filter-dropdown {
@@ -431,7 +431,7 @@
             .type {
                 border-radius: 2px;
                 background-color: #006FBB;
-                color: #fff;
+                color: @ig-white;
                 padding: 2px 3px 2px 3px;
             }
 
@@ -447,7 +447,7 @@
 
             .type {
                 border-radius: 2px;
-                color: #fff;
+                color: @ig-white;
                 padding: 2px 3px 2px 3px;
             }
         }
@@ -468,7 +468,7 @@
         text-align: center;
         white-space: nowrap;
         background: #f0f0f0;
-        color: #202020;
+        color: @ig-black;
         border: none;
         border-radius: 4px;
 
@@ -521,9 +521,9 @@
         background: #f1f1f2;
         outline: 0 none;
         outline-offset: 0;
-        -webkit-box-shadow: 0 0 0 2px #8abddf;
-        -moz-box-shadow: 0 0 0 2px #8abddf;
-        box-shadow: 0 0 0 2px #8abddf;
+        -webkit-box-shadow: 0 0 0 2px @ig-midblue-t3;
+        -moz-box-shadow: 0 0 0 2px @ig-midblue-t3;
+        box-shadow: 0 0 0 2px @ig-midblue-t3;
     }
 
     button:hover {
@@ -546,7 +546,7 @@
 
     button.dark {
         background: none;
-        color: #202020;
+        color: @ig-black;
     }
 
     .asset-browser-button-group {
@@ -556,7 +556,7 @@
         &.zoom-controls {
             padding: 12px 8px;
             border-radius: 4px;
-            background-color: @igx-grey-t5;
+            background-color: @ig-grey-t5;
             height: initial;
             padding: 4px;
 
@@ -567,7 +567,7 @@
             .diagram-zoom {
                 display: inline-block;
                 position: relative;
-                color: #4d565d;
+                color: @igx-grey;
                 font-weight: 600;
                 margin: 0px 4px;
                 font-size: 14px;
@@ -621,7 +621,7 @@
 
             .fa-times-circle {
                 margin: 0px 8px;
-                color: #006fba;
+                color: @ig-midblue;
                 cursor: pointer;
             }
 
@@ -713,8 +713,8 @@
         }
 
         .warningMessage {
-            background-color: #ffe7b2;
-            border: 1px solid #ffb000;
+            background-color: @igx-orange-xlight;
+            border: 1px solid @igx-orange-light;
             border-radius: 2px;
             width: 100%;
             padding: 10px 20px;
@@ -724,8 +724,8 @@
         }
 
         .err-message {
-            background-color: #ffc6bb;
-            border: 1px solid #c44d36;
+            background-color: @igx-coral-xlight;
+            border: 1px solid @igx-coral;
             border-radius: 2px;
             width: 100%;
             padding: 10px 20px;

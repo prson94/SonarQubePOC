@@ -25,7 +25,7 @@
                 <i class="fa fa-trash"></i>Delete
             </button>
 
-            <ng-container *ngIf="assetAction.showEdit">
+            <ng-container *ngIf="assetAction.type === 'TAG' && assetAction.showEdit">
                 <d3s-dynamic-editor [objectID]="assetAction.edit.objectID"
                                     [objectType]="assetAction.edit.objectType"
                                     [selection]="assetAction.edit.selected"
@@ -37,7 +37,7 @@
                                     (closeClick)="assetAction.edit.closeClick()">
                 </d3s-dynamic-editor>
             </ng-container>
-            <ng-container *ngIf="assetAction.showDelete">
+            <ng-container *ngIf="assetAction.type === 'TAG' && assetAction.showDelete">
                 <d3s-delete-form [callback]="assetAction.delete.callback"
                                  [method]="'callback'"
                                  [items]="assetAction.delete.item"
@@ -57,7 +57,7 @@
             </d3s-score-badge>
         </span>
     </div>
-    <div *ngIf="items && items.length > 0" class="tab-view">
+    <div class="tab-view">
         <div class="tab-bar-outer">
             <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
                 <i class="fa fa-chevron-circle-left"></i>

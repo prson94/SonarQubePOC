@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output, EventEmitter, ElementRef, AfterViewChecked, ViewChild } from '@angular/core';
 import { ConnectorLabelService } from '../../../services/connectorLabel.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { ConnectorLabelService } from '../../../services/connectorLabel.service'
     providers: [ConnectorLabelService]
 })
 
-export class WhereUsedComponent implements OnChanges {
+export class WhereUsedComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string = '';
     @Input() objectType: string = '';
     @Input() showAsTable: boolean = true;
@@ -21,11 +21,26 @@ export class WhereUsedComponent implements OnChanges {
     private isUsageLoading: boolean = false;
     private hasUsage: boolean = false;
     private isModalVisible: boolean = false;
+    @ViewChild('tableHolder', { static: false }) tableHolder: ElementRef;
+
     constructor(
         private connectorLabelService: ConnectorLabelService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private elRef: ElementRef
     ) {
 
+    }
+
+    ngAfterViewChecked() {
+        var modal = (this.elRef.nativeElement as HTMLElement).closest('D3S-MODAL');
+        if (modal) {
+            //substract modal header & footer from window height to set max height of table
+            var height = window.innerHeight - 400;
+            if (this.tableHolder) {
+                (this.tableHolder.nativeElement as HTMLElement).style.maxHeight = height + 'px';
+                (this.tableHolder.nativeElement as HTMLElement).style.overflowY = 'auto';
+            }
+        }
     }
 
     ngOnChanges(changes: SimpleChanges) {

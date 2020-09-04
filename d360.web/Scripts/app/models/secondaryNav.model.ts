@@ -75,6 +75,7 @@ export class DynamicButton {
 }
 
 export class AssetAction {
+    type: string = '';
     isVisible: boolean = false;
     showBack: boolean;
     showEdit: boolean;
