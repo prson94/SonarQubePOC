@@ -802,7 +802,8 @@ from	metrics.Score T
 		<comment>use this to prevent dupe score records. to create hash, you take all the relevant measures, order them by MeasureUid, Value - separate by a semi-colon via format  ->   Uid:Value;Uid:Value </comment>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
-alter table metrics.Score add VersionValueHash varchar(50) null;
+alter table metrics.Score add VersionValueHash varchar(50) null
+GO
 
 update	T
 set		T.VersionValueHash = S.VersionValueHash
@@ -814,7 +815,7 @@ from	metrics.Score T
 								inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
 								inner join metrics.ScoreITem I on I.Uid = L.ScoreItemUid
 					group by	S.Uid
-					) S on S.Uid = T.Uid;
+					) S on S.Uid = T.Uid
 		]]>
 		</sql>
 		<rollback>
