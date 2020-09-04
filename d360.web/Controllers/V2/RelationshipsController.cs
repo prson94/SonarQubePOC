@@ -520,6 +520,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The default is 5000 and the maximum value is 100,000.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_owner", "An optional exact match filter on the owner of the relationship.", DataType = "string", ParameterType = "query", Required = false),
        ]
         public async Task<HttpResponseMessage> GetRelationshipUidsAsync(Guid RelationshipTypeUid)
         {
@@ -538,6 +539,7 @@ namespace d360.web.Controllers.V2
                 long pageSize = 5000;
                 long pageNum = 1;
                 bool includeTotal = true;
+                string owner = null;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
                 {                    
@@ -576,7 +578,17 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                if(RelationshipTypeUid == Guid.Empty)
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_owner"))
+                {
+                    owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
+                    if (owner.Length > 100)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _owner parameter passed in the request, maximum length is 100 characters.");
+                    }
+                }
+
+                if (RelationshipTypeUid == Guid.Empty)
                 {
                     return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid.");
                 }
@@ -588,7 +600,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.");
                 }
 
-                var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal);
+                var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal, owner);
                 HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results );
                 return response;
 

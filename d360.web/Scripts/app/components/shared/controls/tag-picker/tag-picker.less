@@ -1,4 +1,6 @@
-﻿.tag-picker {
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.tag-picker {
     outline: none;
 
     .selected-tags {
@@ -24,7 +26,7 @@
         text-align: center;
         white-space: nowrap;
         background: #f0f0f0;
-        color: #202020;
+        color: @ig-black;
         border: none;
         border-radius: 3px;
         margin-bottom: 6px;
@@ -51,7 +53,7 @@
     }
 
     .ui-state-highlight {
-        background: #DFF3F7 !important;
+        background: @igx-lightblue-xlight !important;
     }
 
     .tooltip-wrapper {

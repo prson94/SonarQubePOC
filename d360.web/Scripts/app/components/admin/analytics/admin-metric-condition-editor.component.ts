@@ -23,7 +23,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Output() matchTypeChange = new EventEmitter();
     @Input() matchType: number;
     private fieldTypeDropdownOptions: SelectItem[] = []
-    private usedFieldTypes: number[] = [];
+    private usedFieldTypes: string[] = [];
 
     private booleanOptions = [
         { value: "true", label: 'True' },
@@ -80,11 +80,11 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         const index = this.conditionItems.indexOf(condition);
         if (index > -1) {
             let item = this.conditionItems.splice(index, 1)[0];
-            let ftIndex = this.usedFieldTypes.indexOf(item.ConditionFieldTypeID);
+            let ftIndex = this.usedFieldTypes.indexOf(item.ConditionFieldTypeName);
 
             if (ftIndex > -1) {
                 this.usedFieldTypes.splice(ftIndex, 1);
-                this.usedFieldTypes = [ ...this.usedFieldTypes ];//workaroud so the angular filter pipe detects changes
+                this.usedFieldTypes = [ ...this.usedFieldTypes ]; // Workaround so the angular filter pipe detects changes.
             }
         }
         this.checkSelectedFields();
@@ -92,8 +92,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     conditionFieldIsInvalid(condition: MetricAssetVersionConditionItemViewModel) {
-        if (condition.ConditionFieldTypeID) {
-            let other = this.conditionItems.filter(x => { return x.ConditionFieldTypeID == condition.ConditionFieldTypeID })
+        if (condition.ConditionFieldTypeName) {
+            let other = this.conditionItems.filter(x => { return x.ConditionFieldTypeName == condition.ConditionFieldTypeName })
             return other.length > 1;
         }
         return false;
@@ -101,8 +101,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     selectFieldType(condition: MetricAssetVersionConditionItemViewModel) {
         
-        if (condition.ConditionFieldTypeID) {
-            let field = this.metricConditionEditorFieldTypes.find(f => f.ID === +condition.ConditionFieldTypeID); 
+        if (condition.ConditionFieldTypeName) {
+            let field = this.metricConditionEditorFieldTypes.find(f => f.ApiName === condition.ConditionFieldTypeName); 
             if (field) {
                 condition.FieldTypeName = field.Name;
                 condition.FieldType = field;
@@ -112,7 +112,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         condition.SingleValue = null;
                         break;
                     case "Lookup":
-                        condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
+                        condition.lookupOptions = this.metricConditionEditorFieldTypes.find(i => i.ApiName === condition.ConditionFieldTypeName).Values.map(x => { return { label: x.Text, value: x.Value } });
                         condition.SingleValue = null;
                         break;
                     case "Date":
@@ -148,10 +148,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             }
             condition.operatorOptions = options;
 
-            //check duplicate fieldTypeIDs
+            //check for duplicate fieldTypeNames
             if (this.conditionItems.length > 1) {
-                let fieldIds = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
-                this.conditionsValid = !fieldIds.some((item, inx) => { return fieldIds.indexOf(item) != inx });
+                let fieldNames = this.conditionItems.map(x => { return x.ConditionFieldTypeName });
+                this.conditionsValid = !fieldNames.some((item, inx) => { return fieldNames.indexOf(item) != inx });
             }
             this.checkSelectedFields();
 
@@ -160,17 +160,19 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     checkSelectedFields() {
-        //Set defaults;
+        // Set defaults.
         this.metricConditionEditorFieldTypes.forEach(ft => {
             ft.Disabled = false;
         });
-        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeID }) : [];
+
+        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeName }) : [];
+
         this.usedFieldTypes.forEach(i => {
-            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
+            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ApiName === i);
             if (ft) {
                 if (this.newCondition) {
-                    if (this.newCondition.ConditionFieldTypeID !== +i) {
-                        ft.Disabled = true;
+                    if (this.newCondition.ConditionFieldTypeName !== i) {
+                        ft.Disabled = true; 
                     }
                 }
                 else {
@@ -179,7 +181,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             }
         });
 
-        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.map((x) => { return { value: x.ID, label: x.Name, disabled: x.Disabled } });
+        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.map((x) => { return { value: x.ApiName, label: x.Name, disabled: x.Disabled } });
     }
 
     getLocaleDateString(): string {
@@ -188,7 +190,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     formatConditions() {
         this.conditionItems.forEach(c => {
-            const field = this.metricConditionEditorFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            const field = this.metricConditionEditorFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
             c.OperatorText = this.parseOperator(c, c.OperatorText);
 
@@ -264,7 +266,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     parseOperator(condition: MetricAssetVersionConditionItemViewModel, OperatorText: string): string {
-        let field = this.metricConditionEditorFieldTypes.find(ft => ft.ID === condition.ConditionFieldTypeID);
+        let field = this.metricConditionEditorFieldTypes.find(ft => ft.ApiName === condition.ConditionFieldTypeName);
         if (field) {
             switch (field.Type) {
                 case 'Date':
@@ -325,7 +327,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     addNewCondition() {
-        if (this.newCondition && this.newCondition.ConditionFieldTypeID) {
+        if (this.newCondition && this.newCondition.ConditionFieldTypeName) {
             this.newCondition.Operator = "eq";
             this.selectFieldType(this.newCondition);
             this.conditionItems.push({ ...this.newCondition });
@@ -333,7 +335,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
             this.checkSelectedFields();
             this.formatConditions();
-            
+
             this.ref.markForCheck();
         }
     }

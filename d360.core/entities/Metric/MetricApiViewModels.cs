@@ -133,11 +133,17 @@ namespace d360.core.entities.Metric
         [DataMember]
         public MetricConditionType ConditionType { get; set; }
         
-        [DataMember]
+        //[DataMember]
         public int? ConditionFieldTypeID{ get; set; }
-        
-        [DataMember]
+
+        //[DataMember]
         public int? ConditionIntersectTypeID { get; set; }
+
+        [DataMember]
+        public string ConditionFieldTypeName { get; set; }
+
+        [DataMember]
+        public Guid? ConditionIntersectTypeUid { get; set; }
 
         [DataMember, StringLength(10)]
         public string Operator { get; set; }
@@ -150,6 +156,7 @@ namespace d360.core.entities.Metric
     public class MetricFieldTypeViewModel
     {
         public int ID { get; set; }
+        public string ApiName { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
         public List<MetricFieldTypeValueViewModel> Values { get; set; }

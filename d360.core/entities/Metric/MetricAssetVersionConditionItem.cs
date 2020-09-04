@@ -34,6 +34,12 @@ namespace d360.core.entities.Metric
         public bool Updated { get; set; }
 
         [IgnoreDataMember, ForeignKey("Uid")]
-        public virtual MetricAssetVersionCondition Condition { get; set; } 
+        public virtual MetricAssetVersionCondition Condition { get; set; }
+
+        [IgnoreDataMember, ForeignKey("ConditionFieldTypeID")]
+        public virtual FieldType ConditionFieldType { get; set; }
+
+        [IgnoreDataMember, ForeignKey("ConditionIntersectTypeID")]
+        public virtual IntersectType ConditionIntersectType { get; set; }
     }
 }
