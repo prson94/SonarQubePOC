@@ -7,6 +7,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 @Component({
     selector: 'd3s-connector-labels',
     templateUrl: './connector-labels-sidebar.component.html',
@@ -235,5 +236,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     private exportUsage() {
         this.connectorLabelService.exportLabelUsage(this.selected.uid, `Where Used report for Connector Label "${this.selected.Value}"`)
+    }
+
+
+    openDetailsPage(item: ConnectorLabel) {
+        this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${item.uid}`]);
     }
 }

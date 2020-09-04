@@ -14,6 +14,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_MONITOR_ROOT, loadChildren: () => import('./components/monitor/monitor.module').then(m => m.MonitorModule) },
     { path: SiteUrlHelpers.SITE_URL_RULE_ROOT, loadChildren: () => import('./components/rule/rule.module').then(m => m.RuleModule) },
     { path: SiteUrlHelpers.SITE_URL_TAG_ROOT, loadChildren: () => import('./components/tag/tag.module').then(m => m.TagModule) },
+    { path: SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT, loadChildren: () => import('./components/connector-label/connector-label.module').then(m => m.ConnectorLabelModule) },
     { path: SiteUrlHelpers.SITE_URL_GROUP_ROOT, loadChildren: () => import('./components/group/group.module').then(m => m.GroupModule) },
     { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, data: { type: SiteUrlHelpers.SITE_URL_POLICY_ROOT }, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
     { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, data: { type: SiteUrlHelpers.SITE_URL_MODEL_ROOT }, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
