@@ -58,7 +58,7 @@
                         </td>
                     </tr>
                 </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <ng-template pTemplate="summary">
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
@@ -98,12 +98,7 @@
                     </p>
 
                     <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected.uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
-
-                    <p>
-                        Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
-                    </p>
                 </div>
-
             </d3s-delete-form>
         </div>
     </div>
