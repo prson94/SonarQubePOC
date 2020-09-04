@@ -2962,7 +2962,7 @@ where   A.[uid] = @assetUid";
                                                 ATET.ExportViewType,
                                                 ATET.IncludeUrl,
                                                 ATET.IncludeParent,
-                                                ATET.IncludeUrl,
+                                                ATET.TemplateFile,
                                                 ATET.CreatedBy,
 	                                            ATET.CreatedOn,
 	                                            ATET.UpdatedBy,

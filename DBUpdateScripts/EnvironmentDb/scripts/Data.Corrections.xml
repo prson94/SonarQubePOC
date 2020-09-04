@@ -955,4 +955,13 @@ select ID as templateId, includeFields.value as FieldTypeId, ROW_NUMBER() OVER(O
 ]]>
 		</sql>
 	</changeSet>
+		<changeSet author="bquinlivan" id="Data.Corrections.GOV-11741-1">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+Update AssetTypeExportTemplate
+set CreatedBy = UpdatedBy, CreatedOn = UpdatedOn
+where CreatedBy is null
+]]>
+		</sql>
+	</changeSet>
  </databaseChangeLog>

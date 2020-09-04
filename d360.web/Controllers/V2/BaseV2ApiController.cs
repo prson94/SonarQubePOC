@@ -553,7 +553,7 @@ namespace d360.web.Controllers.V2
 
         internal void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
-            if (!styles.Any()) return;
+            if (styles == null || !styles.Any()) return;
 
             //check if the styles collection has an entry for this row
             var style = styles.Where(x => x.Row == rowIndex && x.Column == -1 && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();

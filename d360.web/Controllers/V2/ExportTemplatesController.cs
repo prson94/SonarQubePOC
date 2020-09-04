@@ -374,6 +374,7 @@ namespace d360.web.Controllers.V2
             Route("TemplateFile/{templateUid}"),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "Error while opening file.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> PostTemplateFile(Guid templateUid)
@@ -392,9 +393,16 @@ namespace d360.web.Controllers.V2
                 if (context.Request.Files.Count > 0)
                 {
                     var file = context.Request.Files[0];
-                    var target = new MemoryStream();
-                    file.InputStream.CopyTo(target);
-                    template = target.ToArray();
+                    if (file.FileName.EndsWith(".xls") || file.FileName.EndsWith(".xlsx"))
+                    {
+                        var target = new MemoryStream();
+                        file.InputStream.CopyTo(target);
+                        template = target.ToArray();
+                    }
+                    else
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "A Template file type must be .xls or .xlsx.");
+                    }
                 }
                 else
                 {
