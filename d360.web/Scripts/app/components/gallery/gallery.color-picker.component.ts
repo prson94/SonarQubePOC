@@ -31,6 +31,8 @@ export class GalleryColorPickerComponent implements OnInit {
     private chosenColor: string = "Sky";
     private selectedColorBasic2 = this.chosenColor;
 
+    private invalidOptions = ["Sky", "Blush"];
+
     private formVal: string;
 
     private customColors: SelectItem[] = [
@@ -53,6 +55,7 @@ export class GalleryColorPickerComponent implements OnInit {
         this.properties.push({ Name: "selectedColor", Type: "string", Description: "The value of the desired item to be selected in the list.", Default: "" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
         this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
+        this.properties.push({ Name: "invalidOptions", Type: "String Array", Description: "Allows the user to define options that can be disabled. If the selected color passed into the component matches any invalid option the value is cleared.", Default: "" });
         this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component.", Default: "" });
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
 
