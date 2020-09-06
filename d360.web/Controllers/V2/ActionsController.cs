@@ -470,9 +470,9 @@ for json path";
 
 
         /// <summary>
-        /// Creates a workflow action type
+        /// Updates a workflow action type
         /// </summary>
-        /// <param name="model">The information of the workflow action type to be created</param>
+        /// <param name="model">The information of the workflow action type to be updated</param>
         [
             Route("type"),
             HttpPut,
