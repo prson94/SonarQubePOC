@@ -33,11 +33,6 @@ export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAcc
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
-        if (this.disabled) {
-
-        } else {
-
-        }
     }
 
 
