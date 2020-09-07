@@ -13,43 +13,52 @@
     <div class="gallery-section">
         <h4>Basic with sizes</h4>
         <div class="row">
-            small(150px)
+            <div class="row">small(150px)</div>
             <input igInput type="text" igSize="small" />
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            medium(308px)
+            <div class="row">medium(308px)</div>
             <input igInput type="text" igSize="medium" />
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            large(624px)
+            <div class="row">large(624px)</div>
             <input igInput type="text" igSize="large" />
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            full(100%)
+            <div class="row">full(100%)</div>
             <input igInput type="text" igSize="full" />
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Errors</h4>
+        <h4>Errors (required, minLength of 4)</h4>
         <div>
-            <input igInput type="text" [invalid]="val1 == 'show error'" [(ngModel)]="val1" required />
-            {{val1}}
+            <input igInput type="text" [(ngModel)]="val1" name="basicInput" #basicInput="ngModel" required minlength="4" />
+            <div *ngIf="basicInput.invalid && (basicInput.dirty || basicInput.touched)">
+                <div *ngIf="basicInput.errors.required" class="ig-text-required">
+                    Field is required.
+                </div>
+                <div *ngIf="basicInput.errors.minlength" class="ig-text-required">
+                    Field requires a length of at least 4 characters.
+                </div>
+            </div>
+            <p>
+                Current Value: {{val1}}
+            </p>
         </div>
-        <br />
-        <div>
-            <input igInput type="text" [invalid]="val2 == 'show error'" [(ngModel)]="val2" validationMessage="im a custom validation message!!" required />
-            {{val2}}
-        </div>
-
     </div>
     <div class="gallery-section">
         <h4>Form Validation</h4>
         <div>
             <form #form="ngForm">
-                <input igInput type="text" [(ngModel)]="formValue" required name="someinput" #someinput="ngModel" />
+                <input igInput type="text" [(ngModel)]="formValue" required name="forminput" #forminput="ngModel" />
+                <div *ngIf="forminput.invalid && (forminput.dirty || forminput.touched)">
+                    <div *ngIf="forminput.errors.required" class="ig-text-required">
+                        Field is required.
+                    </div>
+                </div>
             </form>
         </div>
     </div>

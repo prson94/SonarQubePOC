@@ -1,47 +1,54 @@
 ﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
+import { ControlValueAccessor } from '@angular/forms';
 
 @Directive({
     selector: '[igInput]'
 
 })
-export class InputDirective implements AfterViewInit, OnDestroy {
+export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAccessor {
 
    
     public _size: string;
     public _invalid: boolean;
     public _validationMessage: string = "Please enter a valid value.";
 
+    protected value: string;
+    protected disabled: boolean;
+    onModelChange: Function = () => { };
+    onModelTouched: Function = () => { };
 
     constructor(public el: ElementRef) { }
 
-    private wrapper: HTMLDivElement;
+    writeValue(obj: string): void {
+        this.value = obj;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onModelChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onModelTouched = fn;
+    }
+
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled = isDisabled
+    }
+
 
     ngAfterViewInit() {
-        if (!this.wrapper) {
-            this.wrapper = document.createElement('div');
-            this.wrapper.className = "ig-input-wrapper";
-            this.el.nativeElement.parentNode.insertBefore(this.wrapper, this.el.nativeElement);
-            this.wrapper.appendChild(this.el.nativeElement);
-        }
-
-        if (this.el.nativeElement.required) {
-            this.el.nativeElement.placeholder = "Value Required";
-            if (!this.el.nativeElement.classList.contains("ng-invalid"))
-                DomHandler.addMultipleClasses(this.el.nativeElement, "ng-invalid");
-
-        } else {
-            this.el.nativeElement.placeholder = "Optional";
-        }
-
-        if (this.el.nativeElement.disabled) {
-            DomHandler.addMultipleClasses(this.el.nativeElement, "disabled");
-        } else {
-            DomHandler.removeClass(this.el.nativeElement, "disabled");
-        }
 
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
+        if (!this.el.nativeElement.placeholder) {
+            if (this.el.nativeElement.required) {
+                this.el.nativeElement.placeholder = "Value Required";
+            } else {
+                this.el.nativeElement.placeholder = "Optional";
+            }
+        }
+
     }
 
     getStyleClass(): string {
@@ -64,54 +71,6 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         }
     }
 
-
-    @Input() get invalid(): boolean {
-        return this._invalid;
-    } 
-
-    set invalid(val: boolean) {
-        this._invalid = val;
-
-        if (!this.wrapper) {
-            this.wrapper = document.createElement('div');
-            this.wrapper.className = "ig-input-wrapper";
-            this.el.nativeElement.parentNode.insertBefore(this.wrapper, this.el.nativeElement);
-            this.wrapper.appendChild(this.el.nativeElement);
-        }
-
-        let errorMessageEl = DomHandler.findSingle(this.wrapper, '.ig-text-required');
-        if (errorMessageEl) {
-            this.wrapper.removeChild(errorMessageEl);
-        }
-
-        if (this._invalid) {
-            errorMessageEl = document.createElement("span");
-            errorMessageEl.className = "ig-text-required ig-input-" + this._size;
-            errorMessageEl.appendChild(document.createTextNode(this._validationMessage));
-            this.wrapper.appendChild(errorMessageEl);
-            DomHandler.addMultipleClasses(this.el.nativeElement, "invalid");
-        } else {
-            DomHandler.removeClass(this.el.nativeElement, "invalid");
-        }
-    }
-
-    @Input() get validationMessage(): string {
-        return this._validationMessage;
-    }
-
-    set validationMessage(val: string) {
-        this._validationMessage = val;
-    }
-
-
-    @HostListener('window:keyup', ['$event'])
-    keyEvent(event: KeyboardEvent) {
-        if (this.el.nativeElement.required && (this.el.nativeElement.value == undefined || this.el.nativeElement.value == null || this.el.nativeElement.value == '')) {
-            DomHandler.addMultipleClasses(this.el.nativeElement, "ng-invalid");
-        } else {
-            DomHandler.removeClass(this.el.nativeElement, "ng-invalid");
-        }
-    }
 
     ngOnDestroy() {
         while (this.el.nativeElement.hasChildNodes()) {

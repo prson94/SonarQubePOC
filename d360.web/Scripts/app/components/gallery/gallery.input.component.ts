@@ -31,19 +31,10 @@ export class GalleryInputComponent implements OnInit {
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "igSize", Type: "string", Description: "Sixe of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
-        this.properties.push({ Name: "valid", Type: "boolean", Description: "Manually sets the valid or invalid state.", Default: "true" });
-        this.properties.push({ Name: "validationMessage", Type: "string", Description: "The message that will display when the valid parameter is false.", Default: "Please enter a valid value." });
     }
 
     toggleDisabled() {
         this.disabledState = !this.disabledState;
     }
 
-    toggleLoading() {
-        //Removing loading state enables the button, so we'll update the disabledState flag to match
-        if (this.loadingState && this.disabledState)
-            this.disabledState = false;
-
-        this.loadingState = !this.loadingState;
-    }
 }
