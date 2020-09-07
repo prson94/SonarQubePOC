@@ -11,8 +11,6 @@ export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAcc
 
    
     public _size: string;
-    public _invalid: boolean;
-    public _validationMessage: string = "Please enter a valid value.";
 
     protected value: string;
     protected disabled: boolean;
@@ -34,7 +32,12 @@ export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAcc
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
+        if (this.disabled) {
+
+        } else {
+
+        }
     }
 
 
