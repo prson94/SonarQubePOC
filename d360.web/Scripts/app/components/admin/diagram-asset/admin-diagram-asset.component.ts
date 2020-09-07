@@ -14,11 +14,12 @@ import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { AssetTypeService } from '../../../services/asset-type.service';
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-diagram-asset',
-    providers: [ArtifactTypeService, AuditService, AssetService, CompanySettingsService],
+    providers: [AssetTypeService, AuditService, AssetService, CompanySettingsService],
     templateUrl: './admin-diagram-asset.component.html'
 })
 
@@ -49,7 +50,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         private stateService: StateService,
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private artifactsService: ArtifactTypeService,
+        private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
         titleService: Title,
         protected messagesService: MessagesObservableService,
@@ -162,7 +163,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     private deleteArtifactType(id: number) {
         var data = this.getAssetTypeById(id);
         if (data) {
-            this.assetsService.deleteAssetType(data.uid).subscribe(result => {
+            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
                 result.title = 'Success!';
                 this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
                 this.isDeleting = false;

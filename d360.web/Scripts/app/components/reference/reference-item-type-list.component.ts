@@ -107,9 +107,10 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     private deleteReferenceItemType(id: number) {
         this.isLoading = true;
+        var uid = this.referenceTypes.filter(x => x.AssetTypeID == id)[0].uid;
         this
             .assetTypeService
-            .deleteAssetType(id)
+            .deleteSingleAssetType(uid)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
 

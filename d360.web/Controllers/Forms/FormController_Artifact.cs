@@ -152,47 +152,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region ArtifactType
-
-
-        [HttpDelete, ActionName("ArtifactType"), Route("ArtifactType"), NonNullableParameters]
-        public JsonResult DeleteArtifactType(int id)
-        {
-            try
-            {
-                var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
-                if (assetType == null) throw new NotFoundException("artifact type");
-
-                var assetTypeId = assetType.ID;
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ArtifactType, id);
-
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetTypeId });
-
-                dynamic custom = new
-                {
-                    assetType.Name,
-                    action = "delete"
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region AssetType
 
         #region Form Get/Post
@@ -449,70 +408,6 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 return jsonNetException(ex);
-            }
-        }
-
-        [HttpDelete, ActionName("AssetType"), Route("AssetType"), NonNullableParameters]
-        public JsonResult DeleteAssetType(int id)
-        {
-            try
-            {
-                var at = Company.GetById<AssetType>(id);
-                if (at == null) throw new NotFoundException("asset type");
-
-                if (at.Class == AssetTypeClass.Reference)
-                {
-                    var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
-
-                    if (governanceRole == at.uid.ToString())
-                        throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", $"UID {at.uid} is a reference list and is configured as the Governance Role and cannot be deleted.");
-                }
-
-                SystemObjects ot;
-
-                if (!Enum.TryParse<SystemObjects>(at.Object, out ot))
-                    throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    throw new UnauthorizedException(FormInfo.Permisions_Error_Delete, FormInfo.Permisions_Error_Delete);
-
-                var parentPredicateType = PredicateType.InterTypeHierarchy;
-
-                if (at.Class == AssetTypeClass.Model || at.Class == AssetTypeClass.Policy)
-                {
-                    parentPredicateType = PredicateType.IntraTypeHierarchy;
-                }
-
-                var intersectType = Company.Filter<IntersectType>(i =>
-                    i.Object == at.Object &&
-                    i.ObjectID == at.ObjectID &&
-                    i.Predicate.Type == parentPredicateType
-                ).SingleOrDefault();
-
-                if (intersectType != null)
-                {
-                    Company.Delete(SystemObjects.IntersectType, intersectType.ID);
-                }
-
-                Company.Delete(ot, at.ObjectID);
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = id });
-
-                dynamic custom = new
-                {
-                    Name = at.Name,
-                    action = "delete"
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 
