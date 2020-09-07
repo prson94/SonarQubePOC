@@ -270,6 +270,6 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
     }
     private export() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, `Connector Labes`, this.sort, this.filters)
+        this.connectorLabelService.exportLabelUsage(this.label.uid, `Connector Labels`, this.sort, this.filters)
     }
 };
