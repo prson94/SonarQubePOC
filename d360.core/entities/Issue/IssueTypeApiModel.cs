@@ -36,4 +36,10 @@ namespace d360.core.entities
         [DataMember]
         public bool Success { get; set; }
     }
+
+    public class DeleteIssueTypeAPIModel
+    {
+        [DataMember]
+        public bool cascade { get; set; }
+    }
 }

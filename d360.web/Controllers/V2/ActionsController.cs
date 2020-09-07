@@ -547,5 +547,49 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
-    }
+        
+        /// <summary>
+        /// Deletes a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type to be deleted</param>
+        [
+            Route("type/{actionTypeUid:Guid}"),
+            HttpDelete,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Action Type was deleted.", typeof(AddIssueTypeApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteWorkflowActionType(Guid actionTypeUid, DeleteIssueTypeAPIModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
+
+            if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid actionTypeUid must be provided."));
+            }
+
+            var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+            if (issueType == null)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided."));
+
+            if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID) || Company.IssueTypeRelations.Any(x => x.IssueTypeID == issueType.ID)))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions / allocations. Enable on cascade request to delete."));
+            }
+
+            var deleteSQL = $@" DELETE FROM IssueTypeRelation Where IssueTypeID = @issueTypeId
+                                
+                                DELETE FROM Issue Where IssueTypeID = @issueTypeId
+                                
+                                DELETE FROM IssueType Where uid = @uid";
+
+            var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
+                new { uid = actionTypeUid , issueTypeId = issueType.ID});
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true })));
+        }
+    }    
 }
