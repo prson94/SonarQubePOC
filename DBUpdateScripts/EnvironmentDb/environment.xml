@@ -63,6 +63,7 @@
 	<include file="scripts/Table.dbo.AssetTypeLevel.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeStyle.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplate.xml"/>
+	<include file="scripts/Table.dbo.AssetTypeExportTemplateField.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeExportTemplateStyle.xml"/>
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>

@@ -1698,7 +1698,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 i.SortOrder,
                 ObjectType = i.Object,
                 i.ObjectID,
-                i.Type
+                i.Type,
+                i.Name
             }).ToList();
         }
         public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
@@ -2931,6 +2932,60 @@ where   A.[uid] = @assetUid";
                 document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
             SetExcelColumnWidths(document, fields);
+        }
+
+        public async Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid))
+        {
+            List<AssetTypeExportTemplate> templateList = new List<AssetTypeExportTemplate>();
+
+            string whereSQL = "";                      
+
+            if (exportTemplateUID != null && exportTemplateUID != Guid.Empty)
+            {
+                whereSQL = $"where ATET.uid = '{exportTemplateUID}'";
+                                
+            }
+            if (assetTypeUid != null && assetTypeUid != Guid.Empty)
+            {
+                whereSQL = $"where AT.Uid = '{assetTypeUid}'";
+            }            
+           
+            if((!string.IsNullOrWhiteSpace(whereSQL)) || (string.IsNullOrWhiteSpace(whereSQL) && CompanyContext.CurrentResourceIsAdmin))
+            {             
+                string exportTemplateSQL = $@"select 
+                                                ATET.ID, 
+                                                ATET.uid, 
+                                                ATET.AssetTypeID, 
+                                                AT.uid as AssetTypeUID, 
+                                                ATET.Name, 
+                                                ATET.Description,
+                                                ATET.ExportViewType,
+                                                ATET.IncludeUrl,
+                                                ATET.IncludeParent,
+                                                ATET.TemplateFile,
+                                                ATET.CreatedBy,
+	                                            ATET.CreatedOn,
+	                                            ATET.UpdatedBy,
+	                                            ATET.UpdatedOn,
+                                                ATET.UsageNotes,
+                                                CASE WHEN ATET.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile
+                                            from 
+                                                AssetTypeExportTemplate ATET 
+                                                left join AssetType AT ON ATET.AssetTypeID = AT.ID 
+                                            {whereSQL}
+                                            order by ATET.Name, ATET.ID";
+
+                templateList = (await CompanyContext.QueryAsync<AssetTypeExportTemplate>(exportTemplateSQL, timeout: ApiTimeout)).ToList();
+
+                foreach (var template in templateList)
+                {
+                    string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
+
+                    template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
+                }
+            }
+            
+            return templateList;
         }
     }
 }

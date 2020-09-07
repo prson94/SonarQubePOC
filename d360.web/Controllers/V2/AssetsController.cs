@@ -285,7 +285,7 @@ namespace d360.web.Controllers.V2
                         {
                             return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid exportTemplateUID value."));
                         }
-                        var template = Company.AssetTypeExportTemplates.Where(x => x.uid == exportTemplateUID).FirstOrDefault();
+                        var template = (await AssetRepository.GetExportTemplates(exportTemplateUID: exportTemplateUID)).FirstOrDefault();
 
                         if (template == null)
                         {
@@ -2266,17 +2266,17 @@ namespace d360.web.Controllers.V2
         private SLDocument GetCustomExportSheet(AssetType assetType, AssetTypeExportTemplate template, List<FieldType> fieldsForCustomExport, AssetsApiViewModel results)
         {
             var data = results.items;
-            if (!string.IsNullOrEmpty(template.IncludeFields))
+            if (!(template.IncludeFieldTypes == null || template.IncludeFieldTypes.Length <= 0))
             {
                 var allFieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
-                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+                var fieldTypeList = template.IncludeFieldTypes;
 
                 fieldsForCustomExport.Clear();
 
                 //done this way to set order of fields in spreadsheet to the order specified in include fields.
-                foreach (var fieldId in fieldIdList)
+                foreach (var fieldName in fieldTypeList)
                 {
-                    var field = allFieldTypes.FirstOrDefault(x => x.ID == fieldId);
+                    var field = allFieldTypes.FirstOrDefault(x => x.Name.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase));
                     if (field != null) fieldsForCustomExport.Add(field);
                 }
             }

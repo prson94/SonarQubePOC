@@ -22,6 +22,7 @@ export class DeleteForm implements OnChanges {
     @Input() prompt: string;
     @Input() callback: Function;
     @Input() itemId: number;
+    @Input() itemUid: string;
     @Input() assetTypeUid: string;
     @Input() useUid: boolean = false;
     @Input() items: any[];
@@ -80,7 +81,11 @@ export class DeleteForm implements OnChanges {
                             this.callback(res.Id);
                         });
                     } else {
-                        this.callback(this.itemId);
+                        if (this.itemUid) {
+                            this.callback(this.itemUid);
+                        } else {
+                            this.callback(this.itemId);
+                        }                        
                     }
                 }
                 break;
