@@ -29,7 +29,7 @@
                 <d3s-where-used [displayValue]="selectedValue.name" [uid]="selectedValue.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{selectedValue.UseCount}} diagrams</d3s-where-used>
                 <br />
                 Choose <strong>Consolidate</strong> to replace the label '{{label.Value}}' with '{{selectedValue.name}}', in
-                <d3s-where-used [displayValue]="label.name" [uid]="label.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{label.UseCount}} diagram.</d3s-where-used>
+                <d3s-where-used [displayValue]="label.Value" [uid]="label.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{label.UseCount}} diagram.</d3s-where-used>
                 <br />
                 The label '{{label.Value}}' will then be deleted.
             </p>
