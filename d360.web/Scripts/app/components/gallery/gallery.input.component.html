@@ -11,15 +11,55 @@
 <div class="tile tile-detail">
     <header>Examples</header>
     <div class="gallery-section">
-        <h4>Basic</h4>
-        <div>
-            <input igInput type="text" [disabled]="disabledState" />
+        <h4>Basic with sizes</h4>
+        <div class="row">
+            <div class="row">small(150px)</div>
+            <input igInput type="text" igSize="small" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">medium(308px)</div>
+            <input igInput type="text" igSize="medium" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">large(624px)</div>
+            <input igInput type="text" igSize="large" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">full(100%)</div>
+            <input igInput type="text" igSize="full" />
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Required</h4>
+        <h4>Errors (required, minLength of 4)</h4>
         <div>
-            <input igInput type="text" required />
+            <input igInput type="text" [(ngModel)]="val1" name="basicInput" #basicInput="ngModel" required minlength="4" />
+            <div *ngIf="basicInput.invalid && (basicInput.dirty || basicInput.touched)">
+                <div *ngIf="basicInput.errors.required" class="ig-text-required">
+                    Field is required.
+                </div>
+                <div *ngIf="basicInput.errors.minlength" class="ig-text-required">
+                    Field requires a length of at least 4 characters.
+                </div>
+            </div>
+            <p>
+                Current Value: {{val1}}
+            </p>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Form Validation</h4>
+        <div>
+            <form #form="ngForm">
+                <input igInput type="text" [(ngModel)]="formValue" required name="forminput" #forminput="ngModel" />
+                <div *ngIf="forminput.invalid && (forminput.dirty || forminput.touched)">
+                    <div *ngIf="forminput.errors.required" class="ig-text-required">
+                        Field is required.
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     <div class="gallery-section">
@@ -41,6 +81,12 @@
         <div class="row">&nbsp;</div>
         <div class="row">
             <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div class="row">
+            <input igInput type="text" disabled />
         </div>
     </div>
 </div>
