@@ -403,11 +403,7 @@ namespace d360.web.Controllers.V2
                     {
                         return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "A Template file type must be .xls or .xlsx.");
                     }
-                }
-                else
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "A Template file is required.");
-                }
+                }                
             }
             catch
             {
