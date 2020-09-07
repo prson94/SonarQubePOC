@@ -816,23 +816,25 @@ from	IntersectType I
 				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid }, ApiTimeout);
         }
 
-        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal)
+        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal, string owner)
         {
             int? total = null;
+            string whereFilter = string.IsNullOrEmpty(owner) ? " " : " and i.owner = @owner";
 
             if (includeTotal)
             {
-                var cntsql = @"select
+                var cntsql = $@"select
 	                        count(1)
                         from
 	                        [intersect] i	                        
                         where 
-	                        i.IntersectTypeID = @intersectTypeID";
+	                        i.IntersectTypeID = @intersectTypeID
+                            {whereFilter}";
 
-                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID }, ApiTimeout);
+                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID, owner }, ApiTimeout);
             }
 
-            var sql = @"
+            var sql = $@"
                         begin                         
                          -- create temp table
                          drop table if exists #TempIntersectInfo
@@ -863,6 +865,7 @@ from	IntersectType I
                             I.[Owner]
                            from [intersect] I 
                            where I.IntersectTypeID = @intersectTypeID
+                                {whereFilter}
                             Order by I.ID OFFSET @offset ROWS 
                                 FETCH NEXT @rows ROWS ONLY
 
@@ -888,7 +891,7 @@ from	IntersectType I
 
                         end";
 
-            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize }, ApiTimeout);
+            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize, owner }, ApiTimeout);
 
             return new RelationshipUidResult { Total = total, Results = results };
         }

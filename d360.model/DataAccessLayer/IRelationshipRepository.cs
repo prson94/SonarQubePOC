@@ -40,6 +40,6 @@ namespace d360.model.DataAccessLayer
         List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
         Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal);
+        Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal, string owner);
     }
 }

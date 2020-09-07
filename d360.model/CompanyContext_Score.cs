@@ -373,7 +373,7 @@ set     T.IsValidAllocation = iif(Al.Uid is null, 0, 1),
 from    api.ExecutionScore T 
         left join dbo.Asset A on A.Uid = T.AssetUid
         left join dbo.AssetType Ast on Ast.ID = A.AssetTypeID
-        left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.ScoreType = T.ScoreType and (Al.OverrideName is null or Al.OverrideName = '')
+        left join metrics.Allocation Al on Al.AssetTypeUid = Ast.Uid and Al.ScoreType = T.ScoreType and (Al.OverrideName is null or Al.OverrideName = '') and Al.IsExternallyCalculated = 1
         left join metrics.Score S on S.AllocationUid = Al.Uid and S.AssetUid = T.AssetUid and S.EffectiveDate = T.EffectiveDate
 where   T.ExecutionID = @ExecutionID
 
