@@ -758,6 +758,7 @@
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.less" />
+    <Content Include="Content\styles\infogix-ui\IgNumberField.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -1627,6 +1628,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autofocus.directive.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-number-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-textarea-directive.ts" />
