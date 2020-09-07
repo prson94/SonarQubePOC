@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.dbo.AssetTypeExportTemplateField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTypeExportTemplateField')
+			BEGIN
+				CREATE TABLE [dbo].[AssetTypeExportTemplateField](
+				[ID] [int] IDENTITY(1,1) NOT NULL,
+				[TemplateID] [int] NOT NULL,
+				[FieldTypeID] [int] NOT NULL,
+				[Order] [int] NOT NULL,
+			 CONSTRAINT [PK_AssetTypeExportTemplateField] PRIMARY KEY CLUSTERED ([ID] ASC)
+			)
+      END
+      
+      IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AssetTypeExportTemplateField_AssetTypeExportTemplate')
+			BEGIN
+				ALTER TABLE [dbo].[AssetTypeExportTemplateField]  WITH CHECK ADD  CONSTRAINT [FK_AssetTypeExportTemplateField_AssetTypeExportTemplate] FOREIGN KEY([TemplateID])
+				REFERENCES [dbo].[AssetTypeExportTemplate] ([ID])
+				ON DELETE CASCADE			
+
+				ALTER TABLE [dbo].[AssetTypeExportTemplateField] CHECK CONSTRAINT [FK_AssetTypeExportTemplateField_AssetTypeExportTemplate]
+			END
+
+			IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AssetTypeExportTemplateField_FieldType')
+			BEGIN
+				ALTER TABLE [dbo].[AssetTypeExportTemplateField]  WITH CHECK ADD  CONSTRAINT [FK_AssetTypeExportTemplateField_FieldType] FOREIGN KEY([FieldTypeID])
+				REFERENCES [dbo].[FieldType] ([ID])
+				ON DELETE CASCADE		
+      
+				ALTER TABLE [dbo].[AssetTypeExportTemplateField] CHECK CONSTRAINT [FK_AssetTypeExportTemplateField_FieldType]
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

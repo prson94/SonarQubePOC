@@ -326,8 +326,11 @@ namespace d360.model.DataAccessLayer
 
                         break;
                     case "diagram":
-                        dbArgs.Add("diagram", $"%{qitem.Value.ToLower()}%");
-                        whereClauses.Add("Path.Diagram like @diagram");
+                        if (!string.IsNullOrEmpty(qitem.Value))
+                        {
+                            dbArgs.Add("diagram", $"%{qitem.Value.ToLower()}%");
+                            whereClauses.Add("Path.Diagram like @diagram");
+                        }
 
                         break;
                     case "occurrences":
@@ -339,7 +342,7 @@ namespace d360.model.DataAccessLayer
 
                         break;
                     case "assettypename":
-                        if (int.TryParse(qitem.Value, out useCount))
+                        if (!string.IsNullOrEmpty(qitem.Value))
                         {
                             dbArgs.Add("assettypename", $"%{qitem.Value.ToLower()}%");
                             whereClauses.Add("Type.AssetTypeName like @assettypename");

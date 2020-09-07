@@ -800,4 +800,33 @@ namespace d360.core.entities
         public int JsonFieldCount { get; set; }
     }
 
+    public class AssetTypeExportTemplateUpsertRequest
+    {
+        #region Properties
+        [DataMember]
+        public string Name { get; set; }
+        
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public string UsageNotes { get; set; }        
+
+        [DataMember]
+        public string[] IncludeFieldTypes { get; set; }
+
+        [DataMember]
+        public bool IncludeUrl { get; set; }
+
+        [DataMember]
+        public bool IncludeParent { get; set; }
+
+        [DataMember]
+        public ExportView ExportViewType { get; set; }        
+        #endregion
+
+        [DataMember]
+        public Guid AssetTypeUID { get; set; }       
+    }
+
 }

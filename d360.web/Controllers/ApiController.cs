@@ -3277,7 +3277,7 @@ order by    Name
                 #endregion
                 case SystemObjects.ExportTemplate:
                     #region Fields
-                    var template = Company.GetById<AssetTypeExportTemplate>(id);
+                    var template = Company.AssetTypeExportTemplates.FirstOrDefault(x=> x.ID == id);
                     if (template != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -3347,7 +3347,7 @@ order by    Name
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { Name = "UID", Value = template.uid.ToString() }
+                                    new ReadOnlyField { Name = "UID", Value = template.Uid.ToString() }
                                 }
                         });
                     }
