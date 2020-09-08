@@ -505,23 +505,23 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
-        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{executionUid:Guid}/status"),
+            Route("executions/{executionID:Guid}/status"),
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json", "application/xml"), 
             SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
             SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
             ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
         {
             var prefix = "CrossReferences.GetExecutionStatus => ";
             var errorMessage = "";
             try {
-                ApiExecution execution = assetRepository.GetExecutionItemByUid(executionUid);
+                ApiExecution execution = assetRepository.GetExecutionItemByUid(executionID);
 
                 if (execution == null)
                 {
@@ -544,7 +544,8 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
-                    { "ExecutionUid", executionUid.ToString() }
+                    { "ExecutionUid", executionID.ToString() }, //left to avoid breaking change
+                    { "ExecutionID", executionID.ToString() }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
