@@ -6,7 +6,7 @@ export class FontAwesomeHelper {
         if (!code)
             return '';
         var icon = this.icons.filter(x => x.class == code)[0];
-        return icon.html.replace(";", "");
+        return icon ? icon.html.replace(";", "") : '';
     }
 
     static icons = [{
