@@ -677,19 +677,6 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 effectiveDate = effectiveDate.Value.ToUniversalTime();
             
             string sql = $@"
-declare @lastScoredDate date =  (
-    select  top 1 
-            RunDate 
-    from    metrics.Score
-    where   AllocationUid = @allocationUid and AssetUid = @assetUid 
-    order by    RunDate desc
-    )
-
-if @effectiveDate > @lastScoredDate
-begin
-    set @effectiveDate = @lastScoredDate
-end
-
 drop table if exists #results;
 select	*
 into    #results
@@ -701,7 +688,7 @@ from	(
 				V.Description,
 				Ma.IsGroup,
 				V.EffectiveDate, 
-				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC) as RowNum,
+				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
 				V.[Weight],
 				SI.AdjustedWeight,
