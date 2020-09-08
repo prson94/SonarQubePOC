@@ -52,20 +52,21 @@ namespace d360.model.DataAccessLayer
             var assetId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault().ID;
 
             var sql = $@"
-            select 
-                R.ResponsibilityTypeName as Responsibility, 
-                RT.uid as ResponsibilityUid,
-                R.ResourceName as Resource,
-                R.ResourceUid as ResourceUid,
-                RT.Description,
-                RT.ResponsibilityTypeGroup as 'Group',
-                CASE
-                WHEN R.SecurityAsset = 'R' THEN 'Rule'
-	            ELSE 'User'
-	            END AS AssignedBy
-                from [dbo].[ResponsibilityDetail] R
-                inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
-            where R.AssetID = @id";
+              select 
+                  R.ResponsibilityTypeName as Responsibility, 
+                  RT.uid as ResponsibilityUid,
+                  R.ResourceName as Resource,
+                  R.ResourceUid as ResourceUid,
+                  RT.Description,
+                  G.Name as 'Group',
+                  CASE
+                    WHEN R.SecurityAsset = 'U' THEN 'User'
+	                ELSE 'Rule'
+	                END AS AssignedBy
+                  from [dbo].[ResponsibilityDetail] R
+                  inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
+                  left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'
+                where R.AssetID = @id";
 
             return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = assetId }));
         }
