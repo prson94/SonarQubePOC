@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetScoreHistoryByObject-v3">
+  <changeSet author="Pappas" id="Procedure.dbo.GetScoreHistoryByObject-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,13 +24,6 @@ begin
 			A.ScoreType
 	from	metrics.Score S
 			inner join metrics.Allocation A on A.Uid = S.AllocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and A.ScoreType = @scoreType and A.OverrideName is null
-	union
-	select	cast(@date as date) as [EffectiveDate],
-			null as [EndDate],
-			cast(S.Value * 100 as decimal(18,1)) as Score,
-			A.ScoreType
-	from	metrics.Score S
-			inner join metrics.Allocation A on A.Uid = S.AllocationUid and S.AssetUid = @assetUid and A.ScoreType = @scoreType and S.EffectiveDate <= @date and S.EndDate is null and A.OverrideName is null
 end
 		]]>
     </sql>

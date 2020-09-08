@@ -2,7 +2,6 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
-import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
@@ -73,7 +72,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.objectStatisticsService.getSearchDetails(this.uid).subscribe(
                 result => {
                     this.searchDetails = result;
-                    this.getCurrentScoreDateText();
                 }
             );
         }
@@ -94,12 +92,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
-                    })
-
-                    //handle non existing todays score point used for plotting graph
-                    var nullEndDate = this.scoresPoints.filter(x => x.EndDate == null);
-                    if (nullEndDate.length > 1)
-                        this.scoresPoints.shift();
+                    });
 
                     this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 
@@ -301,9 +294,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             dataArray.sort((a, b) => b[0] - a[0]);
 
             let mostRecent = dataArray.splice(0, 1)[0];
-            let lastchangedDate = this.getLastChangedDate(dataArray, mostRecent);
-            let milliseconds = Math.floor((new Date(mostRecent[0])).getTime() - (new Date(lastchangedDate[0]).getTime()));
-            this.formatCalculatedScoreText(milliseconds, mostRecent[1]);
+            let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent[0]).getTime();
+            this.formatCalculatedScoreText(milliseconds, mostRecent[1]); 
         }
         else {
             return "Calculating...";
@@ -320,18 +312,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             default:
                 return "";
         }
-    }
-
-    private getLastChangedDate(tempArr: any[], mostRecent: any): any {
-        if (tempArr.length > 0) {
-            var nextLatest = tempArr.splice(0, 1)[0];
-            if (mostRecent[1] == nextLatest[1]) {
-                return this.getLastChangedDate(tempArr, nextLatest);
-            } else {
-                return mostRecent;
-            }
-        } else
-            return mostRecent;
     }
 
     private formatCalculatedScoreText(milliseconds: number, score: number) {
@@ -407,13 +387,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     //scoring carousel, table and graph interactivity
     private setSelectedPoint: boolean = false;
     private selectPointOnGraph() {
-        var idx = this.getSelectedIndex();
+        var ms = new Date(this.scoreDate.toString()).getTime();
+        var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
+
         if (idx > -1) {
 
             for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
                 this.chartInstance.series[0].data[i].select(false, true);
             }
-            var point = this.chartInstance.series[0].data[this.getSelectedIndex()];
+            var point = this.chartInstance.series[0].data[idx];
             if (point)
                 point.select(true, true);
         }
@@ -421,29 +403,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.cdRef.markForCheck();
     }
 
-    private getSelectedIndex() {
-        var item = null;
-        if (!this.scoresPoints)
-            return -1;
-
-        this.scoresPoints.forEach(p => {
-            var date = new Date(this.scoreDate.toString());
-            var scoreDate = new Date(p.EffectiveDate.toString());
-            if (date.toString() == scoreDate.toString()) {
-                item = p;
-            }
-        });
-        return this.scoresPoints.length - 1 - this.scoresPoints.indexOf(item);
-    }
-
     private scoreTableClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.tableSelectedIDX = this.scoresPoints.indexOf(item);
+        this.selectPointOnGraph();
         this.loadPoints();
     }
 
     private onCarouselScoreClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
+        this.selectPointOnGraph();
         this.loadPoints();
     }
 
@@ -455,7 +424,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {
-        this.selectPointOnGraph()
         //table autoscroll to selected item
         if (this.scoreTable) {
             var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');
@@ -463,7 +431,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
             for (var i = 0; i < tblBody.children.length - 1; i++) {
                 var selected = tblBody.children[i].className.toLowerCase().indexOf('selected') > -1 ? tblBody.children[i] : null;
-
                 if (!selected)
                     continue;
 
