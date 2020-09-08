@@ -256,13 +256,13 @@ namespace d360.model.DataAccessLayer
             int metricExistsCount = 0;
             var metricCountSql = $@"select count(1) from (
 select A.Uid, max(V.EffectiveDate) as EffectiveDate
-from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and A.State = 1 and A.AllocationUid = @AllocationUid and A.Uid <> @Uid and lower(V.Name) = @n and {(model.ParentUid.HasValue ? "A.ParentUid = @p" : "A.ParentUid is null")} group by A.Uid) O";
+from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and A.State = 1 and A.AllocationUid = @AllocationUid {(model.Uid != Guid.Empty ? "and A.Uid <> @Uid" : "")} and lower(V.Name) = @n and {(model.ParentUid.HasValue && model.ParentUid != Guid.Empty ? "A.ParentUid = @p" : "A.ParentUid is null")} group by A.Uid) O";
             metricExistsCount = Company.Query<int>(metricCountSql, new { n = model.Name.Trim().ToLower(), p = model.ParentUid, model.AllocationUid, model.Uid }).Single();
 
             if (metricExistsCount > 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric",
-                    (model.ParentUid.HasValue) ?
+                    (model.ParentUid.HasValue && model.ParentUid != Guid.Empty) ?
                     "You may not add a metric with the same name under the same grouping." :
                     $"Measure with name '{model.Name}' already exists.");
             }
