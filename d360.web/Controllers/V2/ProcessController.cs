@@ -173,6 +173,18 @@ namespace d360.web.Controllers.V2
             try
             {
                 var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+                if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.ModifyAsset))
+                {
+                    var err = new List<ValidationError>();
+                    err.Add(new ValidationError() { Error = "You are not authorized to edit this process diagram" });
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+                    {
+                        hasError = true,
+                        errors = err
+                    })));
+                }
+
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
                 foreach (var item in model.linkDataArray)
                 {
