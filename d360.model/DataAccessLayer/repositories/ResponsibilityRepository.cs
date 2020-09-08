@@ -45,71 +45,29 @@ namespace d360.model.DataAccessLayer
             return res;
         }
 
-        public async Task<IEnumerable<OwnershipApiModel>> GetOwnership(string assetUid)
+        public async Task<IEnumerable<OwnershipApiModel>> GetOwnership(Guid assetUid)
         {
             var res = new AssetResponsibilitiesApiModel();
 
-            var assetId = Company.Assets.Where(x => x.uid.ToString() == assetUid).FirstOrDefault().ID;
+            var assetId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault().ID;
 
             var sql = $@"
-    select 
-                        rt.[name] as 'ResponsibilityName',
-	                    rt.[uid] as 'ResponsibilityUid',
-                        s.[Name] as 'Resource',
-                        s.[uid] as 'ResourceUid',
-                        rt.[Description] as 'Description',
-                        rt.[ResponsibilityTypeGroup] as 'Group',
-                        'rule' as 'AssignedBy'
-                    from
-	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
-	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
-	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
-	                    inner join [dbo].[assettype] att on att.[object] = rr.[object] and att.objectid = rr.objectid
-	                    inner join [dbo].asset a on a.AssetTypeID = att.id
-                        cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
-                    where
-	                    rr.applytotype = 1 and a.id = {assetId}
-                          
-                    union
-                    select 
-                        rt.[name] as 'ResponsibilityName',
-	                    rt.[uid] as 'ResponsibilityUid',
-                        s.[Name] as 'Resource',
-                        s.[uid] as 'ResourceUid',
-                        rt.[Description] as 'Description',
-                        rt.[ResponsibilityTypeGroup] as 'Group',
-                        'rule' as 'AssignedBy'
-                    from
-	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationRule] rr on rr.ResponsibilityTypeID = rt.id
-	                    inner join [dbo].[ResponsibilityTypeRelation] rtr on rtr.ObjectID = rr.ObjectID and rtr.ObjectType = rr.[Object]
-	                    inner join [dbo].[ResponsibilityRuleResultSecurityAsset] rsa on rsa.RuleID = rr.id
-	                    inner join [dbo].[ResponsibilityRuleResultAsset] ra on ra.RuleID = rr.id	
-                        inner join [dbo].[asset] a on ra.assetid = a.id
-                        cross apply [dbo].[GetSecurityAssetUid](rsa.SecurityAsset,rsa.SecurityAssetID) s
-                    where
-	                    rr.applytotype = 0 and ra.assetid = {assetId}
-                          
-                    union
-                    select 
-                        rt.[name] as 'ResponsibilityName',
-	                    rt.[uid] as 'ResponsibilityUid',
-                        s.[Name] as 'Resource',
-                        s.[uid] as 'ResourceUid',
-                        rt.[Description] as 'Description',
-                        rt.[ResponsibilityTypeGroup] as 'Group',
-                        'user' as 'AssignedBy'
-                    from
-	                    [dbo].[ResponsibilityType] rt
-	                    inner join [dbo].[ResponsibilityTypeRelationOverrideItem] oride on oride.ResponsibilityTypeID = rt.id	    
-                        inner join [dbo].[asset] a on a.id = oride.assetid
-                        cross apply [dbo].[GetSecurityAssetUid](oride.SecurityAsset,oride.SecurityAssetID) s                        
-                    where
-	                    oride.assetid = {assetId}";
+            select 
+                R.ResponsibilityTypeName as Responsibility, 
+                RT.uid as ResponsibilityUid,
+                R.ResourceName as Resource,
+                R.ResourceUid as ResourceUid,
+                RT.Description,
+                RT.ResponsibilityTypeGroup as 'Group',
+                CASE
+                WHEN R.SecurityAsset = 'R' THEN 'Rule'
+	            ELSE 'User'
+	            END AS AssignedBy
+                from [dbo].[ResponsibilityDetail] R
+                inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
+            where R.AssetID = @id";
 
-
-            return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql));
+            return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = assetId }));
         }
 
         public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)

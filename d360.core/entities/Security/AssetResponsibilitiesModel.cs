@@ -76,7 +76,7 @@ namespace d360.core.entities
     public class OwnershipApiModel : BaseObject
     {
         [DataMember]
-        public string ResponsibilityName { get; set; }
+        public string Responsibility { get; set; }
 
         [DataMember]
         public Guid ResponsibilityUid { get; set; }

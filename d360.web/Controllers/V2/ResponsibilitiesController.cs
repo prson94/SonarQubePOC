@@ -790,14 +790,13 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var queryParams = Request.GetQueryNameValuePairs();
                 var validAsset = Company.Assets.Any(x => x.uid == assetUid);
 
                 if (!validAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Asset Uid item doesn't exist or is not a valid type for ownership."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset does not exist for UID provided."));
 
 
-                var res = await ResponsibilityRepository.GetOwnership(assetUid.ToString());
+                var res = await ResponsibilityRepository.GetOwnership(assetUid);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res)));
             }
