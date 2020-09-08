@@ -11,7 +11,7 @@
     line-height: 30px;
     border-radius: @ig-field-border-radius;
     margin-bottom: 14px;
-    width: @ig-field-width-small !important;    
+    width: 150px !important;
 
     &:enabled:focus:not(.ui-state-error) {
         outline: 0 none;
@@ -42,6 +42,63 @@
 
     &[disabled] {
         opacity: 0.33;
+    }
+
+    &[type=number]::-webkit-inner-spin-button,
+    &[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+
+    &[type=number] {
+        -moz-appearance: textfield !important;
+    }
+}
+
+.ig-button-container {
+    float: left;
+    left: 146px;
+    position: relative;
+    height: 32px;
+}
+
+.ig-number-field-button {
+    position: relative;
+    cursor: pointer;
+    width: 28px;
+    text-align: center;
+    background: rgba(0,0,0,0.07);
+    font-size: 8px;
+    line-height: 12px;
+    color: @ig-grey;
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+
+    &:hover {
+        background: rgba(0,0,0,0.14);
+    }
+
+    &:active {
+        background: rgba(0,0,0,0.21);
+    }
+
+    &.up {
+        position: absolute;
+        top: 4px;
+        height: 12px;
+        border-radius: 4px 4px 0px 0px;
+    }
+
+    &.down {
+        position: absolute;
+        bottom: 4px;
+        height: 12px;
+        border-radius: 0px 0px 4px 4px;
     }
 }
 

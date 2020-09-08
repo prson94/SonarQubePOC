@@ -34,6 +34,7 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
 import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { GalleryDatePickerComponent } from './gallery.date-picker.component';
+import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 
 
 @NgModule({
@@ -72,6 +73,7 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         GalleryTextAreaComponent,
         GalleryAutoFocusComponent,
         GalleryDatePickerComponent,
+        GalleryNumberFieldComponent,
     ],
     providers: [
         GalleryGuard,

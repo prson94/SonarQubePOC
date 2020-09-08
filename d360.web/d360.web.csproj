@@ -719,6 +719,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autocomplete.component.html" />
@@ -878,6 +879,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autocomplete.component.ts" />

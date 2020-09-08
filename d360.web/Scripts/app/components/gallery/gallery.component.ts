@@ -22,6 +22,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Color Variables', key: 'color-variables' },
         { label: 'Text Area', key: 'textarea' },
         { label: 'Date Picker', key: 'date-picker' },
+        { label: 'Number Field', key: 'number-field' },
     ];
 
     ngOnInit(): void {        
