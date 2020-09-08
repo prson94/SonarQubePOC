@@ -410,8 +410,8 @@ namespace d360.model.DataAccessLayer
             var fields = new List<FieldType>();
             fields.Add(new FieldType { Type = "string", Name = "Diagram", FriendlyName = "Diagram" });
             fields.Add(new FieldType { Type = "string", Name = "AssetTypeName", FriendlyName = "Asset Type" });
-            fields.Add(new FieldType { Type = "string", Name = "Occurrences", FriendlyName = "Label Occurrence" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "string", Name = "Occurrences", FriendlyName = "Occurrences" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "UID" });
             fields.Add(new FieldType { Type = "string", Name = "AssetId", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "url", FriendlyName = "URL" });
 
