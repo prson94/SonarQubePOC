@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { ObjectRelationshipCount } from '../../../models/relationship.model';
@@ -11,7 +11,7 @@ import { ResponsibilityTypeRelationPermission } from '../../../models/responsibi
     templateUrl: './object-relationships.component.html'
 })
 
-export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges {
+export class ObjectRelationshipsComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectName: string;
@@ -35,6 +35,10 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
 
     constructor(protected relationshipsService: RelationshipsService, private changeDetectorRef: ChangeDetectorRef) {
         super();
+    }
+
+    ngOnDestroy(): void {
+        this.relGrid.ngOnDestroy();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

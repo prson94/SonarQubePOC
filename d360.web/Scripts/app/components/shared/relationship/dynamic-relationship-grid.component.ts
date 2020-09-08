@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild } from '@angular/core';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
@@ -15,7 +15,7 @@ import { AssetService } from '../../../services/asset.service';
     templateUrl: './dynamic-relationship-grid.component.html'
 })
 
-export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges {
+export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() objectUid: number;
@@ -68,6 +68,10 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     ) {
         super();
         this.theDeleteCallback = this.deleteItem.bind(this);
+    }
+
+    ngOnDestroy(): void {
+        this.closeEditor();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
