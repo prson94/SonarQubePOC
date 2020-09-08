@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { forEach } from 'core-js/fn/array';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -68,12 +69,18 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
     selectedItemChange() {
         if (this.selected) {
-            
+
             this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                 this.selectedItemID = res.ObjectID;
                 this.selectedAssetTypeID = res.Id;
+
+                this.types.forEach(t => {
+                    if (t.uid == this.selected.uid) {
+                        t['AssetTypeId'] = res.Id;
+                    }
+                });
                 this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
-                        
+
             });
         }
     }
@@ -95,7 +102,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     ngOnDestroy() {
-        this.clearSidebar(); 
+        this.clearSidebar();
     }
 
     getAssetTypes() {
@@ -135,11 +142,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         this.getAssetTypes();
         this.stateService.reloadLeftNavMenu();
     }
-    
+
     deleteType(id: number) {
+        var uid = this.types.filter(x => x.AssetTypeId == id)[0].uid;
+
         this
             .assetTypeService
-            .deleteAssetType(id)
+            .deleteSingleAssetType(uid)
             .subscribe(res => {
                 this.showMessageForResult(this.messagesService, res);
 
@@ -151,7 +160,6 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 }
 
                 this.showDelete = false;
-            })
-            ;
+            });
     }
 }

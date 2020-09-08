@@ -12,10 +12,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
-    providers: [ArtifactTypeService, AuditService, AssetService],
+    providers: [ArtifactTypeService, AuditService, AssetService, AssetTypeService],
     templateUrl: './admin-artifacts.component.html'
 })
 
@@ -45,6 +46,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
+        private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
         titleService: Title,
         protected messagesService: MessagesObservableService
@@ -162,13 +164,21 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     private deleteArtifactType(id: number) {
-        this.artifactsService.deleteArtifactType(id).subscribe(result => {
-            this.showMessageForResult(this.messagesService, result);
-            this.isDeleting = false;
-            this.selectedRow = { data: { ID: 0 } };
-            this.load();
-            this.stateService.reloadLeftNavMenu();
-        })
+        var data = this.getAssetTypeById(id);
+        if (data) {
+            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
+                result.title = 'Success!';
+                this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
+                this.isDeleting = false;
+                this.selectedRow = { data: { ID: 0 } };
+                this.load();
+                this.stateService.reloadLeftNavMenu();
+            })
+        }
+    }
+
+    private getAssetTypeById(id: number): any {
+        return this.artifactTypes.filter(x => x.data['ID'] == id)[0].data;
     }
 
     private loadDataAndExecuteAction(action: Function) {

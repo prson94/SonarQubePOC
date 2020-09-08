@@ -521,8 +521,6 @@ namespace d360.web.Controllers
             {                
                 case "APIFIELD":
                     return DeleteApiField(form);
-                case "ARTIFACTTYPE":
-                    return DeleteArtifactType(objectID);
                 case "CONTRACT":
                     return DeleteContract(objectID);
                 case "CUSTOMSYNONYM":
@@ -571,7 +569,7 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIVersion(form);
             }
 
-            throw new Exception("Invalid / unsupported edit type");
+            throw new Exception("Invalid / unsupported delete type");
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
