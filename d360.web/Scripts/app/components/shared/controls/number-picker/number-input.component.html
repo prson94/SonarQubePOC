@@ -1,0 +1,26 @@
+﻿<input 
+       #iginput 
+       [ngClass]="'ig-number-field ' + styleClass"
+       [attr.tabindex]="tabindex"
+       [attr.aria-label]="ariaLabel"
+       [attr.aria-required]="ariaRequired"
+       [required]="required"
+       [value]="value" 
+       type="number" 
+       step="{{step}}" 
+       [attr.aria-valumin]="min"
+       [attr.aria-valuemax]="max"
+       [disabled]="disabled"
+       [attr.placeholder]="placeholder"
+       [attr.name]="name"
+       (keydown)="onInputKeyDown($event)"
+       (blur)="onModelTouched()"
+       (input)="onModelChange($event.target.value)">
+<div class="ig-button-container">
+    <div class="ig-number-field-button up" (click)="increment()">
+        <span class="fa fa-chevron-up"></span>
+    </div>
+    <div class="ig-number-field-button down" (click)="decrement()">
+        <span class="fa fa-chevron-down"></span>
+    </div>
+</div>

@@ -35,6 +35,7 @@ import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { GalleryDatePickerComponent } from './gallery.date-picker.component';
 import { GalleryNumberFieldComponent } from './gallery.number-field.component';
+import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 
 
 @NgModule({
@@ -53,6 +54,7 @@ import { GalleryNumberFieldComponent } from './gallery.number-field.component';
         TagPickerModule,
         IgColorPickerModule,
         IgDateModule,
+        IgNumberFieldModule,
 
         TableModule,
         TooltipModule,

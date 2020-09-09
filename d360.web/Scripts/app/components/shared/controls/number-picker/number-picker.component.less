@@ -1,0 +1,155 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import "../../../../../../Content/styles/_Variables.less";
+ig-number-input {
+
+    .ig-number-field {
+        font-family: @ig-field-font-family;
+        font-size: 14px;
+        color: @ig-black;
+        background: @ig-white;
+        padding: 0 32px 0 8px;
+        border: 1px solid #bdbfc6;
+        height: @ig-field-height;
+        line-height: 30px;
+        border-radius: @ig-field-border-radius;
+        margin-bottom: 14px;
+        width: 150px !important;
+
+        &:enabled:focus:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+            border-color: @ig-field-border-color;
+        }
+
+
+        &[type=number]::-webkit-inner-spin-button,
+        &[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none !important;
+            margin: 0 !important;
+        }
+
+        &[type=number] {
+            -moz-appearance: textfield !important;
+        }
+
+        &[disabled] {
+            opacity: 0.33;
+        }
+
+        &.invalid {
+            background: @ig-red-t5 !important;
+            border-color: none !important;
+        }
+
+        &:required {
+            background: @ig-lightblue-t4;
+            border-color: @ig-field-border-color;
+        }
+
+        &:required:valid {
+            background: @ig-white;
+            border-color: none;
+            box-shadow: none;
+        }
+    }
+
+    &.ng-valid[required], .ng-valid.required {
+        .ig-number-field {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: none;
+        }
+    }
+
+    &.ng-invalid[required], .ng-invalid.required {
+        .ig-number-field {
+            background: @ig-lightblue-t4;
+            border-color: @ig-field-border-color;
+        }
+    }
+
+    &.ng-dirty.ng-invalid[required], .ng-dirty.ng-invalid.required {
+        .ig-number-field {
+            background: @ig-red-t5;
+            border-color: none;
+        }
+    }
+}
+
+.ig-button-container {
+    float: left;
+    left: 146px;
+    position: relative;
+    height: 32px;
+}
+
+.ig-number-field-button {
+    position: relative;
+    cursor: pointer;
+    width: 28px;
+    text-align: center;
+    background: rgba(0,0,0,0.07);
+    font-size: 8px;
+    line-height: 12px;
+    color: @ig-grey;
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+
+    &:hover {
+        background: rgba(0,0,0,0.14);
+    }
+
+    &:active {
+        background: rgba(0,0,0,0.21);
+    }
+
+    &.up {
+        position: absolute;
+        top: 4px;
+        height: 12px;
+        border-radius: 4px 4px 0px 0px;
+    }
+
+    &.down {
+        position: absolute;
+        bottom: 4px;
+        height: 12px;
+        border-radius: 0px 0px 4px 4px;
+    }
+}
+
+::placeholder {
+    color: @ig-grey;
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: @ig-grey;
+}
+
+::-webkit-input-placeholder {
+    color: @ig-grey;
+}
+
+::-ms-input-placeholder {
+    color: @ig-grey;
+}
+
+
+.ig-text-required {
+    background: #b21a3e;
+    padding: 2px 7px;
+    font-size: 12px;
+    color: white;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    width: auto;
+    margin-top: -12px;
+    display: table;
+}

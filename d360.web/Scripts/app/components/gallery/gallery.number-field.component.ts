@@ -1,5 +1,5 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+﻿import { Component, OnInit, ChangeDetectionStrategy, AfterContentInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormBuilder } from '@angular/forms';
 
 
 @Component({
@@ -15,21 +15,45 @@ import { FormControl, Validators } from '@angular/forms';
             padding-bottom: 8px;
         }
         `
-    ], changeDetection: ChangeDetectionStrategy.OnPush
+    ]
 })
 
 export class GalleryNumberFieldComponent implements OnInit {
     protected properties: Array<any>;
-    protected sampleUsage: string = '<input igNumberField type="number" name="Number" />';
-    private val1: string;
-    private val2: string;
-    private formValue = new FormControl('', [Validators.min(4), Validators.max(10)]);
-    private formValue2 = new FormControl('', [Validators.min(4), Validators.max(10)]);
+    protected sampleUsage: string = '<ig-number-input></ig-number-input>';
+    private model: DummyformModel = new DummyformModel("name", 0);
+    protected form: FormGroup = null;
+
+    constructor(private fb: FormBuilder) { }
 
     ngOnInit(): void {
-
+        this.form = this.fb.group({
+            myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7])], updateOn: "blur" }]
+        });
         this.properties = new Array();
-        
+
+    }
+    numbersIdontLike(numberIDontLike: number[]): ValidatorFn {
+        return (control: AbstractControl): { [key: string]: any } | null => {
+            if (control.value == null)
+                return {};
+            if (control.value == null || numberIDontLike.indexOf(parseFloat(control.value)) != -1)
+                return {
+                    notNiceNumber: { value: control.value }
+                };
+            return null;
+        };
     }
 
+    submitTemplateForm(form) {
+        console.log(form);
+    }
+    get diagnostic() { return JSON.stringify(this.model); }
+}
+
+export class DummyformModel {
+    constructor(
+        public name: string,
+        public number: number
+    ) { }
 }

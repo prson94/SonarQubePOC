@@ -13,13 +13,13 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
-            <input igNumberField />
+            <ig-number-input></ig-number-input>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Required</h4>
         <div>
-            <input igNumberField required [(ngModel)]="val1" />
+            <ig-number-input required="true"></ig-number-input>
         </div>
     </div>
     <div class="gallery-section">
@@ -28,53 +28,69 @@
             Click on the first input then tab using your tab keys.
         </p>
         <div class="row">
-            <input igNumberField tabindex="1" />
+            <ig-number-input [tabindex]="1"></ig-number-input>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            <input igNumberField  tabindex="2" />
+            <ig-number-input [tabindex]="2"></ig-number-input>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            <input igNumberField label="I'm 3rd" tabindex="3" />
+            <ig-number-input label="I'm 3rd" [tabindex]="3"></ig-number-input>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            <input igNumberField tabindex="4" />
+            <ig-number-input [tabindex]="4"></ig-number-input>
         </div>
     </div>
     <div class="gallery-section">
-
-    </div>
-    <div class="gallery-section">
-        <h4>Form Validation</h4>
-        <h4>Errors (required/min of 4/max of 10)</h4>
+        <h4>Validation</h4>
         <div>
-            <form #form="ngForm">
-                <input igNumberField required [formControl]="formValue" />
-                <div *ngIf="formValue.invalid && (formValue.dirty || formValue.touched)">
-                    <div *ngIf="formValue.errors.required" class="ig-text-required">
-                        Field is required.
+            Form validation.
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #myForm="ngForm" (ngSubmit)="submitTemplateForm(myForm)">
+                <div class="row">
+                    <b>Template driven forms</b>
+                    <p>template model: {{diagnostic}}</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <ig-number-input [(ngModel)]="model.number" id="number" name="number" #number="ngModel" required="true" [ngModelOptions]="{ updateOn: 'blur' }"></ig-number-input>
+                        <div *ngIf="number.invalid && (number.dirty || number.touched)">
+                            <div *ngIf="number.errors.required" class="ig-text-required">
+                                Please select a number
+                            </div>
+                        </div>
                     </div>
-                    <div *ngIf="formValue.errors.min" class="ig-text-required">
-                        Min Value of 4 is required.
-                    </div>
-                    <div *ngIf="formValue.errors.max" class="ig-text-required">
-                        Max Value of 10 is required.
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
                     </div>
                 </div>
-                <p>with step of 2</p>
-                <input igNumberField required [formControl]="formValue2" step="2" />
-                <div *ngIf="formValue2.invalid && (formValue2.dirty || formValue2.touched)">
-                    <div *ngIf="formValue2.errors.required" class="ig-text-required">
-                        Field is required.
+            </form>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <div class="row">
+                <b>Reactive forms with custom validation</b>
+            </div>
+            <form *ngIf="form != null" [formGroup]="form">
+                <div class="row">
+                    <ig-number-input formControlName="myNumber" required="true">
+                    </ig-number-input>
+                    <div *ngIf="form.get('myNumber').invalid && (form.get('myNumber').dirty || form.get('myNumber').touched)">
+                        <div *ngIf="form.get('myNumber').errors.notNiceNumber" class="ig-text-required">
+                            I dont like 3, 5 or 7
+                        </div>
                     </div>
-                    <div *ngIf="formValue2.errors.min" class="ig-text-required">
-                        Min Value of 4 is required.
-                    </div>
-                    <div *ngIf="formValue2.errors.max" class="ig-text-required">
-                        Max Value of 10 is required.
-                    </div>
+                </div>
+                <div class="row">Value: {{form.get('myNumber').value}}&nbsp;</div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
                 </div>
             </form>
         </div>
