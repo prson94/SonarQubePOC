@@ -1,0 +1,128 @@
+﻿<div class="tile tile-detail">
+    <header>Number Field Directive</header>
+    <p>Angular directive that can be applied to Html input controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <ig-number-input></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div>
+            <ig-number-input required="true"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <ig-number-input disabled="true"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <ig-number-input [tabindex]="1"></ig-number-input>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-number-input [tabindex]="2"></ig-number-input>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-number-input label="I'm 3rd" [tabindex]="3"></ig-number-input>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-number-input [tabindex]="4"></ig-number-input>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Validation</h4>
+        <div>
+            Form validation.
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #myForm="ngForm" (ngSubmit)="submitTemplateForm(myForm)">
+                <div class="row">
+                    <b>Template driven forms</b>
+                    <p>template model: {{diagnostic}}</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <ig-number-input [(ngModel)]="model.number" id="number" name="number" #number="ngModel" required="true" [ngModelOptions]="{ updateOn: 'blur' }"></ig-number-input>
+                        <div *ngIf="number.invalid && (number.dirty || number.touched)">
+                            <div *ngIf="number.errors.required" class="ig-text-required">
+                                Please select a number
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div> 
+        <div>
+            <div class="row">
+                <b>Reactive forms with custom validation</b>
+            </div>
+            <form *ngIf="form != null" [formGroup]="form">
+                <div class="row">
+                    <ig-number-input formControlName="myNumber" required="true">
+                    </ig-number-input>
+                    <div *ngIf="form.get('myNumber').invalid && (form.get('myNumber').dirty || form.get('myNumber').touched)">
+                        <div *ngIf="form.get('myNumber').errors.notNiceNumber" class="ig-text-required">
+                            I dont like 3, 5 or 7
+                        </div>
+                    </div>
+                </div>
+                <div class="row">Value: {{form.get('myNumber').value}}&nbsp;</div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

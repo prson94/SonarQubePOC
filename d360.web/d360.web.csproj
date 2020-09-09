@@ -724,6 +724,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autocomplete.component.html" />
@@ -763,10 +764,12 @@
     <Content Include="Content\styles\infogix-ui\IgAutocomplete.less" />
     <Content Include="Content\styles\infogix-ui\IgTextArea.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.less" />
+    <Content Include="Scripts\app\components\shared\controls\number-picker\number-picker.component.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
+    <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -887,6 +890,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autocomplete.component.ts" />
@@ -1642,6 +1646,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autofocus.directive.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\number-picker\number-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-textarea-directive.ts" />

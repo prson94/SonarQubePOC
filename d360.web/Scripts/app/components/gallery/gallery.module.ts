@@ -41,6 +41,8 @@ import { GalleryGridSelectionInfoComponent } from './gallery.grid-selection-info
 import { SimpleAccordionModule } from '../shared/simple-accordion.part';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
+import { GalleryNumberFieldComponent } from './gallery.number-field.component';
+import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 
 
 @NgModule({
@@ -62,6 +64,7 @@ import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.com
         SimpleAccordionModule,
         SharedGridSelectionInfoModule,
         SharedGridPagingInfoModule,
+        IgNumberFieldModule,
 
         TableModule,
         TooltipModule,
@@ -86,6 +89,7 @@ import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.com
         GalleryAccordionComponent,
         GalleryGridPagingInfoComponent,
         GalleryGridSelectionInfoComponent,
+        GalleryNumberFieldComponent,
     ],
     providers: [
         GalleryGuard,
