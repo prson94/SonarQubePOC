@@ -16,6 +16,7 @@ export class MetricAssetViewModel {
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     VersionCount: number;
+    HasResults: boolean;
 }
 
 export class MetricAssetHistoryViewModel {
@@ -27,6 +28,7 @@ export class MetricAssetHistoryViewModel {
     EffectiveEndDate: Date;
     Weight: number;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
+    HasResults: boolean;
 }
 
 export class MetricAssetVersionConditionViewModel {
