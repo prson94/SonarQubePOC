@@ -7,7 +7,6 @@ import { InputDirective } from './ig-input-directive';
 import { AutocompleteDirective } from './ig-autocomplete-directive';
 import { TextAreaDirective } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
-import { NumberFieldDirective } from './ig-number-directive';
 
 
 @NgModule({ 
@@ -20,8 +19,7 @@ import { NumberFieldDirective } from './ig-number-directive';
         InputDirective,
         TextAreaDirective,
         AutocompleteDirective,
-        AutoFocusDirective,
-        NumberFieldDirective
+        AutoFocusDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -31,8 +29,7 @@ import { NumberFieldDirective } from './ig-number-directive';
         InputDirective,
         TextAreaDirective,
         AutocompleteDirective,
-        AutoFocusDirective,
-        NumberFieldDirective
+        AutoFocusDirective
     ]
 })
 export class DirectivesModule { }
