@@ -5,12 +5,12 @@
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
                     <span class="ig-input-label">Name</span>
-                    <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
+                    <input igInput tabindex="1" class="bottom-margin" igSize="medium" type="text" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
                 </div>
                 <div class="row">
                     <div>
                         <span class="ig-input-label">Description</span>
-                        <textarea igInput tabindex="2" istextarea="true" class="text-area" [(ngModel)]="model.Description" rows="3" [style]="{'width' : '100%'}" maxlength="4000" name="description"></textarea>
+                        <textarea igInput tabindex="2" class="text-area bottom-margin" [(ngModel)]="model.Description" rows="3" [style]="{'width' : '100%'}" maxlength="4000" name="description"></textarea>
                     </div>
                 </div>
                 <div class="measure-two-col">
@@ -19,7 +19,7 @@
                             <div class="ig-input-label">
                                 Effective From
                             </div>
-                            <div (click)="doToggle($event,pc)" class="ig-input calendar" [ngClass]="{'required': !model.EffectiveDate}" (keyup)="keyEvent($event)" >
+                            <div (click)="doToggle($event,pc)" class="ig-input bottom-margin calendar" [ngClass]="{'required': !model.EffectiveDate}" (keyup)="keyEvent($event)" >
                                 <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate | utcDate" [baseZIndex]="20000" [ngModel]="date" (ngModelChange)="date = $event" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
