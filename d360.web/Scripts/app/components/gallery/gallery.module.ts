@@ -34,6 +34,13 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
 import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { GalleryDatePickerComponent } from './gallery.date-picker.component';
+import { GalleryLoadingComponent } from './gallery.loading.component';
+import { GalleryAccordionComponent } from './gallery.accordion.component';
+import { GalleryGridPagingInfoComponent } from './gallery.grid-paging-info.component';
+import { GalleryGridSelectionInfoComponent } from './gallery.grid-selection-info.component';
+import { SimpleAccordionModule } from '../shared/simple-accordion.part';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 
 
 @NgModule({
@@ -52,6 +59,9 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         TagPickerModule,
         IgColorPickerModule,
         IgDateModule,
+        SimpleAccordionModule,
+        SharedGridSelectionInfoModule,
+        SharedGridPagingInfoModule,
 
         TableModule,
         TooltipModule,
@@ -72,6 +82,10 @@ import { GalleryDatePickerComponent } from './gallery.date-picker.component';
         GalleryTextAreaComponent,
         GalleryAutoFocusComponent,
         GalleryDatePickerComponent,
+        GalleryLoadingComponent,
+        GalleryAccordionComponent,
+        GalleryGridPagingInfoComponent,
+        GalleryGridSelectionInfoComponent,
     ],
     providers: [
         GalleryGuard,
