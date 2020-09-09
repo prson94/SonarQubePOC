@@ -69,7 +69,7 @@ import { PredicateFriendlyType } from '../../../models/predicate.model';
                                         <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
                                     </td>
                                     <td>
-                                        <div *ngIf="item?.Predicate.Type != 'Diagram' && item?.Predicate.Type != 'DiagramUse'" class="RowTools">
+                                        <div *ngIf="item?.Predicate.Type != 'Diagram' && item?.Predicate.Type != 'DiagramUse' && item?.Predicate.Type != 'DiagramReference'" class="RowTools">
                                             <a style="cursor:pointer;" title="Download all relationships in this type" (click)="downloadRel(item)"><i class="fa fa-download"></i></a>
                                         </div>
                                     </td>
