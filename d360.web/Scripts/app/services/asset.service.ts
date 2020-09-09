@@ -121,21 +121,6 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    public deleteAssetType(uid: string): Observable<any> {
-        const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-            body: { Uid: uid, Cascade: true }
-        };
-
-        return this
-            .http
-            .delete(`api/v2/assets/single`, httpOptions)
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     public getAssetTypeLegacyData(uid: string): Observable<any> {
         return this.http.get(`/api/v2/assets/assetTypeLegacyData/${uid}`)
             .pipe(map(res => { return <any>res[0] }),

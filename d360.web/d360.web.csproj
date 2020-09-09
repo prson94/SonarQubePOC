@@ -624,6 +624,7 @@
     <Content Include="Content\primeng\v9.1.0\images\password-meter.png" />
     <Content Include="Content\primeng\v9.1.0\primeng.css" />
     <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
+    <Content Include="Content\primeng\v9.1.0\theme.css" />
     <Content Include="Content\primeng\v9.1.0\theme.less" />
     <Content Include="Content\primeng\v9.1.0\theme.min.css" />
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
@@ -719,6 +720,10 @@
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
@@ -828,6 +833,7 @@
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
     <Content Include="Scripts\app\components\sidebar\dashboard\dashboard.component.html" />
     <Content Include="Scripts\app\components\sidebar\dashboard\powerbi-viewer.component.html" />
+    <Content Include="Scripts\app\components\connector-label\connector-label-item.component.html" />
     <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.html" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="images\error.png" />
@@ -880,6 +886,10 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
@@ -1467,6 +1477,7 @@
     <Content Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-label-form.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.ts" />
@@ -1602,6 +1613,10 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
     <Content Include="Scripts\app\components\tag\tag-item.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\connector-label\connector-label.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />

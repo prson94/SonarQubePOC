@@ -34,6 +34,13 @@ import { GalleryTextAreaComponent } from './gallery.textarea.component';
 import { GalleryAutoFocusComponent } from './gallery.autofocus.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { GalleryDatePickerComponent } from './gallery.date-picker.component';
+import { GalleryLoadingComponent } from './gallery.loading.component';
+import { GalleryAccordionComponent } from './gallery.accordion.component';
+import { GalleryGridPagingInfoComponent } from './gallery.grid-paging-info.component';
+import { GalleryGridSelectionInfoComponent } from './gallery.grid-selection-info.component';
+import { SimpleAccordionModule } from '../shared/simple-accordion.part';
+import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
+import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 
@@ -54,6 +61,9 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
         TagPickerModule,
         IgColorPickerModule,
         IgDateModule,
+        SimpleAccordionModule,
+        SharedGridSelectionInfoModule,
+        SharedGridPagingInfoModule,
         IgNumberFieldModule,
 
         TableModule,
@@ -75,6 +85,10 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
         GalleryTextAreaComponent,
         GalleryAutoFocusComponent,
         GalleryDatePickerComponent,
+        GalleryLoadingComponent,
+        GalleryAccordionComponent,
+        GalleryGridPagingInfoComponent,
+        GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
     ],
     providers: [

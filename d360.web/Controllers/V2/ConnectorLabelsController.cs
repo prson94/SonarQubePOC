@@ -125,7 +125,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                IEnumerable<dynamic> response = ConnectorLabelRepository.GetConnectorLabelUsage(labelUid);
+                IEnumerable<dynamic> response = ConnectorLabelRepository.GetConnectorLabelUsage(labelUid, Request.GetQueryNameValuePairs());
 
                 if (isStreamResponse)
                 {

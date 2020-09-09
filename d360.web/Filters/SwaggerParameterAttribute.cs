@@ -45,6 +45,22 @@ namespace d360.web.Filters
                     @enum = (attribute.Enum == null) ? null : Enum.GetNames(attribute.Enum).Cast<object>().ToList()
                 });
             }
+
+            if (operation.operationId.Equals("ExportTemplates_PostTemplateFile", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (operation.parameters == null)
+                    operation.parameters = new List<Parameter>(1);
+                
+                operation.parameters.Add(new Parameter
+                {
+                    name = "File",
+                    @in = "formData",
+                    description = "Upload template file",
+                    required = true,
+                    type = "file"
+                });
+                operation.consumes.Add("multipart/form-data");
+            }
         }
     }
 }

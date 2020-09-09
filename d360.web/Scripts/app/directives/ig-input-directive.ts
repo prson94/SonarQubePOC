@@ -1,65 +1,74 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
-import { NG_VALIDATORS, AbstractControl } from '@angular/forms';
+import { ControlValueAccessor } from '@angular/forms';
 
 @Directive({
     selector: '[igInput]'
 
 })
-export class InputDirective implements AfterViewInit, OnDestroy {
+export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAccessor {
 
-    @Input() tooltip: string;
-    public _label: string;
-    public _istextarea: boolean;
-    private control: AbstractControl;
+   
+    public _size: string;
+
+    protected value: string;
+    protected disabled: boolean;
+    onModelChange: Function = () => { };
+    onModelTouched: Function = () => { };
+
     constructor(public el: ElementRef) { }
 
+    writeValue(obj: string): void {
+        this.value = obj;
+    }
+
+    registerOnChange(fn: any): void {
+        this.onModelChange = fn;
+    }
+
+    registerOnTouched(fn: any): void {
+        this.onModelTouched = fn;
+    }
+
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled = isDisabled;
+    }
+
+
     ngAfterViewInit() {
+
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
-        if (this.tooltip) {
-            this.el.nativeElement.setAttribute("title", this.tooltip);
-            this.el.nativeElement.setAttribute("aria-label", this.tooltip);
+        if (!this.el.nativeElement.placeholder) {
+            if (this.el.nativeElement.required) {
+                this.el.nativeElement.placeholder = "Value Required";
+            } else {
+                this.el.nativeElement.placeholder = "Optional";
+            }
         }
+
     }
 
     getStyleClass(): string {
         return 'ig-input';
     }
 
-    @Input() get label(): string {
-        return this._label;
+    @Input() get igSize(): string {
+        return this._size;
     }
-    set label(val: string) {
-        this._label = val;
-
-        let labelElement = DomHandler.findSingle(this.el.nativeElement, '.ig-input-label');
-        if (labelElement) {
-            this.el.nativeElement.removeChild(labelElement);
-        }
-
-        if (this._label) {
-            labelElement = document.createElement("span");
-            labelElement.className = 'ig-input-label';
-            labelElement.appendChild(document.createTextNode(this.label));
-            this.el.nativeElement.parentNode.insertBefore(labelElement, this.el.nativeElement);
-            DomHandler.removeClass(this.el.nativeElement, "ig-input-icon-only");
-        } else {
-            DomHandler.addClass(this.el.nativeElement, "ig-input-icon-only");
-            throw new Error("Infogix Button Component: caption has not been set");
+    set igSize(val: string) {
+        this._size = val;
+        if (this._size && this._size == "small") {
+            DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-small");
+        } else if (this._size && this._size == "medium") {
+            DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-medium");
+        } else if (this._size && this._size == "large") {
+            DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-large");
+        } else if (this._size && this._size == "full") {
+            DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-full");
         }
     }
 
-    @Input() get istextarea(): boolean {
-        return this._istextarea;
-    }
-
-    set istextarea(val: boolean) {
-        this._istextarea = val;
-        if (this._istextarea) {
-            DomHandler.addMultipleClasses(this.el.nativeElement, "text-area");
-        }
-    }
 
     ngOnDestroy() {
         while (this.el.nativeElement.hasChildNodes()) {

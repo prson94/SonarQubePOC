@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -520,6 +521,10 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
             }
+            catch (GenericException ex)
+            {
+                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
+            }
             catch
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
@@ -558,6 +563,10 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(model.Count);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
+            }
+            catch (GenericException ex)
+            {
+                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
             }
             catch
             {

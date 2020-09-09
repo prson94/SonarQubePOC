@@ -45,14 +45,6 @@ export class ScoreService extends BaseObservableService  {
             );
     }
 
-    getScoreitemDetails(uid: string, date: string = null): Observable<any> {
-        return this.http.get(`/api/v2/metrics/${uid}/definitionFromAsset` + (date == null ? '' : `?effectiveDate=${date}`))
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getScoreTypes(assetUid: string): Observable<number[]> {
         return this.http.get(`/api/v2/metrics/ScoreTypes/${assetUid}`)
             .pipe(

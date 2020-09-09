@@ -260,7 +260,7 @@ namespace d360.web.Controllers
                     objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
                 case "EXPORTTEMPLATE":
-                    objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.uid == uid).ID;
+                    objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
                 default:
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
@@ -521,8 +521,6 @@ namespace d360.web.Controllers
             {                
                 case "APIFIELD":
                     return DeleteApiField(form);
-                case "ARTIFACTTYPE":
-                    return DeleteArtifactType(objectID);
                 case "CONTRACT":
                     return DeleteContract(objectID);
                 case "CUSTOMSYNONYM":
@@ -571,7 +569,7 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIVersion(form);
             }
 
-            throw new Exception("Invalid / unsupported edit type");
+            throw new Exception("Invalid / unsupported delete type");
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
@@ -2846,6 +2844,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var template = Company.AssetTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
 
+            string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
+
+            template.IncludeFieldTypes = Company.Database.Connection.Query<string>(templateFieldTypesSQL, new { templateId = template.ID }).ToArray();
+
             var list = new List<EditableField>();
             var assetPaths = Company.GetAssetTypePathsByAssetClasses(
                 new List<int>()
@@ -2855,7 +2857,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     { (int) AssetTypeClass.Rule }
                 });
             list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
-            list.Add(new EditableField { FieldName = "IncludeFields", Name = "IncludeFields", FieldType = DataType.Hidden.ToString(), Value = (string.IsNullOrEmpty(template.IncludeFields) ? "" : template.IncludeFields.ToString()) });
+            list.Add(new EditableField { FieldName = "Uid", Name = "Uid", FieldType = DataType.Hidden.ToString(), Value = template.Uid.ToString() });
+            list.Add(new EditableField { FieldName = "IncludeFieldTypes", Name = "IncludeFieldTypes", FieldType = DataType.Hidden.ToString(), Value = template.IncludeFieldTypes == null ? template.IncludeFieldTypes.ToString() : null });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.Description });
             var names = Enum.GetNames(typeof(ExportView)).Select(i => new SelectListItem { Text = i, Value = i, Selected = template.ExportViewType.ToString() == i }).ToList();

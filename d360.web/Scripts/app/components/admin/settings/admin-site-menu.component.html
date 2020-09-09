@@ -52,7 +52,7 @@
                                 <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
                             </div>
                             <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
-                                <ig-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl></ig-icon-picker>
+                                <ig-icon-picker [(ngModel)]="selection.Icon" ngDefaultControl required></ig-icon-picker>
                             </div>
                             <div>
                                 <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
@@ -171,7 +171,7 @@
                                 <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
                             </div>
                             <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
-                                <ig-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl></ig-icon-picker>
+                                <ig-icon-picker [(ngModel)]="newFolder.Icon" ngDefaultControl required></ig-icon-picker>
                             </div>
                             <div>
                                 <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon

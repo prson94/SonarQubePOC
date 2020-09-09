@@ -1,0 +1,56 @@
+﻿<div class="tile tile-detail">
+    <header>Grid Paging</header>
+    <p>Angular control that displays paging info paged on locale settings.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Example</header>
+    <div class="gallery-section">
+        <p-table #dt [value]="items" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50, 100, 500]">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr>
+                    <td>{{item.name}}</td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+        <div>
+
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

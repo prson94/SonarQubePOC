@@ -23,15 +23,22 @@
                 <ng-template *ngIf="message">
                     <form-message [message]="message"></form-message>
                 </ng-template>
-                <ng-container *ngIf="confirmationText && !isUsageLoading">
+            </div>
+        </div>
+
+        <ng-container *ngIf="confirmationText && !isUsageLoading">
+            <div class="confirmation-wrapper row">
+                <div class="s12">
+                    <p>
+                        Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
+                    </p>
                     <p>
                         <p-checkbox igAutoFocus [(ngModel)]="isConfirmed" [binary]="true" label="{{confirmationText}}"></p-checkbox>
                     </p>
-
-                </ng-container>
-
+                </div>
             </div>
-        </div>
+            <div class="clearfix"></div>
+        </ng-container>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
                 <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>

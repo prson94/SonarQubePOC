@@ -26,6 +26,7 @@ import { WhereUsedModule } from '../../shared/where-used/where-used.module';
 import { ConnectorLabelsFormComponent } from './connector-label-form.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { ConnectorLabelFormModule } from './connector-label-form.module';
 
 @NgModule({
     imports: [
@@ -58,11 +59,12 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         TilesModule,
         SiteModalModule,
         WhereUsedModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+
+        ConnectorLabelFormModule
     ],
     declarations: [
-        ConnectorLabelsComponent,
-        ConnectorLabelsFormComponent
+        ConnectorLabelsComponent
     ],
     providers: [
         {

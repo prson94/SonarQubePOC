@@ -396,7 +396,7 @@ from    api.ExecutionMeasure T
                             and EffectiveDate = VEff.EffectiveDate
                     ) VUid
         left join metrics.ScoreItemLink Sil on Sil.ScoreUid = S.ScoreUid
-        left join metrics.ScoreItem Si on Si.Uid = Sil.ScoreItemUid and Si.AssetVersionUid = VUid.Uid and Si.Value = T.Passed
+        left join metrics.ScoreItem Si on Si.Uid = Sil.ScoreItemUid and Si.AssetVersionUid = VUid.Uid
 where   T.ExecutionID = @ExecutionID"
             , new { execution.ExecutionID, scoreType = (int)scoreType }
             , commandTimeout: timeout);

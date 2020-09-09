@@ -946,5 +946,32 @@ delete [metrics].[RollupPath]
 exec [metrics].[CalculateRollups]
 ]]>
 		</sql>
+	</changeSet>	
+		<changeSet author="bquinlivan" id="Data.Corrections.GOV-11741-1">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+Update AssetTypeExportTemplate
+set CreatedBy = UpdatedBy, CreatedOn = UpdatedOn
+where CreatedBy is null
+]]>
+		</sql>
+	</changeSet>
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-11741-2">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+if((select Count(1) from AssetTypeExportTemplateField) = 0) BEGIN
+insert into AssetTypeExportTemplateField (templateId, FieldTypeId, [Order])
+select 
+	ATET.ID as templateId, 
+	includeFields.value as FieldTypeId, 
+	ROW_NUMBER() OVER(ORDER BY (SELECT NULL)) AS [Order] 
+FROM 
+	AssetTypeExportTemplate ATET 
+	CROSS APPLY 
+	STRING_SPLIT(IncludeFields, ',') includefields
+	inner join FieldType FT on FT.ID = includeFields.value
+END
+]]>
+		</sql>
 	</changeSet>
  </databaseChangeLog>

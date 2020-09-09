@@ -4,11 +4,13 @@
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
-                    <input igInput tabindex="1" class="big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
+                    <span class="ig-input-label">Name</span>
+                    <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
                 </div>
                 <div class="row">
                     <div>
-                        <textarea igInput tabindex="2" istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" rows="3" [style]="{'width' : '100%'}" maxlength="4000" name="description"></textarea>
+                        <span class="ig-input-label">Description</span>
+                        <textarea igInput tabindex="2" istextarea="true" class="text-area" [(ngModel)]="model.Description" rows="3" [style]="{'width' : '100%'}" maxlength="4000" name="description"></textarea>
                     </div>
                 </div>
                 <div class="measure-two-col">

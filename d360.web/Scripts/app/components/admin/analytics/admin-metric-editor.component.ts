@@ -193,6 +193,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.model.EffectiveDate = condate;
         }
 
+        this.model.MatchConditionsOnly = true;
+
         this.model.ConditionGroups.forEach(g => {
             g.ConditionItems.forEach(c => {
                 if (!c.Values) {

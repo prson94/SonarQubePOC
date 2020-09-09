@@ -30,6 +30,8 @@ namespace d360.core.entities.Metric
         [DataMember]
         public DateTime? EndDate { get; set; }
 
+        public string VersionValueHash { get; set; }
+
         public ICollection<ScoreItem> Items { get; set; }
     }
 

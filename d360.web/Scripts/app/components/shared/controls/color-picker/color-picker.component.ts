@@ -1,5 +1,5 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -36,11 +36,12 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ColorPickerComponent implements ControlValueAccessor, OnInit {
+export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges {
 
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = 'Optional';
     @Input() selectedColor: string;
+    @Input() invalidOptions: string[] = [];
     @Input() disabled: boolean = false;
     @Input() styleClass: string = '';
     @Input() style: any;
@@ -55,9 +56,26 @@ export class ColorPickerComponent implements ControlValueAccessor, OnInit {
 
     constructor(private ref: ChangeDetectorRef) {
     }
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["colors"]) {
+            this.colors.forEach(x => {
+                if (this.invalidOptions.indexOf(x.value) != -1) {
+                    x.disabled = true;
+                } else {
+                    x.disabled = false;
+                }
+            });
+        }
+    }
+
+    ngAfterViewInit(): void {
+        if (this.invalidOptions.indexOf(this.selectedColor) != -1) {
+            this.writeValue(null);
+        }
+        this.ref.markForCheck();
+    }
 
     writeValue(obj: string): void {
-
         this.selectedColor = obj;
         this.onModelChange(this.selectedColor);
         this.selectedColorChange.emit(this.selectedColor);
@@ -74,11 +92,6 @@ export class ColorPickerComponent implements ControlValueAccessor, OnInit {
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled
-    }
-
-
-    ngOnInit() {
-
     }
 
     private itemChanged(item: any) {

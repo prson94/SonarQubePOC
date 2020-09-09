@@ -10,6 +10,7 @@ using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -277,9 +278,21 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         internal decimal AdjustScoreItemWeights(
             List<AllocationDataModel> allMeasures, List<ScoreItem> items)
         {
+            var all = new List<AllocationDataModel>(allMeasures);
+
+            var measuresThatAreNotPresent = all.Where(m => !m.IsGroup && !items.Any(i => i.MetricAssetUid == m.MetricAssetUid)).Select(m => m.MetricAssetUid);
+            all.RemoveAll(m => measuresThatAreNotPresent.Contains(m.MetricAssetUid));
+
+            var groupsWithoutAChild = all
+                .Where(g => !g.MetricParentAssetUid.HasValue  && g.IsGroup  && !all.Any(c => c.MetricParentAssetUid == g.MetricAssetUid))
+                .Select(g => g.MetricAssetUid)
+                .Distinct()
+                .ToList();
+            all.RemoveAll(m => groupsWithoutAChild.Contains(m.MetricAssetUid));
+
             decimal scoreValue = 0;
 
-            var rootUids = allMeasures.Where(o => !o.MetricParentAssetUid.HasValue).Select(o => o.MetricAssetUid).ToList();
+            var rootUids = all.Where(o => !o.MetricParentAssetUid.HasValue).Select(o => o.MetricAssetUid).ToList();
             
             // Root-level measures
             foreach(var o in items.Where(o => rootUids.Contains(o.MetricAssetUid)))
@@ -289,10 +302,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                 decimal totalChildPassingWeights = 0;
                 // Child-level measures.
-                if (allMeasures.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
+                if (all.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
                 {
                     var childMeasures = (from item in items 
-                                        join m in allMeasures on item.MetricAssetUid equals m.MetricAssetUid
+                                        join m in all on item.MetricAssetUid equals m.MetricAssetUid
                                         where m.MetricParentAssetUid == o.MetricAssetUid
                                         select item).ToList();
 
@@ -304,7 +317,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     }
                 }
 
-                var rootMeasure = allMeasures.Single(r => r.MetricAssetUid == o.MetricAssetUid);
+                var rootMeasure = all.Single(r => r.MetricAssetUid == o.MetricAssetUid);
                 if (rootMeasure.IsGroup)
                 {
                     o.AdjustedWeight = totalChildPassingWeights * (o.AdjustedMaxWeight ?? 0);

@@ -54,5 +54,6 @@ namespace d360.model.DataAccessLayer
         Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
         Task<dynamic> GetAssetSingle(Guid assetUid);
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
+        Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
     }
 }

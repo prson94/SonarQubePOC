@@ -105,14 +105,6 @@ export class ArtifactTypeService extends BaseObservableService {
         });
     }
 
-    public deleteArtifactType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
-    }
-
-    public deleteDiagramType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'diagram', id);
-    }
-
     public getFilterListItems(
         id: number,
         type: string,

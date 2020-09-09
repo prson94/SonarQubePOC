@@ -2,12 +2,11 @@
     Name: string;    
     Description: string;
     ID: number;
-    AssetTypeID: number;
     AssetTypeUID: string;
-    IncludeFields: string;
+    IncludeFieldTypes: string[];
     HasTemplateFile: boolean;
     ExportViewType: ExportViewType;
-    uid: string;
+    Uid: string;
 }
 
 export class ExportTemplateStyle {

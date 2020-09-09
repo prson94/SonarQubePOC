@@ -22,25 +22,19 @@ export class GalleryInputComponent implements OnInit {
     protected sampleUsage: string = '<input igInput type="text" name="name" maxlength="250" />';
     protected loadingState: boolean = false;
     protected disabledState: boolean = false;
-    protected clicks: string[] = [];
+    protected showError: boolean = false;
+    protected showError2: boolean = false;
+    private formValue: string;
+    private val1: string;
+    private val2: string;
 
     ngOnInit(): void {
         this.properties = new Array();
-        this.properties.push({ Name: "label", Type: "string", Description: "Text of the button. Buttons without a label must always provide a tooltip.", Default: "" });
-        this.properties.push({ Name: "icon", Type: "string", Description: "Name of the icon.", Default: "" });
-        this.properties.push({ Name: "tooltip", Type: "string", Description: "Tooltip for button. Must be provided if there is no label. Will also be used as ARIA label.", Default: "" });
-        this.properties.push({ Name: "loading", Type: "boolean", Description: "When present, it specifies that the component should be in loading state. When loading, the button is also disabled.", Default: "false" });
+        this.properties.push({ Name: "igSize", Type: "string", Description: "Sixe of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
     }
 
     toggleDisabled() {
         this.disabledState = !this.disabledState;
     }
 
-    toggleLoading() {
-        //Removing loading state enables the button, so we'll update the disabledState flag to match
-        if (this.loadingState && this.disabledState)
-            this.disabledState = false;
-
-        this.loadingState = !this.loadingState;
-    }
 }

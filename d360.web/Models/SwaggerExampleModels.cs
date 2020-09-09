@@ -352,4 +352,23 @@ namespace d360.web.Models
     }
     #endregion
 
+    #region Export Template Examples
+
+    public class ExportTemplateUpsertExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new AssetTypeExportTemplateUpsertRequest
+            {
+                Name = "Export Template Name",
+                Description = "A meaningful description of what this Export Template.",
+                UsageNotes = "string",
+                IncludeFieldTypes = new string[] { "Name" },
+                ExportViewType = ExportView.None
+            };
+        }
+    }
+
+    #endregion
+
 }

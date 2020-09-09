@@ -39,46 +39,56 @@
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Tab index</h4>
+        <h4>Invalid color (Sky)</h4>
         <div>
-            <p>
-                Click on the first input then tab using your tab keys(space bar to open dropdown).
-            </p>
-            <div class="row">
-                <input igInput type="text" tabindex="1" />
-            </div>
-            <div class="row">&nbsp;</div>
-            <div class="row">
-                <input igInput type="text" tabindex="2" />
-            </div>
-            <div class="row">&nbsp;</div>
-            <div class="row">
-                <ig-color-picker [colors]="defaultColors" [tabindex]="3" [selectedColor]="amodel"></ig-color-picker>
-                <div>tab index of 3</div>&nbsp;
-            </div>
-            <div class="row">
-                <input igInput type="text" tabindex="4" />
-            </div>
+            <ig-color-picker [colors]="defaultColors" [selectedColor]="chosenColor" (selectedColorChange)="onColorSelect($event,3)" [invalidOptions]="invalidOptions"></ig-color-picker>
+            <div>Chosen color: Sky</div>
+            <h5>invalid options: </h5>
+            <span *ngFor="let c of invalidOptions">{{c}} </span>
+
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Form Validation</h4>
-        <p>The color-picker supports Angular native form validation.  Validators such as required can be used and styles can be specified on the control to meet your needs.</p>
-        <form #form="ngForm">
-            <div class="row">
-                <ig-color-picker name="colorpicker" [colors]="defaultColors" [(ngModel)]="formVal" #colorpicker="ngModel" required [placeholder]="'required'" [styleClass]="colorpicker?.errors?.required ? 'required' : ''"></ig-color-picker>
-                <span *ngIf="colorpicker.invalid && (colorpicker.dirty || colorpicker.touched)" class="error-message">
-                    <span *ngIf="colorpicker.errors.required">
-                        Value required
-                    </span>
-                </span>
-            </div>
-            <div class="row">value: {{formVal}}</div>
-            <div class="row">
-                <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
-            </div>
-        </form>
-    </div>
+         <h4>Tab index</h4>
+         <div>
+             <p>
+                 Click on the first input then tab using your tab keys(space bar to open dropdown).
+             </p>
+             <div class="row">
+                 <input igInput type="text" tabindex="1" />
+             </div>
+             <div class="row">&nbsp;</div>
+             <div class="row">
+                 <input igInput type="text" tabindex="2" />
+             </div>
+             <div class="row">&nbsp;</div>
+             <div class="row">
+                 <ig-color-picker [colors]="defaultColors" [tabindex]="3" [selectedColor]="amodel"></ig-color-picker>
+                 <div>tab index of 3</div>&nbsp;
+             </div>
+             <div class="row">
+                 <input igInput type="text" tabindex="4" />
+             </div>
+         </div>
+     </div>
+     <div class="gallery-section">
+         <h4>Form Validation</h4>
+         <p>The color-picker supports Angular native form validation.  Validators such as required can be used and styles can be specified on the control to meet your needs.</p>
+         <form #form="ngForm">
+             <div class="row">
+                 <ig-color-picker name="colorpicker" [colors]="defaultColors" [(ngModel)]="formVal" #colorpicker="ngModel" required [placeholder]="'required'" [styleClass]="colorpicker?.errors?.required ? 'required' : ''"></ig-color-picker>
+                 <span *ngIf="colorpicker.invalid && (colorpicker.dirty || colorpicker.touched)" class="error-message">
+                     <span *ngIf="colorpicker.errors.required">
+                         Value required
+                     </span>
+                 </span>
+             </div>
+             <div class="row">value: {{formVal}}</div>
+             <div class="row">
+                 <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+             </div>
+         </form>
+     </div>
 
 </div>
 

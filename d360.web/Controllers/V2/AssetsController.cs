@@ -285,7 +285,7 @@ namespace d360.web.Controllers.V2
                         {
                             return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid exportTemplateUID value."));
                         }
-                        var template = Company.AssetTypeExportTemplates.Where(x => x.uid == exportTemplateUID).FirstOrDefault();
+                        var template = (await AssetRepository.GetExportTemplates(exportTemplateUID: exportTemplateUID)).FirstOrDefault();
 
                         if (template == null)
                         {
@@ -1972,17 +1972,17 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
-        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{executionUid:Guid}/status"),
+            Route("executions/{executionID:Guid}/status"),
             SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
         {
             var prefix = "Assets.GetExecutionStatus => ";
             var errorMessage = "";
@@ -1997,7 +1997,7 @@ namespace d360.web.Controllers.V2
                     bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
                 }
 
-                var res = await AssetRepository.GetExecutionStatusModel(executionUid, !summaryOnly);
+                var res = await AssetRepository.GetExecutionStatusModel(executionID, !summaryOnly);
                 if (res == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
@@ -2020,7 +2020,8 @@ namespace d360.web.Controllers.V2
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
-                    { "ExecutionUid", executionUid.ToString() }
+                    { "ExecutionID", executionID.ToString() },
+                    { "ExecutionUid", executionID.ToString() }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
@@ -2266,17 +2267,17 @@ namespace d360.web.Controllers.V2
         private SLDocument GetCustomExportSheet(AssetType assetType, AssetTypeExportTemplate template, List<FieldType> fieldsForCustomExport, AssetsApiViewModel results)
         {
             var data = results.items;
-            if (!string.IsNullOrEmpty(template.IncludeFields))
+            if (!(template.IncludeFieldTypes == null || template.IncludeFieldTypes.Length <= 0))
             {
                 var allFieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
-                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+                var fieldTypeList = template.IncludeFieldTypes;
 
                 fieldsForCustomExport.Clear();
 
                 //done this way to set order of fields in spreadsheet to the order specified in include fields.
-                foreach (var fieldId in fieldIdList)
+                foreach (var fieldName in fieldTypeList)
                 {
-                    var field = allFieldTypes.FirstOrDefault(x => x.ID == fieldId);
+                    var field = allFieldTypes.FirstOrDefault(x => x.Name.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase));
                     if (field != null) fieldsForCustomExport.Add(field);
                 }
             }

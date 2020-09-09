@@ -467,5 +467,129 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
-    }
+
+
+        /// <summary>
+        /// Updates a workflow action type
+        /// </summary>
+        /// <param name="model">The information of the workflow action type to be updated</param>
+        [
+            Route("type"),
+            HttpPut,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Workflow Action Type successfully Updated.", typeof(AddIssueTypeApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "User is not an administrator.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> UpdateWorkflowActionType(AddWorkFlowAction model)
+        {
+            var prefix = "Issues.AddWorkflowActionType => ";
+            AddIssueTypeApiModel result = new AddIssueTypeApiModel();
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
+
+                if (model.Uid == null || model.Uid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid Uid is required."));
+                }
+
+                var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == model.Uid);
+
+                if (issueType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The Uid provided is invalid."));
+
+
+                if (model.Name == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name is a required field."));
+                }
+
+                if (string.IsNullOrEmpty(model.Name.Trim()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Empty string provided for Name. Cannot be empty."));
+
+                if (model.Name.Trim().Length > 250)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name provided must be less then 250 characters in length."));
+
+                var validName = Company.IssueTypes.Any(i => i.Name.ToLower() == model.Name.Trim().ToLower() && i.uid != model.Uid);
+
+                if (validName)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Name must be unique. Workflow action already exists with this name"));
+
+                if (model.Description == null)
+                {
+                    model.Description = issueType.Description;
+                }
+
+                var updateSQL = $@"Update [dbo].[IssueType]
+                                        set [Name]= @name, [Description]=@desc, [UpdatedOn] = @date ,[UpdatedBy] = @user
+                                   Where uid = @uid";
+                    
+
+                var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
+                new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });                
+
+                result.Uid = (Guid)model.Uid;
+                result.Message = "Action Type updated";
+                result.Success = true;
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+        
+        /// <summary>
+        /// Deletes a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type to be deleted</param>
+        [
+            Route("type/{actionTypeUid:Guid}"),
+            HttpDelete,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Action Type was deleted.", typeof(AddIssueTypeApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteWorkflowActionType(Guid actionTypeUid, DeleteIssueTypeAPIModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Forbidden user is not an administrator."));
+
+            if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid actionTypeUid must be provided."));
+            }
+
+            var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+            if (issueType == null)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided."));
+
+            if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID) || Company.IssueTypeRelations.Any(x => x.IssueTypeID == issueType.ID)))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions / allocations. Enable on cascade request to delete."));
+            }
+
+            var deleteSQL = $@" DELETE FROM IssueTypeRelation Where IssueTypeID = @issueTypeId
+                                
+                                DELETE FROM Issue Where IssueTypeID = @issueTypeId
+                                
+                                DELETE FROM IssueType Where uid = @uid";
+
+            var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
+                new { uid = actionTypeUid , issueTypeId = issueType.ID});
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true })));
+        }
+    }    
 }
