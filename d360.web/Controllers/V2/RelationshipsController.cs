@@ -1037,18 +1037,18 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
-        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <param name="executionID">The execution's unique identifier to retrieve status for.</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{executionUid:Guid}/status"),
+            Route("executions/{executionID:Guid}/status"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionID)
         {
             var prefix = "Relationships.GetExecutionStatus => ";
             var errorMessage = "";
@@ -1062,14 +1062,14 @@ namespace d360.web.Controllers.V2
                     bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "summaryonly").Value, out summaryOnly);
                 }
 
-                var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
+                var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionID);
 
                 if (dbExecutionItem == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
                 }
 
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
+                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionID };
 
                 List<DatabaseBulkAssetResult> results = null;
                 bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
