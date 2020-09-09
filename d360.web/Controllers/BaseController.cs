@@ -120,7 +120,7 @@ namespace d360.web.Controllers
             Company = company;
         }
 
-        internal bool HideData3SixtyUsers()
+        protected internal bool HideData3SixtyUsers()
         {
             var hideData3SixtyUsers = false;
             var settings = Community.GetCompanySettings();
@@ -131,7 +131,7 @@ namespace d360.web.Controllers
             return hideData3SixtyUsers;
         }
 
-        internal IQueryable<Resource> GetCompanyResources()
+        protected internal IQueryable<Resource> GetCompanyResources()
         {
             return (
                    from cr in Community.Table<CompanyResource>()
@@ -150,7 +150,7 @@ namespace d360.web.Controllers
             public HttpStatusCode Code { get; set; }
         }
 
-        internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
+        protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
         {
             var acceptHeaders = Request.Headers.Accept;
             var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
@@ -159,7 +159,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
+        protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {
             var telemetry = new TelemetryClient();
             if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
@@ -167,7 +167,7 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
-        internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
+        protected internal System.Web.Http.IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
             return ResponseMessage(
                 Request.CreateResponse(
@@ -177,7 +177,7 @@ namespace d360.web.Controllers
             );
         }
 
-        internal System.Web.Http.IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
+        protected internal System.Web.Http.IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
         {
             return ResponseMessage(
                 Request.CreateResponse(
@@ -187,7 +187,7 @@ namespace d360.web.Controllers
             );
         }
 
-        internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
+        protected internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (properties == null) properties = new Dictionary<string, string>();
             var telemetry = new TelemetryClient();
@@ -196,7 +196,7 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
-        internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
+        protected internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
         {
             var response = Request.CreateResponse(status);
             response.Content = new ByteArrayContent(content);
@@ -211,12 +211,12 @@ namespace d360.web.Controllers
 
         #region Private Methods
 
-        internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
+        protected internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
         {
             Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFieldName, checkForListable, null, coreTableIdJoinColumn, false, enableRelationFields, checkForKeyColumn);
         }
 
-        internal string applyFilteringSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
+        protected internal string applyFilteringSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
         {
             var query = Request.GetQueryStrings();
 
@@ -287,13 +287,13 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        internal bool isValidFieldName(string field)
+        protected internal bool isValidFieldName(string field)
         {
             var nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z][a-zA-Z0-9._-]+$");
             return nameRegex.IsMatch(field);
         }
 
-        internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
+        protected internal string applySortSuffix(string sql, System.Net.Http.HttpRequestMessage Request, string sortDefaultField = "Name", string sortOrder = "asc", string sortFieldType = "string")
         {
             string sortDataField = "";
 
@@ -332,7 +332,7 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        internal string applyPagingSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
+        protected internal string applyPagingSuffix(string sql, System.Net.Http.HttpRequestMessage Request)
         {
             int pagenum = 0;
             int pagesize = 20;
@@ -353,7 +353,7 @@ namespace d360.web.Controllers
             return sql;
         }
 
-        internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        protected internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
         {
 
             var execution = new ApiExecution
