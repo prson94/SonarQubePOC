@@ -56,9 +56,12 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 20)]
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
-        
+
         [DataMember, JsonProperty(Order = 21)]
         public int VersionCount { get; set; }
+
+        [DataMember, JsonProperty(Order = 22)]
+        public bool HasResults { get; set; } = false;
     }
 
     [DataContract]
@@ -204,6 +207,6 @@ namespace d360.core.entities.Metric
         public DateTime? EffectiveEndDate { get; set; }
         public double Weight { get; set; }
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
-
+        public bool HasResults { get; set; } = false;
     }
 }

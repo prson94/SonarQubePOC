@@ -168,9 +168,6 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            var existingResultCount = 0;
-            var childMetricCount = 0;
-
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
             var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
             var operatorErrorMessage = "";
@@ -293,14 +290,14 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             }
             else 
             {
-                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", new { model.Uid }).Single();
-                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", new { model.Uid }).Single();
-
                 metricAsset.UpdatedBy = Company.CurrentResourceID;
                 metricAsset.UpdatedOn = DateTime.Now;
+
+                var childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", new { model.Uid }).Single();                
+                var existingAllVersionsResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", new { metricAsset.Uid }).Single();
                 
                 // If results, then you cannot change. 
-                if (existingResultCount > 0 && model.IsGroup)
+                if (existingAllVersionsResultCount > 0 && model.IsGroup && !metricAsset.IsGroup)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this metric to a grouping as there are results already associated with it.");
                 }
@@ -318,7 +315,6 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             #endregion
 
             var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
-
             var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where AssetUid = @Uid", new { model.Uid }).SingleOrDefault();
 
             if (maxEffectiveDate.HasValue)
@@ -377,8 +373,10 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             }
             else
             {
+                var existingVersionResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }).Single();
+
                 // Only validate if there any existing results for this metric. If not, do not worry about it.
-                if (existingResultCount > 0)
+                if (existingVersionResultCount > 0)
                 {
                     if (metricAssetVersion.Weight != model.Weight)
                     {
@@ -795,6 +793,7 @@ from    metrics.Allocation  ma
                     		V.Threshold,
 							V.UpdateFrequency,
 							V.MatchConditionsOnly,
+                            cast(IIF(V.Uid = ANY(select AssetVersionUid from metrics.ScoreItem), 1, 0) as bit) as HasResults,
 							(
                     			select		C.Uid,
 											C.Position,
@@ -1405,6 +1404,7 @@ from    metrics.ScoreItem I
 							V.EffectiveEndDate,
 							V.Weight,
 							V.Uid as versionuid,
+                            cast(IIF(V.Uid = ANY(select AssetVersionUid from metrics.ScoreItem), 1, 0) as bit) as HasResults,
 							(
                     			select		C.Uid,
 											C.Position,
