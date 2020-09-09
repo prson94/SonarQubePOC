@@ -694,6 +694,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     m.set(data, 'refItemColor', self.getNodeColor(data));
                     m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
                 }
+
+                m.nodeDataArray = m.nodeDataArray.sort((a, b) => {
+                    var numberA = +a['StepNo'];
+                    var numberB = +b['StepNo'];
+                    if (numberA === numberB) {
+                        return a['Name'] > b['Name'] ? -1 : 1;
+                    }
+                    return numberA > numberB ? 1 : -1;
+                });
             }, 'update_model');
         } catch (e) {
             console.log(e);
