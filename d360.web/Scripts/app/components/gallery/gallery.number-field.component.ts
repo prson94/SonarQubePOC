@@ -30,8 +30,22 @@ export class GalleryNumberFieldComponent implements OnInit {
         this.form = this.fb.group({
             myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7])], updateOn: "blur" }]
         });
-        this.properties = new Array();
 
+
+        this.properties = new Array();
+        this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });
+        this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the textarea control is required", Default: "" });
+        this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected date object", Default: "" });
+        this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component", Default: "" });
+        this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text string for the input control.", Default: "'Optional' or 'Value required' if required = true" });
+        this.properties.push({ Name: "max", Type: "Date", Description: "The minimum number allowed", Default: "" });
+        this.properties.push({ Name: "min", Type: "Date", Description: "The maximum number allowed", Default: "" });
+        this.properties.push({ Name: "step", Type: "string", Description: "The amount to increment/decrement the value by", Default: "mm/dd/yy" });
+        this.properties.push({ Name: "name", Type: "string", Description: "Name of the input element or form control", Default: "" });
+        this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
+        this.properties.push({ Name: "ariaLabel", Type: "string", Description: "Aria-label attribute is used to define a string that labels the current element.", Default: "" });
+        this.properties.push({ Name: "ariaRequired", Type: "string", Description: "The aria-required attribute is used to indicate that user input is required on an element before a form can be submitted", Default: "" });
+        this.properties.push({ Name: "ariaInvalid", Type: "string", Description: "The aria-invalid attribute is used to indicate that the value entered into an input field does not conform to the format expected by the application.", Default: "" });
     }
     numbersIdontLike(numberIDontLike: number[]): ValidatorFn {
         return (control: AbstractControl): { [key: string]: any } | null => {

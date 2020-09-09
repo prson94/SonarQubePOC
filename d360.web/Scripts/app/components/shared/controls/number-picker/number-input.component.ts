@@ -27,7 +27,9 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
     @Input() name: string;
     @Input() tabindex: number = 0;
     @Input() styleClass: string = '';
-
+    @Input() ariaLabel: string;
+    @Input() ariaRequired: boolean;
+    @Input() ariaInvalid: boolean;
 
     protected value: number;
     onModelChange: Function = () => { };
