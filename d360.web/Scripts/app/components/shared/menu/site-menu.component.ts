@@ -222,8 +222,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
                             this.loadCounts(menu, res);
                         });
-                    //set the nav state for the admin menu elements
-                    this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
+                        //set the nav state for the admin menu elements
+                        if (this.adminMenu)
+                            this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
+                        else
+                            this.setNavState(navigationState, [], null, null);
                     });
                 });
     }
