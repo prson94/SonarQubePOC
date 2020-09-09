@@ -1,6 +1,6 @@
 ﻿<input 
        #iginput 
-       [ngClass]="'ig-number-field ' + styleClass"
+       [ngClass]="{'ig-number-field ': true , styleClass : styleClass, 'disabled':disabled}"
        [attr.tabindex]="tabindex"
        [attr.aria-label]="ariaLabel"
        [attr.aria-required]="ariaRequired"
@@ -11,17 +11,17 @@
        step="{{step}}" 
        [attr.aria-valumin]="min"
        [attr.aria-valuemax]="max"
-       [disabled]="disabled"
        [attr.placeholder]="placeholder"
        [attr.name]="name"
+       [disabled]="disabled"
        (keydown)="onInputKeyDown($event)"
        (blur)="onModelTouched()"
        (input)="onModelChange($event.target.value)">
 <div class="ig-button-container">
-    <div class="ig-number-field-button up" (click)="increment()">
+    <div [ngClass]="{'ig-number-field-button up' : true,'disabled':disabled}"  (click)="increment()">
         <span class="fa fa-chevron-up"></span>
     </div>
-    <div class="ig-number-field-button down" (click)="decrement()">
+    <div [ngClass]="{'ig-number-field-button down' : true,'disabled':disabled}" (click)="decrement()">
         <span class="fa fa-chevron-down"></span>
     </div>
 </div>

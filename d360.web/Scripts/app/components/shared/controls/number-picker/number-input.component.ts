@@ -63,16 +63,20 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
     }
 
     increment() {
-        this.el.nativeElement.stepUp();
-        this.writeValue(this.el.nativeElement.value);
+        if (!this.disabled) {
+            this.el.nativeElement.stepUp();
+            this.writeValue(this.el.nativeElement.value);
+        }
     }
     decrement() {
-        this.el.nativeElement.stepDown();
-        this.writeValue(this.el.nativeElement.value);
+        if (!this.disabled) {
+            this.el.nativeElement.stepDown();
+            this.writeValue(this.el.nativeElement.value);
+        }
     }
 
     getStyleClass(): string {
-        return 'ig-number-field';
+        return 'ig-number-field ' + this.styleClass;
     }
 
     ngOnDestroy() {

@@ -33,7 +33,7 @@ ig-number-input {
             -moz-appearance: textfield !important;
         }
 
-        &[disabled] {
+        &.disabled {
             opacity: 0.33;
         }
 
@@ -101,12 +101,17 @@ ig-number-input {
     -o-user-select: none;
     user-select: none;
 
-    &:hover {
+    &:hover:enabled {
         background: rgba(0,0,0,0.14);
     }
 
-    &:active {
+    &:active:enabled {
         background: rgba(0,0,0,0.21);
+    }
+
+    &.disabled {
+        opacity: 0.33;
+        cursor: default;
     }
 
     &.up {
