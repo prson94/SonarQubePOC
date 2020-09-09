@@ -33,7 +33,7 @@ namespace d360.web.Controllers.V2
                 return Company.ApiTimeout;
             }
         }
-        public void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
+        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>
             {
@@ -322,7 +322,7 @@ namespace d360.web.Controllers.V2
 
         #region excel export functions
 
-        internal SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
+        protected internal SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
         {
             SLDocument document = null;
 
@@ -358,7 +358,7 @@ namespace d360.web.Controllers.V2
 
             return document;
         }
-        internal SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template = null, string worksheetName = "Items")
+        protected internal SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template = null, string worksheetName = "Items")
         {
             ICollection<AssetTypeExportTemplateStyle> styles = null;
             if (template != null)
@@ -402,7 +402,7 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
-        internal SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
+        protected internal SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
         {
             var styles = template.AssetTypeExportTemplateStyles;
 
@@ -461,7 +461,7 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
-        internal SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
+        protected internal SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
         {
             var styles = template.AssetTypeExportTemplateStyles;
 
@@ -512,7 +512,7 @@ namespace d360.web.Controllers.V2
         }
 
 
-        internal void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
+        protected internal void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
         {
             switch ((field.Type ?? "").ToUpper())
             {
@@ -551,7 +551,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        internal void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        protected internal void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
             if (styles == null || !styles.Any()) return;
 
@@ -565,7 +565,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        internal void SetColumnStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        protected internal void SetColumnStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
         {
             if (styles != null && styles.Any())
             {
@@ -628,7 +628,7 @@ namespace d360.web.Controllers.V2
             document.SetRowStyle(row, CreateStyle(columnStyle));
         }
 
-        public void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
+        protected void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
         {
             var valueString = value?.ToString() ?? "";
             switch (dataType.ToUpper())
@@ -738,7 +738,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        internal static void UseTempleteFields(AssetTypeExportTemplate template, List<FieldType> fieldTypes)
+        protected internal static void UseTempleteFields(AssetTypeExportTemplate template, List<FieldType> fieldTypes)
         {
             var oldFields = new List<FieldType>(fieldTypes);
             //if include fields is specified only include field ids from list
@@ -759,7 +759,7 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        internal WorkHttpStatus validateScoreAllocation(string allocationUid, out Guid uid)
+        protected internal WorkHttpStatus validateScoreAllocation(string allocationUid, out Guid uid)
         {
             var status = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
 
@@ -781,7 +781,7 @@ namespace d360.web.Controllers.V2
             return status;
         }
 
-        internal WorkHttpStatus validateAsset(string assetUid, Permission permission, out Guid uid)
+        protected internal WorkHttpStatus validateAsset(string assetUid, Permission permission, out Guid uid)
         {
             var status = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
 
