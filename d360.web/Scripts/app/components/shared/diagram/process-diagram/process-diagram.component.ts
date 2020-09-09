@@ -699,7 +699,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     var numberA = +a['StepNo'];
                     var numberB = +b['StepNo'];
                     if (numberA === numberB) {
-                        return a['Name'] > b['Name'] ? 1 : -1;
+                        return a['Name'] > b['Name'] ? -1 : 1;
                     }
                     return numberA > numberB ? 1 : -1;
                 });
