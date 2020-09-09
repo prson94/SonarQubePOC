@@ -2,13 +2,8 @@
     Layout = null;
 
     var VersionNumber = ViewData["VersionNumber"].ToString();
-    var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
 
-    var baseUrl = "";
-    if ((useCdn ?? "").ToLower() == "true") {
-        baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
-    }
 }
 
 <!DOCTYPE html>
@@ -50,33 +45,25 @@
             top: -20px;
         }
 
-        .browser-warning .content div {
-            color: #6985A1;
-        }
+            .browser-warning .content div {
+                color: #6985A1;
+            }
 
-        .browser-warning .content .spacer {
-            display: block;
-            height: 20px;
-        }
+            .browser-warning .content .spacer {
+                display: block;
+                height: 20px;
+            }
 
-        .browser-warning .content .spacer-large {
-            display: block;
-            height: 32px;
-        }
+            .browser-warning .content .spacer-large {
+                display: block;
+                height: 32px;
+            }
 
-        .browser-warning .content .button {
-            color: #000;
-        }
+            .browser-warning .content .button {
+                color: #000;
+            }
     </style>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/primeng.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/theme.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
 </head>
 <body>
     <div class="browser-warning">
