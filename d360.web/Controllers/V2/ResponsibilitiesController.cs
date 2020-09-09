@@ -771,6 +771,46 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves all ownership records for the provided asset uid.
+        /// </summary>   
+        /// <returns>Returns all ownership records for the current asset.</returns>
+        [
+            HttpGet,
+            Route("assignments/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "All ownership records for the current asset.", typeof(OwnershipApiModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Uid item doesn't exist or is not a valid type for ownership."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetOwnershipOfAsset(Guid assetUid)
+        {
+            var prefix = "Responsibilities.GetOwnershipOfAsset => ";
+            var errorMessage = "";
+
+            try
+            {
+                var validAsset = Company.Assets.Any(x => x.uid == assetUid);
+
+                if (!validAsset)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset does not exist for UID provided."));
+
+
+                var res = await ResponsibilityRepository.GetOwnership(assetUid);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
 
         /// <summary>
         /// Updates responsibility types of a given responsibility types list.
