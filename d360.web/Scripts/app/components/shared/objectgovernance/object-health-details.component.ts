@@ -8,14 +8,11 @@ import { ObjectHealthDetailsItemComponent } from './object-health-details-item.c
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 
-
-
 @Component({
     selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
     providers: [ScoreService, ObjectStatisticsService],
 })
-
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
@@ -61,6 +58,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.loadTypesAndLatestScore();
         }
     }
+
     private loadTypesAndLatestScore() {
         if (this.uid) {
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
@@ -91,6 +89,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     });
 
                     this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
+                    this.scoreDate = this.scoresPoints[0].EffectiveDate;
 
                     this.historicalData = res.map(val => {
                         return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
@@ -176,6 +175,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                             this.selectPointOnGraph();
                                             this.loadPoints();
                                         }
+                                    }
+                                },
+                                animation: {
+                                    complete: function() {
+                                        this.selectPointOnGraph();
                                     }
                                 }
                             }
@@ -408,7 +412,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         var point = this.chartInstance.series[0].data[idx];
         if (point) { 
             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
-            point.select(true, true);
+            point.setState("select");
         }
         this.cdRef.detectChanges();
         this.cdRef.markForCheck();
