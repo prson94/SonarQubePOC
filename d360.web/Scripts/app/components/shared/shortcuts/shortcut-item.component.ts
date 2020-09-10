@@ -76,7 +76,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                     <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
                 </div>
                 <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
-                    <ig-icon-picker [(ngModel)]="shortcut.Icon" ngDefaultControl></ig-icon-picker>
+                    <ig-icon-picker [(ngModel)]="shortcut.Icon" required ngDefaultControl></ig-icon-picker>
                 </div>
                 <div>
                     <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
