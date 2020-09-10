@@ -974,4 +974,11 @@ END
 ]]>
 		</sql>
 	</changeSet>
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12158">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update assettype set hashvalue = null where [object] = 'ArtifactType'
+]]>
+		</sql>
+	</changeSet>
  </databaseChangeLog>
