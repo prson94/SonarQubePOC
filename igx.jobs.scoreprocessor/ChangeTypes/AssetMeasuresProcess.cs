@@ -146,7 +146,9 @@ from    (
                     and ( (Al.EffectiveDate between S.EffectiveDate and S.EndDate) or (Al.EffectiveDate >= S.EffectiveDate and S.EndDate is null) ) 
                 inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
                 inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
-		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid
+		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid 
+                    and V.[State] = 1 
+                    and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) ) 
                 cross apply (
                     select  count(1) as UseCount
                     from    metrics.ScoreItemLink
@@ -263,7 +265,7 @@ select	Al.AllocationUid,
 			for json path, WITHOUT_ARRAY_WRAPPER
 		) as RollupPathJson
 from	metrics.Asset A
-		inner join metrics.AssetVersion V on V.AssetUid = A.Uid
+		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.[State] = 1
         inner join metrics.Allocation Mal on Mal.Uid = A.AllocationUid
 		inner join (
 			select		AllocationUid, EffectiveDate
