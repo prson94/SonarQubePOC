@@ -84,10 +84,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
 
-                    this.historicalData = res.map(val => {
-                        return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
-                    });
-
                     this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
@@ -95,6 +91,20 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     });
 
                     this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
+
+                    this.historicalData = res.map(val => {
+                        return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
+                    });
+
+                    // Adds arbitrary last point for current date.
+                    let currentDate = new Date(Date.now());
+                    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+                    let currenDateMs = currentDate.getTime();
+                    if (currenDateMs > Date.parse(this.scoresPoints[0].EffectiveDate)) {
+                        this.historicalData.unshift(
+                            [currenDateMs, this.scoresPoints[0].Score, this.getScoreType()]
+                        );
+                    }
 
                     for (var i = 0; i < this.scoresPoints.length - 1; i++) {
                         if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
@@ -383,21 +393,22 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         else return false;
     }
 
-
     //scoring carousel, table and graph interactivity
-    private setSelectedPoint: boolean = false;
     private selectPointOnGraph() {
         var ms = new Date(this.scoreDate.toString()).getTime();
         var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
 
-        if (idx > -1) {
+        if (idx == -1) {
+            idx = 1;
+        }
 
-            for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
-                this.chartInstance.series[0].data[i].select(false, true);
-            }
-            var point = this.chartInstance.series[0].data[idx];
-            if (point)
-                point.select(true, true);
+        for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
+            this.chartInstance.series[0].data[i].select(false, true);
+        }
+        var point = this.chartInstance.series[0].data[idx];
+        if (point) { 
+            this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
+            point.select(true, true);
         }
         this.cdRef.detectChanges();
         this.cdRef.markForCheck();
