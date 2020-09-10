@@ -1992,6 +1992,7 @@ order by    rnk, [Name]";
         private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)
         {
             var list = new List<DetailReadOnlyRowModel>();
+            var asset = Company.Assets.FirstOrDefault(x => x.Object == type && x.ObjectID == id);
 
             var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeLookup);
             var lookup = ft.FieldTypeLookup;
@@ -2058,7 +2059,7 @@ order by    rnk, [Name]";
                                         HideHeader = (lookup != null) ? lookup.HideHeader : false,
                                         HideFooter = (lookup != null) ? lookup.HideFooter : false,
                                         HideFilter = (lookup != null) ? lookup.HideFilter : false,
-                                        LookupGridUrl = $"/api/ComplexLookupField/{type}/{id}/{ft.ID}/values",
+                                        IsComplexLookupGrid = true,
                                         LookupObjectID = id,
                                         LookupObjectType = type,
                                         LookupFieldTypeID = ft.ID,
@@ -3277,7 +3278,7 @@ order by    Name
                 #endregion
                 case SystemObjects.ExportTemplate:
                     #region Fields
-                    var template = Company.AssetTypeExportTemplates.FirstOrDefault(x=> x.ID == id);
+                    var template = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == id);
                     if (template != null)
                     {
                         model.rows.Add(new DetailReadOnlyRowModel

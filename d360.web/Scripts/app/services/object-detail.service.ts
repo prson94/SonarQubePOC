@@ -1,22 +1,22 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
-import {TreeNode} from 'primeng/api';
+﻿import { Injectable } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
+import { TreeNode } from 'primeng/api';
 
-import {FormHelper} from '../models/form.model';
-import {JsonResult} from '../models/jsonresult.model';
+import { FormHelper } from '../models/form.model';
+import { JsonResult } from '../models/jsonresult.model';
 import {
     Classification,
     AssetDetail,
     NymType,
     Synonym,
-    SynonymItem,    
+    SynonymItem,
     AttributeHeirarchyItem,
     ToolbarItemNg,
     ObjectDetail
 } from '../models/object-detail.model';
-import {LookupGrid} from '../models/grid-definition.model';
+import { LookupGrid } from '../models/grid-definition.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
@@ -94,15 +94,7 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<SynonymItem[]> {
         return this.http.get(`form/SynonymsOptions?type=${type}&typeId=${typeId}&obj=${object}&objid=${objectId}&query=${query}&predicateId=${predicateId}`)
             .pipe(
-                map(response => <SynonymItem[]>response),                
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getLookupGrid(uri: string): Observable<LookupGrid> {
-        return this.http.get(uri)
-            .pipe(
-                map(result => <LookupGrid>result),
+                map(response => <SynonymItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -123,7 +115,7 @@ export class ObjectDetailService extends BaseObservableService {
     downloadFile(data: Blob, contentDisposition: string) {
         var filename = contentDisposition.split(';')[1].split('filename')[1].split('=')[1].trim();
         filename = filename.split('\"').join('');
-                
+
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         } else {

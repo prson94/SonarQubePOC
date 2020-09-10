@@ -58,7 +58,7 @@ namespace d360.web.Models
     [DataContract(Name = "artifact", Namespace = constants.NAMESPACE)]
     [Serializable]
     public class ArtifactModelRequest : Dictionary<string, object> { }
-    
+
     public class AttributeNode
     {
         public AttributeNode()
@@ -475,7 +475,7 @@ namespace d360.web.Models
         public string FieldDescription { get; set; }
 
         [DataMember]
-        public string LookupGridUrl { get; set; }
+        public bool IsComplexLookupGrid { get; set; }
 
         [DataMember]
         public string LookupObjectType { get; set; }
@@ -648,7 +648,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string IconBackColor { get; set; }
-        
+
         [DataMember]
         public string Displayobject { get; set; }
     }
