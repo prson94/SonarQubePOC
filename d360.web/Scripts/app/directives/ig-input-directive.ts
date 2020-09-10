@@ -1,35 +1,18 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider, HostListener } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, ChangeDetectorRef, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor } from '@angular/forms';
 
 @Directive({
     selector: '[igInput]'
-
 })
-export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAccessor {
+export class InputDirective implements AfterViewInit, OnDestroy {
 
    
     public _size: string;
+    @Input() required: boolean;
+    @Input() disabled: boolean;
 
-    protected value: string;
-    protected disabled: boolean;
-    onModelChange: Function = () => { };
-    onModelTouched: Function = () => { };
-
-    constructor(public el: ElementRef) { }
-
-    writeValue(obj: string): void {
-        this.value = obj;
-    }
-
-    registerOnChange(fn: any): void {
-        this.onModelChange = fn;
-    }
-
-    registerOnTouched(fn: any): void {
-        this.onModelTouched = fn;
-    }
+    constructor(public el: ElementRef, private ref: ChangeDetectorRef) { }
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
@@ -37,14 +20,15 @@ export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAcc
 
 
     ngAfterViewInit() {
-
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
-        if (!this.el.nativeElement.placeholder) {
-            if (this.el.nativeElement.required) {
-                this.el.nativeElement.placeholder = "Value Required";
-            } else {
-                this.el.nativeElement.placeholder = "Optional";
-            }
+        this.required = this.el.nativeElement.getAttribute("required");
+        this.disabled = this.el.nativeElement.getAttribute("disabled");
+
+        if (this.required == null) {
+            this.el.nativeElement.setAttribute("placeholder", "Optional");
+        } else {
+            this.el.nativeElement.setAttribute("placeholder", "Value required");
+            this.el.nativeElement.setAttribute("aria-required", true);
         }
 
     }
@@ -68,10 +52,16 @@ export class InputDirective implements AfterViewInit, OnDestroy, ControlValueAcc
             DomHandler.addMultipleClasses(this.el.nativeElement, "ig-input-full");
         }
     }
-
-
+    @HostListener('document:keydown', ['$event'])
+    onInputKeyDown(event) {
+        switch (event.which) {
+            case 13:
+                this.el.nativeElement.blur();
+                break;
+        }
+    }
     ngOnDestroy() {
-        while (this.el.nativeElement.hasChildNodes()) {
+        while (this.el.nativeElement.hasChildNodes()) { 
             this.el.nativeElement.removeChild(this.el.nativeElement.lastChild);
         }
     }

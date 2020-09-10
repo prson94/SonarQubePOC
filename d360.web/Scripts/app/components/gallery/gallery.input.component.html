@@ -33,54 +33,57 @@
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Errors (required, minLength of 4)</h4>
+        <h4>Validation</h4>
         <div>
-            <input igInput type="text" [(ngModel)]="val1" name="basicInput" #basicInput="ngModel" required minlength="4" />
-            <div *ngIf="basicInput.invalid && (basicInput.dirty || basicInput.touched)">
-                <div *ngIf="basicInput.errors.required" class="ig-text-required">
-                    Field is required.
-                </div>
-                <div *ngIf="basicInput.errors.minlength" class="ig-text-required">
-                    Field requires a length of at least 4 characters.
-                </div>
-            </div>
-            <p>
-                Current Value: {{val1}}
-            </p>
+            Form validation.
         </div>
-    </div>
-    <div class="gallery-section">
-        <h4>Form Validation</h4>
+        <div class="row">&nbsp;</div>
         <div>
-            <form #form="ngForm">
-                <input igInput type="text" [(ngModel)]="formValue" required name="forminput" #forminput="ngModel" />
-                <div *ngIf="forminput.invalid && (forminput.dirty || forminput.touched)">
-                    <div *ngIf="forminput.errors.required" class="ig-text-required">
-                        Field is required.
+            <form #myForm="ngForm" (ngSubmit)="submitTemplateForm(myForm)">
+                <div class="row">
+                    <b>Template driven forms</b>
+                    <p>template model: {{diagnostic}}</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <input igInput [(ngModel)]="model.theName" id="theName" name="theName" #theName="ngModel" required [ngModelOptions]="{ updateOn: 'blur' }" />
+                        <div *ngIf="theName.invalid && (theName.dirty || theName.touched)">
+                            <div *ngIf="theName.errors.required" class="ig-text-required">
+                                Value is required
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
                     </div>
                 </div>
             </form>
         </div>
-    </div>
-    <div class="gallery-section">
-        <h4>Tab Index</h4>
-        <p>
-            Click on the first input then tab using your tab keys.
-        </p>
-        <div class="row">
-            <input igInput type="text" tabindex="1" />
-        </div>
         <div class="row">&nbsp;</div>
-        <div class="row">
-            <input igInput type="text" tabindex="2" />
-        </div>
         <div class="row">&nbsp;</div>
-        <div class="row">
-            <input igInput label="I'm 3rd" tabindex="3" />
-        </div>
-        <div class="row">&nbsp;</div>
-        <div class="row">
-            <input igInput type="text" tabindex="4" />
+        <div>
+            <div class="row">
+                <b>Reactive forms with custom validation</b>
+            </div>
+            <form *ngIf="testForm != null" [formGroup]="testForm"  (ngSubmit)="submitTemplateForm(myForm)">
+                <div class="row">
+                    <input igInput type="text" formControlName="myFormName" required />
+                    <div *ngIf="testForm.get('myFormName').invalid && (testForm.get('myFormName').dirty || testForm.get('myFormName').touched)">
+                        <div *ngIf="testForm.get('myFormName').errors.notNiceWord" class="ig-text-required">
+                            I dont like No, Bug or Defect!
+                        </div>
+                        <div *ngIf="testForm.get('myFormName').errors.required" class="ig-text-required">
+                            Value is required.
+                        </div>
+                    </div>
+                </div>
+                <div class="row">Value: {{testForm.get('myFormName').value}}&nbsp;</div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!testForm.valid" label="Save"></button>
+                </div>
+            </form>
         </div>
     </div>
     <div class="gallery-section">
