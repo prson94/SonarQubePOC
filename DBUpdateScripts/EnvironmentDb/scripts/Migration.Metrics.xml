@@ -812,4 +812,21 @@ from	metrics.Score T
 		</rollback>
 	</changeSet>
 
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-12130">
+		<comment>Clean up score effective END dates to be a day before the next effective date.</comment>
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+update	T
+set		T.EndDate = dateadd(dd, -1, S.EffectiveDate)
+from	metrics.Score T
+		inner join metrics.Score S on S.AssetUid = T.AssetUid and S.AllocationUid = T.AllocationUid and S.EffectiveDate = T.EndDate and T.Uid <> S.Uid
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
 </databaseChangeLog>
