@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
@@ -162,7 +163,14 @@ namespace d360.web.Models
 
     public class FieldLoader
     {
-        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server, bool ignoreFieldIfNull = true)
+        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, Dictionary<string,string> fields, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)
+        {
+            var FieldsCollection = fields.Aggregate(new NameValueCollection(), (a, b) => { a.Add(b.Key, b.Value); return a; });
+
+            return GetFormDynamicFieldValues(type, id, fieldTypes, new FormCollection(FieldsCollection), Server, ignoreFieldIfNull);
+        }
+
+        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)
         {
             var fields = new List<Field>();
 
@@ -181,7 +189,7 @@ namespace d360.web.Models
                                 value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
                                 break;
                             case "Html":
-                                value = Server.HtmlDecode(form[ft.Name]);
+                                value = Server != null ? Server.HtmlDecode(form[ft.Name]) : HttpUtility.HtmlDecode(form[ft.Name]);
                                 break;
                             case "Link":
                                 var rawLinkName = form[ft.Name + "_Name"];
