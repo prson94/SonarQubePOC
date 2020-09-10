@@ -230,6 +230,12 @@ export class AdminRelationshipsEditor {
                 this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'Many')));
 
             }
+
+            if (this.selectedPredicate && this.selectedPredicate.type == 'Diagram') {
+                this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.subjectCardinalityOptions.filter(x => x.label != 'One')));
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'One')));
+
+            }
             this.isLoading = false;
         });
     }
