@@ -935,9 +935,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
-    <None Include="Views\Shared\Unsupported.cshtml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Content Include="Views\Shared\Unsupported.cshtml" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
