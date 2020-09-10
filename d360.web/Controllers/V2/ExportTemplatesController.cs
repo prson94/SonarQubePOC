@@ -456,9 +456,6 @@ namespace d360.web.Controllers.V2
             if (currentTemplate.ID <= 0)
             {
                 return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found",  "Export Template not found matching the Uid Provided.");
-            }else if (currentTemplate.AssetTypeID != template.AssetTypeID)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "Asset Type Uid provided does not match template Asset Type.");
             }
             else
             {
