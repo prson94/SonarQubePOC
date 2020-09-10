@@ -698,12 +698,11 @@ from	(
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
                 inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
 				inner join metrics.ScoreItem SI on SI.Uid = SIL.ScoreItemUid
-				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid
+				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid and V.EffectiveDate <= @effectiveDate and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
 				inner join metrics.Asset Ma on Ma.Uid = V.AssetUid
         where   S.AllocationUid = @allocationUid 
                 and S.AssetUid = @assetUid 
-				and S.EffectiveDate <= @effectiveDate 
-				and (S.EndDate >= @effectiveDate or S.EndDate is null)
+				and S.EffectiveDate <= @effectiveDate and (S.EndDate >= @effectiveDate or S.EndDate is null)
 		) O 
 where	O.RowNum = 1
 order by ParentUid, Name
