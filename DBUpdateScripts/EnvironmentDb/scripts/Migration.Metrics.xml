@@ -811,5 +811,19 @@ from	metrics.Score T
 		]]>
 		</rollback>
 	</changeSet>
+	
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-12163">
+		<comment>Update all measure versions to set MatchConditionsOnly flag to true </comment>
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+update metrics.AssetVersion set MatchConditionsOnly = 1
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>	
 
 </databaseChangeLog>
