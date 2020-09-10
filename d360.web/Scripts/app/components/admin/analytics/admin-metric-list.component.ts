@@ -38,6 +38,17 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
+    private menu: MenuItem[] = [
+        { label: 'Edit', command: (event) => { this.edit() } },
+        {
+            label: 'Disable',
+            command: (event) => { this.delete(); }
+        }, {
+            label: 'Version History',
+            command: (event) => { this.showHistory(true); }
+        }
+    ];
+
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -137,6 +148,15 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
+        this.updateSelectionMenuLabel();
+    }
+    updateSelectionMenuLabel() {
+        if (this.menu && this.menu.length > 0) {
+            let versionMenuItem = this.menu.find(x => x.label.indexOf("Version History") != -1);
+            if (versionMenuItem) {
+                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+            }
+        }
     }
 
     public add(asChild: boolean = false) {
@@ -188,19 +208,5 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         if (s.startsWith('0'))
             s = s.substr(1, s.length);
         return s;
-    }
-    private getCardMenuItems(): MenuItem[] {
-        var menu: MenuItem[] = [
-            { label: 'Edit', command: (event) => { this.edit() } },
-        ];
-        menu.push({
-            label: 'Disable',
-            command: (event) => { this.delete(); }
-        });
-        menu.push({
-            label: 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')',
-            command: (event) => { this.showHistory(true); }
-        });
-        return menu;
     }
 };

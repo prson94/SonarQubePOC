@@ -27,7 +27,7 @@
                     </td>
                     <td>
                         <div class="RowTools">
-                            <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
+                            <p-menu #cardmenu [popup]="true" [model]="menu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
                             <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>
                         </div>
                     </td>
