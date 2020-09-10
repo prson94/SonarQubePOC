@@ -635,6 +635,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             })[0];
             if (item && item.Text.startsWith("Rule")) {
                 this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "no-display";
+                this.fields.find(x => x.FieldName == "IncludeParent").Value = false;
                 this.ref.detectChanges();
             } else {
                 this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";

@@ -2874,8 +2874,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
 
-            if(template.AssetType.Class != AssetTypeClass.Rule)
-                list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
+            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
 
             list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.UsageNotes });
 
