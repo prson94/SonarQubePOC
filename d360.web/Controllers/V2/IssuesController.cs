@@ -168,10 +168,17 @@ namespace d360.web.Controllers.V2
             }
 
             if (asset == null)
-                return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.AssetUid} could not be found.");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.AssetUid} could not be found.");            
 
-            if (!Company.HasAssetPermission(asset.ID, Permission.ModifyAsset))
+            if (!Company.HasAssetPermission(asset.ID, Permission.ReadAsset))
                 return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add actions on this asset.");
+
+            var allocations = Company.Filter<IssueTypeRelation>(r => r.IssueTypeID == issueType.ID).ToList();
+
+            if (allocations.Count > 0 && !allocations.Any(a => a.AssetTypeID == asset.AssetTypeID))
+            {
+                return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Allocation does not exist for Asset Type '{asset.AssetType.Name}' on Action Type '{issueType.Name}'.");
+            }
 
             var fieldTypes = Company.Filter<FieldType>(ft => ft.ObjectID == issueType.ID);
 
@@ -187,7 +194,7 @@ namespace d360.web.Controllers.V2
 
             if(invalidFields.Count >0)
             {
-                var errMsg = $"Field Name '{invalidFields.FirstOrDefault()}' is not valid for Asset type '{issueType.Name}'.";
+                var errMsg = $"Field Name '{invalidFields.FirstOrDefault()}' is not valid for Action type '{issueType.Name}'.";
 
                 if (invalidFields.Count>1)
                 {
