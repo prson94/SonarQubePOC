@@ -3495,11 +3495,12 @@ where   ExecutionID = @ExecutionID
                                 bulkCopy.ColumnMappings.Add("FieldTypeID", "FieldTypeID");
 
                                 bulkCopy.WriteToServer(fieldTable);
-
-                                AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
                             }
+
+
                             transaction.Commit();
 
+                            AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
                         }
 
                         catch (Exception ex)
@@ -3548,20 +3549,32 @@ where   ExecutionID = @ExecutionID
                     if (hasLookupFieldTypes)
                     {
                         LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
                     }
 
                     LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
+                    AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
+
                     ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
+                    AddMeasurement(metrics, "ValidateAssetAndParent", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
 
                     // If you cannot find parent based on Uids provided.
                     // special case is intratype hierarchy if guid.empty we need to allow this so we later know which items to remove the relationships from
                     LogParentErrors(execution.ExecutionID, timeout, predicateType == PredicateType.IntraTypeHierarchy);
+                    AddMeasurement(metrics, "LogParentErrors", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
 
                     if (!isInsert)
                     {
                         LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                         LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
+
+                        AddMeasurement(metrics, "LogAssetErrors / LoadMissingKeyFields/ LogNullIsRequiredFields", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
                     }
 
                     //Policy/Model Check maximum hierarchy maximum level allowed 
@@ -3585,6 +3598,8 @@ where   ExecutionID = @ExecutionID
                     }
 
                     CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID);
+                    AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
+                    sw.Restart();
 
                     #endregion
 
@@ -4085,6 +4100,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                     metrics.Add($"{++step} Update success flag", sw.ElapsedMilliseconds);
                                     trans.Commit();
+                                    AddMeasurement(metrics, "Commit Loop of data", sw.ElapsedMilliseconds, ++step);
+                                    sw.Restart();
 
                                     //Add items after commit, so we dont have dirty data if trans is rolled back
                                     if (transationFieldUpdates != null && transationFieldUpdates.Count > 0)
@@ -4111,6 +4128,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
                                         LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAsset", ex.GetFullExceptionData(false), timeout);
+                                        AddMeasurement(metrics, "LogLoopExecutionError", sw.ElapsedMilliseconds, ++step);
+                                        sw.Restart();
                                     }
                                     else
                                     {
@@ -4135,6 +4154,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
+
+                        AddMeasurement(metrics, "End of batch loop", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
                     }
 
                     Connection.Close();
