@@ -96,10 +96,13 @@
                             I dont like 3, 5 or 7
                         </div>
                         <div *ngIf="form.get('myNumber').errors.min" class="ig-text-required">
-                            Please enter a value greater than 1
+                            Please enter a value of 1 or greater
                         </div>
                         <div *ngIf="form.get('myNumber').errors.max" class="ig-text-required">
-                            Please enter a value lower than 10
+                            Please enter a value of 10 or lower
+                        </div>
+                        <div *ngIf="form.get('myNumber').errors.required" class="ig-text-required">
+                            Please select a number
                         </div>
                     </div>
                 </div>
