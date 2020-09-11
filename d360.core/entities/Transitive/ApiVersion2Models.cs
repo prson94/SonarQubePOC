@@ -799,7 +799,7 @@ namespace d360.core.entities
         public bool ContainsColorField { get; set; }
         public int JsonFieldCount { get; set; }
     }
-
+    
     public class AssetTypeExportTemplateUpsertRequest
     {
         #region Properties
@@ -827,6 +827,12 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid AssetTypeUID { get; set; }       
+    }
+
+    public class ActionUpsertRequest
+    {
+        public Guid AssetUid { get; set; }
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
 }

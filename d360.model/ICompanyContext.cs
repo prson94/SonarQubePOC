@@ -334,5 +334,7 @@ namespace d360.model
         string GetDiagramUrlForDiagramAsset(Guid assetUid);
         bool HasRelationshipInProcessDiagram(Guid intersectTypeUid);
 
+        void CreateEventsForAddedActions(List<Issue> actions);
+
     }
 }
