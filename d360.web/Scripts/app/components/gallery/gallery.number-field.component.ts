@@ -28,7 +28,7 @@ export class GalleryNumberFieldComponent implements OnInit {
 
     ngOnInit(): void {
         this.form = this.fb.group({
-            myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7])], updateOn: "blur" }]
+            myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7]), Validators.min(1), Validators.max(10)], updateOn: "blur" }]
         });
 
 
@@ -63,6 +63,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         console.log(form);
     }
     get diagnostic() { return JSON.stringify(this.model); }
+    get JSONERR() { return JSON.stringify(this.form.get('myNumber').errors);}
 }
 
 export class DummyformModel {
