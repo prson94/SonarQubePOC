@@ -47,7 +47,7 @@
         </div>
         <div *ngFor="let category of categories">
             <simple-accordion *ngIf="category.loaded && category.hasData" [header]="category.name" [active]="category.active">
-                <object-detail-category [category]="category" assetUID="assetUID"></object-detail-category>
+                <object-detail-category [category]="category" [assetUID]="assetUID"></object-detail-category>
             </simple-accordion>        
         </div>
         <div>
