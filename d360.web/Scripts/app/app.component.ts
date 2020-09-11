@@ -28,7 +28,6 @@ declare var CurrentResourceID;
                         </div>
                     </div>
                 </main>
-                <ig-browser-warning></ig-browser-warning>
                 <p-toast [baseZIndex]="20000"></p-toast>
               `,
     providers: [MessageService]
