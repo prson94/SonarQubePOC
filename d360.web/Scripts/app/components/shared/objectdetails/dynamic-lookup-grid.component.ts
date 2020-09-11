@@ -113,7 +113,6 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
     loadData(event) {
         this.isLoading = true;
         var params = {};
-        console.log(event);
         if (event.rows) {
             params['_pageSize'] = event.rows;
         }
@@ -137,6 +136,22 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
             if (event.filters['global']) {
                 params['simpleFilter'] = event.filters.global.value;
             }
+
+            var keys = Object.keys(event.filters).filter(x => x != 'global');
+            var advFilters: string[] = [];
+
+            keys.forEach(key => {
+                var q = key + ' ct ' + `'${decodeURIComponent(event.filters[key].value)}'`;
+                advFilters.push(q);
+            });
+
+            if (advFilters.length > 0) {
+                delete params['simpleFilter'];
+                params['filter'] = advFilters.join(" and ");
+            }
+
+            console.log(event.filters);
+
         }
 
 
