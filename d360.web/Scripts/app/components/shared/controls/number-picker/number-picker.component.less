@@ -68,10 +68,16 @@ ig-number-input {
         }
     }
 
-    &.ng-dirty.ng-invalid[required], &.ng-dirty.ng-invalid.required, &.ng-touched.ng-invalid[required], &.ng-touched.ng-invalid.required {
+    &.ng-dirty.ng-invalid,
+    &.ng-touched.ng-invalid {
         .ig-number-field {
             background: @ig-red-t5;
             border-color: none;
+
+            &:required:invalid {
+                background: @ig-lightblue-t4;
+                border-color: @ig-field-border-color;
+            }
         }
     }
 }

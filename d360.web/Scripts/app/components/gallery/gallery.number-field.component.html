@@ -64,11 +64,6 @@
                 <div class="form-group">
                     <div class="row">
                         <ig-number-input [(ngModel)]="model.number" id="number" name="number" #number="ngModel" required="true" [ngModelOptions]="{ updateOn: 'blur' }"></ig-number-input>
-                        <div *ngIf="number.invalid && (number.dirty || number.touched)">
-                            <div *ngIf="number.errors.required" class="ig-text-required">
-                                Please select a number
-                            </div>
-                        </div>
                     </div>
                     <div class="row">&nbsp;</div>
                     <div class="row">
@@ -100,9 +95,6 @@
                         </div>
                         <div *ngIf="form.get('myNumber').errors.max" class="ig-text-required">
                             Please enter a value of 10 or lower
-                        </div>
-                        <div *ngIf="form.get('myNumber').errors.required" class="ig-text-required">
-                            Please select a number
                         </div>
                     </div>
                 </div>
