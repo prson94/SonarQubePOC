@@ -8,11 +8,10 @@ ig-number-input {
         color: @ig-black;
         background: @ig-white;
         padding: 0 32px 0 8px;
-        border: 1px solid #bdbfc6;
+        border: 1px solid rgba(0, 0, 0, 0.2);
         height: @ig-field-height;
         line-height: 30px;
         border-radius: @ig-field-border-radius;
-        margin-bottom: 14px;
         width: 150px !important;
 
         &:enabled:focus:not(.ui-state-error) {
@@ -87,7 +86,7 @@ ig-number-input {
 .ig-number-field-button {
     position: relative;
     cursor: pointer;
-    width: 28px;
+    width: 24px;
     text-align: center;
     background: rgba(0,0,0,0.07);
     font-size: 8px;
@@ -155,7 +154,6 @@ ig-number-input {
     color: white;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
-    width: auto;
-    margin-top: -12px;
-    display: table;
+    width: fit-content;
+    display:block
 }

@@ -82,14 +82,24 @@
         <div>
             <div class="row">
                 <b>Reactive forms with custom validation</b>
+                <p>
+                    min:1<br />
+                    max: 10<br />
+                    invalid numbers(custom): 3, 5 and 7
+                </p>
             </div>
             <form *ngIf="form != null" [formGroup]="form">
                 <div class="row">
-                    <ig-number-input formControlName="myNumber" required="true">
-                    </ig-number-input>
+                    <ig-number-input formControlName="myNumber" required="true"></ig-number-input>
                     <div *ngIf="form.get('myNumber').invalid && (form.get('myNumber').dirty || form.get('myNumber').touched)">
                         <div *ngIf="form.get('myNumber').errors.notNiceNumber" class="ig-text-required">
                             I dont like 3, 5 or 7
+                        </div>
+                        <div *ngIf="form.get('myNumber').errors.min" class="ig-text-required">
+                            Please enter a value greater than 1
+                        </div>
+                        <div *ngIf="form.get('myNumber').errors.max" class="ig-text-required">
+                            Please enter a value lower than 10
                         </div>
                     </div>
                 </div>
