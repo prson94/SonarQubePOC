@@ -101,17 +101,18 @@ ig-number-input {
     -o-user-select: none;
     user-select: none;
 
-    &:hover:enabled {
+    &:hover {
         background: rgba(0,0,0,0.14);
     }
 
-    &:active:enabled {
+    &:active {
         background: rgba(0,0,0,0.21);
     }
 
     &.disabled {
         opacity: 0.33;
         cursor: default;
+        background: rgba(0,0,0,0.07) !important;
     }
 
     &.up {
