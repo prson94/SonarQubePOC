@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.GetComplexLookupByAsset-v33">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v34">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -22,7 +22,8 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@simpleFilter nvarchar(max) = '',
 	@orderBy nvarchar(100) = '',
 	@orderDirection nvarchar(100) = 'asc',
-	@useUidUrls bit = 0
+	@useUidUrls bit = 0,
+	@filters AssetFiltersTable readonly 
 as
 begin
 	set nocount on;
@@ -290,25 +291,6 @@ begin
 		-- Add permissions check
 		insert into @wheres values ('H1.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', H1.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)')
 		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = H1.AssetTypeID)')
-
-		if @simpleFilter <> ''
-		begin
-				;with simpleFilterQueries as (select CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter') as Filter
-						 from @fields f 
-						 cross apply(select case 
-								when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
-								when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
-								when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
-								else null
-							end as FieldCol)FSQL(col) 
-						where F.FieldTypeName <> 'TextPath' and FSQL.col is not null
-						union 
-						select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
-						 from @fields f 
-						where F.FieldTypeName = 'TextPath')
-				insert into @wheres
-				select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
-		end
 
 		insert into @orders
 			select		case 
@@ -718,6 +700,57 @@ begin
 		end
 	end
 
+	if exists (select * from @filters)
+	begin
+		;with filterQueries as (
+			select concat(s.columnname, ' like ', '''%' +  f.filtervalues +'%''') as q from @filters f
+			inner join @selects s on s.Alias = f.optionalidentifier and s.ColumnName is not null) 
+		insert into @wheres
+		select '(' + string_agg(q,' and ')+ ')' from filterQueries 
+	end
+
+	if @simpleFilter <> ''
+	begin
+		if @type = 'ComplexRelationLookup'
+		begin
+			;with simpleFilterQueries as (select CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter') as Filter
+					 from @fields f 
+					 cross apply(select case 
+							when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+							when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
+							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+							else null
+						end as FieldCol)FSQL(col) 
+					where F.FieldTypeName <> 'TextPath' and FSQL.col is not null
+					union 
+					select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
+					 from @fields f 
+					where F.FieldTypeName = 'TextPath')
+			insert into @wheres
+			select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
+		end
+
+		if @type = 'OwnershipLookup'
+		begin
+			insert into @fields (FieldTypeName) values ('ResponsibilityTypeName'),('ResourceName'),('Context')
+			
+			;with simpleFilterQueries as (
+				select CONCAT( FieldTypeName ,' like ', '@simpleFilter') as Filter 
+				from @fields
+			 )
+			insert into @wheres
+			select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
+		end
+		
+		if  @type = 'RefListRelationship'
+		begin
+			;with simpleFilterQueries as (
+			select ColumnName + ' like ' + '@simpleFilter' as q from @selects)
+			insert into @wheres
+			select '(' + string_agg(q,' or ')+ ')' from simpleFilterQueries 
+		end
+	end
+
 	if @orderBy <> ''
 	begin
 		delete from @orders
@@ -835,7 +868,7 @@ begin
 	
 	-- The tables to hold the statements that are used to build the SQL below.
 	declare @selects table (ColumnName varchar(500), Alias varchar(250))
-	declare @tables table ([Statement] varchar(2500))
+	declare @tables table (RowID INT IDENTITY(1, 1) PRIMARY KEY CLUSTERED, [Statement] varchar(2500))  -- table order by clusterd primary key asc is the default so rows will be ordered by row id asc...
 	declare @wheres table ([Statement] varchar(MAX))
 	declare @orders table ([Statement] varchar(500), SortOrder int)
 	declare @finalOrders table ([Statement] varchar(500), SortOrder int, INDEX IX1 CLUSTERED(SortOrder asc))

@@ -164,6 +164,9 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
                 this.data = result;
                 this.isLoading = false;
                 this.cdRef.markForCheck();
+            }, null, () => {
+                this.isLoading = false;
+                this.cdRef.markForCheck();
             });
     }
 }
