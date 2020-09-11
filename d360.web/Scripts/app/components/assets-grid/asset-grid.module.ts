@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
-import { ChartModule } from 'angular2-highcharts';
 
 import { CoreModule } from '../shared/core.module';
 import { WorkflowModule } from '../workflow/workflow.module';
@@ -15,19 +14,6 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
-import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
-
-
-declare var require: any;
-export function highchartsFactory() {
-    const hc = require('highcharts');
-    const hcm = require('highcharts/highcharts-more'); // used for more category of charts    
-    const solidGauge = require('highcharts/modules/solid-gauge');
-    hcm(hc);
-    solidGauge(hc);
-    return hc;
-}
-
 
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -67,9 +53,6 @@ import { AssetGridComponent } from './asset-grid.component';
         SharedModule,
         TableModule,
 
-        //highcharts        
-        ChartModule,
-
         //d3s
         D3SSharedModule,
         CoreModule,
@@ -102,11 +85,7 @@ import { AssetGridComponent } from './asset-grid.component';
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true
-        },
-        {
-            provide: HighchartsStatic,
-            useFactory: highchartsFactory
-        },
+        }        
     ]
 })
 
