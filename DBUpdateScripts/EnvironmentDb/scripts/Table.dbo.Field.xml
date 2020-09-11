@@ -105,8 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v4">
-    <comment>GOV-11007,GOV-11024,GOV-8929</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.Field-Field_AfterUpsert-v5">
+    <comment>GOV-12094,GOV-11007,GOV-11024,GOV-8929</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -126,16 +126,16 @@ AS
 		
 
 	drop table if exists #insertedFields;
-	create table #insertedFields (FieldTypeID int, ObjectType varchar(250), ObjectID int);
-	create clustered index IX_TempInsertedFields ON #insertedFields (FieldTypeID, ObjectType, ObjectID);
+	create table #insertedFields (ObjectType varchar(250), ObjectID int);
+	create clustered index IX_TempInsertedFields ON #insertedFields (ObjectType, ObjectID);
 
 	insert into #insertedFields
 	select distinct
-		FieldTypeID,
 		replace(FT.[Object],'Type',''),
 		FT.ObjectID
-	from inserted
-	inner join FieldType FT on FT.ID = FieldTypeID;
+	from inserted i
+	inner join FieldType FT on FT.ID = i.FieldTypeID
+	where exists (select 1 from deleted d where d.id = i.id);
 
 
 	if exists(
@@ -184,7 +184,7 @@ AS
 	create clustered index IX_TempInsertedFields ON #insertedFields (FieldTypeID, ObjectType, ObjectID);
 
 	insert into #insertedFields
-	select
+	select distinct
 		FieldTypeID,
 		replace(FT.[Object],'Type',''),
 		FT.ObjectID
