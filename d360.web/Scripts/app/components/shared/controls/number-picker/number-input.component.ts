@@ -78,16 +78,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
     getStyleClass(): string {
         return 'ig-number-field ' + this.styleClass;
     }
-
-    ngOnDestroy() {
-        this.removeElementChildren(this.el);
-    }
-
-    removeElementChildren(elem: any) {
-        while (elem.hasChildNodes()) {
-            elem.removeChild(this.el.nativeElement.lastChild);
-        }
-    }
+    
     onInputKeyDown(event) {
         switch (event.which) {
             case 13:

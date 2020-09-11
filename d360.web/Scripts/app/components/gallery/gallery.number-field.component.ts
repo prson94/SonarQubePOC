@@ -33,9 +33,9 @@ export class GalleryNumberFieldComponent implements OnInit {
 
 
         this.properties = new Array();
-        this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });
-        this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the textarea control is required", Default: "" });
-        this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected date object", Default: "" });
+        this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the number field control is disabled", Default: "" });
+        this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the number field control is required", Default: "" });
+        this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected number field object", Default: "" });
         this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component", Default: "" });
         this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text string for the input control.", Default: "'Optional' or 'Value required' if required = true" });
         this.properties.push({ Name: "max", Type: "Date", Description: "The minimum number allowed", Default: "" });
