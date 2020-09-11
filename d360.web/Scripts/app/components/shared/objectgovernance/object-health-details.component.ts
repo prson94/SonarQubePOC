@@ -7,6 +7,7 @@ import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-object-health-details',
@@ -75,7 +76,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
 
-    private loadSeriesData() {
+    private loadSeriesData(): Observable<boolean> {
+        var subject = new Subject<boolean>();
+
         if (this.uid) {
             this.historicalData = [];
             this.loadingHistory = true;
@@ -90,7 +93,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                     this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
                     this.scoreDate = this.scoresPoints[0].EffectiveDate;
-
                     this.historicalData = res.map(val => {
                         return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
@@ -178,7 +180,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     }
                                 },
                                 animation: {
-                                    complete: function() {
+                                    complete: function () {
                                         this.selectPointOnGraph();
                                     }
                                 }
@@ -222,8 +224,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         }]
                     };
                     this.loadingHistory = false;
+
+                    subject.next(true);
                 });
         }
+        else {
+            subject.next(false);
+        }
+        return subject.asObservable();
     }
 
     private loadPoints(isTabChange: boolean = false) {
@@ -267,18 +275,20 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = false;
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.Governance;
-                this.loadSeriesData();
-                this.loadPoints(true);
-                this.isDQAndNoItems();
+                this.loadSeriesData().subscribe(b => {
+                    this.loadPoints(true);
+                    this.isDQAndNoItems();
+                });
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.DataQuality;
-                this.loadSeriesData();
-                this.loadPoints(true);
-                this.isDQAndNoItems();
+                this.loadSeriesData().subscribe(b => {
+                    this.loadPoints(true);
+                    this.isDQAndNoItems();
+                });
                 break;
             default:
         }
@@ -303,13 +313,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private getCurrentScoreDateText() {
-        if (this.historicalData && this.historicalData.length > 0) {
-            let dataArray = [...this.historicalData];
-            dataArray.sort((a, b) => b[0] - a[0]);
-
-            let mostRecent = dataArray.splice(0, 1)[0];
-            let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent[0]).getTime();
-            this.formatCalculatedScoreText(milliseconds, mostRecent[1]); 
+        if (this.scoresPoints && this.scoresPoints.length > 0) {
+            let mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
+            let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
+            this.formatCalculatedScoreText(milliseconds, this.scoresPoints[0].Score);
         }
         else {
             return "Calculating...";
