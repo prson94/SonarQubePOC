@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Allocation does not exist for Asset Type '{asset.AssetType.Name}' on Action Type '{issueType.Name}'.");
             }            
 
-            var fieldTypes = Company.Filter<FieldType>(ft => ft.ObjectID == issueType.ID);
+            var fieldTypes = Company.Filter<FieldType>(ft => ft.Object == "IssueType" && ft.ObjectID == issueType.ID);
 
             var fieldTable = new DataTable();
             fieldTable.Columns.Add("ExecutionID", typeof(Guid));
