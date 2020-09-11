@@ -14,6 +14,7 @@ using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -178,31 +179,23 @@ namespace d360.web.Controllers.V2
             if (allocations.Count > 0 && !allocations.Any(a => a.AssetTypeID == asset.AssetTypeID))
             {
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Allocation does not exist for Asset Type '{asset.AssetType.Name}' on Action Type '{issueType.Name}'.");
-            }
+            }            
 
             var fieldTypes = Company.Filter<FieldType>(ft => ft.ObjectID == issueType.ID);
 
-            List<string> invalidFields = new List<string>();
+            var fieldTable = new DataTable();
+            fieldTable.Columns.Add("ExecutionID", typeof(Guid));
+            fieldTable.Columns.Add("ItemNumber", typeof(int));
+            fieldTable.Columns.Add("FieldName", typeof(string));
+            fieldTable.Columns.Add("FieldValue", typeof(string));
+            fieldTable.Columns.Add("FieldTypeID", typeof(int));
 
-            foreach (var field in model.Fields)
-            {                
-                if (!fieldTypes.Any(ft => ft.Name.Contains(field.Key)))
-                {
-                    invalidFields.Add(field.Key);                
-                }
-            }
+            Company.ValidateFields("IssueType", issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);            
 
-            if(invalidFields.Count >0)
+            if(!success)
             {
-                var errMsg = $"Field Name '{invalidFields.FirstOrDefault()}' is not valid for Action type '{issueType.Name}'.";
-
-                if (invalidFields.Count>1)
-                {
-                    errMsg = $"Field Names '{string.Join("','", invalidFields)}' are not valid for Action type '{issueType.Name}'.";
-                }
-               
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", errMsg);
-            }
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", errorMessage);
+            }            
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -236,7 +229,7 @@ namespace d360.web.Controllers.V2
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, issue.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueType.ID).ToList(), model.Fields, null);
 
-                issues.Add(new IssueInsertModel { Issue = issue, fields = fields, Comment = model.Fields.ContainsKey("Description") ? model.Fields["Description"] : ""});
+                issues.Add(new IssueInsertModel { Issue = issue, fields = fields, Comment = model.Fields.ContainsKey("ProblemDesc") ? model.Fields["ProblemDesc"] : null});
             }            
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
