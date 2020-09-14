@@ -43,5 +43,4 @@ import 'lodash';
 import 'angular2-highcharts';
 import 'highcharts/highcharts';
 import 'highcharts/highcharts-more';
-import 'highcharts/modules/solid-gauge';
 import 'ng-json-view';
