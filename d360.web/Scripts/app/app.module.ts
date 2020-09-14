@@ -19,6 +19,7 @@ import { MessagesObservableService } from "./services/messages-observable.servic
 import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 import { HeaderActionsService } from './services/header-actions.service';
 import { SecondaryNavService } from './services/right-sidebar.service';
+import { FavoritesService } from './services/favorites.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { ApplicationInsightsService } from './services/application-insights.service';
@@ -102,6 +103,7 @@ export function localeInitializer(localeId: string) {
         HeaderBreadcrumbService,
         MessagesObservableService,
         SecondaryNavService,
+        FavoritesService,
         AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,

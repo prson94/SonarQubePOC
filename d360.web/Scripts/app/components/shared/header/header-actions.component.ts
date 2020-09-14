@@ -29,8 +29,7 @@ declare var CompanySettings;
                         <li class="header-action-li"><d3s-header-mini-menu></d3s-header-mini-menu></li>
                     </ul>
                 </div>
-                `,
-    providers: [FavoritesService]
+                `
 })
 
 export class HeaderActionsComponent {
@@ -110,12 +109,10 @@ export class HeaderActionsComponent {
 
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
-            this.favoritesService.getFavorites().subscribe(
-                res => {
-                    this.favItems = res;
-                    this.favoritesService.GetHomePage().subscribe((res) => {
-                        this.homePageItem = res;
-                    });
+            this.favoritesService.getHomePageAndFavorites().subscribe(
+                homefav => {
+                    this.favItems = homefav.Favorites;
+                    this.homePageItem = homefav.Homepage;
                 }
             );
         });
@@ -134,12 +131,10 @@ export class HeaderActionsComponent {
                 }
                 this.Uid = c.Uid;
             }
-            this.favoritesService.getFavorites().subscribe(
-                fav => {
-                    this.favItems = fav;
-                    this.favoritesService.GetHomePage().subscribe((res) => {
-                        this.homePageItem = res;
-                    });
+            this.favoritesService.getHomePageAndFavorites().subscribe(
+                homefav => {
+                    this.favItems = homefav.Favorites;
+                    this.homePageItem = homefav.Homepage;
                 }
             );
         });

@@ -17,3 +17,7 @@ export class Favorite {
     ObjectID: number;
     IsHomePage: boolean = false;
 }
+export class HomepageAndFavoritesModel {
+    Homepage: FavoriteApiModel;
+    Favorites: FavoriteApiModel[];
+}

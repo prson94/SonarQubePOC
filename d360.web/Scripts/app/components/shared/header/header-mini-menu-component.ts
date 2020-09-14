@@ -106,12 +106,10 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
-            this.favoritesService.getFavorites().subscribe(
-                res => {
-                    this.favItems = res;
-                    this.favoritesService.GetHomePage().subscribe((res) => {
-                        this.homePageItem = res;
-                    });
+            this.favoritesService.getHomePageAndFavorites().subscribe(
+                homefav => {
+                    this.favItems = homefav.Favorites;
+                    this.homePageItem = homefav.Homepage;
                 }
             );
         });
@@ -127,12 +125,10 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
                 }
                 this.Uid = c.Uid;
             }
-            this.favoritesService.getFavorites().subscribe(
-                fav => {
-                    this.favItems = fav;
-                    this.favoritesService.GetHomePage().subscribe((res) => {
-                        this.homePageItem = res;
-                    });
+            this.favoritesService.getHomePageAndFavorites().subscribe(
+                homefav => {
+                    this.favItems = homefav.Favorites;
+                    this.homePageItem = homefav.Homepage;
                 }
             );
         });
