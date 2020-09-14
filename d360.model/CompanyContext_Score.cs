@@ -568,6 +568,7 @@ where   ExecutionID = @ExecutionID
 
                             var batchResults = Connection.Query<ExternalScoreResultsApiResultsModel>( $@"
 select  E.ScoreUid, 
+        E.AllocationUid,
         E.AssetUid, 
         E.EffectiveDate, 
         E.Success as IsSuccess, 
@@ -621,10 +622,10 @@ where   E.ExecutionID = @ExecutionID
             try
             {
                 // Send to ScoreEngine.
-                var scoreUids = results.Where(i => i.IsSuccess).Select(i => i.ScoreUid).ToList();
-                if (scoreUids.Count > 0)
+                var scores = results.Where(i => i.IsSuccess).Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList();
+                if (scores.Count > 0)
                 {
-                    SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalScoresCreated, scoreUids);
+                    SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalScoresCreated, scores);
                 }
 
                 execution.Error = results.Count(i => !i.IsSuccess);

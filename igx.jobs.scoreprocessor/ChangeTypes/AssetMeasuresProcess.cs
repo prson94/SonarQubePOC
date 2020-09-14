@@ -665,6 +665,10 @@ from	metrics.Asset A
                                     AllocationUid uniqueidentifier null,
                                     VersionValueHash varchar(50) null
                                 );
+                                create table #ScoreUidSynchronization (
+                                    GivenUid uniqueidentifier not null,
+                                    ActualUid uniqueidentifier not null
+                                ); 
                                 create table #ScoreItems (
 	                                Uid uniqueidentifier NOT NULL,
 	                                UpdatedOn datetime NOT NULL,
@@ -750,13 +754,31 @@ from	metrics.Asset A
                             await company.ExecuteAsync(
                                 "merge metrics.Score as T " +
                                 "using #Scores as S " +
-                                "on (S.Uid = T.Uid) " +
+                                "on (S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) " +
                                 "when matched then " +
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.Value = S.Value, T.VersionValueHash = S.VersionValueHash " +
                                 "when not matched then " +
                                 "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate, VersionValueHash) " +
-                                "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.VersionValueHash);", transaction: trans);
+                                "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.VersionValueHash)" +
+                                "output S.Uid, inserted.Uid into #ScoreUidSynchronization;", transaction: trans);
+                            
+                            // Synchronize score Uids with temp table we are about to merge into Link and Item table.
+                            await company.ExecuteAsync(@"
+update T 
+set T.ScoreUid = S.ActualUid 
+from #ScoreItemLinks T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
+
+update T 
+set T.ScoreUid = S.ActualUid 
+from #ScoreItemLinksToDelete T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
+
+update T 
+set T.Uid = S.ActualUid 
+from #Scores T 
+inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;", transaction: trans);
 
                             // Merge score items.
                             await company.ExecuteAsync(
@@ -790,9 +812,26 @@ from	metrics.Asset A
                                     "inner join #ScoreItemLinksToDelete S on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid);", transaction: trans);
                             }
 
+                            // Clean out potentially old references to the same asset versions on a single score.
+                            await company.ExecuteAsync(
+                                @"
+delete	T
+from	metrics.ScoreItemLink T
+		inner join	(
+					select	*
+					from	(
+							select	L.*,
+									ROW_NUMBER() OVER(PARTITION BY S.Uid, I.AssetVersionUid ORDER BY I.UpdatedOn desc) as RowNum
+							from	#Scores S
+									inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
+									inner join metrics.ScoreItem I on I.Uid = L.ScoreItemUid
+							) O
+					where	O.RowNum > 1
+					) S on (S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid);", transaction: trans);
+
                             trans.Commit();
 
-                            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoresToAdd.Select(i => i.Uid).ToList());
+                            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList());
                         }
                         catch (Exception ex)
                         {

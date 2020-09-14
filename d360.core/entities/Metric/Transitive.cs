@@ -51,4 +51,11 @@ namespace d360.core.entities.Metric
         [JsonConverter(typeof(StringEnumConverter))]
         public ScoreType ScoreType { get; set; }
     }
+
+    public class ScoreCreatedModel
+    {
+        public Guid AllocationUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+    }
 }
