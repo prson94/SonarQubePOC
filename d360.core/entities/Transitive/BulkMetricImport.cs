@@ -94,6 +94,9 @@ namespace d360.core.entities
         public DateTime? EffectiveDate { get; set; }
 
         [DataMember]
+        public DateTime? RunDate { get; set; }
+
+        [DataMember]
         public DateTime? EndDate { get; set; }
 
 
