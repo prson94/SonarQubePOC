@@ -685,6 +685,7 @@ from	(
 				V.Name,
 				V.Description,
 				Ma.IsGroup,
+                SI.RunDate,
 				V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
