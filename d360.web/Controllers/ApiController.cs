@@ -1894,101 +1894,6 @@ order by    rnk, [Name]";
             }
         }
 
-        [HttpGet, Route("dynamiclookup/export/{type}/{id:int}/{fieldTypeID:int}/{lookupType}/excel.xls")]
-        public async Task<HttpResponseMessage> ExportDynamicLookup(string type, int id, int fieldTypeID, DataType lookupType)
-        {
-            string resultString = "";
-            var ft = Company.GetById<FieldType>(fieldTypeID);
-            string fileName = "Items";
-
-            if (ft != null)
-            {
-                fileName = ft.FriendlyName.GetSafeFilename();
-                fileName += " List";
-            }
-
-            switch ((DataType)lookupType)
-            {
-                case DataType.RefListRelationship:
-                case DataType.ComplexRelationLookup:
-                case DataType.OwnershipLookup:
-                    var dataResponse = await GetComplexLookupGridField(type, id, fieldTypeID);
-                    resultString = await dataResponse.Content.ReadAsStringAsync();
-
-                    if ((DataType)lookupType == DataType.RefListRelationship)
-                    {
-                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
-                        if (intersect != null)
-                        {
-                            var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
-                            var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
-                            if (assetType != null)
-                            {
-                                fileName = assetType.Name.GetSafeFilename();
-                                fileName += " List";
-                            }
-                        }
-                    }
-                    break;
-                default:
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, new Exception("invalid lookup type"));
-
-            }
-
-            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
-
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            int colIndex = 1;
-            for (int i = 0; i < result.Columns.Count; i++)
-            {
-                var colField = result.Columns[i].datafield.Value;
-                var dataType = "string";
-
-                for (int k = 0; k < result.Fields.Count; k++)
-                {
-                    var field = result.Fields[k];
-                    if (field["name"].Value == colField)
-                    {
-                        dataType = field["type"].Value;
-                        break;
-                    }
-
-                }
-
-                document.SetCellValue(1, colIndex, result.Columns[i].text.Value);
-
-                int rowIndex = 2;
-
-                for (int j = 0; j < result.Values.Count; j++)
-                {
-                    var value = result.Values[j][colField].Value;
-
-                    SetCellValue(document, rowIndex, colIndex, dataType, value);
-
-                    rowIndex++;
-                }
-                colIndex++;
-            }
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage response = null;
-            // serve the file to the client      
-            response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(stream);
-            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            response.Content.Headers.ContentLength = stream.Length;
-            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx"
-            };
-            return response;
-        }
-
         private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -2117,34 +2022,6 @@ order by    rnk, [Name]";
             }
 
             return any;
-        }
-
-        [Route("ComplexLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
-        public async Task<HttpResponseMessage> GetComplexLookupGridField(string type, int id, int fieldTypeID)
-        {
-            List<GridColumn> Columns = null;
-            List<GridField> Fields = null;
-            List<dynamic> Values = null;
-            try
-            {
-                var reader = await Company.QueryMultipleAsync("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
-                    new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
-                );
-
-                Columns = reader.Read<GridColumn>().ToList();
-                Fields = reader.Read<GridField>().ToList();
-                Values = reader.Read<dynamic>().ToList();
-
-                return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
-            }
-            catch (Exception ex)
-            {
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
-                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeID}, {Company.CurrentResourceID}, 1" }
-                });
-            }
-            return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
         }
 
         /// <summary>

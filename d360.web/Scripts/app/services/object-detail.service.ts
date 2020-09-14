@@ -99,37 +99,6 @@ export class ObjectDetailService extends BaseObservableService {
             );
     }
 
-    getLookupGridExport(
-        type: string,
-        id: number,
-        fieldTypeID: number,
-        lookupType: number
-    ) {
-        let uri = `api/dynamiclookup/export/${type}/${id}/${fieldTypeID}/${lookupType}/excel.xls`;
-
-        this.http.get(uri, { observe: 'response', responseType: 'blob' }).subscribe(
-            d => { this.downloadFile(d.body, d.headers.get('content-disposition')); }
-        );
-    }
-
-    downloadFile(data: Blob, contentDisposition: string) {
-        var filename = contentDisposition.split(';')[1].split('filename')[1].split('=')[1].trim();
-        filename = filename.split('\"').join('');
-
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        } else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
-
     deleteCustomSynonym(synonym: Synonym): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'customsynonym', synonym.CustomID);
     }

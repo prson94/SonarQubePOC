@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
 import { DetailField } from '../../../models/object-detail.model';
-import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AssetService } from '../../../services/asset.service';
 import { Subscription } from 'rxjs';
 
@@ -12,7 +11,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'd3s-dynamic-lookup-grid',
     templateUrl: './dynamic-lookup-grid.component.html',
-    providers: [ObjectDetailService, AssetService],
+    providers: [AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -29,13 +28,13 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
     visibleColumns: GridFilterColumn[] = [];
     private loadSubscription: Subscription;
+    private currentFilters: any;
 
     get globalFilterFields(): string[] {
         return this.visibleColumns.map(c => c.datafield);
     }
 
     constructor(private router: Router,
-        private objectDetailService: ObjectDetailService,
         private assetService: AssetService,
         private cdRef: ChangeDetectorRef
     ) {
@@ -107,7 +106,11 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
     }
 
     export() {
-        this.objectDetailService.getLookupGridExport(this.field.LookupObjectType, this.field.LookupObjectID, this.field.LookupFieldTypeID, this.field.LookupType);
+        var params = this.currentFilters;
+        params['_pageSize'] = 10000;
+        params['_pageNum'] = 1;
+
+        this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params, true);
     }
 
     loadData(event) {
@@ -149,15 +152,14 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
                 delete params['simpleFilter'];
                 params['filter'] = advFilters.join(" and ");
             }
-
-            console.log(event.filters);
-
         }
 
 
         if (this.loadSubscription) {
             this.loadSubscription.unsubscribe();
         }
+
+        this.currentFilters = params;
 
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
             .subscribe(result => {

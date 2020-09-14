@@ -44,8 +44,8 @@
                         <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'short'}}</span>
                     </span>
                     <span *ngSwitchCase="'bool'">
-                        <i *ngIf="(item[column.datafield] || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
-                        <i *ngIf="(item[column.datafield] || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
+                        <i *ngIf="(item[column.datafield] || '').toString().toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                        <i *ngIf="(item[column.datafield] || '').toString().toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                     </span>
                     <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                     <span *ngSwitchCase="'lookup'" style="display:block; word-wrap:break-word !important">
