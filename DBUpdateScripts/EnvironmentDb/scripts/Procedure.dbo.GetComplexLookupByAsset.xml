@@ -193,6 +193,7 @@ begin
 									when 'DateTime' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as datetime)'
 									when 'Decimal' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as float)'
 									when 'Number' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as int)'
+									when 'Boolean' then 'try_cast(H' + F.RRN + '_F' + F.FT + '.FormattedValue as bit)'
 									else 'H' + F.RRN + '_F' + F.FT + '.FormattedValue'
 								end							
 							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then 'H' + F.RRN + '_DV.DisplayValue'
@@ -670,6 +671,8 @@ begin
 							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end'
 						when FieldDataType = 'date' or FieldDataType = 'datetime' then 
 							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end'
+							when FieldDataType = 'boolean' then 
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as bit) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as bit) end'
 						else
 							'F' + cast(FieldTypeID as varchar) + '.FormattedValue'
 						end, 
