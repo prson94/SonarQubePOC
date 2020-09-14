@@ -59,6 +59,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private currentResouceID: number;
     private isScoringScreen: boolean = false;
     private menuWarningType: string = '';
+    private showOnlyMainTab: boolean = false;
 
     status: string;
     showStatus = false;
@@ -238,7 +239,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
                 this.currentObject = null;
                 this.statistics = null;
-                this.showStatus = false; this.emitChanges();
+                this.showStatus = false;
+                this.showOnlyMainTab = false;
+                this.emitChanges();
             })
         this.areaSub = this.secondaryNavService.currentArea$.subscribe(
             area => {
@@ -267,6 +270,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.assetActionSub = this.secondaryNavService.assetAction$.subscribe(res => {
             this.assetAction = res;
+            if (this.assetAction && this.assetAction.type == "CONNECTORLABEL") {
+                this.showOnlyMainTab = true;
+            }
         });
 
         this.assetActionClearSub = this.secondaryNavService.assetActionClear$.subscribe(
