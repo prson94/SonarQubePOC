@@ -14,7 +14,8 @@
             padding-bottom: 8px;
         }
         .colorsample {
-            padding: 3px;
+            padding: 8px;
+            border-radius: 5px;
         }
         div.colorsample {
             width: 100px;
@@ -31,9 +32,9 @@
 })
 
 export class GalleryColorVariablesComponent implements OnInit, AfterViewInit {
-    protected tintedbasecolors: Array<string> = ['grey', 'midblue', 'lightblue', 'red', 'coral', 'orange', 'green'];
+    protected tintedbasecolors: Array<string> = ['grey', 'slate', 'midblue', 'lightblue', 'red', 'coral', 'orange', 'green'];
     protected tintsshaded: Array<string> = [ 't5', 't4', 't3', 't2', 't1', 'Base', 's1', 's2', 's3'];
-    protected nontintedbasecolors: Array<string> = ['black', 'white', 'slate'];
+    protected nontintedbasecolors: Array<string> = ['black', 'white'];
     protected basecolors: Array<string>;
     protected hexcolors: Map<string, string> = new Map<string, string>();
 
