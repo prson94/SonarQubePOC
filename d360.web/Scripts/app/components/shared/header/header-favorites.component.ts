@@ -35,7 +35,6 @@ import * as _ from 'lodash';
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
         </div>
     `,
-    providers: [FavoritesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 

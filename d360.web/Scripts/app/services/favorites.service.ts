@@ -1,9 +1,9 @@
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import { Observable, Subject, forkJoin } from "rxjs";
+import { catchError, map, shareReplay, takeUntil, tap } from "rxjs/operators";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 
-import {FavoriteApiModel, Favorite} from '../models/favorite.model';
+import { FavoriteApiModel, HomepageAndFavoritesModel} from '../models/favorite.model';
 import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesObservableService} from './messages-observable.service';
@@ -44,7 +44,8 @@ export class FavoritesService extends BaseObservableService {
             .put(`api/v2/membership/users/me/favorites`, favorite)
             .pipe(
                 map(response => response),
-                catchError(err => this.handleError(err))
+                catchError(err => this.handleError(err)),
+                tap(res => this.clearCache())
             );
     }
 
@@ -64,8 +65,40 @@ export class FavoritesService extends BaseObservableService {
             .put(`api/v2/membership/users/me/homepage`, homepage)
             .pipe(
                 map(response => response),
-                catchError(err => this.handleError(err))
-            );
+                catchError(err => this.handleError(err)),
+                tap(res => this.clearCache())
+            )
+    }
+
+    //Observable for caching Favorites and Homepage
+    private homefavoritecache$: Observable<HomepageAndFavoritesModel>;
+    //Subject used to control when the cache is complete
+    private reload$ = new Subject<void>();
+
+    //Public method that creates, if needed, and gets the cached Observable
+    public getHomePageAndFavorites(): Observable<HomepageAndFavoritesModel> {
+        if (!this.homefavoritecache$) {
+            this.homefavoritecache$ = this.requestHomePageAndFavorites().pipe(takeUntil(this.reload$));
+        }
+        return this.homefavoritecache$;
+    }
+
+    //Private method that combines the Favorites and GetHomepage calls and pipes it into a shareReplay Observable
+    private requestHomePageAndFavorites(): Observable<HomepageAndFavoritesModel> {
+        let favResponse = this.getFavorites();
+        let homeResponse = this.GetHomePage();
+        return forkJoin([favResponse, homeResponse], (favRes, homeRes) => {
+            let res = new HomepageAndFavoritesModel();
+            res.Homepage = homeRes;
+            res.Favorites = favRes;
+            return res;
+        }).pipe(shareReplay(1));
+    }
+
+    //Private message that clears Favorties and Homepage cache. Called by the toggle methods
+    private clearCache() {
+        this.reload$.next();
+        this.homefavoritecache$ = null;
     }
 
     moveUp(
