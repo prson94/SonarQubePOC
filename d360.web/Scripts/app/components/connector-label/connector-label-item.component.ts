@@ -177,6 +177,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
     setActions() {
         this.actions = new AssetAction();
+        this.actions.type = "CONNECTORLABEL";
         this.actions.isVisible = true;
         this.actions.showDelete = false;
         this.actions.showEdit = false;
