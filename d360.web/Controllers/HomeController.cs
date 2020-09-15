@@ -25,7 +25,7 @@ namespace d360.web.Controllers
         #endregion
 
 
-        [ValidateContracts(Ignore = true), Authorize, Route("unsupported")]
+        [ValidateContracts(Ignore = true), AllowAnonymous, Route("unsupported")]
         public ActionResult Unsupported()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);

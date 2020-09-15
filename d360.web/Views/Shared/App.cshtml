@@ -81,12 +81,6 @@
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
         var VersionNumber = '@(VersionNumber)';
-
-    //redirect IE users to unsupported browser view
-    if (false || !!document.documentMode) {
-        window.location.href = './unsupported';
-    }
-
 </script>
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/primeng.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
