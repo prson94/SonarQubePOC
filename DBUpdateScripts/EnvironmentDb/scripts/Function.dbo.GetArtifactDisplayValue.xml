@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetArtifactDisplayValue-v1">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetArtifactDisplayValue-v2">
+  <comment>GOV-12198</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+		   DROP FUNCTION IF EXISTS [dbo].[GetArtifactDisplayValue];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetArtifactDisplayValue]
 (
 	@Id bigint
@@ -26,11 +32,6 @@ RETURN
 				inner join dbo.Field F on ATDF.FieldTypeID = F.FieldTypeID and F.AssetID = A.ID	
 	where 		A.ID = @id
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
