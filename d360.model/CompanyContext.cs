@@ -552,8 +552,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             bool sameSubjectObject = (intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID);
             obj = isSubject ? intersectType.Object : intersectType.Subject;
             objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-            var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
-
+            
             var cardinalityCheckSQL = "";
             if (intersectType.SubjectCardinality == Cardinality.One)
             {

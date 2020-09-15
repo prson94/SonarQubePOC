@@ -89,39 +89,7 @@ namespace d360.web.Controllers
                 Formatting = Formatting.None
             };
         }
-
-        [Route("{type}/{id:int}/ImpactAnalysisFusion")]
-        public JsonNetResult ImpactAnalysisFusion(SystemObjects type, int id)
-        {
-            var list = Company.Query<string>(QueryConstants.ImpactAnalysisDiagramFusion, new
-            {
-                type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                id
-            });
-
-            var json = string.Join("", list);
-            dynamic obj = JsonConvert.DeserializeObject(string.IsNullOrEmpty(json) ? "{}" : json);
-
-            if (obj != null && obj.nodes != null && PluralCultureHelper.IsNeutralCultureEnglish())
-            {
-                var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-
-                foreach (var node in obj.nodes)
-                {
-                    try
-                    {
-                        node.typeNamePlural.Value = pluralize.IsPlural(node.typeNamePlural.Value) ? node.typeNamePlural.Value : pluralize.Pluralize(node.typeNamePlural.Value);
-                    }
-                    catch { }
-                }
-            }
-
-            return new JsonNetResult
-            {
-                Data = obj,
-                Formatting = Formatting.None
-            };
-        }
+                
         #endregion
 
         #region Lineage Diagram

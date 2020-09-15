@@ -950,34 +950,6 @@ from	AssetType T
 					) S
 where	T.ObjectID = @id and T.Object='TaxonomyType'";
 
-        
-
-        public static string SimilarItems = @"
-                    select top 10
-						a.objectid,
-						a.[object],
-	                    d.DisplayValue as Name,
-	                    u.[Url], 
-	                    os.IconForeColor, 
-	                    os.IconBackColor, 
-	                    t.objectid as objecttypeid,
-						case when d.DisplayValue like @query + '%' then
-							0
-						else
-							1
-						end as rnk
-                    from 
-	                    Asset a
-					inner join AssetType t on t.ID = a.AssetTypeID
-                    left join AssetTypeStyle os on os.ID = t.ID
-					cross apply dbo.GetAssetDisplayValueById(a.ID) d
-					cross apply dbo.GetAssetUrlById(a.ID) u
-                    where 
-	                    a.[Object] = @type
-	                    and (@typeID is null or t.objectID = @typeID)
-	                    and d.DisplayValue like '%' + @query + '%'
-					order by rnk
-            ";
 
         public static string ImpactAnalysisDiagram = @"
 declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
@@ -1110,70 +1082,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 			select * from @nodes for json path			
 			) as 'nodes'
 	for json path, WITHOUT_ARRAY_WRAPPER";
-
-        public static string ImpactAnalysisDiagramFusion = @"
-    declare @links table ([from] varchar(250), [to] varchar(250), [text] varchar(50), predicateid int, intersectid int)
-    declare @nodes table ([key] varchar(250), obj varchar(50), [objid] int, typeName nvarchar(250), typeNamePlural nvarchar(250), [type] nvarchar(250), typeId int, name nvarchar(500), back varchar(7), fore varchar(7), [predicate] nvarchar(250), predicateLabel nvarchar(250), predicateid int, intersectid int)
-
-    declare @typeName varchar(50), @typeId int;
-
-	select @typeName=Type, @typeId=TypeID from AssetDetail
-    where object = @type and objectid = @id;
-
-    insert into @nodes
-    select D.Object + cast(D.ObjectID as varchar),
-				    D.Object,
-				    D.ObjectID,
-				    D.TypeName as ObjectTypeName,
-				    D.TypeName as ObjectTypeName,
-				    D.Type as ObjectType,
-				    D.TypeID as ObjectTypeID,
-				    D.DisplayValue as TextPath,
-				    D.BackColor as IconBackColor,
-				    D.ForeColor as IconForeColor,
-				    case 
-					    when I.Subject = @type and I.SubjectID = @id then coalesce(P.Name, 'uses')
-					    else coalesce(P.Inverse, 'used in')
-				    end as [Predicate],
-                    coalesce(P.Name, 'uses') + ' (' + coalesce(P.Inverse, 'used in') + ')',
-				    P.ID as PredicateID,
-				    I.ID
-    from [Intersect] I
-    inner join IntersectType T on I.IntersectTypeID = T.ID AND
-	    ((T.Subject = @typeName and T.SubjectID = @typeId and T.Object = 'FusionAttributeType') OR
-	     (T.Object = @typeName and T.ObjectID = @typeId and T.Subject ='FusionAttributeTYpe'))
-    inner join AssetDetail D on D.Object = case 
-												    when I.Subject = @type and I.SubjectID = @id then I.Object
-												    else I.Subject
-											       end 
-									    and
-									    D.ObjectID = case 
-												    when I.Subject = @type and I.SubjectID = @id then I.ObjectID
-												    else I.SubjectID
-											       end
-    left join Predicate P on P.ID = T.PredicateID
-    where
-    (I.Subject = @type AND I.SubjectID = @id) OR (I.Object = @type AND I.ObjectID = @id);
-
-
-    insert into @links
-	    select	@type + cast(@id as varchar),
-			    [key],
-			    [predicate],
-			    [predicateid],
-			    [intersectid]
-	    from	@nodes;
-
-    select	(
-		    select * from @links for json path			
-		    ) as 'links',
-		    (
-		    select * from @nodes for json path			
-		    ) as 'nodes'
-    for json path, WITHOUT_ARRAY_WRAPPER;
-";
-
-
+		
         public static string MapItems = @"
 select	MI.ID as MapItemID,
 				

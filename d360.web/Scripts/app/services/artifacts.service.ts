@@ -98,20 +98,6 @@ export class ArtifactService extends BaseObservableService {
             ;
     }
 
-    getSimilarArtifactNames(
-        typeID: number,
-        query: string
-    ): Observable<any[]> {
-        return this
-            .http
-            .get(`form/Artifact_SimilarItems?typeID=${typeID}&query=${query}`)
-            .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
     public requestCertification(assetUid: string): Observable<JsonResult> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })

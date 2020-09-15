@@ -1,11 +1,9 @@
 using d360.core;
 using d360.core.entities;
-using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions;
-using d360.extensions.powerbi;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
@@ -18,14 +16,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Data.Entity;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 using System.Xml.Linq;
-using System.Configuration;
-using d360.core.helpers;
 using System.Text;
 using d360.core.resources;
 using Newtonsoft.Json;
@@ -1580,26 +1574,6 @@ order by Sort, title";
 
             //add a column to the given lookup worksheet with the specified values
             string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns, true);
-            dataValidation.AllowList($"={range}", true, true);
-        }
-
-        private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, Dictionary<string, string> values)
-        {
-            if (!values.Any()) return;
-
-            var currentSheet = document.GetCurrentWorksheetName();
-            document.SelectWorksheet(lookupWorksheetName);
-            int rowNum = 0;
-            foreach (var key in values.Keys)
-            {
-                document.SetCellValue(++rowNum, numLookupColumns, WebUtility.HtmlDecode(key));
-                document.SetCellValue(rowNum, numLookupColumns + 1, WebUtility.HtmlDecode(values[key]));
-            }
-
-            document.SelectWorksheet(currentSheet);
-
-            //add a column to the given lookup worksheet with the specified values
-            string range = SLConvert.ToCellRange(lookupWorksheetName, 1, numLookupColumns, rowNum, numLookupColumns + 1, true);
             dataValidation.AllowList($"={range}", true, true);
         }
 
