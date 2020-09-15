@@ -43,6 +43,8 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
+import { GalleryMessageBoxComponent } from './gallery.message-box.component';
+import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
 
 
 @NgModule({
@@ -65,6 +67,7 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
         SharedGridSelectionInfoModule,
         SharedGridPagingInfoModule,
         IgNumberFieldModule,
+        IgMessageBoxModule,
 
         TableModule,
         TooltipModule,
@@ -90,6 +93,7 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
         GalleryGridPagingInfoComponent,
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
+        GalleryMessageBoxComponent,
     ],
     providers: [
         GalleryGuard,
