@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -723,6 +723,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.popup-menu.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
@@ -769,8 +770,10 @@
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -889,6 +892,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
@@ -913,6 +917,7 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />

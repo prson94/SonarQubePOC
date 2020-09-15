@@ -1,0 +1,72 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.ig-popup-menu {
+    outline: none;
+    position: absolute;
+    z-index: 20000;
+    background-color: white;
+
+    .menu-items {
+        padding: 4px 0;
+        border-radius: 4px;
+        box-shadow: @popup-shadow;
+        display: inline-block;
+        min-width: 128px;
+        position: relative;
+
+        li {
+            position: relative;
+        }
+
+        .open-menu {
+            font-size: 10px;
+            position: absolute;
+            top: 13px;
+            right: 10px;
+        }
+
+        .separator {
+            height: 0px;
+            border-top: 1px solid @ig-grey-t4;
+            margin: 4px 0px;
+        }
+
+        .sub-menu {
+            position: absolute;
+            right: 0px;
+            transform: translateX(100%);
+            background-color: white;
+            margin-top: -12px;
+        }
+
+        .menu-sub-item {
+            min-height: 36px;
+            padding: 8px 16px;
+
+            &.active {
+                background-color: @ig-orange-t4;
+                cursor: pointer;
+            }
+
+            &.selected {
+                background-color: @ig-orange-t3;
+            }
+
+            &.disabled {
+                color: black;
+                pointer-events: none;
+                opacity: 0.33;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 2px @ig-midblue-t3;
+                outline: none;
+            }
+
+            .menu-icon {
+                font-size: 14px;
+                width: 18px;
+            }
+        }
+    }
+}

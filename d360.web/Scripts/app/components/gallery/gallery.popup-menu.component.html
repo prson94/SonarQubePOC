@@ -1,0 +1,51 @@
+﻿<div class="tile tile-detail">
+    <header>Popup menu</header>
+    <p>Angular component that shows popup menu</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu.toggle($event)"></button>
+            <ig-popup-menu [items]="simpleExample" #menu [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>Multi</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu2.toggle($event)"></button>
+            <ig-popup-menu [items]="multiExample" #menu2 [tabIndex]="20"></ig-popup-menu>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    protected activeControl: string = "switch";
+    protected activeControl: string = "popup-menu";
     protected controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
@@ -27,6 +27,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Page Info', key: 'paging-info' },
         { label: 'Selection Info', key: 'selection-info' },
         { label: 'Number Field', key: 'number-field' },
+        { label: 'Popup Menu', key: 'popup-menu' },
     ];
 
     ngOnInit(): void {        

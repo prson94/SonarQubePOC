@@ -1,0 +1,25 @@
+﻿<div #positionRef></div>
+<div igAutoFocus #element tabindex="{{tabIndex}}" [style.visibility]="isVisible ? 'visible' : 'hidden'" class="ig-popup-menu">
+    <ng-template #menuItems let-items></ng-template>
+    <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: items,class:''}"></ng-container>
+</div>
+
+<ng-template #menuItemsTemplate let-items let-class="class">
+    <ul class="menu-items {{class}}">
+        <li *ngFor="let item of items"
+            tabindex="{{item.isSeparator ? -1 : tabIndex}}"
+            [attr.class]="getItemClass(item)"
+            (focus)="onFocus(item)"
+            (focusout)="onFocusOut(item)"
+            (click)="select(item,$event)"
+            (mouseenter)="hover(item)">
+            <span><i *ngIf="hasIcons(items)" class="menu-icon fa {{item.icon}}"></i> {{item.label}}</span>
+            <ng-container *ngIf="item.items">
+                <span class="open-menu fa fa-chevron-right"></span>
+            </ng-container>
+            <ng-container *ngIf="item.items && item.isActive">
+                <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: item.items, class: 'sub-menu'}"></ng-container>
+            </ng-container>
+        </li>
+    </ul>
+</ng-template>
