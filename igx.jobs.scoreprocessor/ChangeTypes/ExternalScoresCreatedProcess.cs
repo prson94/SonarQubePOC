@@ -1,4 +1,5 @@
-﻿using d360.core.queue;
+﻿using d360.core.entities.Metric;
+using d360.core.queue;
 using System;
 using System.Collections.Generic;
 
@@ -10,13 +11,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public async Task Run()
         {            
-            var scoreUids = await Storage.DeserializeJsonObjectFromBlobAsync<List<Guid>>(Info.StorageFolder, Info.StorageFile);
+            var scores = await Storage.DeserializeJsonObjectFromBlobAsync<List<ScoreCreatedModel>>(Info.StorageFolder, Info.StorageFile);
 
             var Db = GetCompanyContext();
 
             // More work to do here. Sprint 9.
             await Task.Delay(10);
-            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoreUids);
+            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scores);
         }
     }
 }

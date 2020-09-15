@@ -28,14 +28,14 @@ export class GalleryNumberFieldComponent implements OnInit {
 
     ngOnInit(): void {
         this.form = this.fb.group({
-            myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7])], updateOn: "blur" }]
+            myNumber: [null, { validators: [Validators.required, this.numbersIdontLike([3, 5, 7]), Validators.min(1), Validators.max(10)], updateOn: "blur" }]
         });
 
 
         this.properties = new Array();
-        this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the textarea control is disabled", Default: "" });
-        this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the textarea control is required", Default: "" });
-        this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected date object", Default: "" });
+        this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the number field control is disabled", Default: "" });
+        this.properties.push({ Name: "required", Type: "Boolean", Description: "Whether or not the number field control is required", Default: "" });
+        this.properties.push({ Name: "ngModel", Type: "Date", Description: "Model binding for the selected number field object", Default: "" });
         this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component", Default: "" });
         this.properties.push({ Name: "placeholder", Type: "string", Description: "Placeholder text string for the input control.", Default: "'Optional' or 'Value required' if required = true" });
         this.properties.push({ Name: "max", Type: "Date", Description: "The minimum number allowed", Default: "" });
@@ -63,6 +63,7 @@ export class GalleryNumberFieldComponent implements OnInit {
         console.log(form);
     }
     get diagnostic() { return JSON.stringify(this.model); }
+    get JSONERR() { return JSON.stringify(this.form.get('myNumber').errors);}
 }
 
 export class DummyformModel {

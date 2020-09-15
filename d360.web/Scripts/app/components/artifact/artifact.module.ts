@@ -4,8 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
-import { ChartModule } from 'angular2-highcharts';
-
 import { CoreModule } from '../shared/core.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { D3SSharedModule } from '../shared/shared.module';
@@ -21,19 +19,6 @@ import { ArtifactRoutingModule } from './artifact.routes';
 import { ArtifactComponent } from './artifact.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
-import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
-
-
-declare var require: any;
-export function highchartsFactory() {
-    const hc = require('highcharts');
-    const hcm = require('highcharts/highcharts-more'); // used for more category of charts    
-    const solidGauge = require('highcharts/modules/solid-gauge');
-    hcm(hc);
-    solidGauge(hc);
-    return hc;
-}
-
 
 import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -71,9 +56,7 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
         SharedModule,
         TableModule,
 
-        //highcharts        
-        ChartModule,
-
+        
         //d3s
         D3SSharedModule,
         CoreModule,        
@@ -98,11 +81,7 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true
-        },
-        {
-            provide: HighchartsStatic,
-            useFactory: highchartsFactory
-        },
+        }
     ]
 })
 

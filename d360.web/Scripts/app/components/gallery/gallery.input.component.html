@@ -47,11 +47,6 @@
                 <div class="form-group">
                     <div class="row">
                         <input igInput [(ngModel)]="model.theName" id="theName" name="theName" #theName="ngModel" required [ngModelOptions]="{ updateOn: 'blur' }" />
-                        <div *ngIf="theName.invalid && (theName.dirty || theName.touched)">
-                            <div *ngIf="theName.errors.required" class="ig-text-required">
-                                Value is required
-                            </div>
-                        </div>
                     </div>
                     <div class="row">&nbsp;</div>
                     <div class="row">
@@ -72,9 +67,6 @@
                     <div *ngIf="testForm.get('myFormName').invalid && (testForm.get('myFormName').dirty || testForm.get('myFormName').touched)">
                         <div *ngIf="testForm.get('myFormName').errors.notNiceWord" class="ig-text-required">
                             I dont like No, Bug or Defect!
-                        </div>
-                        <div *ngIf="testForm.get('myFormName').errors.required" class="ig-text-required">
-                            Value is required.
                         </div>
                     </div>
                 </div>

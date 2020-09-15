@@ -8,11 +8,10 @@ ig-number-input {
         color: @ig-black;
         background: @ig-white;
         padding: 0 32px 0 8px;
-        border: 1px solid #bdbfc6;
+        border: 1px solid rgba(0, 0, 0, 0.2);
         height: @ig-field-height;
         line-height: 30px;
         border-radius: @ig-field-border-radius;
-        margin-bottom: 14px;
         width: 150px !important;
 
         &:enabled:focus:not(.ui-state-error) {
@@ -69,10 +68,16 @@ ig-number-input {
         }
     }
 
-    &.ng-dirty.ng-invalid[required], .ng-dirty.ng-invalid.required {
+    &.ng-dirty.ng-invalid,
+    &.ng-touched.ng-invalid {
         .ig-number-field {
             background: @ig-red-t5;
             border-color: none;
+
+            &:required:invalid {
+                background: @ig-lightblue-t4;
+                border-color: @ig-field-border-color;
+            }
         }
     }
 }
@@ -87,7 +92,7 @@ ig-number-input {
 .ig-number-field-button {
     position: relative;
     cursor: pointer;
-    width: 28px;
+    width: 24px;
     text-align: center;
     background: rgba(0,0,0,0.07);
     font-size: 8px;
@@ -149,13 +154,12 @@ ig-number-input {
 
 
 .ig-text-required {
-    background: #b21a3e;
-    padding: 2px 7px;
-    font-size: 12px;
+    background: @ig-red-s1;
+    padding: 3px 8px;
+    font-size: 14px;
     color: white;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
-    width: auto;
-    margin-top: -12px;
-    display: table;
+    border-radius: 4px;
+    width: fit-content;
+    display: block;
+    margin-top: 2px;
 }

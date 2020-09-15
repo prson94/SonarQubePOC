@@ -650,6 +650,7 @@ from    [queue].[Task] T
                 }
             }
         }
+    
     }
 
     internal class TagSqlModel

@@ -3,6 +3,25 @@
 
 ig-date {
 
+    &:required.ng-invalid .ig-date .ig-input {
+        background: @ig-lightblue-t4 !important;
+        border-color: @ig-field-border-color;
+    }
+
+    &.ng-dirty.ng-invalid .ig-date .ig-input,
+    &.ng-invalid .ig-date .ig-input,
+    &.ng-touched.ng-invalid .ig-date .ig-input {
+        background: @ig-red-t5 !important;
+
+        &:required:invalid {
+            background: @ig-lightblue-t4 !important;
+            border-color: @ig-field-border-color;
+        }
+    }
+
+
+
+
     .ig-error-label {
         background: @ig-red-s1;
         color: @ig-white;
@@ -36,12 +55,14 @@ ig-date {
         border-top-right-radius: @ig-field-border-radius !important;
         padding: 0 8px;
 
-        &:required:invalid {
-            background: @ig-lightblue-t4;
-        }
+
 
         &:disabled {
             opacity: 0.33;
+        }
+
+        &:required:invalid {
+            background: @ig-lightblue-t4 !important;
         }
     }
 

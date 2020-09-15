@@ -2660,46 +2660,58 @@ select @err";
             var fieldEvents = new List<EventObjectInfo>();
 
             //we need to create event objects for field changes. Add them here
-            foreach (var field in changedFields)
+            if (changedFields != null)
             {
-                var fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
-                var eventInfo = fieldEvents.FirstOrDefault(f => f.Object.ToString() == field.ObjectType && f.ObjectID == field.ObjectID);
-                if (eventInfo != null)
+                foreach (var field in changedFields)
                 {
-                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-                }
-                else
-                {
-                    eventInfo = new EventObjectInfo();
-                    eventInfo.Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType);
-                    eventInfo.ObjectID = field.ObjectID;
-                    eventInfo.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldType.Object);
-                    eventInfo.ObjectTypeID = fieldType.ObjectID;
-                    eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
-                    fieldEvents.Add(eventInfo);
-                }
+                    var fieldType = FieldTypes.AsNoTracking().FirstOrDefault(f => f.ID == field.FieldTypeID);
+                    var eventInfo = fieldEvents.FirstOrDefault(f => f.Object.ToString() == field.ObjectType && f.ObjectID == field.ObjectID);
+                    if (eventInfo != null)
+                    {
+                        eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+                    }
+                    else
+                    {
+                        eventInfo = new EventObjectInfo();
+                        eventInfo.Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), field.ObjectType);
+                        eventInfo.ObjectID = field.ObjectID;
+                        eventInfo.ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), fieldType.Object);
+                        eventInfo.ObjectTypeID = fieldType.ObjectID;
+                        eventInfo.ChangedFieldIds.Add(field.FieldTypeID);
+                        fieldEvents.Add(eventInfo);
+                    }
 
+                }
             }
-
+ 
             foreach (var fieldEvent in fieldEvents)
             {
                 AddQE(events, ChangeType.Update, fieldEvent);
             }
 
 
-            foreach (var modified in modifiedEntities)
+            if (modifiedEntities != null)
             {
-                AddQE(events, ChangeType.Update, modified.GetEventObjectInfo());
+                foreach (var modified in modifiedEntities)
+                {
+                    AddQE(events, ChangeType.Update, modified.GetEventObjectInfo());
+                }
             }
 
-            foreach (var added in addedEntities)
+            if (addedEntities != null)
             {
-                AddQE(events, ChangeType.Add, added.GetEventObjectInfo());
+                foreach (var added in addedEntities)
+                {
+                    AddQE(events, ChangeType.Add, added.GetEventObjectInfo());
+                }
             }
 
-            foreach (var deleted in deletedEntities)
+            if (deletedEntities != null)
             {
-                AddQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
+                foreach (var deleted in deletedEntities)
+                {
+                    AddQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
+                }
             }
 
             if (events.Any())
@@ -3199,6 +3211,11 @@ new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = v
                             where ped.DiagramAssetTypeUid = it.SubjectUid and 
                             (ped.FromAssetTypeUid = it.ObjectUid or ped.ToAssetTypeUid = it.objectuid)",
                             new { intersectTypeUid }).FirstOrDefault() > 0;
+        }
+
+        public void CreateEventsForAddedActions(List<Issue> actions)
+        {
+            CreateEventsForObjectsRequiringTracking(null, actions, null, null);
         }
     }
 }

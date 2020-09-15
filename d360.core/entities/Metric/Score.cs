@@ -66,6 +66,7 @@ namespace d360.core.entities.Metric
     {
         [JsonIgnore]
         public Guid ScoreUid { get; set; }
+        public Guid AllocationUid { get; set; }
         public Guid AssetUid { get; set; }
         public decimal Score { get; set; }
         public DateTime RunDate { get; set; }

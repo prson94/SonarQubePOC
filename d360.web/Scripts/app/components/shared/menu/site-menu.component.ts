@@ -17,7 +17,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-site-menu',
     templateUrl: './site-menu.component.html',
-    providers: [SiteMenuService, FavoritesService],
+    providers: [SiteMenuService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -103,28 +103,26 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             return;
         }
 
-        this.favoritesService.getFavorites().subscribe(
-            favorites => {
-                this.favoritesService.GetHomePage().subscribe(res => {
-                    this.favorites = new SiteMenu();
-                    this.favorites.MenuID = '*Favourites';
-                    this.favorites.NavigationItems = [];
+        this.favoritesService.getHomePageAndFavorites().subscribe(
+            homefav => {
+                this.favorites = new SiteMenu();
+                this.favorites.MenuID = '*Favourites';
+                this.favorites.NavigationItems = [];
 
-                    for (let favorite of favorites) {
-                        let isHomePage = _.isEqual(favorite, res);
-                        this.favorites.NavigationItems.push({
-                            Name: favorite.Name,
-                            Url: favorite.Route,
-                            IsLink: false,
-                            Items: null,
-                            IsHomePage: isHomePage,
-                            count: null
-                        });
-                    }
+                for (let favorite of homefav.Favorites) {
+                    let isHomePage = _.isEqual(favorite, homefav.Homepage);
+                    this.favorites.NavigationItems.push({
+                        Name: favorite.Name,
+                        Url: favorite.Route,
+                        IsLink: false,
+                        Items: null,
+                        IsHomePage: isHomePage,
+                        count: null
+                    });
+                }
 
-                    this.ref.markForCheck();
-                });
-        }
+                this.ref.markForCheck();
+            }
         );
     }
 

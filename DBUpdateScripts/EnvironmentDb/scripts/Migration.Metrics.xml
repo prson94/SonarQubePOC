@@ -698,18 +698,22 @@ GO
 drop table if exists #rootItems
 GO
 
-select		distinct
-			S.Uid as ScoreUid,
-			I.AssetVersionUid,
-			V.Weight as RawWeight,
-			I.AdjustedWeight,
-			I.AdjustedMaxWeight
+select		*
 into		#rootItems
-from		metrics.ScoreItem I
-			inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid
-			inner join metrics.Score S on S.Uid = L.ScoreUid			
-			inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
-			inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null
+from		(
+			select		ROW_NUMBER() OVER (PARTITION BY S.Uid, I.AssetVersionUid ORDER BY I.RunDate DESC) as RowNumber, 
+						S.Uid as ScoreUid,
+						I.AssetVersionUid,
+						V.Weight as RawWeight,
+						I.AdjustedWeight,
+						I.AdjustedMaxWeight
+			from		metrics.ScoreItem I
+						inner join metrics.ScoreItemLink L on L.ScoreItemUid  = I.Uid
+						inner join metrics.Score S on S.Uid = L.ScoreUid			
+						inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.State = 1
+						inner join metrics.Asset A on A.Uid = V.AssetUid and A.ParentUid is null and A.IsGroup = 0
+			) R 
+where R.RowNumber = 1
 GO
 
 update	T

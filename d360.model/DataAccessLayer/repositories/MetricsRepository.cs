@@ -685,6 +685,7 @@ from	(
 				V.Name,
 				V.Description,
 				Ma.IsGroup,
+                SI.RunDate,
 				V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
@@ -698,7 +699,7 @@ from	(
 				inner join metrics.Allocation A on A.Uid = S.AllocationUid
                 inner join metrics.ScoreItemLink SIL on SIL.ScoreUid = S.Uid 
 				inner join metrics.ScoreItem SI on SI.Uid = SIL.ScoreItemUid
-				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid and V.EffectiveDate <= @effectiveDate and (V.EffectiveEndDate >= @effectiveDate or V.EffectiveEndDate is null)
+				inner join metrics.AssetVersion V on V.Uid = SI.AssetVersionUid
 				inner join metrics.Asset Ma on Ma.Uid = V.AssetUid
         where   S.AllocationUid = @allocationUid 
                 and S.AssetUid = @assetUid 
