@@ -1,0 +1,78 @@
+﻿<div class="tile tile-detail">
+    <header>Badge Directive</header>
+    <p>Angular component to show a badge with text.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Default</h4>
+        <div>
+            <ig-badge [text]="' Im a badge!'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Emphasis</h4>
+        <div>
+            <ig-badge [text]="'New!'" [variant]="'emphasis'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Positive</h4>
+        <div>
+            <ig-badge [text]="'Goverenance: 94%'" [variant]="'positive'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Negative</h4>
+        <div>
+            <ig-badge [text]="'Data Quality: 24%'" [variant]="'negative'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Warning</h4>
+        <div>
+            <ig-badge [text]="'Average'" [variant]="'warning'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Light</h4>
+        <div style="background: navy; width: 60px; height: 44px; padding: 10px;">
+            <ig-badge [text]="'80'" [variant]="'light'"></ig-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Custom</h4>
+        <div>
+            <ig-badge [text]="'Draft'" [backgroundColor]="'#3ca67d'" [textColor]="'#f2eb20'"></ig-badge>
+        </div>
+    </div> 
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
