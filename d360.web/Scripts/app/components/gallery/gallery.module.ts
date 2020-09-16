@@ -96,7 +96,7 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         GalleryGridPagingInfoComponent,
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
-        GalleryBadgeComponent
+        GalleryBadgeComponent,
         GalleryMessageBoxComponent,
     ],
     providers: [
