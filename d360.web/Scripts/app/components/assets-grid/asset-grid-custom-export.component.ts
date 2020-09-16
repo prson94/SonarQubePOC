@@ -1,10 +1,10 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
 import { ArtifactService } from '../../services/artifacts.service';
 import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
 import { RulesService } from '../../services/rules.service';
 
 @Component({
@@ -39,7 +39,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     @Output() closeClick = new EventEmitter();
     @Output() customExportClick = new EventEmitter();
 
-    private exportOptions: AssetTypeExportTemplate[];
+    exportOptions: AssetTypeExportTemplate[];
 
     constructor(
         protected artifactService: ArtifactService,

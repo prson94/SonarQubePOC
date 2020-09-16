@@ -27,13 +27,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
     private lastCalculatedDate: number;
     private showStatus: boolean = false;
-    private showPath: boolean = false;
+    showPath: boolean = false;
     private status: string;
     private path: string;
     showShoppingCart = false;
     private obj: string;
     private objID: number;
-    private searchDetails: SearchDetail;
+    searchDetails: SearchDetail;
     private formattedPath: string;
     private displayInfopopup: boolean = false;
 
@@ -142,7 +142,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         return menu;
     }
 
-    private navigateLink() {
+    navigateLink() {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
 

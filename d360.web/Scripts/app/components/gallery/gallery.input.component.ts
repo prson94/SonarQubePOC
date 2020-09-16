@@ -19,12 +19,12 @@ import { FormGroup, FormBuilder, Validators, ValidatorFn, AbstractControl } from
 })
 
 export class GalleryInputComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<input igInput type="text" name="name" />';
-    protected disabledState: boolean = false;
+    properties: Array<any>;
+    sampleUsage: string = '<input igInput type="text" name="name" />';
+    disabledState: boolean = false;
    
-    private model: DummyformModel = new DummyformModel("name", 0);
-    protected testForm: FormGroup = null;
+    model: DummyformModel = new DummyformModel("name", 0);
+    testForm: FormGroup = null;
 
     constructor(private fb: FormBuilder) { }
 

@@ -18,11 +18,11 @@
 })
 
 export class GalleryGridSelectionInfoComponent implements OnInit {
-    protected properties: Array<any>;
-    protected events: Array<any>;
-    protected sampleUsage: string = '<d3s-grid-selection-info></d3s-grid-selection-info>';
+    properties: Array<any>;
+    events: Array<any>;
+    sampleUsage: string = '<d3s-grid-selection-info></d3s-grid-selection-info>';
 
-    protected items = [
+    items = [
         { name: 'Item 1' },
         { name: 'Item 2' },
         { name: 'Item 3' },
@@ -30,7 +30,7 @@ export class GalleryGridSelectionInfoComponent implements OnInit {
         { name: 'Item 5' },
     ];
 
-    protected selection = [];
+    selection = [];
 
     ngOnInit(): void {
         this.properties = new Array();

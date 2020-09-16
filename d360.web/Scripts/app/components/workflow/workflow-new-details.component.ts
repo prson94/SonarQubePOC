@@ -38,8 +38,8 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
     private items: WorkflowAssignmentDetail[];
     private workflow: any;
     private selection: WorkflowAssignmentDetail[] = [];
-    private showBulkFormEditor = false;
-    private showBulkReassignEditor = false;
+    showBulkFormEditor = false;
+    showBulkReassignEditor = false;
     private bulkEditorModel: BulkWorkflowFormModel;
     private bulkReassignModel: BulkWorkflowReassignModel;
     private fromMail: boolean = false;

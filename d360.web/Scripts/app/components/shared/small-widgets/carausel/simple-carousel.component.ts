@@ -10,9 +10,9 @@ import { Component, ElementRef, Input, ChangeDetectorRef } from '@angular/core';
 export class SimpleCarouselComponent {
     @Input() data: any[] = [];
 
-    private maxContentWidth: number = 1000;
-    private leftOffset: number = 0;
-    private showGoRight: boolean = false;
+    maxContentWidth: number = 1000;
+    leftOffset: number = 0;
+    showGoRight: boolean = false;
 
     private childWidth: number = 0;
     private currentylSelectedChildIDX: number = 0;

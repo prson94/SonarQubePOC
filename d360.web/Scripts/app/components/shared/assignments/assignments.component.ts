@@ -61,7 +61,7 @@ import { WorkflowType } from '../../../models/workflow.model';
 export class AssignmentsComponent extends BaseComponent implements OnInit {
     @Input() resourceId = -1;
     @Output() showItemDetail = new EventEmitter();
-    private counts: Count[] = [];
+    counts: Count[] = [];
     private selected: Count;
     private daysToLookBack: number = 7;
     private isLoaded: boolean = false;

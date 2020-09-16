@@ -22,7 +22,7 @@ import { Location } from '@angular/common';
 
 export class ConnectorLabelItemComponent extends BaseComponent implements OnInit {
 
-    private label: ConnectorLabel;
+    label: ConnectorLabel;
     private usage: ConnectorLabelUsage[] = [];
     private sub: any;
     private labelUid: number;
@@ -30,12 +30,12 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     private currentAreaName: string;
 
     private actions: AssetAction;
-    private isEditorVisible: boolean = false;
-    private isDeleteVisible: boolean = false;
-    private isSaving: boolean = false;
+    isEditorVisible: boolean = false;
+    isDeleteVisible: boolean = false;
+    isSaving: boolean = false;
 
-    private deletePopupTitle = 'Delete Connector Label';
-    private deleteConfirmationText = '';
+    deletePopupTitle = 'Delete Connector Label';
+    deleteConfirmationText = '';
 
     private theDeleteCallback: Function;
 

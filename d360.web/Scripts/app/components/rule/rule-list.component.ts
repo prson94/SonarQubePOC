@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -8,7 +8,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Rule, RuleType } from '../../models/rule.model';
+import { RuleType } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
@@ -29,7 +29,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private currentAreaName: string;
     ruleTypeId: number;
     gridObject: AssetGridObject;
-    private ruleType: RuleType;
+    ruleType: RuleType;
 
 
     constructor(private route: ActivatedRoute,

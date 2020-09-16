@@ -65,7 +65,7 @@ export class AssetGridTopLevelFilterComponent extends BaseComponent implements O
         this.ref.markForCheck();
     }
 
-    private resetFilters(): void {
+    resetFilters(): void {
         this.filters = [];
 
         for (let field of this.fields) {

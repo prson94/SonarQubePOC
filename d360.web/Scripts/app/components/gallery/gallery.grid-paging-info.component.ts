@@ -18,12 +18,12 @@
 })
 
 export class GalleryGridPagingInfoComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<d3s-grid-paging-info></d3s-grid-paging-info>';
-    protected first: number = 5;
-    protected rows = 10;
-    protected totalRecords = 1500;
-    protected items: any[] = [];
+    properties: Array<any>;
+    sampleUsage: string = '<d3s-grid-paging-info></d3s-grid-paging-info>';
+    first: number = 5;
+    rows = 10;
+    totalRecords = 1500;
+    items: any[] = [];
 
     ngOnInit(): void {
         this.properties = new Array();

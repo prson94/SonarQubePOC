@@ -72,12 +72,12 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
 })
 
 export class ChipsFilterComponent {
-    private openMenu: boolean = false;
-    private changeWait: any;
-    private filterText: string = '';
-    private currentFilter: AdvancedSearchFilter;
-    private isInputOpen: boolean = false;
-    private isEditOpen: boolean = false;
+    openMenu: boolean = false;
+    changeWait: any;
+    filterText: string = '';
+    currentFilter: AdvancedSearchFilter;
+    isInputOpen: boolean = false;
+    isEditOpen: boolean = false;
 
     @Input() filterOption: any[] = [];
     @Input() selectedFilters: AdvancedSearchFilter[];

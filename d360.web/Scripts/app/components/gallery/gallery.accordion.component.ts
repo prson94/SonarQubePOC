@@ -18,8 +18,8 @@
 })
 
 export class GalleryAccordionComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<simple-accordion header="Section 1"><p>Lorem ipsum...</p></simple-accordion>';
+    properties: Array<any>;
+    sampleUsage: string = '<simple-accordion header="Section 1"><p>Lorem ipsum...</p></simple-accordion>';
 
     ngOnInit(): void {
         this.properties = new Array();

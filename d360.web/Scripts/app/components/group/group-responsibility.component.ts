@@ -38,9 +38,9 @@ import {BaseComponent} from '../shared/base.component';
 
 export class GroupResponsibilityComponent extends BaseComponent implements OnChanges {
     @Input() group: Group = null;
-    private items: CountObject[] = new Array<CountObject>();
-    private selected: CountObject;
-    private showFilter: boolean = true;
+    items: CountObject[] = new Array<CountObject>();
+    selected: CountObject;
+    showFilter: boolean = true;
 
     constructor(private groupService: GroupService) {
         super();

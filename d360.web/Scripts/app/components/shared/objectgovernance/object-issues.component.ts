@@ -34,15 +34,15 @@ export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
         }
     }
 
-    private isWarning(): boolean {
+    isWarning(): boolean {
         return this.issueCount > 0 && this.issueCount < 5;
     }
 
-    private isPass(): boolean {
+    isPass(): boolean {
         return this.issueCount <= 0;
     }
 
-    private isFail(): boolean {
+    isFail(): boolean {
         return this.issueCount >= 5;
     }
 
@@ -51,7 +51,7 @@ export class ObjectIssuesComponent extends BaseComponent implements OnChanges  {
         this.showDetailsChange.emit(this.showDetails);
     }
 
-    private lastIssueMessage() {
+    lastIssueMessage() {
         if (!this.lastIssueDate) {
             return "No actions assigned.";
         }

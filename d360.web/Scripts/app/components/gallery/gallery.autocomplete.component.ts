@@ -18,18 +18,18 @@
 })
 
 export class GalleryAutocompleteComponent implements OnInit {
-    protected properties: Array<any>;
+    properties: Array<any>;
 
-    private brands: string[] = ['Audi', 'BMW','BMW M3','BMW T4', 'Fiat', 'Ford', 'Honda', 'Jaguar', 'Mercedes', 'Renault', 'Volvo', 'VW'];
-    private filteredBrands: string[] = [];
+    brands: string[] = ['Audi', 'BMW','BMW M3','BMW T4', 'Fiat', 'Ford', 'Honda', 'Jaguar', 'Mercedes', 'Renault', 'Volvo', 'VW'];
+    filteredBrands: string[] = [];
 
-    protected sampleUsage: string = `<p-autoComplete igAutocomplete 
+    sampleUsage: string = `<p-autoComplete igAutocomplete 
                         placeholder="Placeholder text"
                         [(ngModel)]="value"
                         (completeMethod)="filterItems($event)"
                         [suggestions]="filteredBrands"><p-autoComplete>`;
 
-    private value: any;
+    value: any;
 
     constructor(private cdRef: ChangeDetectorRef) {}
 

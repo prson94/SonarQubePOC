@@ -1,9 +1,7 @@
-﻿import { Component, Input, EventEmitter, OnChanges, AfterViewInit, SimpleChange, Output, ViewChild, ElementRef,   } from '@angular/core';
+﻿import { Component, Input, EventEmitter, AfterViewInit, Output, ViewChild, ElementRef,   } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
-import { TreeNode } from 'primeng/api';
 import { ScoreType } from '../../../models/metrics.model';
-import { expand } from 'rxjs/operators';
 import { clearTimeout } from 'timers';
 import { PointBreakdown } from '../../../models/score.model';
 
@@ -14,12 +12,12 @@ import { PointBreakdown } from '../../../models/score.model';
     providers: [ScoreService],
 })
 
-export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges, AfterViewInit {
+export class ObjectHealthDetailsItemComponent extends BaseComponent implements AfterViewInit {
     @Input() item: PointBreakdown;
     @Input() isloading: boolean = false;
     @Input() showtype: ScoreType;
     @Output() checkExpander = new EventEmitter();
-    private ScoreType = ScoreType;
+    ScoreType = ScoreType;
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
@@ -37,20 +35,6 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
         this.checkExpanders();
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        let requiresLoad: boolean = false;
-        //for (let p in changes) {
-        //    if (p == 'definition') {
-        //        requiresLoad = (changes['definition'].currentValue != changes['definition'].previousValue) && changes['definition'] != undefined;
-        //    }
-        //    if (p == 'item') {
-        //        requiresLoad = (changes['item'].currentValue != changes['item'].previousValue) && changes['item'] != undefined;
-        //    }
-        //}
-        //if (requiresLoad) {
-        //    this.isLoading = true;
-        //}
-    }
 
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
