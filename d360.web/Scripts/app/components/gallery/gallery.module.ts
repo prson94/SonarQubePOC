@@ -45,6 +45,8 @@ import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 import { GalleryMessageBoxComponent } from './gallery.message-box.component';
 import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
+import { IgBadgeModule } from '../shared/controls/badge/badge.module';
+import { GalleryBadgeComponent } from './gallery.badge.component';
 
 
 @NgModule({
@@ -68,6 +70,7 @@ import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.m
         SharedGridPagingInfoModule,
         IgNumberFieldModule,
         IgMessageBoxModule,
+        IgBadgeModule,
 
         TableModule,
         TooltipModule,
@@ -93,6 +96,7 @@ import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.m
         GalleryGridPagingInfoComponent,
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
+        GalleryBadgeComponent,
         GalleryMessageBoxComponent,
     ],
     providers: [
