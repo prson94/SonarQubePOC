@@ -1,4 +1,4 @@
-﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="styleClass" class="tag-picker {{disabled ? 'disabled':''}}">
+﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="getStyleClasses" >
     <div class="selected-tags">
         <div *ngIf="!disabled" class="tooltip-wrapper">
             <div class="tag-tooltip">

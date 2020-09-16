@@ -4,11 +4,13 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { ViewChildren } from '@angular/core';
+import { ViewChildren, Component } from '@angular/core';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 
-
+@Component({
+    template: ''
+})
 export class AdminBaseComponent extends BaseComponent {
     public areaName: string;
     public areaLink: string = undefined;    

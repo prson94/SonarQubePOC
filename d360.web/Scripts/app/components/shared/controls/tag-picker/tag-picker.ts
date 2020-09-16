@@ -303,6 +303,13 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
         if (!this.arePermissionsLoaded) return false;
         return this.tagPermissions.some(x => x.Value == tagValue && x.CanDelete == true);
     }
+
+    get getStyleClasses(): string {
+        let classes = 'tag-picker';
+        classes += this.disabled ? ' disabled' : '';
+        classes += this.styleClass ? this.styleClass + ' ' : '';
+        return classes;
+    }
 }
 
 

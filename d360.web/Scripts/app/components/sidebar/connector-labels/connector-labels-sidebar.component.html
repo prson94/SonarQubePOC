@@ -68,7 +68,7 @@
                        (onClose)="showEditor=false"
                        [isVisible]="showEditor">
                 <d3s-connector-label-form [label]="selected"
-                                          [isSaving]="isSaving"
+                                          [isSaving]="isSaving" 
                                           (onSave)="saveLabel($event)"
                                           (onCancel)="closeEditor()"
                                           [isVisible]="showEditor">
@@ -79,7 +79,7 @@
             <d3s-delete-form *ngIf="selected"
                              [callback]="theDeleteCallback"
                              [method]="'callback'"
-                             [items]="selected"
+                             [items]="selected" 
                              [showAsModal]="true"
                              [modalCssClasses]="'large-dialog'"
                              [modalTitle]="deletePopupTitle"

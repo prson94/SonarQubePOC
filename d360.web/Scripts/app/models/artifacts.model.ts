@@ -5,6 +5,7 @@ import { AssetTypeClass } from './asset.model';
 export class Artifacts {
     results: any[];
     total: number;
+    items: any;
 }
 
 
@@ -26,6 +27,4 @@ export class Artifact {
     Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
-
-    items: any;
 }
