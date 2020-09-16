@@ -22,7 +22,7 @@ export class SegmentsTooltipComponent implements OnInit {
 
     @Input() item: any;
 
-    private assetTypeText: string = '...loading...';
+    assetTypeText: string = '...loading...';
 
     constructor(
         private tooltipService: ToolTipService,

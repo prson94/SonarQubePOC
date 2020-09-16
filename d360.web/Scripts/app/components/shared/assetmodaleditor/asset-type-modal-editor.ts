@@ -21,13 +21,13 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
     @Output() closeEvent = new EventEmitter;
     @Output() onSave = new EventEmitter;
     @Input() options: AssetType[] = [];
-    private assetType: AssetType = null;
+    assetType: AssetType = null;
     private assetTypeClass: any;
-    private editorOpen: boolean = false;
+    editorOpen: boolean = false;
     private isModelLoading: boolean = false;
     private asSub: Subscription;
-    private savingInProgress: boolean = false;
-    private isValid: boolean = false;
+    savingInProgress: boolean = false;
+    isValid: boolean = false;
 
     @ViewChild('definition', { static: false }) definition: ElementRef;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: DynamicEditorComponent;

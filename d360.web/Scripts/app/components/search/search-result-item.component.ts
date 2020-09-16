@@ -114,15 +114,15 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
-    private showBadges(): boolean {
+    showBadges(): boolean {
         return this.showStatus || (this.searchDetails && this.searchDetails.Scores.length > 0)
     }
 
-    private showInfo() {
+    showInfo() {
         this.displayInfopopup = true;
     }
 
-    private getCardMenuItems(): MenuItem[] {
+    getCardMenuItems(): MenuItem[] {
         var menu: MenuItem[] = [
             { label: 'More Information', command: (event) => { this.showInfo() } },
         ];
@@ -158,7 +158,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             .subscribe(r => this.showMessageForResult(this.messagesService, r));
     }
 
-    private getDataForPreview() {
+    getDataForPreview() {
         return {
             DisplayName: this.result.DisplayName,
             TypeName: this.result.Type,

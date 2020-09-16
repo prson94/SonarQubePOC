@@ -19,7 +19,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     FormMode = FormMode;
     private forceRulesReloadFlag: boolean = false;
 
-    private responsibilityTypeItems = new Array<ResponsibilityType>();
+    responsibilityTypeItems = new Array<ResponsibilityType>();
     selectedRow = new ResponsibilityType();
 
     theDeleteCallback: Function;

@@ -58,22 +58,22 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     @Input() maxItems: number;
 
-    private isSearchWindowOpened: boolean = false;
+    isSearchWindowOpened: boolean = false;
 
-    private searchOption = new AssetSearchFilter();
-    private searchresults: CommonComponentAssetResultExt[] = [];
-    private searchResultsCount: number;
-    private isSearchPhraseValid: boolean = true;
+    searchOption = new AssetSearchFilter();
+    searchresults: CommonComponentAssetResultExt[] = [];
+    searchResultsCount: number;
+    isSearchPhraseValid: boolean = true;
 
-    private isFullPathVisible: boolean = false;
+    isFullPathVisible: boolean = false;
 
-    private readonly pageSize: number = 10;
-    private pageNum: number = 1;
-    private numberOfPages: number = 1;
+    readonly pageSize: number = 10;
+    pageNum: number = 1;
+    numberOfPages: number = 1;
 
-    private currentSearchNavigationIndex: number = 0;
-    private isLoading: boolean = false;
-    private displayStyle: string = '';
+    currentSearchNavigationIndex: number = 0;
+    isLoading: boolean = false;
+    displayStyle: string = '';
 
     @ViewChild('searchInput', { static: true }) searchInput: ElementRef;
 
@@ -236,7 +236,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     }
 
 
-    private search($event) {
+    search($event) {
         if ($event) {
             if ($event.key === 'Escape' || $event.key === 'Esc') {
                 if (this.isSearchWindowOpened)

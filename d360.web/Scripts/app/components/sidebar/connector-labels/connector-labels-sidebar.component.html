@@ -67,9 +67,6 @@
                        additionalClasses="modal-dyn-editor medium-dialog"
                        (onClose)="showEditor=false"
                        [isVisible]="showEditor">
-                <div class="row" *ngIf="isInError">
-                    <div class="err-message">{{isInErrorMessage}}</div>
-                </div>
                 <d3s-connector-label-form [label]="selected"
                                           [isSaving]="isSaving"
                                           (onSave)="saveLabel($event)"

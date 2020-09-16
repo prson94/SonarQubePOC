@@ -66,30 +66,30 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private originalAssetUid: string;
 
-    private alerts: AssetBrowserAlert[] = [];
-    private assetsWithAlerts: string[] = [];
-    private selectedAssetsWithAlerts: string[] = [];
-    private totalAlertCount = 0;
+    alerts: AssetBrowserAlert[] = [];
+    assetsWithAlerts: string[] = [];
+    selectedAssetsWithAlerts: string[] = [];
+    totalAlertCount = 0;
 
-    private diagramTypeSpecifiedInPath = DiagramType.Lineage;
-    private isDiagramTypeSpecifiedInPath = false;
+    diagramTypeSpecifiedInPath = DiagramType.Lineage;
+    isDiagramTypeSpecifiedInPath = false;
 
-    private selectedDiagramAsset: AssetBrowserDiagramAsset;
-    private isFullScreen = false;
-    private loadingText = '';
+    selectedDiagramAsset: AssetBrowserDiagramAsset;
+    isFullScreen = false;
+    loadingText = '';
 
-    private isError: boolean = false;
-    private errorText = '';
+    isError: boolean = false;
+    errorText = '';
 
-    private searchText = '';
-    private searchResults: go.Node[] = [];
-    private searchableProps: string[] = ["text"];
+    searchText = '';
+    searchResults: go.Node[] = [];
+    searchableProps: string[] = ["text"];
 
-    private panel_Loading = false;
-    private panel_InformationDisabled = true;
-    private panel_TabIndex = 0;
+    panel_Loading = false;
+    panel_InformationDisabled = true;
+    panel_TabIndex = 0;
 
-    private panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
+    panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
 
     displayConfiguration: AssetBrowserFilterModel = new AssetBrowserFilterModel();
     private readonly displayConfigurationKey = 'asset-browser-configuration';
@@ -97,7 +97,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     scale = 1;
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
-    private diagramTypes: DiagramTypesModel = null;
+    diagramTypes: DiagramTypesModel = null;
 
     //#region Constants
 
@@ -1213,7 +1213,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * Determines whether the Lineage view is currently selected.
     * @returns A boolean value on whether the lineage view is selected.
     */
-    private helper_LineageDiagramApplies(): boolean {
+    helper_LineageDiagramApplies(): boolean {
         return (+this.displayConfiguration.DiagramType === +DiagramType.Lineage);
     }
 
@@ -1607,7 +1607,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.detectChanges();
     }
 
-    private panels_Click(e: AssetBrowserPanelCommand) {
+    panels_Click(e: AssetBrowserPanelCommand) {
         switch (e) {
             case AssetBrowserPanelCommand.Add:
                 this.helper_SetVisiblePanel(e);
@@ -2914,7 +2914,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * Responds to the change event from the shared Asset Browser ViewChange control.
     * @returns The DiagramType.
     */
-    private viewchange_Apply(e: DiagramType) {
+    viewchange_Apply(e: DiagramType) {
         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
         this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;
         this.saveFilter();
@@ -2929,7 +2929,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.helper_ScaleDiagram(_scale);
     }
 
-    private isProcessDiagramInEditMode: boolean = false;
+    isProcessDiagramInEditMode: boolean = false;
     editProcess() {
         this.isFullScreen = false;
         this.isProcessDiagramInEditMode = true;
@@ -2941,7 +2941,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else this.saveStateChanged.emit(null);
     }
 
-    private openProcessDiagramInfo() {
+    openProcessDiagramInfo() {
         if (this.processDiagramRef) {
             this.processDiagramRef.changeInfoPanelMode();
             this.processDiagramRef.myDiagram.requestUpdate();
@@ -2949,7 +2949,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     }
 
-    private isProcessDiagramEmpty() {
+    isProcessDiagramEmpty() {
         if (this.processDiagramRef) {
             if (this.processDiagramRef) {
                 return this.processDiagramRef.isCanvasEmpty;
@@ -2958,7 +2958,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return true;
     }
 
-    private getProcessDiagramViewType() {
+    getProcessDiagramViewType() {
         if (this.processDiagramRef) {
             if (this.processDiagramRef) {
                 return this.processDiagramRef.viewType;

@@ -92,7 +92,7 @@ export class ChipsFilterComponent {
     ) {
     }
 
-    private toggleMenu() {
+    toggleMenu() {
         if (this.openMenu || this.isEditOpen)
             this.closeMenu();
         else

@@ -24,7 +24,9 @@ export class GalleryTagPickerComponent implements OnInit {
     value: SelectItem[] = [];
     copyOfValue: SelectItem[] = [];
     formValue;
-
+    tagOnChange;
+    tagOnSelect;
+    tagOnUnselect;
 
     valueEvents: string = '';
 

@@ -83,7 +83,7 @@ export class HeaderBreadcrumbComponent {
     }
 
 
-    private hideSmallPanel(item) {
+    hideSmallPanel(item) {
         item.style.display = "none";
     }
 

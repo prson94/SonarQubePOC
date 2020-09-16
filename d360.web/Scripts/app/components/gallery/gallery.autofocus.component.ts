@@ -20,6 +20,7 @@
 export class GalleryAutoFocusComponent implements OnInit {
     properties: Array<any>;
     sampleUsage: string = '<button igAutoFocus igButton></button>';
+    showModal = false;
 
     ngOnInit(): void {
         this.properties = new Array();

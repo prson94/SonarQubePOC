@@ -1,6 +1,5 @@
 <div class="switcher" style="display:none;">
-    <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType('Lineage')">Lineage</button>
-    <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
+    <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType(RelationshipEditorType.Lineage)">Lineage</button>
 </div>
 <div class="{{isAddTransformationVisible ? 'popup-opened' : ''}}">
     

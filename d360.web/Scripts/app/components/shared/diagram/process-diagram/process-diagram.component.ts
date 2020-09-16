@@ -58,27 +58,27 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private colors: any[] = [];
     private diagramOriginalPosition: any = null;
 
-    private isLoaded = false;
-    public isDiagramLoaded = false;
-    private isSaveDisabled: boolean = true;
-    public isCanvasEmpty: boolean = true;
-    private isSaving: boolean = false;
-    private isExporting: boolean = false;
-    private defaultStrokeColor: string = '#708EA6';
+    isLoaded = false;
+    isDiagramLoaded = false;
+    isSaveDisabled: boolean = true;
+    isCanvasEmpty: boolean = true;
+    isSaving: boolean = false;
+    isExporting: boolean = false;
+    defaultStrokeColor: string = '#708EA6';
 
     public selectedNodeData: any;
-    private loadedEditors: any[] = [];
+    loadedEditors: any[] = [];
 
-    private isErrorModalOpened: boolean = false;
-    private isSavingChangesModalOpened: boolean = false;
-    private promptDeleteOpened: boolean = false;
-    private isRelatedAssetsVisible: boolean = false;
+    isErrorModalOpened: boolean = false;
+    isSavingChangesModalOpened: boolean = false;
+    promptDeleteOpened: boolean = false;
+    isRelatedAssetsVisible: boolean = false;
 
     private newInstancesMap: any[] = [];
 
     public isInfoPanelOpened: boolean = false;
 
-    private selectedLinkData: any;
+    selectedLinkData: any;
     private nodeNames: string[] = [];
 
     private initialActions = new HeaderActions();
@@ -320,14 +320,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return this.myDiagram.nodes.count > 0;
     }
 
-    private getSelectedNodeCount() {
+    getSelectedNodeCount() {
         if (!this.myDiagram)
             return 0;
 
         return this.myDiagram.selection.filter(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
     }
 
-    private get deleteModelTitle(): string {
+    get deleteModelTitle(): string {
         return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
     }
 
@@ -554,9 +554,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return JSON.stringify(m);
     }
 
-    private validationErrors: any = {};
-    private areNamesUnique: boolean = true;
-    private save(closeEditorAfterSave: boolean = false) {
+    validationErrors: any = {};
+    areNamesUnique: boolean = true;
+    save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
         this.diagramOriginalPosition = this.myDiagram.viewportBounds.copy();
         this.processDiagramBase64 = this.myDiagram.makeImageData({
@@ -600,11 +600,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 });
     }
-    private clear() {
+
+    clear() {
         this.myDiagram.clear();
         this.diagramStateChanged();
     }
-    private load(isFromSave: boolean = false) {
+
+    load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
         this.isSaveDisabled = true;
@@ -806,7 +808,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }, 200);
     }
 
-    private toggleClass(event: any, cs: string) {
+    toggleClass(event: any, cs: string) {
         var element = event.target;
         if (!element.classList.contains('gov-accordion-item')) {
             if (element.parentElement.classList.contains('gov-accordion-item')) {
@@ -967,9 +969,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
     }
 
-    private actionAfterSaved: Function;
-    private actionMessage: string = '';
-    private showDiscardChanges: boolean = false;
+    actionAfterSaved: Function;
+    actionMessage: string = '';
+    showDiscardChanges: boolean = false;
     public doControlledAction(actionName: string) {
         if (this.isEditMode && !this.isCurrentStateSaved()) {
             this.isSavingChangesModalOpened = true;

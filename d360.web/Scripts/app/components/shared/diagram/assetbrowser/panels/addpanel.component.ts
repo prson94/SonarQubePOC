@@ -34,47 +34,48 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
     private browserAssets: CommonComponentAssetResult[] = [];
-    private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
-    private sourceAssets: CommonComponentAssetSelection[] = [];
-    private targetAssets: CommonComponentAssetSelection[] = [];
-    private transformationAsset: CommonComponentAssetSelection[] = [];
+    editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
+    RelationshipEditorType = RelationshipEditorType;
+    sourceAssets: CommonComponentAssetSelection[] = [];
+    targetAssets: CommonComponentAssetSelection[] = [];
+    transformationAsset: CommonComponentAssetSelection[] = [];
 
-    private transformationFilters: CommonComponentAssetTypeFilter[] = [];
-    private sourceFilters: CommonComponentAssetTypeFilter[] = [];
-    private targetFilters: CommonComponentAssetTypeFilter[] = [];
+    transformationFilters: CommonComponentAssetTypeFilter[] = [];
+    sourceFilters: CommonComponentAssetTypeFilter[] = [];
+    targetFilters: CommonComponentAssetTypeFilter[] = [];
 
-    private targetAllowedPredicates: Predicate[] = [];
-    private transformationRelationships: any[] = [];
+    targetAllowedPredicates: Predicate[] = [];
+    transformationRelationships: any[] = [];
 
-    private sourcePrePop: CommonComponentAssetResult[] = [];
-    private isAddTransformationVisible: boolean = false;
+    sourcePrePop: CommonComponentAssetResult[] = [];
+    isAddTransformationVisible: boolean = false;
 
-    private predicateType: PredicateType = PredicateType.Transformation;
-    private showPredicateSelector: boolean = false;
+    predicateType: PredicateType = PredicateType.Transformation;
+    showPredicateSelector: boolean = false;
 
-    private topWarningMessage: string = '';
-    private bottomWarningMessage: string = '';
+    topWarningMessage: string = '';
+    bottomWarningMessage: string = '';
 
-    private isTransformationDisabled: boolean = true;
-    private isTargetDisabled: boolean = true;
+    isTransformationDisabled: boolean = true;
+    isTargetDisabled: boolean = true;
 
-    private isSaving: boolean = false;
-    private isSavingAndContinue: boolean = false;
-    private afterSaveEvent: Function;
+    isSaving: boolean = false;
+    isSavingAndContinue: boolean = false;
+    afterSaveEvent: Function;
 
-    private relationshipsError: any[] = [];
-    private areRelationshipsValid = false;
-    private areAllItemsSelected = false;
+    relationshipsError: any[] = [];
+    areRelationshipsValid = false;
+    areAllItemsSelected = false;
 
-    private noAssetOnDiagram: boolean = false;
+    noAssetOnDiagram: boolean = false;
 
-    private sourceBtnText: string = 'Add source asset';
-    private targetBtnText: string = 'Add target asset';
+    sourceBtnText: string = 'Add source asset';
+    targetBtnText: string = 'Add target asset';
 
-    private missingPredicateSource: boolean = false;
-    private missingPredicateTarget: boolean = false;
+    missingPredicateSource: boolean = false;
+    missingPredicateTarget: boolean = false;
 
-    private helpTextTop: number = 0;
+    helpTextTop: number = 0;
 
     constructor(
         private relationshipService: RelationshipsService,
@@ -269,7 +270,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         }
     }
 
-    private changeEditorType(type: RelationshipEditorType) {
+    changeEditorType(type: RelationshipEditorType) {
         if (this.sourceAssets.length > 0 || this.targetAssets.length > 0) {
             this.topWarningMessage = 'You cannot switch! Save your changes or remove selection from Source and Target assets';
         }
@@ -317,7 +318,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         this.isAddTransformationVisible = false;
     }
 
-    private get IsValid(): boolean {
+    get IsValid(): boolean {
 
         if (!this.areRelationshipsValid)
             return false;
@@ -337,7 +338,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         }
     }
 
-    private saveAndContinue() {
+    saveAndContinue() {
         this.isSavingAndContinue = true;
         this.afterSaveEvent = function (ev: boolean) {
             if (ev) {
@@ -349,7 +350,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         this.executeSave();
     }
 
-    private save() {
+    save() {
         this.isSaving = true;
         this.afterSaveEvent = function (ev: boolean) {
             if (ev) {
@@ -624,7 +625,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
         return result;
     }
 
-    private lineageChainMouseEnter(event) {
+    lineageChainMouseEnter(event) {
         this.helpTextTop = event.clientY + 16;
         this.ref.markForCheck();
     }

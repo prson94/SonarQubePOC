@@ -17,7 +17,7 @@ declare var CompanySettings: any;
 
 export class LineageComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    private usageOnly: boolean = false;
+    usageOnly: boolean = false;
 
     constructor(
         private route: ActivatedRoute,

@@ -48,7 +48,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
 
     @Input() assetUid: string = '00000000-0000-0000-0000-000000000000';
 
-    protected value: Array<SelectItem> = [];  // this is intentionally NOT public or an input you should be using ngModel..
+    value: Array<SelectItem> = [];  // this is intentionally NOT an input you should be using ngModel..
 
     onModelChange: Function = () => { };
 

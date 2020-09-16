@@ -15,8 +15,8 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit, O
     @Input() assets: string[] = [];
     @Output() openDetail: EventEmitter<AssetBrowserAlert> = new EventEmitter();
 
-    private alerts: AssetBrowserAlert[] = [];
-    private loading: boolean = false;
+    alerts: AssetBrowserAlert[] = [];
+    loading: boolean = false;
 
     constructor(
         private browserService: BrowserService,

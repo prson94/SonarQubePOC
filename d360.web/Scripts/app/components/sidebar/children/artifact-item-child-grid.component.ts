@@ -30,20 +30,20 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     @Input() objectTypeUid: string;
     @Input() displayName: string;
 
-    private columns: GridColumn[] = [];
-    private fields: GridField[] = [];
-    private artifacts: Artifacts;
+    columns: GridColumn[] = [];
+    fields: GridField[] = [];
+    artifacts: Artifacts;
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
     private totalRecords: number = 10000;
     private useGraph: boolean = true;
 
-    private numberOfRows: number = this.defaultInitialItemsPerPage;
-    private currentPage: number = 1;
-    private sortField: string;
-    private sortOrder: SortOrder;
-    private filter: string;
-    private statistics: ObjectStatistics;
+    numberOfRows: number = this.defaultInitialItemsPerPage;
+    currentPage: number = 1;
+    sortField: string;
+    sortOrder: SortOrder;
+    filter: string;
+    statistics: ObjectStatistics;
     isLoading: boolean = false;
 
     get globalFilterFields(): string[] {
@@ -68,7 +68,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         }
     }
 
-    private loadArtifactsLazy(event: LazyLoadEvent) {
+    loadArtifactsLazy(event: LazyLoadEvent) {
         /**
          * event.first = First row offset
          * event.rows = Number of rows per page
