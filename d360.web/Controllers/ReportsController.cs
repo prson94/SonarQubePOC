@@ -31,7 +31,7 @@ namespace d360.web.Controllers
 
         private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
         private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
-        private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
+        private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         private static readonly string pbiUrl = "https://api.powerbi.com";
         
