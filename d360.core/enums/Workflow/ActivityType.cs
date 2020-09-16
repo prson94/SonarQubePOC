@@ -39,6 +39,7 @@ namespace d360.core.enums.Workflow
         public string BackColor { get; set; }
         public string ForeColor { get; set; }
         public string Icon { get; set; }
+        public bool IsShow { get; set; }
     }
 
     public static class ActivityTypeExtensions
@@ -60,11 +61,11 @@ namespace d360.core.enums.Workflow
                     Name = tm.Name,
                     BackColor = ((BackColorAttribute)tm.GetCustomAttribute(typeof(BackColorAttribute))).Color,
                     ForeColor = ((ForeColorAttribute)tm.GetCustomAttribute(typeof(ForeColorAttribute))).Color,
-                    Icon = ((IconAttribute)tm.GetCustomAttribute(typeof(IconAttribute))).Icon
+                    Icon = ((IconAttribute)tm.GetCustomAttribute(typeof(IconAttribute))).Icon,
+                    IsShow = true
                 };
                 list.Add(info);
             }
-
             return list;
         }    
     }

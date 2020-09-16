@@ -39,7 +39,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     private getAssetSub: Subscription;
 
 
-    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true };
+    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true};
 
 
     add() {
@@ -57,6 +57,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
             this.loadParams._pageNum = 1;
             this.loadParams._pageSize = 10;
             this.loadParams.useGraphForParent = true;
+            this.loadParams._listColorsAsJSON = true;
             delete this.loadParams['_simpleFilter'];
             delete this.loadParams['_filter'];
 

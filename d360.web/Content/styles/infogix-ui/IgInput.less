@@ -48,7 +48,15 @@
         border-color: @ig-field-border-color;
     }
 
+    &:required:valid {
+        background: @ig-white;
+        border-color: none;
+        box-shadow: none;
+    }
+
     &.ng-valid[required], .ng-valid.required {
+        background: @ig-white;
+        border-color: none;
         outline: 0 none;
         outline-offset: 0;
         box-shadow: none;
@@ -56,8 +64,8 @@
 
     &.ng-dirty.ng-invalid,
     &.ng-touched.ng-invalid {
-        background: @ig-red-t5 !important;
-        border-color: none !important;
+        background: @ig-red-t5;
+        border-color: none;
 
         &:required:invalid {
             background: @ig-lightblue-t4;
@@ -65,20 +73,14 @@
         }
     }
 
-    &.invalid {
-        background: @ig-red-t5 !important;
-        border-color: none !important;
-    }
-
     &:required {
         background: @ig-lightblue-t4;
         border-color: @ig-field-border-color;
     }
 
-    &:required:valid {
-        background: @ig-white;
+    &.invalid {
+        background: @ig-red-t5;
         border-color: none;
-        box-shadow: none;
     }
 
     &[disabled] {
@@ -113,4 +115,5 @@
     width: fit-content;
     display: block;
     margin-top: 2px;
+    line-height: 18px;
 }

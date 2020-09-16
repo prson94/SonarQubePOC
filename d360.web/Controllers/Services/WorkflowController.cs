@@ -1135,7 +1135,15 @@ order by wi.StartedOn desc";
         [Route("activitytypes"), HttpGet]
         public List<core.enums.Workflow.ActivityTypeInfo> GetActivityTypes()
         {
-            return d360.core.enums.Workflow.WorkflowActivityType.EmailNotification.GetList().ToList();
+            var items = d360.core.enums.Workflow.WorkflowActivityType.EmailNotification.GetList().ToList();
+
+            if (Company.WorkflowTaskProcedures.Count() <=0)
+            {
+                var itemvalue =  items.FirstOrDefault(i => i.Name == "Procedure");
+                itemvalue.IsShow = false;
+            }
+
+            return items;
         }
 
         [Route("emailtaskrecipienttypes"), HttpGet]

@@ -50,24 +50,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Field Data
-
-        void loadDisplayFields(List<DisplayField> list, SystemObjects type, int id)
-        {
-            var fields = Company.GetFieldRelationsByObject(type, id);
-            foreach (var k in fields)
-            {
-                if (!string.IsNullOrEmpty(k.Value))
-                {
-                    list.Add(new DisplayField
-                    {
-                        FriendlyName = k.FriendlyName,
-                        Value = k.FormattedValue,
-                        Name = k.Name
-                    });
-                }
-            }
-        }
-
+        
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -549,24 +532,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
-            /* if (tagList.Count > 0)
-             {
-                 var title = new ReadOnlyField
-                 {
-                     Name = tagDisplayName,
-                     FieldDescription = tagDisplayDescription,
-                     ShowIfEmpty = true,
-                     DataType = "tag",
-                     Values = GetTagsValues(type, id)
-                 };
-                 list.Add(new DetailReadOnlyRowModel
-                 {
-                     columns = 1,
-                     FirstColumnFields = new List<ReadOnlyField> { title },
-                     Category = tagCategory
-                 });
-
-             }*/
             return list;
         }
 
@@ -1592,15 +1557,7 @@ where   h.ID <> @t order by h.[Level] desc;
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-
-        #region Promotion
-
-
-
-
-
-        #endregion
-
+                
         #endregion
 
         #region Groups
@@ -2637,7 +2594,6 @@ select	top 100 percent
         P.SubjectID as ParentID,
         TD.DisplayValue,
         {columns}
-       -- 0 as Level,
 		case 
 				when Work.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)

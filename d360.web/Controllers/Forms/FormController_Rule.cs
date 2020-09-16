@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.queue;
-using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -66,17 +65,6 @@ namespace d360.web.Controllers
             );
 
             return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        [Route("Rule_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Rule_SimilarItems(string query)
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = "Rule", typeID = (int?)null, query }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
         }
 
         #endregion

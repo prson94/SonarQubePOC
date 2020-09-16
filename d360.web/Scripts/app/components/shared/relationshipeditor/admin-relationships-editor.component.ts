@@ -179,6 +179,9 @@ export class AdminRelationshipsEditor {
                         type: item.type
                     });
                 }
+
+                this.selectedPredicate = this.predicates.find(p => +p.value == this.editedRelationship.Predicate);
+                this.loadCardinalityOptions();
             });
     }
 
