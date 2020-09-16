@@ -1,14 +1,12 @@
 import { debounceTime } from 'rxjs/operators';
-
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { GridColumn, GridField, GridFilterExpression, GridFilterColumn } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../../services/permissions.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { UriBasedService } from '../../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
@@ -17,18 +15,16 @@ import { SortOrder } from '../../../models/enums.model';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
-/* FIXME: Extract templates and styles to their own files
-*  https://angular.io/guide/styleguide#style-05-04 */
+import { ResourceApiModel } from '../../../models/resource.model';
+
 @Component({
     selector: 'd3s-user-list',
-    providers: [GridDefinitionService, UriBasedService, PermissionsService, ResourcesService, CompanySettingsService],
+    providers: [GridDefinitionService, PermissionsService, ResourcesService, CompanySettingsService],
     templateUrl: 'user-list.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class UserListComponent extends BaseComponent implements OnInit, OnDestroy {
-
-
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];
@@ -56,14 +52,12 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         return f;
     }
 
-
     theDeleteCallback: Function;
 
     @ViewChild('dt', { static: false }) datatable;
 
-    constructor(private route: ActivatedRoute,
-        private router: Router,
-        protected uriBasedService: UriBasedService,
+    constructor(
+        private router: Router,        
         private gridDefinitionService: GridDefinitionService,
         protected messagesService: MessagesObservableService,
         private permissionsService: PermissionsService,
@@ -89,7 +83,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         }
     }
 
-    private openResource(event) {
+    public openResource(event) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('resource', event.ResourceID));
     }
 
@@ -107,18 +101,6 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                 this.allowPasswordReset = true;
             }
         });
-    }
-
-    deleteUser(id: number) {
-        this.uriBasedService.deleteItemWithResult('form/DeleteResourceByID?id=', id)
-            .subscribe(res => {
-                this.showMessageForResult(this.messagesService, res);
-                this.showDelete = false;
-                if (res.type != 'error') {
-                    this.items = this.items.filter(x => x.ID != id);
-                    this.changeDetectorRef.markForCheck();
-                }
-            });
     }
 
     getFieldsDefinition() {
@@ -258,14 +240,65 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.showEditor = true;
     }
 
-    saveItem(event) {
+    saveUser(event) {        
+        let user = new ResourceApiModel;
+                
+        user.FirstName = event.item.FirstName;
+        user.LastName = event.item.LastName;
+        user.IsAdministrator = event.item.IsAdministrator;
+        user.Username = event.item.Email;
+        
+        if (event.item.ID > 0) {
+            user.uid = this.selected.uid;
+            user.State = event.item.State;
+        }
+        else {
+            user.Password = event.item.Password;
+        }
+
+        user.Fields = new Object();
+
+        // handle dynamic fields
+        for (let key in event.item) {
+            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password') {                
+                user.Fields[key] = event.item[key];                
+            }
+        }
+
+        let op = event.item.ID > 0 ? 'Updated' : 'Added';
+
         this.isLoading = true;
-        this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
+        this.resourcesService.saveResource(user)
+            .subscribe(
+                result => {
+                    
+                    this.showMessageForApiResult(this.messagesService, result, `User successfully ${op}`);
+                    this.showEditor = false;
+                    this.getData();                    
+                }
+            )
+         
+        /*this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
                 this.getData();
-            });
+            });*/
+    }
+
+
+    deleteUser(id: number) {
+        this.resourcesService.deleteResource(this.selected.uid)
+            .subscribe(
+                result => {
+                    this.showMessageForResult(this.messagesService, result, 'User successfully deleted');
+                    this.showDelete = false;
+                    if (result.type !== 'error') {
+                        this.items = this.items.filter(x => x.ID !== id);
+                    }
+                    this.changeDetectorRef.markForCheck();
+                }
+            )
     }
 
     resetPassword() {

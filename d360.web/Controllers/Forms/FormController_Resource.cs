@@ -32,15 +32,13 @@ namespace d360.web.Controllers
 
             if (!Company.CurrentResourceIsAdmin)
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
-
+                        
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "FirstName", Name = "First Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "First Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });//@"^([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})$", null, null, "be an email address") });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "Password", Name = "Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Password", true, passwordRegex, null, null, passwordRegexMessage) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Status", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)CompanyResourceState.Active).ToString() });
+            
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
@@ -57,7 +55,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Community.GetById<Resource>(id, i => i.CompanyResources);
 
-            var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = ((int)i.ID).ToString() }).ToList();
+            var stateList = CompanyResourceState.Active.GetList().Select(i => new SelectListItem { Text = i.Name, Value = (i.Name).ToString() }).ToList();
             var cr = a.CompanyResources.Single(i => i.CompanyID == Company.CurrentCompanyID);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
@@ -65,7 +63,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = cr.IsAdministrator.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Status", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)cr.State).ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Status", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = (cr.State).ToString() });
 
             list = (
                 loadDynamicFields(
@@ -120,121 +118,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Form Get/Post
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddResource")]
-        public JsonResult AddResource(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                int typeID = 1;
-                var email = form["Email"].Trim();
-
-                var a = Community.Filter<Resource>(i => i.Email == email).FirstOrDefault();
-
-                var id = 0;
-
-                // Only add resource account if it does not already exist.
-                if (a == null)
-                {
-                    a = new Resource
-                    {
-                        FirstName = parseNameField(form, "FirstName"),
-                        LastName = parseNameField(form, "LastName"),
-                        Email = parseTextField(form, "Email"),
-                        Username = parseTextField(form, "Email"),
-                        Password = "temp"
-                    };
-
-                    Community.Add(a);
-
-                    id = a.ID;
-                    Community.ChangePassword(a.ID, "", form["Password"]);
-                }
-                else
-                {
-                    id = a.ID;
-                    var globalResource = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
-                    if (globalResource != null && globalResource.State != CompanyResourceState.Deleted)
-                    {
-                        throw new ConflictException("Error", "The specified email address / username is already in use.");
-                    }
-                }
-
-                var firstName = parseNameField(form, "FirstName");
-                var lastName = parseNameField(form, "LastName");
-                var isAdmin = parseBooleanField(form, "IsAdministrator");
-                var state = parseEnumField<CompanyResourceState>(form, "State");
-                var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == id).FirstOrDefault();
-
-                if (companyResource == null)
-                {
-                    companyResource = new CompanyResource
-                    {
-                        CompanyID = Company.CurrentCompanyID,
-                        IsAdministrator = isAdmin,
-                        ResourceID = id,
-                        State = state
-                    };
-                    Community.Add(companyResource);
-                }
-                else
-                {
-                    companyResource.IsAdministrator = isAdmin;
-                    companyResource.State = state;
-                    Community.Update(companyResource);
-                }
-
-                if (!GetCompanyResources().Any(i => i.ResourceID == a.ID))
-                {
-                    GlobalReportingResource gr = new GlobalReportingResource
-                    {
-                        IsAdministrator = isAdmin,
-                        ResourceID = id,
-                        Email = a.Email,
-                        LastName = lastName,
-                        FirstName = firstName,
-                        State = state,
-                        UpdatedOn = DateTime.UtcNow,
-                        Uid = a.Uid
-                    };
-
-                    Company.Add(gr);
-                }
-                else
-                {
-                    GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
-
-                    gr.FirstName = firstName;
-                    gr.LastName = lastName;
-                    gr.Email = a.Email;
-                    gr.IsAdministrator = isAdmin;
-                    gr.State = state;
-                    gr.UpdatedOn = DateTime.UtcNow;
-
-                    Company.Update(gr);
-                }
-
-                // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, a.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, typeID).ToList(), form, Server);
-                Company.AddOrUpdateFields(fields);
-
-                return jsonSuccess("User successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
+               
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("ResetResourcePassword")]
         public JsonResult ResetResourcePassword(FormCollection form)
@@ -257,128 +141,6 @@ namespace d360.web.Controllers
 
                 return jsonSuccess("Users password has been successfully updated!", id.ToString(), "reset", HttpStatusCode.OK);
 
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteResource")]
-        public JsonResult DeleteResource(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                var id = parseIntField(form, "ID");
-
-                if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
-
-                var model = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
-                var globalResource = Company.Filter<GlobalReportingResource>(x => x.ResourceID == id).SingleOrDefault();
-                if (model == null) throw new NotFoundException("resource");
-                if (globalResource == null) throw new NotFoundException("resource");
-                model.State = CompanyResourceState.Deleted;
-                globalResource.State = CompanyResourceState.Deleted;
-
-                Community.Update<CompanyResource>(model);
-                Company.Update<GlobalReportingResource>(globalResource);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteResourceByID"), NonNullableParameters]
-        public JsonResult DeleteResourceByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteResource(form);
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditResource")]
-        public JsonResult EditResource(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                var id = parseIntField(form, "ID");
-                var model = Community.GetById<Resource>(id);
-
-                if (model == null) throw new NotFoundException("resource");
-
-                if (id <= 0) throw new NotFoundException("Resource with ID less than or equal to 0 cannot be removed.");
-
-                var newEmail = parseTextField(form, "Email");
-
-                if (string.IsNullOrEmpty(newEmail)) throw new NoFormDataException("Resource doesnt have a valid email / username specified.");
-
-                //we need to compare the new email to the old email.  If they are different, we need to check if the new email already exists for another user
-                // if the username is already in use we should throw an error to prevent this from happening as the other account should be updated
-                if (string.Compare(newEmail, model.Username, true) != 0)
-                {
-                    //check if the resource already exists in community
-                    var a = Community.Filter<Resource>(i => i.Email == newEmail).FirstOrDefault();
-
-                    if (a != null) throw new Exception("Cannot update the user.  The specified email address / username is already in use.");
-                }
-
-                // Static fields
-                model.FirstName = parseNameField(form, "FirstName");
-                model.LastName = parseNameField(form, "LastName");
-                model.Email = newEmail;
-                model.Username = newEmail;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Community.Update(model);    //Must be first before saving fields.
-
-                var cr = Community.Filter<CompanyResource>(i => i.ResourceID == id && i.CompanyID == Company.CurrentCompanyID).SingleOrDefault();
-                if (cr != null)
-                {
-                    cr.State = parseEnumField<CompanyResourceState>(form, "State");
-                    cr.IsAdministrator = parseBooleanField(form, "IsAdministrator");
-                    Community.Update(cr);
-                }
-
-                GlobalReportingResource gr = Company.Filter<GlobalReportingResource>(i => i.ResourceID == id).FirstOrDefault();
-
-                gr.FirstName = model.FirstName;
-                gr.LastName = model.LastName;
-                gr.Email = model.Email;
-                gr.IsAdministrator = cr.IsAdministrator;
-                gr.State = cr.State;
-                gr.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(gr);
-
-                // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(), form, Server, false);
-                Company.AddOrUpdateFields(fields);
-
-
-                return jsonSuccess("Resource successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

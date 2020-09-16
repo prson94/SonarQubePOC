@@ -485,11 +485,8 @@ namespace d360.web.Controllers
                     return PutOrganizationInvitation(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
-
                 case "REPORT":
                     return await EditReport(form);
-                case "RESOURCE":
-                    return EditResource(form);
                 case "RESOURCESELF":
                     return EditMyInfo(form);
                 case "RESOURCESELFPASSWORD":
@@ -620,9 +617,7 @@ namespace d360.web.Controllers
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
                 case "REPORT":
-                    return await AddReport(form);
-                case "RESOURCE":
-                    return AddResource(form);                
+                    return await AddReport(form);                
                 case "RULETYPE":
                     return AddRuleType(form);
                 case "SERVICE":
