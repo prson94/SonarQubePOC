@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions.powerbi;
 using d360.model;
@@ -12,7 +11,6 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Xml.Linq;
 using System.Configuration;
 
 namespace d360.web.Controllers

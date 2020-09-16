@@ -1,9 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
-using d360.core.exceptions;
 using d360.model;
-using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
@@ -15,7 +13,6 @@ using System.Data.Entity;
 using System.Net;
 using System.Web.Mvc;
 using d360.core.helpers;
-using d360.core.queue;
 
 namespace d360.web.Controllers
 {
@@ -129,18 +126,6 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [HttpGet, Route("Artifact_SimilarItems"), NonNullableParameters]
-        public JsonNetResult Artifact_SimilarItems(int typeID, string query)
-        {
-            //escape wildcards
-            query = query.Replace("_", "[_]");
-            query = query.Replace("%", "[%]");
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(QueryConstants.SimilarItems, new { type = new DbString { Value = "Artifact", IsAnsi = true, IsFixedLength = true, Length = 50 }, typeID, query }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
         #endregion
 
         #endregion

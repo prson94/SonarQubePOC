@@ -15,6 +15,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -550,18 +551,6 @@ namespace d360.web.Controllers
             return showAllUsersAPIKey;
         }
 
-        protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
-        {
-            return new JsonResult()
-            {
-                Data = data,
-                ContentType = contentType,
-                ContentEncoding = contentEncoding,
-                JsonRequestBehavior = behavior,
-                MaxJsonLength = Int32.MaxValue
-            };
-        }
-
         internal List<EditableField> loadDynamicFields(List<EditableField> list, List<FieldType> fields, int startRow = 10)
         {
             var row = startRow;
@@ -1075,128 +1064,6 @@ namespace d360.web.Controllers
             return list;
         }
 
-        protected string sortColumnType(string sortDataField, List<FieldType> fields)
-        {
-            if (string.IsNullOrEmpty(sortDataField)) return "";
-
-            var field = fields.Where(x => string.Compare($"Field{x.ID}", sortDataField, true) == 0).FirstOrDefault();
-
-            if (field == null) return "";
-
-            return field.Type;
-        }
-
-        internal void processFormDynamicRelationshipFields(SystemObjects ot, int otid, SystemObjects o, int oid, ICollection<FieldType> fieldTypes, FormCollection form)
-        {
-            foreach (var ft in fieldTypes)
-            {
-                if (ft.Type == DataType.Relationship.ToString() && ft.IsEditable)
-                {
-                    var value = form[ft.Name];
-                    List<int> items = new List<int>();
-                    var intersectType = Company.GetById<IntersectType>(ft.LookupObjectID.Value);
-                    if (intersectType != null)
-                    {
-                        var isSubject = (intersectType.Subject == ot.ToString() && intersectType.SubjectID == otid);
-                        if (!string.IsNullOrEmpty(value))
-                            items = value.Trim(' ', ',').Split(',').Select<string, int>(int.Parse).ToList();
-                        //delete any intersects for this object not in the list
-                        List<Intersect> intersects = null;
-                        if (isSubject)
-                        {
-                            intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == o.ToString() && i.SubjectID == oid).ToList();
-                            foreach (var intersect in intersects)
-                            {
-                                //check if the object is in the value list if not delete the intersect
-                                if (!items.Contains(intersect.ObjectID))
-                                {
-                                    Company.Delete<Intersect>(intersect);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            intersects = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == o.ToString() && i.ObjectID == oid).ToList();
-                            foreach (var intersect in intersects)
-                            {
-                                //check if the object is in the value list if not delete the intersect
-                                if (!items.Contains(intersect.SubjectID))
-                                {
-                                    Company.Delete<Intersect>(intersect);
-                                }
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(value))
-                        {
-
-                            //add / update the rest
-
-                            foreach (var val in items)
-                            {
-                                var obj = "";
-                                var sub = "";
-                                var objID = 0;
-                                var subID = 0;
-
-                                Intersect intersect = null;
-
-                                if (isSubject)
-                                {
-                                    sub = o.ToString();
-                                    subID = oid;
-                                    obj = intersectType.Object;
-                                    obj = (obj == "ReferenceItemType" && intersectType.ObjectID == 0) ? obj : obj.Replace("Type", "");
-                                    objID = val;
-
-                                    intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Subject == sub && i.SubjectID == subID && i.ObjectID == val).FirstOrDefault();
-                                }
-                                else
-                                {
-                                    obj = o.ToString();
-                                    objID = oid;
-                                    sub = intersectType.Subject;
-                                    sub = (sub == "ReferenceItemType" && intersectType.SubjectID == 0) ? sub : sub.Replace("Type", "");
-                                    subID = val;
-
-                                    intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == intersectType.ID && i.Object == obj && i.ObjectID == objID && i.SubjectID == val).FirstOrDefault();
-                                }
-
-                                if (intersect != null)
-                                {
-                                    if (isSubject)
-                                    {
-                                        intersect.Object = obj;
-                                        intersect.ObjectID = objID;
-                                    }
-                                    else
-                                    {
-                                        intersect.Subject = sub;
-                                        intersect.SubjectID = subID;
-                                    }
-                                    Company.Update(intersect);
-                                }
-                                else
-                                {
-                                    intersect = new Intersect { IntersectTypeID = intersectType.ID, Object = obj, ObjectID = objID, Subject = sub, SubjectID = subID };
-                                    Company.Add(intersect);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        internal Dictionary<string, object> SerializeDynamicObject(ExpandoObject obj)
-        {
-            var result = new Dictionary<string, object>();
-            var dictionary = obj as IDictionary<string, object>;
-            foreach (var item in dictionary)
-                result.Add(item.Key, item.Value);
-            return result;
-        }
-
         internal void SendException(Exception ex, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
         {
             if (properties == null) properties = new Dictionary<string, string>();
@@ -1206,181 +1073,13 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
-        internal void SendEvent(string eventName, IDictionary<string, string> properties = null, IDictionary<string, double> metrics = null)
-        {
-            if (properties == null) properties = new Dictionary<string, string>();
-            var telemetry = new TelemetryClient();
-            if (!properties.ContainsKey("CompanyID")) properties.Add("CompanyID", Company.CurrentCompanyID.ToString());
-            telemetry.TrackEvent(eventName, properties, metrics);
-            telemetry = null;
-        }
-
         #region Dynamic Query Processing
-
-        public class DynamicPagedResults
-        {
-            public int total { get; set; }
-            public IEnumerable<dynamic> results { get; set; }
-        }
-
-        internal string addOwnershipJoinCriteria(string joins, string ownerUsers, string ownerGroups, string idColumn = "A.ID")
-        {
-            int index = 0;
-            if (!string.IsNullOrEmpty(ownerUsers))
-            {
-                foreach (var user in ownerUsers.Split(','))
-                {
-                    var ids = user.Split('|');
-                    if (ids.Length == 2)
-                    {
-                        joins += $" inner join ResponsibilityDetail RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'R' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])} )";
-                        index++;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(ownerGroups))
-            {
-                foreach (var group in ownerGroups.Split(','))
-                {
-                    var ids = group.Split('|');
-                    if (ids.Length == 2)
-                    {
-                        joins += $" inner join ResponsibilityDetail RD{index} on (RD{index}.AssetID = {idColumn} and RD{index}.SecurityAsset = 'G' and RD{index}.SecurityAssetID = {int.Parse(ids[1])} and RD{index}.ResponsibilityTypeID = {int.Parse(ids[0])})";
-                        index++;
-                    }
-                }
-            }
-
-            return joins;
-        }
 
         internal List<FieldType> getFieldTypesByObjectType(string objectType, int objectTypeID, bool listableOnly)
         {
             return (listableOnly) ?
                 Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList() :
                 Company.Filter<FieldType>(i => i.Object == objectType && i.ObjectID == objectTypeID).OrderBy(i => i.ColumnOrder).ToList();
-        }
-
-        internal DynamicPagedResults processDynamicResults(
-            string sql,
-            HttpRequestBase Request,
-            string objectType, int objectTypeID,
-            bool listableOnly, string sortDataField, string sortOrder, int pagenum, int pagesize,
-            string[] staticFields,
-            string filter = "", string ownerUsers = "", string ownerGroups = "",
-            string sortDefaultField = "DisplayValue", string sortDefaultDirection = "asc",
-            Dictionary<string, object> extraParams = null,
-            bool includeIdColumn = true, bool useFriendlyName = false, bool fetchPermissions = false, string idColumn = "A.ID", string innerIdColumn = "A.ID")
-        {
-            var dbArgs = new Dapper.DynamicParameters();
-            var obj = objectType.Replace("Type", "");
-
-            var fields = getFieldTypesByObjectType(objectType, objectTypeID, listableOnly);
-
-            dbArgs.Add("id", objectTypeID);
-
-            if (extraParams != null)
-            {
-                foreach (var k in extraParams.Keys)
-                {
-                    dbArgs.Add(k, extraParams[k]);
-                }
-            }
-
-            var joins = "";
-            var columns = "";
-
-            // Field Joins
-            getDynamicFieldJoinStatements(objectTypeID, obj, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, innerIdColumn);
-
-            // Ownership Joins
-            joins = addOwnershipJoinCriteria(joins, ownerUsers, ownerGroups, innerIdColumn);
-
-            if (fetchPermissions)
-            {
-                if (Company.CurrentResourceIsAdmin)
-                {
-                    columns += "1 P_CanEdit, 1 P_CanDelete,";
-                }
-                else
-                {
-                    columns += "IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete, ";
-                    joins += $@"
-outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = {Company.CurrentResourceID} and (PermissionsBitMask & {(int)Permission.ModifyAsset}) = {(int)Permission.ModifyAsset}) S_E 
-outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID and ResourceID = {Company.CurrentResourceID} and (PermissionsBitMask & {(int)Permission.DeleteAsset}) = {(int)Permission.DeleteAsset}) S_D ";
-                }
-            }
-
-            sql = string.Format(sql, columns, joins);
-
-            // If simple filter specified add that criteria to the sql
-            if (!string.IsNullOrEmpty(filter))
-            {
-                sql = $"{sql} and {addDynamicFieldSimpleFilter(staticFields, obj, objectTypeID, filter, dbArgs, fields)}";
-            }
-
-            var querySql = $@"select * from ({sql}) A";
-            var countSql = $@"select count(1) from ({sql}) A";
-
-            #region Relation filtering
-
-            var filters = applyRelationFilteringExistsRawSuffix(Request, dbArgs, fields, idColumn);
-
-            countSql += filters;
-            querySql += filters;
-
-            #endregion
-
-            filters += applyFilteringSuffixBindRaw(Request, dbArgs, true, fields, idColumn: idColumn);  // Filtering
-
-            countSql += filters;
-            querySql += filters;
-
-            #region Sorting
-
-            if (string.IsNullOrEmpty(sortDataField))
-            {
-                var sortSql = "";
-
-                foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
-                {
-                    var columnName = useFriendlyName ? field.FriendlyName.Replace("[", "").Replace("]", "") : $"Field{field.ID}";
-                    switch (field.Type)
-                    {
-                        case "Number":
-                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS bigint)";
-                            break;
-                        case "Date":
-                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST(+ [{columnName}] AS date)";
-                            break;
-                        default:
-                            sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
-                            break;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(sortSql))
-                {
-                    sortSql = sortDefaultField;
-                }
-
-                querySql += " ORDER BY " + sortSql;
-            }
-            else
-            {
-                //The user sorted by something else, other than the default SortOrder settings on the FieldTypes.
-                querySql = applySortSuffix(querySql, sortDataField, sortOrder, sortDefaultField, sortDefaultDirection, sortFieldType: sortColumnType(sortDataField, fields));         // Sorting
-            }
-
-            #endregion
-
-            querySql = applyPagingSuffix(querySql, pagenum, pagesize);              // Paging
-
-            int total = Company.Query<int>(countSql, dbArgs).First();
-            var query = Company.Query<dynamic>(querySql, dbArgs);
-
-            return new DynamicPagedResults { results = query, total = total };
         }
 
         #endregion
@@ -1392,91 +1091,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
         {
             Company.getDynamicFieldJoinStatements(typeID, type, out joins, out columns, includeIdColumn, useFriendlyName, listableOnly, fields, idColumn);
         }
-
-        internal string addDynamicFieldSimpleFilter(string[] fixedColumns, string type, int typeID, string filterExp, Dapper.DynamicParameters dbArgs, List<FieldType> fields = null)
-        {
-            if (string.IsNullOrEmpty(filterExp)) return "";
-
-            var fieldTypeRelationType = type;
-            switch (type)
-            {
-                case "Rule":
-                    type = "Event";
-                    break;
-                default:
-                    fieldTypeRelationType += "Type";
-                    break;
-            }
-
-            //loop through visible fields for this item 
-            if (fields == null)
-            {
-                fields = Company.Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
-            }
-
-            StringBuilder sb = new StringBuilder();
-
-            foreach (var column in fixedColumns)
-            {
-                if (sb.Length != 0) sb.Append(" or ");
-
-                sb.Append($"({column} like @simpleFilter + '%')");
-            }
-
-            var relationFieldInfos = Company.getRelationFieldData(fieldTypeRelationType, typeID, fields);
-
-            foreach (var field in fields)
-            {
-                if (sb.Length != 0) sb.Append(" or ");
-
-                if (field.Type == DataType.Relationship.ToString())
-                {
-                    var relationFieldInfo = relationFieldInfos.FirstOrDefault(i => i.FieldTypeID == field.ID);
-                    var columnName = "DisplayValue";
-                    if (relationFieldInfo != null)
-                    {
-                        if (relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString())
-                        {
-                            columnName = "Name";
-                        }
-                    }
-
-                    sb.Append($"(Field{field.ID}_OTD.{columnName} like @simpleFilter + '%')");
-                }
-                else if (field.Type == DataType.FieldFromRelationship.ToString())
-                {
-                    var columnName = "FormattedValue";
-                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
-                }
-                else if (field.Type == DataType.Path.ToString())
-                {
-                    var columnName = "FormattedValue";
-                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
-                }
-                else
-                {
-                    if (field.Name.ToLower() == "highproductrisk" && filterExp.ToLower() == "yes")
-                    {
-                        //do nothing, LMTOM-specific. Yes means Yes AND No
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(field.DefaultFormattedValue))
-                            sb.Append($"(coalesce(Field{field.ID}_T.FormattedValue, '{field.DefaultFormattedValue}') like @simpleFilter + '%')");
-                        else
-                            sb.Append($"(Field{field.ID}_T.FormattedValue like @simpleFilter + '%')");
-                    }
-
-                }
-            }
-
-            var val = new Dapper.DbString { Value = filterExp.Replace('*', '%').Replace('?', '_'), Length = 200 };
-
-            dbArgs.Add("simpleFilter", val);
-
-            return $"({sb.ToString()})";
-        }
-
+        
         internal List<FieldType> getDynamicFieldJoinStatements(int typeID, string type, List<string> filterFields, out string joins, out string filterjoins, out string columns, out string filtercolumns, DynamicParameters dbArgs, bool includeIdColumn = true, bool useFriendlyName = false, List<FieldType> fields = null, bool showSubsetColumns = false, List<int> subsetColumns = null, string idColumn = "A.ID")
         {
             columns = "";
@@ -1676,55 +1291,6 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
         internal bool isValidUserProfileName(string name)
         {
             return !(name.Contains('>') || name.Contains('<') || name.Contains('"') || name.Contains('/') || name.Contains('\\'));
-        }
-
-        internal string applyRelationFilteringExists(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null, string idColumn = "A.ID")
-        {
-            return sql + applyRelationFilteringExistsRawSuffix(Request, dbParams, fields, idColumn);
-        }
-
-        internal string applyRelationFilteringExistsRawSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, List<FieldType> fields = null, string idColumn = "A.ID")
-        {
-            var query = Request.Params;
-            int filterscount = 0;
-
-            var sb = new StringBuilder();
-
-            if (int.TryParse(query["relfilterscount"], out filterscount) && filterscount > 0)
-            {
-                for (var i = 0; i < filterscount; i++)
-                {
-                    var fFieldId = int.Parse(query["relfilterdatafield" + i]);
-                    var fCondition = query["relfiltercondition" + i];
-                    var fValue = query["relfiltervalue" + i];
-
-                    FieldType filterFieldType = null;
-                    if (fields != null)
-                    {
-                        filterFieldType = fields.FirstOrDefault(f => f.ID == fFieldId);
-                    }
-
-                    var filtersql = getFilteringConditionBind("relField.FormattedValue", fCondition, i, dbParams, fValue, "relflt", true, ft: filterFieldType);
-
-                    if (string.IsNullOrEmpty(filtersql)) continue;
-
-                    var existsql = @" and exists (select  B.sourceobjectid
-                                from(
-                                        select  IntersectID as ID,
-                                                SourceObjectID
-                                        from Relationship
-                                        where SourceObjectType = 'Artifact'
-                                                and SourceObjectID = {idColumn}
-                                        ) B left join Field relField on (relField.ObjectType = 'Intersect' and relField.ObjectID = B.ID and relField.FieldTypeID = {0})
-                                        where " + filtersql + ")";
-
-                    existsql = string.Format(existsql, fFieldId);
-
-                    sb.Append(existsql);
-                }
-            }
-
-            return sb.ToString();
         }
 
         internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null, bool v2ApiFilterValues = false)
@@ -2187,20 +1753,11 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
         #endregion
 
-        protected bool IsSingleSignOn()
+        protected async Task<bool> IsSingleSignOn()
         {
-            var c = Community.GetById<Company>(Company.CurrentCompanyID, i => i.CompanyDomainSettings);
+            var authModel = await Community.QueryFirstOrDefaultAsync<AuthenticationType>("select AuthenticationType from CompanyDomainSetting where CompanyID = @id and UrlPrefix = @prefix", new { id = Company.CurrentCompanyID, prefix = Company.CurrentCompanyDomain });
 
-            foreach (var companySetting in c.CompanyDomainSettings)
-            {
-                if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
-                {
-                    return !(companySetting.AuthenticationType == AuthenticationType.Forms);
-
-                }
-            }
-
-            return false;
+            return !(authModel == AuthenticationType.Forms);
         }
     }
 }
