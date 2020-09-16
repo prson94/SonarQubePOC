@@ -1625,7 +1625,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\worflowmonitor-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-action-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-filter.component.ts" />

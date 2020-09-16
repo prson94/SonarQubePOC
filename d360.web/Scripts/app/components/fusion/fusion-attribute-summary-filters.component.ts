@@ -1,8 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
-import { FusionAttributeValueDetails, FusionAttributeFilter } from '../../models/fusion-attribute.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
+import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
+import { GridFilterColumn  } from '../../models/grid-definition.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -54,7 +54,7 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
     @Input() isFiltering: boolean = false;
     @Input() hasExport: boolean = false;
     @Output() exportClick = new EventEmitter();
-    private internalFilters: FusionAttributeFilter[] = [];
+    internalFilters: FusionAttributeFilter[] = [];
 
 
     constructor(private fusionAttributeService: FusionAttributeService) {
@@ -78,7 +78,7 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
         this.internalFilters.push(new FusionAttributeFilter());            
     }
 
-    private filterResults() {        
+    filterResults() {        
         this.filters = _.cloneDeep(this.internalFilters);
         this.filtersChange.emit(this.filters);
     }

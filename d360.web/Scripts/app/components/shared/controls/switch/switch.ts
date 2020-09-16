@@ -39,7 +39,7 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     @Output() onChange: EventEmitter<any> = new EventEmitter();
 
-    protected value = false;  // this is intentionally NOT public or an input you should be using ngModel..
+    value = false;  // this is intentionally NOT an input you should be using ngModel..
 
     onModelChange: Function = () => { };
 

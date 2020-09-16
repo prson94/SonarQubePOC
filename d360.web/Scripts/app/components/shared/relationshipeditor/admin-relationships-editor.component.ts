@@ -175,7 +175,7 @@ export class AdminRelationshipsEditor {
                     this.predicates.push({
                         label: item.label,
                         value: item.value,
-                        isSemantic: item.isSemantic,
+                        isSemantic: item.isSemantic, 
                         type: item.type
                     });
                 }

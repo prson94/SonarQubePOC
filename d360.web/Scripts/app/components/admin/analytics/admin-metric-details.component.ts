@@ -22,10 +22,10 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
 })
 
 export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
-    private selectedAssetType: AssetTypeMetricModel = null;
-    private selectedMetric = null;
+    selectedAssetType: AssetTypeMetricModel = null;
+    selectedMetric = null;
     routeParamsSubscription: any;
-    private data: ScoreTypeAllocation = null;
+    data: ScoreTypeAllocation = null;
     private assetTypeUid: string;
     private allocationUid: string;
     formattedScoreCalc: string;

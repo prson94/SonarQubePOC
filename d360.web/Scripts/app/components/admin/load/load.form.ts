@@ -54,7 +54,7 @@ export class LoadForm implements OnInit, OnChanges {
         this.onLoadComplete.emit(null);
     }
 
-    private loadTypes(): void {
+    loadTypes(): void {
         this.isLoadingTypes = true;
         this.selectedType = '';
         this.loadService.getTypeOptions(this.selectedAction).subscribe(
@@ -114,7 +114,7 @@ export class LoadForm implements OnInit, OnChanges {
         return true;
     }
 
-    private showDetail() {
+    showDetail() {
         return (this.selectedAction && this.selectedAction != '' && this.selectedType && this.selectedType != '');
     }
 
@@ -133,11 +133,11 @@ export class LoadForm implements OnInit, OnChanges {
         this.file = e.srcElement.files[0];
     }
 
-    private cancel(): void {
+    cancel(): void {
         this.onCancel.emit(null);
     }
 
-    private save(): void {
+    save(): void {
         let model = new LoadFilePostModel();
 
         this.errorMessage = "";

@@ -20,7 +20,7 @@ import * as _ from 'lodash';
 export class ColorDisplayComponent implements OnInit {
 
     @Input() colorsJSON: string;
-    private colorsObject: any;
+    public colorsObject: any;
 
     constructor() {
     }

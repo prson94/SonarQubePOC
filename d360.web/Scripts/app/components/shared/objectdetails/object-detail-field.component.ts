@@ -36,32 +36,33 @@ export class ObjectDetailFieldComponent {
             return "Error";
         }
     }
-    private get isArrayValue(): boolean {
+
+    get isArrayValue(): boolean {
         return this.field != null
             && this.field.Values
             && this.field.Values.length > 0;
     }
 
-    private get isEmail(): boolean {
+    get isEmail(): boolean {
         return this.field != null
             && this.field.Name != null
             && this.field.Name.toLowerCase() == 'email'
             && this.fieldDataType == 'text';
     }
 
-    private get isName(): boolean {
+    get isName(): boolean {
         return this.field != null
             && this.field.Name != null
             && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
     }
 
-    private get isAlreadyUTC(): boolean {
+    get isAlreadyUTC(): boolean {
         if (this.field && this.field.Value && this.field.Value.endsWith('Z'))
             return true;
         return false;
     }
 
-    private get fieldDataType(): string {
+    get fieldDataType(): string {
         if (this.field == null || this.field.DataType == null)
             return null;
         switch (this.field.DataType.toLowerCase()) {

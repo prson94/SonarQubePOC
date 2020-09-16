@@ -53,7 +53,7 @@ import { NgForm, FormGroup } from '@angular/forms';
                             <button pButton type="button" (click)="closeClick.emit();" label="Close"></button>
                         </div>
                     </form>
-                </div>
+                </div> 
                 `,
     providers: [SurveysService],
 })

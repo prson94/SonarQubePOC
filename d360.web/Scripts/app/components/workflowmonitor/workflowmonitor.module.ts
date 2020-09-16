@@ -13,7 +13,7 @@ import { PipesModule } from '../../pipes/pipes.module';
 
 import { WorkflowMonitorRoutingModule } from './workflowmonitor.routes';
 import { WorkflowMonitorComponent } from './workflowmonitor.component';
-import { WorkflowMonitorListComponent } from './worflowmonitor-list.component';
+import { WorkflowMonitorListComponent } from './workflowmonitor-list.component';
 import { WorkflowMonitorListFilterComponent } from './workflowmonitor-list-filter.component';
 import { WorkflowMonitorListColumnFilterComponent } from './workflowmonitor-list-column-filter.components';
 import { WorkflowMonitorStepListComponent } from './workflowmonitor-step-list.component';

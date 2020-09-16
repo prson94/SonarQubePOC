@@ -66,9 +66,9 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     @Output() filtersChange = new EventEmitter();
     connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     filterFieldType = FilterFieldType;
-    private internalFilters: FilterExpression[] = [];
-    private availableFilters: FilterField[] = [];
-    private selectedFilter: any;
+    internalFilters: FilterExpression[] = [];
+    availableFilters: FilterField[] = [];
+    selectedFilter: any;
 
     constructor(private ref: ChangeDetectorRef) { }
 
@@ -101,7 +101,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
         }
     }
 
-    private onSubmit() {
+    onSubmit() {
         this.filters = [];
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field && internalFilter.Data.value) {

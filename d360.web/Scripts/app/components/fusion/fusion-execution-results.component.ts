@@ -86,9 +86,9 @@ export class FusionExecutionResultsComponent extends BaseComponent {
     @Input() executionId: number;
     @Input() rowsPerPage: number = 20;
 
-    private results: FusionExecutionResult[] = [];
-    private selected: FusionExecutionResult;
-    private resultCount: number = 0;
+    results: FusionExecutionResult[] = [];
+    selected: FusionExecutionResult;
+    resultCount: number = 0;
     private currentPageNumber: number = 0;
     private sortField: string = "";
     private sortOrder: SortOrder = SortOrder.None;
@@ -104,7 +104,7 @@ export class FusionExecutionResultsComponent extends BaseComponent {
         this.isLoading = true;
     }
 
-    private export() {
+    export() {
         this.fusionService.getFusionExecutionResultsExport(this.executionId, this.simpleTextFilter);
     }
 
@@ -131,7 +131,7 @@ export class FusionExecutionResultsComponent extends BaseComponent {
             );
     }
 
-    private loadResultsLazy(event: LazyLoadEvent) {
+    loadResultsLazy(event: LazyLoadEvent) {
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with

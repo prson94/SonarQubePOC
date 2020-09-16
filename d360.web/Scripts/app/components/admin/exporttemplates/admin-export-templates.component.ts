@@ -123,9 +123,9 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class AdminExportTemplatesComponent extends AdminBaseComponent implements OnDestroy, OnInit {
     public selected: ExportTemplate;
 
-    private exportTemplates: ExportTemplate[];
-    private showDelete: boolean = false;
-    private showEditor: boolean = false;
+    exportTemplates: ExportTemplate[];
+    showDelete: boolean = false;
+    showEditor: boolean = false;
     uploadedFiles: any[] = [];
 
     theDeleteCallback: Function;

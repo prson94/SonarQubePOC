@@ -10,12 +10,12 @@
         <p-dropdown [class]="condition-dropdown" [options]="operators" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
-                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                    <span class="ig-colorfield-item-label">{{item.label}}</span> 
                 </div>
             </ng-template>
         </p-dropdown>
         <div *ngIf="condition?.FieldType?.Type == 'Text'">
-            <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+            <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" /> 
         </div>
         <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
             <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.SingleValue">

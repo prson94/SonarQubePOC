@@ -34,7 +34,7 @@ import * as _ from 'lodash';
                         </div>                                  
                         <div class="col s12">
                             <div class="FieldName">Force Refresh</div>    
-                            <div><input name="forcerefresh" type="checkbox" [disabled]="readonly" [(ngModel)]="editedSchedule.FullRefresh" /> </div>                        
+                            <div><input name="forcerefresh" type="checkbox" [(ngModel)]="editedSchedule.FullRefresh" /> </div>                        
                         </div>                                           
                         <div class="col s12">&nbsp;</div>
                         <div class="col s12">

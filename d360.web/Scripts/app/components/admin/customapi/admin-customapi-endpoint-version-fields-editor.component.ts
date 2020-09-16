@@ -22,7 +22,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
     @Output() onSaveClick = new EventEmitter();
     @Output() onCloseClick = new EventEmitter();
 
-    private isAdding: boolean = false;
+    isAdding: boolean = false;
     private fieldTypes: FieldType[] = [];
     private multiSelectFieldTypes: FieldType[] = [];
     private selectedFields: any[] = [];

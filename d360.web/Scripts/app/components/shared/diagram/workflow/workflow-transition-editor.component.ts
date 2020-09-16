@@ -35,7 +35,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     @Output() transitionChange = new EventEmitter();
 
     private originalTransition: LinkModel;
-    private transitionTypes: TransitionTypeInfo[] = [];
+    transitionTypes: TransitionTypeInfo[] = [];
     private condition = null;
 
     TransitionType = TransitionType;

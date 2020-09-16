@@ -1,6 +1,6 @@
 ﻿<div>
     <header>
-        &nbsp;<d3s-tile-actions [hasFilterMode]="!hideFilter && !hideHeader" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export(null)"></d3s-tile-actions>
+        &nbsp;<d3s-tile-actions [hasFilterMode]="!hideFilter && !hideHeader" [(filterMode)]="showSimpleFilter" hasExport="true" (exportClick)="export()"></d3s-tile-actions>
     </header>
 </div>
 <input type="text" [hidden]="!showSimpleFilter || hideFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">

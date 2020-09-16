@@ -44,6 +44,7 @@ export class CompanySettings {
     CurrentCompanyLogoPath: string;
     LineageVersion: number;
     FusionEnabled: boolean = true;
+    MaxExcelExportRows: number;
 }
 
 export class IpRestriction {

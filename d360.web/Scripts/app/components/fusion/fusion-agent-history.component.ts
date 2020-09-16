@@ -35,7 +35,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
         this.load();
     }
 
-    private load() {
+    load() {
         this.isLoading = true;
 
         this.fusionService
@@ -75,7 +75,7 @@ export class FusionAgentHistoryComponent extends BaseComponent implements OnInit
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.FusionID));
     }
 
-    private export() {
+    export() {
         this.fusionService.getFusionAgentHistoryExport(this.maxRows, this.fusion ? this.fusion.ID : undefined)
     }
 }
