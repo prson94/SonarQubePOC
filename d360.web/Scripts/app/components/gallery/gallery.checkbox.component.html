@@ -1,0 +1,64 @@
+﻿<div class="tile tile-detail">
+    <header>Checkbox Directive</header>
+    <p>Angular directive that can be applied to <strong>p-checkbox</strong> input controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+    <p>or</p>
+    <code>{{sampleUsage2}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <p-checkbox igCheckbox [binary]="true" [(ngModel)]="val" label="Binary checkbox"></p-checkbox>
+            <p>Value: {{val}}</p>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Indeterminate</h4>
+        <div>
+            <p-triStateCheckbox igCheckbox [(ngModel)]="tristateval" label="Tri state checkbox"></p-triStateCheckbox>
+            <p>Value: {{tristateval}}</p>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>tabindex</h4>
+        <div>
+            <p>
+                Click on the first input then tab using your tab keys(space bar check the checkbox).
+            </p>
+            <div class="row">
+                <input igInput type="text" tabindex="1" />
+            </div>
+            <div class="row">
+                <input igInput type="text" tabindex="2" />
+            </div>
+            <div class="row">
+                <input igInput type="text" tabindex="3" />
+            </div>
+            <div class="row">
+                <p-checkbox igCheckbox tabindex="4" [binary]="true" label="Im 4th!"></p-checkbox>
+            </div>
+            <div class="row">
+                <input igInput type="text" tabindex="5" />
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <p-checkbox igCheckbox [disabled]="true" value="true"  label="Tri state checkbox"></p-checkbox>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <strong>* All properties that are available on current version of PrimeNG checkbox/tristatecheckbox components</strong>
+</div>
+

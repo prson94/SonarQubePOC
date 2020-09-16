@@ -45,6 +45,9 @@ import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 import { GalleryMessageBoxComponent } from './gallery.message-box.component';
 import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
+import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 
 
 @NgModule({
@@ -72,6 +75,8 @@ import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.m
         TableModule,
         TooltipModule,
         AutoCompleteModule,
+        CheckboxModule,
+        TriStateCheckboxModule,
         SiteModalModule
     ],
     declarations: [
@@ -94,6 +99,7 @@ import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.m
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
         GalleryMessageBoxComponent,
+        GalleryCheckboxComponent
     ],
     providers: [
         GalleryGuard,
