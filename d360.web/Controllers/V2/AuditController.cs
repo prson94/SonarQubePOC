@@ -164,7 +164,8 @@ namespace d360.web.Controllers.V2
                     !Company.Any<Tag>(i => i.uid == assetUid) &&
                     !Company.Any<IssueType>(i => i.uid == assetUid) &&
                     !Company.Any<IntersectType>(i => i.uid == assetUid) &&
-                    !Company.Any<ResponsibilityType>(i => i.UID == assetUid))
+                    !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
+                    !Company.Any<Report>(i => i.uid == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if(assetType == null)
@@ -618,6 +619,8 @@ namespace d360.web.Controllers.V2
                     CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = @uid
                 union
                 select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
+                union
+                select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Report] where uid = @uid
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

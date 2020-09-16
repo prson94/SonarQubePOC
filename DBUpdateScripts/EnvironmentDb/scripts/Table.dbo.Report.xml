@@ -38,6 +38,31 @@ END
 		]]>
 	</rollback>
   </changeSet>
+    <changeSet author="TKlok" id="Table.dbo.Report-v2">
+    <comment>GOV-12217</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[Report]', 'uid') IS NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			ADD [uid] [uniqueidentifier] CONSTRAINT [DF_Report_uid] DEFAULT (newid()) NOT NULL
+		END
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[Report]', 'uid') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN uid
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
 
   <changeSet author="Core" id="Table.dbo.Report-Report_AfterDelete-v1">
     <sql dbms="mssql"
