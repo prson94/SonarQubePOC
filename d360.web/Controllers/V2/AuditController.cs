@@ -163,11 +163,13 @@ namespace d360.web.Controllers.V2
                     !Company.Any<Asset>(i => i.uid == assetUid) &&
                     !Company.Any<Tag>(i => i.uid == assetUid) &&
                     !Company.Any<IssueType>(i => i.uid == assetUid) &&
-                    !Company.Any<IntersectType>(i => i.uid == assetUid))
+                    !Company.Any<IntersectType>(i => i.uid == assetUid) &&
+                    !Company.Any<ResponsibilityType>(i => i.UID == assetUid) &&
+                    !Company.Any<Report>(i => i.uid == assetUid))
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
                     if(assetType == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type or RelationshipType not found for UID"));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Asset, Asset Type, Tag, Workflow Type, RelationshipType or Responsibility Type not found for UID"));
                     isAssetType = true;
                 }
 
@@ -615,6 +617,10 @@ namespace d360.web.Controllers.V2
                 union
                 select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from dbo.[IntersectType] IT
                     CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = @uid
+                union
+                select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
+                union
+                select uid, name as DisplayName, 'Report' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Report] where uid = @uid
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

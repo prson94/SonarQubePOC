@@ -108,6 +108,10 @@ namespace d360.web.Controllers
         [AllowAnonymous, Route("sso")]
         public ActionResult Login()
         {
+
+            if (Request.Browser.Browser.ToLower() == "internetexplorer")
+                return RedirectToAction("unsupported", "home");
+
             if (!Community.CurrentCompanySsoModel.IsCompanyActive)
             {
                 return InactiveCompany();

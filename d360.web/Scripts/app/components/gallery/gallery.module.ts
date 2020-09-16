@@ -43,6 +43,8 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedGridSelectionInfoModule } from '../shared/grid-selection-info.component';
 import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
+import { GalleryMessageBoxComponent } from './gallery.message-box.component';
+import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
 
@@ -67,6 +69,7 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         SharedGridSelectionInfoModule,
         SharedGridPagingInfoModule,
         IgNumberFieldModule,
+        IgMessageBoxModule,
         IgBadgeModule,
 
         TableModule,
@@ -94,6 +97,7 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
         GalleryBadgeComponent
+        GalleryMessageBoxComponent,
     ],
     providers: [
         GalleryGuard,
