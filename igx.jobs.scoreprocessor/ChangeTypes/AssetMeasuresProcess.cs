@@ -404,7 +404,7 @@ from	metrics.Asset A
                                         break;
                                         #endregion
                                     case ScoreType.Governance:
-                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition);
+                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition ?? "{}");
                                         switch (gDefinition.Check)
                                         {
                                             case GovernanceMeasureCheck.External:
@@ -422,6 +422,9 @@ from	metrics.Asset A
                                                 break;
                                             case GovernanceMeasureCheck.Relationship:
                                                 //scoreItem.Value = n.Result;
+                                                break;
+                                            default:
+                                                scoreItem.Value = false;
                                                 break;
                                         }
                                         break;
