@@ -12,7 +12,7 @@ namespace d360.model.DataAccessLayer
     {
         Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
         WorkHttpStatus DeleteResources(ApiExecution execution, IEnumerable<UserApiDeleteModel> resources);
-        Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users);
+        Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false);
         Task<List<FavoriteApiViewModel>> GetFavorites(int resourceID);
         Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
         WorkHttpStatus DeleteFavorites(int resourceID);

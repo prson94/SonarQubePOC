@@ -65,3 +65,14 @@ export class MulitSelectResourceData {
     results: any;
     total: number;
 }
+
+export class ResourceApiModel {        
+    Username: string;
+    FirstName: string;
+    LastName: string;
+    State: string;
+    IsAdministrator: boolean;
+    uid: string;
+    Password: string;
+    Fields: any;    
+}

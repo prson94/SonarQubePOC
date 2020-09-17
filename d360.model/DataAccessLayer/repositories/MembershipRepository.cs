@@ -139,9 +139,9 @@ namespace d360.model.DataAccessLayer
                 return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Users deleted successfully");
+            return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false)
         {
             const int ResourceTypeID = 1;
 
@@ -586,8 +586,15 @@ namespace d360.model.DataAccessLayer
 
                         ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
-
-                    CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+                    if (lookupFieldsPassedByValue)
+                    {
+                        CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);                        
+                    }
+                    else
+                    {
+                        CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+                    }
+                    
 
                     //validate lookup fields
                     await CompanyContext.Connection.ExecuteAsync(@"

@@ -1,11 +1,12 @@
 import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
+import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData, ResourceApiModel } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable, throwError } from "rxjs";
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { ApiResult } from '../models/apiresult.model';
 
 
 @Injectable()
@@ -39,6 +40,55 @@ export class ResourcesService extends BaseObservableService {
 
     }
 
+    public saveResource(        
+        resource: ResourceApiModel
+    ): Observable<ApiResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        const resourceArray: ResourceApiModel[] = [];
+        resourceArray.push(resource);
+
+        if (resource.uid) {
+
+            return this
+                .http
+                .put(`api/v2/membership/users?lookupFieldsPassedByValue=true`, resourceArray, httpOptions)
+                .pipe(
+                    map((res: ApiResult) => {
+                        return res[0];
+                    }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        else {
+            return this
+                .http
+                .post(`api/v2/membership/users?lookupFieldsPassedByValue=true`, resourceArray, httpOptions)
+                .pipe(
+                    map((res: ApiResult[]) => {
+                        return res[0];
+                    }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+    }
+
+    public deleteResource(uid: string): Observable<JsonResult> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: [ uid]
+        };
+
+        return this
+            .http
+            .delete(`api/v2/membership/users`, httpOptions)
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
+    }
 
     getResourceLazy(params: any): Observable<any> {
 
