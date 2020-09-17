@@ -5,7 +5,7 @@
 </div>
 
 <ng-template #menuItemsTemplate let-items let-class="class">
-    <ul class="menu-items {{class}}">
+    <ul class="menu-items {{class}} {{(openToLeftSide ? ' open-left' : '')}}">
         <li *ngFor="let item of items"
             pTooltip="{{item.tooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
             tabindex="-1"
@@ -13,6 +13,9 @@
             (click)="select(item,$event)"
             (mouseenter)="hover(item)">
             <div class="item-container">
+                <ng-container *ngIf="item.items && item.isSubMenuOpened">
+                    <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: item.items, class: 'sub-menu'}"></ng-container>
+                </ng-container>
                 <div *ngIf="hasCheckboxes(items)" class="part checkbox-part">
                     <i *ngIf="item.isChecked" class="fa fa-check"></i>
                 </div>

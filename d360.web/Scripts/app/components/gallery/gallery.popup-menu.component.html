@@ -122,6 +122,31 @@
             <strong>Event: </strong>{{item | json}}
         </div>
     </div>
+
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Dynamic Position</h4>
+        <p>
+            Popup menu will switch positions if there is not enought room underneath to render full menu. Use scroll Up to trigger position change
+        </p>
+        <p>
+            Right button will open a popup which will open on left side
+        </p>
+        <div>
+            <div style="float:left;">
+                <button type="button" igButton label="Show" (click)="menu11.toggle($event)"></button>
+                <ig-popup-menu [items]="checkExample" #menu11 [tabIndex]="10"></ig-popup-menu>
+            </div>
+            <div style="float:right;">
+                <button type="button" igButton label="Show" (click)="menu12.toggle($event)"></button>
+                <ig-popup-menu [items]="checkExample" #menu12 [tabIndex]="10"></ig-popup-menu>
+            </div>
+
+        </div>
+    </div>
+    <br />
+    <br />
 </div>
 
 <div class="tile tile-detail">

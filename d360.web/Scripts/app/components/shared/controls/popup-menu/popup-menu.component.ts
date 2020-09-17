@@ -15,6 +15,7 @@ import { IgBadgeModule } from '../badge/badge.module';
 export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     @Input() tabIndex: number = -1;
     @Input() items: PopupMenuItem[];
+    @Input() location: PopupMenuLocation = PopupMenuLocation.BottomLeft;
 
     @Output() onSelect = new EventEmitter();
 
@@ -25,11 +26,13 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     private positionLeft: number;
     private pressedKeys: any = {};
 
+    private anchorElement: HTMLElement;
     @ViewChild('positionRef', { static: true }) positionEl: ElementRef;
     @ViewChild('element', { static: true }) popupEl: ElementRef;
 
     private updatePositionInterval: any = null;
-
+    private openToLeftSide: boolean = false;
+    private toggleInProgress: boolean = false;
     constructor(private cdRef: ChangeDetectorRef) {
 
     }
@@ -99,7 +102,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     @HostListener('document:click', ['$event'])
     clickout(event) {
         if (!this.popupEl.nativeElement.contains(event.target)) {
-            if (this.isVisible) {
+            if (this.isVisible && !this.toggleInProgress) {
                 this.isVisible = false;
                 this.reset();
             }
@@ -197,14 +200,66 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     private setElementPosition() {
-        if (this.positionEl) {
+
+        if (this.positionEl && this.isVisible) {
+
             var htmlEl = this.positionEl.nativeElement as HTMLElement;
+            var menu = this.popupEl.nativeElement as HTMLElement;
+
             var box = htmlEl.getBoundingClientRect();
             var topPosition = box.top + window.scrollX - 12;
+            var leftPosition = box.left;
+            if (window.innerHeight < (htmlEl.getBoundingClientRect().bottom + menu.offsetHeight)) {
+                if (this.location == PopupMenuLocation.BottomLeft)
+                    this.location = PopupMenuLocation.TopLeft;
+                if (this.location == PopupMenuLocation.BottomRight)
+                    this.location = PopupMenuLocation.TopRight;
+            }
+            else {
+                if (this.location == PopupMenuLocation.TopLeft)
+                    this.location = PopupMenuLocation.BottomLeft;
+                if (this.location == PopupMenuLocation.TopRight)
+                    this.location = PopupMenuLocation.BottomRight;
+            }
+            if ((htmlEl.getBoundingClientRect().right + menu.offsetWidth) > window.innerWidth) {
+                if (this.location == PopupMenuLocation.BottomLeft)
+                    this.location = PopupMenuLocation.BottomRight;
+                if (this.location == PopupMenuLocation.TopLeft)
+                    this.location = PopupMenuLocation.TopRight;
+            }
+            else {
+                if (this.location == PopupMenuLocation.BottomRight)
+                    this.location = PopupMenuLocation.BottomLeft;
+                if (this.location == PopupMenuLocation.TopRight)
+                    this.location = PopupMenuLocation.TopLeft;
+            }
+
+            if (this.anchorElement) {
+
+                if (this.location == PopupMenuLocation.BottomLeft || this.location == PopupMenuLocation.BottomRight) {
+                    topPosition = this.anchorElement.getBoundingClientRect().bottom + window.screenX - 12;
+                }
+                else {
+                    topPosition = this.anchorElement.getBoundingClientRect().top + window.screenX + 12;
+                }
+            }
+
+            if (this.location == PopupMenuLocation.TopLeft || this.location == PopupMenuLocation.TopRight) {
+                topPosition = topPosition - menu.offsetHeight;
+            }
+
+            if (this.location == PopupMenuLocation.TopRight || this.location == PopupMenuLocation.BottomRight) {
+                var width = this.anchorElement ? this.anchorElement.getBoundingClientRect().width : 0;
+                leftPosition -= (menu.offsetWidth - width);
+                this.openToLeftSide = true;
+            }
+            else {
+                this.openToLeftSide = false;
+            }
             if (topPosition != this.positionTop || box.left != this.positionLeft) {
                 setTimeout(() => {
                     this.positionTop = topPosition;
-                    this.positionLeft = box.left;
+                    this.positionLeft = leftPosition;
                     this.cdRef.markForCheck();
                 });
             }
@@ -329,9 +384,14 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         item.isFocused = false;
     }
 
-    public toggle() {
+    public toggle($event: MouseEvent = null) {
+        if ($event && $event.srcElement) {
+            this.anchorElement = ($event.srcElement as HTMLElement).closest('button');
+        }
+        this.toggleInProgress = true;
         setTimeout(() => {
             this.isVisible = !this.isVisible;
+            this.toggleInProgress = false;
             this.cdRef.markForCheck();
         }, 10);
 
@@ -391,6 +451,9 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
 export class PopupMenuModule { }
 
+export enum PopupMenuLocation {
+    TopLeft, TopRight, BottomLeft, BottomRight
+}
 
 export class PopupMenuItem {
     title?: string;
