@@ -628,47 +628,7 @@ order by r.Name";
         #endregion
 
         #endregion
-
-        #region Intersect/Other Relationships
-
-        [HttpDelete, Route("DeleteIntersect"), NonNullableParameters]
-        public JsonResult DeleteIntersect(int id)
-        {
-            try
-            {
-                var intersect = Company.GetById<Intersect>(id);
-
-                if (intersect == null)
-                    throw new NotFoundException("relationship");
-
-                if (
-                    !Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.DeleteRelationships) ||
-                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.DeleteRelationships)
-                    )
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.DeleteRelationship(id);
-                Response.StatusCode = (int)HttpStatusCode.OK;
-                Response.StatusDescription = "Successfully unrelated item.";
-                return Json(new { message = Response.StatusDescription });
-            }
-            catch (BaseException ex)
-            {
-                Response.StatusCode = (int)ex.StatusCode;
-                Response.StatusDescription = ex.StatusDescription;
-                return Json(new { message = Response.StatusDescription });
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                Response.StatusDescription = ex.Message;
-                return Json(new { message = Response.StatusDescription });
-            }
-        }
-
-        #endregion
-
+                
         #region IntersectType
 
         #region Json Feeds To Support Editing

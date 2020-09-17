@@ -624,6 +624,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (excluded >= 0)
                     r.splice(excluded, 1);
 
+                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.Procedure && a.IsShow == false); 
+                    if (excluded >= 0)
+                        r.splice(excluded, 1);
+
                     this.activityTypes = r;
                 })
             );
@@ -1267,7 +1271,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private changeStep(e: NodeModel) {
-
         this.diagram.startTransaction('changeStep');
 
         let n = this.diagram.model.findNodeDataForKey(e.key) as NodeModel;
@@ -1566,13 +1569,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private ClipboardPasted(e) {
         if (e != null && e.subject != null) {
             let nodes = e.subject.toArray();
+            
             for (let i = 0; i < nodes.length; i++) {
 
                 if (nodes[i].data.DiagramObjectType == DiagramObjectType.Link) {
                     continue;
                 }
 
-                this.diagram.model.setKeyForNodeData(nodes[i].data, (--this.newKey).toString());
+                //clone settings
+                this.diagram.model.setDataProperty(nodes[i].data, "settings", _.cloneDeep(nodes[i].data.settings));
+
                 //move the copy slightly so it's not directly on top of the original
                 nodes[i].location = new go.Point(nodes[i].location.x - (Math.random() * 30), nodes[i].location.y - (Math.random() * 30));
             }

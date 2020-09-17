@@ -754,7 +754,7 @@ from	metrics.Asset A
                             await company.ExecuteAsync(
                                 "merge metrics.Score as T " +
                                 "using #Scores as S " +
-                                "on (S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) " +
+                                "on ((S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) OR (T.Uid = S.Uid)) " +
                                 "when matched then " +
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.EndDate = S.EndDate, T.Value = S.Value, T.VersionValueHash = S.VersionValueHash " +

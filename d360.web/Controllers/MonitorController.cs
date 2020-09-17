@@ -29,8 +29,6 @@ namespace d360.web.Controllers
         [Route("workflowmonitor/items/download/excel.xls"), HttpGet, FileDownload]
         public FileResult GetWorkFlowMonitorToExcel(int pagenum, int pagesize, string sortDataField, string sortOrder)
         {
-
-
             var dbArgs = new DynamicParameters();
             var sql = GetWorkflowMonitorSql(dbArgs);
 
@@ -38,7 +36,6 @@ namespace d360.web.Controllers
             var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
             var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "DateTime", "desc", sortFieldType: stFieldType);
   
-
             sql = $@"Select * from ({sql}) as A {sortsql} ";
             var list = Company.Query<dynamic>(sql,dbArgs);
 
@@ -91,8 +88,6 @@ namespace d360.web.Controllers
             var stream = new MemoryStream();
             document.SaveAs(stream);
             return File(stream.ToArray(), "application/vnd.ms-excel", $"WorkflowItems {System.DateTime.Now.ToShortDateString()}.xlsx");
-
-
         }
 
         private string getAssetType(string obj)
@@ -301,7 +296,6 @@ namespace d360.web.Controllers
         [Route("workflowmonitor/items"), HttpGet, NonNullableParameters]
         public JsonNetResult GetWorkflowMonitor( int pagenum, int pagesize, string sortDataField, string sortOrder)
         {
-
             try
             {
                 var dbArgs = new DynamicParameters();
@@ -311,8 +305,7 @@ namespace d360.web.Controllers
                 var stFieldType = sortDataField == "StartedOn" || sortDataField == "CompletedOn" ? "DateTime" : "string";
                 var sortsql = applySortSuffix(string.Empty, sortDataField, sortOrder, "DateTime", "desc", sortFieldType: stFieldType);
                 var pagingSql = applyPagingSuffix(string.Empty, pagenum, pagesize);
-
-                
+                                
 
                 var countSql = $@"Select count(1) from ({sql}) as A ";
 
@@ -334,7 +327,5 @@ namespace d360.web.Controllers
                 return jsonNetException(ex);
             }
         }
-
-
     }
 }

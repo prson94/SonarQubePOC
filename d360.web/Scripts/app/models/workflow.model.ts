@@ -265,7 +265,7 @@ export class ActivityTypeInfo {
     BackColor: string;
     ForeColor: string;
     Icon: string;
-
+    IsShow: boolean = true;
 }
 
 export class TransitionTypeInfo {

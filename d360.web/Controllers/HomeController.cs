@@ -10,6 +10,7 @@ using System;
 using d360.extensions.caching;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace d360.web.Controllers
 {
@@ -25,7 +26,7 @@ namespace d360.web.Controllers
         #endregion
 
 
-        [ValidateContracts(Ignore = true), Authorize, Route("unsupported")]
+        [ValidateContracts(Ignore = true), AllowAnonymous, Route("unsupported")]
         public ActionResult Unsupported()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
@@ -37,7 +38,7 @@ namespace d360.web.Controllers
         /// </summary>
         /// <returns></returns>
         [ValidateContracts, Authorize]
-        public ActionResult App()
+        public async Task<ActionResult> App()
         {
             if (!updateContractValidationCache())
                 return RedirectToAction("terms", new { redirectUri = HttpContext.Request.Path });
@@ -47,7 +48,7 @@ namespace d360.web.Controllers
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
             ViewData.Add("Settings", new Dictionary<string, string>(Community.GetCompanySettings()));
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
-            ViewData.Add("SingleSignOn", IsSingleSignOn());
+            ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
             var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
             if (res != null)

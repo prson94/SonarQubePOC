@@ -26,7 +26,7 @@ namespace d360.extensions.powerbi
     {
         static string apiEndpointUri = "https://api.powerbi.com";
 
-        private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
+        private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         public const string PowerBiServiceRootUrl = "https://api.powerbi.com/v1.0/myorg/";
 
