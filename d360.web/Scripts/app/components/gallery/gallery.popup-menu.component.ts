@@ -23,10 +23,20 @@ export class GalleryPopupMenuComponent implements OnInit {
     protected isLoading1: boolean = true;
     protected isLoading2: boolean = false;
 
+    private cleanJsonExamples: any = {};
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "isLoading", Type: "boolean", Description: "Whether or not to show the loading wheel", Default: "" });
         this.properties.push({ Name: "showTransparentLoader", Type: "boolean", Description: "Show a transparent background behind the loading wheel", Default: "false" });
+
+        this.cleanJsonExamples['simpleExample'] = JSON.parse(JSON.stringify(this.simpleExample));
+        this.cleanJsonExamples['multiExample'] = JSON.parse(JSON.stringify(this.multiExample));
+        this.cleanJsonExamples['tooltipExample'] = JSON.parse(JSON.stringify(this.tooltipExample));
+        this.cleanJsonExamples['defaultExample'] = JSON.parse(JSON.stringify(this.defaultExample));
+        this.cleanJsonExamples['labelExample'] = JSON.parse(JSON.stringify(this.labelExample));
+        this.cleanJsonExamples['checkExample'] = JSON.parse(JSON.stringify(this.checkExample));
+        this.cleanJsonExamples['keyboardShortcuts'] = JSON.parse(JSON.stringify(this.keyboardShortcuts));
+        this.cleanJsonExamples['badgeExample'] = JSON.parse(JSON.stringify(this.badgeExample));
     }
 
     private simpleExample = [
@@ -49,7 +59,6 @@ export class GalleryPopupMenuComponent implements OnInit {
             title: 'Exit'
         }
     ]
-
 
     private multiExample = [
         {
@@ -278,7 +287,6 @@ export class GalleryPopupMenuComponent implements OnInit {
             hasCheckbox: true
         }
     ]
-
 
     private badgeExample = [
         {

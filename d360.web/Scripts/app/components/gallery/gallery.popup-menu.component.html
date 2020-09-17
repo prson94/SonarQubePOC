@@ -4,14 +4,24 @@
 </div>
 
 <div class="tile tile-detail">
-    <header>Basic Usage</header>
+    <header>
+        Basic Usage
+    </header>
     <code>{{sampleUsage}}</code>
 </div>
 
 <div class="tile tile-detail">
     <header>Examples</header>
     <div class="gallery-section">
-        <h4>Basic</h4>
+        <h4>
+            Basic
+            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Basic example using one menu tier without submenus
         </p>
@@ -22,7 +32,15 @@
     </div>
     <hr />
     <div class="gallery-section">
-        <h4>Multi</h4>
+        <h4>
+            Multi
+            <label (click)="OPmultiExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPmultiExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['multiExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Example using submenus which can be navigated using arrow keys (Up, Right, Down, Left) or using mouse (hover over item will open a submenu)
             Using space will select a value and close menu
@@ -35,7 +53,15 @@
     <hr />
 
     <div class="gallery-section">
-        <h4>Tooltip</h4>
+        <h4>
+            Tooltip
+            <label (click)="OPtooltipExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPtooltipExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['tooltipExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Tooltip is visible when hovering over element.
         </p>
@@ -47,8 +73,15 @@
     <hr />
 
     <div class="gallery-section">
-        <h4>With default action</h4>
-        <h4>Tooltip</h4>
+        <h4>
+            With default action
+            <label (click)="OPdefaultExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPdefaultExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['defaultExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Default action in menu is bolded
         </p>
@@ -60,7 +93,15 @@
     <hr />
 
     <div class="gallery-section">
-        <h4>Labels</h4>
+        <h4>
+            Labels
+            <label (click)="OPlabelExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPlabelExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['labelExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Labels are shown above all element, they are not selectable and provide no action.
             * submenu shows support for multi line labels
@@ -73,7 +114,16 @@
     <hr />
 
     <div class="gallery-section">
-        <h4>Checkmarks</h4>
+        <h4>
+            Checkmarks
+
+            <label (click)="OPcheckExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPcheckExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['checkExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Items that are selectable will toggle checkmark on click or selecting using space button. Menu wont be closed
         </p>
@@ -84,7 +134,15 @@
     </div>
     <hr />
     <div class="gallery-section">
-        <h4>Badges</h4>
+        <h4>
+            Badges
+            <label (click)="OPbadgeExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPbadgeExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['badgeExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Menu items support basic
         </p>
@@ -96,7 +154,15 @@
     </div>
     <hr />
     <div class="gallery-section">
-        <h4>Keyboard Shortcuts</h4>
+        <h4>
+            Keyboard Shortcuts
+            <label (click)="OPkeyboardShortcuts.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPkeyboardShortcuts [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['keyboardShortcuts']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
         <p>
             Every item can have action using shortcuts. onSelect event will be triggered on shortcut
         </p>
