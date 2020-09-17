@@ -31,82 +31,252 @@ export class GalleryPopupMenuComponent implements OnInit {
 
     private simpleExample = [
         {
-            label: 'Edit',
+            title: 'Edit',
             icon: 'fa-pencil'
         },
         {
-            label: 'New',
+            title: 'New',
             icon: 'fa-plus'
         },
         {
-            label: 'Delete',
+            title: 'Delete',
             icon: 'fa-thrash'
         },
         {
             isSeparator: true
         },
         {
-            label: 'Exit'
+            title: 'Exit'
         }
     ]
 
 
     private multiExample = [
         {
-            label: 'Operators',
+            title: 'Operators',
             icon: 'fa-pencil',
             items: [{
-                label: 'No Edit',
+                title: 'No Edit',
                 icon: 'fa-plus'
             },
             {
-                label: 'New',
+                title: 'New',
                 icon: 'fa-minus'
             },
             {
-                label: 'Delete',
+                title: 'Delete',
                 icon: 'fa-times'
             },
             {
                 isSeparator: true
             },
             {
-                label: 'No operator'
+                title: 'No operator'
             }]
         },
         {
-            label: 'New',
+            title: 'New',
             icon: 'fa-plus',
             items: [{
-                label: 'New nothins',
+                title: 'New nothins',
                 disabled: true
             },
             {
-                label: 'New new',
+                title: 'New new',
                 items: [{
-                    label: 'Yes this works too'
+                    title: 'Yes this works too'
                 },
                 {
-                    label: '2nd works here too'
+                    title: '2nd works here too'
                 },
                 {
-                    label: 'Try me',
+                    title: 'Try me',
                     items: [{
-                        label: 'Last one'
+                        title: 'Last one'
                     }]
                 }
                 ]
-            }]
+            },
+            {
+                title: 'Third item'
+            }
+            ]
         },
         {
-            label: 'Delete',
+            title: 'Delete',
             icon: 'fa-thrash'
         },
         {
             isSeparator: true
         },
         {
-            label: 'Exit'
+            title: 'Exit'
         }
     ]
+
+    private tooltipExample = [
+        {
+            title: 'Edit',
+            icon: 'fa-pencil'
+        },
+        {
+            title: 'New',
+            icon: 'fa-plus'
+        },
+        {
+            title: 'Delete',
+            icon: 'fa-thrash'
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Child has tooltip',
+            items: [{
+                title: 'Hover over me',
+                tooltip: 'I am tooltip and I am positioned above element. I am cool.'
+            }]
+        }
+    ]
+
+    private defaultExample = [
+        {
+            title: 'Edit',
+            icon: 'fa-pencil'
+        },
+        {
+            title: 'New',
+            icon: 'fa-plus',
+            default: true
+        },
+        {
+            title: 'Delete',
+            icon: 'fa-thrash'
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Exit'
+        }
+    ]
+
+    private labelExample = [
+        {
+            title: 'Options:',
+            isLabel: true
+        },
+        {
+            title: 'Edit',
+            icon: 'fa-pencil'
+        },
+        {
+            title: 'New',
+            icon: 'fa-plus',
+            default: true
+        },
+        {
+            title: 'Delete',
+            icon: 'fa-thrash',
+            items: [
+                {
+                    title: 'Mandy Bank <br/> mbank@infogix.com',
+                    isLabel: true
+                },
+                {
+                    title: 'Edit',
+                    icon: 'fa-pencil'
+                },
+                {
+                    title: 'New',
+                    icon: 'fa-plus',
+                    default: true
+                },
+                {
+                    title: 'Delete',
+                    icon: 'fa-thrash'
+                },
+                {
+                    isSeparator: true
+                },
+                {
+                    title: 'Exit'
+                }
+            ]
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Exit'
+        }
+    ]
+
+    private checkExample = [
+        {
+            title: 'New'
+        },
+        {
+            isSeparator: true
+        }
+        ,
+        {
+            title: 'Edit'
+        },
+        {
+            title: 'Duplicate'
+        },
+        {
+            title: 'Delete',
+            disabled: true
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Show Optional Fields',
+            hasCheckbox: true,
+            isChecked: true
+        },
+        {
+            title: 'Show Beta Features',
+            hasCheckbox: true
+        }
+    ]
+
+    private keyboardShortcuts = [
+        {
+            title: 'Actions',
+            isLabel: true
+        },
+        {
+            title: 'Copy',
+            keys: [17, 67]
+        },
+        {
+            title: 'Paste',
+            keys: [17, 86]
+        },
+        {
+            title: 'Cut',
+            keys: [17, 88]
+        },
+        {
+            title: 'Delete',
+            keys: [46]
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Show Optional Fields',
+            hasCheckbox: true,
+            isChecked: true
+        },
+        {
+            title: 'Show Beta Features',
+            hasCheckbox: true
+        }
+    ]
+
 }

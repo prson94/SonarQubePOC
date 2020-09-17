@@ -1,5 +1,5 @@
 ﻿<div #positionRef></div>
-<div igAutoFocus #element tabindex="{{tabIndex}}" [style.visibility]="isVisible ? 'visible' : 'hidden'" class="ig-popup-menu">
+<div igAutoFocus #element [style.top.px]="positionTop" [style.left.px]="positionLeft" tabindex="{{tabIndex}}" [style.visibility]="isVisible ? 'visible' : 'hidden'" class="ig-popup-menu">
     <ng-template #menuItems let-items></ng-template>
     <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: items,class:''}"></ng-container>
 </div>
@@ -7,17 +7,28 @@
 <ng-template #menuItemsTemplate let-items let-class="class">
     <ul class="menu-items {{class}}">
         <li *ngFor="let item of items"
-            tabindex="{{item.isSeparator ? -1 : tabIndex}}"
+            pTooltip="{{item.tooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
+            tabindex="-1"
             [attr.class]="getItemClass(item)"
-            (focus)="onFocus(item)"
-            (focusout)="onFocusOut(item)"
             (click)="select(item,$event)"
             (mouseenter)="hover(item)">
-            <span><i *ngIf="hasIcons(items)" class="menu-icon fa {{item.icon}}"></i> {{item.label}}</span>
-            <ng-container *ngIf="item.items">
-                <span class="open-menu fa fa-chevron-right"></span>
-            </ng-container>
-            <ng-container *ngIf="item.items && item.isActive">
+            <div class="item-container">
+                <div *ngIf="hasCheckboxes(items)" class="part checkbox-part">
+                    <i *ngIf="item.isChecked" class="fa fa-check"></i>
+                </div>
+                <div class="part icon-part" *ngIf="hasIcons(items)"><i class="menu-icon fa {{item.icon}}"></i></div>
+                <div class="part title-part" [innerHtml]="item.title"></div>
+                <div *ngIf="item.keys && item.keys.length > 0" class="flex-grow"></div>
+                <div *ngIf="hasShortcuts(items)" class="part shortcuts-part">
+                    <span>
+                        {{getShortcutString(item)}}
+                    </span>
+                </div>
+                <div *ngIf="item.items" class="part open-submenu-part">
+                    <span class="open-menu fa fa-chevron-right"></span>
+                </div>
+            </div>
+            <ng-container *ngIf="item.items && item.isSubMenuOpened">
                 <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: item.items, class: 'sub-menu'}"></ng-container>
             </ng-container>
         </li>

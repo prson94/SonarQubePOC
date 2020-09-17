@@ -46,7 +46,6 @@ import { IgNumberFieldModule } from '../shared/controls/number-picker/number-inp
 import { GalleryPopupMenuComponent } from './gallery.popup-menu.component';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 
-
 @NgModule({
     imports: [
         CommonModule,

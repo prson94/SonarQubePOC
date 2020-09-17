@@ -17,12 +17,66 @@
             <ig-popup-menu [items]="simpleExample" #menu [tabIndex]="10"></ig-popup-menu>
         </div>
     </div>
-
+    <hr />
     <div class="gallery-section">
         <h4>Multi</h4>
         <div>
             <button type="button" igButton label="Show" (click)="menu2.toggle($event)"></button>
             <ig-popup-menu [items]="multiExample" #menu2 [tabIndex]="20"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>Tooltip</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu3.toggle($event)"></button>
+            <ig-popup-menu [items]="tooltipExample" #menu3 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>With default action</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu4.toggle($event)"></button>
+            <ig-popup-menu [items]="defaultExample" #menu4 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>Labels</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu6.toggle($event)"></button>
+            <ig-popup-menu [items]="labelExample" #menu6 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>Checkmarks</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu7.toggle($event)"></button>
+            <ig-popup-menu [items]="checkExample" #menu7 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>Keyboard Shortcuts</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu8.toggle($event)"></button>
+            <ig-popup-menu [items]="keyboardShortcuts" #menu8 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>On selected event</h4>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu5.toggle($event)"></button>
+            <ig-popup-menu (onSelect)="item=$event" [items]="defaultExample" #menu5 [tabIndex]="10"></ig-popup-menu>
+
+            {{item | json}}
         </div>
     </div>
 </div>

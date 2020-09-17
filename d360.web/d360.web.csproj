@@ -1954,6 +1954,7 @@
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <None Include="Scripts\app\tsconfig.aot.json" />
     <TypeScriptCompile Include="Scripts\app\static\font-awesome-helper.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\keyboard-key-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\workflow-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\vendor.ts" />

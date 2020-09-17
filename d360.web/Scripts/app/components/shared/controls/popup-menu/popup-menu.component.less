@@ -4,9 +4,9 @@
     outline: none;
     position: absolute;
     z-index: 20000;
-    background-color: white;
 
     .menu-items {
+        background-color: white;
         padding: 4px 0;
         border-radius: 4px;
         box-shadow: @popup-shadow;
@@ -43,12 +43,12 @@
             min-height: 36px;
             padding: 8px 16px;
 
-            &.active {
+            &.hover {
                 background-color: @ig-orange-t4;
                 cursor: pointer;
             }
 
-            &.selected {
+            &.active {
                 background-color: @ig-orange-t3;
             }
 
@@ -63,9 +63,48 @@
                 outline: none;
             }
 
-            .menu-icon {
-                font-size: 14px;
-                width: 18px;
+            &.default {
+                font-weight: bold;
+            }
+
+            &.label {
+                opacity: 1;
+                font-weight: bold;
+
+                .icon-part {
+                    display: none;
+                }
+
+                .checkbox-part {
+                    display: none;
+                }
+            }
+
+            .item-container {
+                display: inline-flex;
+                width: 100%;
+
+                .title-part {
+                    padding-right: 16px;
+                }
+
+                .menu-icon {
+                    font-size: 14px;
+                    width: 18px;
+                }
+
+                .checkbox-part {
+                    min-width: 20px;
+                    max-height: 15px;
+                }
+
+                .shortcuts-part {
+                    opacity: 0.33;
+
+                    span {
+                        float: right;
+                    }
+                }
             }
         }
     }
