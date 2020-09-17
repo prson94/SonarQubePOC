@@ -191,7 +191,6 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         params._pageSize = this.rowsPerPage;
 
         return params;
-
     }
 
     getApiName(fieldName: string): string {
@@ -241,7 +240,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     saveUser(event) {        
-        let user = new ResourceApiModel;
+        const user = new ResourceApiModel;
                 
         user.FirstName = event.item.FirstName;
         user.LastName = event.item.LastName;
@@ -265,25 +264,21 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             }
         }
 
-        let op = event.item.ID > 0 ? 'Updated' : 'Added';
-
         this.isLoading = true;
         this.resourcesService.saveResource(user)
             .subscribe(
-                result => {
-                    
-                    this.showMessageForApiResult(this.messagesService, result, `User successfully ${op}`);
-                    this.showEditor = false;
-                    this.getData();                    
+                result => {                    
+                    this.showMessageForApiResult(this.messagesService, result, `User successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
+                    if (result.Success) {
+                        this.showEditor = false;
+                        this.getData();
+                    }
+                    else {
+                        this.isLoading = false;
+                        this.changeDetectorRef.markForCheck();
+                    }
                 }
-            )
-         
-        /*this.uriBasedService.saveItem('form/dynamicedit/create/resource/', 'form/dynamicedit/edit/resource/', event.item)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.showEditor = false;
-                this.getData();
-            });*/
+            )        
     }
 
 
