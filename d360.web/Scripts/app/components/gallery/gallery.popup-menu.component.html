@@ -12,6 +12,9 @@
     <header>Examples</header>
     <div class="gallery-section">
         <h4>Basic</h4>
+        <p>
+            Basic example using one menu tier without submenus
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu.toggle($event)"></button>
             <ig-popup-menu [items]="simpleExample" #menu [tabIndex]="10"></ig-popup-menu>
@@ -20,6 +23,10 @@
     <hr />
     <div class="gallery-section">
         <h4>Multi</h4>
+        <p>
+            Example using submenus which can be navigated using arrow keys (Up, Right, Down, Left) or using mouse (hover over item will open a submenu)
+            Using space will select a value and close menu
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu2.toggle($event)"></button>
             <ig-popup-menu [items]="multiExample" #menu2 [tabIndex]="20"></ig-popup-menu>
@@ -29,6 +36,9 @@
 
     <div class="gallery-section">
         <h4>Tooltip</h4>
+        <p>
+            Tooltip is visible when hovering over element.
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu3.toggle($event)"></button>
             <ig-popup-menu [items]="tooltipExample" #menu3 [tabIndex]="10"></ig-popup-menu>
@@ -38,6 +48,10 @@
 
     <div class="gallery-section">
         <h4>With default action</h4>
+        <h4>Tooltip</h4>
+        <p>
+            Default action in menu is bolded
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu4.toggle($event)"></button>
             <ig-popup-menu [items]="defaultExample" #menu4 [tabIndex]="10"></ig-popup-menu>
@@ -47,6 +61,10 @@
 
     <div class="gallery-section">
         <h4>Labels</h4>
+        <p>
+            Labels are shown above all element, they are not selectable and provide no action.
+            * submenu shows support for multi line labels
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu6.toggle($event)"></button>
             <ig-popup-menu [items]="labelExample" #menu6 [tabIndex]="10"></ig-popup-menu>
@@ -56,6 +74,9 @@
 
     <div class="gallery-section">
         <h4>Checkmarks</h4>
+        <p>
+            Items that are selectable will toggle checkmark on click or selecting using space button. Menu wont be closed
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu7.toggle($event)"></button>
             <ig-popup-menu [items]="checkExample" #menu7 [tabIndex]="10"></ig-popup-menu>
@@ -63,20 +84,42 @@
     </div>
     <hr />
     <div class="gallery-section">
-        <h4>Keyboard Shortcuts</h4>
+        <h4>Badges</h4>
+        <p>
+            Menu items support basic
+        </p>
         <div>
-            <button type="button" igButton label="Show" (click)="menu8.toggle($event)"></button>
-            <ig-popup-menu [items]="keyboardShortcuts" #menu8 [tabIndex]="10"></ig-popup-menu>
+            <button type="button" igButton label="Show" (click)="menu9.toggle($event)"></button>
+            <ig-popup-menu [items]="badgeExample" #menu9 [tabIndex]="10"></ig-popup-menu>
+
         </div>
     </div>
     <hr />
     <div class="gallery-section">
+        <h4>Keyboard Shortcuts</h4>
+        <p>
+            Every item can have action using shortcuts. onSelect event will be triggered on shortcut
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu8.toggle($event)"></button>
+            <ig-popup-menu (onSelect)="shortcutSelected=$event" [items]="keyboardShortcuts" #menu8 [tabIndex]="10"></ig-popup-menu>
+
+            <strong>Event: </strong>{{shortcutSelected | json}}
+
+        </div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
         <h4>On selected event</h4>
+        <p>
+            Selection on mouse click, space, using shortcut will trigger onSelect event
+        </p>
         <div>
             <button type="button" igButton label="Show" (click)="menu5.toggle($event)"></button>
             <ig-popup-menu (onSelect)="item=$event" [items]="defaultExample" #menu5 [tabIndex]="10"></ig-popup-menu>
 
-            {{item | json}}
+            <strong>Event: </strong>{{item | json}}
         </div>
     </div>
 </div>

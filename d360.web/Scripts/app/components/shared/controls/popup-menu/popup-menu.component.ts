@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { KeyMapHelpers } from '../../../../static/keyboard-key-helper';
+import { IgBadgeModule } from '../badge/badge.module';
 
 @Component({
     selector: 'ig-popup-menu',
@@ -168,6 +169,8 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 this.isVisible = false;
                 this.reset();
             }
+
+            //Space
             if (event.keyCode === 32) {
                 event.preventDefault();
                 el = this.getLastHoveredElement(this.items);
@@ -176,7 +179,20 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 }
             }
 
-            console.log(this.pressedKeys);
+            //Trigger shortcuts
+            this.navigationArr.forEach(item => {
+                if (item.keys && item.keys.length > 0) {
+                    var doesMatch = true;
+                    item.keys.forEach(key => {
+                        if (!this.pressedKeys[key.toString()]) {
+                            doesMatch = false;
+                        }
+                    })
+                    if (doesMatch) {
+                        this.select(item, { event: 'shortcut' });
+                    }
+                }
+            })
         }
     }
 
@@ -197,7 +213,9 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     private select(item: PopupMenuItem, $event) {
-        $event.stopPropagation();
+        if ($event.stopPropagation)
+            $event.stopPropagation();
+
         if (!item.hasCheckbox) {
             this.onSelect.emit({ value: item.title, event: $event });
             this.toggle();
@@ -364,7 +382,8 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     imports: [
         CommonModule,
         TooltipModule,
-        FormsModule
+        FormsModule,
+        IgBadgeModule
     ],
     declarations: [PopupMenu],
     exports: [PopupMenu]
@@ -384,6 +403,7 @@ export class PopupMenuItem {
     hasCheckbox: boolean = false;
     isChecked: boolean = null;
     keys: number[] = [];
+    badge: PopupMenuItemBadge;
 
     isSeparator?: boolean;
     isActive?: boolean = false;
@@ -394,4 +414,9 @@ export class PopupMenuItem {
 
     itemID: number;
     parent: PopupMenuItem;
+}
+
+export class PopupMenuItemBadge {
+    text: string = '';
+    invariant: string = 'default'
 }

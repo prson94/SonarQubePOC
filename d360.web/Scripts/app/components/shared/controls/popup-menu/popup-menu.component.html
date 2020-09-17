@@ -24,6 +24,10 @@
                         {{getShortcutString(item)}}
                     </span>
                 </div>
+                <div class="flex-grow" *ngIf="item.badge && item.badge.text"></div>
+                <div class="part badge-part" *ngIf="item.badge && item.badge.text">
+                    <ig-badge [text]="item.badge.text" [variant]="item.badge.variant"></ig-badge>
+                </div>
                 <div *ngIf="item.items" class="part open-submenu-part">
                     <span class="open-menu fa fa-chevron-right"></span>
                 </div>

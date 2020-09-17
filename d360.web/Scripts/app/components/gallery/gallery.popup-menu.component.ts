@@ -279,4 +279,33 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
+
+    private badgeExample = [
+        {
+            title: 'Edit',
+            icon: 'fa-pencil'
+        },
+        {
+            title: 'New',
+            icon: 'fa-plus',
+            badge: {
+                text: 'Im text badge',
+                variant: 'negative'
+            }
+        },
+        {
+            title: 'Delete',
+            icon: 'fa-thrash',
+            badge: {
+                text: '23',
+                variant: 'default'
+            }
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Exit'
+        }
+    ]
 }
