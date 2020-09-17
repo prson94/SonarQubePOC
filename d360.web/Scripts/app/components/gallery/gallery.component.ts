@@ -29,6 +29,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Number Field', key: 'number-field' },
         { label: 'Message Box', key: 'message-box' },
         { label: 'Badge', key: 'badge' },
+        { label: 'Checkbox', key: 'checkbox' },
     ];
 
     ngOnInit(): void {        

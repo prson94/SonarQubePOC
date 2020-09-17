@@ -7,6 +7,7 @@ import { InputDirective, InputModule } from './ig-input-directive';
 import { AutocompleteDirective, AutocompleteModule } from './ig-autocomplete-directive';
 import { TextAreaDirective, TextAreaModule } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
+import { CheckboxDirective } from './ig-checkbox-directive';
 
 
 @NgModule({ 
@@ -20,7 +21,12 @@ import { AutoFocusDirective } from './ig-autofocus.directive';
         TextHighlightDirective,
         CopyClipboardDirective,
         ClickOutsideDirective,
-        AutoFocusDirective
+        ButtonDirective,
+        InputDirective,
+        TextAreaDirective,
+        AutocompleteDirective,
+        AutoFocusDirective,
+        CheckboxDirective,        
     ],
     exports: [
         TextHighlightDirective,
@@ -30,7 +36,8 @@ import { AutoFocusDirective } from './ig-autofocus.directive';
         InputDirective,
         TextAreaDirective,
         AutocompleteDirective,
-        AutoFocusDirective
+        AutoFocusDirective,
+        CheckboxDirective,
     ]
 })
 export class DirectivesModule { }

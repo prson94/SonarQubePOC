@@ -63,7 +63,7 @@
             </div>
             <form *ngIf="testForm != null" [formGroup]="testForm"  (ngSubmit)="submitTemplateForm(myForm)">
                 <div class="row">
-                    <input igInput type="text" formControlName="myFormName" required />
+                    <input igInput type="text" [ngClass]="{'invalid': testForm.get('myFormName')?.errors?.notNiceWord}" formControlName="myFormName" required />
                     <div *ngIf="testForm.get('myFormName').invalid && (testForm.get('myFormName').dirty || testForm.get('myFormName').touched)">
                         <div *ngIf="testForm.get('myFormName').errors.notNiceWord" class="ig-text-required">
                             I dont like No, Bug or Defect!
