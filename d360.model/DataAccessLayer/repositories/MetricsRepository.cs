@@ -685,14 +685,14 @@ from	(
 				V.Name,
 				V.Description,
 				Ma.IsGroup,
-                SI.RunDate,
-				V.EffectiveDate, 
+				SI.RunDate,
+                V.EffectiveDate, 
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
 				V.[Weight],
 				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
-				SI.Value,
+				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType
 		from    metrics.Score S 

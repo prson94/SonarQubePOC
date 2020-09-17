@@ -85,7 +85,7 @@ namespace d360.core.entities
         public decimal AdjustedMaxWeight { get; set; }
 
         [DataMember]
-        public bool Value { get; set; }
+        public bool? Value { get; set; }
 
         [DataMember]
         public ScoreType ScoreType { get; set; }

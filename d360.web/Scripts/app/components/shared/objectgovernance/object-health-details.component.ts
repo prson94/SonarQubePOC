@@ -448,6 +448,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {
+        this.selectPointOnGraph();
         //table autoscroll to selected item
         if (this.scoreTable) {
             var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');
