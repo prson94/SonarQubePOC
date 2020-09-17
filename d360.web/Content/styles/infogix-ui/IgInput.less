@@ -48,11 +48,6 @@
         border-color: @ig-field-border-color;
     }
 
-    &:required:valid {
-        background: @ig-white;
-        border-color: none;
-        box-shadow: none;
-    }
 
     &.ng-valid[required], .ng-valid.required {
         background: @ig-white;
@@ -71,7 +66,14 @@
             background: @ig-lightblue-t4;
             border-color: @ig-field-border-color;
         }
+
+        &:required:valid {
+            background: @ig-white;
+            border-color: none;
+            box-shadow: none;
+        }
     }
+
 
     &:required {
         background: @ig-lightblue-t4;
@@ -79,8 +81,8 @@
     }
 
     &.invalid {
-        background: @ig-red-t5;
-        border-color: none;
+        background: @ig-red-t5 !important;
+        border-color: none !important;
     }
 
     &[disabled] {
