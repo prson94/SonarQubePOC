@@ -1,118 +1,19 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
+﻿using d360.core.entities;
 using d360.model;
-using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
-using Newtonsoft.Json.Linq;
-using Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
 {
     public partial class FormController : BaseController
-    {
-        #region FieldType
-
+    {        
         #region Supporting Json Feeds
-
-        [Route("FieldType_ListFilter"), NonNullableParameters]
-        public JsonNetResult FieldType_ListFilter(SystemObjects objectType, int objectId, SystemObjects type, int id)
-        {
-            var predicateTypes = string.Join(",", PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
-                .Select(i => ((int)i.ID).ToString())
-                .ToArray());
-
-            string sql = $@"SELECT 
-                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
-                        A.PredicateName, 
-                        A.ObjectName, 
-                        A.[Object], 
-                        A.[ObjectID], 
-                        B.FieldTypeID, 
-                        B.[FriendlyName],
-						B.Type,
-                        B.Class,
-                        B.Name
-                    FROM ( 
-                        SELECT 
-                            it.[ID] as IntersectTypeID, 
-                            0 AS Direction, 
-                            p.[ID] as PredicateID, 
-                            p.[Name] as PredicateName, 
-                            ot.[Name] as ObjectName, 
-                            it.[Object] as [Object], 
-                            it.[ObjectID] as [ObjectID] 
-                        FROM [dbo].[IntersectType] it 
-                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
-                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
-                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-                        where it.[Subject] = @objectType 
-                        and it.[SubjectID] = @objectId
-                        and p.Type IN ({predicateTypes})
-                        and it.[Object] in ('ArtifactType', 'TaxonomyType')
-                        UNION ALL 
-                        SELECT 
-                            it.[ID], 
-                            1 AS Direction, 
-                            p.[ID] as PredicateID, 
-                            p.[Inverse] as PredicateName,
-                            st.[Name] as ObjectName, 
-                            it.[Subject] as [Object], 
-                            it.[SubjectID] as [ObjectID] 
-                        FROM [dbo].[IntersectType] it 
-                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
-                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
-                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-                         where it.[Object] = @objectType 
-                         and it.[ObjectID] = @objectId 
-                         and p.Type IN ({predicateTypes})
-                         and it.[Subject] in ('ArtifactType', 'TaxonomyType')
-                        ) A LEFT OUTER JOIN
-                    (SELECT 
-                        ft.[ID] as FieldTypeID,
-                        ft.[FriendlyName], 
-                        ft.[Object], 
-                        ft.[ObjectID], 
-                        at.Object as LookupObject, 
-                        ft.LookupObjectID,
-                        ft.Type,
-                        at.Class,
-                        at.Name
-                    FROM [dbo].[FieldType] ft
-                    INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
-                    WHERE ft.[ObjectID] = @id AND ft.[Object] = @type  
-                    ) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
-            var parms = new
-            {
-                objectType = objectType.ToString(),
-                objectId = objectId,
-                type = type.ToString(),
-                id = id
-            };
-
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(sql, parms).Select(i => new
-                {
-                    PredicateValue = i.PredicateValue,
-                    PredicateName = i.PredicateName,
-                    FieldTypeID = i.FieldTypeID,
-                    FriendlyName = i.FriendlyName,
-                    Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
-                })
-            };
-        }
-
-
+                
         [Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID, string value = "", string query = "")
         {
@@ -275,50 +176,7 @@ namespace d360.web.Controllers
             };
 
         }
-
-        [Route("Reference_Hierarchy"), NonNullableParameters]
-        public JsonNetResult Reference_Hierarchy(int id, SystemObjects objectType, int objectId)
-        {
-            //return possible hierarchy parents for this object type
-            var parent = Company.GetParentType(id, SystemObjects.ReferenceItemType);
-            var list = new List<PrimeSelectItem>();
-
-            if (parent != null)
-            {
-                //get possible parent reference list types defined for this object / object id they cant already be parents
-                list = Company.FieldTypes.Where(x => x.Object == objectType.ToString() && x.ObjectID == objectId && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.ID.ToString() }).ToList();
-                if (list.Count > 0) list.Insert(0, new PrimeSelectItem { label = "", value = "" });
-            }
-
-            return new JsonNetResult
-            {
-                Data = list,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [Route("FieldType_Relationship_IsListable"), NonNullableParameters]
-        public JsonNetResult FieldType_Relationship_IsListable(SystemObjects type, int id, int intersectTypeId)
-        {
-            bool isListable = false;
-            var sType = type.ToString();
-
-            var intersectType = Company.Filter<IntersectTypeDetail>(i => i.ID == intersectTypeId).FirstOrDefault();
-
-            if (intersectType != null)
-            {
-                if (intersectType.Subject == sType && intersectType.SubjectID == id && intersectType.ObjectCardinality == Cardinality.One) isListable = true;
-                else if (intersectType.Object == sType && intersectType.ObjectID == id && intersectType.SubjectCardinality == Cardinality.One) isListable = true;
-            }
-
-            return new JsonNetResult
-            {
-                Data = isListable,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
- 
+         
         [Route("FieldType_TypeAheadLookup"), NonNullableParameters]
         public JsonNetResult FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "", bool useColor = false)
         {
@@ -422,49 +280,6 @@ offset 0 rows fetch next 25 rows only
 
         }
 
-        #endregion
-
-        #region Form Get/Post
-
-        private void CheckIsFieldTypeNameReserved(string name)
-        {
-            var nameUpper = name.ToUpper();
-
-            if (nameUpper == "PARENTID" || nameUpper == "DATABASE" || nameUpper == "COLOR" || nameUpper == "ICON") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
-        }
-
-       
-        [HttpGet, ActionName("FieldType"), Route("FieldType"), NonNullableParameters]
-        public JsonNetResult GetFieldType(int id)
-        {
-            var a = Company.GetById<FieldType>(id);
-            if (a == null) return null;
-            var used = Company.Any<Field>(i => i.FieldTypeID == id);
-
-            if (new[] { "Text" }.Contains(a.Type))
-            {
-                if (!string.IsNullOrEmpty(a.Pattern)) a.MinimumLength = 0;
-            }
-            else if (!new[] { "Number", "Decimal" }.Contains(a.Type))
-            {
-                if (!a.IsRequired) a.MinimumLength = 0;
-            }
-
-            var model = new FieldTypeEditorModel
-            {
-                FieldIsUsed = used,
-                FieldType = a
-            };
-            return new JsonNetResult
-            {
-                Data = model,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
-        }
-        #endregion
-
-        #endregion
-
+        #endregion                        
     }
 }

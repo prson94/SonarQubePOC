@@ -48,6 +48,8 @@ import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.m
 import { CheckboxModule } from 'primeng/checkbox';
 import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { GalleryCheckboxComponent } from './gallery.checkbox.component';
+import { IgBadgeModule } from '../shared/controls/badge/badge.module';
+import { GalleryBadgeComponent } from './gallery.badge.component';
 
 
 @NgModule({
@@ -71,6 +73,7 @@ import { GalleryCheckboxComponent } from './gallery.checkbox.component';
         SharedGridPagingInfoModule,
         IgNumberFieldModule,
         IgMessageBoxModule,
+        IgBadgeModule,
 
         TableModule,
         TooltipModule,
@@ -98,6 +101,7 @@ import { GalleryCheckboxComponent } from './gallery.checkbox.component';
         GalleryGridPagingInfoComponent,
         GalleryGridSelectionInfoComponent,
         GalleryNumberFieldComponent,
+        GalleryBadgeComponent,
         GalleryMessageBoxComponent,
         GalleryCheckboxComponent
     ],

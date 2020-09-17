@@ -1,0 +1,42 @@
+﻿
+@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.ig-badge {
+    display: inline-block;
+    font-size: 14px;
+    height: 24px;
+    padding: 0px 12px;
+    border-radius: 12px;
+    line-height: 22px;
+
+    &.default {
+        background: @ig-grey-t5;
+        color: black;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    &.emphasis {
+        background: @ig-slate;
+        color: white;
+    }
+
+    &.positive {
+        background: @ig-green;
+        color: white;
+    }
+
+    &.negative {
+        background: @ig-red;
+        color: white;
+    }
+
+    &.warning {
+        background: @ig-orange;
+        color: black;
+    }
+
+    &.light {
+        background: rgba(255,255,255,.33);
+        color: white;
+    }
+}

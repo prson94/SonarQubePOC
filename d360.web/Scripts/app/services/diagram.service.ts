@@ -74,21 +74,6 @@ export class DiagramService extends BaseObservableService {
             );
     }
 
-    public getLineageObjectDetail(
-        type: string,
-        id: number
-    ): Observable<any> {
-        /* FIXME: non using method */
-
-        return this
-            .http
-            .get(`resources/${type}/${id}/templates/tooltip/preview`)
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     public getLineageTechnicalRelationships(
         source: string,
         sourceId: number,
@@ -179,21 +164,6 @@ export class DiagramService extends BaseObservableService {
             );
     }
 
-    public getImpactDiagramFusion(
-        object: string,
-        objectId: number
-    ): Observable<ImpactDiagramModel> {
-        /* FIXME: non using method */
-
-        return this
-            .http
-            .get(`diagrams/${object}/${objectId}/ImpactAnalysisFusion`)
-            .pipe(
-                map(response => <ImpactDiagramModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     public getCatalogDiagram(id: number): Observable<HierarchyDiagramModel[]> {
         return this
             .http
@@ -245,18 +215,6 @@ export class DiagramService extends BaseObservableService {
         return this
             .http
             .get(`api/lineage/query/fusionattributes?query=${query}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    public deleteIntersect(intersectID: number) {
-        /* FIXME: non using method */
-
-        return this
-            .http
-            .delete(`form/DeleteIntersect?id=${intersectID}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
