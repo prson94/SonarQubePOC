@@ -48,8 +48,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     area: any = { icon: 'fa-folder', title: '' };
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
-    private currentObject: any;
-    private survey: Survey;
+    currentObject: any;
+    survey: Survey;
     @ViewChild('badge', { static: false }) badge: ElementRef;
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;

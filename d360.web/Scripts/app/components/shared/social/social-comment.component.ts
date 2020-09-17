@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { SocialService } from '../../../services/social.service';
 import { SocialComment, SocialVoteType, SocialCommentType } from '../../../models/social.model';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { CurrentCompanySettings } from '../../../static/company-settings'
 
 @Component({
@@ -115,17 +115,17 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     @Output() reply = new EventEmitter();
     @Output() edit = new EventEmitter();
 
-    private upVotes: number = 0;
-    private downVotes: number = 0;
+    upVotes: number = 0;
+    downVotes: number = 0;
 
-    private showTools: boolean = false;
-    private showReply: boolean = false;
-    private showEdit: boolean = false;
+    showTools: boolean = false;
+    showReply: boolean = false;
+    showEdit: boolean = false;
     
-    private replyText: string = "";    
-    private editText: string = "";
+    replyText: string = "";    
+    editText: string = "";
 
-    private socialVoteType = SocialVoteType; // for template to use enum
+    socialVoteType = SocialVoteType; // for template to use enum
        
 
     constructor(private socialService: SocialService, private router: Router) {
@@ -138,12 +138,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         }
     }   
     
-    private calculateVotes() {
+    calculateVotes() {
         this.upVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.UpVote).length;
         this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
     }
 
-    private doVote(vote: SocialVoteType) {
+    doVote(vote: SocialVoteType) {
         this.socialService.vote(this.comment.ID, vote).subscribe(
             res => {
                 if (res) {                    
@@ -176,30 +176,30 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         return "Other";
     }
 
-    private handleReplyClick() {        
+    handleReplyClick() {        
         this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
         this.showReply = false;
     }
 
-    private handleEditClick() {
+    handleEditClick() {
         this.comment.Body = this.editText;
         this.edit.emit({ comment: this.comment });
         this.showEdit = false;
     }
 
-    private isChallenge(): boolean {
+    isChallenge(): boolean {
         return this.comment.CommentTypeID == SocialCommentType.Challenge;
     }
 
-    private isSocial(): boolean {        
+    isSocial(): boolean {        
         return this.comment.CommentTypeID == SocialCommentType.Social;
     }
 
-    private isIssue(): boolean {
+    isIssue(): boolean {
         return this.comment.CommentTypeID == SocialCommentType.Issue;
     }
 
-    private canReply(): boolean {
+    canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
     }
 };

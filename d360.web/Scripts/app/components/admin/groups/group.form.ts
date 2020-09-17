@@ -29,7 +29,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     private secondaryOwnerGrid: boolean = false;
 
     private model: GroupEditorModel;
-    private isLoading = false;
+    isLoading = false;
     private initialItem: GroupEditorModel;
 
     constructor(private groupService: GroupService, private messagesService: MessagesObservableService) {

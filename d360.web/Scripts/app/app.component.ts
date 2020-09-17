@@ -74,12 +74,12 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         this.setMaxHeight();
     }
 
-    private handleMenuChange(v: boolean) {
+    public handleMenuChange(v: boolean) {
         this.menuOpen = v;
         this.cookieService.set("MenuState", v + "");
     }  
 
-    private setMaxHeight() {
+    public setMaxHeight() {
         clearTimeout(this.timer);
         this.timer = window.setTimeout(() => {
             let headerHeight = 0;

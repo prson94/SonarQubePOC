@@ -1,9 +1,9 @@
-﻿import { Component, HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
-import { TagType, TagItem } from '../../../models/tag.model';
+import { TagType } from '../../../models/tag.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Router } from '@angular/router';
@@ -30,8 +30,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
-    private deletePopupTitle: string = 'Delete Tag';
-    private editPopupTitle: string = 'Edit Tag';
+    deletePopupTitle: string = 'Delete Tag';
+    editPopupTitle: string = 'Edit Tag';
 
 
     public theDeleteCallback: Function;
@@ -316,7 +316,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
     }
 
-    private export() {
+    export() {
         this.tagsService.exportTags(this.filters, this.sort);
     }
 

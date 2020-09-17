@@ -40,7 +40,7 @@ export class ObjectBoardComponent extends BaseComponent implements OnChanges {
     }
 
 
-    private lastBoardMessage() {
+    lastBoardMessage() {
         if (!this.lastCommentDate) {
             return "No comments.";
         }

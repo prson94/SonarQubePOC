@@ -76,7 +76,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.createUserFilter.name = '';
     }
 
-    private apply(e) {
+    apply(e) {
         if (!this.hasSelectedUserFilter())
             return;
 
@@ -118,12 +118,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.applySavedFilter.emit(model);
     }
 
-    private cancel() {
+    cancel() {
         this.saveFilterModalVisible = false;
         this.deleteFilterModalVisible = false;
     }
 
-    private create() {
+    create() {
         this.saveFilterModalWorking = true;
         this.browserService
             .saveUserFilter(this.createUserFilter)
@@ -138,7 +138,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
             });
     }
 
-    private delete() {
+    delete() {
         this.deleteFilterModalWorking = true;
         if (this.hasSelectedUserFilter()) {
             this.browserService
@@ -159,7 +159,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         }
     }
 
-    private getFilterMenuItems(): MenuItem[] {
+    getFilterMenuItems(): MenuItem[] {
         return [
             { label: 'Add', command: (event) => { this.add() } },
             { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.update() } },

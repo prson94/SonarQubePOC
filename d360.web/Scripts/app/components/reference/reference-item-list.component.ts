@@ -1,10 +1,8 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component,  OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
-import { ReferenceItemType } from '../../models/reference.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
-import { debounceTime } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 
@@ -36,8 +34,8 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     fields: GridField[] = [];
 
     private selected: any;
-    private showEditor: boolean = false;
-    private showDelete: boolean = false;
+    showEditor: boolean = false;
+    showDelete: boolean = false;
     private getAssetSub: Subscription;
 
 

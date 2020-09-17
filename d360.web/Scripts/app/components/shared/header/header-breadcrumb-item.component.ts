@@ -63,7 +63,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @ViewChild('standardInput', { static: false }) standardInput: ElementRef;
     @ViewChild('treeInput', { static: false }) treeInput: ElementRef;
 
-    private results: SearchResult[];
+    results: SearchResult[];
     private result: SearchResult;
     public showSearch: boolean;
     private hasTree: boolean;
@@ -72,7 +72,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     public treeItems: TreeNode[] = [];
     public maxOverlayHeight: string = '800px'
     private searchSub: ISubscription
-    private searchingTypeahed: boolean = false;
+    searchingTypeahed: boolean = false;
     
     constructor(private elementRef: ElementRef, private router: Router,
         private typeaheadSearchService: TypeaheadSearchService, private ref: ChangeDetectorRef) { }
@@ -87,22 +87,22 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     }
 
     ngOnDestroy() {
-        if (this.searchSub)  this.searchSub.unsubscribe(); 
+        if (this.searchSub)  this.searchSub.unsubscribe();
     }
 
     private setMaxHeight() {
         this.maxOverlayHeight = (window.innerHeight > 100) ? ((window.innerHeight - 120) + 'px') : '100px';
     }
 
-    private isChangableItem() {
+    isChangableItem() {
         return (this.breadcrumb.objectType && (+this.breadcrumb.objectId > -1)) || this.breadcrumb.treeItems;
     }
 
-    private isTreeItem(): boolean {
+    isTreeItem(): boolean {
         return (this.breadcrumb.treeItems && this.breadcrumb.treeItems.length > 0);
     }
 
-    private in(panel, searchPanel, event) {
+    in(panel, searchPanel, event) {
         let parent = this.hoverTarget.nativeElement.parentNode;
         let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
 
@@ -221,18 +221,21 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     }
 
-    private stopParentNav(event) {
+    stopParentNav(event) {
         event.stopPropagation();
     }
-    private navigateToLink(url: string, res?: any) {
+
+    navigateToLink(url: string, res?: any) {
         if (url && url.length > 0) 
             this.router.navigateByUrl(url);
     }
-    private hasLink(url: string) {
+
+    hasLink(url: string) {
         if (url && url.length > 0 && !this.isLastItem) return true;
         else false;
     }
-    private hasClass(element, className) {
+
+    hasClass(element, className) {
         return (' ' + element.className + ' ').indexOf(' ' + className + ' ') > -1;
     }
 }

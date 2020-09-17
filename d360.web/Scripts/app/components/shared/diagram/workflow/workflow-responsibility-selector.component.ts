@@ -3,7 +3,6 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 
 import * as _ from 'lodash';
-import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-responsibility-selector',
@@ -47,7 +46,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
     @Input() step: any;
     @Output() stepChange = new EventEmitter();
 
-    private isLoading = false;
+    isLoading = false;
     private responsibilities: any[] = [];
     private intersectType = null;
     private responsibleObject = null;

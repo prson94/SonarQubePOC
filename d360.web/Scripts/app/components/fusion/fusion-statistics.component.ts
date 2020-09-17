@@ -65,8 +65,8 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
     private agentPie: Object;
     private workerPie: Object;
 
-    private showAgentHistory: boolean;
-    private showFusionHistory: boolean;
+    showAgentHistory: boolean;
+    showFusionHistory: boolean;
 
     private daysToLookBack: number = 7;
 

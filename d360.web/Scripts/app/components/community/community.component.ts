@@ -49,10 +49,10 @@ const Highcharts = require('highcharts/highstock.src');
 })
 
 export class CommunityComponent extends BaseComponent implements OnInit {
-    private responsibilitiesPie: Object;
-    private selectedResponsibilityId: number = 0;
-    private selectedResponsibilityName: string;
-    private selectedResource: ResourceResponsibilityTypeCount;
+    responsibilitiesPie: Object;
+    selectedResponsibilityId: number = 0;
+    selectedResponsibilityName: string;
+    selectedResource: ResourceResponsibilityTypeCount;
 
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,

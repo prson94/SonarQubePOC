@@ -48,7 +48,7 @@ export class AssetBrowserPanelsComponent {
         return this.totalAlertCount > 0 ? "has-alerts-count" : "";
     }
 
-    private execute(command: AssetBrowserPanelCommand) {
+    execute(command: AssetBrowserPanelCommand) {
         this.click.emit(command);
     }
 

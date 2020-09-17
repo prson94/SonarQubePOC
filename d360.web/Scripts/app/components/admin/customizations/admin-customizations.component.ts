@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { AdminBaseComponent } from '../admin-base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SiteCustomizationsService } from '../../../services/site-customizations.service';
@@ -71,7 +71,7 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
         });
     }
 
-    private saveCustomizations() {
+    saveCustomizations() {
         this.siteCustomizationsService.saveCustomCss(this.customCss).subscribe(res => {
             this.showMessageForResult(this.messagesService, res);
             window.location.reload();

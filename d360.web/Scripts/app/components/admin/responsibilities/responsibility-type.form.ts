@@ -1,5 +1,5 @@
-﻿import { Input, Output, Component, OnInit, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
+﻿import { Input, Output, Component, OnInit, EventEmitter, SimpleChange } from '@angular/core';
+import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import * as _ from 'lodash';
 
@@ -15,7 +15,7 @@ export class ResponsibilityTypeForm implements OnInit {
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    private isLoading = true;
+    isLoading = true;
     private item: ResponsibilityType = new ResponsibilityType();
 
     private selectedAllocations: string[] = [];

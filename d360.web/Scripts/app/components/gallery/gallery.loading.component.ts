@@ -18,10 +18,10 @@
 })
 
 export class GalleryLoadingComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<d3s-loading isLoading="true"></d3s-loading>';
-    protected isLoading1: boolean = true;
-    protected isLoading2: boolean = false;
+    properties: Array<any>;
+    sampleUsage: string = '<d3s-loading isLoading="true"></d3s-loading>';
+    isLoading1: boolean = true;
+    isLoading2: boolean = false;
 
     ngOnInit(): void {
         this.properties = new Array();

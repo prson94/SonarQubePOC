@@ -814,11 +814,11 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         }
     }
 
-    private isRequired() {
+    isRequired() {
         return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
     }
 
-    private getPlaceholder() {
+    getPlaceholder() {
         if (this.isRequired())
             return 'Value required';
         else return 'Optional';

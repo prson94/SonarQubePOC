@@ -100,10 +100,10 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
     @Output() treeRequiresUpdate = new EventEmitter();
 
     private queries: FusionQueryAttributeType[] = [];
-    private selected: FusionQueryAttributeType;
+    selected: FusionQueryAttributeType;
 
-    private showDelete: boolean = false;
-    private showEditor: boolean = false;
+    showDelete: boolean = false;
+    showEditor: boolean = false;
 
     destroySubject$: Subject<void> = new Subject();
 

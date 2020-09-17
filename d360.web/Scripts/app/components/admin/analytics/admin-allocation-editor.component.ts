@@ -19,10 +19,10 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
-    private savingInProgress: boolean = false;
+    savingInProgress: boolean = false;
 
-    private ddlScoreTypes: any[] = [];
-    private ddlAssetTypes: any[] = [];
+    ddlScoreTypes: any[] = [];
+    ddlAssetTypes: any[] = [];
 
     public scoringHelpPage: string = CurrentEnvironmentSettings.HelpBaseUri + 'Default.htm#d-admin/scoring.htm?Highlight=scoring';
 
@@ -110,11 +110,11 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         }
     }
 
-    private cancel() {
+    cancel() {
         this.onCancel.emit();
     }
 
-    private save() {
+    save() {
         var item = new ScoreTypeAllocation();
         if (this.selection.uid)
             item.uid = this.selection.uid;

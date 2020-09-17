@@ -27,13 +27,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
     private lastCalculatedDate: number;
     private showStatus: boolean = false;
-    private showPath: boolean = false;
+    showPath: boolean = false;
     private status: string;
     private path: string;
     showShoppingCart = false;
     private obj: string;
     private objID: number;
-    private searchDetails: SearchDetail;
+    searchDetails: SearchDetail;
     private formattedPath: string;
     private displayInfopopup: boolean = false;
 
@@ -114,15 +114,15 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
-    private showBadges(): boolean {
+    showBadges(): boolean {
         return this.showStatus || (this.searchDetails && this.searchDetails.Scores.length > 0)
     }
 
-    private showInfo() {
+    showInfo() {
         this.displayInfopopup = true;
     }
 
-    private getCardMenuItems(): MenuItem[] {
+    getCardMenuItems(): MenuItem[] {
         var menu: MenuItem[] = [
             { label: 'More Information', command: (event) => { this.showInfo() } },
         ];
@@ -142,7 +142,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         return menu;
     }
 
-    private navigateLink() {
+    navigateLink() {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
 
@@ -158,7 +158,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             .subscribe(r => this.showMessageForResult(this.messagesService, r));
     }
 
-    private getDataForPreview() {
+    getDataForPreview() {
         return {
             DisplayName: this.result.DisplayName,
             TypeName: this.result.Type,

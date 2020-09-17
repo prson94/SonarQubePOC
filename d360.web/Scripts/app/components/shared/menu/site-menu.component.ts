@@ -270,7 +270,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         );
     }
 
-    protected toggleMenu() {
+    toggleMenu() {
         this.menuOpen = !this.menuOpen;
         this.menuChanged.emit(this.menuOpen);
     }

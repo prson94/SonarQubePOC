@@ -92,9 +92,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private newKey = -1;
 
 
-    private menuItems: MenuItem[] = [];
+    menuItems: MenuItem[] = [];
     private isWindowVisible = false;
-    private isReadOnly: boolean = true;
+    isReadOnly: boolean = true;
     private tab = 'info';
     private showNodeTabs = false;
     private showLinkTabs = false;
@@ -1382,7 +1382,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.commitTransaction('changeTransition');
     }
 
-    private menuClick(e: any) {
+    menuClick(e: any) {
         if (e.icon == 'fa fa-info-circle')
             this.isWindowVisible = !this.isWindowVisible;
         if (e.icon == 'fa fa-remove')
@@ -1391,9 +1391,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.save();
         if (e.icon == 'fa fa-arrow-left')
             this.backClick();
-
-        //TODO: debugging remove this
-        //this.resizeDiagram();
     }
 
     @HostListener('window:resize', ['$event'])

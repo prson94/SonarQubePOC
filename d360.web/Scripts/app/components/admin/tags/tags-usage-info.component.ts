@@ -10,10 +10,10 @@ import { TagService } from '../../../services/tag.service';
 
 export class TagUsageInfoBox {
     @Input() uid: string = '';
-    private tooltipHTML: string = ``;
+    tooltipHTML: string = ``;
     private loadedUid: string = '';
 
-    private isTooltipVisibe: boolean = false;
+    isTooltipVisibe: boolean = false;
     private isMouseOnTooltip: boolean = false;
 
     constructor(private tagsService: TagService, private elRef: ElementRef) {
@@ -34,7 +34,7 @@ export class TagUsageInfoBox {
         })
     }
 
-    showContent(isFromTooltip) {
+    showContent(isFromTooltip = false) {
         if (this.uid != this.loadedUid)
             this.load();
 
@@ -46,7 +46,7 @@ export class TagUsageInfoBox {
 
     }
 
-    hideContent(isFromTooltip) {
+    hideContent(isFromTooltip = false) {
         if (isFromTooltip)
             this.isMouseOnTooltip = false;
 
@@ -54,7 +54,7 @@ export class TagUsageInfoBox {
             this.isTooltipVisibe = false;
     }
 
-    private getTop() {
+    getTop() {
         if (this.elRef) {
             var box = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect();
             return box.top;

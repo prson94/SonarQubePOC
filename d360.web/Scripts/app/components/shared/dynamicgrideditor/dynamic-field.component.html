@@ -1,4 +1,4 @@
-﻿<ng-container *ngIf="!useNewUI || useNewUI == false">
+﻿<ng-container *ngIf="!useNewUI">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">

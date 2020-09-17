@@ -22,26 +22,26 @@ import { AssetService } from '../../services/asset.service';
 })
 
 export class GalleryColorPickerComponent implements OnInit {
-    protected properties: Array<any>;
-    protected events: Array<any>;
-    protected sampleUsage: string = '<ig-color-picker (selectedColorChange)="onColorSelect($event)"></ig-color-picker>';
+    properties: Array<any>;
+    events: Array<any>;
+    sampleUsage: string = '<ig-color-picker (selectedColorChange)="onColorSelect($event)"></ig-color-picker>';
 
-    private selectedColorBasic = "no color selected";
-    private selectedColorCustom = "no color selected";
-    private chosenColor: string = "Sky";
-    private selectedColorBasic2 = this.chosenColor;
+    selectedColorBasic = "no color selected";
+    selectedColorCustom = "no color selected";
+    chosenColor: string = "Sky";
+    selectedColorBasic2 = this.chosenColor;
 
-    private invalidOptions = ["Sky", "Blush"];
+    invalidOptions = ["Sky", "Blush"];
 
-    private formVal: string;
+    formVal: string;
 
-    private customColors: SelectItem[] = [
+    customColors: SelectItem[] = [
         { label: "custom label 1", value: "unique value 1", title: "#169b62" },
         { label: "custom label 2", value: "unique value 2", title: "#ffffff" },
         { label: "custom label 3", value: "unique value 3", title: "#ff883e" }
     ];
 
-    private defaultColors: SelectItem[] = [];
+    defaultColors: SelectItem[] = [];
     
 
     constructor(private assetService: AssetService) {}

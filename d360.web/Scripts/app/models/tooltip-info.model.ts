@@ -24,6 +24,10 @@ export class TooltipInfo {
     Description: string;
     ShowTooltip: boolean;
     Class: AssetTypeClass;
+    AssetID: number;
+    UID: string;
+    WorkflowTypeUID: string;
+    WorkflowVersionUID: string;
 }
 
 export class LookupTooltipInfo {

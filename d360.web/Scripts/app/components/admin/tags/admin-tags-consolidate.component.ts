@@ -1,6 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
-import { TagService } from '../../../services/tag.service';
-import { AdminBaseComponent } from '../admin-base.component'
+﻿import { Component, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { TagType } from '../../../models/tag.model';
 
 @Component({
@@ -10,14 +8,14 @@ import { TagType } from '../../../models/tag.model';
 
 export class AdminTagsConsolidateComponent implements OnChanges {
     @Input() tags: TagType[] = [];
-    private selected: TagType;
+    selected: TagType;
 
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
 
     @Input() callback: Function;
     @Output() onCancel = new EventEmitter();
-    private consolidateInProgress: boolean = false;
+    consolidateInProgress: boolean = false;
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['isModalVisible']) {

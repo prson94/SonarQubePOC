@@ -5,6 +5,7 @@ import { AssetTypeClass } from './asset.model';
 export class Artifacts {
     results: any[];
     total: number;
+    items: any;
 }
 
 

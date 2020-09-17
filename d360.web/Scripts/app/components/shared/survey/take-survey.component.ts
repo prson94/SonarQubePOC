@@ -25,7 +25,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     private currentQuestionIndex: number = 0;
     private errorMessage: string = '';
-    private surveyDetails: SurveyTypeDetails;
+    surveyDetails: SurveyTypeDetails;
     SurveyTypeDisplayStyle = SurveyTypeDisplayStyle;
 
     private submitting: boolean = false;
@@ -59,7 +59,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         });
     }
 
-    private closeDialog() {
+    closeDialog() {
         this.currentQuestionIndex = 0;
         this.surveyDetails.Questions.forEach(qd => { qd.Options.forEach(i => { i.Value = null; i.IsChecked = false }) });
         this.currentQuestion = this.surveyDetails.Questions[0];

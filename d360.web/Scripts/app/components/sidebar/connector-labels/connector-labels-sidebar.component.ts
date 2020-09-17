@@ -27,16 +27,16 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
-    private deletePopupTitle: string = 'Delete Connector Label';
-    private editPopupTitle: string = 'Edit Connector Label';
-    private isUsageLoading: boolean = false;
-    private deleteConfirmationText: string = '';
-    private labelUsage: any;
+    deletePopupTitle: string = 'Delete Connector Label';
+    editPopupTitle: string = 'Edit Connector Label';
+    isUsageLoading: boolean = false;
+    deleteConfirmationText: string = '';
+    labelUsage: any;
     public theDeleteCallback: Function;
-    private isSaving: boolean = false;
+    isSaving: boolean = false;
 
     @ViewChild('dt', { static: false }) tableEl: any;
-    private lastSelectedElement: ConnectorLabel;
+    lastSelectedElement: ConnectorLabel;
 
     constructor(private router: Router,
         private connectorLabelService: ConnectorLabelService,
@@ -230,11 +230,11 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         }
     }
 
-    private export() {
+    export() {
         this.connectorLabelService.exportLabels(this.filters, this.sort);
     }
 
-    private exportUsage() {
+    exportUsage() {
         this.connectorLabelService.exportLabelUsage(this.selected.uid, `Where Used report for Connector Label "${this.selected.Value}"`)
     }
 

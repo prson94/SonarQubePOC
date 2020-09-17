@@ -61,7 +61,7 @@ export class SurveyQuestionOption {
 }
 
 export class SurveyQuestionTypeDetails {
-    Desciption: string;
+    Description: string;
     DisplayStyle: SurveyTypeDisplayStyle;
     DisplayStyleOptions: DropdownOption[];
     ID: number;

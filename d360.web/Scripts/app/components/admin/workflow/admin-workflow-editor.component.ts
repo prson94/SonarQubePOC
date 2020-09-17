@@ -50,8 +50,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     private SCHEDULE_OBJECT_LIMIT = 2000;
     private isValid = false;
-    private errorMessage = "";
-    private warningMessage = "";
+    errorMessage = "";
+    warningMessage = "";
     private hideShoppingCart = true;
 
     WorkflowChangeType = WorkflowChangeType;

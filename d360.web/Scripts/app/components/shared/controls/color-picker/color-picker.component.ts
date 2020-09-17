@@ -94,7 +94,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
         this.disabled = isDisabled
     }
 
-    private itemChanged(item: any) {
+    itemChanged(item: any) {
         this.writeValue(item.value)
     }
 };

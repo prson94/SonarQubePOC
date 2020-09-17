@@ -30,7 +30,7 @@ export class SearchFullResult extends SearchResult {
     Url: string;
     Icon: string;
     Uid: string;
-    Explanation: string;  
+    Explaination: string;
 }
 
 export class SearchCategories {

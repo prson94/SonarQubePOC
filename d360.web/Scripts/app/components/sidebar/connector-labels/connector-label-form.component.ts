@@ -24,7 +24,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     private suggestionResults: string[] = [];
     private suggestionResultsArray: any[] = [];
 
-    private selectedValue: any;
+    selectedValue: any;
 
     get value() { return this.connectorLabelForm.get('value'); }
 

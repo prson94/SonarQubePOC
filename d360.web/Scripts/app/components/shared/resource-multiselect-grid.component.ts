@@ -23,7 +23,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     template: ` 
                
                 <span>
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" (keypress)="ref.markForCheck()" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" (keypress)="handleKeyPress()" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [scrollable]="true" scrollWidth="100%" [lazy]="true" [totalRecords]="totalRecords" [metaKeySelection]="!multiple" 
                         [globalFilterFields]="['Text','Type']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [loading]="isLoading" 
                         loadingIcon="fa fa-spinner" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)">
@@ -131,7 +131,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
             });
     }
 
-    private lazyLoad(event: LazyLoadEvent) {
+    lazyLoad(event: LazyLoadEvent) {
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField;
         this.rowsPerPage = event.rows;
@@ -140,7 +140,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         this.load();
     }
 
-    private handleItemSelection(event) {
+    handleItemSelection(event) {
         if (this.multiple) {
             this.selectedItems = event;
             var items = [];
@@ -159,6 +159,10 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
             this.value = _.cloneDeep(items);
             this.onModelChange(this.value);
         }
+    }
+
+    handleKeyPress() {
+        this.ref.markForCheck();
     }
 
     writeValue(value: any): void {

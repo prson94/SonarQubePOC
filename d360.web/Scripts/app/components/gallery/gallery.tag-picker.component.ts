@@ -15,18 +15,20 @@ import { SelectItem } from '../../models/form.model';
 })
 
 export class GalleryTagPickerComponent implements OnInit {
-    protected properties: Array<any>;
-    protected events: Array<any>;
-    protected sampleUsage: string = '<ig-tag-picker [(ngModel)]="model.Tags"></ig-tag-picker>';
-    protected sampleUsage2: string = '<ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>';
+    properties: Array<any>;
+    events: Array<any>;
+    sampleUsage: string = '<ig-tag-picker [(ngModel)]="model.Tags"></ig-tag-picker>';
+    sampleUsage2: string = '<ig-tag-picker [formControlName]="field.FieldName"></ig-tag-picker>';
 
 
-    private value: SelectItem[] = [];
-    private copyOfValue: SelectItem[] = [];
-    private formValue;
+    value: SelectItem[] = [];
+    copyOfValue: SelectItem[] = [];
+    formValue;
+    tagOnChange;
+    tagOnSelect;
+    tagOnUnselect;
 
-
-    private valueEvents: string = '';
+    valueEvents: string = '';
 
     constructor(private ref: ChangeDetectorRef) { }
 

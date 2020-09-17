@@ -45,10 +45,10 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() percentage: number;
     @Input() hideLastButton: boolean = false;
     @Output() onPageChange = new EventEmitter();
-    private itemsPerPageOptions = [10, 25, 50, 100];
-    private itemsPerPage: number = 10;
-    private pageOptions = [1];
-    private visableNumbers: number = 5;
+    itemsPerPageOptions = [10, 25, 50, 100];
+    itemsPerPage: number = 10;
+    pageOptions = [1];
+    visableNumbers: number = 5;
     constructor(
         ref: ChangeDetectorRef,
         private router: Router
@@ -65,11 +65,13 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.page = 0;
         this.CheckVisableNumbers();
     }
+
     changePageNumber(newItemsPerPage: number) {
         this.page = Math.floor((this.page * this.itemsPerPage) / newItemsPerPage);
         this.itemsPerPage = newItemsPerPage;
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
+
     isFirstPage(): boolean {
         if (0 == this.page) {
             return true;

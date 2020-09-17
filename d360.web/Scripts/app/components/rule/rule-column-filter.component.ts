@@ -41,9 +41,9 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];
     filterFieldType = FilterFieldType;
 
-    private internalFilters: FilterExpression[] = [];
-    private availableFilters: FilterField[] = [];
-    private selectedFilter: any;
+    internalFilters: FilterExpression[] = [];
+    availableFilters: FilterField[] = [];
+    selectedFilter: any;
 
     constructor(
         private relationshipsService: RelationshipsService        
@@ -91,7 +91,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
         }
     }
 
-    private onSubmit() {
+    onSubmit() {
         this.filters = [];
 
         for (let internalFilter of this.internalFilters) {
@@ -156,7 +156,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
         }
     }
 
-    private hasMultipleRelationships() {
+    hasMultipleRelationships() {
         return this.internalFilters.filter(x => x.Type == FilterFieldType.Relationship).length > 1;
     }
 

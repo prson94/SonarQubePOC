@@ -24,8 +24,8 @@ export class HomeSearchComponent extends BaseComponent {
     private categories: SearchCategories[] = [];
     private selectedCategory: SearchCategories;
     private searchText: string;
-    private isExactMatch: boolean = true;
-    private searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
+    isExactMatch: boolean = true;
+    searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
 
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;

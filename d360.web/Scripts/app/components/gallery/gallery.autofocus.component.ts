@@ -18,8 +18,9 @@
 })
 
 export class GalleryAutoFocusComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<button igAutoFocus igButton></button>';
+    properties: Array<any>;
+    sampleUsage: string = '<button igAutoFocus igButton></button>';
+    showModal = false;
 
     ngOnInit(): void {
         this.properties = new Array();

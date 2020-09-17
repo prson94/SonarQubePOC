@@ -18,7 +18,7 @@
 })
 
 export class GalleryTooltipComponent {
-    protected properties: Array<any>;
-    protected sampleUsage: string = `<button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download"></button>`;
+    properties: Array<any>;
+    sampleUsage: string = `<button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download"></button>`;
 
 }

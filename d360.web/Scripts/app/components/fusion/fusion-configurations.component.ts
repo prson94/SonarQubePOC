@@ -59,7 +59,7 @@ export class FusionConfigurationComponent extends BaseComponent implements OnIni
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('FusionType', fusion.ID));
     }
 
-    private doExport() {
+    doExport() {
         this.fusionService.exportFusionConfigurations();
     }
 }

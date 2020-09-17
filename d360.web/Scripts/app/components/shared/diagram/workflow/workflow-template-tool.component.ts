@@ -18,7 +18,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     @ViewChild('sel', { static: false }) select;
     @ViewChild('cont', { static: false }) container;
 
-    private fields = [];
+    fields = [];
 
     private defaultFields = [
         { value: '[OBJECT_NAME]', label: 'Object Name' },
@@ -37,7 +37,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[REL_OBJECT_NAME]', label: 'Relationship Object Name' },
     ];
 
-    private selected = "none";
+    selected = "none";
 
     constructor(private workflowService: WorkflowService) {
     }

@@ -20,7 +20,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {   
-    private selected: RelationshipType;
+    selected: RelationshipType;
     
     constructor(secondaryNavService: SecondaryNavService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);        

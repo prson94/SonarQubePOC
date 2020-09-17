@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { BaseComponent } from '../../shared/base.component';
-import { Dashboard, DashboardTokens } from '../../../models/dashboard.model'
+import { Dashboard } from '../../../models/dashboard.model'
 
 @Component({
     selector: 'd3s-sagacity-viewer',
@@ -18,7 +18,7 @@ import { Dashboard, DashboardTokens } from '../../../models/dashboard.model'
 export class SagacityViewerComponent extends BaseComponent implements OnInit {
     @Input() dashboard: Dashboard;    
 
-    private sagacityUrl: any;
+    sagacityUrl: any;
 
     constructor(private sanitizer: DomSanitizer) {
         super();        

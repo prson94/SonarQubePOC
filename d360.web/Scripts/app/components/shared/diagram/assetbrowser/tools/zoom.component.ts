@@ -12,7 +12,7 @@ export class AssetBrowserZoomComponent implements OnChanges {
     @Input() scale: number;
     @Output() change: EventEmitter<number> = new EventEmitter();
 
-    private zoomText: string = '100%';
+    zoomText: string = '100%';
 
     constructor(
         protected messagesService: MessagesObservableService
@@ -31,7 +31,7 @@ export class AssetBrowserZoomComponent implements OnChanges {
         this.zoomText = Math.round(scale * 100) + '%';
     }
 
-    private in(e) {
+    in(e) {
         let scale: number = this.scale + .1;
         if (scale > 2.5) {
             scale = 2.5;
@@ -39,7 +39,7 @@ export class AssetBrowserZoomComponent implements OnChanges {
         this.update(scale);
     }
 
-    private out(e) {
+    out(e) {
         let scale: number = this.scale - .1;
         if (scale < .1) {
             scale = .1;

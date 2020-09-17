@@ -30,7 +30,7 @@ export class AssetBrowserViewChangeComponent implements AfterViewInit, OnChanges
     }
 
 
-    private diagramTypeChange(e: any) {
+    diagramTypeChange(e: any) {
         this.current = e.value;
         this.apply.emit(e.value);
     }
