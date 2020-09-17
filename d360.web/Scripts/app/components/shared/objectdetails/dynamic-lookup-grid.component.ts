@@ -144,7 +144,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
             var advFilters: string[] = [];
 
             keys.forEach(key => {
-                var q = key + ' ct ' + `'${decodeURIComponent(event.filters[key].value)}'`;
+                var q = key + ' ct ' + `'${encodeURIComponent(event.filters[key].value)}'`;
                 advFilters.push(q);
             });
 
