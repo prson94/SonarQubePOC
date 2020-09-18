@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FollowDetail-v3">
+  <changeSet author="Pappas" id="View.dbo.FollowDetail-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -236,8 +236,12 @@ create or alter view [dbo].[FollowDetail]
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
 		inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
 		inner join Asset A on A.Object = F.Object and A.ObjectID = F.ObjectID
-		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)
-		left join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = 1 and Al.OverrideName is null
+		outer apply (
+			select	S.Value
+			from	metrics.Score S
+					inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = 1 and Al.OverrideName is null
+								and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)
+		) S
 		]]>
     </sql>
 	<rollback>
