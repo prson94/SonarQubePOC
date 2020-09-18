@@ -2,6 +2,7 @@
 using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -19,16 +20,21 @@ namespace d360.model.helpers
         private FilterExpressionParseType parseType;
         private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        public List<FilterToken> FilterTokens = new List<FilterToken>();
+
+        private bool registerTokensAsFields = false;
 
         public FilterExpressionParser(
             ICompanyContext ctx,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
             bool includeParent = false,
-            bool useUserDefaultFields = false)
+            bool useUserDefaultFields = false,
+            bool registerTokensAsFields = false
+            )
         {
             this.CompanyContext = ctx;
             this.parseType = type;
-
+            this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
 
@@ -68,9 +74,37 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
+        public DataTable ParseAsFiltersDataTable(string filterString)
+        {
+
+            DataTable filterDT = new DataTable();
+            filterDT.Columns.Add("FieldType");
+            filterDT.Columns.Add("Operator");
+            filterDT.Columns.Add("TypeID");
+            filterDT.Columns.Add("OptionalIdentifier");
+            filterDT.Columns.Add("FilterValues");
+            this.Parse(filterString, out _, out _);
+
+            foreach (var item in this.FilterTokens.Where(x => x.IsOnlyOperator != true))
+            {
+                DataRow row = filterDT.NewRow();
+                row["FieldType"] = "F";
+                row["Operator"] = item.@operator;
+                row["TypeID"] = 0;
+                row["OptionalIdentifier"] = item.Field;
+                row["FilterValues"] = item.ValueAsString.Trim('%');
+
+                filterDT.Rows.Add(row);
+            }
+
+
+            return filterDT;
+        }
+
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
             fieldIds = this.filteredFieldIDs;
+            this.FilterTokens.Clear();
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
@@ -124,7 +158,6 @@ namespace d360.model.helpers
                     tokens[j] = value;
                 }
             }
-            List<FilterToken> FilterTokens = new List<FilterToken>();
 
             bool expectingCondition = false;
             int paramCount = 0;
@@ -133,7 +166,7 @@ namespace d360.model.helpers
             {
                 if (tokens[i] == "(")
                 {
-                    FilterTokens.Add(new FilterToken(this.CompanyContext, null, "(", null));
+                    FilterTokens.Add(new FilterToken(CompanyContext, null, "(", null));
                     i++;
                     continue;
                 }
@@ -221,6 +254,12 @@ namespace d360.model.helpers
                     {
                         var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower() == token.Field.ToLower());
                         sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
+                    }
+                    else if (this.registerTokensAsFields == true)
+                    {
+                        var val = new DefaultFilter(token.Field, token.Field, SqlFieldType.Text);
+                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
+
                     }
                     else
                     {

@@ -21,7 +21,7 @@ export class DetailRow {
     Category: any;
     columns: number;
     FirstColumnFields = new Array<DetailField>();
-    SecondColumnFields = new Array<DetailField>();    
+    SecondColumnFields = new Array<DetailField>();
 }
 
 export enum DetailFieldType {
@@ -48,7 +48,7 @@ export class DetailField {
     HideFooter: boolean;
     HideHeader: boolean;
     HideFilter: boolean;
-    LookupGridUrl: string;
+    IsComplexLookupGrid: boolean;
     LookupObjectID: number;
     LookupObjectType: string;
     LookupFieldTypeID: number;
@@ -79,23 +79,23 @@ export class Synonym {
     Object: string;
     ObjectID: number;
     ObjectTypeName: string;
-    Url: string;    
+    Url: string;
     ParentName: string;
     ParentID: number;
-    ParentUrl: string;  
+    ParentUrl: string;
     IntersectUid: string;
     IntersectTypeUid: string;
 }
 
-export class SynonymItem {    
-    Name: string;    
+export class SynonymItem {
+    Name: string;
     uid: string;
 }
 
 export class NymType {
     Enabled: boolean;
     ID: number;
-    Name: string;    
+    Name: string;
 }
 
 export class AttributeHeirarchyItem {

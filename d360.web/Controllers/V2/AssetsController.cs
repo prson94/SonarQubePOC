@@ -33,6 +33,8 @@ using System.Data.Entity;
 using System.Dynamic;
 using System.Configuration;
 using SpreadsheetLight;
+using d360.model.helpers;
+using System.Data;
 
 namespace d360.web.Controllers.V2
 {
@@ -650,7 +652,7 @@ namespace d360.web.Controllers.V2
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
                 Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
-                
+
                 var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
@@ -1167,7 +1169,7 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
-        
+
         /// <summary>
         /// Retrieves a list of all asset types and asset counts for current user.
         /// </summary>
@@ -1269,6 +1271,23 @@ namespace d360.web.Controllers.V2
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
+                DataTable advFilters = null;
+                if (qparams.Any(x => x.Key.ToLower() == "filter"))
+                {
+                    var filter = qparams.FirstOrDefault(x => x.Key.ToLower() == "filter").Value;
+                    var filterExpressionParser = new FilterExpressionParser(this.Company, FilterExpressionParseType.CustomFields, false, false, true);
+                    advFilters = filterExpressionParser.ParseAsFiltersDataTable(filter);
+                }
+                else
+                {
+                    advFilters = new DataTable();
+                    advFilters.Columns.Add("FieldType");
+                    advFilters.Columns.Add("Operator");
+                    advFilters.Columns.Add("TypeID");
+                    advFilters.Columns.Add("OptionalIdentifier");
+                    advFilters.Columns.Add("FilterValues");
+                }
+
                 if (qparams.Any(x => x.Key.ToLower() == "_order"))
                 {
                     orderBy = qparams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
@@ -1329,21 +1348,23 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                var dbArgs = new DynamicParameters();
+
+                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("objectId", asset.ObjectID);
+                dbArgs.Add("fieldTypeId", fieldType.ID);
+                dbArgs.Add("resourceId", Company.CurrentResourceID);
+                dbArgs.Add("pageSize", pageSize);
+                dbArgs.Add("pageNum", pageNum);
+                dbArgs.Add("simpleFilter", simpleFilter);
+                dbArgs.Add("orderBy", orderBy);
+                dbArgs.Add("orderDirection", direction);
+                dbArgs.Add("useUidUrls", true);
+                dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
+
                 var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls",
-                        new
-                        {
-                            @object = asset.Object,
-                            objectId = asset.ObjectID,
-                            fieldTypeId = fieldType.ID,
-                            resourceId = Company.CurrentResourceID,
-                            pageSize,
-                            pageNum,
-                            simpleFilter,
-                            orderBy,
-                            orderDirection = direction,
-                            useUidUrls = true
-                        }
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
+                       dbArgs
                     );
 
                 var Columns = reader.Read<GridColumn>().ToList();
@@ -2514,7 +2535,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x=> x.AssetType).FirstOrDefault();
+                var asset = Company.Assets.Where(x => x.uid == assetUid).Include(x => x.AssetType).FirstOrDefault();
 
                 if (asset == null) throw new NotFoundException("Asset");
 
