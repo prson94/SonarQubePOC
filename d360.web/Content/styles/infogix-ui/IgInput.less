@@ -48,15 +48,6 @@
         border-color: @ig-field-border-color;
     }
 
-
-    &.ng-valid[required], .ng-valid.required {
-        background: @ig-white;
-        border-color: none;
-        outline: 0 none;
-        outline-offset: 0;
-        box-shadow: none;
-    }
-
     &.ng-dirty.ng-invalid,
     &.ng-touched.ng-invalid {
         background: @ig-red-t5;
@@ -75,9 +66,15 @@
     }
 
 
-    &:required {
+    &:required:invalid {
         background: @ig-lightblue-t4;
         border-color: @ig-field-border-color;
+    }
+
+    &:required:valid {
+        background: @ig-white;
+        border-color: none;
+        box-shadow: none;
     }
 
     &.invalid {
