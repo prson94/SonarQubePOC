@@ -57,6 +57,7 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         switch (event.which) {
             case 13:
                 this.el.nativeElement.blur();
+                this.el.nativeElement.focus();
                 break;
         }
     }
