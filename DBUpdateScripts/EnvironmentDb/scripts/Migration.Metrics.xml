@@ -786,7 +786,7 @@ INSERT INTO [metrics].[ScoreItemLink] ([ScoreUid], [ScoreItemUid])
 		</rollback>
 	</changeSet>
 
-	<changeSet author="Pappas" id="Migration.Metrics-GOV-12071">
+	<changeSet author="Pappas" id="Migration.Metrics-GOV-12071-2">
 		<comment>use this to prevent dupe score records. to create hash, you take all the relevant measures, order them by MeasureUid, Value - separate by a semi-colon via format  ->   Uid:Value;Uid:Value </comment>
 		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
@@ -796,17 +796,7 @@ begin
 end
 GO
 
-update	T
-set		T.VersionValueHash = S.VersionValueHash
-from	metrics.Score T
-		inner join	(
-					select		S.Uid,
-								utility.GetHash(STRING_AGG(cast(I.AssetVersionUid as varchar(50)) + ':' + cast(I.AdjustedWeight as varchar), ';') WITHIN GROUP ( ORDER BY I.AssetVersionUid  )) as VersionValueHash
-					from		metrics.Score S
-								inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
-								inner join metrics.ScoreITem I on I.Uid = L.ScoreItemUid
-					group by	S.Uid
-					) S on S.Uid = T.Uid
+update metrics.Score set VersionValueHash = null
 		]]>
 		</sql>
 		<rollback>
