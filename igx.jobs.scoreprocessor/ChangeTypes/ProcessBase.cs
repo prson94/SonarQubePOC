@@ -69,7 +69,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             {
                                 if (fieldType.Type == DataType.Lookup.ToString() && fieldType.AllowMultipleValues)
                                 {
-                                    var fieldValues = assetField.Value.Split(',');
+                                    var fieldValues = (assetField.Value ?? "").Split(',');
                                     var conditionValues = i.Values.Select(o => o.Value).ToList();
                                     if (i.ConditionType == MetricConditionType.And)
                                     {
@@ -136,13 +136,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                     switch (i.Operator)
                                     {
                                         case "eq":
-                                            if (assetField.Value == i.Values[0].Value)
+                                            if ((assetField.Value ?? "") == i.Values[0].Value)
                                             {
                                                 conditionsMetCount++;
                                             }
                                             break;
                                         case "neq":
-                                            if (assetField.Value != i.Values[0].Value)
+                                            if ((assetField.Value ?? "") != i.Values[0].Value)
                                             {
                                                 conditionsMetCount++;
                                             }
@@ -151,60 +151,63 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         case "gte":
                                         case "lt":
                                         case "lte":
-                                            dynamic conditionValue;
-                                            dynamic fieldValue;
-                                            if (fieldType.Type == DataType.Boolean.ToString())
+                                            if (assetField.Value != null)
                                             {
-                                                conditionValue = bool.Parse(i.Values[0].Value);
-                                                fieldValue = bool.Parse(assetField.Value);
-                                            }
-                                            else if (fieldType.Type == DataType.Date.ToString() || fieldType.Type == DataType.DateTime.ToString())
-                                            {
-                                                conditionValue = DateTime.Parse(i.Values[0].Value);
-                                                fieldValue = DateTime.Parse(assetField.Value);
-                                            }
-                                            else if (fieldType.Type == DataType.Decimal.ToString())
-                                            {
-                                                conditionValue = decimal.Parse(i.Values[0].Value);
-                                                fieldValue = decimal.Parse(assetField.Value);
-                                            }
-                                            else if (fieldType.Type == DataType.Number.ToString())
-                                            {
-                                                conditionValue = int.Parse(i.Values[0].Value);
-                                                fieldValue = int.Parse(assetField.Value);
-                                            }
-                                            else
-                                            {
-                                                conditionValue = i.Values[0].Value;
-                                                fieldValue = assetField.Value;
-                                            }
+                                                dynamic conditionValue;
+                                                dynamic fieldValue;
+                                                if (fieldType.Type == DataType.Boolean.ToString())
+                                                {
+                                                    conditionValue = bool.Parse(i.Values[0].Value);
+                                                    fieldValue = bool.Parse(assetField.Value);
+                                                }
+                                                else if (fieldType.Type == DataType.Date.ToString() || fieldType.Type == DataType.DateTime.ToString())
+                                                {
+                                                    conditionValue = DateTime.Parse(i.Values[0].Value);
+                                                    fieldValue = DateTime.Parse(assetField.Value);
+                                                }
+                                                else if (fieldType.Type == DataType.Decimal.ToString())
+                                                {
+                                                    conditionValue = decimal.Parse(i.Values[0].Value);
+                                                    fieldValue = decimal.Parse(assetField.Value);
+                                                }
+                                                else if (fieldType.Type == DataType.Number.ToString())
+                                                {
+                                                    conditionValue = int.Parse(i.Values[0].Value);
+                                                    fieldValue = int.Parse(assetField.Value);
+                                                }
+                                                else
+                                                {
+                                                    conditionValue = i.Values[0].Value;
+                                                    fieldValue = assetField.Value;
+                                                }
 
-                                            switch (i.Operator)
-                                            {
-                                                case "gt":
-                                                    if (fieldValue > conditionValue)
-                                                    {
-                                                        conditionsMetCount++;
-                                                    }
-                                                    break;
-                                                case "gte":
-                                                    if (fieldValue >= conditionValue)
-                                                    {
-                                                        conditionsMetCount++;
-                                                    }
-                                                    break;
-                                                case "lt":
-                                                    if (fieldValue < conditionValue)
-                                                    {
-                                                        conditionsMetCount++;
-                                                    }
-                                                    break;
-                                                case "lte":
-                                                    if (fieldValue <= conditionValue)
-                                                    {
-                                                        conditionsMetCount++;
-                                                    }
-                                                    break;
+                                                switch (i.Operator)
+                                                {
+                                                    case "gt":
+                                                        if (fieldValue > conditionValue)
+                                                        {
+                                                            conditionsMetCount++;
+                                                        }
+                                                        break;
+                                                    case "gte":
+                                                        if (fieldValue >= conditionValue)
+                                                        {
+                                                            conditionsMetCount++;
+                                                        }
+                                                        break;
+                                                    case "lt":
+                                                        if (fieldValue < conditionValue)
+                                                        {
+                                                            conditionsMetCount++;
+                                                        }
+                                                        break;
+                                                    case "lte":
+                                                        if (fieldValue <= conditionValue)
+                                                        {
+                                                            conditionsMetCount++;
+                                                        }
+                                                        break;
+                                                }
                                             }
                                             break;
                                     }
