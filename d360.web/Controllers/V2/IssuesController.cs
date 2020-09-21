@@ -199,19 +199,19 @@ namespace d360.web.Controllers.V2
 
             foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
             {
-                var lookupSQL = "Select * from FieldLookupValue where fieldTypeId = @fieldTypeId";
-
-                var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID });
+                var lookupSQL = "Select * from FieldLookupValue where fieldTypeId = @fieldTypeId";              
 
                 string[] lookupValues = { };
 
                 if (model.Fields.ContainsKey(ft.Name))
                 {
-                    lookupValues = model.Fields[ft.Name].Trim().Split(new char[] {','});
+                    lookupValues = model.Fields[ft.Name].Trim().Split(',');
                 }
 
                 if (lookupValues.Length > 0)
                 {
+                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID });
+
                     List<string> fieldValues = new List<string>();
                     foreach (var lookupValue in lookupValues)
                     {                    
