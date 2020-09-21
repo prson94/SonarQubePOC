@@ -114,6 +114,41 @@ END
 	  ]]>
     </rollback>
   </changeSet>
+  <changeSet author="TKlok" id="Table.dbo.FieldType-v3">
+    <comment>GOV-11606</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]', 'SearchAddToResult') IS NULL
+		BEGIN
+			ALTER TABLE dbo.FieldType ADD
+				SearchAddToResult bit CONSTRAINT [DF_FieldType_SearchAddToResult] DEFAULT (0) NOT NULL,
+				SearchPrefix nvarchar(250) NULL,
+				SearchSuffix nvarchar(250) NULL,
+				SearchDisplayOrder int NULL
+		END
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[FieldType]', 'SearchAddToResult') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.FieldType
+			DROP CONSTRAINT DF_FieldType_SearchAddToResult
+
+			ALTER TABLE dbo.FieldType
+			DROP COLUMN IF EXISTS
+				SearchAddToResult,
+				SearchPrefix,
+				SearchSuffix,
+				SearchDisplayOrder
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
   
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"
