@@ -19,28 +19,67 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     @Output() onSelect = new EventEmitter();
 
-    private navigationArr: PopupMenuItem[] = [];
-    private isVisible: boolean = false;
+    navigationArr: PopupMenuItem[] = [];
+    isVisible: boolean = false;
 
-    private positionTop: number;
-    private positionLeft: number;
-    private pressedKeys: any = {};
+    positionTop: number;
+    positionLeft: number;
+    pressedKeys: any = {};
 
-    private anchorElement: HTMLElement;
+    anchorElement: HTMLElement;
     @ViewChild('positionRef', { static: true }) positionEl: ElementRef;
     @ViewChild('element', { static: true }) popupEl: ElementRef;
 
-    private updatePositionInterval: any = null;
-    private openToLeftSide: boolean = false;
-    private toggleInProgress: boolean = false;
-    constructor(private cdRef: ChangeDetectorRef) {
+    updatePositionInterval: any = null;
+    openToLeftSide: boolean = false;
+    openToBottomSide: boolean = true;
+
+    toggleInProgress: boolean = false;
+    typedCharacters: any[] = [];
+    constructor(public cdRef: ChangeDetectorRef) {
 
     }
-    private reset() {
+    reset() {
         this.navigationArr = this.items;
         this.updatePropToAll(this.items, 'hasHoverState', false);
         this.updatePropToAll(this.items, 'isSubMenuOpened', false);
+        this.location = PopupMenuLocation.BottomLeft;
         this.pressedKeys = {};
+    }
+
+    clearSearch: any;
+    search() {
+        var searchString = this.typedCharacters.join('').toLowerCase();
+        if (searchString) {
+            var el = this.getLastHoveredElement(this.navigationArr);
+            var currentIndex = this.navigationArr.indexOf(el);
+            if (currentIndex == -1)
+                currentIndex = 0;
+
+            var foundIdx = -1;
+            for (let idx = currentIndex; idx < this.navigationArr.length; idx++) {
+                if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled != true) {
+                    foundIdx = idx;
+                }
+            }
+            if (foundIdx == -1) {
+                for (let idx = 0; idx < this.navigationArr.indexOf(el); idx++) {
+                    if (this.navigationArr[idx].title && this.navigationArr[idx].title.toLowerCase().indexOf(searchString) > -1 && this.navigationArr[idx].disabled != true) {
+                        foundIdx = idx;
+                    }
+                }
+            }
+
+            if (foundIdx != -1) {
+                var foundEL = this.navigationArr[foundIdx];
+                this.setHoverStateToElement(foundEL);
+            }
+        }
+
+        clearTimeout(this.clearSearch);
+        this.clearSearch = setTimeout(() => {
+            this.typedCharacters = [];
+        }, 1000);
     }
 
     ngDoCheck() {
@@ -129,6 +168,11 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                     this.items[0].hasHoverState = true;
                 }
             }
+            else {
+                this.typedCharacters.push(event.key);
+                this.search();
+            }
+
 
             //Arrow right
             if (event.keyCode === 39) {
@@ -199,7 +243,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
     }
 
-    private setElementPosition() {
+    setElementPosition() {
 
         if (this.positionEl && this.isVisible) {
 
@@ -209,30 +253,26 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             var box = htmlEl.getBoundingClientRect();
             var topPosition = box.top + window.scrollX - 12;
             var leftPosition = box.left;
-            if (window.innerHeight < (htmlEl.getBoundingClientRect().bottom + menu.offsetHeight)) {
-                if (this.location == PopupMenuLocation.BottomLeft)
-                    this.location = PopupMenuLocation.TopLeft;
-                if (this.location == PopupMenuLocation.BottomRight)
-                    this.location = PopupMenuLocation.TopRight;
+
+            var isOverflowBottom = (window.innerHeight < (htmlEl.getBoundingClientRect().bottom + menu.offsetHeight));
+            var isOverflowRight = ((htmlEl.getBoundingClientRect().left + menu.offsetWidth + 32) > window.innerWidth);
+
+            this.openToBottomSide = false;
+            if (isOverflowBottom && isOverflowRight) {
+                this.location = PopupMenuLocation.TopRight;
             }
-            else {
-                if (this.location == PopupMenuLocation.TopLeft)
-                    this.location = PopupMenuLocation.BottomLeft;
-                if (this.location == PopupMenuLocation.TopRight)
-                    this.location = PopupMenuLocation.BottomRight;
+            else if (isOverflowBottom && !isOverflowRight) {
+                this.location = PopupMenuLocation.TopLeft;
             }
-            if ((htmlEl.getBoundingClientRect().right + menu.offsetWidth) > window.innerWidth) {
-                if (this.location == PopupMenuLocation.BottomLeft)
-                    this.location = PopupMenuLocation.BottomRight;
-                if (this.location == PopupMenuLocation.TopLeft)
-                    this.location = PopupMenuLocation.TopRight;
+            else if (isOverflowRight && !isOverflowBottom) {
+                this.location = PopupMenuLocation.BottomRight;
+                this.openToBottomSide = true;
             }
-            else {
-                if (this.location == PopupMenuLocation.BottomRight)
-                    this.location = PopupMenuLocation.BottomLeft;
-                if (this.location == PopupMenuLocation.TopRight)
-                    this.location = PopupMenuLocation.TopLeft;
+            else if (!isOverflowRight && !isOverflowBottom) {
+                this.location = PopupMenuLocation.BottomLeft;
+                this.openToBottomSide = true;
             }
+
 
             if (this.anchorElement) {
 
@@ -267,9 +307,17 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
     }
 
-    private select(item: PopupMenuItem, $event) {
+    select(item: PopupMenuItem, $event) {
         if ($event.stopPropagation)
             $event.stopPropagation();
+
+        if (item && item.items) {
+            this.navigationArr = item.items;
+            item.isSubMenuOpened = true;
+            var firstActiveElement = this.navigationArr.filter(x => x.disabled != true)[0];
+            this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
+            return;
+        }
 
         if (!item.hasCheckbox) {
             this.onSelect.emit({ value: item.title, event: $event });
@@ -282,7 +330,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
     }
 
-    private hover(item: PopupMenuItem) {
+    hover(item: PopupMenuItem) {
         if (!item.isSeparator) {
             if (item.parent == null) {
                 this.updatePropToAll(this.items, 'isSubMenuOpened', false);
@@ -296,7 +344,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
     }
 
-    private moveThroughElements(idx: number, forward: boolean, arr: PopupMenuItem[]): boolean {
+    moveThroughElements(idx: number, forward: boolean, arr: PopupMenuItem[]): boolean {
 
         let nextIdx: number = 0;
         if (forward)
@@ -320,7 +368,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         return false;
     }
 
-    private setHoverStateToElement(item: PopupMenuItem) {
+    setHoverStateToElement(item: PopupMenuItem) {
         this.updatePropToAll(this.items, 'hasHoverState', false);
         item.hasHoverState = true;
         this.setHoverStateToParent(item);
@@ -333,17 +381,17 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     }
 
-    private hasIcons(items: PopupMenuItem[]) {
+    hasIcons(items: PopupMenuItem[]) {
         return items.some(x => x.icon && x.icon != '');
     }
-    private hasCheckboxes(items: PopupMenuItem[]) {
+    hasCheckboxes(items: PopupMenuItem[]) {
         return items.some(x => x.hasCheckbox == true);
     }
-    private hasShortcuts(items: PopupMenuItem[]) {
+    hasShortcuts(items: PopupMenuItem[]) {
         return items.some(x => x.keys && x.keys.length > 0);
     }
 
-    private getShortcutString(item: PopupMenuItem): string {
+    getShortcutString(item: PopupMenuItem): string {
         if (item.keys) {
             var arr: string[] = [];
             item.keys.forEach(k => {
@@ -354,7 +402,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         return '';
     }
 
-    private getItemClass(item: PopupMenuItem): string {
+    getItemClass(item: PopupMenuItem): string {
         let cs: string = '';
         if (item.isSeparator) return 'separator';
         else cs = 'menu-sub-item';
@@ -377,10 +425,10 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         return cs;
     }
 
-    private onFocus(item: PopupMenuItem) {
+    onFocus(item: PopupMenuItem) {
         item.isFocused = true;
     }
-    private onFocusOut(item: PopupMenuItem) {
+    onFocusOut(item: PopupMenuItem) {
         item.isFocused = false;
     }
 
@@ -427,7 +475,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         return el;
     }
 
-    private setHoverStateToParent(item: PopupMenuItem) {
+    setHoverStateToParent(item: PopupMenuItem) {
         if (item.parent) {
             item.parent.hasHoverState = true;
             this.setHoverStateToParent(item.parent);
@@ -481,5 +529,5 @@ export class PopupMenuItem {
 
 export class PopupMenuItemBadge {
     text: string = '';
-    invariant: string = 'default'
+    variant: string = 'default'
 }

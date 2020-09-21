@@ -33,18 +33,46 @@
 
         .sub-menu {
             position: absolute;
-            right: 0px;
-            transform: translateX(100%);
-            background-color: white;
             margin-top: -12px;
         }
 
+
+        &.open-right {
+            &.open-bottom {
+                &.sub-menu {
+                    right: 0px;
+                    transform: translateX(100%);
+                    background-color: white;
+                }
+            }
+
+            &.open-top {
+                &.sub-menu {
+                    right: 0px;
+                    transform: translateX(100%) translateY(-100%);
+                    background-color: white;
+                    top: 50px;
+                }
+            }
+        }
+
         &.open-left {
-            .sub-menu {
-                transform: translateX(-100%) translateY(-100%);
-                left: -2px;
-                right: initial;
-                top: 54px;
+            &.open-top {
+                &.sub-menu {
+                    transform: translateX(-100%) translateY(-100%);
+                    left: -2px;
+                    right: initial;
+                    top: 54px;
+                }
+            }
+
+            &.open-bottom {
+                &.sub-menu {
+                    transform: translateX(-100%) translateY(0%);
+                    left: -2px;
+                    top: 10px;
+                    right: initial;
+                }
             }
         }
 

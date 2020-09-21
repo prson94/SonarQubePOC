@@ -8,6 +8,10 @@
         Basic Usage
     </header>
     <code>{{sampleUsage}}</code>
+
+    <p>
+        Items property is object of type <span style="background-color: #eff2f6;">Array&#706;PopupMenuItem&#707;</span>
+    </p>
 </div>
 
 <div class="tile tile-detail">
@@ -211,8 +215,42 @@
 
         </div>
     </div>
-    <br />
-    <br />
+    <hr />
+    <div class="gallery-section">
+        <h4>Dynamic Position Popup</h4>
+        <p>
+            Popup menu will switch position if there are not enought room above/under or top/left from the menu
+        </p>
+        <p>
+            Right button will open a popup which will open on left side
+        </p>
+        <div>
+            <button type="submit" igButton label="Show In Fullscreen" (click)="showFull=true;"></button>
+            <div *ngIf="showFull" class="fullscreen">
+                <div style="position: absolute;top: 16px;left: 16px;">
+                    <button type="button" igButton label="Show" (click)="fsmenu1.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu1 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 95%;left: 16px;">
+                    <button type="button" igButton label="Show" (click)="fsmenu2.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu2 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 95%;left: 95%">
+                    <button type="button" igButton label="Show" (click)="fsmenu3.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu3 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 16px;left: 95%">
+                    <button type="button" igButton label="Show" (click)="fsmenu4.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu4 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div class="message">
+                    Dynamic position will set up correct display mode. Check out 4 menus positioned in each corner. <br />
+                    Press 'ESC' to close fullscreen mode.
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="tile tile-detail">

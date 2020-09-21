@@ -5,7 +5,7 @@
 </div>
 
 <ng-template #menuItemsTemplate let-items let-class="class">
-    <ul class="menu-items {{class}} {{(openToLeftSide ? ' open-left' : '')}}">
+    <ul class="menu-items {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
         <li *ngFor="let item of items"
             pTooltip="{{item.tooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
             tabindex="-1"

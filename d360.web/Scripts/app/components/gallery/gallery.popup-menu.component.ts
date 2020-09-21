@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 
 
 @Component({
@@ -13,21 +13,52 @@
         .gallery-section h4 {
             padding-bottom: 8px;
         }
+
+        .fullscreen{
+            position: fixed;
+            background: #44444485;
+            z-index: 15000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+         }
+
+        .fullscreen .message{
+            background: white;
+            width: 400px;
+            text-align: center;
+            margin: 0 auto;
+            margin-top: 40px;
+            padding: 20px;
+            border-radius: 4px;
+        }
         `
     ], changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class GalleryPopupMenuComponent implements OnInit {
     protected properties: Array<any>;
-    protected sampleUsage: string = '<ig-popup-menu></ig-popup-menu>';
+    protected sampleUsage: string = '<ig-popup-menu [items]="items"></ig-popup-menu>';
     protected isLoading1: boolean = true;
     protected isLoading2: boolean = false;
 
-    private cleanJsonExamples: any = {};
+    cleanJsonExamples: any = {};
     ngOnInit(): void {
         this.properties = new Array();
-        this.properties.push({ Name: "isLoading", Type: "boolean", Description: "Whether or not to show the loading wheel", Default: "" });
-        this.properties.push({ Name: "showTransparentLoader", Type: "boolean", Description: "Show a transparent background behind the loading wheel", Default: "false" });
+        this.properties.push({ Name: "items", Type: "Array<PopupMenuItem>", Description: "Array of menu items", Default: "Empty []" });
+        this.properties.push({ Name: "items[i].title", Type: "string", Description: "Title of menu item", Default: "" });
+        this.properties.push({ Name: "items[i].icon", Type: "string", Description: "Icon that will appear near title (font awesome class definition)", Default: "" });
+        this.properties.push({ Name: "items[i].items", Type: "Array<PopupMenuItem>", Description: "Array of sub-menu items", Default: "Empty []" });
+        this.properties.push({ Name: "items[i].disabled", Type: "boolean", Description: "If set to true item will be disabled and non-actionable", Default: "false" });
+        this.properties.push({ Name: "items[i].tooltip", Type: "string", Description: "Tooltip that will appear over item when hovered", Default: "" });
+        this.properties.push({ Name: "items[i].isLabel", Type: "boolean", Description: "If set to true title will be bolded and be non-actionable", Default: "false" });
+        this.properties.push({ Name: "items[i].hasCheckbox", Type: "boolean", Description: "If set to true, checkmark will appear near menu item if isChecked value is true", Default: "false" });
+        this.properties.push({ Name: "items[i].isChecked", Type: "boolean", Description: "If set to true, checkmark will be visible", Default: "false" });
+        this.properties.push({ Name: "items[i].keys", Type: "Array<int>", Description: "Array of key codes that will trigger action (shortcut)", Default: "Empty []" });
+        this.properties.push({ Name: "items[i].badge", Type: "Object<PopupMenuItemBadge>", Description: "Object that defines value and appearance of badge", Default: "null" });
+        this.properties.push({ Name: "items[i].badge.text", Type: "string", Description: "Text that will appear in badge", Default: "" });
+        this.properties.push({ Name: "items[i].badge.variant", Type: "string", Description: "String value for the style for the badge. [default, emphasis, positive, negative, warning and light] are the options", Default: "" });
 
         this.cleanJsonExamples['simpleExample'] = JSON.parse(JSON.stringify(this.simpleExample));
         this.cleanJsonExamples['multiExample'] = JSON.parse(JSON.stringify(this.multiExample));
@@ -39,7 +70,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         this.cleanJsonExamples['badgeExample'] = JSON.parse(JSON.stringify(this.badgeExample));
     }
 
-    private simpleExample = [
+    simpleExample = [
         {
             title: 'Edit',
             icon: 'fa-pencil'
@@ -60,7 +91,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private multiExample = [
+    multiExample = [
         {
             title: 'Operators',
             icon: 'fa-pencil',
@@ -123,7 +154,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private tooltipExample = [
+    tooltipExample = [
         {
             title: 'Edit',
             icon: 'fa-pencil'
@@ -148,7 +179,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private defaultExample = [
+    defaultExample = [
         {
             title: 'Edit',
             icon: 'fa-pencil'
@@ -170,7 +201,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private labelExample = [
+    labelExample = [
         {
             title: 'Options:',
             isLabel: true
@@ -221,7 +252,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private checkExample = [
+    checkExample = [
         {
             title: 'New'
         },
@@ -253,7 +284,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private keyboardShortcuts = [
+    keyboardShortcuts = [
         {
             title: 'Actions',
             isLabel: true
@@ -288,7 +319,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         }
     ]
 
-    private badgeExample = [
+    badgeExample = [
         {
             title: 'Edit',
             icon: 'fa-pencil'
@@ -308,6 +339,112 @@ export class GalleryPopupMenuComponent implements OnInit {
                 text: '23',
                 variant: 'default'
             }
+        },
+        {
+            isSeparator: true
+        },
+        {
+            title: 'Exit'
+        }
+    ]
+
+    showFull: boolean = false;
+    @HostListener('document:keydown.escape', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        this.showFull = false;
+    }
+
+    fullScreenExample = [
+        {
+            title: 'Options:',
+            isLabel: true
+        },
+        {
+            title: 'Edit',
+            icon: 'fa-pencil',
+            items: [
+                {
+                    title: 'Mandy Bank <br/> mbank@infogix.com',
+                    isLabel: true
+                },
+                {
+                    title: 'Edit',
+                    icon: 'fa-pencil'
+                },
+                {
+                    title: 'New',
+                    icon: 'fa-plus',
+                    default: true
+                },
+                {
+                    title: 'Delete',
+                    icon: 'fa-thrash'
+                },
+                {
+                    isSeparator: true
+                },
+                {
+                    title: 'Exit'
+                }
+            ]
+        },
+        {
+            title: 'New',
+            icon: 'fa-plus',
+            default: true,
+            items: [
+                {
+                    title: 'Mandy Bank <br/> mbank@infogix.com',
+                    isLabel: true
+                },
+                {
+                    title: 'Edit',
+                    icon: 'fa-pencil'
+                },
+                {
+                    title: 'New',
+                    icon: 'fa-plus',
+                    default: true
+                },
+                {
+                    title: 'Delete',
+                    icon: 'fa-thrash'
+                },
+                {
+                    isSeparator: true
+                },
+                {
+                    title: 'Exit'
+                }
+            ]
+        },
+        {
+            title: 'Delete',
+            icon: 'fa-thrash',
+            items: [
+                {
+                    title: 'Mandy Bank <br/> mbank@infogix.com',
+                    isLabel: true
+                },
+                {
+                    title: 'Edit',
+                    icon: 'fa-pencil'
+                },
+                {
+                    title: 'New',
+                    icon: 'fa-plus',
+                    default: true
+                },
+                {
+                    title: 'Delete',
+                    icon: 'fa-thrash'
+                },
+                {
+                    isSeparator: true
+                },
+                {
+                    title: 'Exit'
+                }
+            ]
         },
         {
             isSeparator: true
