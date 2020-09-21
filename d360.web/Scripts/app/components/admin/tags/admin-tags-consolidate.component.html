@@ -8,7 +8,7 @@
                 <table class="table table-borderless">
                     <thead>
                         <tr>
-                            <th></th>
+                            <th></th> 
                             <th scope="col"></th>
 
                         </tr>
@@ -31,7 +31,7 @@
         </div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+        <button class="button" (click)="cancel()">Cancel</button>
         <span class="grow"></span>
 
         <button class="button primary {{consolidateInProgress ? 'loading' : ''}}" (click)="consolidate()" [disabled]="!selected">

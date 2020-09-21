@@ -58,6 +58,8 @@ export class ObjectRelationshipCount {
     uid: number;
     Cardinality: number;
     AllowEditFromRelationshipEditor: boolean;
+    IsSubject: boolean;
+    ObjectUid: string;
 }
 
 

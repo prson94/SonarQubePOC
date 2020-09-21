@@ -21,7 +21,7 @@ export class PreviewPopupComponent implements OnInit {
     @Input() seed: TooltipInfo = null;
 
     private _display: boolean = false;
-    private displaydialog: boolean = false;
+    displaydialog: boolean = false;
 
     @Input() get display(): any {
         return this._display;
@@ -40,7 +40,7 @@ export class PreviewPopupComponent implements OnInit {
     public loading: boolean = false;
 
     private remoteAugment: boolean = false;
-    private data: TooltipInfo;
+    data: TooltipInfo;
 
     private subscriptions: Subscription = new Subscription();
 
@@ -57,7 +57,7 @@ export class PreviewPopupComponent implements OnInit {
             info => {
                 if (info.uid == this.uid || !this.displaydialog) return;
                 setTimeout(() => {
-                    this.closeDialog(undefined);
+                    this.closeDialog();
                 }, 10);
                 
             });
@@ -100,11 +100,11 @@ export class PreviewPopupComponent implements OnInit {
             return url;
     }
 
-    private getLeft() {
+    getLeft() {
         return this.elRef.nativeElement.offsetLeft - (468+10);
     }
 
-    private getTop(): number {
+    getTop(): number {
         var viewport = DomHandler.getViewport();
         return Math.min(this.elRef.nativeElement.offsetTop, (viewport.height/2)-30);
     }
@@ -149,7 +149,7 @@ export class PreviewPopupComponent implements OnInit {
         }
     }
 
-    closeDialog($event) {
+    closeDialog() {
         if (this.displaydialog) {
             this.displaydialog = false;
             this.displayChange.emit(false);

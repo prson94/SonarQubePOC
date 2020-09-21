@@ -34,7 +34,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     private typeAheadQuery$ = new Subject<string>();
 
-    private isSearchInProgress: boolean = false;
+    isSearchInProgress: boolean = false;
 
     constructor(
         private router: Router,

@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;" >
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;" >
                        <div class="menu-category-box">
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" />

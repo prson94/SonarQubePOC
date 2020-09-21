@@ -28,11 +28,11 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     @Output() formModeChange = new EventEmitter<FormMode>();
 
-    private get showEditor(): boolean {
+    get showEditor(): boolean {
         return this._showEditor;
     }
 
-    private set showEditor(value: boolean) {
+    set showEditor(value: boolean) {
         if (value != this._showEditor && value) {
             this.formModeChange.emit(FormMode.Editing | FormMode.Adding);
         }
@@ -44,12 +44,12 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         }
     }
 
-    private get showDelete(): boolean {
+    get showDelete(): boolean {
         return this._showDelete;
     }
 
 
-    private set showDelete(value: boolean) {
+    set showDelete(value: boolean) {
         if (value != this._showDelete && value) {
             this.formModeChange.emit(FormMode.Deleting);
         }

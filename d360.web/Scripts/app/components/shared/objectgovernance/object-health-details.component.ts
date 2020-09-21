@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, HostListener, } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -22,23 +22,23 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     lastScorePoint: Date;
     averageScore: number;
     scoreDate: string = null;
-    private showGovernanceScores: boolean = true;
-    private showDQScores: boolean = false;
+    showGovernanceScores: boolean = true;
+    showDQScores: boolean = false;
 
     private historicalData: any[];
-    private calculatedScoreText: string = 'Calculating...';
+    calculatedScoreText: string = 'Calculating...';
     private pointBreakdown: PointBreakdown[] = [];
-    private ScoreType = ScoreType;
+    ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes: number[] = [];
-    private showEmptyMessage: boolean = false;
+    showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
     private handle: any;
-    private loadingPoints: boolean = false;
-    private loadingDefinition: boolean = false;
-    private loadingHistory: boolean = false;
+    loadingPoints: boolean = false;
+    loadingDefinition: boolean = false;
+    loadingHistory: boolean = false;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
-    private showExpandAndCollapse: boolean = true;
+    showExpandAndCollapse: boolean = true;
 
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -298,7 +298,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         if (this.OHDitems && this.OHDitems.length > 0)
             this.OHDitems.forEach(x => { x.setCollapsed(val); })
     }
-    private isAllCollapsed() {
+
+    isAllCollapsed() {
         if (this.OHDitems && this.OHDitems.length > 0) {
             let any = this.OHDitems.filter(x => { return !x.isCollapsed; });
             if (any && any.length > 0)
@@ -307,12 +308,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 return true;
         }
     }
-    private hasAnyScoreType(scoreType: ScoreType) {
+
+    hasAnyScoreType(scoreType: ScoreType) {
         if (this.scoreTypes && this.scoreTypes.length > 0)
             return this.scoreTypes.indexOf(scoreType) !== -1;
     }
 
-    private getCurrentScoreDateText() {
+    getCurrentScoreDateText() {
         if (this.scoresPoints && this.scoresPoints.length > 0) {
             let mostRecent = Date.parse(this.scoresPoints[0].EffectiveDate);
             let milliseconds = new Date(Date.now()).getTime() - new Date(mostRecent).getTime();
@@ -406,23 +408,27 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     //scoring carousel, table and graph interactivity
     private selectPointOnGraph() {
-        var ms = new Date(this.scoreDate.toString()).getTime();
-        var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
+        if (this.chartInstance.series && this.chartInstance.series.length > 0) {
 
-        if (idx == -1) {
-            idx = 1;
-        }
+            var ms = new Date(this.scoreDate.toString()).getTime();
+            var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
 
-        for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
-            this.chartInstance.series[0].data[i].select(false, true);
+            if (idx == -1) {
+                idx = 1;
+            }
+
+            for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
+                this.chartInstance.series[0].data[i].select(false, true);
+            }
+            var point = this.chartInstance.series[0].data[idx];
+            if (point) {
+                this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
+                point.setState("select");
+            }
+            this.cdRef.detectChanges();
+            this.cdRef.markForCheck();
+
         }
-        var point = this.chartInstance.series[0].data[idx];
-        if (point) { 
-            this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
-            point.setState("select");
-        }
-        this.cdRef.detectChanges();
-        this.cdRef.markForCheck();
     }
 
     private scoreTableClick(item: ScorePoint) {
@@ -446,6 +452,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {
+        this.selectPointOnGraph();
         //table autoscroll to selected item
         if (this.scoreTable) {
             var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');

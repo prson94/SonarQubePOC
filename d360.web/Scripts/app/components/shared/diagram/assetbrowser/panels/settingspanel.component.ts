@@ -25,19 +25,19 @@ export class AssetBrowserSettingsPanelComponent implements AfterViewInit {
         this.cdRef.markForCheck();
     }
 
-    private allBadgesChange(): void {
+    allBadgesChange(): void {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.AllBadges, Model: this.current });
     }
 
-    private ancestorBadgesChange(): void {
+    ancestorBadgesChange(): void {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.AncestorBadges, Model: this.current });
     }
 
-    private iconsChange(): void {
+    iconsChange(): void {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Icons, Model: this.current });
     }
 
-    private scoreChange(): void {
+    scoreChange(): void {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Scores, Model: this.current });
     }
 } 

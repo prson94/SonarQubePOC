@@ -683,8 +683,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
         /// </table>
         /// <br/>
-        /// </remarks>
+        /// </remarks>        
         /// <param name="users">A list of users to add.</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         [
             HttpPost,
             Route("users"),
@@ -695,7 +696,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users)
+        public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
         {
             var prefix = "Membership.PostUsers => ";
 
@@ -710,7 +711,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -742,8 +743,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
         /// </table>
         /// <br/>
-        /// </remarks>
+        /// </remarks>        
         /// <param name="users">A list of users to update.</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         [
             HttpPut,
             Route("users"),
@@ -754,7 +756,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users)
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
         {
             var prefix = "Membership.PutUsers => ";
 
@@ -769,7 +771,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)

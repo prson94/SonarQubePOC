@@ -31,7 +31,7 @@ export class TagView extends BaseComponent implements OnInit {
     private inputValue: any;
     tagNoSpaces: string = "";
     private searchResults: any[] = [];
-    private tags: any[];
+    tags: any[];
     private resultPanel: any;
     private targetPanel: any;
     private tagsLoading = false;

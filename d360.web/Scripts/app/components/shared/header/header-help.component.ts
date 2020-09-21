@@ -20,7 +20,7 @@ declare var VersionNumber: string;
                                          additionalClasses="about medium-dialog" 
                                          (onClose)="closeAbout()" 
                                          [isVisible]="isModalVisible"
-                                         (keydown)="checkKey($event,popupBox)"
+                                         (keydown)="checkKey($event)"
                                          tabindex=-1 >
                         <div class="content">
                             <div class="flex row">

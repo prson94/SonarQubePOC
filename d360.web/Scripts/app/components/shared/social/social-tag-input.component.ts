@@ -1,6 +1,6 @@
 
 import {debounceTime} from 'rxjs/operators';
-import { Component, Input, Output, EventEmitter, HostBinding, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { Tag } from '../../../models/tag.model';
@@ -30,8 +30,8 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
     
     @Output() selectTag = new EventEmitter();
         
-    private tags : Tag[] = [];
-    private tag : Tag;
+    tags : Tag[] = [];
+    tag : Tag;
     private searchSub: ISubscription;
     constructor(private tagService: TagService) {
         super();
@@ -41,7 +41,7 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
         if (this.searchSub) this.searchSub.unsubscribe();
     }
 
-    private search(event) {
+    search(event) {
         this.searchSub = this.tagService.getTags(event.query).pipe(
             debounceTime(400))
             .subscribe(data => {
@@ -49,13 +49,14 @@ export class SocialTagInputComponent extends BaseComponent  implements OnDestroy
         }); 
     }
 
-    private selectItem() {
+    selectItem() {
         this.selectTag.emit({
             tag: this.tag
         });
         this.tag = null;
     }
-    private userFriendlyObjectName(objectType: string) {
+
+    userFriendlyObjectName(objectType: string) {
         return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
     }
 }

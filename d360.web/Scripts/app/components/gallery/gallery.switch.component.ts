@@ -8,11 +8,12 @@
 })
 
 export class GallerySwitchComponent implements OnInit {
-    protected properties: Array<any>;    
-    protected events: Array<any>;
-    protected sampleUsage: string = '<ig-switch></ig-switch>';
-    protected bindingVal: boolean = true;
-    protected formVal: boolean = undefined;
+    properties: Array<any>;    
+    events: Array<any>;
+    sampleUsage: string = '<ig-switch></ig-switch>';
+    bindingVal: boolean = true;
+    formVal: boolean = undefined;
+
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "ngModel", Type: "boolean", Description: "Value for the switch control true/false/undefined", Default: "false" });

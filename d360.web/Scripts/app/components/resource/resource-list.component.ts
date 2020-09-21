@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -9,8 +9,6 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { PermissionsService } from '../../services/permissions.service';
 
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 
@@ -32,7 +30,7 @@ declare var CompanySettings;
 })
 
 export class ResourceListComponent extends BaseComponent {
-    private showResources: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
+    showResources: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
 
     constructor(private route: ActivatedRoute,
         private router: Router,

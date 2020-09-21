@@ -41,7 +41,7 @@ export class HeaderBreadcrumbComponent {
     private resizeTimer: any;
     private maxSpaceForCrumbs: number = 800;
     private maxWidthOfSmallPanel: number = window.innerWidth - 200;
-    private objectState: string = '';
+    objectState: string = '';
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
@@ -83,11 +83,11 @@ export class HeaderBreadcrumbComponent {
     }
 
 
-    private hideSmallPanel(item) {
+    hideSmallPanel(item) {
         item.style.display = "none";
     }
 
-    private fixHeight($event, smallPanel) {
+    fixHeight($event, smallPanel) {
         smallPanel.style.display = "block";
         smallPanel.style.maxWidth = this.maxWidthOfSmallPanel + "px";
     }

@@ -18,9 +18,9 @@ export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
     @Output() previous: EventEmitter<number> = new EventEmitter();
     @Output() next: EventEmitter<number> = new EventEmitter();
 
-    private searchTimer;
-    private searchValue: string = '';
-    private searchCurrentItem: number;
+    searchTimer;
+    searchValue: string = '';
+    searchCurrentItem: number;
 
     constructor(
         protected permissionsService: PermissionsService,

@@ -17,16 +17,16 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 export class AdminMetricAssetTypeListComponent extends BaseComponent implements OnInit {
 
     private _loadedAllocations: ScoreTypeAllocation[];
-    private selection: ScoreTypeAllocation = new ScoreTypeAllocation();
+    selection: ScoreTypeAllocation = new ScoreTypeAllocation();
 
     //This one will hold data but with formatted enums to friendly string (for readability and search)
     private allocations: ScoreTypeAllocationFormatted[] = [];
 
-    private showDelete = false;
+    showDelete = false;
     public theDeleteCallback: Function;
 
-    private showEdit = false;
-    private editTitle = 'Add Score';
+    showEdit = false;
+    editTitle = 'Add Score';
 
     @ViewChild('dt', { static: false }) dt: Table;
 
@@ -102,11 +102,11 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         }
     }
 
-    private export() {
+    export() {
         this.allocationService.export(this.dt.filters);
     }
 
-    private add() {
+    add() {
         this.editTitle = 'Add Score';
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
@@ -116,11 +116,12 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.showEdit = true;
     }
 
-    private doDelete(item: ScoreTypeAllocationFormatted) {
+    doDelete(item: ScoreTypeAllocationFormatted) {
         this.showDelete = true;
         this.selection = this.getAllocationByUid(item.uid);
     }
-    private doEdit(item: ScoreTypeAllocationFormatted) {
+
+    doEdit(item: ScoreTypeAllocationFormatted) {
         this.editTitle = 'Edit Score';
         this.showEdit = true;
         this.selection = this.getAllocationByUid(item.uid);
@@ -141,7 +142,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
             }, err => { this.showMessageForResult(this.messagesService, err); this.showDelete = false; });
     }
 
-    private onSaveCancel() {
+    onSaveCancel() {
         this.showEdit = false;
     }
 

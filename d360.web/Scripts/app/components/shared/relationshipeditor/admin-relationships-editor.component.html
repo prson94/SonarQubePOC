@@ -12,7 +12,7 @@
             <div class="col l4 m4 s12">
                 <div class="FieldName">Predicate</div>
                 <p-dropdown filter="true" appendTo="body" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
-            </div>
+            </div> 
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>

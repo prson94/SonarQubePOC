@@ -61,7 +61,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
         
     }
 
-    private handleArrowClick(event) {
+    handleArrowClick(event) {
         event.stopPropagation();
         
         if (!this.item.ShowChildren) {             

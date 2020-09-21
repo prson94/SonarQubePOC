@@ -2,11 +2,12 @@ import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@a
 import { DetailRow, DetailField, DetailFieldType, NymType, Category } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'object-detail',
     templateUrl: './object-detail.component.html',
-    providers: [ObjectDetailService]
+    providers: [ObjectDetailService, AssetService]
 })
 
 
@@ -20,15 +21,18 @@ export class ObjectDetailComponent implements OnChanges {
     private assetUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
-    
+
     readonly systemProperties: string = "System Properties";
-    readonly noCategory: string  = "None";
-        
+    readonly noCategory: string = "None";
+
     private categories: Category[] = new Array<Category>();
     private systemPropertiesCategory: Category = new Category(this.systemProperties);
 
     rows = new Array<DetailRow>();
-    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService, private cdRef: ChangeDetectorRef) { }
+    constructor(private objectDetailService: ObjectDetailService,
+        protected messagesService: MessagesObservableService,
+        private assetService: AssetService,
+        private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
@@ -65,9 +69,9 @@ export class ObjectDetailComponent implements OnChanges {
                         if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
                             this.categories.push(new Category(r.Category));
 
-                        this.populateRow(r)                        
+                        this.populateRow(r)
                     });
-                                       
+
                     let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
                     if (this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
                         this.categories.push(this.categories.splice(this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
@@ -81,14 +85,14 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                         }
                     }
-                    this.rows = displayRows;                                      
+                    this.rows = displayRows;
                     this.loadCategory();
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
         }
-    }    
-    
+    }
+
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
         if ((field.Value == null || field.Value == '') && field.ShowIfEmpty == false)
@@ -99,8 +103,8 @@ export class ObjectDetailComponent implements OnChanges {
             else
                 field.Type = DetailFieldType.None;
         }
-
-        if (field.LookupGridUrl != null) {
+        
+        if (field.IsComplexLookupGrid) {
             field.Type = DetailFieldType.Lookup;
         }
     }
@@ -139,9 +143,9 @@ export class ObjectDetailComponent implements OnChanges {
         // if there are no fields (non-system) without a category then expand the first category unless it's system properties
         if (this.categories && this.categories.length > 0
             && this.rows.filter(x => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0
-            && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {            
+            && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {
             this.categories[0].active = true;
-        }        
+        }
 
     }
 
@@ -150,7 +154,7 @@ export class ObjectDetailComponent implements OnChanges {
             this.setDetailFieldType(f);
 
             if (f.Type == DetailFieldType.Lookup) {
-                this.objectDetailService.getLookupGrid(f.LookupGridUrl)
+                this.assetService.getAssetsComplexFieldValue(this.objectUID, f.FieldName)
                     .subscribe(i => {
                         f.Data = i;
                         if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
@@ -170,7 +174,7 @@ export class ObjectDetailComponent implements OnChanges {
             this.setDetailFieldType(s);
 
             if (s.Type == DetailFieldType.Lookup) {
-                this.objectDetailService.getLookupGrid(s.LookupGridUrl)
+                this.assetService.getAssetsComplexFieldValue(this.objectUID, s.FieldName)
                     .subscribe(i => {
                         s.Data = i;
                         if ((!s.Data || !s.Data.Values || s.Data.Values.length == 0) && (!s.ShowIfEmpty)) {
@@ -187,7 +191,7 @@ export class ObjectDetailComponent implements OnChanges {
         row.SecondColumnFields = row.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
     }
 
-    private populateSystemProperties(rows: DetailRow[]) {        
+    private populateSystemProperties(rows: DetailRow[]) {
         let systemPropertyItems = this.rows.filter(row => row.Category && row.Category.toUpperCase() == this.systemProperties.toUpperCase());
 
         this.systemPropertiesCategory.rows = [];

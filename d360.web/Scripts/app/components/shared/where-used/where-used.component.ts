@@ -17,10 +17,10 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
 
     @Output() onLoaded = new EventEmitter<any>();
 
-    private usage: any[] = [];
-    private isUsageLoading: boolean = false;
-    private hasUsage: boolean = false;
-    private isModalVisible: boolean = false;
+    usage: any[] = [];
+    isUsageLoading: boolean = false;
+    hasUsage: boolean = false;
+    isModalVisible: boolean = false;
     @ViewChild('tableHolder', { static: false }) tableHolder: ElementRef;
 
     constructor(
@@ -60,6 +60,7 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
             this.loadConnectorLabelUsage();
         }
     }
+
     export() {
         if (this.objectType == "ConnectorLabel") {
             this.connectorLabelService.exportLabelUsage(this.uid, `Where Used report for Connector Label "${this.displayValue}"`)

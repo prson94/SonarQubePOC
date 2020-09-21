@@ -29,6 +29,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     private formMode = FormMode.Default;
     FormMode = FormMode;
 
+    g: any = null;
+
     private operators = [
         { value: 'eq', label: '=' },
         { value: 'neq', label: '!=' },

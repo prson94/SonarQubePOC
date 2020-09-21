@@ -45,6 +45,9 @@ import { GalleryNumberFieldComponent } from './gallery.number-field.component';
 import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
 import { GalleryMessageBoxComponent } from './gallery.message-box.component';
 import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
+import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
 import { GalleryPopupMenuComponent } from './gallery.popup-menu.component';
@@ -77,6 +80,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         TableModule,
         TooltipModule,
         AutoCompleteModule,
+        CheckboxModule,
+        TriStateCheckboxModule,
         SiteModalModule,
         PopupMenuModule,
         OverlayPanelModule
@@ -102,7 +107,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         GalleryNumberFieldComponent,
         GalleryBadgeComponent,
         GalleryMessageBoxComponent,
-        GalleryPopupMenuComponent
+        GalleryPopupMenuComponent,
+        GalleryCheckboxComponent
     ],
     providers: [
         GalleryGuard,

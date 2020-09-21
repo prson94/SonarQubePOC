@@ -10,9 +10,9 @@ import { Count} from '../../models/counts.model';
 })
 
 export class ActivityTile extends BaseComponent implements OnInit {
-    private counts: Count[] = [];
-    private selected: Count;    
-    private isLoaded: boolean = false;
+    counts: Count[] = [];
+    selected: Count;    
+    isLoaded: boolean = false;
 
     @Input() daysToLookBack: number = 7;
     @Output() daysToLookBackChange = new EventEmitter();
@@ -45,20 +45,20 @@ export class ActivityTile extends BaseComponent implements OnInit {
         ;
     }
 
-    private doSelect(item) {
+    doSelect(item) {
         this.showItemDetail.emit({
             Id: item.Id,
             name: item.Name
         });
     }
 
-    private changeDates(event) {
+    changeDates(event) {
         this.daysToLookBack = event.days;
         this.daysToLookBackChange.emit(this.daysToLookBack);
         this.load();
     }
 
-    private timeFrameMessage() {
+    timeFrameMessage() {
         let text;
 
         switch (this.daysToLookBack) {

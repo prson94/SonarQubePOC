@@ -76,5 +76,5 @@ export class WorkflowHistoryComponent extends BaseComponent implements OnInit, O
 
 enum FormMode {
     Default,
-    ShowFormHistory,
+    FormHistory,
 }

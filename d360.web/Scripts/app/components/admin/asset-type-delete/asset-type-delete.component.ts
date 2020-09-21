@@ -20,8 +20,8 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     @Input() count: number = 0;
     @Output() onCancel = new EventEmitter();
 
-    private signoff: boolean = false;
-    private className: string;
+    signoff: boolean = false;
+    className: string;
     private sub: any;
 
     constructor(
@@ -63,7 +63,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
         });
     }
 
-    private delete(): void {
+    delete(): void {
         if (this.isLoading) {
             return;
         }
@@ -77,7 +77,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
         this.isLoading = false;
     }
 
-    private cancel(): void {
+    cancel(): void {
         this.onCancel.emit(null);
     }
 }

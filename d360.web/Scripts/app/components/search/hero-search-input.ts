@@ -17,7 +17,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
-    private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
+    searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
         return {
             label: set.title,
             value: set.value

@@ -18,11 +18,11 @@
 })
 
 export class GalleryButtonComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<button igButton icon="fa-ellipsis-v" tooltip="More..."></button>';
-    protected loadingState: boolean = false;
-    protected disabledState: boolean = false;
-    protected clicks: string[] = [];
+    properties: Array<any>;
+    sampleUsage: string = '<button igButton icon="fa-ellipsis-v" tooltip="More..."></button>';
+    loadingState: boolean = false;
+    disabledState: boolean = false;
+    clicks: string[] = [];
 
     ngOnInit(): void {
         this.properties = new Array();

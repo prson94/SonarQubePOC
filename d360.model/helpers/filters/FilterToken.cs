@@ -16,7 +16,7 @@ namespace d360.model.helpers
 
         private int parameterIdx { get; set; }
         private string field { get; set; }
-        private string @operator { get; set; }
+        public string @operator { get; set; }
         private object value { get; set; }
         private FieldType fieldType { get; set; }
         private string fieldColumn { get; set; }

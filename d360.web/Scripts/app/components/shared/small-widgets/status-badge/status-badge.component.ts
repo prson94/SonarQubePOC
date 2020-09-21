@@ -1,8 +1,7 @@
 ﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
-import { validateDashboardLoad } from 'powerbi-models';
 
 @Component({
     selector: 'd3s-status-badge',
@@ -14,8 +13,8 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
 
     @Input() status: string;
     private formattedStatus: string;
-    private useDefinedColor: boolean;
-    private singleUndefinedColor: boolean;
+    useDefinedColor: boolean;
+    singleUndefinedColor: boolean;
     private colorObjects: any = null;
     private changeWait: any;
     constructor(

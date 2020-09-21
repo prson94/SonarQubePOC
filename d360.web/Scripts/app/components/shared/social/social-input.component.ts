@@ -1,7 +1,5 @@
-﻿import { Input, Component, EventEmitter, Output, HostBinding, ViewChildren, QueryList, ElementRef } from '@angular/core';
+﻿import { Component, EventEmitter, Output, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/social.service';
-import { SocialComment, SocialEditCommentData } from '../../../models/social.model';
 import { Tag } from '../../../models/tag.model';
 
 @Component({
@@ -49,15 +47,15 @@ export class SocialInputComponent extends BaseComponent {
     @Output() commented = new EventEmitter();
          
     @ViewChildren('editor') viewChildren: QueryList<ElementRef>;
-    private isEditing: boolean = false;
-    private comment: string = '';
-    private tags: Tag[] = [];
+    isEditing: boolean = false;
+    comment: string = '';
+    tags: Tag[] = [];
      
     ngAfterViewInit() {
         this.viewChildren.changes.subscribe(x => this.setFocus(x) );
     }
 
-    private handleCommentClick() {
+    handleCommentClick() {
         this.commented.emit({
             comment: this.comment,
             tags: this.tags
@@ -66,17 +64,17 @@ export class SocialInputComponent extends BaseComponent {
     }
     
 
-    private setFocus(items) {
+    setFocus(items) {
         if (items.length > 0) {
             items._results[0].quill.focus();
         }
     }
 
-    private addTag(event) {
+    addTag(event) {
         this.tags.push(event.tag);
     }
 
-    private removeTag(tag: Tag) {
+    removeTag(tag: Tag) {
         let index = this.tags.findIndex(x => x.Object == tag.Object && x.ObjectID == tag.ObjectID);
 
         if (index >= 0 && index < this.tags.length) {
@@ -84,7 +82,7 @@ export class SocialInputComponent extends BaseComponent {
         }
     }
 
-    private showEditor() {
+    showEditor() {
         this.tags = [];
         this.comment = "";
         this.isEditing = true;

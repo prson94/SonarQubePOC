@@ -18,8 +18,8 @@
 })
 
 export class GalleryTextAreaComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<textarea igTextArea></textarea>';
+    properties: Array<any>;
+    sampleUsage: string = '<textarea igTextArea></textarea>';
 
     ngOnInit(): void {
         this.properties = new Array();

@@ -60,7 +60,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     * Called by the asset type listbox control when an item is (un)checked.
     * @returns Nothing
     */
-    private assetTypeChange(e) {
+    assetTypeChange(e) {
         this.current.SelectedAssetTypes = this.getTreeNodeSelectionKeys(e.value);
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.AssetType, Model: this.current });
     }
@@ -85,7 +85,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     * Called by the predicate listbox control when an item is (un)checked.
     * @returns Nothing
     */
-    private predicateChange(e) {
+    predicateChange(e) {
         this.current.SelectedPredicates = this.getTreeNodeSelectionKeys(e.value);
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Predicate, Model: this.current });
     }
@@ -94,7 +94,7 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     * Called by the responsibility type listbox control when an item is (un)checked.
     * @returns Nothing
     */
-    private responsibilityTypeChange(e) {
+    responsibilityTypeChange(e) {
         this.current.SelectedResponsibilityTypes = this.getTreeNodeSelectionKeys(e.value);
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.ResponsibilityType, Model: this.current });
     }

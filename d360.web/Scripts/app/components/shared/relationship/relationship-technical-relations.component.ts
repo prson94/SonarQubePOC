@@ -117,7 +117,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
 
     private relations: any[] = [];
     private selected: any;
-    private showEditor: boolean = false;
+    showEditor: boolean = false;
 
     private possibleTechnicalIntersectTypes: PossibleTechnicalRelationship[] = [];
     private selectedIntersectType: number;
@@ -185,7 +185,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
         this.showEditor = false;
     }
 
-    private showRelEditor() {
+    showRelEditor() {
         return this.showEditor;
     }
 }

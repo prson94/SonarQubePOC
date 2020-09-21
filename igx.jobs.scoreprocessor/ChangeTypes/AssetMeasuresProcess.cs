@@ -404,7 +404,7 @@ from	metrics.Asset A
                                         break;
                                         #endregion
                                     case ScoreType.Governance:
-                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition);
+                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition ?? "{}");
                                         switch (gDefinition.Check)
                                         {
                                             case GovernanceMeasureCheck.External:
@@ -422,6 +422,9 @@ from	metrics.Asset A
                                                 break;
                                             case GovernanceMeasureCheck.Relationship:
                                                 //scoreItem.Value = n.Result;
+                                                break;
+                                            default:
+                                                scoreItem.Value = false;
                                                 break;
                                         }
                                         break;
@@ -498,7 +501,7 @@ from	metrics.Asset A
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
 
                         // Helps to determine if we should create a new score record.
-                        var scoreItemHash = string.Join(";", assetScoreItems.OrderBy(i => i.AssetVersionUid).Select(i => $"{i.AssetVersionUid}:{i.AdjustedWeight}"));
+                        var scoreItemHash = string.Join(";", assetScoreItems.OrderBy(i => i.AssetVersionUid).Select(i => $"{i.AssetVersionUid}:{String.Format("{0:#,0.000}", i.AdjustedWeight ?? 0)}"));
                         scoreItemHash = scoreItemHash.GetSha1HashString();
 
                         Score assetScore = new Score
@@ -522,6 +525,14 @@ from	metrics.Asset A
                             }
                             else
                             {
+                                // This condition is for cases where ou need to check historical (pre-migration scores that do not yet have a proper hash).
+                                if (string.IsNullOrEmpty(matchingScore.VersionValueHash))
+                                {
+                                    var matchingScoreItemHash = string.Join(";", previousScoreItems.OrderBy(i => i.MetricAssetVersionUid).Select(i => $"{i.MetricAssetVersionUid}:{String.Format("{0:#,0.000}", i.AdjustedWeight)}"));
+                                    matchingScoreItemHash = matchingScoreItemHash.GetSha1HashString();
+                                    matchingScore.VersionValueHash = matchingScoreItemHash;
+                                }
+
                                 if (assetEffectiveDate.EffectiveDate > matchingScore.EffectiveDate && assetScore.VersionValueHash == matchingScore.VersionValueHash)
                                 {
                                     scoreUid = matchingScore.ScoreUid;

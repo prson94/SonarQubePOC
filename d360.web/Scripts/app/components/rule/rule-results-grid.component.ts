@@ -24,10 +24,10 @@ export class RuleResultsGridComponent extends BaseComponent {
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
 
-    private rowsPerPage: number = 25;
-    private totalRecords: number = 0;
-    private results: RuleResultPagedResults;
-    private items;
+    rowsPerPage: number = 25;
+    totalRecords: number = 0;
+    results: RuleResultPagedResults;
+    items;
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
@@ -53,7 +53,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.getData();        
     }
 
-    private getData() {
+    getData() {
 
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
@@ -84,7 +84,7 @@ export class RuleResultsGridComponent extends BaseComponent {
             });       
     }
 
-    private loadRuleResultsLazy(event: LazyLoadEvent) {
+    loadRuleResultsLazy(event: LazyLoadEvent) {
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
@@ -98,7 +98,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.getData();
     }
 
-    private checkSimpleSearchEnter(event, dt: Table) {
+    checkSimpleSearchEnter(event, dt: Table) {
         if (event.keyCode == 13) this.doSimpleSearch(dt);
         else {
             if (this.simpleSearchID > 0) {
@@ -110,16 +110,16 @@ export class RuleResultsGridComponent extends BaseComponent {
         }
     }
 
-    private doSimpleSearch(dt: Table) {
+    doSimpleSearch(dt: Table) {
         if (dt) dt.reset();
         this.getData();
     }
 
-    private doExport() {
+    doExport() {
         this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);        
     }
 
-    private formatPath(s: string) {
+    formatPath(s: string) {
         return s ? s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>') : s;
     }
 

@@ -87,7 +87,7 @@ export class FusionExecutionErrorsComponent extends BaseComponent implements OnI
             });
     }
 
-    private export() {
+    export() {
         this.fusionService.getFusionExecutionErrorsExport(this.executionId)
     }
 }

@@ -163,11 +163,11 @@ export class FusionExecutionHistoryComponent extends BaseComponent implements On
     @Input() maxRows: number = 100;
     @Input() fusion: FusionConfigurationDetails;
 
-    private executions: FusionWorkerExecution[] = [];
-    private selected: FusionWorkerExecution;
+    executions: FusionWorkerExecution[] = [];
+    selected: FusionWorkerExecution;
 
-    private showExecutionResults: boolean = false;
-    private showExecutionErrors: boolean = false;
+    showExecutionResults: boolean = false;
+    showExecutionErrors: boolean = false;
 
     destroySubject$: Subject<void> = new Subject();
 

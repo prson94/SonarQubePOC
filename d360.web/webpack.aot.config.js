@@ -17,6 +17,23 @@ var webpackConfig = {
         path: __dirname + '/scripts/app/',
     },
 
+
+    optimization: {
+        runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,
+                vendor: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
+    },
+
     plugins: [
         new ngtools.AngularCompilerPlugin({
             tsConfigPath: './scripts/app/tsconfig.aot.json',
@@ -31,26 +48,38 @@ var webpackConfig = {
             /@angular(\\|\/)core(\\|\/)fesm5/,
             path.resolve(__dirname, '../src')
         ),
-        /*new webpack.optimize.UglifyJsPlugin({
-            compress: { warnings: false },comments:false
-        }),*/
-        new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
+
     ],
 
     module: {
-        loaders: [
-            // .ts files for TypeScript
-            // {test:/\.ts$/, loaders:["@ngtools/webpack"]},
-            { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.aot.json', 'angular2-template-loader', 'angular2-router-loader'] },
-            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-            { test: /\.html$/, loader: 'raw-loader' }
-        ],
         rules: [
             {
-                test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-                loader: '@ngtools/webpack'
+                test: /\.less$/,
+                exclude: /node_modules/,
+                loader: 'raw-loader!less-loader'
+            },
+            // .ts files for TypeScript
+            {
+                test: /\.ts$/,
+                use: [
+                    {
+                        loader: 'ts-loader', options: {
+                            configFile: "scripts/app/tsconfig.aot.json"
+                        }
+                    },
+                    { loader: 'angular2-template-loader' },
+                    { loader: 'angular2-router-loader' }
+                ],
+                exclude: [/\.(spec|e2e)\.ts$/],
+            },
+            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
+            { test: /\.html$/, loader: 'raw-loader' },
+            {
+                // Hide import warnings
+                test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+                parser: { system: true }
             }
-        ]
+        ],
     }
 
 };

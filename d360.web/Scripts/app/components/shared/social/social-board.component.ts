@@ -37,11 +37,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Output() countsChanged = new EventEmitter();
     @Output() close = new EventEmitter();
     
-    private rowCount: number = 5;
-    private pageNumber: number = 0;
-    private hasMore: boolean = true;
-    private comments: SocialComment[] = [];
-    private socialMessage: string;
+    rowCount: number = 5;
+    pageNumber: number = 0;
+    hasMore: boolean = true;
+    comments: SocialComment[] = [];
+    socialMessage: string;
     
     
 
@@ -83,11 +83,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.pageNumber++;
     }
 
-    private allowComments(): boolean {
+    allowComments(): boolean {
         return this.hasNewInput && !CurrentCompanySettings.disableCommunityPosting;
     }
 
-    private deleteComment(event) {
+    deleteComment(event) {
         let comment = event.comment;
 
         if (!comment) return;
@@ -114,7 +114,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private addComment(event) {
+    addComment(event) {
         let commentContent = event.comment;
 
         if (!commentContent) return;
@@ -141,7 +141,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private editComment(event) {
+    editComment(event) {
         let comment = event.comment;
 
         if (!comment) return;
@@ -159,7 +159,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             });
     }
 
-    private replyToComment(event) {
+    replyToComment(event) {
         if (!event) {
             console.log("DEV ERROR - EVENT OBJECT IS NULL!");
             return;

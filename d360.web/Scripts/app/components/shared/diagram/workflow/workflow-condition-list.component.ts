@@ -70,7 +70,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     @Output() editClick = new EventEmitter();
     @Output() connectorChange = new EventEmitter();
 
-    private filteredConditions: any[] = [];
+    filteredConditions: any[] = [];
 
     ngOnInit() {
         this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");

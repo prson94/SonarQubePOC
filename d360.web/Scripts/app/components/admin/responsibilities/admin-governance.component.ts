@@ -1,9 +1,8 @@
-﻿import { Component, NgZone, OnDestroy } from '@angular/core';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
+﻿import { Component, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { ResponsibilityType, IResponsibilityTypeService } from '../../../models/responsibility-type.model';
+import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { FormMode } from '../../../models/form.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
@@ -16,12 +15,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {
-    private formMode = FormMode.Default;
-    private FormMode = FormMode;
+    formMode = FormMode.Default;
+    FormMode = FormMode;
     private forceRulesReloadFlag: boolean = false;
 
-    private responsibilityTypeItems = new Array<ResponsibilityType>();
-    private selectedRow = new ResponsibilityType();
+    responsibilityTypeItems = new Array<ResponsibilityType>();
+    selectedRow = new ResponsibilityType();
 
     theDeleteCallback: Function;
 

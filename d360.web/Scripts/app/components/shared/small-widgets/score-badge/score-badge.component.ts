@@ -21,7 +21,7 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() lowerThreshold: number = 50; //50%
     @Input() upperThreshold: number = 90; //90%
 
-    private scoreBadgeClass: string;
+    scoreBadgeClass: string;
 
     private changeWait: any;
     constructor(

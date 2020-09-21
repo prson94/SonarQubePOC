@@ -31,13 +31,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Output() onClose = new EventEmitter();
 
 
-    //private condition: any = {};
-    private fields: FieldType[] = [];
-    private selectedField;
-    private selectedType;
-    private lookups: any[] = [];
-    private fieldList: any[] = [];
-    private contextualFields: any[] = [];
+    fields: FieldType[] = [];
+    selectedField;
+    selectedType;
+    lookups: any[] = [];
+    fieldList: any[] = [];
+    contextualFields: any[] = [];
 
     private selectedIssueObject = null;
     private suggestions = [];

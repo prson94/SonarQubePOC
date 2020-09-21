@@ -378,7 +378,6 @@
     <Compile Include="Controllers\V2\BaseV2ApiController.cs" />
     <Compile Include="Controllers\V2\CrossReferencesController.cs" />
     <Compile Include="Controllers\V2\CustomEndpointsController.cs" />
-    <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\Filter\CompanyStateValidator.cs" />
@@ -740,6 +739,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.message-box.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.badge.component.html" />
@@ -790,6 +790,7 @@
     <Content Include="Scripts\app\components\shared\controls\date\date.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\badge\badge.less" />
+    <Content Include="Content\styles\infogix-ui\IgCheckbox.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -912,6 +913,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.badge.component.ts" />
@@ -1655,7 +1657,7 @@
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\worflowmonitor-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-action-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-filter.component.ts" />
@@ -1678,6 +1680,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-checkbox-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autofocus.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\number-picker\number-input.component.ts" />

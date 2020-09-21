@@ -8,8 +8,8 @@
 })
 
 export class GalleryComponent implements OnInit {
-    protected activeControl: string = "popup-menu";
-    protected controls = [
+    activeControl: string = "switch";
+    controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
         { label: 'Icon Picker', key: 'icon-picker' },
@@ -29,6 +29,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Number Field', key: 'number-field' },
         { label: 'Message Box', key: 'message-box' },
         { label: 'Badge', key: 'badge' },
+        { label: 'Checkbox', key: 'checkbox' },
         { label: 'Popup Menu', key: 'popup-menu' },
     ];
 

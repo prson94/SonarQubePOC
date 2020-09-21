@@ -48,8 +48,8 @@ import { Count } from '../../models/counts.model';
 })
 
 export class BoardTile extends BaseComponent implements OnInit {
-    private counts: Count[] = [];
-    private selected: any;    
+    counts: Count[] = [];
+    selected: any;    
     @Input() daysToLookBack: number = 7;
     @Output() daysToLookBackChange = new EventEmitter();
 
@@ -63,7 +63,7 @@ export class BoardTile extends BaseComponent implements OnInit {
         this.load();
     }
 
-    private load() {
+    load() {
         this.isLoading = true;
 
         this.socialService.getMyCounts(this.daysToLookBack).subscribe(
@@ -73,19 +73,19 @@ export class BoardTile extends BaseComponent implements OnInit {
             });
     }
 
-    private doSelect(item: Count) {        
+    doSelect(item: Count) {        
         this.showItemDetail.emit({
             selected: item
         });
     }
 
-    private changeDates(event) {
+    changeDates(event) {
         this.daysToLookBack = event.days;
         this.daysToLookBackChange.emit( this.daysToLookBack );
         this.load();
     }
 
-    private timeFrameMessage() {
+    timeFrameMessage() {
         switch (this.daysToLookBack) {
             case 7:
                 return ' (Past week)';

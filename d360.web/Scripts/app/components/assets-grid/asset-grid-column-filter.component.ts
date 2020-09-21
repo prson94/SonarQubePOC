@@ -64,7 +64,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
 
     filterFieldType = FilterFieldType;
 
-    private internalFilters: FilterExpression[] = [];
+    internalFilters: FilterExpression[] = [];
     private availableFilters: FilterField[] = [];
     private isLoadingFilter = false;
     private ownerShipFilter: FilterField = {
@@ -124,7 +124,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
         }
     }
 
-    private onSubmit() {
+    onSubmit() {
         let hasOwnerFilter = false;
 
         this.filters = [];
@@ -264,7 +264,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
         }
     }
 
-    private hasMultipleOwners() {
+    hasMultipleOwners() {
         return this.internalFilters.filter(x => x.Type == FilterFieldType.Owner).length > 1;
     }
 

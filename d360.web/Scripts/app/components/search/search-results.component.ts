@@ -17,11 +17,11 @@ export class SearchResultsComponent extends BaseComponent {
     @Input() from: number = 0;
     @Input() loading: boolean = false;
 
-    constructor(private searchStateService: SearchStateService, private ref: ChangeDetectorRef) {
+    constructor(public searchStateService: SearchStateService, private ref: ChangeDetectorRef) {
         super();
     }
 
-    private paginate(data) {
+    paginate(data) {
         /*
             event.page: New page number
             event.first: Index of first record

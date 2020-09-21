@@ -13,6 +13,7 @@ import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse }
 import { URLSearchParams } from 'url';
 import { FormResponseType } from '../models/workflow.model';
 import { SelectItem } from 'primeng/api';
+import { LookupGrid } from '../models/grid-definition.model';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -154,6 +155,35 @@ export class AssetService extends BaseObservableService {
         return this.http.get('api/v2/assets/GetUIDetails/' + uid)
             .pipe(map(res => { return <any>res }),
                 catchError(err => this.handleError(err, true)));
+    }
+
+    getAssetsComplexFieldValue(assetUid: string, fieldName: string, params: any = null, isExport: boolean = false): Observable<LookupGrid> | null {
+        var url = `/api/v2/assets/${assetUid}/fields/${fieldName}?forUi=true`;
+
+        if (params) {
+            var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                url = url + '&' + qString;
+        }
+
+        if (!isExport) {
+            return this.http.get(url)
+                .pipe(
+                    map(result => {
+                        result['Values'] = result['items'];
+                        delete result['items'];
+                        return <LookupGrid>result;
+                    }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        else {
+            var fileName = fieldName;
+            this.
+                http
+                .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe(data => this.downloadFile(data, fileName));
+        }
     }
 
     public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {

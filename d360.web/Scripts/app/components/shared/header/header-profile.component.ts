@@ -68,7 +68,7 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     public singleSignOn: boolean = SingleSignOn;
     public userName: string = ResourceName;
     public userEmail: string = ResourceEmail;
-    private showAllUsersAPIKey: boolean = false;
+    showAllUsersAPIKey: boolean = false;
     private isAdminSub: Subscription;
     constructor(
         private router: Router,        

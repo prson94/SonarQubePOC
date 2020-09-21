@@ -1,0 +1,57 @@
+﻿
+@import './IgUiVariables.less';
+@import '../_Variables.less';
+
+.ui-chkbox {
+    .ig-checkbox {
+        &.ui-chkbox-box {
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+
+            &:hover:not(.ui-state-disabled) {
+                border: 1px solid rgba(0,0,0,0.4);
+            }
+
+            &:active:not(.ui-state-disabled) {
+                border: 1px solid rgba(0,0,0,0.6);
+            }
+
+            &:focus:not(.ui-state-disabled), &.ui-state-focus:not(.ui-state-disabled) {
+                box-shadow: 0 0 0 2px @ig-midblue-t3 !important;
+                outline: none !important;
+                background: @ig-white;
+            }
+
+            &.ui-state-active {
+                background: @ig-white;
+                color: @ig-black;
+            }
+
+            .pi {
+                font-weight: bold;
+            }
+        }
+    }
+
+    .ui-state-disabled {
+        opacity: 0.33;
+    }
+
+    &.ui-tristatechkbox {
+        .ig-checkbox {
+            span:not(.pi-times):not(.pi-check) {
+                &:before {
+                    content: "\e90f";
+                }
+            }
+        }
+    }
+}
+p-checkbox, p-tristatecheckbox {
+    &:focus {
+        outline: none;
+    }
+}
+

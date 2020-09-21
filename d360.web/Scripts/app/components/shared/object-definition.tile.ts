@@ -27,7 +27,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Output() onEditComplete = new EventEmitter();
     @Output() formModeChange = new EventEmitter();
 
-    private formMode: FormMode = FormMode.Default;
+    formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
     protected object: ObjectDetail = null;

@@ -19,10 +19,10 @@ import { FormControl, Validators, FormGroup, ValidatorFn, AbstractControl, FormB
 })
 
 export class GalleryNumberFieldComponent implements OnInit {
-    protected properties: Array<any>;
-    protected sampleUsage: string = '<ig-number-input></ig-number-input>';
-    private model: DummyformModel = new DummyformModel("name", 0);
-    protected form: FormGroup = null;
+    properties: Array<any>;
+    sampleUsage: string = '<ig-number-input></ig-number-input>';
+    model: DummyformModel = new DummyformModel("name", 0);
+    form: FormGroup = null;
 
     constructor(private fb: FormBuilder) { }
 

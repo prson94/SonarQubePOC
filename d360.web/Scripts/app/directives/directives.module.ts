@@ -2,24 +2,27 @@
 import { TextHighlightDirective } from './text-highlight-directive';
 import { CopyClipboardDirective } from './copy-clipboard-directive';
 import { ClickOutsideDirective } from './click-outside-directive';
-import { ButtonDirective } from './ig-button-directive';
-import { InputDirective } from './ig-input-directive';
-import { AutocompleteDirective } from './ig-autocomplete-directive';
-import { TextAreaDirective } from './ig-textarea-directive';
+import { ButtonDirective, ButtonModule } from './ig-button-directive';
+import { InputDirective, InputModule } from './ig-input-directive';
+import { AutocompleteDirective, AutocompleteModule } from './ig-autocomplete-directive';
+import { TextAreaDirective, TextAreaModule } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
+import { CheckboxDirective } from './ig-checkbox-directive';
 
 
 @NgModule({ 
-    imports: [],
+    imports: [
+        ButtonModule,
+        InputModule,
+        TextAreaModule,
+        AutocompleteModule,
+    ],
     declarations: [
         TextHighlightDirective,
         CopyClipboardDirective,
         ClickOutsideDirective,
-        ButtonDirective,
-        InputDirective,
-        TextAreaDirective,
-        AutocompleteDirective,
-        AutoFocusDirective
+        AutoFocusDirective,
+        CheckboxDirective,        
     ],
     exports: [
         TextHighlightDirective,
@@ -29,7 +32,8 @@ import { AutoFocusDirective } from './ig-autofocus.directive';
         InputDirective,
         TextAreaDirective,
         AutocompleteDirective,
-        AutoFocusDirective
+        AutoFocusDirective,
+        CheckboxDirective,
     ]
 })
 export class DirectivesModule { }

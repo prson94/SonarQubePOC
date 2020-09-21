@@ -22,10 +22,10 @@ export class PredicateSelectorComponent implements OnInit {
     @Input() assetTypeUid: string;
 
 
-    private noPredicates: boolean = false;
-    private predicates: Predicate[] = [];
+    noPredicates: boolean = false;
+    predicates: Predicate[] = [];
 
-    private isSelectionVisible: boolean = false;
+    isSelectionVisible: boolean = false;
 
     constructor(
         private predicatesService: PredicatesService,

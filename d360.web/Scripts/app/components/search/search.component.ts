@@ -47,7 +47,7 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected secondaryNavService: SecondaryNavService,
-        private searchStateService: SearchStateService,
+        public searchStateService: SearchStateService,
         private typeaheadSearchService: TypeaheadSearchService) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -96,7 +96,7 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
     }
 
     //Advanced filters changed
-    private filterChanged(options) {
+    filterChanged(options) {
         this.doSearch(true);
     }
 

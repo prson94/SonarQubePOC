@@ -1,10 +1,9 @@
-﻿import {Component, NgZone, OnInit} from '@angular/core';
+﻿import {Component} from '@angular/core';
 import {Router} from '@angular/router';
-import {Breadcrumb} from '../../../models/breadcrumb.model';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {GroupService} from '../../../services/group.service';
-import {GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel, GroupApiModel} from '../../../models/group.model';
+import {GroupApiModel} from '../../../models/group.model';
 import {FormMode} from '../../../models/form.model';
 import {Title} from '@angular/platform-browser';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
@@ -20,10 +19,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class AdminGroupsComponent extends AdminBaseComponent {
 
-    private selectedRow: GroupApiModel;
-    private groupItems: GroupApiModel[];
-    private formMode: FormMode = FormMode.Default;
-    private FormMode = FormMode;
+    selectedRow: GroupApiModel;
+    groupItems: GroupApiModel[];
+    formMode: FormMode = FormMode.Default;
+    FormMode = FormMode;
 
     constructor(
         private router: Router,

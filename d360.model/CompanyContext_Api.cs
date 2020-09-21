@@ -12,7 +12,6 @@ using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
@@ -1028,14 +1027,14 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             sw.Restart();
         }
 
-        private void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600)
+        public void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
         update	T
         set		T.LookupValue = T.[FieldValue]
-        from	api.ExecutionField T
+        from	{fieldTable} T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup' and T.ExecutionID = @executionID
-            ", new { executionID }, commandTimeout: timeout);
+            ", new { executionID }, commandTimeout: timeout, transaction: trans);
         }
 
         public void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
@@ -3553,9 +3552,12 @@ where   ExecutionID = @ExecutionID
                         sw.Restart();
                     }
 
-                    LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
-                    AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
+                    if (hasRelationshipFieldTypes)
+                    {
+                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
+                        AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+                    }
 
                     ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
                     AddMeasurement(metrics, "ValidateAssetAndParent", sw.ElapsedMilliseconds, ++step);
@@ -7782,12 +7784,6 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
                                                 {updateOnSuccess}
                                                     ";
 
-                    // TODO: Gotta figure out how to get asset measure records BEFORe we delete the results above.
-
-                    //var ruleResultUids = import.Where(i => i.Uid).Select(i => i.Uid.Value).ToList();
-                    //var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
-                    //SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
-
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
                         bool runCompleted = false;
@@ -7839,8 +7835,6 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
                     }
                 }
             }
-
-            //SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, import);
 
             return results;
         }
@@ -9013,5 +9007,4 @@ SO.ObjectID as SecondaryID
 
 
     }
-
 }

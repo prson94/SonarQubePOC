@@ -15,7 +15,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class ShortcutListComponent extends BaseComponent implements OnInit {
     private shortcuts: Shortcut[] = [];
     private selectedShortcut: Shortcut = null;
-    private formMode = FormMode.Default;
+    formMode = FormMode.Default;
     FormMode = FormMode;
     
     constructor(private shortcutService: ShortcutService, private messagesService: MessagesObservableService) {

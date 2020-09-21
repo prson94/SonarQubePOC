@@ -6,9 +6,7 @@ import { WorkflowService } from '../../services/workflow.service';
 import { EventEmitter } from '@angular/core';
 import { BulkWorkflowReassignModel } from '../../models/workflow.model';
 import { ResourcesService } from '../../services/resources.service';
-import { FormEvents, FormHelper } from '../../models/form.model';
 import { EditorField } from '../../models/editor-field.model';
-import { AuthenticationService } from '../../services/authentication.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
