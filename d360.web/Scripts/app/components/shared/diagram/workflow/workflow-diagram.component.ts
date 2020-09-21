@@ -628,6 +628,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (excluded >= 0)
                         r.splice(excluded, 1);
 
+                    excluded = r.findIndex(a => a.ID == WorkflowActivityType.StateChange);
+                    if (excluded >= 0)
+                        r.splice(excluded, 1);
+
                     this.activityTypes = r;
                 })
             );
