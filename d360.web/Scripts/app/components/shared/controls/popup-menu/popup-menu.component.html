@@ -11,11 +11,8 @@
             tabindex="-1"
             [attr.class]="getItemClass(item)"
             (click)="select(item,$event)"
-            (mouseenter)="hover(item)">
+            (mouseenter)="mouseenter(item)">
             <div class="item-container">
-                <ng-container *ngIf="item.items && item.isSubMenuOpened">
-                    <ng-container *ngTemplateOutlet="menuItemsTemplate; context: {$implicit: item.items, class: 'sub-menu'}"></ng-container>
-                </ng-container>
                 <div *ngIf="hasCheckboxes(items)" class="part checkbox-part">
                     <i *ngIf="item.isChecked" class="fa fa-check"></i>
                 </div>

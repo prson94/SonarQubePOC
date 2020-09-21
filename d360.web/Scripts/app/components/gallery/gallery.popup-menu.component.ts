@@ -128,12 +128,6 @@ export class GalleryPopupMenuComponent implements OnInit {
                 },
                 {
                     title: '2nd works here too'
-                },
-                {
-                    title: 'Try me',
-                    items: [{
-                        title: 'Last one'
-                    }]
                 }
                 ]
             },

@@ -330,7 +330,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         }
     }
 
-    hover(item: PopupMenuItem) {
+    mouseenter(item: PopupMenuItem) {
         if (!item.isSeparator) {
             if (item.parent == null) {
                 this.updatePropToAll(this.items, 'isSubMenuOpened', false);
@@ -338,7 +338,6 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             else {
                 item.parent.items.forEach(x => x.isSubMenuOpened = false);
             }
-
             item.isSubMenuOpened = true;
             this.setHoverStateToElement(item);
         }
