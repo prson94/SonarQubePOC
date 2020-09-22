@@ -78,7 +78,7 @@ namespace d360.model.DataAccessLayer
                         select new MetricAssetViewDetailModel
                         {
                             AllocationUid = a.AllocationUid,
-                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
+                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel {
                                 ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
                                     ConditionFieldTypeID = i.ConditionFieldTypeID,
                                     ConditionFieldTypeName = (i.ConditionFieldType != null) ? i.ConditionFieldType.Name : null,
@@ -87,40 +87,43 @@ namespace d360.model.DataAccessLayer
                                     ConditionType = i.ConditionType,
                                     Operator = i.Operator,
                                     Uid = i.Uid,
-                                    Values = i.Values.ToList()
+                                    Values = i.Values.Select(v => v.Value).ToList()
                                 }).ToList(),
-                                MatchType = g.MatchType, 
-                                Position = g.Position, 
-                                Threshold = g.Threshold, 
-                                Uid = g.Uid, 
-                                Weight = g.Weight 
+                                MatchType = g.MatchType,
+                                Position = g.Position,
+                                Threshold = g.Threshold,
+                                Uid = g.Uid,
+                                Weight = g.Weight
                             }).ToList(),
+                            Definition = new MetricAssetDefinitionViewModel {
+                                DataQuality = (a.Allocation.ScoreType == ScoreType.DataQuality) ? new MetricAssetDefinitionDataQualityViewModel { } : null,
+                                Governance = (a.Allocation.ScoreType == ScoreType.Governance) ? new MetricAssetDefinitionGovernanceViewModel { } : null
+                            },
                             Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
-                              ConditionAndOr = v.ConditionAndOr,
-                              Description = v.Description,
-                              EffectiveDate = v.EffectiveDate,
-                              EffectiveEndDate = v.EffectiveEndDate,
-                              MatchConditionsOnly = v.MatchConditionsOnly,
-                              Name = v.Name,
-                              Threshold = v.Threshold,
-                              Uid = v.Uid,
-                              UpdateFrequency = v.UpdateFrequency,
-                              Weight = v.Weight
+                                ConditionAndOr = v.ConditionAndOr,
+                                Description = v.Description,
+                                EffectiveDate = v.EffectiveDate,
+                                EffectiveEndDate = v.EffectiveEndDate,
+                                MatchConditionsOnly = v.MatchConditionsOnly,
+                                Name = v.Name,
+                                Threshold = v.Threshold,
+                                Uid = v.Uid,
+                                UpdateFrequency = v.UpdateFrequency,
+                                Weight = v.Weight
                             }).ToList(),
-                            AssetTypeUid = a.Allocation.AssetTypeUid,
                             MatchConditionsOnly = v.MatchConditionsOnly,
                             Description = v.Description,
                             EffectiveDate = v.EffectiveDate,
                             IsGroup = a.IsGroup,
                             Name = v.Name,
                             ParentUid = a.ParentUid,
-                            ScoreType = a.Allocation.ScoreType,
                             Threshold = v.Threshold,
                             Uid = a.Uid,
-                            UpdateFrequency = v.UpdateFrequency,
                             Weight = v.Weight
                         }).FirstOrDefault();
             
+
+
             return model;
         }
 
