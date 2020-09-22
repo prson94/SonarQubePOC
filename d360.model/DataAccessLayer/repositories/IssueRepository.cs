@@ -72,7 +72,6 @@ namespace d360.model.DataAccessLayer
 
             if (nameParam.Key != null)
             {
-                //pull out try parse and put in validator
                 if (!string.IsNullOrWhiteSpace(nameParam.Value))
                 {
                     conditions.Add("IT.Name = @name");
