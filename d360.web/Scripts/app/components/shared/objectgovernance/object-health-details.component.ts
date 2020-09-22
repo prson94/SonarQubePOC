@@ -408,6 +408,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     //scoring carousel, table and graph interactivity
     private selectPointOnGraph() {
+
         if (this.chartInstance.series) {
             if (this.chartInstance.series.length > 0) {
                 var ms = new Date(this.scoreDate.toString()).getTime();
@@ -429,6 +430,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.cdRef.markForCheck();
             }
         }
+
     }
 
     private scoreTableClick(item: ScorePoint) {
