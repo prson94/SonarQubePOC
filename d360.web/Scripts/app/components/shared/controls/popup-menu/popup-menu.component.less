@@ -1,0 +1,148 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.ig-popup-menu {
+    outline: none;
+    position: absolute;
+    z-index: 20000;
+
+    .menu-items {
+        background-color: white;
+        padding: 4px 0;
+        border-radius: 4px;
+        box-shadow: @popup-shadow;
+        display: inline-block;
+        min-width: 128px;
+        position: relative;
+
+        li {
+            position: relative;
+        }
+
+        .open-menu {
+            font-size: 10px;
+            position: absolute;
+            top: 13px;
+            right: 10px;
+        }
+
+        .separator {
+            height: 0px;
+            border-top: 1px solid @ig-grey-t4;
+            margin: 4px 0px;
+        }
+
+        .sub-menu {
+            position: absolute;
+            margin-top: -12px;
+        }
+
+
+        &.open-right {
+            &.open-bottom {
+                &.sub-menu {
+                    right: 0px;
+                    transform: translateX(100%);
+                    background-color: white;
+                }
+            }
+
+            &.open-top {
+                &.sub-menu {
+                    right: 0px;
+                    transform: translateX(100%) translateY(-100%);
+                    background-color: white;
+                    top: 50px;
+                }
+            }
+        }
+
+        &.open-left {
+            &.open-top {
+                &.sub-menu {
+                    transform: translateX(-100%) translateY(-100%);
+                    left: 0px;
+                    right: initial;
+                    top: 54px;
+                }
+            }
+
+            &.open-bottom {
+                &.sub-menu {
+                    transform: translateX(-100%) translateY(0%);
+                    left: 0px;
+                    top: 10px;
+                    right: initial;
+                }
+            }
+        }
+
+        .menu-sub-item {
+            min-height: 36px;
+            padding: 8px 16px;
+
+            &.hover {
+                background-color: @ig-orange-t4;
+                cursor: pointer;
+            }
+
+            &.active {
+                background-color: @ig-orange-t3;
+            }
+
+            &.disabled {
+                color: black;
+                pointer-events: none;
+                opacity: 0.33;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 2px @ig-midblue-t3;
+                outline: none;
+            }
+
+            &.default {
+                font-weight: bold;
+            }
+
+            &.label {
+                opacity: 1;
+                font-weight: bold;
+
+                .icon-part {
+                    display: none;
+                }
+
+                .checkbox-part {
+                    display: none;
+                }
+            }
+
+            .item-container {
+                display: inline-flex;
+                width: 100%;
+
+                .title-part {
+                    padding-right: 16px;
+                }
+
+                .menu-icon {
+                    font-size: 14px;
+                    width: 18px;
+                }
+
+                .checkbox-part {
+                    min-width: 20px;
+                    max-height: 15px;
+                }
+
+                .shortcuts-part {
+                    opacity: 0.33;
+
+                    span {
+                        float: right;
+                    }
+                }
+            }
+        }
+    }
+}
