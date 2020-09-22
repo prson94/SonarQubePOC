@@ -96,7 +96,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             }).ToList()
                         }).ToList();
 
-                    Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, assetMeasureModels);
+                    Db.SendScoreEventWithPayload(
+                        Info.ExecutionUid, 
+                        ScoreQueueChangeType.AssetMeasures, 
+                        assetMeasureModels,
+                        Info.StartedOn
+                    );
                 }
             }
         }
