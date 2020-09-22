@@ -52,7 +52,6 @@ namespace d360.model.DataAccessLayer
 
             if (actionTypeUidParam.Key != null)
             {
-                //pull out try parse and put in validator
                 if (actionTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(actionTypeUidParam.Value) && (Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid) && actionTypeUid != Guid.Empty))
                 {
                     conditions.Add("IT.uid = @actionTypeUid");
@@ -98,8 +97,7 @@ namespace d360.model.DataAccessLayer
                 issueTypeSQL = $@"{baseIssueTypesSql}
                                     cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = IT.ID) C
                                     where C.Allocations = 0";
-
-                //pull out try parse and put in validator
+                
                 if (assetTypeUidParam.Key != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                 {                 
                     if (Guid.TryParse(assetTypeUidParam.Value, out Guid assetTypeUid))
