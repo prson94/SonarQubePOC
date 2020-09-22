@@ -332,7 +332,7 @@ namespace d360.web.Controllers.V2
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
-            Route("{connectorLabelUid}"),
+            Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the connector label provided is invalid.", typeof(ErrorResponse)),

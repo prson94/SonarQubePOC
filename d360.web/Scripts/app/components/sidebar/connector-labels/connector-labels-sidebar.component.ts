@@ -35,6 +35,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     isSaving: boolean = false;
 
+    showConsolidationPopup: boolean = false;
+    consolidateValue: string = '';
+
+
     @ViewChild('dt', { static: false }) tableEl: any;
     lastSelectedElement: ConnectorLabel;
 
@@ -84,6 +88,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     getLabels() {
         this.isLoading = true;
         this.connectorLabelService.getLabelList().subscribe(res => {
+            this.labels = [];
             if (res && res.length > 0) {
                 this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
             }
@@ -109,6 +114,17 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.showEditor = true;
         this.cdRef.markForCheck();
     }
+
+    consolidateClick() {
+        var children = [];
+        this.selected.forEach(label => {
+            if (label.uid != this.consolidateValue) {
+                children.push(label.uid);
+            }
+        });
+        this.consolidateLabels(this.consolidateValue, children);
+    }
+
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
@@ -128,18 +144,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                     msg = `Connector label succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
-                if (event.item.uid == undefined) {
-                    this.labels.push(result);
-                }
-                else {
-                    this.labels[this.findLabelIndex(event.item.uid)].Value = event.item.Value;
-                }
-                this.labels = this.labels.sort((a, b) => a.Value.localeCompare(b.Value));
-
-                this.selected = null;
-                event.item.UseCount = 0;
-                this.selected = event.item;
-
+                this.getLabels();
                 this.showEditor = false;
                 this.isSaving = false;
 
@@ -159,6 +164,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.selected = null;
                 this.selected = [this.labels[0]];
                 this.showConsolidate = false;
+                this.showConsolidationPopup = false;
                 this.showEditor = false;
                 this.isSaving = false;
             }, err => {
@@ -175,9 +181,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.getLabels();
                     this.selected = [];
                 }
+                this.getLabels();
                 this.showDelete = false;
                 this.cdRef.markForCheck();
             }, err => this.showMessageForResult(this.messagesService, err));
@@ -362,7 +368,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             this.showDelete = true;
             this.deletePopupTitle = 'Delete Connector Labels';
             this.deleteConfirmationText = `Delete all Connector Labels listed above`;
+        }
 
+        if ($event.value === 'Consolidate') {
+            this.showConsolidationPopup = true;
         }
     }
 

@@ -8,8 +8,9 @@
             <div class="inline-header">
                 <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                 <div *ngIf="selected.length > 1" class="grid-header-actions">
-                    <button type="button" icon="fa-ellipsis-v" igButton label="{{selected.length}} items selected" (click)="popupMenu.toggle($event)"></button>
-                    <ig-popup-menu #popupMenu (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
+                    <div class="text">{{selected.length}} items selected</div>
+                    <button type="button" icon="fa-ellipsis-v" igButton (click)="popupMenu.toggle($event)"></button>
+                    <ig-popup-menu #popupMenu [location]="3" (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
                 </div>
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
             </div>
@@ -167,6 +168,65 @@
                     </p-table>
                 </div>
             </d3s-delete-form>
+
+
+            <d3s-modal [title]="'Consolidate Connector Labels'"
+                       additionalClasses="modal-dyn-editor large-dialog"
+                       (onClose)="showConsolidationPopup=false"
+                       [isVisible]="showConsolidationPopup">
+                <div prompt>
+                    <div class="content">
+                        <p>Please select the one Connector Label you wish to keep:</p>
+
+                        <p-table #usageTableConsolidate
+                                 [value]="selected"
+                                 [pageLinks]="3"
+                                 [paginator]="true"
+                                 [rows]="10"
+                                 class="ig-table"
+                                 [loading]="isUsageLoading"
+                                 [loadingIcon]="'fa fa-spinner fa-spin'">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th [pSortableColumn]="'Value'" style="width: 60%">
+                                        Connector Label
+                                        <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                    </th>
+                                    <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                        Where Used
+                                        <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr>
+                                    <td>
+                                        <input [(ngModel)]="consolidateValue" type="radio" id="val_{{item.uid}}" name="consolidateTo" value="{{item.uid}}" />
+                                        <label class="default-label" for="val_{{item.uid}}">{{item.Value}}</label>
+                                    </td>
+                                    <td>
+                                        <d3s-where-used [displayValue]="item.Value"
+                                                        [uid]="item.uid"
+                                                        [objectType]="'ConnectorLabel'"
+                                                        [showAsModal]="true">
+                                            {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
+                                        </d3s-where-used>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="usageTableConsolidate.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button igButton type="button" label="Cancel" (click)="showConsolidationPopup=false"></button>&nbsp;&nbsp;
+                    <button igButton type="button" label="Download Where Used Reports" (click)="exportUsage()"></button>
+                    <div class="grow"></div>
+                    <button igButton type="submit" [disabled]="!consolidateValue" [loading]="isSaving" (click)="consolidateClick()" class="ig-button-primary" label="Consolidate"></button>
+                </div>
+            </d3s-modal>
         </div>
     </div>
 </div>
