@@ -83,11 +83,6 @@
                 </div>
                 <div class="row">
                     <ig-date name="myDate" [(ngModel)]="formVal" #myDate="ngModel" required="true"></ig-date>
-                    <div *ngIf="myDate.invalid && (myDate.dirty || myDate.touched)">
-                        <div *ngIf="myDate.errors.required" class="ig-text-required">
-                            Please select a date
-                        </div>
-                    </div>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
