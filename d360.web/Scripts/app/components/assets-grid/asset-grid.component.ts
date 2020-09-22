@@ -74,6 +74,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     deleteName: string = 'Artifact';
     previousEvent: LazyLoadEvent;
     totalRecords: number;
+    initialTotalRecords: number = null;
 
     searchValue: string = "";
 
@@ -300,12 +301,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             delete params['_ownedBy'];
         }
 
-        if (this.totalRecords < 1000) {
+        if (this.initialTotalRecords != null && this.initialTotalRecords < 1000) {
             params.usegraphforparent = false;
         }
         else {
             delete params['usegraphforparent'];
         }
+
         return params;
     }
 
@@ -346,6 +348,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
 
                 this.totalRecords = res.total;
+                if (this.initialTotalRecords == null) {
+                    this.initialTotalRecords = res.total;
+                }
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
