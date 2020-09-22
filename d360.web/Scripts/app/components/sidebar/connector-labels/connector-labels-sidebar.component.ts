@@ -175,7 +175,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-
+                    this.getLabels();
                     this.selected = [];
                 }
                 this.showDelete = false;
@@ -234,7 +234,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.selected[0].uid, `Where Used report for Connector Label "${this.selected[0].Value}"`)
+        this.selected.forEach(item => {
+            this.connectorLabelService.exportLabelUsage(item.uid, `Where Used report for Connector Label "${item.Value}"`)
+        })
     }
 
 
@@ -354,4 +356,22 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             this.selectElement(element);
 
     }
+
+    actionSelected($event) {
+        if ($event.value === 'Delete') {
+            this.showDelete = true;
+            this.deletePopupTitle = 'Delete Connector Labels';
+            this.deleteConfirmationText = `Delete all Connector Labels listed above`;
+
+        }
+    }
+
+    multiselectMenu = [
+        {
+            title: 'Delete'
+        },
+        {
+            title: 'Consolidate'
+        }
+    ]
 }

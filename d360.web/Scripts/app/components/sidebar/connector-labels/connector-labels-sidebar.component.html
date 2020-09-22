@@ -3,9 +3,16 @@
     <div class="col s12">
         <div class="tile tile-detail">
             <header>
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+                Connector Labels
             </header>
-            <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <div class="inline-header">
+                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <div *ngIf="selected.length > 1" class="grid-header-actions">
+                    <button type="button" icon="fa-ellipsis-v" igButton label="{{selected.length}} items selected" (click)="popupMenu.toggle($event)"></button>
+                    <ig-popup-menu #popupMenu (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
+                </div>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+            </div>
 
             <p-table #dt
                      [value]="labels"
@@ -74,7 +81,7 @@
                        (onClose)="showEditor=false"
                        [isVisible]="showEditor">
                 <d3s-connector-label-form [label]="selected.length > 0 ? selected[0] : null"
-                                          [isSaving]="isSaving" 
+                                          [isSaving]="isSaving"
                                           (onSave)="saveLabel($event)"
                                           (onCancel)="closeEditor()"
                                           [isVisible]="showEditor">
@@ -82,10 +89,10 @@
                 </d3s-connector-label-form>
             </d3s-modal>
 
-            <d3s-delete-form *ngIf="selected && selected.length > 0"
+            <d3s-delete-form *ngIf="selected && selected.length == 1"
                              [callback]="theDeleteCallback"
                              [method]="'callback'"
-                             [items]="selected[0]" 
+                             [items]="selected[0]"
                              [showAsModal]="true"
                              [modalCssClasses]="'large-dialog'"
                              [modalTitle]="deletePopupTitle"
@@ -93,14 +100,71 @@
                              [isModalVisible]="showDelete"
                              (onCancel)="showDelete=false;"
                              [showDownloadWhereUsed]="labelUsage && labelUsage.length > 0"
-                             (onUsageExport)="exportUsage()"
-                             [isUsageLoading]="isUsageLoading">
+                             (onUsageExport)="exportUsage()">
                 <div prompt>
                     <p>
                         Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
                     </p>
 
                     <d3s-where-used (onLoaded)="usageLoaded($event)" [uid]="selected[0].uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
+                </div>
+            </d3s-delete-form>
+
+            <d3s-delete-form *ngIf="selected && selected.length > 1"
+                             [callback]="theDeleteCallback"
+                             [method]="'callback'"
+                             [items]="selected"
+                             [showAsModal]="true"
+                             [modalCssClasses]="'large-dialog'"
+                             [modalTitle]="deletePopupTitle"
+                             [confirmationText]="deleteConfirmationText"
+                             [isModalVisible]="showDelete"
+                             [showDownloadWhereUsed]="true"
+                             (onCancel)="showDelete=false;"
+                             (onUsageExport)="exportUsage()">
+                <div prompt>
+                    <p>
+                        Please confirm that you wish to delete the following Connector Labels.
+                    </p>
+                    <p-table #usageTable
+                             [value]="selected"
+                             [pageLinks]="3"
+                             [paginator]="true"
+                             [rows]="10"
+                             class="ig-table"
+                             [loading]="isUsageLoading"
+                             [loadingIcon]="'fa fa-spinner fa-spin'">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th [pSortableColumn]="'Value'" style="width: 60%">
+                                    Connector Label
+                                    <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                    Where Used
+                                    <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr>
+                                <td>
+                                    {{item.Value}}
+                                </td>
+                                <td>
+                                    <d3s-where-used [displayValue]="item.Value"
+                                                    [uid]="item.uid"
+                                                    [objectType]="'ConnectorLabel'"
+                                                    [showAsModal]="true">
+                                        {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
+                                    </d3s-where-used>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
                 </div>
             </d3s-delete-form>
         </div>

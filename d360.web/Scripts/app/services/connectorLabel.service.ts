@@ -102,26 +102,13 @@ export class ConnectorLabelService extends BaseObservableService {
 
     }
 
-    deleteLabelByUid(uid: string, cascade: boolean = true): Observable<any> {
-        let url = `api/v2/connectorLabels/${uid}?cascade=${cascade}`;
-        return this.http.delete(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
-    }
 
     deleteLabels(labels: ConnectorLabel[]): Observable<any> {
         let url = `api/v2/connectorLabels/`;
 
-        if (labels.length == 1)
-            return this.deleteLabelByUid(labels[0].uid);
-
-        let body: any[] = []
-        labels.forEach(t => {
-            body.push({ 'uid': t.uid, cascade: true });
-        })
-
         const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: labels
         };
         return this.http.delete(url, httpHeaders)
             .pipe(map(response => <any>response),

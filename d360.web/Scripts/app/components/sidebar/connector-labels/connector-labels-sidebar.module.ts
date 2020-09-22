@@ -27,6 +27,7 @@ import { ConnectorLabelsFormComponent } from './connector-label-form.component';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ConnectorLabelFormModule } from './connector-label-form.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
@@ -61,7 +62,8 @@ import { ConnectorLabelFormModule } from './connector-label-form.module';
         WhereUsedModule,
         AutoCompleteModule,
 
-        ConnectorLabelFormModule
+        ConnectorLabelFormModule,
+        PopupMenuModule
     ],
     declarations: [
         ConnectorLabelsComponent

@@ -2535,6 +2535,25 @@ div.home-image-title-text {
         font-weight: normal;
         font-size: 14px;
     }
+
+    .inline-header {
+        width: 100%;
+        display: inline-flex;
+
+        .grid-header-actions {
+            padding: 0px 16px;
+        }
+
+        .TileTools {
+            width: 86px;
+            position: relative;
+            top: -9px;
+        }
+
+        input {
+            width: 100%;
+        }
+    }
 }
 
 .modal-overlay.show {
@@ -3427,11 +3446,11 @@ button.tab-scroller {
         margin-top: 15px;
         color: #000;
         font-weight: normal;
+    }
 
-        .open-usage-dialog-link {
-            color: @ig-color-link;
-            cursor: pointer;
-        }
+    .open-usage-dialog-link {
+        color: @ig-color-link;
+        cursor: pointer;
     }
 
     .errorMessage {
@@ -7687,6 +7706,7 @@ table {
 .igx-related-asset-icon:before {
     content: url(\Content\images\related-assets-icon.svg);
 }
+
 .gallery-overlay {
     z-index: 20000;
     max-height: 500px;
