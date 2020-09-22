@@ -53,9 +53,9 @@ export class EditorDefinitionService extends BaseObservableService {
         );        
     }
 
-    public getEditorDefinitionUid(giud: string): Observable<EditorField[]> {
+    public getEditorDefinitionUid(giud: string, objectType?: string): Observable<EditorField[]> {
         return this.http
-            .get(`form/dynamiceditor/new/${giud}`)
+            .get(`form/dynamiceditor/new/uid/${giud}/type/${objectType}`)
             .pipe(
             map(res => <EditorField[]>res),
                 catchError(err => this.handleError(err))

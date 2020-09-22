@@ -340,12 +340,102 @@ for json path";
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A full list of actions types.", typeof(List<IssueTypeApiModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request Parameters are invalid.", typeof(List<IssueTypeApiModel>)),
+            SwaggerResponse(HttpStatusCode.NotFound, "No matching uid for the Action Type/Asset Type/Asset Uid Provided.", typeof(List<IssueTypeApiModel>)),
+            SwaggerParameter("_actionTypeUid", "Filter by provided action type Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetTypeUid", "Filter by provided asset type Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<HttpResponseMessage> GetIssueTypes()
         {
-            var issueTypes = await issueRepository.GetIssueTypes();
+            var queryParams = Request.GetQueryNameValuePairs();
 
-            return Request.CreateResponse(issueTypes);
+            #region validate Parameters
+            var actionTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_actiontypeuid");
+
+            if (actionTypeUidParam.Key != null)
+            {
+                if (Guid.TryParse(actionTypeUidParam.Value, out Guid actionTypeUid))
+                {
+                    var validUid = Company.IssueTypes.Any(i => i.uid == actionTypeUid);
+
+                    if (!validUid)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Action Type Uid provided does not exist."));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Action Type Uid provided is invalid."));
+                }
+            }
+
+            var assetTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assettypeuid");
+
+            if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
+            {
+                if (Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid))
+                {
+                    var validUid = Company.AssetTypes.Any(i => i.uid == assetTypeUid);
+
+                    if (!validUid)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type Uid provided does not exist."));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                }
+            }
+
+            var assetUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assetuid");
+
+            if (assetUidParam.Key != null && assetUidParam.Value != null && !string.IsNullOrWhiteSpace(assetUidParam.Value))
+            {
+                if (Guid.TryParse(assetUidParam.Value.Trim(), out Guid assetUid))
+                {
+                    var asset = Company.Assets.FirstOrDefault(i => i.uid == assetUid);
+
+                    if (asset == null)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Uid provided does not exist."));
+                    }
+
+                    if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
+                    {
+                        if (!Company.AssetTypes.Any(i => i.uid == Guid.Parse(assetTypeUidParam.Value) && i.ID == asset.AssetTypeID))
+                        {
+                            return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid does not match the Asset Type provided."));
+                        }
+                    }
+
+                }
+                else
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                }
+            }
+
+            var nameParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_name");
+
+            if (nameParam.Key != null)
+            {
+                if (string.IsNullOrEmpty(nameParam.Value.Trim()))
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Empty string provided for Name. Cannot be empty."));
+                }
+
+                if (nameParam.Value.Trim().Length > 250)
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Name provided must be less then 250 characters in length."));
+            }
+
+            #endregion
+
+            var issueTypes = await issueRepository.GetIssueTypes(queryParams);
+
+            return Request.CreateResponse(HttpStatusCode.OK, issueTypes);
         }
 
         /// <summary>
