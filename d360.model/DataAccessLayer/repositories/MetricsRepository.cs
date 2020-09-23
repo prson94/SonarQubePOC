@@ -137,11 +137,133 @@ namespace d360.model.DataAccessLayer
             return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active).SingleOrDefault();
         }
 
-        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model, out bool isNew)
+        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model)
         {
             MetricAsset metricAsset = null;
             AssetType targetAssetType = null;
-            isNew = true;
+            MetricAllocation allocation = null;
+            bool isNew = true;
+
+            #region Perform model validation first
+
+            if (model == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
+            }
+
+            //List<ValidationResult> validationResults = new List<ValidationResult>();
+
+            //bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+            //if (!isValid)
+            //{
+            //    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
+            //}
+
+            if (model.Description != null)
+            {
+                if (model.Description?.Length > 4000)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error updating metric", $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
+                }
+            }
+
+            if (model.ParentUid.HasValue && model.IsGroup)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+            }
+
+            if (model.AllocationUid == Guid.Empty)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
+            }
+            else
+            {
+                allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
+                if (allocation == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Allocation Uid.");
+                }
+            }
+
+            if (allocation.IsExternallyCalculated == false)
+            {
+                if (model.Weight <= 0 || model.Weight > 1)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
+                }
+                else if (decimal.Round(model.Weight, 2) != model.Weight)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
+                }
+
+                if (model.Threshold <= 0 || model.Threshold > 1)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error updating metric", "Threshold must be a value between 0 and 1");
+                }
+            }
+
+            if (model.ParentUid != null && model.ParentUid != Guid.Empty)
+            {
+                var parent = GetMetricByUid(model.ParentUid.Value);
+
+                if (parent == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
+                }
+
+                if (!parent.IsGroup)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Parent metric must have 'IsGroup' value set to True.");
+                }
+
+                if (model.IsGroup || parent.ParentUid != null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+                }
+            }
+
+            model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
+            if (model.IsGroup && model.ConditionGroups.Count > 0)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
+            }
+
+            foreach (var cond in model.ConditionGroups)
+            {
+                foreach (var item in cond.ConditionItems)
+                {
+                    if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
+                    }
+                    else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeName must not be empty.");
+                        }
+
+                        if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeUid must be valid.");
+                        }
+                    }
+
+                    if (item.Values != null)
+                    {
+                        if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Condition Value must not be longer than 250 characters.");
+                        }
+                    }
+                }
+            }
+
+            #endregion
 
             if (model.Uid != null && model.Uid != Guid.Empty)
             {
@@ -149,7 +271,7 @@ namespace d360.model.DataAccessLayer
                 metricAsset = Company.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
                 if (metricAsset == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Metric not found.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", $"Metric with UID {model.Uid} does not exist.");
                 }
                 Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
                 targetAssetType = Company.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
@@ -159,9 +281,9 @@ namespace d360.model.DataAccessLayer
                 if (model.AllocationUid != null && model.AllocationUid != Guid.Empty)
                 {
                     targetAssetType = (
-                                      from allocation in Company.MetricAllocations
-                                      join assettype in Company.AssetTypes on allocation.AssetTypeUid equals assettype.uid
-                                      where allocation.Uid == model.AllocationUid
+                                      from al in Company.MetricAllocations
+                                      join assettype in Company.AssetTypes on al.AssetTypeUid equals assettype.uid
+                                      where al.Uid == model.AllocationUid
                                       select assettype
                                       ).SingleOrDefault();
                 }
@@ -170,6 +292,9 @@ namespace d360.model.DataAccessLayer
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric", "You must provide a valid AllocationUid.");
                 }
             }
+            
+            // Remove any time component from the effective date.
+            model.EffectiveDate = model.EffectiveDate.Date;
 
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
             var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
@@ -219,20 +344,20 @@ namespace d360.model.DataAccessLayer
                         switch (fieldType.Type)
                         {
                             case "Boolean":
-                                if (!bool.TryParse(condition.Values[0].Value, out tempBool))
+                                if (!bool.TryParse(condition.Values[0], out tempBool))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Decimal":
-                                if (!decimal.TryParse(condition.Values[0].Value, out tempDecimal))
+                                if (!decimal.TryParse(condition.Values[0], out tempDecimal))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Date":
-                                if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
+                                if (!DateTime.TryParse(condition.Values[0], out tempDate))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                                condition.Values[0].Value = tempDate.ToUniversalTime().ToShortDateString();
+                                condition.Values[0] = tempDate.ToUniversalTime().ToShortDateString();
                                 break;
                             case "Number":
-                                if (!int.TryParse(condition.Values[0].Value, out tempInt))
+                                if (!int.TryParse(condition.Values[0], out tempInt))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             default:
@@ -581,7 +706,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+            return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
 
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
@@ -1096,29 +1221,6 @@ for json path";
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
             
             return (result, "");
-        }
-
-        public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
-        {
-            if (model.AllocationUid == Guid.Empty)
-            {
-                if (model.AssetTypeUid.HasValue)
-                {
-                    if (!model.ScoreType.HasValue)
-                    {
-                        model.ScoreType = ScoreType.Governance;
-                    }
-                    return Company.Filter<MetricAllocation>(a => a.AssetTypeUid == model.AssetTypeUid.Value && a.ScoreType == model.ScoreType.Value && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return Company.GetByUid<MetricAllocation>(model.AllocationUid);
-            }
         }
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
