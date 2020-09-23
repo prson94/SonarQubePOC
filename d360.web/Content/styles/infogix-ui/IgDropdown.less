@@ -40,6 +40,21 @@
         padding: 0 8px;
     }
 
+    .ui-dropdown-clear-icon {
+        width: 24px;
+        height: 24px;
+        right: 30px;
+        background-color: rgba(0,0,0,0.07);
+        top: 10px;
+        font-size: 14px;
+        padding: 5px;
+        border-radius: 4px;
+
+        &:hover {
+            background-color: rgba(0,0,0,0.14);
+        }
+    }
+
     &.ng-dirty.ng-invalid,
     &.ng-touched.ng-invalid {
         background: @ig-red-t5;
@@ -103,12 +118,15 @@
         }
     }
 }
-.ui-dropdown-items {
-    padding: 0;
 
-    li {
-        height: 32px;
-        color: black;
-        padding: 6px 12px;
+.ig-dropdown-overlay {
+    .ui-dropdown-items {
+        padding: 0;
+
+        li {
+            height: 32px;
+            color: black;
+            padding: 6px 12px;
+        }
     }
 }

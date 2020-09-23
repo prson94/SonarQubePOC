@@ -1,4 +1,4 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 import { Dropdown } from 'primeng/dropdown';
@@ -12,13 +12,13 @@ export class DropdownDirective implements AfterViewInit {
     public _size: string;
     @Input() required: boolean;
     @Input() disabled: boolean;
+    private isOverlayVisible: boolean = false;
 
     constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
     }
-
 
     ngAfterViewInit() {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
@@ -31,10 +31,16 @@ export class DropdownDirective implements AfterViewInit {
             this.el.nativeElement.setAttribute("placeholder", "Value required");
             this.el.nativeElement.setAttribute("aria-required", true);
         }
+
         setInterval(() => {
-            var el = (this.dropdownRef.el.nativeElement as HTMLElement).getElementsByClassName('ui-dropdown-panel');
-            console.log(el);
-        }, 200);
+            if (this.isOverlayVisible !== this.dropdownRef.overlayVisible) {
+                if (this.dropdownRef.overlayVisible && this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
+                    this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
+                }
+                this.isOverlayVisible = this.dropdownRef.overlayVisible;
+            }
+
+        }, 10);
 
     }
 
