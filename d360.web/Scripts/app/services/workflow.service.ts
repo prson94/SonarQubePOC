@@ -95,15 +95,19 @@ export class WorkflowService extends BaseObservableService {
         return this.postDynamic(this.http, 'issue', issue);
     }
    
-    getWorkflowIssueTypes(object: string = null, objectId: number = null): Observable<WorkflowIssueType[]> {
-        let url = 'api/issuetypes';
-        if (object != null && objectId != null)
-            url += `?object=${object}&objectID=${objectId}`
-        return this.http.get(url)
+    getWorkflowIssueTypes(object: string = null, objectId: number = null, params: any): Observable<WorkflowIssueType[]> {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+
+        return this.http.get(`/api/v2/actions/types${qString}`)
             .pipe(
                 map(response => <WorkflowIssueType[]>response),
                 catchError(err=>this.handleError(err))
-            );
+            ); 
     }
 
     getAdminWorkflowIssueTypes(): Observable<WorkflowIssueType[]> {

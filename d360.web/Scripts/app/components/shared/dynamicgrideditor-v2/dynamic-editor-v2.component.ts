@@ -213,7 +213,7 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
 
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid)
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
