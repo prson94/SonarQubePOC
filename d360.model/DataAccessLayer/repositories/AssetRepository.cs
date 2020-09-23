@@ -2626,6 +2626,48 @@ where	O.RowNum = 1";
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow }, ApiTimeout);
         }
 
+        
+        public async Task<AssetsCountModel> GetAssetsCounts()
+        {
+            var results = new AssetsCountModel();
+
+            var includedAssetClasses = new List<AssetTypeClass>() {
+                AssetTypeClass.BusinessAsset,
+                AssetTypeClass.Diagram,
+                AssetTypeClass.Fusion,
+                AssetTypeClass.FusionAttribute,
+                AssetTypeClass.FusionQuery,
+                AssetTypeClass.Group,
+                AssetTypeClass.Model,
+                AssetTypeClass.Organization,
+                AssetTypeClass.Policy,
+                AssetTypeClass.Reference,
+                AssetTypeClass.Rule,
+                AssetTypeClass.TechnicalAsset,
+                AssetTypeClass.User
+            };
+                        
+            //total asset count
+            results.totalNumberOfAssets = await CompanyContext.QueryFirstOrDefaultAsync<int>("select count(1) from asset a inner join assettype att on a.assetTypeId = att.id where att.class in @includedClassTypes", new { includedClassTypes = includedAssetClasses });
+
+            results.countsByAssetClass = new List<AssetClassCountModel>();
+
+            var allCounts = await CompanyContext.QueryAsync<dynamic>("select class as [assetTypeClass], count(1) as [cnt] from asset a inner join assettype att on a.assetTypeId = att.id group by att.class");
+
+            foreach (var assetType in includedAssetClasses)
+            {
+                var info = allCounts.FirstOrDefault(x => x.assetTypeClass == (int)assetType);
+
+                results.countsByAssetClass.Add(new AssetClassCountModel()
+                {
+                    @class = assetType.ToString(),
+                    numberOfAssets = info == null ? 0 : info.cnt
+                });
+            }
+
+            return results;
+        }
+
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
