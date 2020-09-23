@@ -7,29 +7,13 @@
     display: inline-block;
     height: 32px;
 
+
     .ui-dropdown {
         height: 32px;
-        padding: 0 8px;
+        padding: 0px;
         border-radius: 4px;
         border: 1px solid rgba(0,0,0,0.2);
-
-        &.ig-input-small {
-            width: @ig-field-width-small !important;
-        }
-
-        &.ig-input-medium {
-            width: @ig-field-width-medium !important;
-        }
-
-        &.ig-input-large {
-            width: @ig-field-width-large !important;
-        }
-
-
-        &.ig-input-full {
-            width: @ig-field-width-full !important;
-        }
-
+        width: 100%;
 
         &.ui-state-focus {
             &:not(.ui-state-error) {
@@ -52,7 +36,9 @@
     }
 
 
-
+    .ui-dropdown-label-container {
+        padding: 0 8px;
+    }
 
     &.ng-dirty.ng-invalid,
     &.ng-touched.ng-invalid {
@@ -90,5 +76,39 @@
 
     &[disabled] {
         opacity: 0.33;
+    }
+
+    &.ig-input-small {
+        .ui-dropdown {
+            width: @ig-field-width-small !important;
+        }
+    }
+
+    &.ig-input-medium {
+        .ui-dropdown {
+            width: @ig-field-width-medium !important;
+        }
+    }
+
+    &.ig-input-large {
+        .ui-dropdown {
+            width: @ig-field-width-large !important;
+        }
+    }
+
+
+    &.ig-input-full {
+        .ui-dropdown {
+            width: @ig-field-width-full !important;
+        }
+    }
+}
+.ui-dropdown-items {
+    padding: 0;
+
+    li {
+        height: 32px;
+        color: black;
+        padding: 6px 12px;
     }
 }

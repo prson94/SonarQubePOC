@@ -15,6 +15,38 @@
         <div class="row">
             <div class="row">small(150px)</div>
             <p-dropdown igDropdown
+                        igSize="small"
+                        [appendTo]="'body'"
+                        [options]="cars"
+                        [styleClass]="'test'"
+                        showClear="true"
+                        [disabled]="disabled"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">medium(308px)</div>
+            <p-dropdown igDropdown
+                        igSize="medium"
+                        [appendTo]="'body'"
+                        [options]="cars"
+                        showClear="true"
+                        [disabled]="disabled"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">large(624px)</div>
+            <p-dropdown igDropdown
+                        igSize="large"
+                        [appendTo]="'body'"
+                        [options]="cars"
+                        showClear="true"
+                        [disabled]="disabled"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <div class="row">full(100%)</div>
+            <p-dropdown igDropdown
+                        igSize="full"
                         [appendTo]="'body'"
                         [options]="cars"
                         showClear="true"

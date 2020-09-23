@@ -1,18 +1,19 @@
 ﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
+import { Dropdown } from 'primeng/dropdown';
 
 @Directive({
     selector: '[igDropdown]'
 })
 export class DropdownDirective implements AfterViewInit {
 
-   
+
     public _size: string;
     @Input() required: boolean;
     @Input() disabled: boolean;
 
-    constructor(public el: ElementRef, private ref: ChangeDetectorRef) { }
+    constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled;
@@ -30,6 +31,10 @@ export class DropdownDirective implements AfterViewInit {
             this.el.nativeElement.setAttribute("placeholder", "Value required");
             this.el.nativeElement.setAttribute("aria-required", true);
         }
+        setInterval(() => {
+            var el = (this.dropdownRef.el.nativeElement as HTMLElement).getElementsByClassName('ui-dropdown-panel');
+            console.log(el);
+        }, 200);
 
     }
 
