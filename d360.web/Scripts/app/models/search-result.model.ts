@@ -30,7 +30,8 @@ export class SearchFullResult extends SearchResult {
     Url: string;
     Icon: string;
     Uid: string;
-    Explaination: string;
+    Explanation: string;
+    Fields: SearchResultFieldDisplay[];
 }
 
 export class SearchCategories {
@@ -44,6 +45,16 @@ export class SearchResultInfo {
     ElapsedMS: number;
     Matches: number;
     Results: SearchFullResult[];
+}
+
+export class SearchResultFieldDisplay {
+    Name: string;
+    Type: string;
+    Label: string;
+    Prefix: string;
+    Suffix: string;
+    Value: string;
+    Empty: boolean;
 }
 
 export class SearchResultsObject {

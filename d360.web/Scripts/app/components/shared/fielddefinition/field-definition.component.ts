@@ -28,6 +28,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
+    @Input() showAddToSearch: boolean = false;
 
     @Input() objectName: string = "";
 

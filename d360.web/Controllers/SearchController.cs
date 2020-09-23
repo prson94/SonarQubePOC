@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -36,7 +37,7 @@ namespace d360.web.Controllers
         #region Json
 
         [HttpPost, Route("Results"), NonNullableParameters]
-        public JsonResult Results(QueryRequest queryRequest)
+        public async Task<JsonResult> Results(QueryRequest queryRequest)
         {
             var o = new SearchResultsViewModel();
 
@@ -44,13 +45,11 @@ namespace d360.web.Controllers
             {
                 queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
                 o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
-
-                foreach (IndexResult result in o.Result.Results)
+                foreach(var r in o.Result.Results)
                 {
-                    AugmentResult(result);
+                    await AugmentResult(r);
                 }
             }
-
             return Json(o);
         }
 
@@ -69,7 +68,7 @@ namespace d360.web.Controllers
 
         [HttpGet, Route("Typeahead"), NonNullableParameters]
         [ValidateInput(false)]
-        public JsonNetResult Typeahead(string q, string t, int? num)
+        public async Task<JsonNetResult> Typeahead(string q, string t, int? num)
         {
             try
             {
@@ -78,7 +77,7 @@ namespace d360.web.Controllers
                     IList<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
                     foreach(TypeaheadResult result in res)
                     {
-                        AugmentResult(result);
+                        await AugmentResult(result);
                     }
 
                     return new JsonNetResult { Data = res, Formatting = Newtonsoft.Json.Formatting.None };
@@ -191,10 +190,19 @@ namespace d360.web.Controllers
             return "fa-circle-o";
         }
 
-        private void AugmentResult(TypeaheadResult result)
+        private async Task AugmentResult(TypeaheadResult result)
         {
             AddIcon(result);
-            AddAssetPath(result);
+            await AddAssetPath(result);
+        }
+
+        private async Task AugmentResult(IndexResult result)
+        {
+            await AugmentResult(result as TypeaheadResult);
+            if (result.Uid.HasValue && result.Uid.Value != Guid.Empty)
+            {
+                result.Fields = await AssetRepository.GetAssetSearchFields(result.Uid ?? Guid.Empty);
+            }
         }
 
         private void AddIcon(TypeaheadResult result)
@@ -210,11 +218,11 @@ namespace d360.web.Controllers
             }
         }
 
-        private void AddAssetPath(TypeaheadResult result)
+        private async Task AddAssetPath(TypeaheadResult result)
         {
             if(result.Uid.HasValue && result.Uid.Value != Guid.Empty)
             {
-                result.AssetPath = AssetRepository.GetAssetPath(result.Uid ?? Guid.Empty);
+                result.AssetPath = await AssetRepository.GetAssetPath(result.Uid ?? Guid.Empty);
             }
         }
 

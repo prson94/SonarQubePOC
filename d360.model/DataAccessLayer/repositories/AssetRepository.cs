@@ -2574,13 +2574,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
-        public string[][] GetAssetPath(Guid assetUid)
+        public async Task<string[][]> GetAssetPath(Guid assetUid)
         {
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@assetUid", assetUid.ToString());
 
             var sql = $@"SELECT	Segments FROM graph.AssetNode WHERE Uid = @assetUid";
-            string segment = CompanyContext.Query<string>(sql, dbArgs, ApiTimeout).FirstOrDefault();
+            string segment = await CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
             return GetPathFromSegments(segment);
         }
 
@@ -2879,6 +2879,74 @@ where   A.[uid] = @assetUid";
 
 
             return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
+        }
+
+        public async Task<List<IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid)
+        {
+            var asset = GetAssetByUID(assetUid);
+
+            if (asset == null)
+                return null;
+
+            var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
+
+            if (!canRead)
+                return null;
+
+            var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
+            //Get fieldtypes to display on search result card
+            var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID && f.SearchAddToResult).ToList();
+
+            if (!fieldTypes.Any())
+                return null;
+
+            var fieldJoins = new List<string>();
+            var fieldColumns = new List<string>();
+            DynamicParameters dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid);
+
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            var sql = $@"
+select  
+        {string.Join(","+Environment.NewLine, fieldColumns)}
+from    Asset A
+        inner join AssetType T on T.ID = A.AssetTypeID
+        outer apply (
+            select  T.[uid]
+            from    graph.AssetNode S,
+                    graph.AssetEdge E,
+                    graph.assetNode T
+            where   match (T-(E)->S)
+                    and E.PredicateType in (3,4)
+                    and S.[uid] = A.[uid]
+        ) Parent
+        left join AssetDetail P on P.uid = Parent.uid
+        {string.Join(Environment.NewLine, fieldJoins)}
+where   A.[uid] = @assetUid";
+
+            var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;
+
+            fieldTypes.Sort((x, y) =>
+                {
+                    //Order field types by SearchDisplayOrder(if available), ColumnOrder, FriendlyName
+                    int result = Nullable.Compare(x.SearchDisplayOrder, y.SearchDisplayOrder);
+                    if (result == 0)
+                        result = x.ColumnOrder.CompareTo(y.ColumnOrder);
+                    if (result == 0)
+                        result = x.FriendlyName.CompareTo(y.FriendlyName);
+                    return result;
+                });
+
+            return fieldTypes.Select(f => new IndexFieldDisplay(){
+               Name = f.Name,
+               Type = f.Type,
+               Label = f.FriendlyName,
+               Prefix = f.SearchPrefix,
+               Suffix = f.SearchSuffix,
+               Value = data[f.Name]?.ToString() ?? "",
+               Empty = (data[f.Name] is null && f.ShowIfEmpty)
+            }).Where(f => !string.IsNullOrEmpty(f.Value) || f.Empty).ToList();
         }
 
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
