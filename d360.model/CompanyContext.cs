@@ -2018,8 +2018,13 @@ where	I.ID is null";
             return await Database.Connection.QueryAsync<TFirst, TSecond, TReturn>(sql, map: map, param: param, splitOn: splitOn);
         }
 
-        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
+        public async Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90)
         {
+            return await Database.Connection.QueryAsync(sql, param, null, timeout);
+        }
+
+        public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
+        {            
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)

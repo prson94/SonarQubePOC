@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
                             queryParams = paramList;
                         }
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                        var results = await AssetRepository.GetAssets(assetType, queryParams);
 
                         SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
 
@@ -351,7 +351,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                    var results = await AssetRepository.GetAssets(assetType, queryParams);
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 

@@ -265,6 +265,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90);
         Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
@@ -281,7 +282,7 @@ namespace d360.model
         List<string> SelectQueryColumns(string statement);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         bool TypeHasChildren(SystemObjects type, int id);
-        bool TypeHasParent(SystemObjects type, int id);
+        bool TypeHasParent(SystemObjects type, int id);        
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
         bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy);
