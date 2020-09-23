@@ -50,6 +50,8 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
+import { GalleryDropDownComponent } from './gallery.dropdown.component';
+import { DropdownModule } from 'primeng/dropdown';
 
 
 @NgModule({
@@ -80,7 +82,8 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         AutoCompleteModule,
         CheckboxModule,
         TriStateCheckboxModule,
-        SiteModalModule
+        SiteModalModule,
+        DropdownModule
     ],
     declarations: [
         GalleryComponent,
@@ -103,7 +106,8 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         GalleryNumberFieldComponent,
         GalleryBadgeComponent,
         GalleryMessageBoxComponent,
-        GalleryCheckboxComponent
+        GalleryCheckboxComponent,
+        GalleryDropDownComponent
     ],
     providers: [
         GalleryGuard,

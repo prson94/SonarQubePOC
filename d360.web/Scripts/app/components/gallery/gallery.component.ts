@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "switch";
+    activeControl: string = "select";
     controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
@@ -30,6 +30,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Message Box', key: 'message-box' },
         { label: 'Badge', key: 'badge' },
         { label: 'Checkbox', key: 'checkbox' },
+        { label: 'Select', key: 'select' },
     ];
 
     ngOnInit(): void {        
