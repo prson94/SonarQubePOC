@@ -83,11 +83,6 @@
                 </div>
                 <div class="row">
                     <ig-date name="myDate" [(ngModel)]="formVal" #myDate="ngModel" required="true"></ig-date>
-                    <span *ngIf="myDate.invalid && (myDate.dirty || myDate.touched)">
-                        <span *ngIf="myDate.errors.required" style="color: maroon">
-                            Please select a date
-                        </span>
-                    </span>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
@@ -106,11 +101,11 @@
                     <ig-date formControlName="myDate"
                              required="true">
                     </ig-date>
-                    <span *ngIf="form.get('myDate').invalid && (form.get('myDate').dirty || form.get('myDate').touched)">
-                        <span *ngIf="form.get('myDate').errors.invalidDate" style="color: maroon">
+                    <div *ngIf="form.get('myDate').invalid && (form.get('myDate').dirty || form.get('myDate').touched)">
+                        <div *ngIf="form.get('myDate').errors.invalidDate" class="ig-text-required">
                             Please select a date in the future
-                        </span>
-                    </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">

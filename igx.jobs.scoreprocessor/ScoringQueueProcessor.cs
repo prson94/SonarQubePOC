@@ -1,6 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities.Metric;
+using d360.core.exceptions;
 using d360.core.queue;
+using d360.extensions.queue;
 using d360.extensions.storage;
 using d360.utils.company;
 using Dapper;
@@ -8,6 +10,7 @@ using igx.jobs.scoreprocessor.ChangeTypes;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -73,13 +76,26 @@ namespace igx.jobs.scoreprocessor
                     await process.Run();
                 }
             }
+            catch (ScoresCurrentlyProcessingException ex)
+            {
+                var queue = new AzureQueueSource();
+                await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), scoreInfo, new TimeSpan(0, 0, 30));
+                queue = null;
+            }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID);
+                var props = new Dictionary<string, string>() {
+                    { "ExecutionUid", scoreInfo.ExecutionUid.ToString() },
+                    { "ChangeType", scoreInfo.ChangeType.ToString() }
+                };
+
+                CoreFunction.AITrackException(functionName, ex, scoreInfo.CompanyID, props);
+
                 lock (log)
                 {
                     log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
                 }
+
                 throw ex;
             }
         }

@@ -226,7 +226,7 @@ from    #InternalMeasures T
 
                     execution.Error = results.Count(i => !i.IsSuccess);
                     execution.Processed = results.Count(i => i.IsSuccess);
-                    execution.CompletedOn = DateTime.UtcNow;
+                    execution.ProcessingStartedOn = null;
                     Update(execution);
 
                     var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel
@@ -239,7 +239,7 @@ from    #InternalMeasures T
 
                     if (queueResults.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults);
+                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.StartedOn);
                     }
                 }
                 catch (Exception ex)
@@ -692,13 +692,19 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item)
+        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null)
         {
+            if (!startedOn.HasValue)
+            {
+                startedOn = DateTime.UtcNow;
+            }
+
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
                 ChangeType = changeType,
                 ExecutionUid = executionUid,
+                StartedOn = startedOn.Value,
                 Location = ScoreQueueExecutionDataLocation.File
             };
             Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(item));

@@ -209,7 +209,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<Guid>()))
                 .Returns(() => JsonConvert.DeserializeObject<dynamic>(DataConstants.FieldTypesJsonFormat));
 
-            mockRepo.Setup(x => x.GetAssets(It.IsAny<Guid>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>()))
+            mockRepo.Setup(x => x.GetAssets(It.IsAny<AssetType>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>()))
                 .Returns(Task.FromResult(new AssetsApiViewModel()));
 
             mockRepo.Setup(x => x.GetAssetTypeByUID(It.IsAny<Guid>()))

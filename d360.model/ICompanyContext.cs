@@ -265,6 +265,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90);
         Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
@@ -281,7 +282,7 @@ namespace d360.model
         List<string> SelectQueryColumns(string statement);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         bool TypeHasChildren(SystemObjects type, int id);
-        bool TypeHasParent(SystemObjects type, int id);
+        bool TypeHasParent(SystemObjects type, int id);        
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
         bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy);
@@ -316,7 +317,7 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
-        void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item);
+        void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);

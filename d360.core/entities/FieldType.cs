@@ -141,6 +141,18 @@ namespace d360.core.entities
         [DataMember]
         public int? ScoreType { get; set; }
 
+        [DataMember]
+        public bool SearchAddToResult { get; set; }
+
+        [DataMember]
+        public string SearchPrefix { get; set; }
+
+        [DataMember]
+        public string SearchSuffix { get; set; }
+
+        [DataMember]
+        public int? SearchDisplayOrder { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
@@ -209,6 +221,18 @@ namespace d360.core.entities
         public string Pattern { get; set; }
     }
 
+    public class FieldTypeDescriptionApiViewModel_Search
+    {
+        [DataMember]
+        public bool AddToResult { get; set; }
+        [DataMember]
+        public string Prefix { get; set; }
+        [DataMember]
+        public string Suffix { get; set; }
+        [DataMember]
+        public int? DisplayOrder { get; set; }
+    }
+
     public class FieldTypeEditableApiViewModel
     {
         [DataMember]
@@ -239,6 +263,8 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeComputedOwnershipLookupApiViewModel
@@ -284,6 +310,8 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel
@@ -351,6 +379,8 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeDecimalApiViewModel : FieldTypeEditableApiViewModel
@@ -363,6 +393,8 @@ namespace d360.core.entities
         public decimal? Increment { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationDecimal Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeDateTimeApiViewModel : FieldTypeEditableApiViewModel
@@ -373,6 +405,8 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
     public class FieldTypeDataTypeHtmlApiViewModel : FieldTypeEditableApiViewModel
     {
@@ -443,6 +477,8 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeLookupApiViewModel_Filter
@@ -490,6 +526,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeLookupApiViewModel_List List { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeNumberApiViewModel : FieldTypeEditableApiViewModel
@@ -502,6 +540,8 @@ namespace d360.core.entities
         public decimal? Increment { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationMinMaxValue Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypePathApiViewModel
@@ -542,6 +582,8 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
 
     public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
@@ -552,6 +594,8 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Search Search { get; set; }
     }
     public class FieldTypeDataTypeTagApiViewModel
     {

@@ -219,6 +219,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter', 
                 case when FT.Type = 'Boolean' then FT.ShowIfEmpty else null end as 'Type.Boolean.ShowIfEmpty', 
                 case when FT.Type = 'Boolean' then FT.IsRequired else null end as 'Type.Boolean.Validation.IsRequired', 
+                case when FT.Type = 'Boolean' then FT.SearchAddToResult else null end as 'Type.Boolean.Search.AddToResult', 
+                case when FT.Type = 'Boolean' then FT.SearchPrefix else null end as 'Type.Boolean.Search.Prefix', 
+                case when FT.Type = 'Boolean' then FT.SearchSuffix else null end as 'Type.Boolean.Search.Suffix', 
+                case when FT.Type = 'Boolean' then FT.SearchDisplayOrder else null end as 'Type.Boolean.Search.DisplayOrder', 
 
 
 		        case when FT.Type = 'OwnershipLookup' then FT.ColumnOrder else null end as 'Type.ComputedOwnershipLookup.ColumnOrder',
@@ -240,6 +244,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'FieldFromRelationship' then FT.IsDisplayable else null end as 'Type.ComputedRelationshipField.IsDisplayable',
 		        case when FT.Type = 'FieldFromRelationship' then FT.IsListable else null end as 'Type.ComputedRelationshipField.IsListable',
 		        case when FT.Type = 'FieldFromRelationship' then FT.ShowIfEmpty else null end as 'Type.ComputedRelationshipField.ShowIfEmpty',
+                case when FT.Type = 'FieldFromRelationship' then FT.SearchAddToResult else null end as 'Type.FieldFromRelationship.Search.AddToResult', 
+                case when FT.Type = 'FieldFromRelationship' then FT.SearchPrefix else null end as 'Type.FieldFromRelationship.Search.Prefix', 
+                case when FT.Type = 'FieldFromRelationship' then FT.SearchSuffix else null end as 'Type.FieldFromRelationship.Search.Suffix', 
+                case when FT.Type = 'FieldFromRelationship' then FT.SearchDisplayOrder else null end as 'Type.FieldFromRelationship.Search.DisplayOrder', 
 
 		        case when FT.Type = 'ComplexRelationLookup' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipLookup.ColumnOrder',
 		        case when FT.Type = 'ComplexRelationLookup' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipLookup.Description.Display',
@@ -295,6 +303,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Date' then FT.IsPartOfKey else null end as 'Type.Date.IsPartOfKey',
 		        case when FT.Type = 'Date' then FT.IsPrimaryFilter else null end as 'Type.Date.IsPrimaryFilter',
 		        case when FT.Type = 'Date' then FT.ShowIfEmpty else null end as 'Type.Date.ShowIfEmpty',
+                case when FT.Type = 'Date' then FT.SearchAddToResult else null end as 'Type.Date.Search.AddToResult', 
+                case when FT.Type = 'Date' then FT.SearchPrefix else null end as 'Type.Date.Search.Prefix', 
+                case when FT.Type = 'Date' then FT.SearchSuffix else null end as 'Type.Date.Search.Suffix', 
+                case when FT.Type = 'Date' then FT.SearchDisplayOrder else null end as 'Type.Date.Search.DisplayOrder', 
 
 		        case when FT.Type = 'DateTime' then FT.ColumnOrder else null end as 'Type.DateTime.ColumnOrder',
 		        case when FT.Type = 'DateTime' then FT.ColumnWidth else null end as 'Type.DateTime.ColumnWidth',
@@ -309,6 +321,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'DateTime' then FT.IsPartOfKey else null end as 'Type.DateTime.IsPartOfKey',
 		        case when FT.Type = 'DateTime' then FT.IsPrimaryFilter else null end as 'Type.DateTime.IsPrimaryFilter',
 		        case when FT.Type = 'DateTime' then FT.ShowIfEmpty else null end as 'Type.DateTime.ShowIfEmpty',
+                case when FT.Type = 'DateTime' then FT.SearchAddToResult else null end as 'Type.DateTime.Search.AddToResult', 
+                case when FT.Type = 'DateTime' then FT.SearchPrefix else null end as 'Type.DateTime.Search.Prefix', 
+                case when FT.Type = 'DateTime' then FT.SearchSuffix else null end as 'Type.DateTime.Search.Suffix', 
+                case when FT.Type = 'DateTime' then FT.SearchDisplayOrder else null end as 'Type.DateTime.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Decimal' then FT.ColumnOrder else null end as 'Type.Decimal.ColumnOrder',
 		        case when FT.Type = 'Decimal' then FT.ColumnWidth else null end as 'Type.Decimal.ColumnWidth',
@@ -327,6 +343,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.IsPartOfKey else null end as 'Type.Decimal.IsPartOfKey',
 		        case when FT.Type = 'Decimal' then FT.IsPrimaryFilter else null end as 'Type.Decimal.IsPrimaryFilter',
 		        case when FT.Type = 'Decimal' then FT.ShowIfEmpty else null end as 'Type.Decimal.ShowIfEmpty',
+                case when FT.Type = 'Decimal' then FT.SearchAddToResult else null end as 'Type.Decimal.Search.AddToResult', 
+                case when FT.Type = 'Decimal' then FT.SearchPrefix else null end as 'Type.Decimal.Search.Prefix', 
+                case when FT.Type = 'Decimal' then FT.SearchSuffix else null end as 'Type.Decimal.Search.Suffix', 
+                case when FT.Type = 'Decimal' then FT.SearchDisplayOrder else null end as 'Type.Decimal.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Html' then FT.ColumnOrder else null end as 'Type.Html.ColumnOrder',
 		        case when FT.Type = 'Html' then FT.ColumnWidth else null end as 'Type.Html.ColumnWidth',
@@ -374,6 +394,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty',
 		        case when FT.Type = 'Link' then FT.IsPartOfKey else null end as 'Type.Link.IsPartOfKey',
 		        case when FT.Type = 'Link' then FT.IsPrimaryFilter else null end as 'Type.Link.IsPrimaryFilter',
+                case when FT.Type = 'Link' then FT.SearchAddToResult else null end as 'Type.Link.Search.AddToResult', 
+                case when FT.Type = 'Link' then FT.SearchPrefix else null end as 'Type.Link.Search.Prefix', 
+                case when FT.Type = 'Link' then FT.SearchSuffix else null end as 'Type.Link.Search.Suffix', 
+                case when FT.Type = 'Link' then FT.SearchDisplayOrder else null end as 'Type.Link.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
@@ -405,6 +429,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Lookup' then FT.IsPartOfKey else null end as 'Type.Lookup.IsPartOfKey',
 		        case when FT.Type = 'Lookup' then FT.IsPrimaryFilter else null end as 'Type.Lookup.IsPrimaryFilter',
 		        case when FT.Type = 'Lookup' then FT.ShowIfEmpty else null end as 'Type.Lookup.ShowIfEmpty',
+                case when FT.Type = 'Lookup' then FT.SearchAddToResult else null end as 'Type.Lookup.Search.AddToResult', 
+                case when FT.Type = 'Lookup' then FT.SearchPrefix else null end as 'Type.Lookup.Search.Prefix', 
+                case when FT.Type = 'Lookup' then FT.SearchSuffix else null end as 'Type.Lookup.Search.Suffix', 
+                case when FT.Type = 'Lookup' then FT.SearchDisplayOrder else null end as 'Type.Lookup.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Number' then FT.ColumnOrder else null end as 'Type.Number.ColumnOrder',
 		        case when FT.Type = 'Number' then FT.ColumnWidth else null end as 'Type.Number.ColumnWidth',
@@ -422,6 +450,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.IsPartOfKey else null end as 'Type.Number.IsPartOfKey',
 		        case when FT.Type = 'Number' then FT.IsPrimaryFilter else null end as 'Type.Number.IsPrimaryFilter',
 		        case when FT.Type = 'Number' then FT.ShowIfEmpty else null end as 'Type.Number.ShowIfEmpty',
+                case when FT.Type = 'Number' then FT.SearchAddToResult else null end as 'Type.Number.Search.AddToResult', 
+                case when FT.Type = 'Number' then FT.SearchPrefix else null end as 'Type.Number.Search.Prefix', 
+                case when FT.Type = 'Number' then FT.SearchSuffix else null end as 'Type.Number.Search.Suffix', 
+                case when FT.Type = 'Number' then FT.SearchDisplayOrder else null end as 'Type.Number.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Path' then FT.ColumnOrder else null end as 'Type.Path.ColumnOrder',
 		        case when FT.Type = 'Path' then FT.ColumnWidth else null end as 'Type.Path.ColumnWidth',
@@ -442,6 +474,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Relationship' then FT.IsListable else null end as 'Type.Relationship.IsListable',
 		        case when FT.Type = 'Relationship' then FT.IsPrimaryFilter else null end as 'Type.Relationship.IsPrimaryFilter',
 		        case when FT.Type = 'Relationship' then FT.ShowIfEmpty else null end as 'Type.Relationship.ShowIfEmpty',
+                case when FT.Type = 'Relationship' then FT.SearchAddToResult else null end as 'Type.Relationship.Search.AddToResult', 
+                case when FT.Type = 'Relationship' then FT.SearchPrefix else null end as 'Type.Relationship.Search.Prefix', 
+                case when FT.Type = 'Relationship' then FT.SearchSuffix else null end as 'Type.Relationship.Search.Suffix', 
+                case when FT.Type = 'Relationship' then FT.SearchDisplayOrder else null end as 'Type.Relationship.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
 		        case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
@@ -460,6 +496,10 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Text' then FT.IsPartOfKey else null end as 'Type.Text.IsPartOfKey',
 		        case when FT.Type = 'Text' then FT.IsPrimaryFilter else null end as 'Type.Text.IsPrimaryFilter',
 		        case when FT.Type = 'Text' then FT.ShowIfEmpty else null end as 'Type.Text.ShowIfEmpty',
+                case when FT.Type = 'Text' then FT.SearchAddToResult else null end as 'Type.Text.Search.AddToResult', 
+                case when FT.Type = 'Text' then FT.SearchPrefix else null end as 'Type.Text.Search.Prefix', 
+                case when FT.Type = 'Text' then FT.SearchSuffix else null end as 'Type.Text.Search.Suffix', 
+                case when FT.Type = 'Text' then FT.SearchDisplayOrder else null end as 'Type.Text.Search.DisplayOrder', 
 
 		        case when FT.Type = 'Tag' then FT.ColumnOrder else null end as 'Type.Tag.ColumnOrder',
 		        case when FT.Type = 'Tag' then FT.ColumnWidth else null end as 'Type.Tag.ColumnWidth',
@@ -587,6 +627,13 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.IsPrimaryFilter = f.Type.Boolean.IsPrimaryFilter;
                     newFieldType.ShowIfEmpty = f.Type.Boolean.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Boolean.SortOrder;
+                    if(f.Type.Boolean.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Boolean.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Boolean.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Boolean.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Boolean.Search.DisplayOrder;
+                    }
                 }
                 else if (f.Type.Score != null)
                 {
@@ -711,6 +758,13 @@ from	IntersectType I
 		    newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
+                    if (f.Type.ComputedRelationshipField.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.ComputedRelationshipField.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.ComputedRelationshipField.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.ComputedRelationshipField.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.ComputedRelationshipField.Search.DisplayOrder;
+                    }
                 }
                 else if (f.Type.ComputedRelationshipLookup != null)
                 {
@@ -967,6 +1021,13 @@ from	IntersectType I
                     {
                         newFieldType.IsRequired = f.Type.Date.Validation.IsRequired;
                     }
+                    if (f.Type.Date.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Date.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Date.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Date.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Date.Search.DisplayOrder;
+                    }
                 }
                 else if (f.Type.DateTime != null)
                 {
@@ -989,6 +1050,13 @@ from	IntersectType I
                     if (f.Type.DateTime.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.DateTime.Validation.IsRequired;
+                    }
+                    if (f.Type.DateTime.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.DateTime.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.DateTime.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.DateTime.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.DateTime.Search.DisplayOrder;
                     }
                 }
                 else if (f.Type.Decimal != null)
@@ -1020,6 +1088,13 @@ from	IntersectType I
                         newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumValue;
                         newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumValue;
                         newFieldType.Precision = f.Type.Decimal.Validation.Precision;
+                    }
+                    if (f.Type.Decimal.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Decimal.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Decimal.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Decimal.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Decimal.Search.DisplayOrder;
                     }
                 }
                 else if (f.Type.Html != null)
@@ -1123,6 +1198,13 @@ from	IntersectType I
                     if (f.Type.Link.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.Link.Validation.IsRequired;
+                    }
+                    if (f.Type.Link.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Link.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Link.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Link.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Link.Search.DisplayOrder;
                     }
                 }
                 else if (f.Type.Lookup != null)
@@ -1263,6 +1345,13 @@ from	IntersectType I
                     {
                         newFieldType.IsRequired = f.Type.Lookup.Validation.IsRequired;
                     }
+                    if (f.Type.Lookup.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Lookup.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Lookup.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Lookup.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Lookup.Search.DisplayOrder;
+                    }
                 }
                 else if (f.Type.Number != null)
                 {
@@ -1292,6 +1381,13 @@ from	IntersectType I
                         newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
                         newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
                         newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
+                    }
+                    if (f.Type.Number.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Number.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Number.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Number.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Number.Search.DisplayOrder;
                     }
                 }
                 else if (f.Type.Path != null)
@@ -1334,6 +1430,13 @@ from	IntersectType I
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
                     newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
+                    if (f.Type.Relationship.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Relationship.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Relationship.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Relationship.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Relationship.Search.DisplayOrder;
+                    }
                 }
                 else if (f.Type.Text != null)
                 {
@@ -1362,6 +1465,14 @@ from	IntersectType I
                         newFieldType.MinimumLength = f.Type.Text.Validation.MinimumLength;
                         newFieldType.Pattern = f.Type.Text.Validation.Pattern;
                     }
+                    if (f.Type.Text.Search != null)
+                    {
+                        newFieldType.SearchAddToResult = f.Type.Text.Search.AddToResult;
+                        newFieldType.SearchPrefix = f.Type.Text.Search.Prefix;
+                        newFieldType.SearchSuffix = f.Type.Text.Search.Suffix;
+                        newFieldType.SearchDisplayOrder = f.Type.Text.Search.DisplayOrder;
+                    }
+
                 }
                 else if (f.Type.Tag != null)
                 {
@@ -1464,6 +1575,10 @@ from	IntersectType I
                     currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
                     currentFieldType.Definition = newFieldType.Definition;
                     currentFieldType.UpdatedBy = Company.CurrentResourceID;
+                    currentFieldType.SearchAddToResult = newFieldType.SearchAddToResult;
+                    currentFieldType.SearchPrefix = newFieldType.SearchPrefix;
+                    currentFieldType.SearchSuffix = newFieldType.SearchSuffix;
+                    currentFieldType.SearchDisplayOrder = newFieldType.SearchDisplayOrder;
                     fieldTypeNamesToDelete.Add(f.Name);
                 }
 

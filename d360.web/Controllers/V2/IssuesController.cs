@@ -161,7 +161,7 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));             
         }
 
-        private WorkHttpStatus validateRequest(IssueType issueType, ActionUpsertRequest model, Asset asset)
+        private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, Asset asset)
         {
             if (model.AssetUid == null || model.AssetUid == Guid.Empty)
             {
@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Allocation does not exist for Asset Type '{asset.AssetType.Name}' on Action Type '{issueType.Name}'.");
             }            
 
-            var fieldTypes = Company.Filter<FieldType>(ft => ft.Object == "IssueType" && ft.ObjectID == issueType.ID);
+            var fieldTypes = Company.Filter<FieldType>(ft => ft.Object == SystemObjects.IssueType.ToString() && ft.ObjectID == issueType.ID);
 
             var fieldTable = new DataTable();
             fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -190,12 +190,46 @@ namespace d360.web.Controllers.V2
             fieldTable.Columns.Add("FieldValue", typeof(string));
             fieldTable.Columns.Add("FieldTypeID", typeof(int));
 
-            Company.ValidateFields("IssueType", issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);            
+            Company.ValidateFields(SystemObjects.IssueType.ToString(), issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);
 
-            if(!success)
+            if (!success)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", errorMessage);
-            }            
+            }
+
+            foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
+            {
+                var lookupSQL = "Select * from FieldLookupValue where fieldTypeId = @fieldTypeId";              
+
+                string[] lookupValues = { };
+
+                if (model.Fields.ContainsKey(ft.Name))
+                {
+                    lookupValues = model.Fields[ft.Name].Trim().Split(',');
+                }
+
+                if (lookupValues.Length > 0)
+                {
+                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID });
+
+                    List<string> fieldValues = new List<string>();
+                    foreach (var lookupValue in lookupValues)
+                    {                    
+                        if (!fieldLookupValues.Any(x => x.Value.ToString() == lookupValue))
+                        {
+                            if (fieldLookupValues.Any(x => x.Text == lookupValue))
+                            {
+                                fieldValues.Add(fieldLookupValues.FirstOrDefault(x => x.Text == lookupValue).Value.ToString());
+                            }
+                            else
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", $"Lookup Value  '{lookupValue}' is not valid for lookup  '{ft.Name}'.");
+                            }
+                        }                       
+                    }
+                    model.Fields[ft.Name] = string.Join(",", fieldValues);
+                }
+            }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -206,7 +240,7 @@ namespace d360.web.Controllers.V2
             {
                 Asset asset = AssetRepository.GetAssetByUID(model.AssetUid);
 
-                var validationStatus =  validateRequest(issueType, model, asset);
+                var validationStatus =  ValidateRequest(issueType, model, asset);
 
                 if(validationStatus.StatusCode != HttpStatusCode.OK)
                 {
@@ -225,9 +259,11 @@ namespace d360.web.Controllers.V2
                     ObjectType = asset.AssetType.Object,
                     ObjectTypeID = asset.AssetType.ObjectID,
                     CommentID = 0
-                };                
+                };
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, issue.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueType.ID).ToList(), model.Fields, null);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.IssueType, issueType.ID).ToList();                
+
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, issue.ID, fieldTypes, model.Fields, null);
 
                 issues.Add(new IssueInsertModel { Issue = issue, fields = fields, Comment = model.Fields.ContainsKey("ProblemDesc") ? model.Fields["ProblemDesc"] : null});
             }            

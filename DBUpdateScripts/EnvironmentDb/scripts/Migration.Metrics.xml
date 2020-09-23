@@ -485,10 +485,18 @@ BEGIN
 		[Evidence] [nvarchar](max) NULL,
 		[ConditionUid] [uniqueidentifier] NULL,
 		[AdjustedMaxWeight] [decimal](5, 3) NULL
-	)
+	);
 
 	insert into [metrics].[ScoreItem_Backup]
-		select * from [metrics].[ScoreItem]
+		select * from [metrics].[ScoreItem];
+
+	alter table metrics.ScoreItem_Backup add OldEndDate date null;
+	update metrics.ScoreItem_Backup set OldEndDate = EndDate;
+
+	update	T
+	set		T.EndDate = dateadd(dd, -1, S.EffectiveDate)
+	from	metrics.ScoreItem_Backup T
+			inner join metrics.ScoreItem_Backup S on S.AssetUid = T.AssetUid and T.MetricAssetUid = S.MetricAssetUid and S.EffectiveDate = T.EndDate and T.Uid <> S.Uid;
 END
 GO
 

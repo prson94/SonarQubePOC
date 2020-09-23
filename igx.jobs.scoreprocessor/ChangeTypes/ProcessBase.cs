@@ -303,6 +303,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 o.AdjustedMaxWeight = o.RawMeasureWeight / 
                     items.Where(i => rootUids.Contains(i.MetricAssetUid)).Sum(i => i.RawMeasureWeight);
 
+                o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 3, MidpointRounding.AwayFromZero);
+
                 decimal totalChildPassingWeights = 0;
                 // Child-level measures.
                 if (all.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
@@ -315,6 +317,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     foreach (var c in childMeasures)
                     {
                         c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
+                        c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 3, MidpointRounding.AwayFromZero);
                         c.AdjustedWeight = c.Value ? c.AdjustedMaxWeight : 0;
                         totalChildPassingWeights += c.AdjustedWeight.Value;
                     }
@@ -337,10 +340,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         o.AdjustedWeight = o.Value ? (o.AdjustedMaxWeight ?? 0) : 0;
                     }
                 }
+                o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 3, MidpointRounding.AwayFromZero);
                 scoreValue += o.AdjustedWeight.Value;
             }
 
-            return scoreValue;
+            if (scoreValue > 1) scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
+
+            return Math.Round(scoreValue, 3, MidpointRounding.AwayFromZero);
         }
 
         internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)

@@ -981,4 +981,11 @@ update assettype set hashvalue = null where [object] = 'ArtifactType'
 ]]>
 		</sql>
 	</changeSet>
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-12260">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+      <![CDATA[
+update fieldtype set defaultvalue = null where [type] = 'link' and defaultvalue = '|' and DefaultFormattedValue is null
+]]>
+    </sql>
+  </changeSet>
  </databaseChangeLog>

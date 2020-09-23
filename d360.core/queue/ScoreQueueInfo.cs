@@ -27,16 +27,21 @@ namespace d360.core.queue
         public int CompanyID { get; set; }
 
         public Guid ExecutionUid { get; set; }
-        
+
+        public DateTime StartedOn { get; set; }
+
         public ScoreQueueExecutionDataLocation Location { get; set; }
         
         public ScoreQueueChangeType ChangeType { get; set; }
 
         [JsonIgnore]
+        private string StartedOnDateString { get { return StartedOn.ToString("yyyyMMdd"); } }
+
+        [JsonIgnore]
         public string StorageFolder { get { return $"scoring"; } }
 
         [JsonIgnore]
-        public string StorageFile { get { return $"{CompanyID}/{ExecutionUid}.json"; } }
+        public string StorageFile { get { return $"{CompanyID}/{StartedOnDateString}_{ExecutionUid}_{ChangeType}.json"; } }
     }
 
     public class ExternalMeasureResultsCreatedModel
