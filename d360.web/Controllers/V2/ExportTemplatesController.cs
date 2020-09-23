@@ -196,12 +196,6 @@ namespace d360.web.Controllers.V2
             if (validationStatus.StatusCode != HttpStatusCode.OK)
                 return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-            var existingTemplateSQL = "select 1 from AssetTypeExportTemplate where Name = @name";
-
-            if (Company.Database.Connection.ExecuteScalar<bool>(existingTemplateSQL, new { name = model.Name })){
-                return errorMessageResponse(HttpStatusCode.Conflict, "Conflict", $"Template named '{model.Name}' already exists.");
-            }
-
             var createExportTemplateSQL = $@"insert into AssetTypeExportTemplate 
                                                 (Name, Description, AssetTypeID, ExportViewType, IncludeUrl, IncludeParent, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, UsageNotes) 
                                                 OUTPUT INSERTED.Id
@@ -669,7 +663,6 @@ namespace d360.web.Controllers.V2
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "A valid AssetTypeUid is required.");
             }
 
-
             if (assetType.Class != AssetTypeClass.BusinessAsset
                && assetType.Class != AssetTypeClass.TechnicalAsset
                && assetType.Class != AssetTypeClass.Rule)
@@ -685,6 +678,12 @@ namespace d360.web.Controllers.V2
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Name must not exceed 250 characters.");
             }
+
+            if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name))
+            {
+                return new WorkHttpStatus(HttpStatusCode.Conflict, "Conflict", $"Template named '{template.Name}' already exists for Asset Type '{assetType.Name}'.");
+            }
+
             if (template.AssetTypeID <= 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "AssetType not found for the UID provided.");
