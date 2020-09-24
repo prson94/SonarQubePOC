@@ -2,7 +2,9 @@
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.queue;
+using d360.model;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -11,6 +13,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace igx.jobs.scoreprocessor.ChangeTypes
@@ -18,7 +21,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     public class AssetMeasuresProcess : ProcessBase, IScoreProcess
     {
         public async Task Run()
-        {            
+        {
             var assetMeasures = await Storage.DeserializeJsonObjectFromBlobAsync<List<AssetMeasureModel>>(Info.StorageFolder, Info.StorageFile);
 
             var scoresToAdd = new List<Score>();
@@ -29,6 +32,27 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             var Db = GetCompanyContext();
             using (var company = GetEnvironmentConnection())
             {
+                var executionRecord = company.Query<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid }).SingleOrDefault();
+
+                if (executionRecord != null)
+                {
+                    // This means that the original execution came in via one of the external measure/score endpoints.
+                    // We need to check whether any other execution is running.
+
+                    // Wait a moment in case there are multiple queue messages
+                    Thread.Sleep(new Random().Next(3000, 7000));
+
+                    var currentlyRunningExecutions = company.Query<bool>("select cast(iif(count(1) > 0, 1, 0) as bit) from api.Execution where ExecutionID <> @id and [Route] like '/api/v2/scoring/%/results' and MarkedForProcessing = 1", new { id = Info.ExecutionUid }).Single();
+                    if (currentlyRunningExecutions)
+                    {
+                        throw new ScoresCurrentlyProcessingException();
+                    }
+
+                    executionRecord.MarkedForProcessing = true;
+                    executionRecord.ProcessingStartedOn = DateTime.UtcNow;
+                    company.Execute("update api.Execution set MarkedForProcessing = 1, ProcessingStartedOn = @dt where ExecutionID = @id", new { dt = executionRecord.ProcessingStartedOn, id = executionRecord.ExecutionID });
+                }
+
                 // Load assets to a temporary table to get the list of asset types with all associated measures for the specific effective date.
                 var assets = new DataTable();
                 assets.Columns.Add("AssetUid", typeof(Guid));
@@ -147,8 +171,6 @@ from    (
                 inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
                 inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
 		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid 
-                    and V.[State] = 1 
-                    and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) ) 
                 cross apply (
                     select  count(1) as UseCount
                     from    metrics.ScoreItemLink
@@ -480,6 +502,16 @@ from	metrics.Asset A
                                 {
                                     // Look up to see if there is an existing score item for this measure, and use that value.
                                     var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
+                                    var scoreItemUid = Guid.NewGuid();
+                                    bool scoreItemValue = false;
+                                    if (previousScoreItem != null) 
+                                    {
+                                        if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                        {
+                                            scoreItemUid = previousScoreItem.ScoreItemUid;
+                                        }
+                                        scoreItemValue = previousScoreItem.Value;
+                                    }
 
                                     var scoreItem = new ScoreItem
                                     {
@@ -489,8 +521,8 @@ from	metrics.Asset A
                                         AssetVersionUid = aM.MetricAssetVersionUid,
                                         ConditionUid = conditionValidator.SelectedConditionUid,
                                         UpdatedOn = DateTime.UtcNow,
-                                        Value = (previousScoreItem != null) ? previousScoreItem.Value : false,
-                                        Uid = (previousScoreItem != null) ? previousScoreItem.ScoreItemUid : Guid.NewGuid()
+                                        Value = scoreItemValue,
+                                        Uid = scoreItemUid
                                     };
                                     assetScoreItems.Add(scoreItem);
                                     assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
@@ -701,7 +733,7 @@ from	metrics.Asset A
                                 );", transaction: trans);
 
                             using (var bulkCopy = CreateBulkCopy(company, trans, "#Scores"))
-                            { 
+                            {
                                 bulkCopy.ColumnMappings.Add("Uid", "Uid");
                                 bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
                                 bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
@@ -711,7 +743,7 @@ from	metrics.Asset A
                                 bulkCopy.ColumnMappings.Add("AllocationUid", "AllocationUid");
                                 bulkCopy.ColumnMappings.Add("VersionValueHash", "VersionValueHash");
 
-                                await bulkCopy.WriteToServerAsync(scores);                           
+                                await bulkCopy.WriteToServerAsync(scores);
                             }
 
                             using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItems"))
@@ -738,14 +770,14 @@ from	metrics.Asset A
                             }
 
                             if (scoreItemLinksToDelete.Count > 0)
-                            { 
+                            {
                                 using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemLinksToDelete"))
                                 {
                                     bulkCopy.ColumnMappings.Add("ScoreUid", "ScoreUid");
                                     bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
 
                                     await bulkCopy.WriteToServerAsync(deleteScoreItemLinks);
-                                }                            
+                                }
                             }
 
                             // End-date earlier scores and score items.
@@ -773,7 +805,7 @@ from	metrics.Asset A
                                 "insert (Uid, AllocationUid, AssetUid, EffectiveDate, Value, RunDate, EndDate, VersionValueHash) " +
                                 "values (S.Uid, S.AllocationUid, S.AssetUid, S.EffectiveDate, S.Value, S.RunDate, S.EndDate, S.VersionValueHash)" +
                                 "output S.Uid, inserted.Uid into #ScoreUidSynchronization;", transaction: trans);
-                            
+
                             // Synchronize score Uids with temp table we are about to merge into Link and Item table.
                             await company.ExecuteAsync(@"
 update T 
@@ -842,15 +874,46 @@ from	metrics.ScoreItemLink T
 
                             trans.Commit();
 
-                            Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList());
+                            Db.SendScoreEventWithPayload(
+                                Info.ExecutionUid,
+                                ScoreQueueChangeType.WorkflowCheck,
+                                scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
+                                Info.StartedOn
+                                );
                         }
                         catch (Exception ex)
                         {
                             trans.Rollback();
+                            updateExecution(company, executionRecord, false);
                             throw ex;
                         }
                     }
                 }
+
+                updateExecution(company, executionRecord, true);
+            }
+        }
+
+        void updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed) 
+        {
+            try
+            {
+                // Reset on failure so it does not interfere with any other executing thread.
+                if (executionRecord != null)
+                {
+                    executionRecord.MarkedForProcessing = false;
+                    executionRecord.ProcessingStartedOn = null;
+                    if (completed)
+                    {
+                        executionRecord.CompletedOn = DateTime.UtcNow;
+                        executionRecord.State = State.InActive;
+                    }
+                    Db.Execute("update api.Execution set MarkedForProcessing = 0, ProcessingStartedOn = null, CompletedOn = @dt, [State] = 4 where ExecutionID = @id", new { dt = executionRecord.CompletedOn, id = executionRecord.ExecutionID });
+                }
+            }
+            catch
+            {
+                //do nothing.
             }
         }
     }

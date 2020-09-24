@@ -30,6 +30,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Message Box', key: 'message-box' },
         { label: 'Badge', key: 'badge' },
         { label: 'Checkbox', key: 'checkbox' },
+        { label: 'Popup Menu', key: 'popup-menu' },
         { label: 'Select', key: 'select' },
     ];
 
