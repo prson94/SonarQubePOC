@@ -900,7 +900,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string, double> metrics = null, int step = 0)
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
         {
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
@@ -926,12 +926,20 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                 string value = f.Value;
                 if (!string.IsNullOrEmpty(value))
                 {
+                    try
+                    {
+                        Dictionary<string, object> test = JsonConvert.DeserializeObject<Dictionary<string, object>>(value);
+                    }
+                    catch(System.Exception e) { }
+
                     List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
                     assetFieldProperties.ForEach(i =>
                     {
                         i.FieldID = f.ID;
                     });
                     collectionFieldProperties.AddRange(assetFieldProperties);
+
+                    
                 }
 
             }
@@ -940,20 +948,28 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
             sw.Restart();
 
+
+            //delete old json field values if this is not a POST
+
+            if(!isInsert)
+            {
+                Connection.Execute($@"
+                    delete from FieldJsonProperty where fieldid in(
+                    select  F.ID
+                    from    Field F 
+                            inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+                            inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID)",
+                            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            }
+
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> delete old values", sw.ElapsedMilliseconds, ++step);
+
+            sw.Restart();
+
+
+
             #region Build data tables for bulk load.
 
-            Connection.Execute($@"
-drop table if exists #FieldJsonProperty;
-CREATE TABLE #FieldJsonProperty (
-	[FieldID] bigint NOT NULL,
-	[Name] nvarchar(250) NOT NULL,
-	[Parent] nvarchar(250) NOT NULL,
-	[Path] nvarchar(500) NOT NULL,
-	[Position] int NOT NULL,
-	[IsArray] bit NOT NULL,
-	[Value] nvarchar(2500) NULL,
-);
-", new { executionID }, transaction: trans);
 
             var table = new DataTable();
             table.Columns.Add("FieldID", typeof(long));
@@ -963,6 +979,12 @@ CREATE TABLE #FieldJsonProperty (
             table.Columns.Add("Position", typeof(int));
             table.Columns.Add("IsArray", typeof(bool));
             table.Columns.Add("Value", typeof(string));
+            table.Columns.Add("CreatedBy", typeof(int));
+            table.Columns.Add("CreatedOn", typeof(DateTime));
+            table.Columns.Add("UpdatedBy", typeof(int));
+            table.Columns.Add("UpdatedOn", typeof(DateTime));
+
+            DateTime now = DateTime.Now;
 
             foreach (var f in collectionFieldProperties)
             {
@@ -975,6 +997,10 @@ CREATE TABLE #FieldJsonProperty (
                 row["Position"] = f.Position;
                 row["IsArray"] = f.IsArray;
                 row["Value"] = f.Value;
+                row["CreatedBy"] = CurrentResourceID;
+                row["CreatedOn"] = now;
+                row["UpdatedBy"] = CurrentResourceID;
+                row["UpdatedOn"] = now;
 
                 table.Rows.Add(row);
             }
@@ -982,11 +1008,10 @@ CREATE TABLE #FieldJsonProperty (
             using (var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.TableLock, trans)
             {
                 BatchSize = SqlBulkBatchSize,
-                DestinationTableName = "#FieldJsonProperty",
+                DestinationTableName = "FieldJsonProperty",
                 BulkCopyTimeout = SqlBulkBatchTimeout
             })
             {
-
                 bulkCopy.ColumnMappings.Add("FieldID", "FieldID");
                 bulkCopy.ColumnMappings.Add("Name", "Name");
                 bulkCopy.ColumnMappings.Add("Parent", "Parent");
@@ -994,16 +1019,20 @@ CREATE TABLE #FieldJsonProperty (
                 bulkCopy.ColumnMappings.Add("Position", "Position");
                 bulkCopy.ColumnMappings.Add("IsArray", "IsArray");
                 bulkCopy.ColumnMappings.Add("Value", "Value");
+                bulkCopy.ColumnMappings.Add("CreatedBy", "CreatedBy");
+                bulkCopy.ColumnMappings.Add("CreatedOn", "CreatedOn");
+                bulkCopy.ColumnMappings.Add("UpdatedBy", "UpdatedBy");
+                bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
 
                 bulkCopy.WriteToServer(table);
             }
 
-            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> bulk load", sw.ElapsedMilliseconds, ++step);
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> bulk load values", sw.ElapsedMilliseconds, ++step);
 
             sw.Restart();
 
             #endregion
-
+            /*
             Connection.Execute($@"
 merge       FieldJsonProperty as T
 using       #FieldJsonProperty as S 
@@ -1022,9 +1051,9 @@ insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value, CreatedBy, Cre
 values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, @r, @dt, @r, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
-            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> merge results", sw.ElapsedMilliseconds, ++step);
+            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> merge results", sw.ElapsedMilliseconds, ++step);*.
 
-            sw.Restart();
+            sw.Restart();*/
         }
 
         public void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null)
@@ -4078,7 +4107,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
-                                        MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel, metrics, step);
+                                        MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel, metrics, step, isInsert);
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
