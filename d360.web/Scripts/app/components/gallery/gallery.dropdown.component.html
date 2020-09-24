@@ -17,10 +17,8 @@
             <p-dropdown igDropdown
                         igSize="small"
                         [appendTo]="'body'"
-                        [options]="cars"
-                        [styleClass]="'test'"
-                        showClear="true"
-                        [disabled]="disabled"></p-dropdown>
+                        [(ngModel)]="value"
+                        [options]="cars"></p-dropdown>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
@@ -28,9 +26,8 @@
             <p-dropdown igDropdown
                         igSize="medium"
                         [appendTo]="'body'"
-                        [options]="cars"
-                        showClear="true"
-                        [disabled]="disabled"></p-dropdown>
+                        [(ngModel)]="value"
+                        [options]="cars"></p-dropdown>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
@@ -38,9 +35,8 @@
             <p-dropdown igDropdown
                         igSize="large"
                         [appendTo]="'body'"
-                        [options]="cars"
-                        showClear="true"
-                        [disabled]="disabled"></p-dropdown>
+                        [(ngModel)]="value"
+                        [options]="cars"></p-dropdown>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
@@ -48,12 +44,115 @@
             <p-dropdown igDropdown
                         igSize="full"
                         [appendTo]="'body'"
-                        [options]="cars"
-                        showClear="true"
-                        [disabled]="disabled"></p-dropdown>
+                        [(ngModel)]="value"
+                        [options]="cars"></p-dropdown>
         </div>
     </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Required</h4>
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        igSize="medium"
+                        [appendTo]="'body'"
+                        [(ngModel)]="reqValue"
+                        [options]="cars"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div class="row">
+            <p-dropdown igDropdown
+                        disabled
+                        igSize="medium"
+                        [appendTo]="'body'"
+                        [(ngModel)]="reqValue"
+                        [options]="cars"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Search</h4>
+        <p>If dropdown has more then 10 item search will appear</p>
+        <div class="row">
+            <p-dropdown igDropdown
+                        igSize="medium"
+                        [appendTo]="'body'"
+                        [(ngModel)]="searchValue"
+                        [options]="companies"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Validation</h4>
+        <div>
+            Form validation.
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #myForm="ngForm">
+                <div class="row">
+                    <b>Template driven forms</b>
+                    <p>template model: {{diagnostic}}</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <p-dropdown igDropdown
+                                    required
+                                    igSize="medium"
+                                    [appendTo]="'body'"
+                                    name="selectValue"
+                                    [(ngModel)]="formValue"
+                                    [options]="companies"></p-dropdown>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input igInput type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <p-dropdown igDropdown
+                        required
+                        [tabIndex]="3"
+                        igSize="medium"
+                        [appendTo]="'body'"
+                        [(ngModel)]="someValue"
+                        [options]="companies"></p-dropdown>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+
 </div>
+
 
 <div class="tile tile-detail">
     <header>Properties</header>

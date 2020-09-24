@@ -33,6 +33,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Select', key: 'select' },
     ];
 
-    ngOnInit(): void {        
+    ngOnInit(): void {
+        this.controls = this.controls.sort((a, b) => { return a.label > b.label ? 1 : -1 });
     }
 }

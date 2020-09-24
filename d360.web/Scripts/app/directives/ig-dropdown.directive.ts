@@ -1,4 +1,4 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, OnChanges } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 import { Dropdown } from 'primeng/dropdown';
@@ -24,20 +24,34 @@ export class DropdownDirective implements AfterViewInit {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
+        var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
+        this.el.nativeElement.tabIndex = -1;
+        this.dropdownRef.tabindex = tabIndex;
 
         if (this.required == null) {
-            this.el.nativeElement.setAttribute("placeholder", "Optional");
+            this.dropdownRef.placeholder = 'Optional';
+            this.dropdownRef.showClear = true;
         } else {
-            this.el.nativeElement.setAttribute("placeholder", "Value required");
+            this.dropdownRef.placeholder = "Value required";
+            this.dropdownRef.showClear = false;
             this.el.nativeElement.setAttribute("aria-required", true);
         }
-
+        this.dropdownRef.scrollHeight = '340px';
         setInterval(() => {
             if (this.isOverlayVisible !== this.dropdownRef.overlayVisible) {
                 if (this.dropdownRef.overlayVisible && this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
                     this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
                 }
                 this.isOverlayVisible = this.dropdownRef.overlayVisible;
+
+                if (this.dropdownRef.options.length > 10) {
+                    this.dropdownRef.filter = true;
+                    this.dropdownRef.filterPlaceholder = 'Search fields';
+                }
+                else {
+                    this.dropdownRef.filter = false;
+                }
+
             }
 
         }, 10);
