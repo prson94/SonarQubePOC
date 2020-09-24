@@ -243,9 +243,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val < (int)Value;
+                    return (int?)val < (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val < (double)Value;
+                    return (double?)val < (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -256,9 +256,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val > (int)Value;
+                    return (int?)val > (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val > (double)Value;
+                    return (double?)val > (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -269,9 +269,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val <= (int)Value;
+                    return (int?)val <= (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val <= (double)Value;
+                    return (double?)val <= (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -282,9 +282,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val >= (int)Value;
+                    return (int?)val >= (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val >= (double)Value;
+                    return (double?)val >= (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -295,15 +295,15 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Boolean:
-                    return (bool)val == (bool)Value;
+                    return (bool?)val == (bool?)Value;
                 case CriteriaValueDataType.String:
                     return String.Compare((string)val, (string)Value, true) == 0;
                 case CriteriaValueDataType.Integer:
-                    return (int)val == (int)Value;
+                    return (int?)val == (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val == (double)Value;
+                    return (double?)val == (double?)Value;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val == (int)Value;
+                    return (int?)val == (int?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -314,15 +314,15 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Boolean:
-                    return (bool)val != (bool)Value;
+                    return (bool?)val != (bool?)Value;
                 case CriteriaValueDataType.String:
                     return String.Compare((string)val, (string)Value, true) != 0;
                 case CriteriaValueDataType.Integer:
-                    return (int)val != (int)Value;
+                    return (int?)val != (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val != (double)Value;
+                    return (double?)val != (double?)Value;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val != (int)Value;
+                    return (int?)val != (int?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
