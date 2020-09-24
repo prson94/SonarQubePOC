@@ -45,4 +45,11 @@ namespace d360.core.entities
         [DataMember]
         public bool cascade { get; set; }
     }
+
+    public class IssueInsertAPIModel
+    {
+        public Issue Issue { get; set; }
+        public List<Field> fields = new List<Field>();
+        public string Comment { get; set; }
+    }
 }
