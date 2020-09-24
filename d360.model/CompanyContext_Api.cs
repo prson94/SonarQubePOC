@@ -574,37 +574,52 @@ where	ExecutionID = @executionID
                                       and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600, bool isInsert = false)
         {
-            Connection.Execute($@"
-merge       AssetDisplayValue as T
-using       (
+            var fieldsSelectSql = $@"
                 select  A.AssetID as ID,
-                        ADV.DisplayValue,
-                        CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
-                        SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
-                from    api.ExecutionAsset A
-                        cross apply GetAssetDisplayValueByID(A.AssetID) ADV
-                where   A.ExecutionID = @executionID
-                        and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                        and A.Success is null 
-                        and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
-                        and ADV.DisplayValue is not null
-            ) as S 
-on          ( T.AssetID = S.ID )
-when		matched then
-update		set
-				T.DisplayValue = S.DisplayValue,
-                T.DisplayValueHash = S.DisplayValueHash,
-                T.[DisplayValuePrefix] = S.DisplayValuePrefix,
-                T.UpdatedOn = @dt
-when		not matched by target then
-insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
-values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                            ADV.DisplayValue,
+                            CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                            SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                    from    api.ExecutionAsset A
+                            cross apply GetAssetDisplayValueByID(A.AssetID) ADV
+                    where   A.ExecutionID = @executionID
+                            and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                            and A.Success is null 
+                            and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
+                            and ADV.DisplayValue is not null
+            ";
+
+            if (isInsert)
+            {
+                Connection.Execute($@"
+                    insert into AssetDisplayValue WITH(TABLOCK) (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
+                        {fieldsSelectSql}
+                ",
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            }
+            else
+            {
+                Connection.Execute($@"
+    merge       AssetDisplayValue as T
+    using       (
+                    {fieldsSelectSql}
+                ) as S 
+    on          ( T.AssetID = S.ID )
+    when		matched then
+    update		set
+				    T.DisplayValue = S.DisplayValue,
+                    T.DisplayValueHash = S.DisplayValueHash,
+                    T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+                    T.UpdatedOn = @dt
+    when		not matched by target then
+    insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+    values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
+                new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            }
         }
 
-        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool shouldCheckExistingFieldValues = true)
+        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false)
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
@@ -624,7 +639,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                                             and F.ObjectId = EA.ObjectID
                     where   EA.ExecutionID = @executionID 
                             and EA.IsNew <> 1 
-                            {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} 
+                            {(!isInsert ? "and F.Value <> EF.FieldValue" : "")} 
                             and @sendWorkflowEvents = 1 
                             and EA.ItemNumber between @beginItemNumber and @endItemNumber
 
@@ -642,7 +657,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                             and EA.IsNew <> 1 
                             and @sendWorkflowEvents = 1 
                             and EA.ItemNumber between @beginItemNumber and @endItemNumber
-                            {(shouldCheckExistingFieldValues ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
+                            {(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
                             and not exists (select 1 from Field where FieldTypeID = EF.FieldTypeID 
                                 and ObjectType = EA.Object and ObjectID = EA.ObjectID)
 "
@@ -652,8 +667,43 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
-            if (shouldCheckExistingFieldValues)
+            var fieldValuesSql = $@"
+                                select 
+                                        {objectSqlSyntax} as [Object]
+                                        ,{objectIdSqlSyntax} as [ObjectID] 
+                                        ,F.FieldTypeID as [FieldTypeID]
+                                        ,coalesce(F.LookupValue, F.FieldValue) as [Value]
+                                        ,F.FieldValue as [FormattedValue]
+                                        ,getutcdate() as [UpdatedOn]
+                                        ,@resourceId as [UpdatedBy]
+                                        {(hasAssetID ? ",A.AssetID as [AssetID]" : " ")}                    
+                                from    {tableName} A
+                                        inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                            and F.ItemNumber = A.ItemNumber 
+                                            and A.ObjectID is not null 
+                                            and F.FieldTypeID is not null
+						                    and A.Success is null
+                                        inner join FieldType FT on FT.Id = F.FieldTypeID
+                                where   A.ExecutionID = @executionID
+                                        and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                        and (F.Ignore = 0 or F.Ignore is null)
+                                        and FT.Type != 'Relationship'
+                                        and FieldValue is not null";
+
+            // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
+            if (isInsert)
             {
+                
+                Connection.Execute(
+                    $@"
+                        INSERT INTO 
+                        dbo.[Field] WITH(TABLOCK) ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+                        {fieldValuesSql}
+                    "
+                    , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+            }
+            else 
+            { 
                 Connection.Execute($@"
                     DELETE Field
                     FROM Field F
@@ -670,39 +720,20 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                      and EF.FieldValue is null 
                      and EF.LookupValue is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                Connection.Execute($@"
+                    merge       Field as T
+                    using       (
+                                    {fieldValuesSql}
+                                ) as S 
+                    on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
+                    when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() 
+                    when		not matched by target then
+                    insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
+                    values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
+                                new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
             }
-
-
-            Connection.Execute($@"
-merge       Field as T
-using       (
-            select 
-                    {objectSqlSyntax},
-                    {objectIdSqlSyntax}, 
-                    F.FieldTypeID,
-                    coalesce(F.LookupValue, F.FieldValue) as Value,
-                    F.FieldValue as FormattedValue
-                    {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                    
-            from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                        and F.ItemNumber = A.ItemNumber 
-                        and A.ObjectID is not null 
-                        and F.FieldTypeID is not null
-						and A.Success is null
-                    inner join FieldType FT on FT.Id = F.FieldTypeID
-            where   A.ExecutionID = @executionID
-                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                    and (F.Ignore = 0 or F.Ignore is null)
-                    and FT.Type != 'Relationship'
-                    and FieldValue is not null
-            ) as S 
-on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
-{(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() " : " ")}
-when		not matched by target then
-insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
-values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
-            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-
+            
             return res;
         }
 
@@ -925,21 +956,13 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
             {
                 string value = f.Value;
                 if (!string.IsNullOrEmpty(value))
-                {
-                    try
-                    {
-                        Dictionary<string, object> test = JsonConvert.DeserializeObject<Dictionary<string, object>>(value);
-                    }
-                    catch(System.Exception e) { }
-
+                {                    
                     List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
                     assetFieldProperties.ForEach(i =>
                     {
                         i.FieldID = f.ID;
                     });
-                    collectionFieldProperties.AddRange(assetFieldProperties);
-
-                    
+                    collectionFieldProperties.AddRange(assetFieldProperties);                    
                 }
 
             }
@@ -950,7 +973,6 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
 
             //delete old json field values if this is not a POST
-
             if(!isInsert)
             {
                 Connection.Execute($@"
@@ -967,7 +989,6 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
             sw.Restart();
 
 
-
             #region Build data tables for bulk load.
 
 
@@ -980,11 +1001,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
             table.Columns.Add("IsArray", typeof(bool));
             table.Columns.Add("Value", typeof(string));
             table.Columns.Add("CreatedBy", typeof(int));
-            table.Columns.Add("CreatedOn", typeof(DateTime));
             table.Columns.Add("UpdatedBy", typeof(int));
-            table.Columns.Add("UpdatedOn", typeof(DateTime));
-
-            DateTime now = DateTime.Now;
+            
 
             foreach (var f in collectionFieldProperties)
             {
@@ -998,9 +1016,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                 row["IsArray"] = f.IsArray;
                 row["Value"] = f.Value;
                 row["CreatedBy"] = CurrentResourceID;
-                row["CreatedOn"] = now;
-                row["UpdatedBy"] = CurrentResourceID;
-                row["UpdatedOn"] = now;
+                row["UpdatedBy"] = CurrentResourceID;                
 
                 table.Rows.Add(row);
             }
@@ -1020,9 +1036,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                 bulkCopy.ColumnMappings.Add("IsArray", "IsArray");
                 bulkCopy.ColumnMappings.Add("Value", "Value");
                 bulkCopy.ColumnMappings.Add("CreatedBy", "CreatedBy");
-                bulkCopy.ColumnMappings.Add("CreatedOn", "CreatedOn");
-                bulkCopy.ColumnMappings.Add("UpdatedBy", "UpdatedBy");
-                bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
+                bulkCopy.ColumnMappings.Add("UpdatedBy", "UpdatedBy");                
 
                 bulkCopy.WriteToServer(table);
             }
@@ -1031,29 +1045,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
 
             sw.Restart();
 
-            #endregion
-            /*
-            Connection.Execute($@"
-merge       FieldJsonProperty as T
-using       #FieldJsonProperty as S 
-on          ( T.FieldID = S.FieldID and T.Position = S.Position and T.Parent = S.Parent and T.Name = S.Name )
-when		matched then
-update		set
-				T.Value = S.Value,
-                T.IsArray = S.IsArray,
-                T.[Path] = S.[Path],
-                T.UpdatedBy = @r,
-                T.UpdatedOn = @dt
-when		not matched by source and T.FieldID in (select FieldID from #FieldJsonProperty) then
-delete
-when		not matched by target then
-insert		(FieldID, Name, Parent, [Path], Position, IsArray, Value, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, @r, @dt, @r, @dt);",
-            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-
-            if (metrics != null) AddMeasurement(metrics, $"MergeJsonFieldProperties >> merge results", sw.ElapsedMilliseconds, ++step);*.
-
-            sw.Restart();*/
+            #endregion            
         }
 
         public void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null)
@@ -3840,11 +3832,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
-    on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
+    on      1 = 0
     when    not matched then
     insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
     values  (@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
     output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
+
+
 
     update  T
     set     T.Object = @Object,
@@ -3856,7 +3850,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     {updateAssetInfoOnExecutionRecordsSql}
 
     {insertGraphAssetNode}",
-                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             else
@@ -3900,7 +3894,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
-    on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
+    on      (1 = 0)
     when    not matched then
     insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
     values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
@@ -3916,7 +3910,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     {updateAssetInfoOnExecutionRecordsSql}
 
     {insertGraphAssetNode}",
-                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
+                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow },
                                                 transaction: trans,
                                                 commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
@@ -3966,7 +3960,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                                         and A.Success is null
                                                                         and A.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
-                                                        on      (T.AssetTypeID = @AssetTypeID and T.[Code] = @NonExistentUid)
+                                                        on      (1 = 0)
                                                         when    not matched then
                                                         insert  (AssetTypeID,State,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
                                                         values  (@AssetTypeID,1,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
@@ -3980,7 +3974,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                                 inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
-                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             else
@@ -4093,7 +4087,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     #endregion
                                     sw.Restart();
-                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
+                                    var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, isInsert);
                                     AddMeasurement(metrics, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     sw.Restart();
 
@@ -4113,7 +4107,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     // Must execute BEFORE the Success flag is updated below.
                                     sw.Restart();
-                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout,isInsert);
                                     AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                     //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
@@ -6626,7 +6620,7 @@ from	{assetTable} A
         ) DF
 where	A.ExecutionID = @ExecutionID;
 
-insert into #Keys
+insert into #Keys WITH(TABLOCK)
     select	A.ID,
             utility.GetHash(
                 cast(@ID as nvarchar) + '|' + 
@@ -6670,7 +6664,7 @@ from    {assetTable} T
 
 {keyTableTempCreation}
 
-insert into #Keys
+insert into #Keys WITH(TABLOCK)
     select		A.ID,
                 utility.GetHash(cast(@ID as nvarchar) + '|' + A.Code) as ActiveKey
     from		Asset A 
@@ -6720,7 +6714,7 @@ from    {assetTable} T
 
 {keyTableTempCreation}
 
-insert into #Keys
+insert into #Keys WITH(TABLOCK)
     {activeKeySql} 
 
 {keyComparisonUpdateStatement}",
