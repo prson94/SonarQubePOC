@@ -8,40 +8,40 @@ namespace d360.core.enums
 {
     public enum Operator
     {
-        [Name("Is"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number), OperatorFieldTypeRequirements(false)]
         Equals = 1,
-        [Name("Is not"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is not"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number), OperatorFieldTypeRequirements(false)]
         NotEquals,
-        [Name("Contains"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("contains"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
         Contains,
-        [Name("Does not contain"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("does not contain"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
         NotContains,
-        [Name("Starts with"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("starts with"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
         StartsWith,
-        [Name("Ends with"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("ends with"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Text), OperatorFieldTypeRequirements(false)]
         EndsWith,
-        [Name("In"), Description(""), OperatorValueCountRange(1, 1000), OperatorAllowedDataTypes(DataType.Lookup), OperatorFieldTypeRequirements(true)]
-        In,
-        [Name("Not in"), Description(""), OperatorValueCountRange(1, 1000), OperatorAllowedDataTypes(DataType.Lookup), OperatorFieldTypeRequirements(true)]
-        NotIn,
-        [Name("Is before"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date), OperatorFieldTypeRequirements(false)]
+        [Name("is before"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date), OperatorFieldTypeRequirements(false)]
         Before,
-        [Name("Is after"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date), OperatorFieldTypeRequirements(false)]
+        [Name("is after"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Date), OperatorFieldTypeRequirements(false)]
         After,
-        [Name("Is between"), Description(""), OperatorValueCountRange(2, 2), OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is between"), Description(""), OperatorValueCountRange(2, 2), OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
         Between,
-        [Name("Is populated"), Description(""), OperatorValueCountRange(0, 0), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("is populated"), Description(""), OperatorValueCountRange(0, 0), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), OperatorFieldTypeRequirements(false)]
         Populated,
-        [Name("Is not populated"), Description(""), OperatorValueCountRange(0, 0), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), OperatorFieldTypeRequirements(false)]
+        [Name("is not populated"), Description(""), OperatorValueCountRange(0, 0), OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), OperatorFieldTypeRequirements(false)]
         NotPopulated,
-        [Name("Is greater than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is greater than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
         GreaterThan,
-        [Name("Is not greater than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is less than or equal to"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
         LessThanOrEquals,
-        [Name("Is less than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
+        [Name("is less than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
         LessThan,
-        [Name("Is not less than"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
-        GreaterThanOrEquals
+        [Name("is greater than or equal to"), Description(""), OperatorValueCountRange(1, 1), OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), OperatorFieldTypeRequirements(false)]
+        GreaterThanOrEquals,
+        [Name("in"), Description(""), OperatorValueCountRange(1, 1000), OperatorAllowedDataTypes(DataType.Lookup), OperatorFieldTypeRequirements(true)]
+        In,
+        [Name("not in"), Description(""), OperatorValueCountRange(1, 1000), OperatorAllowedDataTypes(DataType.Lookup), OperatorFieldTypeRequirements(true)]
+        NotIn
     }
     public class OperatorInfo
     {

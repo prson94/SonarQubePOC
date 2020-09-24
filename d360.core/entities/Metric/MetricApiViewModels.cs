@@ -56,6 +56,22 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 22)]
         public bool HasResults { get; set; } = false;
+
+        [IgnoreDataMember]
+        public string CurrentConditionHash 
+        { 
+            get 
+            {
+                var hashItems = from g in ConditionGroups
+                                from c in g.ConditionItems
+                                from v in c.Values
+                                orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v
+                                select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v}";
+                string newConditionHash = string.Join("|", hashItems);
+                newConditionHash = newConditionHash.GetD3sHashString();
+                return newConditionHash;
+            }
+        }
     }
 
     [DataContract]
@@ -82,7 +98,7 @@ namespace d360.core.entities.Metric
     {
         public Guid AssetTypeUid { get; set; }
         public string FieldTypeName { get; set; }
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
         public List<string> Values { get; set; }
     }
 
@@ -103,6 +119,9 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
+        
+        [DataMember]
+        public string Instructions { get; set; }
     }
 
     [DataContract]
@@ -110,7 +129,7 @@ namespace d360.core.entities.Metric
     {
         public Guid AssetTypeUid { get; set; }
         public string FieldTypeName { get; set; }
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
         public List<string> Values { get; set; }
     }
 
@@ -118,7 +137,7 @@ namespace d360.core.entities.Metric
     public class MetricAssetDefinitionGovernancePredicateViewModel
     {
         public Guid PredicateUid { get; set; }
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
         public List<string> Values { get; set; }
     }
 
@@ -126,7 +145,7 @@ namespace d360.core.entities.Metric
     public class MetricAssetDefinitionGovernanceRelationViewModel
     {
         public Guid IntersectTypeUid { get; set; }
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
         public List<string> Values { get; set; }
     }
 
@@ -219,7 +238,7 @@ namespace d360.core.entities.Metric
         public Guid? ConditionIntersectTypeUid { get; set; }
 
         [DataMember, StringLength(10)]
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
 
         [DataMember]
         public List<string> Values { get; set; }
