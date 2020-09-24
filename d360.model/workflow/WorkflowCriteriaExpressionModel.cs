@@ -1,5 +1,6 @@
 ﻿using d360.core.enums.Workflow;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -24,13 +25,20 @@ namespace d360.model.workflow
             var @operator = operatorFromString((string)element.Attribute("Operator"));
             var @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
 
+            var noValueOperators = new List<CriteriaOperator>() 
+            { 
+                CriteriaOperator.Changed,
+                CriteriaOperator.Populated,
+                CriteriaOperator.NotPopulated
+            };
+
             return new WorkflowCriteriaExpressionModel
             {
                 FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
                 ContextualFieldID = ((string)element.Attribute("ContextualFieldID") ?? ""),
                 Operator = @operator,
                 ValueDataType = dataType,
-                Value = @operator == CriteriaOperator.Changed ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
+                Value = noValueOperators.Contains(@operator) ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
                 VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
                 FormInputId = ((string)element.Attribute("FormInputID")),
                 CriteriaConnector = connector
@@ -126,6 +134,10 @@ namespace d360.model.workflow
                     return CriteriaOperator.NotEqual;
                 case "C":
                     return CriteriaOperator.Changed;
+                case "P":
+                    return CriteriaOperator.Populated;
+                case "NP":
+                    return CriteriaOperator.NotPopulated;
             }
 
             return CriteriaOperator.Invalid;
@@ -206,6 +218,10 @@ namespace d360.model.workflow
                     return isEqual(val);
                 case CriteriaOperator.NotEqual:
                     return isNotEqual(val);
+                case CriteriaOperator.Populated:
+                    return isPopulated(val);
+                case CriteriaOperator.NotPopulated:
+                    return isNotPopulated(val);
             }
 
             throw new Exception("INVALID COMPARISON OPERATION");
@@ -296,6 +312,36 @@ namespace d360.model.workflow
                     return (double)val != (double)Value;
                 case CriteriaValueDataType.Lookup:
                     return (int)val != (int)Value;
+            }
+
+            throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
+        }
+
+        private bool isPopulated(object val)
+        {
+            switch (ValueDataType)
+            {
+                case CriteriaValueDataType.Boolean:
+                case CriteriaValueDataType.Integer:
+                case CriteriaValueDataType.Double:
+                case CriteriaValueDataType.Lookup:
+                case CriteriaValueDataType.String:
+                    return val != null;
+            }
+
+            throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
+        }
+
+        private bool isNotPopulated(object val)
+        {
+            switch (ValueDataType)
+            {
+                case CriteriaValueDataType.Boolean:
+                case CriteriaValueDataType.Integer:
+                case CriteriaValueDataType.Double:
+                case CriteriaValueDataType.Lookup:
+                case CriteriaValueDataType.String:
+                    return val == null;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");

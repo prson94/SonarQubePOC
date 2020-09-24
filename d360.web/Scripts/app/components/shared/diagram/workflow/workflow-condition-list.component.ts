@@ -39,10 +39,10 @@ import { BaseComponent } from '../../../shared/base.component';
             <tr [pSelectableRow]="item">
                 <td>{{item['@FieldName'] ? item['@FieldName'] :  item['@FieldLabel']}}</td>
                 <td>
-                    {{(item['@Operator'] == 'C') ? 'value changed' : item['@Operator']}}
+                    {{operatorLabel(item)}}
                 </td>
                 <td>
-                    {{(item['@Operator'] == 'C') ? '[any value change]' : (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']) }}
+                    {{valueLabel(item)}}
                 </td>
                 <td *ngIf="!readonly">
                     <div class="RowTools">
@@ -86,5 +86,37 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
     constructor() {
         super();
+    }
+
+    operatorLabel(item: any): string {
+        if (item == null || item['@Operator'] == null)
+            return null;
+
+        switch (item['@Operator']) {
+            case 'C':
+                return 'value changed';
+            case 'P':
+                return 'is populated';
+            case 'NP':
+                return 'is not populated';
+            default:
+                return item['@Operator']
+        }
+    }
+
+    valueLabel(item: any): string {
+        if (item == null || item['@Operator'] == null)
+            return null;
+
+        switch (item['@Operator']) {
+            case 'C':
+                return '[any value change]';
+            case 'P':
+                return '[any value]';
+            case 'NP':
+                return '[no value]';
+            default:
+                return (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']);
+        }
     }
 }

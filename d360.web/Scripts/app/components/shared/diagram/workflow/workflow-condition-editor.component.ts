@@ -49,6 +49,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         { value: '>=', label: '>=' },
         { value: '<=', label: '<=' },
         { value: 'C', label: 'value changed' },
+        { value: 'P', label: 'is populated' },
+        { value: 'NP', label: 'is not populated' },
     ];
 
     private bool = [
@@ -318,6 +320,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         //only supporting fields at the moment
         if (fieldType == 'FieldType') {
             this.operators.push({ value: 'C', label: 'value changed' });
+            this.operators.push({ value: 'P', label: 'is populated' });
+            this.operators.push({ value: 'NP', label: 'is not populated' });
         }
     }
 
@@ -353,7 +357,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == '') &&
             this.condition['@FormInputID'] == null)
             return false;
-        if (this.condition['@Value'] == null && this.condition['@Operator'] != 'C')
+        if (this.condition['@Value'] == null && ['C','P','NP'].indexOf(this.condition['@Operator']) == -1)
             return false;
         if (this.condition['@Operator'] == '') return false;
         if (this.condition['@Value'] === '') return false;
