@@ -646,7 +646,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.ref.detectChanges();
             } else {
                 this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";
-                this.ref.detectChanges();
+                this.ref.markForCheck();
             }
         }
         if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
