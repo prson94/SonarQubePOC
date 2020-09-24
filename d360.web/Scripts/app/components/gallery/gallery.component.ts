@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "switch";
+    activeControl: string = "select";
     controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
@@ -31,8 +31,10 @@ export class GalleryComponent implements OnInit {
         { label: 'Badge', key: 'badge' },
         { label: 'Checkbox', key: 'checkbox' },
         { label: 'Popup Menu', key: 'popup-menu' },
+        { label: 'Select', key: 'select' },
     ];
 
-    ngOnInit(): void {        
+    ngOnInit(): void {
+        this.controls = this.controls.sort((a, b) => { return a.label > b.label ? 1 : -1 });
     }
 }

@@ -53,6 +53,8 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
 import { GalleryPopupMenuComponent } from './gallery.popup-menu.component';
 import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { GalleryDropDownComponent } from './gallery.dropdown.component';
+import { DropdownModule } from 'primeng/dropdown';
 
 @NgModule({
     imports: [
@@ -84,7 +86,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         TriStateCheckboxModule,
         SiteModalModule,
         PopupMenuModule,
-        OverlayPanelModule
+        OverlayPanelModule,
+        DropdownModule
     ],
     declarations: [
         GalleryComponent,
@@ -108,7 +111,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         GalleryBadgeComponent,
         GalleryMessageBoxComponent,
         GalleryPopupMenuComponent,
-        GalleryCheckboxComponent
+        GalleryCheckboxComponent,
+        GalleryDropDownComponent
     ],
     providers: [
         GalleryGuard,
