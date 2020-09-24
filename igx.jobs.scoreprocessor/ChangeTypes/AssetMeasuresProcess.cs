@@ -171,8 +171,6 @@ from    (
                 inner join metrics.ScoreItemLink L on L.ScoreUid = S.Uid
                 inner join metrics.ScoreItem Si on Si.Uid = L.ScoreItemUid
 		        inner join metrics.AssetVersion V on V.Uid = Si.AssetVersionUid 
-                    and V.[State] = 1 
-                    and ( (Al.EffectiveDate between V.EffectiveDate and V.EffectiveEndDate) or (Al.EffectiveDate >= V.EffectiveDate and V.EffectiveEndDate is null) ) 
                 cross apply (
                     select  count(1) as UseCount
                     from    metrics.ScoreItemLink
@@ -504,6 +502,16 @@ from	metrics.Asset A
                                 {
                                     // Look up to see if there is an existing score item for this measure, and use that value.
                                     var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
+                                    var scoreItemUid = Guid.NewGuid();
+                                    bool scoreItemValue = false;
+                                    if (previousScoreItem != null) 
+                                    {
+                                        if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                        {
+                                            scoreItemUid = previousScoreItem.ScoreItemUid;
+                                        }
+                                        scoreItemValue = previousScoreItem.Value;
+                                    }
 
                                     var scoreItem = new ScoreItem
                                     {
@@ -513,8 +521,8 @@ from	metrics.Asset A
                                         AssetVersionUid = aM.MetricAssetVersionUid,
                                         ConditionUid = conditionValidator.SelectedConditionUid,
                                         UpdatedOn = DateTime.UtcNow,
-                                        Value = (previousScoreItem != null) ? previousScoreItem.Value : false,
-                                        Uid = (previousScoreItem != null) ? previousScoreItem.ScoreItemUid : Guid.NewGuid()
+                                        Value = scoreItemValue,
+                                        Uid = scoreItemUid
                                     };
                                     assetScoreItems.Add(scoreItem);
                                     assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });

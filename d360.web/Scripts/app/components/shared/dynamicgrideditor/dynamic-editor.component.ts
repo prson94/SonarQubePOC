@@ -188,7 +188,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid)
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid, this.objectType)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
@@ -646,7 +646,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.ref.detectChanges();
             } else {
                 this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";
-                this.ref.detectChanges();
+                this.ref.markForCheck();
             }
         }
         if (field.FieldType == 'Relationship' && field.IsSemantic === true) {

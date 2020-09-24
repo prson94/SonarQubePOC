@@ -15,12 +15,13 @@ import { IgBadgeModule } from '../badge/badge.module';
 export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     @Input() tabIndex: number = -1;
     @Input() items: PopupMenuItem[];
-    @Input() location: PopupMenuLocation = PopupMenuLocation.BottomLeft;
+    @Input() location: PopupMenuLocation;
 
     @Output() onSelect = new EventEmitter();
 
     navigationArr: PopupMenuItem[] = [];
     isVisible: boolean = false;
+    currentLocation: PopupMenuLocation = PopupMenuLocation.BottomLeft;
 
     positionTop: number;
     positionLeft: number;
@@ -43,7 +44,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         this.navigationArr = this.items;
         this.updatePropToAll(this.items, 'hasHoverState', false);
         this.updatePropToAll(this.items, 'isSubMenuOpened', false);
-        this.location = PopupMenuLocation.BottomLeft;
+        this.currentLocation = PopupMenuLocation.BottomLeft;
         this.pressedKeys = {};
     }
 
@@ -259,24 +260,26 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
             this.openToBottomSide = false;
             if (isOverflowBottom && isOverflowRight) {
-                this.location = PopupMenuLocation.TopRight;
+                this.currentLocation = PopupMenuLocation.TopRight;
             }
             else if (isOverflowBottom && !isOverflowRight) {
-                this.location = PopupMenuLocation.TopLeft;
+                this.currentLocation = PopupMenuLocation.TopLeft;
             }
             else if (isOverflowRight && !isOverflowBottom) {
-                this.location = PopupMenuLocation.BottomRight;
+                this.currentLocation = PopupMenuLocation.BottomRight;
                 this.openToBottomSide = true;
             }
             else if (!isOverflowRight && !isOverflowBottom) {
-                this.location = PopupMenuLocation.BottomLeft;
+                this.currentLocation = PopupMenuLocation.BottomLeft;
+                if (this.location)
+                    this.currentLocation = this.location;
                 this.openToBottomSide = true;
             }
 
 
             if (this.anchorElement) {
 
-                if (this.location == PopupMenuLocation.BottomLeft || this.location == PopupMenuLocation.BottomRight) {
+                if (this.currentLocation == PopupMenuLocation.BottomLeft || this.currentLocation == PopupMenuLocation.BottomRight) {
                     topPosition = this.anchorElement.getBoundingClientRect().bottom + window.screenX - 12;
                 }
                 else {
@@ -284,13 +287,16 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 }
             }
 
-            if (this.location == PopupMenuLocation.TopLeft || this.location == PopupMenuLocation.TopRight) {
+            if (this.currentLocation == PopupMenuLocation.TopLeft || this.currentLocation == PopupMenuLocation.TopRight) {
                 topPosition = topPosition - menu.offsetHeight;
             }
 
-            if (this.location == PopupMenuLocation.TopRight || this.location == PopupMenuLocation.BottomRight) {
-                var width = this.anchorElement ? this.anchorElement.getBoundingClientRect().width : 0;
-                leftPosition -= (menu.offsetWidth - width);
+            if (this.currentLocation == PopupMenuLocation.TopRight || this.currentLocation == PopupMenuLocation.BottomRight) {
+                leftPosition = leftPosition - menu.offsetWidth;
+                if (this.anchorElement) {
+                    var ancBox = this.anchorElement.getBoundingClientRect();
+                    leftPosition = ancBox.right - menu.offsetWidth;
+                }
                 this.openToLeftSide = true;
             }
             else {
@@ -300,6 +306,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 setTimeout(() => {
                     this.positionTop = topPosition;
                     this.positionLeft = leftPosition;
+
                     this.cdRef.markForCheck();
                 });
             }

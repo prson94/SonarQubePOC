@@ -9,7 +9,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IIssueRepository
     {
-        Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes();
+        Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
 
         Task<IEnumerable<IssueTypeApiModel>> GetAllocationByAssetType(Guid assetTypeUid);
 
