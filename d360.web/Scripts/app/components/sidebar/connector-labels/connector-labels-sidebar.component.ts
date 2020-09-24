@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, ViewChild, ChangeDetectorRef, ElementRef } from '@angular/core';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { ConnectorLabel } from '../../../models/connectorLabel.model';
 import { Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
-    selected: ConnectorLabel;
+    selected: ConnectorLabel[] = [];
     rowsPerPage: number = 25;
 
     error: any;
@@ -34,6 +34,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     labelUsage: any;
     public theDeleteCallback: Function;
     isSaving: boolean = false;
+
+    showConsolidationPopup: boolean = false;
+    consolidateValue: string = '';
+
 
     @ViewChild('dt', { static: false }) tableEl: any;
     lastSelectedElement: ConnectorLabel;
@@ -84,6 +88,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     getLabels() {
         this.isLoading = true;
         this.connectorLabelService.getLabelList().subscribe(res => {
+            this.labels = [];
             if (res && res.length > 0) {
                 this.labels = res.sort((a, b) => a.Value.localeCompare(b.Value));
             }
@@ -97,18 +102,29 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     openEditor(label: ConnectorLabel) {
-        this.selected = label;
+        this.selected = [label];
         this.showEditor = true;
         this.editPopupTitle = 'Edit Connector Label';
         this.cdRef.markForCheck();
     }
 
     add() {
-        this.selected = null;
+        this.selected = [];
         this.editPopupTitle = 'Add Connector Label';
         this.showEditor = true;
         this.cdRef.markForCheck();
     }
+
+    consolidateClick() {
+        var children = [];
+        this.selected.forEach(label => {
+            if (label.uid != this.consolidateValue) {
+                children.push(label.uid);
+            }
+        });
+        this.consolidateLabels(this.consolidateValue, children);
+    }
+
     saveLabel(event) {
         this.isSaving = true;
         if (event.additionalOption && event.additionalOption.uid) {
@@ -128,18 +144,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                     msg = `Connector label succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
-                if (event.item.uid == undefined) {
-                    this.labels.push(result);
-                }
-                else {
-                    this.labels[this.findLabelIndex(event.item.uid)].Value = event.item.Value;
-                }
-                this.labels = this.labels.sort((a, b) => a.Value.localeCompare(b.Value));
-
-                this.selected = null;
-                event.item.UseCount = 0;
-                this.selected = event.item;
-
+                this.getLabels();
                 this.showEditor = false;
                 this.isSaving = false;
 
@@ -157,8 +162,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                     this.getLabels();
                 }
                 this.selected = null;
-                this.selected = this.labels[0];
+                this.selected = [this.labels[0]];
                 this.showConsolidate = false;
+                this.showConsolidationPopup = false;
                 this.showEditor = false;
                 this.isSaving = false;
             }, err => {
@@ -170,15 +176,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     deleteLabel() {
-        this.connectorLabelService.deleteLabels([this.selected]).
+        this.connectorLabelService.deleteLabels(this.selected).
             subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-
-                    this.labels.splice(this.findLabelIndex(this.selected.uid), 1);
-                    this.selected = null;
+                    this.selected = [];
                 }
+                this.getLabels();
                 this.showDelete = false;
                 this.cdRef.markForCheck();
             }, err => this.showMessageForResult(this.messagesService, err));
@@ -188,15 +193,15 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     onRowSelected() {
 
-        if (this.lastLoadedUid != this.selected.uid) {
+        if (this.lastLoadedUid != this.selected[0].uid) {
             this.isUsageLoading = true;
-            this.lastLoadedUid = this.selected.uid;
+            this.lastLoadedUid = this.selected[0].uid;
             this.cdRef.markForCheck();
         }
     }
 
     openDeleteModal(label: ConnectorLabel) {
-        this.selected = label;
+        this.selected = [label];
 
         if (this.lastLoadedUid != label.uid) {
             this.cdRef.markForCheck();
@@ -206,7 +211,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         this.lastLoadedUid = label.uid;
         setTimeout(() => {
             this.deletePopupTitle = this.selected ? 'Delete Connector Label' : 'Delete Connector Labels';
-            this.deleteConfirmationText = `Delete the Connector Label '${this.selected.Value}'`;
+            this.deleteConfirmationText = `Delete the Connector Label '${this.selected[0].Value}'`;
             this.showDelete = true;
             this.cdRef.markForCheck();
         }, 100);
@@ -235,11 +240,147 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.selected.uid, `Where Used report for Connector Label "${this.selected.Value}"`)
+        this.selected.forEach(item => {
+            this.connectorLabelService.exportLabelUsage(item.uid, `Where Used report for Connector Label "${item.Value}"`)
+        })
     }
 
 
     openDetailsPage(item: ConnectorLabel) {
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${item.uid}`]);
     }
+
+
+    selectSingleItem(event: MouseEvent, item: ConnectorLabel, element: ElementRef = null) {
+        this.editPopupTitle = 'Edit Connector Label';
+        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+        if (event && element) {
+            if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
+                if (this.selected.filter(x => x.uid == item.uid).length > 0) {
+                    this.selected = this.selected.filter(x => x.uid != item.uid);
+                    var el = (<any>(event.target)).parentNode;
+                    el = (el.nodeName === "TD") ? el.parentNode : el;
+                    this.deselectElement(el);
+                }
+                else {
+                    this.selected.push(item);
+                    var el = (<any>(event.target)).parentNode;
+                    el = (el.nodeName === "TD") ? el.parentNode : el;
+                    this.selectElement(el);
+                }
+
+                this.lastSelectedElement = item;
+                return;
+            }
+            if (event.shiftKey) {
+                var lastIndex = this.labels.indexOf(this.lastSelectedElement);
+                if (lastIndex == -1 && this.selected.length == 1) {
+                    lastIndex = this.labels.indexOf(this.selected[0]);
+                }
+                var currentIndex = this.labels.indexOf(item);
+
+                if (lastIndex > currentIndex) {
+                    lastIndex += currentIndex;
+                    currentIndex = lastIndex - currentIndex;
+                    lastIndex -= currentIndex;
+                }
+
+                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+                for (var i = lastIndex; i <= currentIndex; i++) {
+                    if (!tableRows[i].classList.contains('ui-state-highlight')) {
+                        this.selected.push(this.labels[i]);
+                        this.selectElement(tableRows[i]);
+                    }
+                }
+
+                this.lastSelectedElement = item;
+                return;
+            }
+
+        }
+        let target = (<any>(event.target));
+        if (element && target.nodeName !== "P-TABLECHECKBOX") {
+            var el = (<any>(event.target));
+            if (el.nodeName === "I")
+                el = el.parentNode.parentNode.parentNode; //gets <a>-><div>-><td>
+            if (el.nodeName === "A")
+                el = el.parentNode.parentNode; //gets <div>-><td>
+            el = (el.nodeName === "TD") ? el.parentNode : el;
+            this.clearAllSelectedItems(el);
+            this.selected = [];
+            this.selected.push(item);
+            this.lastSelectedElement = item;
+        } else {
+            if (this.selected.filter(x => x.uid == item.uid).length > 0) {
+                this.selected = this.selected.filter(x => x.uid != item.uid);
+                var el = (<any>(event.target)).parentNode;
+                el = (el.nodeName === "TD") ? el.parentNode : el;
+                this.deselectElement(el);
+            }
+            else {
+                this.selected.push(item);
+                var el = (<any>(event.target)).parentNode;
+                this.selectElement(el);
+            }
+            this.lastSelectedElement = item;
+        }
+    }
+    private deselectElement(element: HTMLElement) {
+        var trElement = this.getTrElement(element);
+
+        trElement.classList.remove('ui-state-highlight');
+        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
+        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi');
+        trElement.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
+
+    }
+    private selectElement(element: HTMLElement) {
+        var trElement = this.getTrElement(element);
+
+        trElement.classList.add('ui-state-highlight');
+        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
+        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi');
+        trElement.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
+
+    }
+
+    private getTrElement(element: HTMLElement) {
+        if (element.tagName === "TR")
+            return element;
+
+        else
+            return this.getTrElement(element.parentElement);
+    }
+
+    private clearAllSelectedItems(element: any) {
+        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
+        Array.from(nodeList)
+            .forEach(x => {
+                this.deselectElement(x as HTMLElement);
+            });
+        if (nodeList.length == 0)
+            this.selectElement(element);
+
+    }
+
+    actionSelected($event) {
+        if ($event.value === 'Delete') {
+            this.showDelete = true;
+            this.deletePopupTitle = 'Delete Connector Labels';
+            this.deleteConfirmationText = `Delete all Connector Labels listed above`;
+        }
+
+        if ($event.value === 'Consolidate') {
+            this.showConsolidationPopup = true;
+        }
+    }
+
+    multiselectMenu = [
+        {
+            title: 'Delete'
+        },
+        {
+            title: 'Consolidate'
+        }
+    ]
 }

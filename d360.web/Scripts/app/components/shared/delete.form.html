@@ -43,7 +43,7 @@
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
                 <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
                 <button *ngIf="confirmationText" class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
-                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where Used Report</button>
+                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where Used Report{{items.length > 1 ? 's' :''}}</button>
                 <span class="grow"></span>
                 <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">
                     {{deleteButtonText ? deleteButtonText : 'Delete'}}
