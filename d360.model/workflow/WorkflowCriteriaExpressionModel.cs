@@ -150,15 +150,20 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Invalid:
                     return val;
                 case CriteriaValueDataType.Boolean:
+                    if (string.IsNullOrEmpty(val))
+                        return null;
                     return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;
                 case CriteriaValueDataType.String:
                     return (val ?? "").Trim().ToUpper();
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
-                    double dVal = 0;
-                    double.TryParse(val, out dVal);
+                    double? dVal = null;
+                    if (double.TryParse(val, out double dValParsed))
+                        dVal = dValParsed;
                     return dVal;
                 case CriteriaValueDataType.Date:
+                    if (string.IsNullOrEmpty(val))
+                        return null;
                     return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
@@ -181,8 +186,13 @@ namespace d360.model.workflow
             {
                 DateTime dt = DateTime.MinValue;
 
-                if (!DateTime.TryParse(givenValue, out dt))
+                if (Operator == CriteriaOperator.NotPopulated)
+                    return string.IsNullOrEmpty(givenValue) || !DateTime.TryParse(givenValue, out _);
+                else if (Operator == CriteriaOperator.Populated)
+                    return DateTime.TryParse(givenValue, out _);
+                else if (!DateTime.TryParse(givenValue, out dt))
                     return false;
+
                 DateTime currentDate = DateTime.UtcNow;
 
                 var numDays = (dt.Date - currentDate.Date).TotalDays;
@@ -199,6 +209,7 @@ namespace d360.model.workflow
                     return (numDays < (int)Value);
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
                     return (numDays <= (int)Value);
+
                 throw new Exception("INVALID DATE OPERATION");
             }
 
@@ -324,9 +335,11 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
-                case CriteriaValueDataType.Lookup:
-                case CriteriaValueDataType.String:
                     return val != null;
+                case CriteriaValueDataType.Lookup:
+                    return (int)val != -1;
+                case CriteriaValueDataType.String:
+                    return !string.IsNullOrEmpty((string)val);
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -339,9 +352,11 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
-                case CriteriaValueDataType.Lookup:
-                case CriteriaValueDataType.String:
                     return val == null;
+                case CriteriaValueDataType.Lookup:
+                    return (int)val != -1;
+                case CriteriaValueDataType.String:
+                    return string.IsNullOrEmpty((string)val);
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
