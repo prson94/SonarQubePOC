@@ -893,7 +893,7 @@ for json path";
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Uid(s) provided are not valid.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> AddWorkflowActionTypes(Guid actionTypeUid, List<string> assetTypeUids)
+        public async Task<IHttpActionResult> AddActionTypeAllocations(Guid actionTypeUid, List<string> assetTypeUids)
         {
             try
             {
