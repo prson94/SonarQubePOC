@@ -49,7 +49,7 @@ export class DropdownDirective implements AfterViewInit {
                 }
                 this.isOverlayVisible = this.dropdownRef.overlayVisible;
 
-                if (this.dropdownRef.options.length > 10) {
+                if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
                     this.dropdownRef.filter = true;
                     this.dropdownRef.filterPlaceholder = 'Search fields';
                 }

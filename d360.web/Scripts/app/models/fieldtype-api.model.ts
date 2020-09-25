@@ -16,11 +16,11 @@ export class FieldTypeAPIModelField {
 
 export class FieldType {
 
-    constructor(type?: string){
+    constructor(type?: string) {
         switch (type) {
             case 'Boolean':
                 this.Boolean = new Boolean();
-                break;            
+                break;
             case 'OwnershipLookup':
                 this.OwnershipLookup = new ComputedOwnershipLookup();
                 break;
@@ -86,7 +86,7 @@ export class FieldType {
         }
     }
 
-    Boolean: Boolean;    
+    Boolean: Boolean;
 
     //need a second ComputedOwnershipLookup so the API can serialize the object by the class name
     OwnershipLookup: ComputedOwnershipLookup;
@@ -203,7 +203,7 @@ export class Search {
     DisplayOrder: number;
 }
 
-export class ComputedOwnershipLookup implements ICommonOptions  {
+export class ComputedOwnershipLookup implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     ColumnWidth: number = null;
     SortOrder: number = 0;
@@ -392,7 +392,7 @@ export class DefaultValue {
     Url: string;
 }
 
-export class Lookup implements ICommonOptions{
+export class Lookup implements ICommonOptions {
     DefaultValue: string;
     Description: Description = new Description();
     AllowAllValue: boolean;
@@ -447,7 +447,7 @@ export class Path implements ICommonOptions {
     Search: Search = new Search();
 }
 
-export class Tag implements ICommonOptions{
+export class Tag implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     SortOrder: number = 0;
     IsDisplayable: boolean = true;

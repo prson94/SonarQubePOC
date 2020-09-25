@@ -1,6 +1,7 @@
 ﻿<div class="field-condition-grid">
     <form name="conditionForm" #conditionsForm="ngForm">
         <div *ngFor="let condition of conditions; let i = index">
+            {{getTypeForCondition(condition)}}
             <div class="row condition-row">
                 <div class="condition-option">
                     <p-dropdown igDropdown
@@ -9,7 +10,7 @@
                                 [(ngModel)]="condition.fieldApiName"
                                 placeholder="Choose a field"
                                 [appendTo]="'body'"
-                                [options]="fields"></p-dropdown>
+                                [options]="fieldsSelect"></p-dropdown>
 
                 </div>
                 <div class="condition-option" *ngIf="condition.fieldApiName">
@@ -19,7 +20,7 @@
                                 [(ngModel)]="condition.operator"
                                 placeholder="Choose a field"
                                 [appendTo]="'body'"
-                                [options]="operators"></p-dropdown>
+                                [options]="getOperators(condition)"></p-dropdown>
                 </div>
                 <div class="condition-option" *ngIf="condition.operator">
 

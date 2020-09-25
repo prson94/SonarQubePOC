@@ -1,5 +1,8 @@
 ﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
+import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
+import { SelectItem } from 'primeng/api';
+import { FieldTypeAPIModelFieldCondition } from './field-condition-grid.models';
 
 @Component({
     selector: 'field-condition-grid',
@@ -8,25 +11,11 @@ import { NgForm } from '@angular/forms';
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./field-condition-grid.component.less']
 })
-export class FieldConditionGrid implements OnInit {
-    private fields = [
-        { label: 'Text Field', value: 'api_text', type: 'Text' },
-        { label: 'Boolean Field', value: 'api_boolean', type: 'Boolean' },
-        { label: 'Number Field', value: 'api_number', type: 'Number' },
-        { label: 'List Field', value: 'api_list', type: 'Lookup' },
-        { label: 'Decimal Field', value: 'api_decimal', type: 'Decimal' },
-        { label: 'Date Field', value: 'api_date', type: 'Date' },
-        { label: 'Date Time Field', value: 'api_date_time', type: 'DateTime' }
-    ];
+export class FieldConditionGrid implements OnInit, OnChanges {
+    @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
 
-    private operators = [
-        { label: 'Is', value: 'Is' },
-        { label: 'Is not', value: 'Is not' },
-        { label: 'In', value: 'In' },
-        { label: 'Not In', value: 'Not In' },
-        { label: 'Contains', value: 'Does not contain' }
-    ];
 
+    fieldsSelect: SelectItem[] = [];
 
     private booleanValues = [
         { label: 'True', value: 'true' },
@@ -35,6 +24,10 @@ export class FieldConditionGrid implements OnInit {
 
 
     private conditions: Condition[] = [];
+    @ViewChild('conditionsForm', { static: true }) formGroup: NgForm;
+    constructor(public cdRef: ChangeDetectorRef) {
+
+    }
 
     ngOnInit() {
         this.addNewCondition();
@@ -49,11 +42,28 @@ export class FieldConditionGrid implements OnInit {
         });
     }
 
-    @ViewChild('conditionsForm', { static: true }) formGroup: NgForm;
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes && changes.fields && changes.fields.currentValue != changes.fields.previousValue) {
+            this.fieldsSelect = [];
 
-    constructor(public cdRef: ChangeDetectorRef) {
-
+            this.fields.filter(x => {
+                !x.Type.ComplexRelationLookup
+                    && !x.Type.ComputedOwnershipLookup
+                    && !x.Type.ComputedRelationshipField
+                    && !x.Type.ComputedRelationshipLookup
+                    && !x.Type.ComputedRelationshipReferenceList
+                    && !x.Type.Empty
+                    && !x.Type.OwnershipLookup
+                    && !x.Type.Relationship
+            }).forEach(f => {
+                this.fieldsSelect.push({
+                    value: f.Name,
+                    label: f.FriendlyName
+                });
+            });
+        }
     }
+
 
     deleteCondition(item: Condition) {
         this.conditions = this.conditions.filter(x => x != item);
@@ -68,7 +78,24 @@ export class FieldConditionGrid implements OnInit {
     }
 
     getTypeForCondition(item: Condition) {
-        return this.fields.filter(x => x.value === item.fieldApiName)[0].type;
+        var ft = this.getFieldType(item);
+        if (!ft) return '';
+        return Object.keys(ft.Type)[0];
+    }
+
+    getOperators(item: Condition) {
+        return this.getFieldType(item).Operators;
+    }
+
+    getValues(item: Condition) {
+        return this.getFieldType(item).Values;
+    }
+
+    getFieldType(item: Condition) {
+        if (this.fields)
+            return this.fields.filter(x => x.Name === item.fieldApiName)[0];
+
+        return null;
     }
 }
 export class Condition {
