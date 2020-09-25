@@ -228,6 +228,13 @@ namespace d360.core
         }
     }
 
+    public class NotYetUsedAttribute : Attribute
+    {
+        public NotYetUsedAttribute()
+        {
+        }
+    }
+
     public class OperatorAllowedDataTypesAttribute : Attribute
     {
         public DataType[] DataTypes { get; private set; }

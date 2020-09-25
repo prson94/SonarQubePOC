@@ -8,6 +8,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { OperatorModel } from '../models/operator.model';
 
 @Injectable()
 export class CompanySettingsService extends BaseObservableService implements ICompanySettingsService {
@@ -83,5 +84,11 @@ export class CompanySettingsService extends BaseObservableService implements ICo
                 map(res => <any>res),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    public getOperators(): Observable<OperatorModel[]> {
+        return this.http
+            .get<OperatorModel[]>(`/api/v2/environment/operators`)
+            .pipe(catchError(err => this.handleError(err)));
     }
 }

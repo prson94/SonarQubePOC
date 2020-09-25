@@ -4,6 +4,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { OperatorModel } from '../../../models/operator.model';
 
 @Component({
     selector: 'd3s-admin-metric-condition-list',
@@ -15,7 +16,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     @Input() assetTypeUid: string;
     @Input() conditions: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() metricConditionListFieldTypes: MetricFieldTypeViewModel[] = [];
-   
+    @Input() operators: OperatorModel[];
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();
@@ -30,15 +31,6 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     FormMode = FormMode;
 
     g: any = null;
-
-    private operators = [
-        { value: 'eq', label: '=' },
-        { value: 'neq', label: '!=' },
-        { value: 'lt', label: '<' },
-        { value: 'lte', label: '<=' },
-        { value: 'gt', label: '>' },
-        { value: 'gte', label: '>=' },
-    ];
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
@@ -62,12 +54,12 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
         return Promise.resolve();
     }
+
     formatConditions() {
         this.conditions.forEach(c => {
             const field = this.metricConditionListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-            c.OperatorText = this.parseOperator(field, c.OperatorText);
-
+            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
+ 
             if (field) {
                 c.FieldTypeName = field.Name;
                 c.FieldType = field;
@@ -77,11 +69,11 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                         if (field.Values) {
                             if (field.Values.length > 0) {
                                 if (c.Values) {
-                                    if (c.Values[0].Value) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                    if (c.Values[0]) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         if (valueModel) {
-                                            c.SingleValue = c.Values[0].Value;
+                                            c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
@@ -91,9 +83,9 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                         break;
                     default:
                         if (c.Values) {
-                            if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value;
-                                c.ValuesText = c.Values[0].Value;
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
                             }
                         }
                         break;
@@ -102,67 +94,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         });
     }
 
-    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        switch (field.Type) {
-            case 'Date':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Text':
-            case 'Lookup':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    default:
-                        return OperatorText;
-                }
-            case 'Decimal':
-            case'Number':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Boolean':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    default:
-                        return OperatorText;
-                }
-        }
-        return '';
-    }
-
-
     save(e: MetricAssetVersionConditionItemViewModel) {
-        e.OperatorText = this.operators.find(o => o.value === e.Operator).label;
+        e.OperatorText = this.operators.find(o => o.ID === e.Operator).Name;
 
         if (!e.IsEditMode) {
             this.conditions.push(e);

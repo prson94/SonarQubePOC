@@ -5,6 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
 import { SelectItem } from 'primeng/api';
+import { OperatorModel, Operator } from '../../../models/operator.model';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -23,19 +24,12 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Output() matchTypeChange = new EventEmitter();
     @Input() matchType: number;
     private fieldTypeDropdownOptions: SelectItem[] = []
+    @Input() operators: OperatorModel[];
     private usedFieldTypes: string[] = [];
 
     private booleanOptions = [
         { value: "true", label: 'True' },
         { value: "false", label: 'False' }
-    ];
-    private operators = [
-        { value: 'eq', label: '=' },
-        { value: 'neq', label: '!=' },
-        { value: 'lt', label: '<' },
-        { value: 'lte', label: '<=' },
-        { value: 'gt', label: '>' },
-        { value: 'gte', label: '>=' },
     ];
 
     private newCondition: MetricAssetVersionConditionItemViewModel = new MetricAssetVersionConditionItemViewModel;
@@ -124,29 +118,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         break;
                 }
             }
-            let options = [];
-            switch (field.Type) {
-                case 'Text':
-                case 'Lookup':
-                    options = [{ value: 'neq', label: '!=' }, { value: 'eq', label: '=' }];
-                    break;
-                case 'Decimal':
-                case 'Number':
-                case 'Date':
-                    options = [
-                        { value: 'eq', label: '=' },
-                        { value: 'neq', label: '!=' },
-                        { value: 'lt', label: '<' },
-                        { value: 'lte', label: '<=' },
-                        { value: 'gt', label: '>' },
-                        { value: 'gte', label: '>=' },
-                    ];
-                    break;
-                case 'Boolean':
-                    options = [{ value: 'eq', label: '=' }];
-                    break;
-            }
-            condition.operatorOptions = options;
+
+            condition.operatorOptions = this.createOperatorOptions(field);
 
             //check for duplicate fieldTypeNames
             if (this.conditionItems.length > 1) {
@@ -191,8 +164,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     formatConditions() {
         this.conditionItems.forEach(c => {
             const field = this.metricConditionEditorFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-            c.OperatorText = this.parseOperator(c, c.OperatorText);
+            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -202,17 +174,19 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'Lookup':
                         if (field.Values) {
                             if (field.Values.length > 0) {
+                                c.lookupOptions = field.Values.map(x => { return { label: x.Text, value: x.Value } });
                                 if (c.Values && c.Values.length > 0) {
-                                    if (c.Values[0].Value) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                    if (c.Values[0]) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         if (valueModel) {
-                                            c.SingleValue = c.Values[0].Value;
+                                            c.SingleValue = valueModel.Value;//c.Values[0];
                                             c.ValuesText = valueModel.Text;
+                                            console.log(c.SingleValue);
+                                            console.log(c.lookupOptions);
                                         }
                                     }
                                 }
-                                c.lookupOptions = field.Values.map(x => { return { label: x.Text, value: x.Value } });
                                 this.ref.markForCheck();
                             }
                         }
@@ -220,115 +194,52 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'Date':
                     case 'DateTime':
                         if (c.Values && c.Values.length > 0) {
-                            if (c.Values[0].Value) {
-                                c.SingleValue = new Date(c.Values[0].Value);
-                                c.ValuesText = c.Values[0].Value;
+                            if (c.Values[0]) {
+                                c.SingleValue = new Date(c.Values[0]);
+                                c.ValuesText = c.Values[0];
                             }
                         }
                         break;
                     default:
                         if (c.Values && c.Values.length > 0) {
-                            if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value;
-                                c.ValuesText = c.Values[0].Value;
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
                             }
                         }
                         break;
                 }
-                let options = [];
-                switch (field.Type) {
-                    case 'Text':
-                    case 'Lookup':
-                        options = [{ value: 'neq', label: '!=' }, { value: 'eq', label: '=' }];
-                        break;
-                    case 'Decimal':
-                    case 'Number':
-                    case 'Date':
-                    case 'DateTime':
-                        options = [
-                            { value: 'eq', label: '=' },
-                            { value: 'neq', label: '!=' },
-                            { value: 'lt', label: '<' },
-                            { value: 'lte', label: '<=' },
-                            { value: 'gt', label: '>' },
-                            { value: 'gte', label: '>=' },
-                        ];
-                        break;
-                    case 'Boolean':
-                        options = [{ value: 'eq', label: '=' }];
-                        break;
-                }
-                c.operatorOptions = options;
+
+                c.operatorOptions = this.createOperatorOptions(field);
 
                 this.ref.markForCheck();
             }
         });
     }
 
-    parseOperator(condition: MetricAssetVersionConditionItemViewModel, OperatorText: string): string {
-        let field = this.metricConditionEditorFieldTypes.find(ft => ft.ApiName === condition.ConditionFieldTypeName);
-        if (field) {
-            switch (field.Type) {
-                case 'Date':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        case '<':
-                            return 'is before'
-                        case '>':
-                            return 'is after'
-                        case '<=':
-                            return 'is on or before'
-                        case '>=':
-                            return 'is on or after'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Text':
-                case 'Lookup':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Decimal':
-                case 'Number':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        case '<':
-                            return 'is less than'
-                        case '>':
-                            return 'is greater than'
-                        case '<=':
-                            return 'is no greater than'
-                        case '>=':
-                            return 'is no less than'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Boolean':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        default:
-                            return OperatorText;
-                    }
-            }
+    checkConditionOperator(condition: MetricAssetVersionConditionItemViewModel) {
+        let operatorInfo = this.operators.find(o => { return o.ID == condition.Operator; });
+        if (operatorInfo) {
+            return (operatorInfo.MaximumValueCount > 0);
         }
-        return OperatorText;
+        else {
+            return true;
+        }
+    }
+
+    createOperatorOptions(field: MetricFieldTypeViewModel) {
+        let options = [];
+        this.operators.forEach(op => {
+            if (op.AllowedDataTypes.findIndex(dt => { return (dt.Name == field.Type); }) > -1) {
+                options.push({ value: op.ID, label: op.Name });
+            }
+        });
+        return options;
     }
 
     addNewCondition() {
         if (this.newCondition && this.newCondition.ConditionFieldTypeName) {
-            this.newCondition.Operator = "eq";
+            this.newCondition.Operator = Operator.Equals;
             this.selectFieldType(this.newCondition);
             this.conditionItems.push({ ...this.newCondition });
             this.newCondition = new MetricAssetVersionConditionItemViewModel();

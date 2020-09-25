@@ -14,11 +14,13 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
 import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
+import { OperatorModel } from '../../../models/operator.model';
+import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
     templateUrl: 'admin-metric-details.component.html',
-    providers: [MetricsService, AssetTypeService, AllocationService]
+    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService]
 })
 
 export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -33,14 +35,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private metricListFieldTypes: MetricFieldTypeViewModel[] = [];
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
-    private operators = [
-        { value: 'eq', label: '=' },
-        { value: 'neq', label: '!=' },
-        { value: 'lt', label: '<' },
-        { value: 'lte', label: '<=' },
-        { value: 'gt', label: '>' },
-        { value: 'gte', label: '>=' },
-    ];
+    operators: OperatorModel[];
+
 
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
     showConditions: boolean;
@@ -54,6 +50,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         private metricsService: MetricsService,
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
+        private settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
@@ -69,10 +66,15 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
                 this.changeAssetType(this.selectedAssetType);
             });
+
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid)
                 .subscribe(f => {
                     this.metricListFieldTypes = f;
-                });
+            });
+
+            this.settingsService.getOperators().subscribe(o => {
+                this.operators = o;
+            });
         });
     }
 
@@ -133,8 +135,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     formatConditions() {
         this.conditions.forEach(c => {
             const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-            c.OperatorText = this.parseOperator(field, c.OperatorText);
+            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -145,11 +146,11 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         if (field.Values) {
                             if (field.Values.length > 0) {
                                 if (c.Values) {
-                                    if (c.Values[0].Value) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                    if (c.Values[0]) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         if (valueModel) {
-                                            c.SingleValue = c.Values[0].Value;
+                                            c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
@@ -159,9 +160,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         break;
                     default:
                         if (c.Values) {
-                            if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value;
-                                c.ValuesText = c.Values[0].Value;
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
                             }
                         }
                         break;
@@ -212,65 +213,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         if (s.startsWith('0'))
             s = s.substr(1, s.length);
         return s;
-    }
-    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        if (field) {
-            switch (field.Type) {
-                case 'Date':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        case '<':
-                            return 'is before'
-                        case '>':
-                            return 'is after'
-                        case '<=':
-                            return 'is on or before'
-                        case '>=':
-                            return 'is on or after'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Text':
-                case 'Lookup':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Decimal':
-                case 'Number':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        case '!=':
-                            return 'is not'
-                        case '<':
-                            return 'is before'
-                        case '>':
-                            return 'is after'
-                        case '<=':
-                            return 'is on or before'
-                        case '>=':
-                            return 'is on or after'
-                        default:
-                            return OperatorText;
-                    }
-                case 'Boolean':
-                    switch (OperatorText) {
-                        case '=':
-                            return 'is'
-                        default:
-                            return OperatorText;
-                    }
-            }
-        }
-        return '';
     }
 
     selectionChanged(event) {

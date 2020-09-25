@@ -362,10 +362,10 @@ namespace d360.model.DataAccessLayer
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"FieldType cannot be type of '{fieldType.Type}'!");
                         }
 
-                        if (!operators.Contains(condition.Operator))
-                        {
-                            operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
-                        }
+                        //if (!operators.Contains(condition.Operator))
+                        //{
+                        //    operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
+                        //}
 
                         condition.ConditionFieldTypeID = fieldType.ID;
 
@@ -425,8 +425,8 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     $"Measure with name '{model.Name}' already exists.");
             }
 
-            //if (company.State != ConnectionState.Open)
-            //    company.Open();
+            if (Company.Connection.State != ConnectionState.Open)
+                Company.Connection.Open();
 
             using (var trans = Company.Connection.BeginTransaction())
             {
@@ -524,7 +524,31 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                     #region Version
 
-                    var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.AssetUid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
+                    var metricAssetVersionJsonFragments = Company.Connection.Query<string>(@"
+select	*,
+		(
+			select	G.*,
+					(
+						select	I.*,
+								(
+									select	*
+									from	metrics.AssetVersionConditionItemValue
+									where	Uid = I.Uid
+									for json path
+								) as [Values]
+						from	metrics.AssetVersionConditionItem I
+						where	I.AssetVersionConditionUid = G.Uid
+						for json path
+					) as Items
+			from	metrics.AssetVersionCondition G
+			where	G.AssetVersionUid = V.Uid
+			for json path
+		) as Conditions
+from	metrics.AssetVersion V
+where	V.AssetUid = @Uid
+		and V.EffectiveDate = @effectiveDate
+for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transaction: trans);
+                    var metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
                     string newConditionHash = model.CurrentConditionHash;
 
                     if (metricAssetVersion == null)
@@ -551,7 +575,10 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         {
                             if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
                             {
-                                metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                if (model.Definition.Governance.External != null)
+                                {
+                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                }
                             }
                         }
 
@@ -561,9 +588,11 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         );
 
                         // End-date the now previous version, if any.
-                        var existingAssetVersions = Company.Filter<MetricAssetVersion>(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null)
-                            .OrderByDescending(x => x.EffectiveDate)
-                            .ToList();
+                        var existingAssetVersions = Company.Connection.Query<MetricAssetVersion>(
+                            "select * from metrics.AssetVersion where AssetUid = @Uid and EffectiveEndDate is null order by EffectiveDate desc", 
+                            new { metricAsset.Uid }, 
+                            transaction: trans
+                        ).ToList();
                         for (var i = 0; i < existingAssetVersions.Count; i++)
                         {
                             if (i == 0)
@@ -571,7 +600,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                                 var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
                                 endDateToUse = endDateToUse.AddDays(-1);
                                 existingAssetVersions[i].EffectiveEndDate = endDateToUse;
-                                Company.Connection.Execute("update metrics.AssetVersion EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
+                                Company.Connection.Execute("update metrics.AssetVersion set EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
                             }
                         }
                     }
@@ -618,7 +647,10 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         {
                             if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
                             {
-                                metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                if (model.Definition.Governance.External != null) 
+                                {
+                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                }
                             }
                         }
 
@@ -666,6 +698,10 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
                             #endregion
 
+                            if (metricAssetVersion.Conditions == null)
+                            {
+                                metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+                            }
 
                             model.ConditionGroups.ForEach(group =>
                             {
@@ -743,9 +779,9 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                                             itemRow["AssetVersionConditionUid"] = dbItem.AssetVersionConditionUid;
                                             itemRow["Uid"] = dbItem.Uid;
                                             itemRow["ConditionType"] = (int)dbItem.ConditionType;
-                                            itemRow["ConditionFieldTypeID"] = dbItem.ConditionFieldTypeID;
-                                            itemRow["ConditionIntersectTypeID"] = dbItem.ConditionIntersectTypeID;
-                                            itemRow["Operator"] = dbItem.Operator;
+                                            if (dbItem.ConditionFieldTypeID.HasValue) itemRow["ConditionFieldTypeID"] = dbItem.ConditionFieldTypeID;
+                                            if (dbItem.ConditionIntersectTypeID.HasValue) itemRow["ConditionIntersectTypeID"] = dbItem.ConditionIntersectTypeID;
+                                            itemRow["Operator"] = (int)dbItem.Operator;
                                             items.Rows.Add(itemRow);
 
                                             okToSendGroup = true;
@@ -832,13 +868,13 @@ using   #Items as S
 on      (T.AssetVersionConditionUid = S.AssetVersionConditionUid and T.Uid = S.Uid)
 when    matched then
 update  set
-        T.ConditionType = S.MaConditionTypetchType,
+        T.ConditionType = S.ConditionType,
         T.ConditionFieldTypeID = S.ConditionFieldTypeID,
         T.ConditionIntersectTypeID = S.ConditionIntersectTypeID,
         T.Operator = S.Operator
 when    not matched by target then
-insert  (AssetVersionConditionUid, Uid, MatchType, [Position], Threshold, Weight)
-values  (S.AssetVersionConditionUid, S.Uid, S.MatchType, S.[Position], S.Threshold, S.Weight);
+insert  (AssetVersionConditionUid, Uid, ConditionType, [ConditionFieldTypeID], ConditionIntersectTypeID, Operator)
+values  (S.AssetVersionConditionUid, S.Uid, S.ConditionType, S.[ConditionFieldTypeID], S.ConditionIntersectTypeID, S.Operator);
 
 delete  T
 from    metrics.AssetVersionConditionItemValue T
@@ -1111,13 +1147,8 @@ from    metrics.Allocation  ma
 														CI.ConditionIntersectTypeID,
                                                         IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
-														(
-															select	[Value]
-															from	metrics.AssetVersionConditionItemValue
-															where	Uid = CI.Uid
-															for json path
-														) as [Values]
-												from	metrics.AssetVersionConditionItem CI
+														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
+                                                from	metrics.AssetVersionConditionItem CI
                                                         left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
@@ -1699,12 +1730,7 @@ from    metrics.ScoreItem I
 														CI.ConditionIntersectTypeID,
                                                         IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
-														(
-															select	[Value]
-															from	metrics.AssetVersionConditionItemValue
-															where	Uid = CI.Uid
-															for json path
-														) as [Values]
+														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
 												from	metrics.AssetVersionConditionItem CI
                                                         left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID

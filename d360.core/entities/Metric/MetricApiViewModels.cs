@@ -87,30 +87,44 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionDataQualityViewModel
     {
+        [DataMember] 
         public MetricRuleResultOperation ResultOperation { get; set; }
+        [DataMember] 
         public Guid ResultPathUid { get; set; }
+        [DataMember] 
         public MetricMatchType FilterMatchType { get; set; }
+        [DataMember] 
         public List<MetricAssetDefinitionDataQualityFilterViewModel> Filters { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionDataQualityFilterViewModel
     {
+        [DataMember]
         public Guid AssetTypeUid { get; set; }
+        [DataMember] 
         public string FieldTypeName { get; set; }
+        [DataMember] 
         public Operator Operator { get; set; }
+        [DataMember] 
         public List<string> Values { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceViewModel
     {
+        [DataMember]
         public MetricGovernanceCheckType Check { get; set; }
 
+        [DataMember]
         public MetricAssetDefinitionGovernanceFieldViewModel Field { get; set; }
+        [DataMember] 
         public MetricAssetDefinitionGovernancePredicateViewModel Predicate { get; set; }
+        [DataMember] 
         public MetricAssetDefinitionGovernanceRelationViewModel Relation { get; set; }
+        [DataMember] 
         public MetricAssetDefinitionGovernanceOwnerViewModel Owner { get; set; }
+        [DataMember] 
         public MetricAssetDefinitionGovernanceExternalViewModel External { get; set; }
     }
 
@@ -127,31 +141,45 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionGovernanceFieldViewModel
     {
+        [DataMember]
         public Guid AssetTypeUid { get; set; }
+
+        [DataMember] 
         public string FieldTypeName { get; set; }
+        
+        [DataMember] 
         public Operator Operator { get; set; }
+        
+        [DataMember] 
         public List<string> Values { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernancePredicateViewModel
     {
+        [DataMember] 
         public Guid PredicateUid { get; set; }
+        [DataMember] 
         public Operator Operator { get; set; }
+        [DataMember] 
         public List<string> Values { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceRelationViewModel
     {
+        [DataMember] 
         public Guid IntersectTypeUid { get; set; }
+        [DataMember] 
         public Operator Operator { get; set; }
+        [DataMember] 
         public List<string> Values { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceOwnerViewModel
     {
+        [DataMember] 
         public Guid ResponsibilityTypeUid { get; set; }
     }
 
@@ -237,7 +265,7 @@ namespace d360.core.entities.Metric
         [DataMember]
         public Guid? ConditionIntersectTypeUid { get; set; }
 
-        [DataMember, StringLength(10)]
+        [DataMember]
         public Operator Operator { get; set; }
 
         [DataMember]

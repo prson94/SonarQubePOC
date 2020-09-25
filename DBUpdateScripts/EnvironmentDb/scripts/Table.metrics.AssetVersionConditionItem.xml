@@ -50,4 +50,41 @@ drop table if exists metrics.AssetVersionConditionItem
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update 	metrics.AssetVersionConditionItem
+set		[Operator] = case [Operator]
+						when 'neq' then 2
+						when 'lt' then 14
+						when 'lte' then 13
+						when 'gt' then 12
+						when 'gte' then 15
+						else 1
+					 end
+GO
+
+alter table metrics.AssetVersionConditionItem alter column [Operator] int not null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table metrics.AssetVersionConditionItem alter column [Operator] varchar(10) not null
+GO
+update 	metrics.AssetVersionConditionItem
+set		[Operator] = case [Operator]
+						when '2' then 'neq'
+						when '14' then 'lt'
+						when '13' then 'lte'
+						when '12' then 'gt'
+						when '15' then 'gte'
+						else 'eq'
+					 end
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

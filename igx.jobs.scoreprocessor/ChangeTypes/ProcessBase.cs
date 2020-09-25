@@ -70,13 +70,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 if (fieldType.Type == DataType.Lookup.ToString() && fieldType.AllowMultipleValues)
                                 {
                                     var fieldValues = (assetField.Value ?? "").Split(',');
-                                    var conditionValues = i.Values.Select(o => o.Value).ToList();
                                     if (i.ConditionType == MetricConditionType.And)
                                     {
-                                        if (i.Operator == "neq")
+                                        if (i.Operator == Operator.NotEquals)
                                         {
-                                            int conditionValueCountMet = conditionValues.Count;
-                                            conditionValues.ForEach(cv =>
+                                            int conditionValueCountMet = i.Values.Count;
+                                            i.Values.ForEach(cv =>
                                             {
                                                 if (!fieldValues.Any(fv => fv == cv))
                                                 {
@@ -91,14 +90,14 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         else
                                         {
                                             int conditionValueCountMet = 0;
-                                            conditionValues.ForEach(cv =>
+                                            i.Values.ForEach(cv =>
                                             {
                                                 if (fieldValues.Any(fv => fv == cv))
                                                 {
                                                     conditionValueCountMet++;
                                                 }
                                             });
-                                            if (conditionValueCountMet == conditionValues.Count) // All condition values met by field.
+                                            if (conditionValueCountMet == i.Values.Count) // All condition values met by field.
                                             {
                                                 conditionsMetCount++;
                                             }
@@ -106,11 +105,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                     }
                                     else
                                     {
-                                        if (i.Operator == "neq")
+                                        if (i.Operator == Operator.NotEquals)
                                         {
                                             // This NEQ logic is the same as above. Let's just get the logic right first before optimizing.
-                                            int conditionValueCountMet = conditionValues.Count;
-                                            conditionValues.ForEach(cv =>
+                                            int conditionValueCountMet = i.Values.Count;
+                                            i.Values.ForEach(cv =>
                                             {
                                                 if (!fieldValues.Any(fv => fv == cv))
                                                 {
@@ -124,7 +123,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         }
                                         else
                                         {
-                                            if (conditionValues.Intersect(fieldValues).Any())
+                                            if (i.Values.Intersect(fieldValues).Any())
                                             {
                                                 conditionsMetCount++;
                                             }
@@ -135,73 +134,73 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 {
                                     switch (i.Operator)
                                     {
-                                        case "eq":
-                                            if ((assetField.Value ?? "") == i.Values[0].Value)
+                                        case Operator.Equals:
+                                            if ((assetField.Value ?? "") == i.Values[0])
                                             {
                                                 conditionsMetCount++;
                                             }
                                             break;
-                                        case "neq":
-                                            if ((assetField.Value ?? "") != i.Values[0].Value)
+                                        case Operator.NotEquals:
+                                            if ((assetField.Value ?? "") != i.Values[0])
                                             {
                                                 conditionsMetCount++;
                                             }
                                             break;
-                                        case "gt":
-                                        case "gte":
-                                        case "lt":
-                                        case "lte":
+                                        case Operator.GreaterThan:
+                                        case Operator.GreaterThanOrEquals:
+                                        case Operator.LessThan:
+                                        case Operator.LessThanOrEquals:
                                             if (assetField.Value != null)
                                             {
                                                 dynamic conditionValue;
                                                 dynamic fieldValue;
                                                 if (fieldType.Type == DataType.Boolean.ToString())
                                                 {
-                                                    conditionValue = bool.Parse(i.Values[0].Value);
+                                                    conditionValue = bool.Parse(i.Values[0]);
                                                     fieldValue = bool.Parse(assetField.Value);
                                                 }
                                                 else if (fieldType.Type == DataType.Date.ToString() || fieldType.Type == DataType.DateTime.ToString())
                                                 {
-                                                    conditionValue = DateTime.Parse(i.Values[0].Value);
+                                                    conditionValue = DateTime.Parse(i.Values[0]);
                                                     fieldValue = DateTime.Parse(assetField.Value);
                                                 }
                                                 else if (fieldType.Type == DataType.Decimal.ToString())
                                                 {
-                                                    conditionValue = decimal.Parse(i.Values[0].Value);
+                                                    conditionValue = decimal.Parse(i.Values[0]);
                                                     fieldValue = decimal.Parse(assetField.Value);
                                                 }
                                                 else if (fieldType.Type == DataType.Number.ToString())
                                                 {
-                                                    conditionValue = int.Parse(i.Values[0].Value);
+                                                    conditionValue = int.Parse(i.Values[0]);
                                                     fieldValue = int.Parse(assetField.Value);
                                                 }
                                                 else
                                                 {
-                                                    conditionValue = i.Values[0].Value;
+                                                    conditionValue = i.Values[0];
                                                     fieldValue = assetField.Value;
                                                 }
 
                                                 switch (i.Operator)
                                                 {
-                                                    case "gt":
+                                                    case Operator.GreaterThan:
                                                         if (fieldValue > conditionValue)
                                                         {
                                                             conditionsMetCount++;
                                                         }
                                                         break;
-                                                    case "gte":
+                                                    case Operator.GreaterThanOrEquals:
                                                         if (fieldValue >= conditionValue)
                                                         {
                                                             conditionsMetCount++;
                                                         }
                                                         break;
-                                                    case "lt":
+                                                    case Operator.LessThan:
                                                         if (fieldValue < conditionValue)
                                                         {
                                                             conditionsMetCount++;
                                                         }
                                                         break;
-                                                    case "lte":
+                                                    case Operator.LessThanOrEquals:
                                                         if (fieldValue <= conditionValue)
                                                         {
                                                             conditionsMetCount++;

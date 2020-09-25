@@ -1699,6 +1699,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\operator.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\process.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance-role.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />

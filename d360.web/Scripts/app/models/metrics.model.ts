@@ -1,5 +1,6 @@
 ﻿import { FieldType } from "./fields.model";
 import { State, AssetTypeClass } from "./asset.model";
+import { OperatorModel, Operator } from "./operator.model";
 
 export class MetricAssetViewModel {
     Uid: string;
@@ -8,6 +9,7 @@ export class MetricAssetViewModel {
     AssetTypeUid: string;
     IsGroup: boolean;
     Name: string;
+    Definition: MetricAssetDefinitionViewModel;
     Description: string;
     EffectiveDate: Date;
     Weight: number;
@@ -45,7 +47,7 @@ export class MetricAssetVersionConditionItemViewModel {
     ConditionType: MetricConditionType;
     ConditionFieldTypeName: string;
     ConditionIntersectTypeUid: string;
-    Operator: string;
+    Operator: Operator;
     Values: string[] = [];
 
     // Transitive values used for UI logic only.
@@ -72,7 +74,7 @@ export class MetricAssetDefinitionDataQualityViewModel {
 export class MetricAssetDefinitionDataQualityFilterViewModel {
     AssetTypeUid: string;
     FieldTypeName: string;
-    Operator: string;
+    Operator: Operator;
     Values: string[];
 }
 export class MetricAssetDefinitionGovernanceViewModel {
@@ -86,21 +88,22 @@ export class MetricAssetDefinitionGovernanceViewModel {
 }
 export class MetricAssetDefinitionGovernanceExternalViewModel {
     UpdateFrequency: MetricUpdateFrequency;
+    Instructions: string;
 }
 export class MetricAssetDefinitionGovernanceFieldViewModel {
     AssetTypeUid: string;
     FieldTypeName: string;
-    Operator: string;
+    Operator: Operator;
     Values: string[];
 }
 export class MetricAssetDefinitionGovernancePredicateViewModel {
     PredicateUid: string;
-    Operator: string;
+    Operator: Operator;
     Values: string[];
 }
 export class MetricAssetDefinitionGovernanceRelationViewModel {
     IntersectTypeUid: string;
-    Operator: string;
+    Operator: Operator;
     Values: string[];
 }
 export class MetricAssetDefinitionGovernanceOwnerViewModel {
@@ -184,7 +187,7 @@ export class Condition {
     MapID: number;
     FieldTypeID: number;
     AndOr: string;
-    Operator: string;
+    Operator: OperatorModel;
     Value: string;
 
     fieldName: string;

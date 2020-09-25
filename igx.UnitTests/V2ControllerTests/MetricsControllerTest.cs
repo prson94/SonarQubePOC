@@ -69,7 +69,18 @@ namespace igx.UnitTests.V2ControllerTests
                             ConditionFieldTypeName = "Name" 
                         } 
                     } 
-                } 
+                }
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
@@ -96,6 +107,17 @@ namespace igx.UnitTests.V2ControllerTests
                     }  
                 } 
             };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -121,6 +143,17 @@ namespace igx.UnitTests.V2ControllerTests
                         }
                     }
                 } 
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
