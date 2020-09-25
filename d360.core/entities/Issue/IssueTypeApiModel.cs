@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -51,5 +52,17 @@ namespace d360.core.entities
         public Issue Issue { get; set; }
         public List<Field> fields = new List<Field>();
         public string Comment { get; set; }
+    }
+
+    public class IssueTypeAllocationsResponse
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public AssetTypeClass Class { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Path { get; set; }
     }
 }
