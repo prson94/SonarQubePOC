@@ -64,6 +64,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showIsEditable: boolean = true;
     @Input() showDescription: boolean = true;
     @Input() enableAllowMultipleValues: boolean = true;
+    @Input() showAddToSearch: boolean = false;
 
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
@@ -1356,6 +1357,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
                 return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
+            case 'SearchAddToResult':
+                return (['Path', 'Html', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'ComplexRelationLookup', 'RefListRelationship', 'Score', 'Tag'].indexOf(this.currentType) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
@@ -1411,6 +1414,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     onShowDetailChange(event: boolean) {
         if (event == false && this.currentType == 'Score') {
             this.model.FieldType.Type[this.currentType].ShowIfEmpty = false;
+        }
+    }
+
+    onAddToSearchChange(event: boolean) {
+        if (!event) {
+            this.model.FieldType.Type[this.currentType].Search.Prefix = null;
+            this.model.FieldType.Type[this.currentType].Search.Suffix = null;
+            this.model.FieldType.Type[this.currentType].Search.DisplayOrder = null;
         }
     }
 }
