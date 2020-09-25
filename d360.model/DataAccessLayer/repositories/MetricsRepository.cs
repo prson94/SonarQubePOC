@@ -141,7 +141,6 @@ namespace d360.model.DataAccessLayer
         {
             MetricAsset metricAsset = null;
             AssetType targetAssetType = null;
-            MetricAllocation allocation = null;
             bool isNew = true;
 
             var errorTitle = "Error updating measure";
@@ -152,40 +151,13 @@ namespace d360.model.DataAccessLayer
 
             if (isNew) errorTitle = "Error creating measure";
 
-            #region Perform model validation first
+            var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
 
-            //List<ValidationResult> validationResults = new List<ValidationResult>();
-
-            //bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-            //if (!isValid)
-            //{
-            //    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, validationResults.First().ErrorMessage);
-            //}
-
-            if (model.Description != null)
+            #region Validation
+            
+            if (allocation == null)
             {
-                if (model.Description?.Length > 4000)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
-                }
-            }
-
-            if (model.ParentUid.HasValue && model.IsGroup)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Maximum number of levels for measures is 2.");
-            }
-
-            if (model.AllocationUid == Guid.Empty)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "There is no allocation for specified Asset Type UID and Score Type.");
-            }
-            else
-            {
-                allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
-                if (allocation == null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "There is no allocation for specified Allocation Uid.");
-                }
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "There is no allocation for specified Allocation Uid.");
             }
 
             if (allocation.IsExternallyCalculated == false)
@@ -203,11 +175,6 @@ namespace d360.model.DataAccessLayer
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Threshold must be a value between 0 and 1");
                 }
-            }
-
-            if (model.Definition == null)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Definition object property must not be empty.");
             }
 
             switch (allocation.ScoreType)
@@ -233,67 +200,6 @@ namespace d360.model.DataAccessLayer
                     }
 
                     break;
-            }
-
-            if (model.ParentUid != null && model.ParentUid != Guid.Empty)
-            {
-                var parent = GetMetricByUid(model.ParentUid.Value);
-
-                if (parent == null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, "Parent metric not found.");
-                }
-
-                if (!parent.IsGroup)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Parent metric must have 'IsGroup' value set to True.");
-                }
-
-                if (model.IsGroup || parent.ParentUid != null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Maximum number of levels for measures is 2.");
-                }
-            }
-
-            model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
-            if (model.IsGroup && model.ConditionGroups.Count > 0)
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Groups should not have conditions.");
-            }
-
-            foreach (var cond in model.ConditionGroups)
-            {
-                foreach (var item in cond.ConditionItems)
-                {
-                    if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
-                    }
-                    else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "ConditionFieldTypeName must not be empty.");
-                        }
-
-                        if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "ConditionIntersectTypeUid must be valid.");
-                        }
-                    }
-
-                    if (item.Values != null)
-                    {
-                        if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Condition Value must not be longer than 250 characters.");
-                        }
-                    }
-                }
             }
 
             #endregion
@@ -330,7 +236,6 @@ namespace d360.model.DataAccessLayer
             model.EffectiveDate = model.EffectiveDate.Date;
 
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
-            var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
             var operatorErrorMessage = "";
 
             if (!model.IsGroup)
@@ -403,12 +308,6 @@ namespace d360.model.DataAccessLayer
             if (!string.IsNullOrEmpty(model.Name) && model.Name.Length > 250)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Name cannot be longer than 250 characters.");
-            }
-
-            if (!string.IsNullOrEmpty(operatorErrorMessage))
-            {
-                operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
             }
             
             int metricExistsCount = 0;
@@ -989,7 +888,7 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                     from	h
                     order by [Level] asc";
 
-            if (cnn.State != System.Data.ConnectionState.Open)
+            if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();

@@ -109,10 +109,117 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult UpsertAsset(MetricAssetViewModel model)
         {
-            if (!Company.CurrentResourceIsAdmin)
+            #region Validation
+
+            var errorTitle = "Error updating measure";
+
+            try
             {
-                return errorMessageResponse(HttpStatusCode.Unauthorized, "Error updating metric", "You are not allowed to update this metric.");
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    throw new WorkStatusException(HttpStatusCode.Unauthorized, "You are not allowed to update this metric.");
+                }
+
+                if (string.IsNullOrEmpty(model.Name) || (model.Name+"").Trim() == "")
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Name must not be empty.");
+                }
+
+                if (model.Weight <= 0 || model.Weight > 1)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Weight must be a decimal greater than 0 and less than or equal to 1.");
+                }
+
+                if (model.Description != null)
+                {
+                    if (model.Description?.Length > 4000)
+                    {
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
+                    }
+                }
+
+                if (model.ParentUid.HasValue && model.IsGroup)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                }
+
+                if (model.AllocationUid == Guid.Empty)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Asset Type UID and Score Type.");
+                }
+
+                if (model.ParentUid != null && model.ParentUid != Guid.Empty)
+                {
+                    var parent = MetricsRepository.GetMetricByUid(model.ParentUid.Value);
+
+                    if (parent == null)
+                    {
+                        throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
+                    }
+
+                    if (!parent.IsGroup)
+                    {
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, "Parent metric must have 'IsGroup' value set to True.");
+                    }
+
+                    if (model.IsGroup || parent.ParentUid != null)
+                    {
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                    }
+                }
+
+                model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
+                if (model.IsGroup && model.ConditionGroups.Count > 0)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");
+                }
+
+                if (model.Definition == null)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Definition object property must not be empty.");
+                }
+
+                foreach (var cond in model.ConditionGroups)
+                {
+                    foreach (var item in cond.ConditionItems)
+                    {
+                        if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
+                        }
+                        else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionFieldTypeName must not be empty.");
+                            }
+
+                            if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionIntersectTypeUid must be valid.");
+                            }
+                        }
+
+                        if (item.Values != null)
+                        {
+                            if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "Condition Value must not be longer than 250 characters.");
+                            }
+                        }
+                    }
+                }
             }
+            catch (WorkStatusException ex)
+            {
+                return errorMessageResponse(ex.Status, errorTitle, ex.Message);
+            }
+
+            #endregion Validation
 
             var result = MetricsRepository.AddOrUpdateMetrics(model);
             
