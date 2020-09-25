@@ -25,16 +25,21 @@ export class DropdownDirective implements AfterViewInit {
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
+
+        var placeholder = this.el.nativeElement.getAttribute("placeholder");
+
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
 
-        if (this.required == null) {
-            this.dropdownRef.placeholder = 'Optional';
-            this.dropdownRef.showClear = true;
-        } else {
-            this.dropdownRef.placeholder = "Value required";
-            this.dropdownRef.showClear = false;
-            this.el.nativeElement.setAttribute("aria-required", true);
+        if (!placeholder) {
+            if (this.required == null) {
+                this.dropdownRef.placeholder = 'Optional';
+                this.dropdownRef.showClear = true;
+            } else {
+                this.dropdownRef.placeholder = "Value required";
+                this.dropdownRef.showClear = false;
+                this.el.nativeElement.setAttribute("aria-required", true);
+            }
         }
         this.dropdownRef.scrollHeight = '340px';
         setInterval(() => {

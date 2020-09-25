@@ -55,6 +55,8 @@ import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.compon
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { GalleryDropDownComponent } from './gallery.dropdown.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { GalleryFieldConditionGridComponent } from './gallery.field-condition-grid.component';
+import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
 
 @NgModule({
     imports: [
@@ -87,7 +89,9 @@ import { DropdownModule } from 'primeng/dropdown';
         SiteModalModule,
         PopupMenuModule,
         OverlayPanelModule,
-        DropdownModule
+        DropdownModule,
+
+        FieldConditionGridModule
     ],
     declarations: [
         GalleryComponent,
@@ -112,7 +116,8 @@ import { DropdownModule } from 'primeng/dropdown';
         GalleryMessageBoxComponent,
         GalleryPopupMenuComponent,
         GalleryCheckboxComponent,
-        GalleryDropDownComponent
+        GalleryDropDownComponent,
+        GalleryFieldConditionGridComponent
     ],
     providers: [
         GalleryGuard,

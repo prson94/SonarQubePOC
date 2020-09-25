@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "select";
+    activeControl: string = "field-condition-grid";
     controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
@@ -32,6 +32,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Checkbox', key: 'checkbox' },
         { label: 'Popup Menu', key: 'popup-menu' },
         { label: 'Select', key: 'select' },
+        { label: 'Field Condition Grid', key: 'field-condition-grid' },
     ];
 
     ngOnInit(): void {

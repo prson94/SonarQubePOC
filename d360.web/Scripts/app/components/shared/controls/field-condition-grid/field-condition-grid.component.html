@@ -1,0 +1,64 @@
+﻿<div class="field-condition-grid">
+    <form name="conditionForm" #conditionsForm="ngForm">
+        <div *ngFor="let condition of conditions; let i = index">
+            <div class="row condition-row">
+                <div class="condition-option">
+                    <p-dropdown igDropdown
+                                igSize="medium"
+                                [name]="'condition_' + i"
+                                [(ngModel)]="condition.fieldApiName"
+                                placeholder="Choose a field"
+                                [appendTo]="'body'"
+                                [options]="fields"></p-dropdown>
+
+                </div>
+                <div class="condition-option" *ngIf="condition.fieldApiName">
+                    <p-dropdown igDropdown
+                                igSize="small"
+                                [name]="'operator_' + i"
+                                [(ngModel)]="condition.operator"
+                                placeholder="Choose a field"
+                                [appendTo]="'body'"
+                                [options]="operators"></p-dropdown>
+                </div>
+                <div class="condition-option" *ngIf="condition.operator">
+
+                    <ng-container [ngSwitch]="getTypeForCondition(condition)">
+                        <ng-container *ngSwitchCase="'Lookup'">
+                            <p-dropdown igDropdown
+                                        required
+                                        igSize="small"
+                                        [name]="'value_' + i"
+                                        [(ngModel)]="condition.value"
+                                        placeholder="Choose a field"
+                                        [appendTo]="'body'"
+                                        [options]="operators"></p-dropdown>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Number'">
+                            <input igInput required igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Decimal'">
+                            <input igInput required igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Date'">
+                            <ig-date required="true" [name]="'value_' + i" [(ngModel)]="condition.value"></ig-date>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'DateTime'">
+                            <ig-date required="true" [name]="'value_' + i" [(ngModel)]="condition.value"></ig-date>
+                        </ng-container>
+                        <ng-container *ngSwitchDefault>
+                            <input igInput required igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" />
+                        </ng-container>
+                    </ng-container>
+
+                </div>
+                <div class="condition-option" *ngIf="condition.fieldApiName">
+                    <button igButton icon="fa-trash" tooltip="Delete" (click)="deleteCondition(condition)"></button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    {{conditions | json}}
+</div>

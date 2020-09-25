@@ -746,6 +746,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.badge.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.field-condition-grid.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.popup-menu.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
@@ -797,7 +798,9 @@
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
+    <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
@@ -923,6 +926,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.field-condition-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
@@ -950,8 +954,10 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
