@@ -816,7 +816,7 @@ where	ExecutionID = @executionID
                                 and (F.Ignore = 0 or F.Ignore is null)
                                 and FT.Type = 'Relationship'
                         )
-                        insert into #Relationships (ID, [uid], IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
+                        insert into #Relationships WITH(TABLOCK) (ID, [uid], IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
                         select
                             null as ID,
                             null as [uid],
@@ -874,7 +874,7 @@ where	ExecutionID = @executionID
 					    where R.ID is null;
 
 
-                        insert into #DeletedRelationships
+                        insert into #DeletedRelationships WITH(TABLOCK)
                             select I.[uid]  from api.ExecutionAsset A
                                 inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                                     and F.ItemNumber = A.ItemNumber 
@@ -1067,7 +1067,7 @@ create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(ma
 ;with field_type_ids as( 
 select distinct F.Id from {fieldTable} T
 				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID)
-				insert into #RelevantLookupValues
+				insert into #RelevantLookupValues WITH(TABLOCK)
 				select FieldTypeId,[Text],[Value] from field_type_ids fti
 					inner join FieldLookupValue FLV on FLV.FieldTypeID = fti.ID
 
@@ -1094,11 +1094,11 @@ create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int n
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 1 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(MV.value) = FLV.Text
 	where executionid = @executionid)
-insert into #LookupValues
+insert into #LookupValues WITH(TABLOCK)
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
 group by fieldvalue, Id
 
-;insert into #LookupValues
+;insert into #LookupValues WITH(TABLOCK)
 select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
@@ -3694,7 +3694,7 @@ from	api.ExecutionAsset T
     from    api.ExecutionAsset T
             inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between @beginItemNumber and @endItemNumber;";
                             var insertGraphAssetNode = $@"		
-insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
         select  EA.AssetID,
 				EA.Uid,
 				@AssetTypeID,
@@ -4035,7 +4035,7 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R)
     output $action, inserted.[uid] into #ParentChildRelationships;
 
-	insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+	insert into graph.AssetEdge WITH(TABLOCK) ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
     select  SG.$node_id,
             OG.$node_id,
             I.ID,
