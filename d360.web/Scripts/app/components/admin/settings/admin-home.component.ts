@@ -34,7 +34,7 @@ export class AdminHomeComponent  {
 
         if (files[0] != null) {
             if (files[0].size > (1024 * 1000)) {
-                this.messagesService.showError('File too large.', `The specified image is too large.  Please resave as a smaller image to continue.  Specified file is ${(files[0].size).toLocaleString()} bytes in size which is greater than the max allowed size of ${(1024 * 1000).toLocaleString()} bytes.`);
+                this.messagesService.showError('File too large.', `Background image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
                 return;
             }
         }
