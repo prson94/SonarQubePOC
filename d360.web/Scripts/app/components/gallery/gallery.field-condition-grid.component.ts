@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { FieldsObservableService } from '../../services/fieldsObservable.service';
 
 
 @Component({
@@ -15,7 +16,9 @@
         }
 
         `
-    ], changeDetection: ChangeDetectionStrategy.OnPush
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [FieldsObservableService]
 })
 
 export class GalleryFieldConditionGridComponent implements OnInit {
@@ -24,10 +27,20 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     protected isLoading1: boolean = true;
     protected isLoading2: boolean = false;
 
-    cleanJsonExamples: any = {};
+    assetTypeUid: string = '4a35d6dc-2ece-4676-adc1-b83cb469b2aa';
+
+    constructor(
+        private fieldsService: FieldsObservableService
+    ) {
+
+    }
+
+
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "items", Type: "Array<PopupMenuItem>", Description: "Array of menu items", Default: "Empty []" });
-        
+
+
+        this.fieldsService.
     }
 }

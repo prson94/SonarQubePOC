@@ -46,6 +46,16 @@
                         <ng-container *ngSwitchCase="'DateTime'">
                             <ig-date required="true" [name]="'value_' + i" [(ngModel)]="condition.value"></ig-date>
                         </ng-container>
+                        <ng-container *ngSwitchCase="'Boolean'">
+                            <p-dropdown igDropdown
+                                        required
+                                        igSize="small"
+                                        [name]="'value_' + i"
+                                        [(ngModel)]="condition.value"
+                                        placeholder="Choose a value"
+                                        [appendTo]="'body'"
+                                        [options]="booleanValues"></p-dropdown>
+                        </ng-container>
                         <ng-container *ngSwitchDefault>
                             <input igInput required igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" />
                         </ng-container>
@@ -53,7 +63,7 @@
 
                 </div>
                 <div class="condition-option" *ngIf="condition.fieldApiName">
-                    <button igButton icon="fa-trash" tooltip="Delete" (click)="deleteCondition(condition)"></button>
+                    <button pTooltip="Remove condition" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" type="button" tooltip="Delete" (click)="deleteCondition(condition)"></button>
                 </div>
             </div>
         </div>

@@ -28,6 +28,12 @@ export class FieldConditionGrid implements OnInit {
     ];
 
 
+    private booleanValues = [
+        { label: 'True', value: 'true' },
+        { label: 'False', false: 'false' }
+    ]
+
+
     private conditions: Condition[] = [];
 
     ngOnInit() {
