@@ -109,13 +109,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         public MetricConditionType ConditionType { get; set; }
         public int? ConditionFieldTypeID { get; set; }
         public int? ConditionIntersectTypeID { get; set; }
-        public string Operator { get; set; }
-        public List<AllocationDataModelConditionItemValue> Values { get; set; }
-    }
-
-    internal class AllocationDataModelConditionItemValue
-    {
-        public string Value { get; set; }
+        public Operator Operator { get; set; }
+        public List<string> Values { get; set; }
     }
 
     internal class AllocationDataModelRollupPath

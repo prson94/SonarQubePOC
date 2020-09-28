@@ -548,8 +548,7 @@ namespace igx.UnitTests
         public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();
-            bool outBool;
-            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetViewModel>(), out outBool))
+            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetViewModel>()))
                 .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
 
             mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))
@@ -582,9 +581,6 @@ namespace igx.UnitTests
                 .Returns(new List<string>() {
                     @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
                 });
-
-            mock.Setup(x => x.GetAllocationByMetricModel(It.IsAny<MetricAssetViewModel>()))
-                .Returns(new MetricAllocation() { IsExternallyCalculated = false });
 
             return mock.Object;
         }

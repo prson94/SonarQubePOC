@@ -8,8 +8,6 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { catchError } from 'rxjs/operators';
 
-
-
 @Injectable()
 export class MetricsService extends BaseObservableService {
 
@@ -50,5 +48,4 @@ export class MetricsService extends BaseObservableService {
             .get<any>(`/api/v2/metrics/${assetTypeUid}/scores?_scoreType=${type}`)
             .pipe(catchError(err => this.handleError(err)));
     }
-
 }

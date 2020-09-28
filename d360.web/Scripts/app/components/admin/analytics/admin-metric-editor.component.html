@@ -81,7 +81,7 @@
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
             <simple-accordion header="Asset Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
+                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes" [operators]="operators"></d3s-admin-metric-condition-editor>
                 </div>
             </simple-accordion>
         </div>

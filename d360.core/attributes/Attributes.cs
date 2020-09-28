@@ -6,57 +6,52 @@ namespace d360.core
 {
     public class BackColorAttribute : Attribute
     {
-        private string _color = "#000";
-        public string Color { get { return _color; } }
+        public string Color { get; private set; } = "#000";
         public BackColorAttribute(string color)
         {
-            _color = color;
+            Color = color;
         }
     }
 
     public class ForeColorAttribute : Attribute
     {
-        private string _color = "#000";
-        public string Color { get { return _color; } }
+        public string Color { get; private set; } = "#000";
         public ForeColorAttribute(string color)
         {
-            _color = color;
+            Color = color;
         }
     }
 
     public class AllowIntersectTypeAsSubjectAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowIntersectTypeAsSubjectAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class AllowOwnershipAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowOwnershipAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class AllowMultiplePredicatesAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowMultiplePredicatesAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class LineageVersionsSupportedAttribute : Attribute
     {
-        public int[] Versions { get; set; }
+        public int[] Versions { get; private set; }
         public LineageVersionsSupportedAttribute(params int[] versions)
         {
             Versions = versions;
@@ -65,7 +60,7 @@ namespace d360.core
 
     public class SubjectAssetClassesSupportedAttribute : Attribute
     {
-        public enums.AssetTypeClass[] Classes { get; set; }
+        public enums.AssetTypeClass[] Classes { get; private set; }
         public SubjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
         {
             Classes = classes;
@@ -74,7 +69,7 @@ namespace d360.core
 
     public class ObjectAssetClassesSupportedAttribute : Attribute
     {
-        public enums.AssetTypeClass[] Classes { get; set; }
+        public enums.AssetTypeClass[] Classes { get; private set; }
         public ObjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
         {
             Classes = classes;
@@ -83,71 +78,64 @@ namespace d360.core
 
     public class AllowIntersectTypeAssignmentAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowIntersectTypeAssignmentAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class AllowDifferentSubjectObjectAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowDifferentSubjectObjectAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class ForceDifferentSubjectObjectAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public ForceDifferentSubjectObjectAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class SingleRelationshipByFunctionalTypeAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public SingleRelationshipByFunctionalTypeAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class AllowSurveyAttribute : Attribute
     {
-        private bool _allowed = true;
-        public bool Allowed { get { return _allowed; } }
+        public bool Allowed { get; private set; } = true;
         public AllowSurveyAttribute(bool allowed)
         {
-            _allowed = allowed;
+            Allowed = allowed;
         }
     }
 
     public class IconAttribute : Attribute
     {
-        private string _icon = "";
-        public string Icon { get { return _icon; } }
+        public string Icon { get; private set; } = "";
         public IconAttribute(string icon)
         {
-            _icon = icon;
+            Icon = icon;
         }
     }
 
     public class NameAttribute : Attribute
     {
-        private string _name = "";
-        public string Name { get { return _name; } }
+        public string Name { get; private set; } = "";
         public NameAttribute(string name)
         {
-            _name = name;
+            Name = name;
         }
     }
 
@@ -163,7 +151,7 @@ namespace d360.core
 
     public class EnableAuditAttribute : Attribute
     {
-        public bool Enabled { get; set; }
+        public bool Enabled { get; private set; }
 
         public EnableAuditAttribute(bool enabled)
         {
@@ -173,7 +161,7 @@ namespace d360.core
 
     public class IsTypeAttribute : Attribute
     {
-        public bool IsType { get; set; }
+        public bool IsType { get; private set; }
 
         public IsTypeAttribute(bool isType)
         {
@@ -183,7 +171,7 @@ namespace d360.core
 
     public class AllowEditFromPredicateEditorAttribute : Attribute
     {
-        public bool Allowed { get; set; }
+        public bool Allowed { get; private set; }
 
         public AllowEditFromPredicateEditorAttribute(bool allowed)
         {
@@ -193,7 +181,7 @@ namespace d360.core
 
     public class AllowEditFromRelationshipEditorAttribute : Attribute
     {
-        public bool Allowed { get; set; }
+        public bool Allowed { get; private set; }
 
         public AllowEditFromRelationshipEditorAttribute(bool allowed)
         {
@@ -203,7 +191,7 @@ namespace d360.core
 
     public class ExcludeDataTypeAttribute : Attribute
     {
-        public DataType Excluded { get; set; }
+        public DataType Excluded { get; private set; }
 
         public ExcludeDataTypeAttribute(DataType exclude)
         {
@@ -240,13 +228,48 @@ namespace d360.core
         }
     }
 
+    public class NotYetUsedAttribute : Attribute
+    {
+        public NotYetUsedAttribute()
+        {
+        }
+    }
+
+    public class OperatorAllowedDataTypesAttribute : Attribute
+    {
+        public DataType[] DataTypes { get; private set; }
+        public OperatorAllowedDataTypesAttribute(params DataType[] dataTypes)
+        {
+            DataTypes = dataTypes;
+        }
+    }
+
+    public class OperatorFieldTypeRequirementsAttribute : Attribute
+    {
+        public bool FieldRequiresMultipleValueSupport { get; private set; }
+        public OperatorFieldTypeRequirementsAttribute(bool fieldRequiresMultipleValueSupport)
+        {
+            FieldRequiresMultipleValueSupport = fieldRequiresMultipleValueSupport;
+        }
+    }
+
+    public class OperatorValueCountRangeAttribute : Attribute
+    {
+        public int Min { get; private set; } = 1;
+        public int Max { get; private set; } = 1;
+        public OperatorValueCountRangeAttribute(int min, int max)
+        {
+            Min = min;
+            Max = max;
+        }
+    }
+
     public class QueueSettingNameAttribute : Attribute
     {
-        private string _name = "";
-        public string Name { get { return _name; } }
+        public string Name { get; private set; } = "";
         public QueueSettingNameAttribute(string name)
         {
-            _name = name;
+            Name = name;
         }
     }
 }
