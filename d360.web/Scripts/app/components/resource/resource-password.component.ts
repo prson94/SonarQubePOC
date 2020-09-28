@@ -101,9 +101,9 @@ export class ResourcePasswordComponent extends BaseComponent{
                     user.Fields = new Object();
 
                     // handle dynamic fields
-                        for (let key in this.items[0]) {
+                        for (let key in this.resource) {
                             if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'ResourceID' && key != 'uid' && key != 'LastLoggedInOn') {
-                                user.Fields[key] = this.items[0][key];
+                                user.Fields[key] = this.resource[key];
                         }
                     }
 
