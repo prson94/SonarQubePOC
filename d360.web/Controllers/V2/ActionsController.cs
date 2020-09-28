@@ -1004,6 +1004,69 @@ for json path";
                 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
             }
+        }    
+
+        /// <summary>
+        /// Delete an allocation from a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type the allocation is to be deleted from</param>
+        /// <param name="assetTypeUid">Uid of the asset type of the allocation to be deleted</param>
+        [
+            Route("allocations/{actionTypeUid:Guid}/{assetTypeUid:Guid}"),
+            HttpDelete,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Allocation Deleted Successfully.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Uid(s) provided are not valid.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteActionTypeAllocations(Guid actionTypeUid, Guid assetTypeUid)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+
+                if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+                }
+
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.AssetTypeUidIsNotValid));
+                }
+
+                var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+                if (issueType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+                }
+
+                var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
+
+                if (assetType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
+                }                
+
+                string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
+                var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, new { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID});
+
+                if(res == 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name)));
+                }
+
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
         }
-    }
+    }    
 }

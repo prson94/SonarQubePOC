@@ -123,10 +123,16 @@
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Type Uid.</value>
   </data>
+  <data name="DeleteAllocationSuccessful" xml:space="preserve">
+    <value>Allocation Deleted Successfully.</value>
+  </data>
   <data name="EmptyAllocationRequest" xml:space="preserve">
     <value>No Asset Type Uids have been provided.</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
     <value>A valid Action Type Uid is required.</value>
+  </data>
+  <data name="NoMatchingAllocation" xml:space="preserve">
+    <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>
   </data>
 </root>
