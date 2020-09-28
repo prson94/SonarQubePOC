@@ -115,7 +115,7 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
         GalleryMessageBoxComponent,
         GalleryPopupMenuComponent,
         GalleryCheckboxComponent,
-        GalleryDropDownComponent
+        GalleryDropDownComponent,
         GalleryCheckboxComponent,
         GalleryPropertyGroupComponent
     ],

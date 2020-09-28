@@ -60,6 +60,8 @@ export class GalleryPropertyGroupComponent implements OnInit {
 
         this.assetService.getAllColors().subscribe(x => { this.defaultColors = x; });
         this.properties = new Array();
+        this.properties.push({ Name: "igformGroup", Type: "FormGroup", Description: "The angular FormGroup object that contains the inputs.", Default: "" });
+        this.properties.push({ Name: "title", Type: "string", Description: "the text to display at the top of the form group.", Default: "" });
     }
 
     wordsIDontLike(wordsIDontLikeArr: string[]): ValidatorFn {
@@ -77,10 +79,6 @@ export class GalleryPropertyGroupComponent implements OnInit {
     }
     get diagnostic() {
         return JSON.stringify(this.model);
-    }
-
-    checkFormValue(value, control: FormControl) {
-        console.log(control);
     }
 }
 export class DummyformModel {
