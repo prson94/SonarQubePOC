@@ -18,7 +18,7 @@ export class ConnectorLabelsFormComponent implements OnChanges {
     @Output() onCancel = new EventEmitter<any>();
 
     connectorLabelForm = new FormGroup({
-        value: new FormControl('', [Validators.required, Validators.maxLength(100)])
+        value: new FormControl('', [Validators.required, Validators.maxLength(40)])
     });
 
     private suggestionResults: string[] = [];
