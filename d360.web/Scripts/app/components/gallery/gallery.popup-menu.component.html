@@ -1,0 +1,277 @@
+﻿<div class="tile tile-detail">
+    <header>Popup menu</header>
+    <p>Angular component that shows popup menu</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>
+        Basic Usage
+    </header>
+    <code>{{sampleUsage}}</code>
+
+    <p>
+        Items property is object of type <span style="background-color: #eff2f6;">Array&#706;PopupMenuItem&#707;</span>
+    </p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>
+            Basic
+            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Basic example using one menu tier without submenus
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu.toggle($event)"></button>
+            <ig-popup-menu [items]="simpleExample" #menu [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>
+            Multi
+            <label (click)="OPmultiExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPmultiExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['multiExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Example using submenus which can be navigated using arrow keys (Up, Right, Down, Left) or using mouse (hover over item will open a submenu)
+            Using space will select a value and close menu
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu2.toggle($event)"></button>
+            <ig-popup-menu [items]="multiExample" #menu2 [tabIndex]="20"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>
+            Tooltip
+            <label (click)="OPtooltipExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPtooltipExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['tooltipExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Tooltip is visible when hovering over element.
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu3.toggle($event)"></button>
+            <ig-popup-menu [items]="tooltipExample" #menu3 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>
+            With default action
+            <label (click)="OPdefaultExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPdefaultExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['defaultExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Default action in menu is bolded
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu4.toggle($event)"></button>
+            <ig-popup-menu [items]="defaultExample" #menu4 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>
+            Labels
+            <label (click)="OPlabelExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPlabelExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['labelExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Labels are shown above all element, they are not selectable and provide no action.
+            * submenu shows support for multi line labels
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu6.toggle($event)"></button>
+            <ig-popup-menu [items]="labelExample" #menu6 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+
+    <div class="gallery-section">
+        <h4>
+            Checkmarks
+
+            <label (click)="OPcheckExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPcheckExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['checkExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Items that are selectable will toggle checkmark on click or selecting using space button. Menu wont be closed
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu7.toggle($event)"></button>
+            <ig-popup-menu [items]="checkExample" #menu7 [tabIndex]="10"></ig-popup-menu>
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>
+            Badges
+            <label (click)="OPbadgeExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPbadgeExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['badgeExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Menu items support basic
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu9.toggle($event)"></button>
+            <ig-popup-menu [items]="badgeExample" #menu9 [tabIndex]="10"></ig-popup-menu>
+
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>
+            Keyboard Shortcuts
+            <label (click)="OPkeyboardShortcuts.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPkeyboardShortcuts [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['keyboardShortcuts']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <p>
+            Every item can have action using shortcuts. onSelect event will be triggered on shortcut
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu8.toggle($event)"></button>
+            <ig-popup-menu (onSelect)="shortcutSelected=$event" [items]="keyboardShortcuts" #menu8 [tabIndex]="10"></ig-popup-menu>
+
+            <strong>Event: </strong>{{shortcutSelected | json}}
+
+        </div>
+    </div>
+
+    <hr />
+    <div class="gallery-section">
+        <h4>On selected event</h4>
+        <p>
+            Selection on mouse click, space, using shortcut will trigger onSelect event
+        </p>
+        <div>
+            <button type="button" igButton label="Show" (click)="menu5.toggle($event)"></button>
+            <ig-popup-menu (onSelect)="item=$event" [items]="defaultExample" #menu5 [tabIndex]="10"></ig-popup-menu>
+
+            <strong>Event: </strong>{{item | json}}
+        </div>
+    </div>
+
+
+    <hr />
+    <div class="gallery-section">
+        <h4>Dynamic Position</h4>
+        <p>
+            Popup menu will switch positions if there is not enought room underneath to render full menu. Use scroll Up to trigger position change
+        </p>
+        <p>
+            Right button will open a popup which will open on left side
+        </p>
+        <div>
+            <div style="float:left;">
+                <button type="button" igButton label="Show" (click)="menu11.toggle($event)"></button>
+                <ig-popup-menu [items]="checkExample" #menu11 [tabIndex]="10"></ig-popup-menu>
+            </div>
+            <div style="float:right;">
+                <button type="button" igButton label="Show" (click)="menu12.toggle($event)"></button>
+                <ig-popup-menu [items]="checkExample" #menu12 [tabIndex]="10"></ig-popup-menu>
+            </div>
+
+        </div>
+    </div>
+    <hr />
+    <div class="gallery-section">
+        <h4>Dynamic Position Popup</h4>
+        <p>
+            Popup menu will switch position if there are not enought room above/under or top/left from the menu
+        </p>
+        <p>
+            Right button will open a popup which will open on left side
+        </p>
+        <div>
+            <button type="submit" igButton label="Show In Fullscreen" (click)="showFull=true;"></button>
+            <div *ngIf="showFull" class="fullscreen">
+                <div style="position: absolute;top: 16px;left: 16px;">
+                    <button type="button" igButton label="Show" (click)="fsmenu1.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu1 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 95%;left: 16px;">
+                    <button type="button" igButton label="Show" (click)="fsmenu2.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu2 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 95%;left: 95%">
+                    <button type="button" igButton label="Show" (click)="fsmenu3.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu3 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div style="position: absolute;top: 16px;left: 95%">
+                    <button type="button" igButton label="Show" (click)="fsmenu4.toggle($event)"></button>
+                    <ig-popup-menu [items]="fullScreenExample" #fsmenu4 [tabIndex]="10"></ig-popup-menu>
+                </div>
+                <div class="message">
+                    Dynamic position will set up correct display mode. Check out 4 menus positioned in each corner. <br />
+                    Press 'ESC' to close fullscreen mode.
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

@@ -19,10 +19,6 @@ using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.core.entities.Process;
-using AngleSharp.Io;
-using DocumentFormat.OpenXml.Spreadsheet;
-using System.Globalization;
-using DocumentFormat.OpenXml.Drawing.Charts;
 using AngleSharp.Text;
 
 namespace d360.model.DataAccessLayer
@@ -242,7 +238,7 @@ namespace d360.model.DataAccessLayer
         }
 
         //UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
+        public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
         {
             var assetTypeID = 0;
             var includeRelationships = false;
@@ -259,10 +255,9 @@ namespace d360.model.DataAccessLayer
             bool isHierachyItem = false;
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
-
-            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+                        
             if (assetType == null)
-                throw new Exception("not found");
+                throw new Exception("Invalid assetType specified");
 
             if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
             {
@@ -286,7 +281,6 @@ namespace d360.model.DataAccessLayer
                     fieldTypes = fieldTypes.Where(x => x.IsListable == true).ToList();
                 }
             }
-
 
             var includeFieldsList = new List<string>();
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
@@ -579,7 +573,6 @@ namespace d360.model.DataAccessLayer
                     dbArgs.Add("assetUids", assetUids);
                     whereStatements.Add($"A.uid in @assetUids");
                 }
-
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "includesegments"))
@@ -616,10 +609,7 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                var hierarchy = CompanyContext.IntersectTypes
-                    .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
-
-                if (hierarchy == null)
+                if (!CompanyContext.TypeHasParent((SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object, true)), assetType.ObjectID))
                 {
                     includeParent = false;
                 }
@@ -889,14 +879,12 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", pagingSql)}
             ";
 
-            int? count = null;
             if (includeTotal)
             {
-                var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
-                count = countResults.First();
+                model.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);                
             }
 
-            var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout);
+            var results = await CompanyContext.QueryAsync(sql, dbArgs, ApiTimeout);
 
             if (includeRelationships)
             {
@@ -953,8 +941,7 @@ namespace d360.model.DataAccessLayer
             }
 
             model.items = results;
-            model.total = count;
-
+            
             return model;
         }
 
@@ -1030,8 +1017,9 @@ namespace d360.model.DataAccessLayer
 
         public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            var results = await GetAssets(uid, queryParams);
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            var results = await GetAssets(assetType, queryParams);
+            
             var fields = new List<FieldType>();
 
             bool includeAssetUrl = true;
@@ -1211,7 +1199,7 @@ namespace d360.model.DataAccessLayer
 
             assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var id = assetType.ObjectID;
-            var data = await GetAssets(uid, queryParamsWithOrder);
+            var data = await GetAssets(assetType, queryParamsWithOrder);
             fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
             results = data.items;
             if (assetType.Class == AssetTypeClass.Policy)
@@ -1235,7 +1223,7 @@ namespace d360.model.DataAccessLayer
                     var par = queryParamsWithOrder.Where(k => k.Key.ToLower() != "_simplefilter");
                     qp.AddRange(par);
                     qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", allFamily)));
-                    var fammilyAssets = await GetAssets(uid, qp);
+                    var fammilyAssets = await GetAssets(assetType, qp);
                     allResults = results.Union(fammilyAssets.items);
                 }
                 else
@@ -2586,13 +2574,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
-        public string[][] GetAssetPath(Guid assetUid)
+        public async Task<string[][]> GetAssetPath(Guid assetUid)
         {
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@assetUid", assetUid.ToString());
 
             var sql = $@"SELECT	Segments FROM graph.AssetNode WHERE Uid = @assetUid";
-            string segment = CompanyContext.Query<string>(sql, dbArgs, ApiTimeout).FirstOrDefault();
+            string segment = await CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
             return GetPathFromSegments(segment);
         }
 
@@ -2636,6 +2624,48 @@ from	(
 where	O.RowNum = 1";
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow }, ApiTimeout);
+        }
+
+        
+        public async Task<AssetsCountModel> GetAssetsCounts()
+        {
+            var results = new AssetsCountModel();
+
+            var includedAssetClasses = new List<AssetTypeClass>() {
+                AssetTypeClass.BusinessAsset,
+                AssetTypeClass.Diagram,
+                AssetTypeClass.Fusion,
+                AssetTypeClass.FusionAttribute,
+                AssetTypeClass.FusionQuery,
+                AssetTypeClass.Group,
+                AssetTypeClass.Model,
+                AssetTypeClass.Organization,
+                AssetTypeClass.Policy,
+                AssetTypeClass.Reference,
+                AssetTypeClass.Rule,
+                AssetTypeClass.TechnicalAsset,
+                AssetTypeClass.User
+            };
+                        
+            //total asset count
+            results.totalNumberOfAssets = await CompanyContext.QueryFirstOrDefaultAsync<int>("select count(1) from asset a inner join assettype att on a.assetTypeId = att.id where att.class in @includedClassTypes", new { includedClassTypes = includedAssetClasses });
+
+            results.countsByAssetClass = new List<AssetClassCountModel>();
+
+            var allCounts = await CompanyContext.QueryAsync<dynamic>("select class as [assetTypeClass], count(1) as [cnt] from asset a inner join assettype att on a.assetTypeId = att.id group by att.class");
+
+            foreach (var assetType in includedAssetClasses)
+            {
+                var info = allCounts.FirstOrDefault(x => x.assetTypeClass == (int)assetType);
+
+                results.countsByAssetClass.Add(new AssetClassCountModel()
+                {
+                    @class = assetType.ToString(),
+                    numberOfAssets = info == null ? 0 : info.cnt
+                });
+            }
+
+            return results;
         }
 
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
@@ -2851,6 +2881,74 @@ where   A.[uid] = @assetUid";
             return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
         }
 
+        public async Task<List<IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid)
+        {
+            var asset = GetAssetByUID(assetUid);
+
+            if (asset == null)
+                return null;
+
+            var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
+
+            if (!canRead)
+                return null;
+
+            var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
+            //Get fieldtypes to display on search result card
+            var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID && f.SearchAddToResult).ToList();
+
+            if (!fieldTypes.Any())
+                return null;
+
+            var fieldJoins = new List<string>();
+            var fieldColumns = new List<string>();
+            DynamicParameters dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid);
+
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            var sql = $@"
+select  
+        {string.Join(","+Environment.NewLine, fieldColumns)}
+from    Asset A
+        inner join AssetType T on T.ID = A.AssetTypeID
+        outer apply (
+            select  T.[uid]
+            from    graph.AssetNode S,
+                    graph.AssetEdge E,
+                    graph.assetNode T
+            where   match (T-(E)->S)
+                    and E.PredicateType in (3,4)
+                    and S.[uid] = A.[uid]
+        ) Parent
+        left join AssetDetail P on P.uid = Parent.uid
+        {string.Join(Environment.NewLine, fieldJoins)}
+where   A.[uid] = @assetUid";
+
+            var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;
+
+            fieldTypes.Sort((x, y) =>
+                {
+                    //Order field types by SearchDisplayOrder(if available), ColumnOrder, FriendlyName
+                    int result = Nullable.Compare(x.SearchDisplayOrder, y.SearchDisplayOrder);
+                    if (result == 0)
+                        result = x.ColumnOrder.CompareTo(y.ColumnOrder);
+                    if (result == 0)
+                        result = x.FriendlyName.CompareTo(y.FriendlyName);
+                    return result;
+                });
+
+            return fieldTypes.Select(f => new IndexFieldDisplay(){
+               Name = f.Name,
+               Type = f.Type,
+               Label = f.FriendlyName,
+               Prefix = f.SearchPrefix,
+               Suffix = f.SearchSuffix,
+               Value = data[f.Name]?.ToString() ?? "",
+               Empty = (data[f.Name] is null && f.ShowIfEmpty)
+            }).Where(f => !string.IsNullOrEmpty(f.Value) || f.Empty).ToList();
+        }
+
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
         {
             var fields = new List<FieldType>();
@@ -2858,7 +2956,7 @@ where   A.[uid] = @assetUid";
             var qp = new List<KeyValuePair<string, string>>();
             qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetUids.Select(x => x.ToString()))));
             qp.Add(new KeyValuePair<string, string>("includeParent", "true"));
-            var results = await GetAssets(assetType.uid, qp);
+            var results = await GetAssets(assetType, qp);
 
             var hierarchy = CompanyContext.IntersectTypes
                 .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);

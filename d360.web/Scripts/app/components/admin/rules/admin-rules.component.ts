@@ -86,6 +86,7 @@ import { StringConstants } from '../../../static/string-constants';
                     <d3s-field-definition-tile [objectType]="'RuleType'"
                                                [objectName]="selected?.Name" 
                                             [supportsPrimaryFilterOption]="true"
+                                            [showAddToSearch]="true"
                                             [objectID]="selected?.ID" [assetTypeUid]="selected?.uid"></d3s-field-definition-tile>
                 </div>
             </div>

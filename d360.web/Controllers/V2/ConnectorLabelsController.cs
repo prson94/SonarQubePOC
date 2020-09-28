@@ -328,11 +328,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Deletes a connector label based on the provided Uid.
         /// </summary>
-        /// <param name="connectorLabelUid">The uid of the connector label to be removed.</param>
+        /// <param name="labels">List of connector labels to be removed.</param>
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
-            Route("{connectorLabelUid}"),
+            Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the connector label provided is invalid.", typeof(ErrorResponse)),
@@ -340,17 +340,21 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteByUid(Guid connectorLabelUid)
+        public IHttpActionResult DeleteByUid([FromBody]List<ConnectorLabelApiDeleteModel> labels)
         {
-            if (!ConnectorLabelRepository.DoesLabelExists(connectorLabelUid))
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", $"Connector Label with uid {connectorLabelUid} not found.");
+
+            foreach (var label in labels)
+            {
+                if (!ConnectorLabelRepository.DoesLabelExists(label.uid))
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", $"Connector Label with uid {label.uid} not found.");
+            }
 
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
             try
             {
-                if (!ConnectorLabelRepository.DeleteConnectorLabels(new List<ConnectorLabelApiDeleteModel>() { new ConnectorLabelApiDeleteModel { uid = connectorLabelUid, cascade = true } }))
+                if (!ConnectorLabelRepository.DeleteConnectorLabels(labels))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing connector label", "Connector label not found.");
                 }

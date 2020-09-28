@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
                             queryParams = paramList;
                         }
                         queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
-                        var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                        var results = await AssetRepository.GetAssets(assetType, queryParams);
 
                         SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
 
@@ -351,7 +351,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                    var results = await AssetRepository.GetAssets(assetType, queryParams);
                     response = Request.CreateResponse(HttpStatusCode.OK, results);
                 }
 
@@ -1097,6 +1097,43 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Retrieves a count of assets in the current environment.  Including the total asset count as well as a breakdown by asset class in the current environment.
+        /// permissions are not factored into the return counts of assets and this endpoint requires administrator access.
+        /// </summary>
+        /// <returns>Returns a list of asset classes the count of assets in them as well as the total asset count in the environment.</returns>
+        [
+            HttpGet,
+            Route("counts"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(AssetsCountModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))           
+        ]
+        public async Task<HttpResponseMessage> GetEnvironmentAssetCountsAsync()
+        {
+            var prefix = "Assets.GetEnvironmentAssetCountsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return Request.CreateErrorResponse(HttpStatusCode.Forbidden, $"You do not have permission to load environment level asset counts.");
+                ;
+                return Request.CreateResponse(HttpStatusCode.OK, await AssetRepository.GetAssetsCounts());
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         /// <summary>
         /// Retrieves a list of all asset types and asset counts for current user.

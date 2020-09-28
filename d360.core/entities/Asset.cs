@@ -223,6 +223,19 @@ namespace d360.core.entities
 
     #endregion
 
+
+    public class AssetClassCountModel
+    {
+        public string @class { get; set; }
+        public int numberOfAssets { get; set; }        
+    }
+
+    public class AssetsCountModel
+    {
+        public int totalNumberOfAssets { get; set; }
+        public List<AssetClassCountModel> countsByAssetClass { get; set; }
+    }
+
     public class AssetTypeCountModel
     {
         public Guid uid { get; set; }

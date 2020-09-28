@@ -318,6 +318,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_GlobalResources\ActionApiMessages.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ActionApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\ApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -371,7 +376,6 @@
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
-    <Compile Include="Controllers\V2\IssuesController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -694,6 +698,11 @@
     <Content Include="App_GlobalResources\ApiMessages.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>ApiMessages.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="App_GlobalResources\ActionApiMessages.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
@@ -742,10 +751,12 @@
     <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.dropdown.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.message-box.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.badge.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.popup-menu.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
@@ -791,13 +802,16 @@
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\badge\badge.less" />
     <Content Include="Content\styles\infogix-ui\IgCheckbox.less" />
+    <Content Include="Content\styles\infogix-ui\IgDropdown.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
+    <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
@@ -916,11 +930,13 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.dropdown.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.date-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-paging-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.grid-selection-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
@@ -949,6 +965,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\date\date.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
@@ -1684,6 +1701,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\ig-autocomplete-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-autofocus.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\number-picker\number-input.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-dropdown.directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-textarea-directive.ts" />
@@ -1987,6 +2005,7 @@
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <None Include="Scripts\app\tsconfig.aot.json" />
     <TypeScriptCompile Include="Scripts\app\static\font-awesome-helper.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\keyboard-key-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\workflow-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\vendor.ts" />

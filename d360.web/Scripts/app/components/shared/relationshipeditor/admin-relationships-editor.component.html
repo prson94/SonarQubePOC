@@ -7,28 +7,30 @@
         <div class="row">
             <div class="col l4 m4 s12">
                 <div class="FieldName">Subject</div>
-                <p-dropdown filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
+                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
             </div>
             <div class="col l4 m4 s12">
                 <div class="FieldName">Predicate</div>
                 <p-dropdown filter="true" appendTo="body" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
-            </div> 
+            </div>
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly" required [style]="{ 'width': '100%' }"></p-dropdown>
+                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly || !canChangeObject" required [style]="{ 'width': '100%' }"></p-dropdown>
             </div>
         </div>
 
         <div class="row">
             <div class="col l4 m4 s12">
-                <div class="FieldName">Subject Cardinality</div>
-                <p-dropdown filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
+                <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+                <div *ngIf="!isLoadingCardinality" class="FieldName">Subject Cardinality</div>
+                <p-dropdown *ngIf="!isLoadingCardinality" panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
             </div>
             <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br />to</div>
             <div class="col l4 m4 s12">
-                <div class="FieldName">Object Cardinality</div>
-                <p-dropdown filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
+                <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+                <div *ngIf="!isLoadingCardinality" class="FieldName">Object Cardinality</div>
+                <p-dropdown *ngIf="!isLoadingCardinality" filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
             </div>
         </div>
 

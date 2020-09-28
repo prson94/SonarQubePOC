@@ -8,6 +8,7 @@ import { AutocompleteDirective, AutocompleteModule } from './ig-autocomplete-dir
 import { TextAreaDirective, TextAreaModule } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
 import { CheckboxDirective } from './ig-checkbox-directive';
+import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
 
 
 @NgModule({ 
@@ -16,6 +17,7 @@ import { CheckboxDirective } from './ig-checkbox-directive';
         InputModule,
         TextAreaModule,
         AutocompleteModule,
+        DropdownModule
     ],
     declarations: [
         TextHighlightDirective,
@@ -34,6 +36,7 @@ import { CheckboxDirective } from './ig-checkbox-directive';
         AutocompleteDirective,
         AutoFocusDirective,
         CheckboxDirective,
+        DropdownDirective
     ]
 })
 export class DirectivesModule { }

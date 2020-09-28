@@ -90,8 +90,10 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         [Fact]
         public void ContextualFieldRequestedonTest()
         {
+            var numDays = (new DateTime(2000, 01, 01) - DateTime.Now.Date).TotalDays;
+
             string condition = "<Conditions>" +
-                "<Condition ValueType =\"D\" Value=\"1/1/2000\" Operator=\"=\" ContextualFieldID=\"RequestedOn\" Connector=\"AND\" />" +
+                $"<Condition ValueType =\"DT\" Value=\"{numDays}\" Operator=\"=\" ContextualFieldID=\"RequestedOn\" Connector=\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { };
@@ -104,13 +106,13 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void ContextualFieldRequestedonTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition ValueType =\"D\" Value=\"1/2/2000\" Operator=\"=\" ContextualFieldID=\"RequestedOn\" Connector=\"AND\" />" +
+                "<Condition ValueType =\"DT\" Value=\"1\" Operator=\"=\" ContextualFieldID=\"RequestedOn\" Connector=\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { };
 
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
-            Assert.True(res, "Invalid evaluation result!");
+            Assert.False(res, "Invalid evaluation result!");
         }
     }
 }

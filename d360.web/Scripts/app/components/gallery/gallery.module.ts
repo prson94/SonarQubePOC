@@ -50,9 +50,13 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
+import { GalleryPopupMenuComponent } from './gallery.popup-menu.component';
+import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.component';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { GalleryDropDownComponent } from './gallery.dropdown.component';
+import { DropdownModule } from 'primeng/dropdown';
 import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
-
 
 @NgModule({
     imports: [
@@ -83,7 +87,10 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
         AutoCompleteModule,
         CheckboxModule,
         TriStateCheckboxModule,
-        SiteModalModule
+        SiteModalModule,
+        PopupMenuModule,
+        OverlayPanelModule,
+        DropdownModule
     ],
     declarations: [
         GalleryComponent,
@@ -106,6 +113,9 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
         GalleryNumberFieldComponent,
         GalleryBadgeComponent,
         GalleryMessageBoxComponent,
+        GalleryPopupMenuComponent,
+        GalleryCheckboxComponent,
+        GalleryDropDownComponent
         GalleryCheckboxComponent,
         GalleryPropertyGroupComponent
     ],

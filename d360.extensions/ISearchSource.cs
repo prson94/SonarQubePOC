@@ -182,7 +182,19 @@ namespace d360.extensions
         /// score ranging between 1 and 0 adjusted based on max value.
         /// </summary>
         public float NormalizedScore { get; set; }
-        public string Explaination { get; set; }
+        public string Explanation { get; set; }
+        public List<IndexFieldDisplay> Fields { get; set; }
+    }
+
+    public class IndexFieldDisplay
+    {
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Label { get; set; }
+        public string Prefix { get; set; }
+        public string Suffix { get; set; }
+        public string Value { get; set; }
+        public bool Empty { get; set; }
     }
 
     public enum SearchConnector

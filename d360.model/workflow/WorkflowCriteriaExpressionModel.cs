@@ -1,5 +1,6 @@
 ﻿using d360.core.enums.Workflow;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -24,13 +25,20 @@ namespace d360.model.workflow
             var @operator = operatorFromString((string)element.Attribute("Operator"));
             var @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
 
+            var noValueOperators = new List<CriteriaOperator>() 
+            { 
+                CriteriaOperator.Changed,
+                CriteriaOperator.Populated,
+                CriteriaOperator.NotPopulated
+            };
+
             return new WorkflowCriteriaExpressionModel
             {
                 FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
                 ContextualFieldID = ((string)element.Attribute("ContextualFieldID") ?? ""),
                 Operator = @operator,
                 ValueDataType = dataType,
-                Value = @operator == CriteriaOperator.Changed ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
+                Value = noValueOperators.Contains(@operator) ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
                 VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
                 FormInputId = ((string)element.Attribute("FormInputID")),
                 CriteriaConnector = connector
@@ -126,6 +134,10 @@ namespace d360.model.workflow
                     return CriteriaOperator.NotEqual;
                 case "C":
                     return CriteriaOperator.Changed;
+                case "P":
+                    return CriteriaOperator.Populated;
+                case "NP":
+                    return CriteriaOperator.NotPopulated;
             }
 
             return CriteriaOperator.Invalid;
@@ -138,15 +150,20 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Invalid:
                     return val;
                 case CriteriaValueDataType.Boolean:
+                    if (string.IsNullOrEmpty(val))
+                        return null;
                     return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;
                 case CriteriaValueDataType.String:
                     return (val ?? "").Trim().ToUpper();
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
-                    double dVal = 0;
-                    double.TryParse(val, out dVal);
+                    double? dVal = null;
+                    if (double.TryParse(val, out double dValParsed))
+                        dVal = dValParsed;
                     return dVal;
                 case CriteriaValueDataType.Date:
+                    if (string.IsNullOrEmpty(val))
+                        return null;
                     return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
@@ -169,8 +186,13 @@ namespace d360.model.workflow
             {
                 DateTime dt = DateTime.MinValue;
 
-                if (!DateTime.TryParse(givenValue, out dt))
+                if (Operator == CriteriaOperator.NotPopulated)
+                    return string.IsNullOrEmpty(givenValue) || !DateTime.TryParse(givenValue, out _);
+                else if (Operator == CriteriaOperator.Populated)
+                    return DateTime.TryParse(givenValue, out _);
+                else if (!DateTime.TryParse(givenValue, out dt))
                     return false;
+
                 DateTime currentDate = DateTime.UtcNow;
 
                 var numDays = (dt.Date - currentDate.Date).TotalDays;
@@ -187,6 +209,7 @@ namespace d360.model.workflow
                     return (numDays < (int)Value);
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
                     return (numDays <= (int)Value);
+
                 throw new Exception("INVALID DATE OPERATION");
             }
 
@@ -206,6 +229,10 @@ namespace d360.model.workflow
                     return isEqual(val);
                 case CriteriaOperator.NotEqual:
                     return isNotEqual(val);
+                case CriteriaOperator.Populated:
+                    return isPopulated(val);
+                case CriteriaOperator.NotPopulated:
+                    return isNotPopulated(val);
             }
 
             throw new Exception("INVALID COMPARISON OPERATION");
@@ -216,9 +243,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val < (int)Value;
+                    return (int?)val < (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val < (double)Value;
+                    return (double?)val < (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -229,9 +256,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val > (int)Value;
+                    return (int?)val > (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val > (double)Value;
+                    return (double?)val > (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -242,9 +269,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val <= (int)Value;
+                    return (int?)val <= (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val <= (double)Value;
+                    return (double?)val <= (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -255,9 +282,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val >= (int)Value;
+                    return (int?)val >= (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val >= (double)Value;
+                    return (double?)val >= (double?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -268,15 +295,15 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Boolean:
-                    return (bool)val == (bool)Value;
+                    return (bool?)val == (bool?)Value;
                 case CriteriaValueDataType.String:
                     return String.Compare((string)val, (string)Value, true) == 0;
                 case CriteriaValueDataType.Integer:
-                    return (int)val == (int)Value;
+                    return (int?)val == (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val == (double)Value;
+                    return (double?)val == (double?)Value;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val == (int)Value;
+                    return (int?)val == (int?)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
@@ -287,15 +314,49 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Boolean:
-                    return (bool)val != (bool)Value;
+                    return (bool?)val != (bool?)Value;
                 case CriteriaValueDataType.String:
                     return String.Compare((string)val, (string)Value, true) != 0;
                 case CriteriaValueDataType.Integer:
-                    return (int)val != (int)Value;
+                    return (int?)val != (int?)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val != (double)Value;
+                    return (double?)val != (double?)Value;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val != (int)Value;
+                    return (int?)val != (int?)Value;
+            }
+
+            throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
+        }
+
+        private bool isPopulated(object val)
+        {
+            switch (ValueDataType)
+            {
+                case CriteriaValueDataType.Boolean:
+                case CriteriaValueDataType.Integer:
+                case CriteriaValueDataType.Double:
+                    return val != null;
+                case CriteriaValueDataType.Lookup:
+                    return (int)val != -1;
+                case CriteriaValueDataType.String:
+                    return !string.IsNullOrEmpty((string)val);
+            }
+
+            throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
+        }
+
+        private bool isNotPopulated(object val)
+        {
+            switch (ValueDataType)
+            {
+                case CriteriaValueDataType.Boolean:
+                case CriteriaValueDataType.Integer:
+                case CriteriaValueDataType.Double:
+                    return val == null;
+                case CriteriaValueDataType.Lookup:
+                    return (int)val != -1;
+                case CriteriaValueDataType.String:
+                    return string.IsNullOrEmpty((string)val);
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");

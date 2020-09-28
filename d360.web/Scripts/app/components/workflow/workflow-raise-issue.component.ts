@@ -96,6 +96,8 @@ declare var CompanySettings;
                         <d3s-dynamic-editor *ngIf="issueType"
                                             [hasHeader]="false"
                                             [objectID]="issueType?.ID"
+                                            [useTypeUidForDefinition]="true"
+                                            [objectTypeUid]="issueType?.Uid"
                                             objectType="Issue"
                                             [selectedObject]="selectedObjectType"
                                             [selectedObjectID]="selectedObjectId"
@@ -114,6 +116,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private issue: string;
     private selectedObjectType: string;
     private selectedObjectId: number;
+    private selectedAssetUid: string;
     private objectDetail: ObjectDetail;
     private terms: Tag[] = [];
     private term: Tag;
@@ -182,6 +185,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                 this.selectedOption = 'current';
                 this.selectedObjectId = this.objectID;
                 this.selectedObjectType = this.objectType;
+                if (this.selectedObjectType == 'Artifact') {
+                    this.selectedAssetUid = res.UID ?? res['Uid'];
+                }                
 
                 this.isLoading = false;
 
@@ -192,7 +198,11 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
 
     private loadIssueTypes() {
         this.isLoading = true;
-        this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId)
+        let params = { _assetUid: "", _assetTypeUid: "" };
+        if (this.selectedAssetUid) {
+            params._assetUid = this.selectedAssetUid;            
+        }        
+        this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
             .subscribe(result => {
                 this.issueTypes = result;
                 if (this.issueTypes != null && this.issueTypes.length == 1) this.issueType = this.issueTypes[0];

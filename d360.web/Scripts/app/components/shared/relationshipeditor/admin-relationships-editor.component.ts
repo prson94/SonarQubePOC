@@ -6,55 +6,7 @@ import { ViewEncapsulation } from '@angular/core';
 
 @Component({
     selector: 'd3s-admin-relationships-editor',
-    template: ` 
-                <header>{{action}} Relationship Type</header>                
-                <d3s-loading [isLoading]="isLoading || isLoadingItem"></d3s-loading>
-                <div *ngIf="!isLoading && !isLoadingItem">
-                    <div class="form-instructions">When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Subject and Business Term as Object.  This will impact how sourcing and synonym inheritance works, as Object is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>
-                    <form (ngSubmit)="onSubmit()" #relationshipEditorForm="ngForm">
-
-                        <div class="row">
-                            <div class="col l4 m4 s12">
-                                <div class="FieldName">Subject</div>
-                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
-                            </div>
-                            <div class="col l4 m4 s12">
-                                <div class="FieldName">Predicate</div>
-                                <p-dropdown filter="true" appendTo="body" name="predicate" #predicate="ngModel" [options]="predicates" [(ngModel)]="editedRelationship.Predicate" [disabled]="!canChangePredicate" required (ngModelChange)="editedRelationship.Predicate=$event;predicateChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
-                            </div>
-                            <div class="col l4 m4 s12">
-                                <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
-                                <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly || !canChangeObject" required [style]="{ 'width': '100%' }"></p-dropdown>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col l4 m4 s12">
-                                <div class="FieldName">Subject Cardinality</div>
-                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
-                            </div>
-                            <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br/>to</div>
-                            <div class="col l4 m4 s12">
-                                <div class="FieldName">Object Cardinality</div>
-                                <p-dropdown filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col s12">&nbsp;</div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col s12">
-                                <button pButton type="submit" [disabled]="!relationshipEditorForm.form.valid" style="width: '150px';" label="Save"></button>
-                                <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-                `,
+    templateUrl: './admin-relationships-editor.component.html',
 
     // Having three dropdowns in compact space gives ugly and unusable dropdown panels...esp for long dropdown items
     // insert custom styling using Angular Default View Encapsulation
@@ -90,6 +42,7 @@ export class AdminRelationshipsEditor {
     isLoading: boolean = false;
     isLoadingObject: boolean = false;
     isLoadingItem: boolean = false;
+    isLoadingCardinality: boolean = false;
     canChangePredicate: boolean = true;
     canChangeObject: boolean = true;
     selectedPredicate: any;
@@ -216,7 +169,7 @@ export class AdminRelationshipsEditor {
     }
 
     private loadCardinalityOptions() {
-        this.isLoading = true;
+        this.isLoadingCardinality = true;
         this.relationshipsService.getCardinalityOptions().subscribe(result => {
             this.cardinalityOptions = [];
             this.cardinalityOptions.push({ label: 'Select Cardinality', value: null });
@@ -239,7 +192,7 @@ export class AdminRelationshipsEditor {
                 this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'One')));
 
             }
-            this.isLoading = false;
+            this.isLoadingCardinality = false;
         });
     }
 

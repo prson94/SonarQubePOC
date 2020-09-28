@@ -408,25 +408,27 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     //scoring carousel, table and graph interactivity
     private selectPointOnGraph() {
-        if (this.chartInstance.series) {
-            if (this.chartInstance.series.length > 0) {
-                var ms = new Date(this.scoreDate.toString()).getTime();
-                var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
+        if (this.chartInstance) {
+            if (this.chartInstance.series) {
+                if (this.chartInstance.series.length > 0) {
+                    var ms = new Date(this.scoreDate.toString()).getTime();
+                    var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
 
-                if (idx == -1) {
-                    idx = 1;
-                }
+                    if (idx == -1) {
+                        idx = 1;
+                    }
 
-                for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
-                    this.chartInstance.series[0].data[i].select(false, true);
+                    for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
+                        this.chartInstance.series[0].data[i].select(false, true);
+                    }
+                    var point = this.chartInstance.series[0].data[idx];
+                    if (point) {
+                        this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
+                        point.setState("select");
+                    }
+                    this.cdRef.detectChanges();
+                    this.cdRef.markForCheck();
                 }
-                var point = this.chartInstance.series[0].data[idx];
-                if (point) {
-                    this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
-                    point.setState("select");
-                }
-                this.cdRef.detectChanges();
-                this.cdRef.markForCheck();
             }
         }
     }
