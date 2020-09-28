@@ -267,26 +267,18 @@ namespace d360.model.DataAccessLayer
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"FieldType cannot be type of '{fieldType.Type}'!");
                         }
 
-                        //if (!operators.Contains(condition.Operator))
-                        //{
-                        //    operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
-                        //}
-
                         condition.ConditionFieldTypeID = fieldType.ID;
 
-                        bool tempBool;
-                        decimal tempDecimal;
                         DateTime tempDate;
-                        int tempInt;
 
                         switch (fieldType.Type)
                         {
                             case "Boolean":
-                                if (!bool.TryParse(condition.Values[0], out tempBool))
+                                if (!bool.TryParse(condition.Values[0], out _))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Decimal":
-                                if (!decimal.TryParse(condition.Values[0], out tempDecimal))
+                                if (!decimal.TryParse(condition.Values[0], out _))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Date":
@@ -295,7 +287,7 @@ namespace d360.model.DataAccessLayer
                                 condition.Values[0] = tempDate.ToUniversalTime().ToShortDateString();
                                 break;
                             case "Number":
-                                if (!int.TryParse(condition.Values[0], out tempInt))
+                                if (!int.TryParse(condition.Values[0], out _))
                                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             default:
