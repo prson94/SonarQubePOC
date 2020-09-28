@@ -44,7 +44,7 @@ namespace d360.model.validators
                 throw new Exception("Connector label must be as least 1 character long in length.");
             }
 
-            if (model.Value.Length > 100)
+            if (model.Value.Length > 40)
             {
                 throw new Exception("Invalid connector label specified [too long].");
             }
