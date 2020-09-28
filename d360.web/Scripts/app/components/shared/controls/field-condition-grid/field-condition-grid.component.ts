@@ -46,16 +46,7 @@ export class FieldConditionGrid implements OnInit, OnChanges {
         if (changes && changes.fields && changes.fields.currentValue != changes.fields.previousValue) {
             this.fieldsSelect = [];
 
-            this.fields.filter(x => {
-                !x.Type.ComplexRelationLookup
-                    && !x.Type.ComputedOwnershipLookup
-                    && !x.Type.ComputedRelationshipField
-                    && !x.Type.ComputedRelationshipLookup
-                    && !x.Type.ComputedRelationshipReferenceList
-                    && !x.Type.Empty
-                    && !x.Type.OwnershipLookup
-                    && !x.Type.Relationship
-            }).forEach(f => {
+            this.fields.forEach(f => {
                 this.fieldsSelect.push({
                     value: f.Name,
                     label: f.FriendlyName
