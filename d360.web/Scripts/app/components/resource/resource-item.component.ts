@@ -8,13 +8,13 @@ import { ObjectStatisticsService } from '../../services/object-statistics.servic
 import { UriBasedService } from '../../services/uri-based.service';
 import { SocialService } from '../../services/social.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { ResourceApiModel } from '../../models/resource.model';
 
 declare var CompanySettings;
 declare var CurrentResourceID;
@@ -40,7 +40,8 @@ enum PageMode {
 export class ResourceItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private resourceId = -1;
-    private resource: Resource;
+    private items: any[] = [];
+    private resource: any;
     private isMe = false;
     private totNumber = 0;
     private days = 90;
@@ -83,7 +84,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
             this.resourcesService.getResource(this.resourceId)
                 .subscribe(r => {
-                    this.resource = r;
+                    this.items = r.items;
+                    if (this.items.length > 0) {
+                        this.resource = this.items[0];
+                    }
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Resource', SiteUrlHelpers.SITE_URL_RESOURCE_ROOT));
@@ -197,15 +201,32 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     }
 
     save(e: any) {
-        const values = e.item;
-        values.ID = -1;
+        const user = new ResourceApiModel;
+        user.FirstName = e.item.FirstName;
+        user.LastName = e.item.LastName;
+        user.uid = this.resource.uid;
+        user.State = this.resource.State;
+        user.Username = this.resource.Email;
+        user.IsAdministrator = this.resource.IsAdministrator;
 
-        this.uriBasedService.saveItem(null, 'form/dynamicedit/edit/resourceself', values)
+        user.Fields = new Object();
+
+        // handle dynamic fields
+        for (let key in e.item) {
+            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'uid' && key != 'ResourceID' && key != 'LastLoggedInOn') {
+                user.Fields[key] = e.item[key];
+            }
+        }
+
+        this.resourcesService.saveResource(user)
             .subscribe(
                 result => {
+                    if (result.Message == "" && result.Success) {
+                        result.Message = 'Info successfully updated.';
+                    }
+                    this.showMessageForApiResult(this.messagesService, result, 'Info successfully updated.');
                     this.pageMode = PageMode.Default;
-                    this.showMessageForResult(this.messagesService, result);
                 }
-            );
+            )
     }
 }

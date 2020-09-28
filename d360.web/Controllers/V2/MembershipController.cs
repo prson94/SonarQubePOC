@@ -50,6 +50,7 @@ namespace d360.web.Controllers.V2
         /// 
         /// </summary>
         /// <param name="Uid">The uid of the user.</param>
+        /// <param name="ResourceID">The id of the user.</param>
         /// <param name="FirstName">First Name of user.</param>
         /// <param name="LastName">Last Name of user.</param>
         /// <param name="State">Select the state of the user from the options in the dropdown.</param>
@@ -69,7 +70,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
+        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
         {
             try
             {
@@ -110,12 +111,17 @@ namespace d360.web.Controllers.V2
                 var queryParams = Request.GetQueryNameValuePairs();
                 getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-                if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
+                if (Uid != null || ResourceID != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
                 {
                     if (Uid != null)
                     {
                         dbArgs.Add("uid", Uid);
                         queries.Add(" gr.uid = @uid");
+                    }
+                    if (ResourceID != null)
+                    {
+                        dbArgs.Add("ResourceID", ResourceID);
+                        queries.Add(" gr.ResourceID = @ResourceID");
                     }
                     if (FirstName != null)
                     {

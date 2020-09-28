@@ -1,7 +1,10 @@
 ﻿import { Component, EventEmitter, Output } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { UriBasedService } from '../../services/uri-based.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { UriBasedService } from '../../services/uri-based.service';
+import { ResourceApiModel } from '../../models/resource.model';
+import { ResourcesService } from '../../services/resources.service';
 
 @Component({
     selector: 'd3s-resource-password',
@@ -25,6 +28,9 @@ import { MessagesObservableService } from '../../services/messages-observable.se
         <div class="errorMessage" *ngIf="newPassword.length > 0 && !newPasswordValid">
             New password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character
         </div>
+        <div class="errorMessage" *ngIf="newPassword.length > 0 && newPasswordValid && SamePasswordMatch">
+            New password may not be the same as old password.
+        </div>
     </div>
     <div class="col s12 m6">
         <div class="FieldNameRequired">Confirm New Password</div>
@@ -39,49 +45,93 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 <div class="row" style="padding-top:15px;">
     <div class="col s12">
         <button pButton label="Cancel" type="button" (click)="onClose.emit()"></button>
-        <button pButton label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || currentPassword.length == 0 || !newPasswordValid"></button>
+        <button pButton label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || SamePasswordMatch || currentPassword.length == 0 || !newPasswordValid"></button>
     </div>
 </div>
 `,
-    providers: [UriBasedService]
+    providers: [ResourcesService, UriBasedService]
 })
 
 export class ResourcePasswordComponent extends BaseComponent{
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
+    private sub: any;
+    private resourceId = -1;
+    private items: any[] = [];
+    private resource: any;
+
     currentPassword = "";
     newPassword = "";
     newPasswordValid = true;
     newPassword2 = "";
     newPassword2Match = true;
+    SamePasswordMatch = false;
 
     passwordRegex = /(?=^.{7,25}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*/;
 
     constructor(
         private uriBasedService: UriBasedService,
+        private resourcesService: ResourcesService,
+        private route: ActivatedRoute,
         protected messagesService: MessagesObservableService) {
         super();
     }
 
     save() {
-        let values: any = {};
-        values.CurrentPassword = this.currentPassword;
-        values.NewPassword = this.newPassword;
-        values.ConfirmNewPassword = this.newPassword2;
-        //force edit instead of create
-        values.ID = -1;
+        const user = new ResourceApiModel;
 
-        this.isLoading = true;
-        this.uriBasedService.saveItem(null, "form/dynamicedit/edit/resourceselfpassword", values)
-            .subscribe(result => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.onSave.emit();
-                }
-            });
+        this.sub = this.route.params.subscribe(params => {
+            this.resourceId = +params['resourceId']; // (+) converts string 'id' to a number
+            this.resourcesService.getResource(this.resourceId)
+                .subscribe(r => {
+                    this.items = r.items;
+                    if (this.items.length > 0) {
+                        this.resource = this.items[0];
+                    
+
+                    user.FirstName = this.resource.FirstName;
+                    user.LastName = this.resource.LastName;
+                    user.uid = this.resource.uid;
+                    user.State = this.resource.State;
+                    user.Username = this.resource.Email;
+                    user.IsAdministrator = this.resource.IsAdministrator;
+                    user.Password = this.newPassword;
+
+                    user.Fields = new Object();
+
+                    // handle dynamic fields
+                        for (let key in this.items[0]) {
+                            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'ResourceID' && key != 'uid' && key != 'LastLoggedInOn') {
+                                user.Fields[key] = this.items[0][key];
+                        }
+                    }
+
+                    this.isLoading = true;
+                    this.resourcesService.saveResource(user)
+                        .subscribe(
+                            result => {
+                                this.isLoading = false;
+                                if (result.Message == "" && result.Success) {
+                                    result.Message = 'Password successfully updated..';
+                                }
+                                this.showMessageForApiResult(this.messagesService, result, 'Password successfully updated..');
+                                if (result.Success) {
+                                    this.onSave.emit();
+                                }
+                            }
+                        );
+                    }
+                });
+        });
     }
+
+    ngOnDestroy() {
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+    }
+
 
     validate() {
         if (!this.passwordRegex.test(this.newPassword))
@@ -93,6 +143,11 @@ export class ResourcePasswordComponent extends BaseComponent{
             this.newPassword2Match = false;
         else
             this.newPassword2Match = true;
+
+        if (this.newPassword != null && this.newPassword.length > 0 && this.currentPassword == this.newPassword && this.newPasswordValid)
+            this.SamePasswordMatch = true;
+        else
+            this.SamePasswordMatch = false;
     }
 };
 

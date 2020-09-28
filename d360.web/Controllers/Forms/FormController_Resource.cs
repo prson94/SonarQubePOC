@@ -103,18 +103,6 @@ namespace d360.web.Controllers
             return Json(list, JsonRequestBehavior.AllowGet);
         }
 
-        [Route("Resource_ChangeMyPasswordFields")]
-        public JsonResult Resource_ChangeMyPasswordFields()
-        {
-            var list = new List<EditableField>();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "CurrentPassword", Name = "Current Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Current Password", true, "", 7, 25) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "NewPassword", Name = "New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "New Password", true, passwordRegex, null, null, passwordRegexMessage) });
-            list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "ConfirmNewPassword", Name = "Confirm New Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Confirm New Password", true, passwordRegex, null, null, passwordRegexMessage) });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
         #endregion
 
         #region Form Get/Post
@@ -141,76 +129,6 @@ namespace d360.web.Controllers
 
                 return jsonSuccess("Users password has been successfully updated!", id.ToString(), "reset", HttpStatusCode.OK);
 
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditMyInfo")]
-        public JsonResult EditMyInfo(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                var model = Community.GetById<Resource>(Company.CurrentResourceID);
-
-                if (model == null) throw new NotFoundException("resource");
-
-                // Static fields
-                model.FirstName = parseNameField(form, "FirstName");
-                model.LastName = parseNameField(form, "LastName");
-                model.UpdatedOn = DateTime.UtcNow;
-
-                // Dynamic fields
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Resource, model.ID, Company.GetFieldTypesByObject(SystemObjects.ResourceType, 1).ToList(), form, Server, false);
-                Company.AddOrUpdateFields(fields);
-
-                Community.Update<Resource>(model);
-
-                return jsonSuccess("Info successfully updated.", Company.CurrentResourceID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("ChangeMyPassword")]
-        public JsonResult ChangeMyPassword(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("resource");
-
-                var model = Community.GetById<Resource>(Company.CurrentResourceID);
-
-                if (model == null) throw new NotFoundException("resource");
-
-                var currentpassword = parseTextField(form, "CurrentPassword");
-                var password1 = parseTextField(form, "NewPassword");
-                var password2 = parseTextField(form, "ConfirmNewPassword");
-
-                if (!password1.Equals(password2))
-                {
-                    throw new ConflictException("Password values do not match", "Password values do not match.  Please try again.");
-                }
-
-                Community.ChangePassword(Company.CurrentResourceID, currentpassword, password1);
-
-                return jsonSuccess("Password successfully updated.", Company.CurrentResourceID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {

@@ -308,8 +308,6 @@ namespace d360.web.Controllers
                     return ReferenceItem_EditFields(oid);
                 case "RESOURCESELF":
                     return Resource_EditMyInfoFields();
-                case "RESOURCESELFPASSWORD":
-                    return Resource_ChangeMyPasswordFields();
                 case "RESOURCETYPE":
                     return Resource_EditFields(oid);
                 case "RULE":
@@ -493,10 +491,6 @@ namespace d360.web.Controllers
                     return EditPolicyTypeLevel(form);
                 case "REPORT":
                     return await EditReport(form);
-                case "RESOURCESELF":
-                    return EditMyInfo(form);
-                case "RESOURCESELFPASSWORD":
-                    return ChangeMyPassword(form);                
                 case "RULETYPE":
                     return EditRuleType(form);
                 case "SERVICE":
