@@ -958,7 +958,7 @@ for json path";
         /// <param name="actionTypeUid">Uid of the action type the allocation is to be deleted from</param>
         /// <param name="assetTypeUid">Uid of the asset type of the allocation to be deleted</param>
         [
-            Route("allocations/{actionTypeUid:Guid}"),
+            Route("allocations/{actionTypeUid:Guid}/{assetTypeUid:Guid}"),
             HttpDelete,
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Allocation Deleted Successfully.", typeof(ConfirmResponse)),
@@ -1000,7 +1000,12 @@ for json path";
                 string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
                 var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, new { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID});
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, "Success", "Allocation Deleted Successfully."));
+                if(res == 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name)));
+                }
+
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful));
             }
             catch (Exception ex)
             {

@@ -79,6 +79,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allocation Deleted Successfully..
+        /// </summary>
+        internal static string DeleteAllocationSuccessful {
+            get {
+                return ResourceManager.GetString("DeleteAllocationSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No Asset Type Uids have been provided..
         /// </summary>
         internal static string EmptyAllocationRequest {
@@ -93,6 +102,15 @@ namespace Resources {
         internal static string InvalidActionTypeUid {
             get {
                 return ResourceManager.GetString("InvalidActionTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Matching Allocation for &apos;{0}&apos; on Action Type &apos;{1}&apos;.
+        /// </summary>
+        internal static string NoMatchingAllocation {
+            get {
+                return ResourceManager.GetString("NoMatchingAllocation", resourceCulture);
             }
         }
     }
