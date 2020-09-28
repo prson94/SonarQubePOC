@@ -1,0 +1,13 @@
+﻿<div class="ig-propert-group">
+    <div class="ig-pg-header" (click)="expanded = !expanded" tabindex="1" (keyup)="onInputKeyUp($event)">
+        <span class="fa fa-chevron-circle-right" [ngClass]="{'down': expanded}"></span>
+        <div class="pg-title" [ngClass]="{'close': !expanded}">{{title}}</div>
+        <div class="badge-containers">
+            <span class="badge-feedback inv" tabindex="1" (keyup)="onInputKeyUp($event)" pTooltip="Click to focus invalid fields" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="focusInvalid($event)" *ngIf="invalidCount > 0">{{invalidCount}} invalid</span>
+            <span class="badge-feedback req" tabindex="1" (keyup)="onInputKeyUp($event)" pTooltip="Click to focus required fields" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="focusRequired($event)" *ngIf="requiredCount > 0">{{requiredCount}} required</span>
+        </div>
+    </div>
+    <div class="pg-collapsable-content" [ngClass]="{'close': !expanded}" #pgcontainer>
+        <ng-content select="[inputs]"></ng-content>
+    </div>
+</div>

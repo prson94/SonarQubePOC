@@ -50,6 +50,8 @@ import { TriStateCheckboxModule } from 'primeng/tristatecheckbox';
 import { GalleryCheckboxComponent } from './gallery.checkbox.component';
 import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 import { GalleryBadgeComponent } from './gallery.badge.component';
+import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
 
 
 @NgModule({
@@ -63,6 +65,7 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
 
         GalleryRoutingModule,
 
+        PropertyGroupModule,
         SwitchModule,
         IconPickerModule,
         TagPickerModule,
@@ -103,7 +106,8 @@ import { GalleryBadgeComponent } from './gallery.badge.component';
         GalleryNumberFieldComponent,
         GalleryBadgeComponent,
         GalleryMessageBoxComponent,
-        GalleryCheckboxComponent
+        GalleryCheckboxComponent,
+        GalleryPropertyGroupComponent
     ],
     providers: [
         GalleryGuard,
