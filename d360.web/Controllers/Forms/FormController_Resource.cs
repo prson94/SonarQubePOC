@@ -313,113 +313,9 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpDelete, Route("DeleteGroupByID"), NonNullableParameters]
-        public JsonResult DeleteGroupByID(int id,Guid? uid)
-        {
-            if (uid.HasValue && uid.Value != Guid.Empty)
-                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteGroup(form);
-        }
-
         #endregion
 
         #region Group : Edit
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("Group"), Route("Group")]
-        public JsonResult PostGroup(Group model)
-        {
-            try
-            {
-                if (!Company.HasAssetTypePermission(SystemObjects.Group, 0, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                Company.Add(model);
-
-                try
-                {
-
-                    if (model.PrimaryOwnerResourceID.HasValue)
-                    {
-                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
-                    }
-
-                    if (model.SecondaryOwnerResourceID.HasValue)
-                    {
-                        if (model?.PrimaryOwnerResourceID?.Equals(model.SecondaryOwnerResourceID) == false)
-                            Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
-                    }
-                }
-                catch
-                {
-                }
-
-                long assetId = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
-
-                Company.CreateOrUpdateDisplayValue(assetId);
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), ActionName("Group"), Route("Group")]
-        public JsonResult PutGroup(Group model)
-        {
-            try
-            {
-                var existing = Company.GetById<Group>(model.ID);
-                if (existing == null) throw new NotFoundException("group");
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, existing.ID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                existing.Name = model.Name;
-                existing.Description = model.Description;
-                existing.PrimaryOwnerResourceID = model.PrimaryOwnerResourceID;
-                existing.SecondaryOwnerResourceID = model.SecondaryOwnerResourceID;
-                existing.IsActiveDirectoryGroup = model.IsActiveDirectoryGroup;
-
-                Company.Update(existing);
-
-                var assetID = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
-                Company.CreateOrUpdateDisplayValue(assetID);
-
-                var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == model.ID).Select(i => i.ResourceID).ToList();
-
-                if (model.PrimaryOwnerResourceID.HasValue && !currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
-                {
-                    Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.PrimaryOwnerResourceID.Value });
-                }
-                if (model.SecondaryOwnerResourceID.HasValue)
-                {
-                    if (!currentGroupUsers.Any(o => o == model.SecondaryOwnerResourceID))
-                    {
-                        Company.Add(new ResourceGroup { GroupID = model.ID, ResourceID = model.SecondaryOwnerResourceID.Value });
-                    }
-                }
-
-                return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         [HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]
         public JsonNetResult GetGroup(int id,Guid? uid)
@@ -447,6 +343,9 @@ namespace d360.web.Controllers
                 var secondaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.SecondaryOwnerResourceID).FirstOrDefault();
                 group.PrimaryOwnerName = primaryOwner != null ? primaryOwner.LastName + ", " + primaryOwner.FirstName : "";
                 group.SecondaryOwnerName = secondaryOwner != null ? secondaryOwner.LastName + ", " + secondaryOwner.FirstName : "";
+                group.PrimaryOwnerUid = primaryOwner.Uid;
+                if(secondaryOwner != null)
+                    group.SecondaryOwnerUid = secondaryOwner.Uid;
 
                 var currentUsers = Company.Filter<ResourceGroup>(i => i.GroupID == id).Select(i => i.ResourceID).ToList();
                 resourceList = GetCompanyResources()

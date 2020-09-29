@@ -44,11 +44,14 @@ export class GroupResourceInfo {
 }
 
 export class Group {
+    Uid: string;
     ID: number;
     Name: string;
     Description: string;
     PrimaryOwnerResourceID: number;
     SecondaryOwnerResourceID: number;
+    PrimaryOwnerUid: string;
+    SecondaryOwnerUid: string;
     PrimaryOwnerName: string;
     SecondaryOwnerName: string;
     IsActiveDirectoryGroup: boolean;
