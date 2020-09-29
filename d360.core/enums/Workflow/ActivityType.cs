@@ -29,6 +29,8 @@ namespace d360.core.enums.Workflow
         StateChange = 7,
         [Name("Delete"), Description("Delete"), BackColor("#b99f39"), ForeColor("#fff"), Icon("\uf014")]
         Delete = 8,
+        [Name("HTTP Request"), Description("HTTP Request"), BackColor("#597897"), ForeColor("#fff"), Icon("\uf120")]
+        HTTPRequest = 9,
     }
 
     public class ActivityTypeInfo

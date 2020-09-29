@@ -1,21 +1,13 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
-    WorkflowEventRegistration,
-    WorkflowObjectType,
     WorkflowChangeType,
-    ChangeTypeInfo,
-    EventCondition,
-    WorkflowListItem,
-    WorkflowDiagramModel,
-    WorkflowDiagramNode,
     NodeModel,
     WorkflowActivityType,
     WorkflowTaskProcedure,
     EmailTaskRecipientType,
     StepType,
 } from '../../../../models/workflow.model';
-import { FieldType } from '../../../../models/fields.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -164,7 +156,19 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
             this.filterFormFields();
 
-        } else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
+        }
+        else if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
+            if (this.step.settings.HTTPRequest == null) {
+                this.step.settings.HTTPRequest = {};
+            }
+            if (this.step.settings.HTTPRequest.Timeout == null) {
+                this.step.settings.HTTPRequest.Timeout = 90;
+            }
+            if (this.step.settings.HTTPRequest.Headers == null) {
+                this.step.settings.HTTPRequest.Headers = [];
+            }
+        }
+        else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
                 this.step.settings.RelationshipUpdate = {};
             if (this.step.settings.RelationshipUpdate.Relationship == null)
@@ -285,6 +289,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         this.stepChange.emit(this.step);
     }
+
     changeValueType(e: any, field: string) {
         this.step.settings.RelationshipUpdate.Relationship[field] = e;
         if (field == '@AppendValue' && e == true) {

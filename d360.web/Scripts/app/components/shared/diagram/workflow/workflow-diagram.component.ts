@@ -40,6 +40,7 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
 import { Observable,of, ConnectableObservable } from 'rxjs';
+import { WorkflowStepHttpComponent } from './workflow-step-http.component';
  
 declare var window: any;
 
@@ -141,8 +142,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     public ngOnChanges(changes: SimpleChanges) {
         let isModelPassed = changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue;
         let isVelueReadOnly = changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue;
-        // let isIdAndCurrentIdNotEqualToPrevious = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
-        // let isVesionAndCurrentVersionNotEqualToPrevious = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+        let isIdChanged = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
+        let isVersionChanged = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+        let isUidChanged = changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue;
+        let isSelectedStepIdChanged = changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue;
 
         if (isVelueReadOnly) {
             this.isReadOnly = this.readonly.toString().toLowerCase() == 'true' ? true : false;
@@ -158,10 +161,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
         //else we need at least an id and preferably a id/version combo
         //without a version we just load the most recent one
-        // isIdAndCurrentIdNotEqualToPrevious || isVesionAndCurrentVersionNotEqualToPrevious
-        else if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue) ||
-            (changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue) ||
-            (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue)) {
+        else if (isIdChanged || isVersionChanged || isUidChanged) {
             if (this.diagram != null && this.diagram.div != null) {
                 this.diagram.div = null;
             }
@@ -179,7 +179,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if a step selection binding changes, select the appropriate step and show the history for it
-        if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
+        if (isSelectedStepIdChanged) {
             this.diagram.clearSelection();
             let part = this.diagram.findPartForKey(changes['selectedStepId'].currentValue);
             let node = this.diagram.findNodeForKey(changes['selectedStepId'].currentValue);
@@ -1103,6 +1103,32 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.State == null || n.settings.State == '')
                     return false;
                 break;
+            case WorkflowActivityType.HTTPRequest:
+                if (n.settings.HTTPRequest == null)
+                    return false;
+                if (n.settings.HTTPRequest.Url == null)
+                    return false;
+                else {
+                    if (n.settings.HTTPRequest.Url.length < 7)
+                        return false;
+                    if (n.settings.HTTPRequest.Url.indexOf('http://') != 0
+                        && n.settings.HTTPRequest.Url.indexOf('https://') != 0) {
+                        return false;
+                    }
+                }
+
+                if (n.settings.HTTPRequest.Timeout == null)
+                    return false;
+                else {
+                    if (isNaN(n.settings.HTTPRequest.Timeout))
+                        return false;
+                    if (+n.settings.HTTPRequest.Timeout < 1 || +n.settings.HTTPRequest.Timeout > 600)
+                        return false;
+                }
+
+                if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
+                    return false;
+                break;
         }
 
         return true;
@@ -1339,6 +1365,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.StateChange: //status change
                 n.settings.State = e.settings.State;
+                break;
+            case WorkflowActivityType.HTTPRequest:
+                n.settings.HTTPRequest = e.settings.HTTPRequest;
                 break;
         }
 
