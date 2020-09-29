@@ -96,7 +96,6 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
             if (control && control.errors && control.errors["required"] == true && !found) {
                 let elem = <HTMLElement>this.getFormControlDomElement(x);
                 if (elem) {
-                    console.log(elem);
                     elem.focus();
                     found = true;
                 }
@@ -106,17 +105,19 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     getFormControlDomElement(controlName:string) {
         if (this.inputContainer) {
-            return this.inputContainer.nativeElement.querySelectorAll("[ng-reflect-name=" + controlName + "]").length > 0 ? 
-                this.inputContainer.nativeElement.querySelectorAll("[ng-reflect-name=" + controlName + "]")[0] : null;
+            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ? 
+                this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
         }
     }
 
     onInputKeyUp(event) {
+        console.log(event);
+        event.preventDefault();
+        event.stopPropagation();
         switch (event.which) {
             case 32:
                 event.target.click();
-                break;
-           
+                return false;           
         }
     }
 }

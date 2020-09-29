@@ -18,6 +18,10 @@ import { AssetService } from '../../services/asset.service';
         .gallery-section h4 {
             padding-bottom: 8px;
         }
+        .ul{
+            padding: 16px;
+            list-style-type: circle;
+        }
         `
     ],
     providers: [AssetService],
