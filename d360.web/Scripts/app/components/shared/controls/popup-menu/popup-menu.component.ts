@@ -252,7 +252,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             var menu = this.popupEl.nativeElement as HTMLElement;
 
             var box = htmlEl.getBoundingClientRect();
-            var topPosition = box.top + window.scrollX - 12;
+            var topPosition = box.top + window.scrollY - 12;
             var leftPosition = box.left;
 
             var isOverflowBottom = (window.innerHeight < (htmlEl.getBoundingClientRect().bottom + menu.offsetHeight));
@@ -280,10 +280,10 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             if (this.anchorElement) {
 
                 if (this.currentLocation == PopupMenuLocation.BottomLeft || this.currentLocation == PopupMenuLocation.BottomRight) {
-                    topPosition = this.anchorElement.getBoundingClientRect().bottom + window.screenX - 12;
+                    topPosition = this.anchorElement.getBoundingClientRect().bottom + window.scrollY - 12;
                 }
                 else {
-                    topPosition = this.anchorElement.getBoundingClientRect().top + window.screenX + 12;
+                    topPosition = this.anchorElement.getBoundingClientRect().top + window.scrollY + 12;
                 }
             }
 
