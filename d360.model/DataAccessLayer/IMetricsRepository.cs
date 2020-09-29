@@ -10,7 +10,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IMetricsRepository
     {
-        WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model, out bool isNew);
+        WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model);
         List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution);
         void DeleteMetric(MetricAsset model);
         MetricAsset GetActiveMetric(Guid uid);
@@ -22,7 +22,6 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
         List<int> GetScoreTypesForAsset(Guid assetUid);
         List<string> GetMetricStructureFragments(Guid allocationUid);
-        MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
         DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd, bool includeDuplicateFlag = false);
         List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);

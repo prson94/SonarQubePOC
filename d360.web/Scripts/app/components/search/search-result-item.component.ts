@@ -1,7 +1,7 @@
 ﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchFullResult, SearchDetail } from '../../models/search-result.model';
+import { SearchFullResult, SearchDetail, SearchResultFieldDisplay } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -20,7 +20,8 @@ declare var CompanySettings;
     selector: 'd3s-search-result-item',
     templateUrl: './search-result-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ShoppingCartService, ObjectStatisticsService]
+    providers: [ShoppingCartService, ObjectStatisticsService],
+    host: { '(window:resize)': 'checkSize()' }
 })
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
@@ -37,8 +38,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private formattedPath: string;
     private displayInfopopup: boolean = false;
 
+    showScrollButtons: boolean = false;
+    disableScrollLeft: boolean = false;
+    disableScrollRight: boolean = false;
+
     @ViewChild('cardmenu', { static: false }) cardmenuRef: Menu;
     @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
+    @ViewChild('fieldScroller', { static: false }) fieldScroller: ElementRef;
     
     @HostListener('document:click', ['$event.target'])
     public hostclick(targetElement) {
@@ -86,7 +92,10 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         } else {
             this.showPath = false;
         }
-
+        //Need to wait for ViewChildren, but can't use AfterOnInit
+        setTimeout(() => {
+            this.checkSize();
+        });
     }
 
     private loadDetails() {
@@ -101,7 +110,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                         this.showStatus = false;
                     }
                     if (isUndefined(this.formattedPath)) {
-                        if (this.searchDetails && this.searchDetails.AssetDetail.Path) {
+                        if (this.searchDetails && Array.isArray(this.searchDetails.AssetDetail.Path)) {
                             this.formattedPath = this.assetSeparatorPipe.transform(this.searchDetails.AssetDetail.Path);
                             this.showPath = true;
                         } else {
@@ -166,5 +175,97 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             AssetID: this.result.ID,
             UID: this.result.Uid
         }
+    }
+
+    /**
+     * Formats display of field value.
+     * Links are returned from API in format <url>|<displayvalue>, Booleans are displayed as an icon etc.
+     * If Prefix/Suffic is set, they are added to the display value
+     * @param field
+     * @param forTitle Return is used in title, so booleans are shown as value and links shown as displayvalue
+     */
+    getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false):string {
+        if (field.Empty)
+            return '---';
+
+        let val: string = field.Value;
+        if (val === null || val === undefined)
+            return '';
+
+        if (field.Type == 'Link' && field.Value.length > 2 && field.Value.indexOf('|') > 0) {
+            let link: string[] = field.Value.split('|', 2);
+            val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
+        } else if (field.Type == 'Boolean') {
+            if (!forTitle) {
+                if(field.Value == 'True')
+                    val = '<i class="fa fa-check enabled"></i>';
+                else
+                    val = '<i class="fa fa-times disabled"></i>';
+            }
+        }
+        if (field.Suffix)
+            val += ' ' + field.Suffix;
+        if (field.Prefix)
+            val = field.Prefix + ' ' + val;
+        return val;
+    }
+
+    /* Field scroller section */
+
+    checkSize() {
+        if (this.fieldScroller) {
+            let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+            let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
+            this.showScrollButtons = lastTab > maxWidth;
+        }
+        this.checkScrollPos();
+    }
+
+    checkScrollPos() {
+        if (this.fieldScroller) {
+                let currentPosition = this.fieldScroller.nativeElement.scrollLeft;
+                this.disableScrollLeft = currentPosition == 0;
+    
+                let maxWidth = this.getElementRightPosition(this.fieldScroller.nativeElement.parentElement);
+                let lastTab = this.getElementRightPosition(this.fieldScroller.nativeElement.lastChild);
+                this.disableScrollRight = lastTab <= maxWidth;
+    
+                this.ref.markForCheck();
+        }
+    }
+
+    private getElementRightPosition(element) {
+        if (element && element.getBoundingClientRect) {
+            return element.getBoundingClientRect().right;
+        }
+        return NaN;
+    }
+
+    private getElementWidth(element) {
+        if (element && element.getBoundingClientRect) {
+            return element.getBoundingClientRect().right - element.getBoundingClientRect().left;
+        }
+        return NaN;
+    }
+
+    scroll(direction: string) {
+        let el = this.fieldScroller.nativeElement;
+        let scrollAmount = 0;
+        let scrollDistance = Math.floor(this.getElementWidth(el)*0.95);
+        let move = () => {
+            if (direction == 'L') {
+                el.scrollLeft -= 10;
+            } else {
+                el.scrollLeft += 10;
+            }
+            scrollAmount += 10;
+            if (scrollAmount >= scrollDistance) {
+                this.checkScrollPos();
+                window.clearInterval(id);
+            }
+            this.checkScrollPos();
+        };
+
+        let id = window.setInterval(move, 5);
     }
 };

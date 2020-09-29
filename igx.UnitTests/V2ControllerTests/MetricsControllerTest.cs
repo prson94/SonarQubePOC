@@ -1,19 +1,15 @@
-﻿using d360.core.entities.Workflow;
+﻿using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.web.Controllers.V2;
+using d360.web.Models;
+using igx.UnitTests.Core;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
-using igx.UnitTests.Core;
-using d360.core.entities;
-using Newtonsoft.Json.Linq;
-using d360.core.entities.Metric;
-using d360.web.Models;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -62,6 +58,7 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "test model";
             model.Weight = 1;
             model.IsGroup = false;
+            model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
                 new MetricAssetVersionConditionViewModel() { 
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() { 
@@ -69,7 +66,18 @@ namespace igx.UnitTests.V2ControllerTests
                             ConditionFieldTypeName = "Name" 
                         } 
                     } 
-                } 
+                }
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
@@ -87,14 +95,26 @@ namespace igx.UnitTests.V2ControllerTests
         {
             var model = new MetricAssetViewModel();
             model.Name = "";
+            model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
                 new MetricAssetVersionConditionViewModel() { 
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
                         new MetricAssetVersionConditionItemViewModel {
-                            ConditionFieldTypeID = 1
+                            ConditionFieldTypeName = "Name"
                         }
                     }  
                 } 
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
@@ -113,14 +133,26 @@ namespace igx.UnitTests.V2ControllerTests
             var model = new MetricAssetViewModel();
             model.Name = "good name";
             model.Weight = 0;
+            model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
                 new MetricAssetVersionConditionViewModel() {
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
                         new MetricAssetVersionConditionItemViewModel {
-                            ConditionFieldTypeID = 1
+                            ConditionFieldTypeName = "Name"
                         }
                     }
                 } 
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
@@ -140,11 +172,12 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = true;
+            model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
                 new MetricAssetVersionConditionViewModel() {
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
                         new MetricAssetVersionConditionItemViewModel {
-                            ConditionFieldTypeID = 1
+                            ConditionFieldTypeName = "Name"
                         }
                     }
                 } 
@@ -167,14 +200,25 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = false;
+            model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
                 new MetricAssetVersionConditionViewModel() {
                     ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
                         new MetricAssetVersionConditionItemViewModel {
-                            ConditionFieldTypeID = 0
                         }
                     }
                 } 
+            };
+            model.Definition = new MetricAssetDefinitionViewModel
+            {
+                Governance = new MetricAssetDefinitionGovernanceViewModel
+                {
+                    Check = d360.core.enums.MetricGovernanceCheckType.External,
+                    External = new MetricAssetDefinitionGovernanceExternalViewModel
+                    {
+                        UpdateFrequency = d360.core.enums.MetricUpdateFrequency.None
+                    }
+                }
             };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;

@@ -1,7 +1,7 @@
 ﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
     <div class="content">
         <label class="ig-input-label">Name</label>
-        <input igAutoFocus *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="101" formControlName="value">
+        <input igAutoFocus *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="41" formControlName="value">
         <p-autoComplete igAutoFocus igAutocomplete *ngIf="label"
                         placeholder="Value required"
                         formControlName="value"
@@ -14,7 +14,7 @@
         </p-autoComplete>
         <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
             <div *ngIf="value.errors.maxlength">
-                Connector label name maximum length of 100 characters exceeded
+                Connector label name maximum length of 40 characters exceeded
             </div>
             <div *ngIf="value.errors.alreadyExists">
                 Please enter a unique name

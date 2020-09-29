@@ -24,10 +24,33 @@
     <div *ngIf="result?.Tags && result?.Tags.length > 0" class="card-row tags tagsnomanagewidth">
         <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
     </div>
+    <div *ngIf="result?.Fields && result?.Fields.length > 0" class="scrollcontainer card-row">
+        <div class="field-bar-outer">
+            <button *ngIf="showScrollButtons" class="left field-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
+                <i class="fa fa-chevron-circle-left"></i>
+            </button>
+            <div #fieldScroller class="field-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 20 : 0,'margin-right.px': showScrollButtons ? 20 : 0}">
+                <div class="search-result-field" *ngFor="let item of result?.Fields">
+                    <ng-container *ngIf="item.Prefix || item.Suffix; else labelvalue">
+                        <div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+                    </ng-container>
+                    <ng-template #labelvalue>
+                        <div class="label" title="{{item.Label}}">{{item.Label}}:</div><div class="value" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
+                    </ng-template>
+                </div>
+            </div>
+            <button *ngIf="showScrollButtons" class="right field-scroller" (click)="scroll('R')" [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
+                <i class="fa fa-chevron-circle-right"></i>
+            </button>
+        </div>
+    </div>
+
+
+
     <div class="card-row button" *ngIf="result?.Uid">
         <d3s-preview-popup [uid]="result.Uid" [(display)]="displayInfopopup" [seed]="getDataForPreview()"></d3s-preview-popup>
         <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu"></p-menu>
         <button igButton #cardmenubutton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="More..."></button>
     </div>
-    <div class="card-row" *ngIf="result?.Explaination"><explain-widget [json]="result?.Explaination"></explain-widget></div>
+    <div class="card-row" *ngIf="result?.Explanation"><explain-widget [json]="result?.Explanation"></explain-widget></div>
 </div>

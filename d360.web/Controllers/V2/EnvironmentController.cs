@@ -386,5 +386,22 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        /// <summary>
+        /// Retrieves a list of operators that can be used as filters, conditions, and in other forms and APIs.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("operators"),
+            SwaggerConsumes("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetOperators()
+        {
+            var response = Operator.Equals.GetAsList();
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+
+        }
     }
 }

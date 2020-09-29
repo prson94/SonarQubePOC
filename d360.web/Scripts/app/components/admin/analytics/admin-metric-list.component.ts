@@ -7,6 +7,7 @@ import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
+import { OperatorModel } from '../../../models/operator.model';
 
 @Component({
     selector: 'd3s-admin-metric-list',
@@ -20,6 +21,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     @Output() selectionChange = new EventEmitter();
     @Input() scoreType: ScoreTypeAllocation;
     @Input() scoreData: any;
+    @Input() operators: OperatorModel[];
 
     private metrics: MetricAssetViewModel[] = [];
     private metricTree: TreeNode[] = [];

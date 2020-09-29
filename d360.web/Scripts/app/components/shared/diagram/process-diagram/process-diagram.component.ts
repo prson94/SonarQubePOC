@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -9,7 +9,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { DynEditorService } from '../../../../services/dyn-editor.service';
 import { HeaderActionsService } from '../../../../services/header-actions.service';
@@ -382,6 +382,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 });
 
         this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
+        this.myDiagram.toolManager.hoverDelay = 200;
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
         this.myDiagram.commandHandler.canDeleteSelection = () => {

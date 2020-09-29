@@ -22,14 +22,14 @@ namespace Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Web.Application.StronglyTypedResourceProxyBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class ApiMessages {
+    internal class ActionApiMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ApiMessages() {
+        internal ActionApiMessages() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Resources.ApiMessages", global::System.Reflection.Assembly.Load("App_GlobalResources"));
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Resources.ActionApiMessages", global::System.Reflection.Assembly.Load("App_GlobalResources"));
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,74 +61,56 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bad Request.
+        ///   Looks up a localized string similar to Allocations added successfully.
         /// </summary>
-        internal static string BadRequest {
+        internal static string AddAllocationsSuccessful {
             get {
-                return ResourceManager.GetString("BadRequest", resourceCulture);
+                return ResourceManager.GetString("AddAllocationsSuccessful", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not authorized.
+        ///   Looks up a localized string similar to {0} is not a valid Asset Type Uid..
         /// </summary>
-        internal static string EndpointNotAuthorizedHeading {
+        internal static string AssetTypeUidIsNotValid {
             get {
-                return ResourceManager.GetString("EndpointNotAuthorizedHeading", resourceCulture);
+                return ResourceManager.GetString("AssetTypeUidIsNotValid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are not authorized to perform this action..
+        ///   Looks up a localized string similar to Allocation Deleted Successfully..
         /// </summary>
-        internal static string EndpointNotAuthorizedMessage {
+        internal static string DeleteAllocationSuccessful {
             get {
-                return ResourceManager.GetString("EndpointNotAuthorizedMessage", resourceCulture);
+                return ResourceManager.GetString("DeleteAllocationSuccessful", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Forbidden.
+        ///   Looks up a localized string similar to No Asset Type Uids have been provided..
         /// </summary>
-        internal static string Forbidden {
+        internal static string EmptyAllocationRequest {
             get {
-                return ResourceManager.GetString("Forbidden", resourceCulture);
+                return ResourceManager.GetString("EmptyAllocationRequest", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Forbidden user is not an administrator..
+        ///   Looks up a localized string similar to A valid Action Type Uid is required..
         /// </summary>
-        internal static string ForbiddenUserNotAuthorizedMessage {
+        internal static string InvalidActionTypeUid {
             get {
-                return ResourceManager.GetString("ForbiddenUserNotAuthorizedMessage", resourceCulture);
+                return ResourceManager.GetString("InvalidActionTypeUid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Not Found.
+        ///   Looks up a localized string similar to No Matching Allocation for &apos;{0}&apos; on Action Type &apos;{1}&apos;.
         /// </summary>
-        internal static string NotFound {
+        internal static string NoMatchingAllocation {
             get {
-                return ResourceManager.GetString("NotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Success.
-        /// </summary>
-        internal static string Success {
-            get {
-                return ResourceManager.GetString("Success", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unknown Error.
-        /// </summary>
-        internal static string UnknownError {
-            get {
-                return ResourceManager.GetString("UnknownError", resourceCulture);
+                return ResourceManager.GetString("NoMatchingAllocation", resourceCulture);
             }
         }
     }

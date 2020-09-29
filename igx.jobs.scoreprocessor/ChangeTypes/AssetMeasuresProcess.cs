@@ -229,12 +229,7 @@ select	Al.AllocationUid,
 							I.ConditionFieldTypeID,
 							I.ConditionIntersectTypeID,
 							I.Operator,
-							(
-							select	V.[Value]
-							from	[metrics].[AssetVersionConditionItemValue] V
-							where	V.Uid = I.Uid
-							for json path
-							) as [Values]
+                            JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where Uid = I.Uid)) as [Values]
 					from	[metrics].[AssetVersionConditionItem] I
 					where	AssetVersionConditionUid = C.Uid
 					for json path

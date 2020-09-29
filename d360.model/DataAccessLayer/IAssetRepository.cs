@@ -43,7 +43,7 @@ namespace d360.model.DataAccessLayer
 
         Guid GetRuleUIDFromRuleID(int id);
         Task<dynamic> GetAssetDetails(Asset asset);
-        string[][] GetAssetPath(Guid assetUid);
+        Task<string[][]> GetAssetPath(Guid assetUid);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
         Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
@@ -54,6 +54,7 @@ namespace d360.model.DataAccessLayer
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model);
         Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
         Task<dynamic> GetAssetSingle(Guid assetUid);
+        Task<List<extensions.IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid);
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
         Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
     }

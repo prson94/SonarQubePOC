@@ -109,153 +109,126 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult UpsertAsset(MetricAssetViewModel model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return errorMessageResponse(HttpStatusCode.Unauthorized, "Error updating metric", "You are not allowed to update this metric.");
-            }
+            #region Validation
 
-            if (model == null)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
-            }
+            var errorTitle = "Error updating measure";
 
-            if (model.Uid != Guid.Empty)
+            try
             {
-                var metric = MetricsRepository.GetMetricByUid(model.Uid);
-                if (metric == null)
+                if (!Company.CurrentResourceIsAdmin)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Metric with UID {model.Uid} does not exist.");
+                    throw new WorkStatusException(HttpStatusCode.Unauthorized, "You are not allowed to update this metric.");
                 }
 
-                if (metric.ParentUid.HasValue && model.IsGroup)
+                if (string.IsNullOrEmpty(model.Name) || (model.Name+"").Trim() == "")
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Name must not be empty.");
                 }
 
-            }
-
-            var allocation = MetricsRepository.GetAllocationByMetricModel(model);
-            if (allocation == null)
-            {
-                if (model.AllocationUid == Guid.Empty)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
-                }
-                else 
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Allocation Uid.");
-                }
-            }
-            else 
-            {
-                // In case measure sent in with an asset type and score type instead of allocation.
-                model.AllocationUid = allocation.Uid;
-            }
-
-            List<ValidationResult> validationResults = new List<ValidationResult>();
-            
-            bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-            if (!isValid)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
-            }
-
-            if (allocation.IsExternallyCalculated == false)
-            {
                 if (model.Weight <= 0 || model.Weight > 1)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
-                }
-                else if (decimal.Round(model.Weight, 2) != model.Weight)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Weight must be a decimal greater than 0 and less than or equal to 1.");
                 }
 
-                if (model.Threshold <= 0 || model.Threshold > 1)
+                if (model.Description != null)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Threshold must be a value between 0 and 1");
-                }
-            }
-
-            if (model.Description != null)
-            {
-                if (model.Description?.Length > 4000)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
-                }
-            }
-
-            model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
-            if (model.IsGroup && model.ConditionGroups.Count > 0)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
-            }
-
-            foreach (var cond in model.ConditionGroups)
-            {
-                foreach (var item in cond.ConditionItems)
-                {
-                    if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
+                    if (model.Description?.Length > 4000)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, $"Description length({model.Description.Length} characters) is too long . It must be maximum length of 4000 characters or less.");
                     }
-                    else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
+                }
+
+                if (model.ParentUid.HasValue && model.IsGroup)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                }
+
+                if (model.AllocationUid == Guid.Empty)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Asset Type UID and Score Type.");
+                }
+
+                if (model.ParentUid != null && model.ParentUid != Guid.Empty)
+                {
+                    var parent = MetricsRepository.GetMetricByUid(model.ParentUid.Value);
+
+                    if (parent == null)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
+                        throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
                     }
-                    else
+
+                    if (!parent.IsGroup)
                     {
-                        if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, "Parent metric must have 'IsGroup' value set to True.");
+                    }
+
+                    if (model.IsGroup || parent.ParentUid != null)
+                    {
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, "Maximum number of levels for measures is 2.");
+                    }
+                }
+
+                model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
+                if (model.IsGroup && model.ConditionGroups.Count > 0)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");
+                }
+
+                if (model.Definition == null)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Definition object property must not be empty.");
+                }
+
+                foreach (var cond in model.ConditionGroups)
+                {
+                    foreach (var item in cond.ConditionItems)
+                    {
+                        if (!string.IsNullOrEmpty(item.ConditionFieldTypeName) && item.ConditionIntersectTypeUid.HasValue)
                         {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeName must not be empty.");
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You cannot use both ConditionFieldTypeName and ConditionIntersectTypeUid within a single condition.");
+                        }
+                        else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, "You must use either a ConditionFieldTypeName or ConditionIntersectTypeUid within a condition.");
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(item.ConditionFieldTypeName) || string.IsNullOrWhiteSpace(item.ConditionFieldTypeName))
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionFieldTypeName must not be empty.");
+                            }
+
+                            if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "ConditionIntersectTypeUid must be valid.");
+                            }
                         }
 
-                        if (item.ConditionIntersectTypeUid.HasValue && item.ConditionIntersectTypeUid != Guid.Empty)
+                        if (item.Values != null)
                         {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeUid must be valid.");
-                        }
-                    }
-
-                    if (item.Values != null)
-                    {
-                        if (item.Values.Any(v => !string.IsNullOrEmpty(v.Value) && v.Value.Length > 250))
-                        {
-                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Condition Value must not be longer than 250 characters.");
+                            if (item.Values.Any(v => !string.IsNullOrEmpty(v) && v.Length > 250))
+                            {
+                                throw new WorkStatusException(HttpStatusCode.BadRequest, "Condition Value must not be longer than 250 characters.");
+                            }
                         }
                     }
                 }
             }
-
-            if (model.ParentUid != null && model.ParentUid != Guid.Empty)
+            catch (WorkStatusException ex)
             {
-                var parent = MetricsRepository.GetMetricByUid(model.ParentUid.Value);
-
-                if (parent == null)
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
-                }
-
-                if (!parent.IsGroup)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Parent metric must have 'IsGroup' value set to True.");
-                }
-
-                if (model.IsGroup || parent.ParentUid != null)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
-                }
+                return errorMessageResponse(ex.Status, errorTitle, ex.Message);
             }
 
-            var isNew = true;
-            model.EffectiveDate = model.EffectiveDate.Date;
+            #endregion Validation
 
-            var result = MetricsRepository.AddOrUpdateMetrics(model, out isNew);
-            if (result.StatusCode != HttpStatusCode.OK)
+            var result = MetricsRepository.AddOrUpdateMetrics(model);
+            
+            if (!result.StatusCode.In(HttpStatusCode.OK, HttpStatusCode.Created))
                 return errorMessageResponse(result.StatusCode, result.Error, result.Message);
 
-            Company.SaveChanges();
+            var isNew = (result.StatusCode == HttpStatusCode.Created);
             return successMessageResponse(
-                    isNew ? HttpStatusCode.Created : HttpStatusCode.OK,
+                    result.StatusCode,
                     $"Metric {(isNew ? "added" : "updated")}.",
                     $"The specified metric was successfully {(isNew ? "added" : "updated")}."
             );
