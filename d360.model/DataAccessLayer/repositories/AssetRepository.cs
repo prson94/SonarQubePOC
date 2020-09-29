@@ -883,6 +883,10 @@ namespace d360.model.DataAccessLayer
             {
                 model.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);                
             }
+            else
+            {
+                model.total = null;
+            }
 
             var results = await CompanyContext.QueryAsync(sql, dbArgs, ApiTimeout);
 
