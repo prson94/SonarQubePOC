@@ -1,8 +1,9 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, AfterViewInit, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { Dropdown } from 'primeng/dropdown';
 
 export const COLORPICKER_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -14,7 +15,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     selector: 'ig-color-picker',
     template: `
                 <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass">
-                    <p-dropdown [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors" [disabled]="disabled">
+                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors" [disabled]="disabled">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -33,7 +34,11 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     providers: [COLORPICKER_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./color-picker.less'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "(click)": "focus($event)",
+        '(focus)': 'focus($event)',
+    }
 })
 
 export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges {
@@ -53,6 +58,8 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     onModelTouched: Function = () => { };
     protected value: string;
+
+    @ViewChild("dd", { static: false }) dropdown: Dropdown;
 
     constructor(private ref: ChangeDetectorRef) {
     }
@@ -77,6 +84,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     writeValue(obj: string): void {
         this.selectedColor = obj;
+        this.value = obj
         this.onModelChange(this.selectedColor);
         this.selectedColorChange.emit(this.selectedColor);
         this.ref.markForCheck();
@@ -96,5 +104,9 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     itemChanged(item: any) {
         this.writeValue(item.value)
+    }
+
+    public focus(evt) {
+        this.dropdown.focus();
     }
 };

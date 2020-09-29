@@ -750,6 +750,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.dropdown.component.html" />
@@ -809,9 +810,11 @@
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\property-group\property-group.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -926,6 +929,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.dropdown.component.ts" />
@@ -964,6 +968,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />

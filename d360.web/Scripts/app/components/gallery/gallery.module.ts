@@ -55,6 +55,8 @@ import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.compon
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { GalleryDropDownComponent } from './gallery.dropdown.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
 
 @NgModule({
     imports: [
@@ -67,6 +69,7 @@ import { DropdownModule } from 'primeng/dropdown';
 
         GalleryRoutingModule,
 
+        PropertyGroupModule,
         SwitchModule,
         IconPickerModule,
         TagPickerModule,
@@ -112,7 +115,9 @@ import { DropdownModule } from 'primeng/dropdown';
         GalleryMessageBoxComponent,
         GalleryPopupMenuComponent,
         GalleryCheckboxComponent,
-        GalleryDropDownComponent
+        GalleryDropDownComponent,
+        GalleryCheckboxComponent,
+        GalleryPropertyGroupComponent
     ],
     providers: [
         GalleryGuard,
