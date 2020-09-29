@@ -120,4 +120,17 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         this.visibleChange.emit(false);
         this.ref.markForCheck();
     }
+
+     operatorName(condition: any): string {
+         switch (condition['@Operator']) {
+             case 'C':
+                 return '[any value change]';
+             case 'P':
+                 return 'is populated';
+             case 'NP':
+                 return 'is not populated';
+             default:
+                 return condition['@Operator'];
+         }
+    }
 }
