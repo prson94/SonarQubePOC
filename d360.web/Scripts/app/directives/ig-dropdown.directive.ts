@@ -27,11 +27,10 @@ export class DropdownDirective implements AfterViewInit {
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
 
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
-
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
 
-        if (!placeholder) {
+        if (!placeholder && placeholder != '' && placeholder != null) {
             if (this.required == null) {
                 this.dropdownRef.placeholder = 'Optional';
                 this.dropdownRef.showClear = true;

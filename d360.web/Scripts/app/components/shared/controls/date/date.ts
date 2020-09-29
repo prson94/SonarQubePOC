@@ -34,7 +34,7 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
     styleUrls: ['./date.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IgDate implements ControlValueAccessor, OnInit  {        
+export class IgDate implements ControlValueAccessor, OnInit  {    
     @Input() style: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;

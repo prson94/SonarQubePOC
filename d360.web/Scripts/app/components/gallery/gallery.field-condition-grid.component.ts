@@ -33,7 +33,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     protected isLoading2: boolean = false;
 
     assetTypeUid: string = '2dc15e42-b2fc-4eb4-bc0d-40850c54b9aa';
-    fields: FieldTypeAPIModelFieldCondition[];
+    fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
 
     constructor(
@@ -51,14 +51,14 @@ export class GalleryFieldConditionGridComponent implements OnInit {
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
-                this.fields = [];
+                var tempFields = [];
                 res.forEach(f => {
                     if (FieldTypeHelper.isFieldForOperator(f.Type)) {
-                        this.fields.push(f as FieldTypeAPIModelFieldCondition);
+                        tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
 
-                this.fields.forEach(f => {
+                tempFields.forEach(f => {
                     f.Operators = [];
                     this.operators.forEach(op => {
                         if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
@@ -83,8 +83,59 @@ export class GalleryFieldConditionGridComponent implements OnInit {
                     });
 
                 });
+
+                this.fields = tempFields;
+                this.selectedValue = JSON.parse(JSON.stringify(this.selectedValueTemp));
             });
         })
 
+    }
+
+    private selectedValue = null;
+
+    private selectedValueTemp = [
+        {
+            "field": "Booleanvalue",
+            "operator": 11,
+            "value": ""
+        },
+        {
+            "field": "Dateofservice",
+            "operator": 8,
+            "value": this.getFormattedDate(new Date())
+        },
+        {
+            "field": "Booleanvalue",
+            "operator": 1,
+            "value": "true"
+        },
+        {
+            "field": "Name",
+            "operator": 2,
+            "value": "test"
+        },
+        {
+            "field": "Countrypicker",
+            "operator": 17,
+            "value": "Value 5"
+        },
+        {
+            "field": "StepNo",
+            "operator": 2,
+            "value": 2
+        },
+        {
+            "field": "",
+            "operator": "",
+            "value": null
+        }
+    ]
+
+    private getFormattedDate(date) {
+        let year = date.getFullYear();
+        let month = (1 + date.getMonth()).toString().padStart(2, '0');
+        let day = date.getDate().toString().padStart(2, '0');
+
+        return month + '/' + day + '/' + year;
     }
 }

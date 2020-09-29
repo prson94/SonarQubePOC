@@ -1,4 +1,4 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, DoCheck, OnDestroy } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
 import { SelectItem } from 'primeng/api';
@@ -12,26 +12,47 @@ import { OperatorModel, Operator } from '../../../../models/operator.model';
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./field-condition-grid.component.less']
 })
-export class FieldConditionGrid implements OnInit, OnChanges {
+export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
+    @Input() conditions: Condition[] = [];
 
     fieldsSelect: SelectItem[] = [];
 
-    private conditions: Condition[] = [];
+
+    private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
+    private dataCheck: any;
+
     @ViewChild('conditionsForm', { static: true }) formGroup: NgForm;
     constructor(public cdRef: ChangeDetectorRef) {
 
     }
 
+    ngOnDestroy() {
+        if (this.dataCheck) {
+            clearInterval(this.dataCheck);
+        }
+    }
+
     ngOnInit() {
+        if (!this.conditions)
+            this.conditions = [];
+
         this.addNewCondition();
+
+        this.dataCheck = setInterval(() => {
+
+            this.conditions.forEach(cond => {
+                if (this.disabledValuesOperators.some(x => x === +cond.operator))
+                    cond.disabled = true;
+                else cond.disabled = false;
+            });
+            this.cdRef.markForCheck();
+
+        }, 100);
 
         this.formGroup.valueChanges.subscribe(obs => {
             setInterval(() => {
-                var lastCondition = this.conditions[this.conditions.length - 1];
-                if (lastCondition.value != null) {
-                    this.addNewCondition();
-                }
+                this.addNewCondition();
             });
         });
     }
@@ -46,7 +67,9 @@ export class FieldConditionGrid implements OnInit, OnChanges {
                     label: f.FriendlyName
                 });
             });
+
         }
+        this.cdRef.detectChanges();
     }
 
 
@@ -59,19 +82,25 @@ export class FieldConditionGrid implements OnInit, OnChanges {
 
 
     addNewCondition() {
-        this.conditions.push({ fieldApiName: '', operator: '', value: null, disabled: false });
+        var lastCondition = this.conditions[this.conditions.length - 1];
+        if (!lastCondition || (lastCondition.operator != null && lastCondition.operator != '')) {
+            this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null });
+        }
+    }
+    onFieldChange($event, condition: Condition) {
+        condition.operator = '';
+        condition.value = '';
     }
 
     onConditionChange(event, condition: Condition) {
-        var disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
-        if (disabledValuesOperators.some(x => x === +event.value)) {
+        if (this.disabledValuesOperators.some(x => x === +event.value)) {
             condition.disabled = true;
-            condition.value = 'true';
         }
         else {
             condition.disabled = false;
-            condition.value = '';
         }
+        condition.value = '';
+        this.cdRef.markForCheck();
     }
 
     getTypeForCondition(item: Condition) {
@@ -81,25 +110,27 @@ export class FieldConditionGrid implements OnInit, OnChanges {
     }
 
     getOperators(item: Condition) {
-        return this.getFieldType(item).Operators;
+        var ft = this.getFieldType(item);
+        return ft ? ft.Operators : [];
     }
 
     getValues(item: Condition) {
-        if (item.disabled) return [];
+        if (item.disabled || !this.getFieldType(item)) return [];
         return this.getFieldType(item).Values;
     }
 
     getFieldType(item: Condition) {
         if (this.fields)
-            return this.fields.filter(x => x.Name === item.fieldApiName)[0];
+            return this.fields.filter(x => x.Name === item.field)[0];
 
         return null;
     }
 }
 export class Condition {
-    fieldApiName: string;
+    field: string;
     operator: string;
     value: any;
+    value2: any;
 
     disabled: boolean = true;
 }
