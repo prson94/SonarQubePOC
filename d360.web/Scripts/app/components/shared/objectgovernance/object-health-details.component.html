@@ -21,7 +21,11 @@
                             <ng-container [ngSwitch]="score.ScoreProgression">
                                 <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
                                 <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
-                                <i *ngSwitchDefault></i>
+                                <i *ngSwitchDefault
+                                   class="fa fa-square turn" 
+                                   pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                   tooltipPosition="top" 
+                                   tooltipStyleClass="ig-tooltip" ></i>
                             </ng-container>
                             {{score.EffectiveDate | utcDate | date:'shortDate'}}
                         </span>
@@ -69,7 +73,11 @@
                                 <ng-container [ngSwitch]="item.ScoreProgression">
                                     <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
                                     <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
-                                    <i *ngSwitchDefault></i>
+                                    <i *ngSwitchDefault
+                                       class="fa fa-square turn"
+                                       pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                       tooltipPosition="top"
+                                       tooltipStyleClass="ig-tooltip"></i>
                                 </ng-container>
                                 {{item.Score}}%
                             </div>
