@@ -318,6 +318,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_GlobalResources\ActionApiMessages.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ActionApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\ApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -645,7 +650,9 @@
     <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
     <Content Include="Content\primeng\v9.1.0\theme.css" />
     <Content Include="Content\primeng\v9.1.0\theme.less" />
-    <Content Include="Content\primeng\v9.1.0\theme.min.css" />
+    <Content Include="Content\primeng\v9.1.0\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />
@@ -693,6 +700,11 @@
     <Content Include="App_GlobalResources\ApiMessages.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>ApiMessages.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="App_GlobalResources\ActionApiMessages.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
     </Content>
     <EmbeddedResource Include="Content\Swagger\index.html" />
     <EmbeddedResource Include="Content\Swagger\swagger.css">
@@ -738,6 +750,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.property-group.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.checkbox.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autofocus.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.dropdown.component.html" />
@@ -797,9 +810,11 @@
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\message-box\message-box.less" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
+    <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\property-group\property-group.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -915,6 +930,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.propery-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.checkbox.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autofocus.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.dropdown.component.ts" />
@@ -953,6 +969,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\message-box\message-box.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
@@ -1702,6 +1719,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\operator.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\process.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance-role.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />

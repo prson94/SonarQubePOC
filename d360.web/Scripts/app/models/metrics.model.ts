@@ -1,5 +1,6 @@
 ﻿import { FieldType } from "./fields.model";
 import { State, AssetTypeClass } from "./asset.model";
+import { OperatorModel, Operator } from "./operator.model";
 
 export class MetricAssetViewModel {
     Uid: string;
@@ -8,11 +9,11 @@ export class MetricAssetViewModel {
     AssetTypeUid: string;
     IsGroup: boolean;
     Name: string;
+    Definition: MetricAssetDefinitionViewModel;
     Description: string;
     EffectiveDate: Date;
     Weight: number;
     Threshold: number;
-    UpdateFrequency: MetricUpdateFrequency;
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     VersionCount: number;
@@ -46,8 +47,8 @@ export class MetricAssetVersionConditionItemViewModel {
     ConditionType: MetricConditionType;
     ConditionFieldTypeName: string;
     ConditionIntersectTypeUid: string;
-    Operator: string;
-    Values: MetricAssetVersionConditionItemValueViewModel[] = [];
+    Operator: Operator;
+    Values: string[] = [];
 
     // Transitive values used for UI logic only.
     FieldType: MetricFieldTypeViewModel;
@@ -60,15 +61,61 @@ export class MetricAssetVersionConditionItemViewModel {
     SingleValue: any; //For non-list fields
 }
 
+export class MetricAssetDefinitionViewModel {
+    DataQuality: MetricAssetDefinitionDataQualityViewModel;
+    Governance: MetricAssetDefinitionGovernanceViewModel;
+}
+export class MetricAssetDefinitionDataQualityViewModel {
+    ResultOperation: MetricRuleResultOperation;
+    ResultPathUid: string;
+    FilterMatchType: MetricMatchType;
+    Filters: MetricAssetDefinitionDataQualityFilterViewModel[] = [];
+}
+export class MetricAssetDefinitionDataQualityFilterViewModel {
+    AssetTypeUid: string;
+    FieldTypeName: string;
+    Operator: Operator;
+    Values: string[];
+}
+export class MetricAssetDefinitionGovernanceViewModel {
+    Check: MetricGovernanceCheckType;
+
+    Field: MetricAssetDefinitionGovernanceFieldViewModel;
+    Predicate: MetricAssetDefinitionGovernancePredicateViewModel;
+    Relation: MetricAssetDefinitionGovernanceRelationViewModel;
+    Owner: MetricAssetDefinitionGovernanceOwnerViewModel;
+    External: MetricAssetDefinitionGovernanceExternalViewModel;
+}
+export class MetricAssetDefinitionGovernanceExternalViewModel {
+    UpdateFrequency: MetricUpdateFrequency;
+    Instructions: string;
+}
+export class MetricAssetDefinitionGovernanceFieldViewModel {
+    AssetTypeUid: string;
+    FieldTypeName: string;
+    Operator: Operator;
+    Values: string[];
+}
+export class MetricAssetDefinitionGovernancePredicateViewModel {
+    PredicateUid: string;
+    Operator: Operator;
+    Values: string[];
+}
+export class MetricAssetDefinitionGovernanceRelationViewModel {
+    IntersectTypeUid: string;
+    Operator: Operator;
+    Values: string[];
+}
+export class MetricAssetDefinitionGovernanceOwnerViewModel {
+    ResponsibilityTypeUid: string;
+}
+
 export class MetricFieldTypeViewModel {
     ApiName: string;
     Name: string;
     Type: string;
     Disabled = false;
     Values: MetricAssetVersionConditionItemFieldValueViewModel[] = [];
-}
-export class MetricAssetVersionConditionItemValueViewModel {
-    Value: string; 
 }
 
 export class MetricAssetVersionConditionItemFieldValueViewModel {
@@ -140,7 +187,7 @@ export class Condition {
     MapID: number;
     FieldTypeID: number;
     AndOr: string;
-    Operator: string;
+    Operator: OperatorModel;
     Value: string;
 
     fieldName: string;
@@ -202,9 +249,23 @@ export enum MetricUpdateFrequency {
     Annually = 6
 }
 
+export enum MetricRuleResultOperation {
+    Average = 1,
+    Minimum = 2,
+    Maximum = 3
+}
+
 export enum MetricMatchType {
     Any = 1,
     All = 2
+}
+
+export enum MetricGovernanceCheckType {
+    External = 0,
+    Field = 1,
+    Owner = 2,
+    Predicate = 3,
+    Relation = 4
 }
 
 export enum MetricConditionType {

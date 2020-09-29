@@ -40,7 +40,7 @@ export class ProcessDiagramTemplates {
                     background: 'white',
                     alignment: go.Spot.LeftCenter,
                     stroke: this.fontColor,
-                    textAlign: "center",
+                    textAlign: "left",
                     font: this.textFont,
                     editable: true,
                     margin: new go.Margin(6, 0, 0, 10),
@@ -60,7 +60,39 @@ export class ProcessDiagramTemplates {
 
     static activity_HeaderPanel(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
-        return $(go.Panel, 'Auto',
+
+        function isColorLight(color) {
+            const hex = color.replace('#', '');
+            const c_r = parseInt(hex.substr(0, 2), 16);
+            const c_g = parseInt(hex.substr(2, 2), 16);
+            const c_b = parseInt(hex.substr(4, 2), 16);
+            const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+            return brightness > 155;
+        }
+
+        function getGovernanceRoleValue(data: any) {
+            var val = data.governanceDisplayValue as string;
+            if (val) {
+                var hasIcon = !!data.icon;
+                var hasRelationship = +data.relCount > 0;
+                var trimSize = val.length;
+
+                if (hasIcon || hasRelationship)
+                    trimSize = 27;
+
+                if (!hasIcon && !hasRelationship)
+                    trimSize = 30;
+
+                if (hasIcon && hasRelationship)
+                    trimSize = 22;
+
+                if (val.length > trimSize)
+                    return val.substring(0, trimSize - 1) + '...';
+            }
+            return val;
+        }
+
+        var headerPanel = $(go.Panel, 'Auto',
             {
                 stretch: go.GraphObject.Horizontal
             },
@@ -82,22 +114,64 @@ export class ProcessDiagramTemplates {
                     font: '14px FontAwesome',
                     margin: new go.Margin(6, 0, 0, 12),
                     minSize: new go.Size(NaN, 24)
-                }
-                , new go.Binding("text", "icon").makeTwoWay()
+                },
+                new go.Binding("text", "icon").makeTwoWay(),
+                new go.Binding("visible", "icon", function (icon) {
+                    if (!icon)
+                        return false;
+                    return true;
+                }),
+                new go.Binding("stroke", "", function (data) {
+                    if (isColorLight(data.refItemColor)) {
+                        return "#202020";
+                    }
+                    return "white";
+                })
             ),
             $(go.TextBlock,
                 {
                     alignment: go.Spot.LeftCenter,
                     stroke: "white",
-                    textAlign: "center",
+                    textAlign: "left",
                     font: this.textFont,
                     margin: new go.Margin(12, 0, 0, 34),
-                    minSize: new go.Size(NaN, 24),
-                }
-                , new go.Binding("text", "governanceDisplayValue").makeTwoWay()
+                    minSize: new go.Size(160, 24),
+                },
+                new go.Binding("text", "", function (data) {
+                    return getGovernanceRoleValue(data);
+                }),
+                new go.Binding("margin", "icon", function (icon) {
+                    if (!icon)
+                        return new go.Margin(12, 0, 0, 8);
+                    return new go.Margin(12, 0, 0, 34);
+                }),
+                new go.Binding("stroke", "", function (data) {
+                    if (isColorLight(data.refItemColor)) {
+                        return "#202020";
+                    }
+                    return "white";
+                })
             ),
             this.getRelBadge('activity', component)
         );
+
+        headerPanel.toolTip = $("ToolTip", {
+            visible: false,
+        },
+            new go.Binding("visible", "", function (data) {
+                var val = getGovernanceRoleValue(data);
+                return val.indexOf('...') > 0 ? true : false;
+            }
+            ),
+
+            $(go.TextBlock, {
+                margin: 4,
+            },
+                new go.Binding("text", "governanceDisplayValue")
+            )
+        );
+
+        return headerPanel;
     }
 
     private static getRelBadge(type: string, component: ProcessDiagramComponent): go.Panel {
@@ -812,7 +886,8 @@ export class ProcessDiagramTemplates {
                         editable: true,
                         stroke: this.fontColor
                     }
-                    , new go.Binding("text", "Name").makeTwoWay())
+                    ,
+                    new go.Binding("text", "Name").makeTwoWay())
             )
         );
 

@@ -1,12 +1,13 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service'; 
 import { Spinner } from 'primeng/spinner';
 import { Calendar } from 'primeng/calendar';
+import { OperatorModel } from '../../../models/operator.model';
 
 
 @Component({
@@ -22,6 +23,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Input() uid: string;
     @Input() parentUid: string;
     @Input() isExternallyCalculated: boolean;
+    @Input() operators: OperatorModel[];
     @Input() scoreData: any;
 
     @Input() metricEditorFieldTypes: MetricFieldTypeViewModel[] = [];
@@ -195,13 +197,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
         this.model.MatchConditionsOnly = true;
 
+        this.model.Definition = new MetricAssetDefinitionViewModel();
+        this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+        this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
+        this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+
         this.model.ConditionGroups.forEach(g => {
             g.ConditionItems.forEach(c => {
                 if (!c.Values) {
                     c.Values = [];
                 }
                 if (c.Values.length === 0) {
-                    c.Values.push({ Value: '' });
+                    c.Values.push('');
                 }
                 switch (c.FieldType.Type) {
                     case 'Date':
@@ -209,13 +216,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         const d = new Date(c.SingleValue as string);
                         const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
                         condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-                        c.Values[0].Value = condate.toISOString();
+                        c.Values[0] = condate.toISOString();
                         break;
                     case 'Lookup':
-                        c.Values[0].Value = c.SingleValue;
+                        c.Values[0] = c.SingleValue;
                         break;
                     default:
-                        c.Values[0].Value = c.SingleValue;
+                        c.Values[0] = c.SingleValue;
                         break;
                 }
             });

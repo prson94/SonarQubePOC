@@ -24,7 +24,7 @@ namespace d360.core.entities.Metric
         public int? ConditionIntersectTypeID { get; set; }
 
         [DataMember]
-        public string Operator { get; set; }
+        public Operator Operator { get; set; }
 
         [DataMember, ForeignKey("Uid")]
         public virtual ICollection<MetricAssetVersionConditionItemValue> Values { get; set; }

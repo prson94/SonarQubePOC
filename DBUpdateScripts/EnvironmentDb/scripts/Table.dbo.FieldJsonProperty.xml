@@ -5,12 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FieldJsonProperty-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.FieldJsonProperty-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+  
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldJsonProperty')
 BEGIN
 	CREATE TABLE [dbo].[FieldJsonProperty](
@@ -25,7 +26,7 @@ BEGIN
 		[CreatedOn] [datetime] CONSTRAINT [DF_FieldJsonProperty_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
 		[UpdatedBy] [int] CONSTRAINT [DF_FieldJsonProperty_UpdatedBy] DEFAULT (0) NOT NULL,
 		[UpdatedOn] [datetime] CONSTRAINT [DF_FieldJsonProperty_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
-		CONSTRAINT [PK_FieldJsonProperty] PRIMARY KEY CLUSTERED ( [FieldID] ASC, [Position] ASC, [Parent] ASC, [Name] ASC )
+		CONSTRAINT [PK_FieldJsonProperty] PRIMARY KEY NONCLUSTERED ( [FieldID] ASC, [Position] ASC, [Parent] ASC, [Name] ASC )
 	)
 END
 
@@ -48,4 +49,26 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="kmcnamee" id="Table.dbo.FieldJsonProperty-make-heap-table">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+      IF EXISTS (select * from sys.indexes where name = 'PK_FieldJsonProperty' and type_desc = 'CLUSTERED')
+			BEGIN
+				ALTER TABLE [dbo].[FieldJsonProperty] DROP CONSTRAINT [PK_FieldJsonProperty]
+	
+				ALTER TABLE [dbo].[FieldJsonProperty] ADD CONSTRAINT [PK_FieldJsonProperty] PRIMARY KEY NONCLUSTERED 
+				(
+					[FieldID] ASC,
+					[Position] ASC,
+					[Parent] ASC,
+					[Name] ASC
+				)
+	
+			END 
+      ]]>
+    </sql>
+  </changeSet>
 </databaseChangeLog>

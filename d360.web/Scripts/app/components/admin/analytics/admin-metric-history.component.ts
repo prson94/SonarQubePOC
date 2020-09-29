@@ -3,6 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
+import { OperatorModel } from '../../../models/operator.model';
 
 @Component({
     selector: 'd3s-metric-history',
@@ -18,6 +19,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
     @Input() MeasureUid: string;
     @Input() isExternallyCalculated: boolean = false;
     @Output() onClose = new EventEmitter;
+    @Input() operators: OperatorModel[];
 
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     private metricHistoryRecords: MetricAssetHistoryViewModel[] = [];
@@ -25,15 +27,6 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
     private selectedNode: TreeNode;
     private selection: MetricAssetHistoryViewModel;
     private showConditions: boolean;
-
-    private operators = [
-        { value: 'eq', label: '=' },
-        { value: 'neq', label: '!=' },
-        { value: 'lt', label: '<' },
-        { value: 'lte', label: '<=' },
-        { value: 'gt', label: '>' },
-        { value: 'gte', label: '>=' },
-    ];
 
     constructor(
         private metricsService: MetricsService
@@ -82,8 +75,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
     formatConditions() {
         this.conditions.forEach(c => {
             const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-            c.OperatorText = this.parseOperator(field, c.OperatorText);
+            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -94,11 +86,11 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                         if (field.Values) {
                             if (field.Values.length > 0) {
                                 if (c.Values) {
-                                    if (c.Values[0].Value) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                    if (c.Values[0]) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         if (valueModel) {
-                                            c.SingleValue = c.Values[0].Value;
+                                            c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
@@ -108,9 +100,9 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                         break;
                     default:
                         if (c.Values) {
-                            if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value;
-                                c.ValuesText = c.Values[0].Value;
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
                             }
                         }
                         break;
@@ -129,63 +121,6 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
         }
     }
 
-    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        switch (field.Type) {
-            case 'Date':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Text':
-            case 'Lookup':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    default:
-                        return OperatorText;
-                }
-            case 'Decimal':
-            case 'Number':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Boolean':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    default:
-                        return OperatorText;
-                }
-        }
-        return '';
-    }
     getAsPrecentage(val: number) {
         if (val == 0)
             return '0%';

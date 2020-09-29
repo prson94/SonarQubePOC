@@ -55,7 +55,7 @@ namespace d360.web.Controllers.V2
                         isAdmin = Company.CurrentResourceIsAdmin,
                         postModel.hopCount
                     },
-                    timeout: 60
+                    timeout: 120
                 );
 
                 var model = new AssetBrowserResponseModel

@@ -1310,7 +1310,7 @@ namespace d360.extensions.search
                 Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
                 AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
                 Tags = GetTags(h),
-                Explaination = queryRequest.Explain ? h._explanation.ToString() : ""
+                Explanation = queryRequest.Explain ? h._explanation.ToString() : ""
             }).ToList();
 
 

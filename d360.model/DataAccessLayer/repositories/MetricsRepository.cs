@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
-
+using d360.core.exceptions;
 
 namespace d360.model.DataAccessLayer
 {
@@ -78,7 +78,7 @@ namespace d360.model.DataAccessLayer
                         select new MetricAssetViewDetailModel
                         {
                             AllocationUid = a.AllocationUid,
-                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
+                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel {
                                 ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
                                     ConditionFieldTypeID = i.ConditionFieldTypeID,
                                     ConditionFieldTypeName = (i.ConditionFieldType != null) ? i.ConditionFieldType.Name : null,
@@ -87,40 +87,43 @@ namespace d360.model.DataAccessLayer
                                     ConditionType = i.ConditionType,
                                     Operator = i.Operator,
                                     Uid = i.Uid,
-                                    Values = i.Values.ToList()
+                                    Values = i.Values.Select(v => v.Value).ToList()
                                 }).ToList(),
-                                MatchType = g.MatchType, 
-                                Position = g.Position, 
-                                Threshold = g.Threshold, 
-                                Uid = g.Uid, 
-                                Weight = g.Weight 
+                                MatchType = g.MatchType,
+                                Position = g.Position,
+                                Threshold = g.Threshold,
+                                Uid = g.Uid,
+                                Weight = g.Weight
                             }).ToList(),
+                            Definition = new MetricAssetDefinitionViewModel {
+                                DataQuality = (a.Allocation.ScoreType == ScoreType.DataQuality) ? new MetricAssetDefinitionDataQualityViewModel { } : null,
+                                Governance = (a.Allocation.ScoreType == ScoreType.Governance) ? new MetricAssetDefinitionGovernanceViewModel { } : null
+                            },
                             Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
-                              ConditionAndOr = v.ConditionAndOr,
-                              Description = v.Description,
-                              EffectiveDate = v.EffectiveDate,
-                              EffectiveEndDate = v.EffectiveEndDate,
-                              MatchConditionsOnly = v.MatchConditionsOnly,
-                              Name = v.Name,
-                              Threshold = v.Threshold,
-                              Uid = v.Uid,
-                              UpdateFrequency = v.UpdateFrequency,
-                              Weight = v.Weight
+                                ConditionAndOr = v.ConditionAndOr,
+                                Description = v.Description,
+                                EffectiveDate = v.EffectiveDate,
+                                EffectiveEndDate = v.EffectiveEndDate,
+                                MatchConditionsOnly = v.MatchConditionsOnly,
+                                Name = v.Name,
+                                Threshold = v.Threshold,
+                                Uid = v.Uid,
+                                UpdateFrequency = v.UpdateFrequency,
+                                Weight = v.Weight
                             }).ToList(),
-                            AssetTypeUid = a.Allocation.AssetTypeUid,
                             MatchConditionsOnly = v.MatchConditionsOnly,
                             Description = v.Description,
                             EffectiveDate = v.EffectiveDate,
                             IsGroup = a.IsGroup,
                             Name = v.Name,
                             ParentUid = a.ParentUid,
-                            ScoreType = a.Allocation.ScoreType,
                             Threshold = v.Threshold,
                             Uid = a.Uid,
-                            UpdateFrequency = v.UpdateFrequency,
                             Weight = v.Weight
                         }).FirstOrDefault();
             
+
+
             return model;
         }
 
@@ -134,11 +137,72 @@ namespace d360.model.DataAccessLayer
             return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active).SingleOrDefault();
         }
 
-        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model, out bool isNew)
+        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model)
         {
             MetricAsset metricAsset = null;
             AssetType targetAssetType = null;
-            isNew = true;
+            bool isNew = true;
+
+            var errorTitle = "Error updating measure";
+            if (model == null)
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You are have provided a null metric.");
+
+            isNew = (model.Uid == null || model.Uid == Guid.Empty);
+
+            if (isNew) errorTitle = "Error creating measure";
+
+            var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
+
+            #region Validation
+            
+            if (allocation == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "There is no allocation for specified Allocation Uid.");
+            }
+
+            if (allocation.IsExternallyCalculated == false)
+            {
+                if (model.Weight <= 0 || model.Weight > 1)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Weight must be a value between 0 and 1");
+                }
+                else if (decimal.Round(model.Weight, 2) != model.Weight)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Weight can have a maximum of 2 decimal places.");
+                }
+
+                if (model.Threshold <= 0 || model.Threshold > 1)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Threshold must be a value between 0 and 1");
+                }
+            }
+
+            switch (allocation.ScoreType)
+            {
+                case ScoreType.DataQuality:
+                    if (model.Definition.DataQuality == null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide the DataQuality object property under Definition.");
+                    }
+                    if (model.Definition.Governance != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not provide a Governance object property under Definition.");
+                    }
+                    break;
+                case ScoreType.Governance:
+                    if (model.Definition.Governance == null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide the Governance object property under Definition.");
+                    }
+                    if (model.Definition.DataQuality != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not provide a DataQuality object property under Definition.");
+                    }
+
+                    break;
+            }
+
+            #endregion
 
             if (model.Uid != null && model.Uid != Guid.Empty)
             {
@@ -146,7 +210,7 @@ namespace d360.model.DataAccessLayer
                 metricAsset = Company.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
                 if (metricAsset == null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Metric not found.");
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, errorTitle, $"Metric with UID {model.Uid} does not exist.");
                 }
                 Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
                 targetAssetType = Company.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
@@ -156,20 +220,22 @@ namespace d360.model.DataAccessLayer
                 if (model.AllocationUid != null && model.AllocationUid != Guid.Empty)
                 {
                     targetAssetType = (
-                                      from allocation in Company.MetricAllocations
-                                      join assettype in Company.AssetTypes on allocation.AssetTypeUid equals assettype.uid
-                                      where allocation.Uid == model.AllocationUid
+                                      from al in Company.MetricAllocations
+                                      join assettype in Company.AssetTypes on al.AssetTypeUid equals assettype.uid
+                                      where al.Uid == model.AllocationUid
                                       select assettype
                                       ).SingleOrDefault();
                 }
                 else
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric", "You must provide a valid AllocationUid.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide a valid AllocationUid.");
                 }
             }
+            
+            // Remove any time component from the effective date.
+            model.EffectiveDate = model.EffectiveDate.Date;
 
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
-            var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
             var operatorErrorMessage = "";
 
             if (!model.IsGroup)
@@ -188,49 +254,41 @@ namespace d360.model.DataAccessLayer
 
                         if (fieldType == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "FieldType does not exist!");
                         }
 
                         if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Invalid FieldType for this asset!");
                         }
 
                         if (!validTypes.Contains(fieldType.Type))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
-                        }
-
-                        if (!operators.Contains(condition.Operator))
-                        {
-                            operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"FieldType cannot be type of '{fieldType.Type}'!");
                         }
 
                         condition.ConditionFieldTypeID = fieldType.ID;
 
-                        bool tempBool;
-                        decimal tempDecimal;
                         DateTime tempDate;
-                        int tempInt;
 
                         switch (fieldType.Type)
                         {
                             case "Boolean":
-                                if (!bool.TryParse(condition.Values[0].Value, out tempBool))
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                if (!bool.TryParse(condition.Values[0], out _))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Decimal":
-                                if (!decimal.TryParse(condition.Values[0].Value, out tempDecimal))
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                if (!decimal.TryParse(condition.Values[0], out _))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             case "Date":
-                                if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                                condition.Values[0].Value = tempDate.ToUniversalTime().ToShortDateString();
+                                if (!DateTime.TryParse(condition.Values[0], out tempDate))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                condition.Values[0] = tempDate.ToUniversalTime().ToShortDateString();
                                 break;
                             case "Number":
-                                if (!int.TryParse(condition.Values[0].Value, out tempInt))
-                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                if (!int.TryParse(condition.Values[0], out _))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
                                 break;
                             default:
                                 break;
@@ -243,13 +301,7 @@ namespace d360.model.DataAccessLayer
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Name cannot be longer than 250 characters.");
             }
-
-            if (!string.IsNullOrEmpty(operatorErrorMessage))
-            {
-                operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
-            }
-
+            
             int metricExistsCount = 0;
             var metricCountSql = $@"select count(1) from (
 select A.Uid, max(V.EffectiveDate) as EffectiveDate
@@ -258,327 +310,505 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
             if (metricExistsCount > 0)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric",
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle,
                     (model.ParentUid.HasValue && model.ParentUid != Guid.Empty) ?
                     "You may not add a metric with the same name under the same grouping." :
                     $"Measure with name '{model.Name}' already exists.");
             }
 
-            #region Asset
+            if (Company.Connection.State != ConnectionState.Open)
+                Company.Connection.Open();
 
-            if (isNew)
+            using (var trans = Company.Connection.BeginTransaction())
             {
-                metricAsset = new MetricAsset
+                try
                 {
-                    Uid = Guid.NewGuid(),
-                    AllocationUid = model.AllocationUid,
-                    IsGroup = model.IsGroup,
-                    State = State.Active
-                };
+                    #region Asset
 
-                if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
-                {
-                    var parentExists = Company.Any<MetricAsset>(i => i.AllocationUid == model.AllocationUid && i.Uid == model.ParentUid.Value);
-                    if (!parentExists)
+                    if (isNew)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
-                    }
-                    metricAsset.ParentUid = model.ParentUid;
-                }
-
-                Company.Add(metricAsset);
-            }
-            else 
-            {
-                metricAsset.UpdatedBy = Company.CurrentResourceID;
-                metricAsset.UpdatedOn = DateTime.Now;
-
-                var childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", new { model.Uid }).Single();                
-                var existingAllVersionsResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", new { metricAsset.Uid }).Single();
-                
-                // If results, then you cannot change. 
-                if (existingAllVersionsResultCount > 0 && model.IsGroup && !metricAsset.IsGroup)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this metric to a grouping as there are results already associated with it.");
-                }
-                
-                // If has child metrics, you cannot change.
-                if (childMetricCount > 0 && !model.IsGroup)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this grouping to a metric as there are child metrics already associated with it.");
-                }
-
-                // If made it past above, then we can save the grouping change.
-                metricAsset.IsGroup = model.IsGroup;
-            }
-
-            #endregion
-
-            var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
-            var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where AssetUid = @Uid", new { model.Uid }).SingleOrDefault();
-
-            if (maxEffectiveDate.HasValue)
-            {
-                if (maxEffectiveDate.Value > effectiveDate.Date)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
-                }
-            }
-
-            #region Version
-
-            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.AssetUid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
-
-            var hashItems = from g in model.ConditionGroups
-                            from c in g.ConditionItems
-                            from v in c.Values
-                            orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
-                            select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
-            string newConditionHash = string.Join("|", hashItems);
-            newConditionHash = newConditionHash.GetD3sHashString();
-            if (metricAssetVersion == null)
-            {
-                metricAssetVersion = new MetricAssetVersion
-                {
-                    AssetUid = metricAsset.Uid,
-                    Name = model.Name,
-                    Description = model.Description,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    MatchConditionsOnly = model.MatchConditionsOnly,
-                    EffectiveDate = effectiveDate,
-                    Threshold = model.Threshold,
-                    Weight = model.Weight,
-                    State = metricAsset.State,
-                    EffectiveEndDate = null,
-                    Definition = model.ScoreType == ScoreType.Governance ? "{ \"Check\": \"External\"}" : "{}"
-                };
-
-                // End-date the now previous version, if any.
-                var existingAssetVersions = Company.Filter<MetricAssetVersion>(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null)
-                    .OrderByDescending(x => x.EffectiveDate)
-                    .ToList();
-                for (var i = 0; i < existingAssetVersions.Count; i++)
-                {
-                    if (i == 0)
-                    {
-                        var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
-                        endDateToUse = endDateToUse.AddDays(-1);
-                        existingAssetVersions[i].EffectiveEndDate = endDateToUse;
-                        Company.Update(existingAssetVersions[i]);
-                    }
-                }
-
-                Company.Add(metricAssetVersion);
-            }
-            else
-            {
-                var existingVersionResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }).Single();
-
-                // Only validate if there any existing results for this metric. If not, do not worry about it.
-                if (existingVersionResultCount > 0)
-                {
-                    if (metricAssetVersion.Weight != model.Weight)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the weight of this metric without also altering its effective date.");
-                    }
-
-                    if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
-                    }
-
-                    var existingHashItems = from g in metricAssetVersion.Conditions
-                                            from c in g.Items
-                                            from v in c.Values
-                                            orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
-                                            select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
-                    string existingConditionHash = string.Join("|", existingHashItems);
-                    existingConditionHash = existingConditionHash.GetD3sHashString();
-                    if (newConditionHash != existingConditionHash)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
-                    }
-                }
-
-                // Set the properties.
-                metricAssetVersion.Name = model.Name;
-                metricAssetVersion.Description = model.Description;
-                metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
-                metricAssetVersion.Threshold = model.Threshold;
-                metricAssetVersion.Weight = model.Weight;
-            }
-
-            #endregion
-
-            #region Process conditions for ADDs or UPDATEs
-
-            if (model.IsGroup)
-            {
-                model.ConditionGroups.Clear();
-            }
-
-            if (model.ConditionGroups.Count > 0)
-            {
-                if (metricAssetVersion.Conditions == null)
-                    metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
-
-                model.ConditionGroups.ForEach(g =>
-                {
-                    var usedFieldTypeIDs = new List<int>();
-                    var usedIntersectTypeIDs = new List<int>();
-
-                    var cg = metricAssetVersion.Conditions.SingleOrDefault(i => i.Uid == g.Uid);
-
-                    if (g.ConditionItems.Count > 0)
-                    {
-                        var isNewGroup = (cg == null);
-                        if (isNewGroup) 
+                        metricAsset = new MetricAsset
                         {
-                            cg = new MetricAssetVersionCondition();
-                        }
+                            Uid = Guid.NewGuid(),
+                            AllocationUid = model.AllocationUid,
+                            IsGroup = model.IsGroup,
+                            State = State.Active,
+                            CreatedBy = Company.CurrentResourceID,
+                            CreatedOn = DateTime.UtcNow,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow
+                        };
 
-                        // Update the group's properties.
-                        cg.MatchType = g.MatchType;
-                        cg.Position = g.Position;
-                        cg.Threshold = g.Threshold;
-                        cg.Weight = g.Weight;
-
-                        if (cg.Items == null)
+                        if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
                         {
-                            cg.Items = new List<MetricAssetVersionConditionItem>();
-                        }
-
-                        g.ConditionItems.ForEach(c =>
-                        {
-                            var ci = cg.Items.SingleOrDefault(i => (i.Uid != Guid.Empty) && (i.Uid == c.Uid));
-
-                            if (ci == null)
+                            var parentExists = Company.Connection
+                                .Query<bool>(
+                                    "select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and ParentUid = @p", 
+                                    new { a = model.AllocationUid, p = model.ParentUid.Value }, transaction: trans)
+                                .Single();
+                            
+                            if (!parentExists)
                             {
-                                ci = new MetricAssetVersionConditionItem();
+                                throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
                             }
+                            
+                            metricAsset.ParentUid = model.ParentUid;
+                        }
 
-                            Action<MetricAssetVersionConditionItem, List<MetricAssetVersionConditionItemValue>> checkValues = delegate (MetricAssetVersionConditionItem item, List<MetricAssetVersionConditionItemValue> newValues) {
-                                if (item.Values != null)
-                                {
-                                    item.Values.Clear();
-                                }
+                        Company.Connection.Execute(
+                            "insert into metrics.Asset (Uid, ParentUid, IsGroup, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, AllocationUid) values (@Uid, @ParentUid, @IsGroup, @CreatedOn, @CreatedBy, @UpdatedOn, @UpdatedBy, @AllocationUid)", 
+                            metricAsset, transaction: trans
+                        );
+                    }
+                    else
+                    {
+                        metricAsset.UpdatedBy = Company.CurrentResourceID;
+                        metricAsset.UpdatedOn = DateTime.Now;
 
-                                newValues.ForEach(nv =>
-                                {
-                                    if (item.Values == null)
-                                    {
-                                        item.Values = new List<MetricAssetVersionConditionItemValue>();
-                                    }
-                                    if (!item.Values.Any(ev => ev.Value == nv.Value) && nv.Value != null)
-                                    {
-                                        item.Values.Add(nv);
-                                    }
-                                });
-                            };
+                        var childMetricCount = Company.Connection.Query<int>(
+                            "select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", 
+                            new { model.Uid }, transaction: trans).Single();
+                        
+                        var existingAllVersionsResultCount = Company.Connection.Query<int>(
+                            "select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", 
+                            new { metricAsset.Uid }, transaction: trans).Single();
 
-                            if (c.ConditionFieldTypeID.HasValue)
+                        // If results, then you cannot change. 
+                        if (existingAllVersionsResultCount > 0 && model.IsGroup && !metricAsset.IsGroup)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not convert this metric to a grouping as there are results already associated with it.");
+                        }
+
+                        // If has child metrics, you cannot change.
+                        if (childMetricCount > 0 && !model.IsGroup)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not convert this grouping to a metric as there are child metrics already associated with it.");
+                        }
+
+                        // If made it past above, then we can save the grouping change.
+                        metricAsset.IsGroup = model.IsGroup;
+
+                        Company.Connection.Execute(
+                            "update metrics.Asset set IsGroup = @IsGroup, UpdatedOn = @UpdatedOn, UpdatedBy = @UpdatedBy where Uid = @Uid",
+                            metricAsset, transaction: trans
+                        );
+                    }
+
+                    #endregion
+
+                    #region Validation -> No Backdating EffectiveDate
+
+                    var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
+                    var maxEffectiveDate = Company.Connection
+                        .Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where AssetUid = @Uid", new { model.Uid }, transaction: trans)
+                        .SingleOrDefault();
+
+                    if (maxEffectiveDate.HasValue)
+                    {
+                        if (maxEffectiveDate.Value > effectiveDate.Date)
+                        {
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
+                        }
+                    }
+
+                    #endregion
+
+                    #region Version
+
+                    var metricAssetVersionJsonFragments = Company.Connection.Query<string>(@"
+select	*,
+		(
+			select	G.*,
+					(
+						select	I.*,
+								(
+									select	*
+									from	metrics.AssetVersionConditionItemValue
+									where	Uid = I.Uid
+									for json path
+								) as [Values]
+						from	metrics.AssetVersionConditionItem I
+						where	I.AssetVersionConditionUid = G.Uid
+						for json path
+					) as Items
+			from	metrics.AssetVersionCondition G
+			where	G.AssetVersionUid = V.Uid
+			for json path
+		) as Conditions
+from	metrics.AssetVersion V
+where	V.AssetUid = @Uid
+		and V.EffectiveDate = @effectiveDate
+for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transaction: trans);
+                    var metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
+                    string newConditionHash = model.CurrentConditionHash;
+
+                    if (metricAssetVersion == null)
+                    {
+                        metricAssetVersion = new MetricAssetVersion
+                        {
+                            Uid = Guid.NewGuid(),
+                            AssetUid = metricAsset.Uid,
+                            Name = model.Name,
+                            Description = model.Description,
+                            CreatedBy = Company.CurrentResourceID,
+                            CreatedOn = DateTime.UtcNow,
+                            MatchConditionsOnly = model.MatchConditionsOnly,
+                            EffectiveDate = effectiveDate,
+                            Threshold = model.Threshold,
+                            Weight = model.Weight,
+                            State = metricAsset.State,
+                            EffectiveEndDate = null,
+                            Definition = JsonConvert.SerializeObject(model.Definition),
+                            UpdateFrequency = MetricUpdateFrequency.None
+                        };
+
+                        if (model.Definition.Governance != null)
+                        {
+                            if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
                             {
-                                // Only one of the specific field per condition group.
-                                if (!usedFieldTypeIDs.Contains(c.ConditionFieldTypeID.Value))
+                                if (model.Definition.Governance.External != null)
                                 {
-                                    ci.ConditionFieldTypeID = c.ConditionFieldTypeID.Value;
-                                    ci.ConditionType = c.ConditionType;
-                                    ci.Operator = c.Operator;
-
-                                    checkValues(ci, c.Values);
-                                    ci.Updated = true;
-
-                                    if (ci.Uid == Guid.Empty || ci.Uid == null) 
-                                    {
-                                        cg.Items.Add(ci);
-                                    }
-
-                                    usedFieldTypeIDs.Add(c.ConditionFieldTypeID.Value);
+                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
                                 }
                             }
-                            else if (c.ConditionIntersectTypeID.HasValue)
+                        }
+
+                        Company.Connection.Execute(
+                            "insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)", 
+                            metricAssetVersion, transaction: trans
+                        );
+
+                        // End-date the now previous version, if any.
+                        var existingAssetVersions = Company.Connection.Query<MetricAssetVersion>(
+                            "select * from metrics.AssetVersion where AssetUid = @Uid and EffectiveEndDate is null order by EffectiveDate desc", 
+                            new { metricAsset.Uid }, 
+                            transaction: trans
+                        ).ToList();
+                        for (var i = 0; i < existingAssetVersions.Count; i++)
+                        {
+                            if (i == 0)
                             {
-                                // Only one of the specific relationship per condition group.
-                                if (!usedIntersectTypeIDs.Contains(c.ConditionFieldTypeID.Value))
+                                var endDateToUse = (i == 0) ? effectiveDate : existingAssetVersions[i - 1].EffectiveDate;
+                                endDateToUse = endDateToUse.AddDays(-1);
+                                existingAssetVersions[i].EffectiveEndDate = endDateToUse;
+                                Company.Connection.Execute("update metrics.AssetVersion set EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var existingVersionResultCount = Company.Connection.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans).Single();
+
+                        // Only validate if there any existing results for this metric. If not, do not worry about it.
+                        if (existingVersionResultCount > 0)
+                        {
+                            if (metricAssetVersion.Weight != model.Weight)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the weight of this metric without also altering its effective date.");
+                            }
+
+                            if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the condition type of this metric without also altering its effective date.");
+                            }
+
+                            var existingHashItems = from g in metricAssetVersion.Conditions
+                                                    from c in g.Items
+                                                    from v in c.Values
+                                                    orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
+                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
+                            string existingConditionHash = string.Join("|", existingHashItems);
+                            existingConditionHash = existingConditionHash.GetD3sHashString();
+                            if (newConditionHash != existingConditionHash)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the conditions of this metric without also altering its effective date.");
+                            }
+                        }
+
+                        // Set the properties.
+                        metricAssetVersion.Name = model.Name;
+                        metricAssetVersion.Description = model.Description;
+                        metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
+                        metricAssetVersion.Threshold = model.Threshold;
+                        metricAssetVersion.Weight = model.Weight;
+                        metricAssetVersion.Definition = JsonConvert.SerializeObject(model.Definition);
+                        metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
+                        
+                        if (model.Definition.Governance != null)
+                        {
+                            if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
+                            {
+                                if (model.Definition.Governance.External != null) 
                                 {
-                                    ci.ConditionIntersectTypeID = c.ConditionIntersectTypeID;
-                                    ci.ConditionType = c.ConditionType;
-                                    ci.Operator = c.Operator;
-                                    checkValues(ci, c.Values);
-                                    ci.Updated = true;
-
-                                    if (ci.Uid == Guid.Empty || ci.Uid == null)
-                                    {
-                                        cg.Items.Add(ci);
-                                    }
-
-                                    usedIntersectTypeIDs.Add(c.ConditionFieldTypeID.Value);
+                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
                                 }
                             }
-                        });
-
-                        // Now remove the items that were NOT updated during this process.
-                        while (cg.Items.Any(i => !i.Updated))
-                        {
-                            var itemToRemove = cg.Items.First(i => !i.Updated);
-                            Company.MetricAssetVersionConditionItems.Remove(itemToRemove);
-                            //cg.Items.Remove(itemToRemove);
                         }
 
-                        cg.Updated = true;
-                        if (cg.Uid == Guid.Empty || cg.Uid == null)
+                        Company.Connection.Execute(
+                            "update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid", 
+                            metricAssetVersion, transaction: trans);
+                    }
+
+                    #endregion
+
+                    #region Process conditions for ADDs or UPDATEs
+
+                    if (model.IsGroup)
+                    {
+                        if (!isNew)
                         {
-                            metricAssetVersion.Conditions.Add(cg);
+                            Company.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
                         }
                     }
-                    else 
+                    else
                     {
-                        if (cg != null)
+                        if (model.ConditionGroups.Count > 0)
                         {
-                            metricAssetVersion.Conditions.Remove(cg); //This is now an empty group, so remove the group entirely.
-                        }
-                    }
-                });
+                            #region DataTable creation
 
-                // Now remove the groups that were NOT updated during this process.
-                while (metricAssetVersion.Conditions.Any(i => !i.Updated))
-                {
-                    var itemToRemove = metricAssetVersion.Conditions.First(i => !i.Updated);
-                    //metricAssetVersion.Conditions.Remove(itemToRemove);
-                    Company.MetricAssetVersionConditions.Remove(itemToRemove);
-                }
-            }
-            else 
-            {
-                if (metricAssetVersion.Conditions != null)
-                { 
-                     metricAssetVersion.Conditions.ToList().ForEach(g =>
-                    {
-                        g.Items.ToList().ForEach(i => {
-                            i.Values.ToList().ForEach(v => {
-                                Company.Entry(v).State = System.Data.Entity.EntityState.Deleted;
+                            var groups = new DataTable();
+                            groups.Columns.Add("AssetVersionUid", typeof(Guid));
+                            groups.Columns.Add("Uid", typeof(Guid));
+                            groups.Columns.Add("MatchType", typeof(int));
+                            groups.Columns.Add("Position", typeof(int));
+                            groups.Columns.Add("Threshold", typeof(float));
+                            groups.Columns.Add("Weight", typeof(decimal));
+
+                            var items = new DataTable();
+                            items.Columns.Add("AssetVersionConditionUid", typeof(Guid));
+                            items.Columns.Add("Uid", typeof(Guid));
+                            items.Columns.Add("ConditionType", typeof(int));
+                            items.Columns.Add("ConditionFieldTypeID", typeof(int));
+                            items.Columns.Add("ConditionIntersectTypeID", typeof(int));
+                            items.Columns.Add("Operator", typeof(string));
+
+                            var values = new DataTable();
+                            values.Columns.Add("Uid", typeof(Guid));
+                            values.Columns.Add("Value", typeof(string));
+
+                            #endregion
+
+                            if (metricAssetVersion.Conditions == null)
+                            {
+                                metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+                            }
+
+                            model.ConditionGroups.ForEach(group =>
+                            {
+                                if (group.ConditionItems.Count > 0)
+                                {
+                                    var usedFieldTypeIDs = new List<int>();
+                                    var usedIntersectTypeIDs = new List<int>();
+
+                                    var dbGroup = metricAssetVersion.Conditions.SingleOrDefault(i => i.Uid == group.Uid);
+
+                                    bool okToSendGroup = false;
+
+                                    if (dbGroup == null) dbGroup = new MetricAssetVersionCondition { Uid = Guid.NewGuid() };
+                                    if (dbGroup.Items == null) dbGroup.Items = new List<MetricAssetVersionConditionItem>();
+
+                                    dbGroup.AssetVersionUid = metricAssetVersion.Uid;
+                                    dbGroup.MatchType = group.MatchType;
+                                    dbGroup.Position = group.Position;
+                                    dbGroup.Threshold = group.Threshold;
+                                    dbGroup.Weight = group.Weight;
+
+                                    group.ConditionItems.ForEach(item =>
+                                    {
+                                        var dbItem = dbGroup.Items.SingleOrDefault(i => (item.Uid != Guid.Empty) && (i.Uid == item.Uid));
+                                        if (dbItem == null) dbItem = new MetricAssetVersionConditionItem { Uid = Guid.NewGuid(), AssetVersionConditionUid = dbGroup.Uid };
+
+                                        bool okToSendItem = item.Values.Any(i => !string.IsNullOrEmpty(i));
+
+                                        dbItem.ConditionType = item.ConditionType;
+                                        dbItem.Operator = item.Operator;
+
+                                        if (item.ConditionFieldTypeID.HasValue)
+                                        {
+                                            // Only one of the specific field per condition group.
+                                            if (usedFieldTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                            {
+                                                okToSendItem = false;
+                                            }
+                                            else
+                                            {
+                                                dbItem.ConditionFieldTypeID = item.ConditionFieldTypeID.Value;
+                                                dbItem.ConditionIntersectTypeID = null;
+                                                usedFieldTypeIDs.Add(item.ConditionFieldTypeID.Value);
+                                            }
+                                        }
+                                        else if (item.ConditionIntersectTypeID.HasValue)
+                                        {
+                                            // Only one of the specific relationship per condition group.
+                                            if (usedIntersectTypeIDs.Contains(item.ConditionFieldTypeID.Value))
+                                            {
+                                                okToSendItem = false;
+                                            }
+                                            else
+                                            {
+                                                dbItem.ConditionFieldTypeID = null;
+                                                dbItem.ConditionIntersectTypeID = item.ConditionIntersectTypeID;
+                                                usedIntersectTypeIDs.Add(item.ConditionFieldTypeID.Value);
+                                            }
+                                        }
+
+                                        if (okToSendItem)
+                                        {
+                                            item.Values.ForEach(value =>
+                                            {
+                                                if (!string.IsNullOrEmpty(value))
+                                                {
+                                                    var valueRow = values.NewRow();
+                                                    valueRow["Uid"] = dbItem.Uid;
+                                                    valueRow["Value"] = value.Trim();
+                                                    values.Rows.Add(valueRow);
+                                                }
+                                            });
+
+                                            var itemRow = items.NewRow();
+                                            itemRow["AssetVersionConditionUid"] = dbItem.AssetVersionConditionUid;
+                                            itemRow["Uid"] = dbItem.Uid;
+                                            itemRow["ConditionType"] = (int)dbItem.ConditionType;
+                                            if (dbItem.ConditionFieldTypeID.HasValue) itemRow["ConditionFieldTypeID"] = dbItem.ConditionFieldTypeID;
+                                            if (dbItem.ConditionIntersectTypeID.HasValue) itemRow["ConditionIntersectTypeID"] = dbItem.ConditionIntersectTypeID;
+                                            itemRow["Operator"] = (int)dbItem.Operator;
+                                            items.Rows.Add(itemRow);
+
+                                            okToSendGroup = true;
+                                        }
+
+                                    });
+
+                                    if (okToSendGroup)
+                                    {
+                                        var groupRow = groups.NewRow();
+                                        groupRow["AssetVersionUid"] = dbGroup.AssetVersionUid;
+                                        groupRow["Uid"] = dbGroup.Uid;
+                                        groupRow["MatchType"] = (int)dbGroup.MatchType;
+                                        groupRow["Position"] = dbGroup.Position;
+                                        if (dbGroup.Threshold.HasValue) groupRow["Threshold"] = dbGroup.Threshold.Value;
+                                        if (dbGroup.Weight.HasValue) groupRow["Weight"] = dbGroup.Weight.Value;
+                                        groups.Rows.Add(groupRow);
+                                    }
+                                }
                             });
-                            Company.Entry(i).State = System.Data.Entity.EntityState.Deleted;
-                        });
-                        Company.Entry(g).State = System.Data.Entity.EntityState.Deleted;
-                    });               
+
+                            if (groups.Rows.Count > 0)
+                            { 
+                                Company.Connection.Execute(@"
+create table #Groups (AssetVersionUid uniqueidentifier not null, Uid uniqueidentifier not null, MatchType int not null, [Position] int not null, Threshold float null, Weight decimal(5,3) null);
+create table #Items (AssetVersionConditionUid uniqueidentifier not null, Uid uniqueidentifier not null, ConditionType int not null, ConditionFieldTypeID int not null, ConditionIntersectTypeID int null, Operator varchar(10) null );
+create table #Values ( Uid uniqueidentifier not null, Value nvarchar(250) not null );", transaction: trans);
+
+                                using (var bulkCopy = Company.Connection.CreateBulkCopy("#Groups", trans: trans))
+                                {
+                                    bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("MatchType", "MatchType");
+                                    bulkCopy.ColumnMappings.Add("Position", "Position");
+                                    bulkCopy.ColumnMappings.Add("Threshold", "Threshold");
+                                    bulkCopy.ColumnMappings.Add("Weight", "Weight");
+                                    bulkCopy.WriteToServer(groups);
+                                }
+                                using (var bulkCopy = Company.Connection.CreateBulkCopy("#Items", trans: trans))
+                                {
+                                    bulkCopy.ColumnMappings.Add("AssetVersionConditionUid", "AssetVersionConditionUid");
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("ConditionType", "ConditionType");
+                                    bulkCopy.ColumnMappings.Add("ConditionFieldTypeID", "ConditionFieldTypeID");
+                                    bulkCopy.ColumnMappings.Add("ConditionIntersectTypeID", "ConditionIntersectTypeID");
+                                    bulkCopy.ColumnMappings.Add("Operator", "Operator");
+                                    bulkCopy.WriteToServer(items);
+                                }
+                                using (var bulkCopy = Company.Connection.CreateBulkCopy("#Values", trans: trans))
+                                {
+                                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                                    bulkCopy.ColumnMappings.Add("Value", "Value");
+                                    bulkCopy.WriteToServer(values);
+                                }
+
+                                Company.Connection.Execute(@"
+delete  T
+from    metrics.AssetVersionCondition T
+        left join #Groups S on S.AssetVersionUid = T.AssetVersionUid and S.Uid = T.Uid
+where   T.AssetVersionUid = @V
+        and S.Uid is null;
+
+merge   metrics.AssetVersionCondition as T
+using   #Groups as S
+on      (T.AssetVersionUid = S.AssetVersionUid and T.Uid = S.Uid)
+when    matched then
+update  set
+        T.MatchType = S.MatchType,
+        T.Position = S.Position,
+        T.Threshold = S.Threshold,
+        T.Weight = S.Weight
+when    not matched by target then
+insert  (AssetVersionUid, Uid, MatchType, [Position], Threshold, Weight)
+values  (S.AssetVersionUid, S.Uid, S.MatchType, S.[Position], S.Threshold, S.Weight);
+
+delete  T
+from    metrics.AssetVersionConditionItem T
+        inner join #Groups G on G.Uid = T.AssetVersionConditionUid
+        left join #Items S on S.AssetVersionConditionUid = G.Uid and S.Uid = T.Uid
+where   S.Uid is null;
+
+merge   metrics.AssetVersionConditionItem as T
+using   #Items as S
+on      (T.AssetVersionConditionUid = S.AssetVersionConditionUid and T.Uid = S.Uid)
+when    matched then
+update  set
+        T.ConditionType = S.ConditionType,
+        T.ConditionFieldTypeID = S.ConditionFieldTypeID,
+        T.ConditionIntersectTypeID = S.ConditionIntersectTypeID,
+        T.Operator = S.Operator
+when    not matched by target then
+insert  (AssetVersionConditionUid, Uid, ConditionType, [ConditionFieldTypeID], ConditionIntersectTypeID, Operator)
+values  (S.AssetVersionConditionUid, S.Uid, S.ConditionType, S.[ConditionFieldTypeID], S.ConditionIntersectTypeID, S.Operator);
+
+delete  T
+from    metrics.AssetVersionConditionItemValue T
+        inner join #Items I on I.Uid = T.Uid
+        left join #Values S on S.Uid = I.Uid and S.Value = T.Value
+where   S.Uid is null;
+
+merge   metrics.AssetVersionConditionItemValue as T
+using   #Values as S
+on      (T.Uid = S.Uid and T.Value = S.Value)
+when    not matched by target then
+insert  (Uid, Value)
+values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: trans);
+                            }
+                        }
+                        else
+                        {
+                            if (!isNew)
+                            {
+                                Company.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+                            }
+                        }
+                    }
+
+                    #endregion
+
+                    trans.Commit();
+                }
+                catch (WorkStatusException ex)
+                {
+                    trans.Rollback();
+                    return new WorkHttpStatus(ex.Status, errorTitle, ex.Message);
+                }
+                catch
+                {
+                    trans.Rollback();
+                    return new WorkHttpStatus(HttpStatusCode.InternalServerError, errorTitle, $"An unhandled error occured. Please try your request again.");
                 }
             }
 
-            #endregion
+            Company.SendScoreEventWithPayload(Guid.NewGuid(), isNew ? ScoreQueueChangeType.MeasureCreated : ScoreQueueChangeType.MeasureChanged, metricAsset);
 
-            Company.Update(metricAssetVersion);
-
-            if (isNew)
-            {
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureCreated, metricAsset);
-            }
-            {
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
-            }
-
-            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+            return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
 
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
@@ -650,7 +880,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     from	h
                     order by [Level] asc";
 
-            if (cnn.State != System.Data.ConnectionState.Open)
+            if (cnn.State != ConnectionState.Open)
                 cnn.Open();
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
@@ -808,13 +1038,8 @@ from    metrics.Allocation  ma
 														CI.ConditionIntersectTypeID,
                                                         IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
-														(
-															select	[Value]
-															from	metrics.AssetVersionConditionItemValue
-															where	Uid = CI.Uid
-															for json path
-														) as [Values]
-												from	metrics.AssetVersionConditionItem CI
+														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
+                                                from	metrics.AssetVersionConditionItem CI
                                                         left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
@@ -1093,29 +1318,6 @@ for json path";
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
             
             return (result, "");
-        }
-
-        public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
-        {
-            if (model.AllocationUid == Guid.Empty)
-            {
-                if (model.AssetTypeUid.HasValue)
-                {
-                    if (!model.ScoreType.HasValue)
-                    {
-                        model.ScoreType = ScoreType.Governance;
-                    }
-                    return Company.Filter<MetricAllocation>(a => a.AssetTypeUid == model.AssetTypeUid.Value && a.ScoreType == model.ScoreType.Value && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return Company.GetByUid<MetricAllocation>(model.AllocationUid);
-            }
         }
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
@@ -1419,12 +1621,7 @@ from    metrics.ScoreItem I
 														CI.ConditionIntersectTypeID,
                                                         IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
-														(
-															select	[Value]
-															from	metrics.AssetVersionConditionItemValue
-															where	Uid = CI.Uid
-															for json path
-														) as [Values]
+														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
 												from	metrics.AssetVersionConditionItem CI
                                                         left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID

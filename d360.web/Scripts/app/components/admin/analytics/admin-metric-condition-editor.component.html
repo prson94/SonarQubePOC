@@ -10,39 +10,41 @@
         <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [(ngModel)]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="selectedItem">
                 <div>
-                    <span>{{parseOperator(condition,item.label)}}</span>
+                    <span>{{item.label}}</span>
                 </div>
             </ng-template>
             <ng-template let-oper pTemplate="item">
                 <div class="ig-colorfield-item">
-                    <span class="ig-colorfield-item-label">{{parseOperator(condition,oper.label)}}</span>
+                    <span class="ig-colorfield-item-label">{{oper.label}}</span>
                 </div>
             </ng-template>
         </p-dropdown>
         <div class="input-container">
-            <div *ngIf="condition?.FieldType?.Type == 'Text'">
-                <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" maxlength="250" />
-            </div>
-            <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [dataKey]="'value'" [options]="condition.lookupOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
-            </div>
-            <div *ngIf="condition?.FieldType?.Type == 'Date'">
-                <div (click)="doToggle($event,pc1)" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
-                    <p-calendar #pc1 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
-                    <i class="fa fa-calendar"></i>
+            <div *ngIf="checkConditionOperator(condition)">
+                <div *ngIf="condition?.FieldType?.Type == 'Text'">
+                    <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" maxlength="250" />
                 </div>
-            </div>
-            <div (click)="doToggle($event,pc2)" *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
-                <p-calendar #pc2 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
-            </div>
-            <div *ngIf="condition?.FieldType?.Type == 'Number'">
-                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" />
-            </div>
-            <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
-                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [step]="0.25" />
-            </div>
-            <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
-                <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
+                <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
+                    <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [dataKey]="'value'" [options]="condition.lookupOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
+                </div>
+                <div *ngIf="condition?.FieldType?.Type == 'Date'">
+                    <div (click)="doToggle($event,pc1)" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
+                        <p-calendar #pc1 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+                <div (click)="doToggle($event,pc2)" *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
+                    <p-calendar #pc2 appendTo="body" [baseZIndex]="20000" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+                </div>
+                <div *ngIf="condition?.FieldType?.Type == 'Number'">
+                    <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" />
+                </div>
+                <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
+                    <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" [step]="0.25" />
+                </div>
+                <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
+                    <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
+                </div>
             </div>
         </div>
         <div class="actions-btn">

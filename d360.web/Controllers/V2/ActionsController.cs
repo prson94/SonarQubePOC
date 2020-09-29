@@ -64,15 +64,15 @@ namespace d360.web.Controllers.V2
        ]
         public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc")
         {
-            List<string> selectColumns = new List<string>() { 
+            List<string> selectColumns = new List<string>() {
                 "I.Uid", "I.CompletedOn",
-                "A.Uid as AssetUid", "A.AssetTypeUid", "A.TypeName as AssetTypeName", 
-                "IT.uid as ActionTypeUid", "IT.Name as ActionTypeName", 
-                "I.CreatedOn", "CR.Uid as CreatedByUid", "I.UpdatedOn", "UR.Uid as UpdatedByUid" 
+                "A.Uid as AssetUid", "A.AssetTypeUid", "A.TypeName as AssetTypeName",
+                "IT.uid as ActionTypeUid", "IT.Name as ActionTypeName",
+                "I.CreatedOn", "CR.Uid as CreatedByUid", "I.UpdatedOn", "UR.Uid as UpdatedByUid"
             };
             List<string> queries = new List<string>();
             List<string> fieldJoins = new List<string>() {
-                "inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID", 
+                "inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID",
                 "left join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID",
                 "left join[reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
                 "left join[reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
@@ -93,7 +93,7 @@ namespace d360.web.Controllers.V2
 
             Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
             string isValid = isPageSizeAndNumValid(pageParams);
-            
+
             if (!string.IsNullOrEmpty(isValid))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
@@ -123,10 +123,11 @@ namespace d360.web.Controllers.V2
                 _order = $"I.CreatedOn";
                 isOrderByFieldValid = true;
             }
-            else 
+            else
             {
                 _order = _order.Trim();
-                switch (_order) {
+                switch (_order)
+                {
                     case "CompletedOn":
                         _order = $"I.CompletedOn";
                         isOrderByFieldValid = true;
@@ -245,10 +246,10 @@ namespace d360.web.Controllers.V2
                 conditions += " and " + string.Join(" and ", queries);
                 conditions = conditions.Trim();
             }
-           
+
             string resultsSql = $"select {columns} from Issue I {joins} where {workflowCheckSql} {conditions} order by {_order} {_direction} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-            string countSql = string.IsNullOrEmpty(conditions) ? 
-                $"select count(*) from Issue I where {workflowCheckSql}" : 
+            string countSql = string.IsNullOrEmpty(conditions) ?
+                $"select count(*) from Issue I where {workflowCheckSql}" :
                 $"select count(*) from Issue I {joins} where {workflowCheckSql} {conditions}";
 
             #endregion
@@ -465,7 +466,7 @@ for json path";
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {AssetTypeUid} could not be found."));
 
-                var allocations=  await this.issueRepository.GetAllocationByAssetType(AssetTypeUid);
+                var allocations = await this.issueRepository.GetAllocationByAssetType(AssetTypeUid);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations)));
             }
             catch (Exception ex)
@@ -619,10 +620,10 @@ for json path";
                 var updateSQL = $@"Update [dbo].[IssueType]
                                         set [Name]= @name, [Description]=@desc, [UpdatedOn] = @date ,[UpdatedBy] = @user
                                    Where uid = @uid";
-                    
+
 
                 var res = await Company.Database.Connection.ExecuteAsync(updateSQL,
-                new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });                
+                new { name = model.Name.Trim(), desc = model.Description, user = Company.CurrentResourceID, uid = model.Uid, date = DateTime.UtcNow });
 
                 result.Uid = (Guid)model.Uid;
                 result.Message = "Action Type updated";
@@ -640,7 +641,7 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
-        
+
         /// <summary>
         /// Deletes a workflow action type
         /// </summary>
@@ -680,7 +681,7 @@ for json path";
                                 DELETE FROM IssueType Where uid = @uid";
 
             var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
-                new { uid = actionTypeUid , issueTypeId = issueType.ID});
+                new { uid = actionTypeUid, issueTypeId = issueType.ID });
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new AddIssueTypeApiModel() { Uid = actionTypeUid, Message = "Action Type was deleted", Success = true })));
         }
@@ -877,6 +878,195 @@ for json path";
             else
                 return bool.Parse(setting.Value);
 
+        }        
+
+        /// <summary>
+        /// Adds allocations to a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type the allocations are to be added to</param>
+        /// <param name="assetTypeUids">Collection of asset type Uids to be added</param>
+        [
+            Route("allocations/{actionTypeUid:Guid}"),
+            HttpPost,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Allocations Added Successfully.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Uid(s) provided are not valid.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> AddActionTypeAllocations(Guid actionTypeUid, List<string> assetTypeUids)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+
+                if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+                }
+
+                var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+                if (issueType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+
+                if (assetTypeUids.Count == 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.EmptyAllocationRequest));
+                }
+
+                List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
+
+                foreach (var assetTypeUid in assetTypeUids)
+                {
+                    if (!Guid.TryParse(assetTypeUid, out Guid uid))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
+                    }
+
+                    var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
+
+                    if (assetType == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
+                    }
+
+                    if (!Company.IssueTypeRelations.Any(itr => itr.AssetTypeID == assetType.ID && itr.IssueTypeID == issueType.ID))
+                    {
+                        var allocation = new IssueTypeRelation() { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID };
+
+                        allocations.Add(allocation);
+                    }
+                }
+
+                string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
+                var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
+
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddAllocationsSuccessful));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Gets allocations for a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type</param>
+        [
+            Route("allocations/{actionTypeUid:Guid}"),
+            HttpGet,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "List of allocations.", typeof(List<IssueTypeAllocationsResponse>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Uid provided is not valid.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetActionTypeAllocations(Guid actionTypeUid)
+        {
+            try
+            {
+                if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));                    
+                }
+
+                var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+                if (issueType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));                   
+                }
+
+                string allocationsSQL = @"
+                                        SELECT 
+                                            T.Uid as AssetTypeUid, 
+		                                    T.Name, 
+		                                    T.[Class], 
+		                                    P.Path
+                                        FROM 
+                                            IssueTypeRelation R
+                                            INNER JOIN AssetType T ON T.ID = R.AssetTypeID
+                                            CROSS APPLY dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+                                        WHERE 
+                                            R.IssueTypeID = @issueTypeID";
+
+                var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
+        }    
+
+        /// <summary>
+        /// Delete an allocation from a workflow action type
+        /// </summary>
+        /// <param name="actionTypeUid">Uid of the action type the allocation is to be deleted from</param>
+        /// <param name="assetTypeUid">Uid of the asset type of the allocation to be deleted</param>
+        [
+            Route("allocations/{actionTypeUid:Guid}/{assetTypeUid:Guid}"),
+            HttpDelete,
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Allocation Deleted Successfully.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Uid(s) provided are not valid.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteActionTypeAllocations(Guid actionTypeUid, Guid assetTypeUid)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage));
+
+                if (actionTypeUid == null || actionTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+                }
+
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.AssetTypeUidIsNotValid));
+                }
+
+                var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
+
+                if (issueType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ActionApiMessages.InvalidActionTypeUid));
+                }
+
+                var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);
+
+                if (assetType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
+                }                
+
+                string allocationsSQL = @"DELETE FROM IssueTypeRelation WHERE AssetTypeID = @AssetTypeID and IssueTypeID = @IssueTypeID";
+                var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, new { AssetTypeID = assetType.ID, IssueTypeID = issueType.ID});
+
+                if(res == 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetType.Name, issueType.Name)));
+                }
+
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.DeleteAllocationSuccessful));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage));
+            }
         }
     }    
 }

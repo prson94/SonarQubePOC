@@ -20,7 +20,7 @@
                 </select>
             </div>
         </div>
-        <div *ngIf="condition['@FieldTypeID'] != '' && condition['@Operator'] != 'C'">
+        <div *ngIf="condition['@FieldTypeID'] != '' && ['C','P','NP'].indexOf(condition['@Operator']) == -1">
             <div *ngIf="selectedType == 'boolean' || selectedType == 'bool'">
                 <div class="FieldName">
                     Value

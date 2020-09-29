@@ -16,7 +16,11 @@ export const SWITCH_VALUE_ACCESSOR: any = {
     providers: [SWITCH_VALUE_ACCESSOR],
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./switch.less'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "(click)": "focus($event)",
+        '(focus)': 'focus($event)',
+    }
 })
 export class Switch implements ControlValueAccessor, OnInit  {        
     @Input() trueLabel = "Yes";
@@ -104,6 +108,9 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled
+    }
+    public focus(evt) {
+        if (this._el) this._el.nativeElement.focus();
     }
 }
 

@@ -23,10 +23,7 @@ namespace d360.core.entities.Metric
         public Guid AllocationUid { get; set; }
 
         [DataMember, JsonProperty(Order = 4)]
-        public Guid? AssetTypeUid { get; set; }
-
-        [DataMember, JsonProperty(Order = 5)]
-        public ScoreType? ScoreType { get; set; }
+        public MetricAssetDefinitionViewModel Definition { get; set; }
 
         [DataMember, JsonProperty(Order = 6)]
         public bool IsGroup { get; set; }
@@ -48,9 +45,6 @@ namespace d360.core.entities.Metric
         [DataMember, JsonProperty(Order = 11)]
         public double? Threshold { get; set; }
 
-        [DataMember, JsonProperty(Order = 12)]
-        public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
-
         [DataMember, JsonProperty(Order = 13)]
         public bool MatchConditionsOnly { get; set; } = false;
 
@@ -62,6 +56,131 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 22)]
         public bool HasResults { get; set; } = false;
+
+        [IgnoreDataMember]
+        public string CurrentConditionHash 
+        { 
+            get 
+            {
+                var hashItems = from g in ConditionGroups
+                                from c in g.ConditionItems
+                                from v in c.Values
+                                orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v
+                                select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v}";
+                string newConditionHash = string.Join("|", hashItems);
+                newConditionHash = newConditionHash.GetD3sHashString();
+                return newConditionHash;
+            }
+        }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionViewModel
+    {
+        [DataMember]
+        public MetricAssetDefinitionDataQualityViewModel DataQuality { get; set; }
+
+        [DataMember] 
+        public MetricAssetDefinitionGovernanceViewModel Governance { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionDataQualityViewModel
+    {
+        [DataMember] 
+        public MetricRuleResultOperation ResultOperation { get; set; }
+        [DataMember] 
+        public Guid ResultPathUid { get; set; }
+        [DataMember] 
+        public MetricMatchType FilterMatchType { get; set; }
+        [DataMember] 
+        public List<MetricAssetDefinitionDataQualityFilterViewModel> Filters { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionDataQualityFilterViewModel
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember] 
+        public string FieldTypeName { get; set; }
+        [DataMember] 
+        public Operator Operator { get; set; }
+        [DataMember] 
+        public List<string> Values { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernanceViewModel
+    {
+        [DataMember]
+        public MetricGovernanceCheckType Check { get; set; }
+
+        [DataMember]
+        public MetricAssetDefinitionGovernanceFieldViewModel Field { get; set; }
+        [DataMember] 
+        public MetricAssetDefinitionGovernancePredicateViewModel Predicate { get; set; }
+        [DataMember] 
+        public MetricAssetDefinitionGovernanceRelationViewModel Relation { get; set; }
+        [DataMember] 
+        public MetricAssetDefinitionGovernanceOwnerViewModel Owner { get; set; }
+        [DataMember] 
+        public MetricAssetDefinitionGovernanceExternalViewModel External { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernanceExternalViewModel
+    {
+        [DataMember]
+        public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
+        
+        [DataMember]
+        public string Instructions { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernanceFieldViewModel
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+
+        [DataMember] 
+        public string FieldTypeName { get; set; }
+        
+        [DataMember] 
+        public Operator Operator { get; set; }
+        
+        [DataMember] 
+        public List<string> Values { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernancePredicateViewModel
+    {
+        [DataMember] 
+        public Guid PredicateUid { get; set; }
+        [DataMember] 
+        public Operator Operator { get; set; }
+        [DataMember] 
+        public List<string> Values { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernanceRelationViewModel
+    {
+        [DataMember] 
+        public Guid IntersectTypeUid { get; set; }
+        [DataMember] 
+        public Operator Operator { get; set; }
+        [DataMember] 
+        public List<string> Values { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetDefinitionGovernanceOwnerViewModel
+    {
+        [DataMember] 
+        public Guid ResponsibilityTypeUid { get; set; }
     }
 
     [DataContract]
@@ -136,10 +255,8 @@ namespace d360.core.entities.Metric
         [DataMember]
         public MetricConditionType ConditionType { get; set; }
         
-        //[DataMember]
         public int? ConditionFieldTypeID{ get; set; }
 
-        //[DataMember]
         public int? ConditionIntersectTypeID { get; set; }
 
         [DataMember]
@@ -148,11 +265,11 @@ namespace d360.core.entities.Metric
         [DataMember]
         public Guid? ConditionIntersectTypeUid { get; set; }
 
-        [DataMember, StringLength(10)]
-        public string Operator { get; set; }
+        [DataMember]
+        public Operator Operator { get; set; }
 
         [DataMember]
-        public List<MetricAssetVersionConditionItemValue> Values { get; set; }
+        public List<string> Values { get; set; }
 
     }
 
