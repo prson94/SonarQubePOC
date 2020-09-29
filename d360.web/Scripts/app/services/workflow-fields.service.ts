@@ -30,12 +30,10 @@ export class WorkflowFieldsService {
     }
 
     getUsedFields() {
-       // console.log(this.usedFields);
         return this.usedFields;
     }
 
     getFields() {
-        //console.log(this.formFields);
         return this.formFields;
     }
 
@@ -52,7 +50,6 @@ export class WorkflowFieldsService {
     pushFormField(field: any) {
         this.formFields.push(field);
         this.formFieldsSource.next(this.formFields);
-       // console.log(this.formFields);
     }
 
     pushFormFields(fields: any[]) {

@@ -859,7 +859,7 @@ namespace d360.model
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.HTTPRequest:
-                        SendHttpRequest(itemStep, stepSettings);
+                        SendHttpRequest(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
                     default:
@@ -914,62 +914,78 @@ namespace d360.model
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
         }
 
-        private async Task SendHttpRequest(WorkflowItemStep item, WorkflowItemStepSettingModel settings)
+        private async Task SendHttpRequest(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
         {
             if (settings == null)
                 throw new Exception($"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
 
             var requestSettings = settings.HttpRequestSettings;
 
-            if (string.IsNullOrEmpty(requestSettings.Url) || !Uri.IsWellFormedUriString(requestSettings.Url, UriKind.Absolute))
+            if (string.IsNullOrEmpty(requestSettings.Url))
                 throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
 
-            HttpRequestMessage msg = new HttpRequestMessage();
+            var prefix = "";
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+
+                cnn.Close();
+            }
+
+            HttpRequestMessage request = new HttpRequestMessage();
             using (HttpClient client = new HttpClient())
             {
 
                 switch (requestSettings.Method.ToUpper())
                 {
                     case "GET":
-                        msg.Method = HttpMethod.Get;
+                        request.Method = HttpMethod.Get;
                         break;
                     case "DELETE":
-                        msg.Method = HttpMethod.Delete;
+                        request.Method = HttpMethod.Delete;
                         break;
                     case "POST":
-                        msg.Method = HttpMethod.Post;
+                        request.Method = HttpMethod.Post;
                         break;
                     case "PUT":
-                        msg.Method = HttpMethod.Put;
+                        request.Method = HttpMethod.Put;
                         break;
                     default:
                         throw new Exception($"ERROR - INVALID METHOD PASSED TO HTTP REQUEST.");
                 }
 
-                msg.RequestUri = new Uri(requestSettings.Url);
+                var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+
+                if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+                    throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
+
+                request.RequestUri = new Uri(uri);
                 
                 if (requestSettings?.Headers?.Any() == true)
                 {
                     requestSettings.Headers.ForEach(h =>
                     {
-                        msg.Headers.Add(h.Key, h.Value);
+                        request.Headers.Add(h.Key, h.Value);
                     });
                 }
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
-                    var contentArray = Encoding.UTF8.GetBytes(requestSettings.Body);
-                    msg.Content = new ByteArrayContent(contentArray);
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
+                    var contentArray = Encoding.UTF8.GetBytes(body);
+                    request.Content = new ByteArrayContent(contentArray);
                 }
 
-                var response = await client.SendAsync(msg);
+                var response = await client.SendAsync(request);
 
-
+                //save results
                 if (!string.IsNullOrEmpty(item.Settings))
                 {
                     var root = XElement.Parse(item.Settings);
 
-                    var xResponse = new XElement("response");
+                    var xResponse = new XElement("HTTPResponse");
 
                     xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
                     xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
@@ -2472,6 +2488,26 @@ namespace d360.model
                 var path = item?.UID == null ? null : Query<string>(@"select graph.GetPath(AN.Segments, ' > ', ' / ') from graph.assetNode AN where AN.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 
                 result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
+            }
+
+            if (result.Contains("[RESPONSE_STATUS_CODE]"))
+            {
+                var root = XElement.Parse(itemStep.Settings);
+                if (root.Element("HTTPResponse") != null)
+                {
+                    var status = root.Element("HTTPResponse").Element("StatusCode")?.Value ?? "";
+                    result = result.Replace("[RESPONSE_STATUS_CODE]", status);
+                }
+            }
+
+            if (result.Contains("[RESPONSE_BODY]"))
+            {
+                var root = XElement.Parse(itemStep.Settings);
+                if (root.Element("HTTPResponse") != null)
+                {
+                    var body = root.Element("HTTPResponse").Element("Body")?.Value ?? "";
+                    result = result.Replace("[RESPONSE_BODY]", body);
+                }
             }
 
             return result;
