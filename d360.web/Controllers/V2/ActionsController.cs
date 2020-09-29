@@ -834,7 +834,15 @@ for json path";
 
             foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
             {                
-                var lookupSQL = "Select * from FieldLookupValue where fieldTypeId = @fieldTypeId";
+                var lookupSQL = @"Select 
+                                    * 
+                                  from 
+                                    FieldLookupValue 
+                                  where 
+                                    fieldTypeId = @fieldTypeId 
+                                    and 
+                                    text in @lookupValues
+                                  ";
 
                 string[] lookupValues = { };
 
@@ -845,7 +853,21 @@ for json path";
 
                 if (lookupValues.Length > 0)
                 {
-                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID });
+                    if(lookupValues.Any(x => x.All(char.IsDigit)))
+                    {
+                        lookupSQL = $@"{lookupSQL}
+                                      UNION
+                                      Select
+                                        *
+                                      from
+                                        FieldLookupValue
+                                      where
+                                        fieldTypeId = @fieldTypeId
+                                        and
+                                        Value in @lookupIdValues";
+                    }
+
+                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues, lookupIdValues = lookupValues.Where(x => x.All(char.IsDigit)) });
 
                     List<string> fieldValues = new List<string>();
                     foreach (var lookupValue in lookupValues)
@@ -853,16 +875,21 @@ for json path";
                         if (!fieldLookupValues.Any(x => x.Value.ToString() == lookupValue))
                         {
                             if (fieldLookupValues.Any(x => x.Text == lookupValue))
-                            {
+                            {  
                                 fieldValues.Add(fieldLookupValues.FirstOrDefault(x => x.Text == lookupValue).Value.ToString());
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", $"Lookup Value  '{lookupValue}' is not valid for lookup  '{ft.Name}'.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
                             }
                         }
+                        else
+                        {
+                            fieldValues.Add(lookupValue);
+                        }
                     }
-                    model.Fields[ft.Name] = string.Join(",", fieldValues);
+                    
+                    model.Fields[ft.Name] = string.Join(",", fieldValues.Distinct());
                 }
             }
 
