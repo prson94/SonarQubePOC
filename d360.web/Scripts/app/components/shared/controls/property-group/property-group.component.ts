@@ -111,7 +111,6 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     }
 
     onInputKeyUp(event) {
-        console.log(event);
         event.preventDefault();
         event.stopPropagation();
         switch (event.which) {
