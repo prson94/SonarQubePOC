@@ -195,6 +195,7 @@
     <Compile Include="workflow\WorkflowFormFieldModel.cs" />
     <Compile Include="workflow\WorkflowFormFormModel.cs" />
     <Compile Include="workflow\WorkflowFormModel.cs" />
+    <Compile Include="workflow\WorkflowHttpRequestSettings.cs" />
     <Compile Include="workflow\WorkflowItemStepSettingsModel.cs" />
     <Compile Include="workflow\WorkflowRegistrationCriteriaProcessor.cs" />
     <Compile Include="workflow\WorkflowRegistrationSettingsModel.cs" />

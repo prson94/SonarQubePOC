@@ -18,6 +18,8 @@ using System.Xml.Linq;
 using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http;
+using System.IO;
 
 namespace d360.model
 {
@@ -856,6 +858,10 @@ namespace d360.model
                         ChangeItemState(itemStep);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.HTTPRequest:
+                        SendHttpRequest(itemStep, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -906,6 +912,73 @@ namespace d360.model
             Console.WriteLine($"Executing - [workflow].[changeItemState] {item.Step.Version.TypeID}, {item.Step.ID}, {item.ItemID} ");
 
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
+        }
+
+        private async Task SendHttpRequest(WorkflowItemStep item, WorkflowItemStepSettingModel settings)
+        {
+            if (settings == null)
+                throw new Exception($"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
+
+            var requestSettings = settings.HttpRequestSettings;
+
+            if (string.IsNullOrEmpty(requestSettings.Url) || !Uri.IsWellFormedUriString(requestSettings.Url, UriKind.Absolute))
+                throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
+
+            HttpRequestMessage msg = new HttpRequestMessage();
+            using (HttpClient client = new HttpClient())
+            {
+
+                switch (requestSettings.Method.ToUpper())
+                {
+                    case "GET":
+                        msg.Method = HttpMethod.Get;
+                        break;
+                    case "DELETE":
+                        msg.Method = HttpMethod.Delete;
+                        break;
+                    case "POST":
+                        msg.Method = HttpMethod.Post;
+                        break;
+                    case "PUT":
+                        msg.Method = HttpMethod.Put;
+                        break;
+                    default:
+                        throw new Exception($"ERROR - INVALID METHOD PASSED TO HTTP REQUEST.");
+                }
+
+                msg.RequestUri = new Uri(requestSettings.Url);
+                
+                if (requestSettings?.Headers?.Any() == true)
+                {
+                    requestSettings.Headers.ForEach(h =>
+                    {
+                        msg.Headers.Add(h.Key, h.Value);
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(requestSettings.Body))
+                {
+                    var contentArray = Encoding.UTF8.GetBytes(requestSettings.Body);
+                    msg.Content = new ByteArrayContent(contentArray);
+                }
+
+                var response = await client.SendAsync(msg);
+
+
+                if (!string.IsNullOrEmpty(item.Settings))
+                {
+                    var root = XElement.Parse(item.Settings);
+
+                    var xResponse = new XElement("response");
+
+                    xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
+                    xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
+
+                    root.Add(xResponse);
+                    item.Settings = root.ToString();
+                    await SaveChangesAsync();
+                }
+            }
         }
 
         private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)

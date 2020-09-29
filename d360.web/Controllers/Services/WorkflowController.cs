@@ -1164,7 +1164,6 @@ order by wi.StartedOn desc";
             return TransitionType.Always.GetList();
         }
 
-
         [Route("admintypes"), HttpGet]
         public HttpResponseMessage GetWorkflowAdminTypes()
         {
