@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
 import { SelectItem } from 'primeng/api';
 import { FieldTypeAPIModelFieldCondition } from './field-condition-grid.models';
+import { OperatorModel, Operator } from '../../../../models/operator.model';
 
 @Component({
     selector: 'field-condition-grid',
@@ -14,14 +15,7 @@ import { FieldTypeAPIModelFieldCondition } from './field-condition-grid.models';
 export class FieldConditionGrid implements OnInit, OnChanges {
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
 
-
     fieldsSelect: SelectItem[] = [];
-
-    private booleanValues = [
-        { label: 'True', value: 'true' },
-        { label: 'False', false: 'false' }
-    ]
-
 
     private conditions: Condition[] = [];
     @ViewChild('conditionsForm', { static: true }) formGroup: NgForm;
@@ -65,7 +59,19 @@ export class FieldConditionGrid implements OnInit, OnChanges {
 
 
     addNewCondition() {
-        this.conditions.push({ fieldApiName: '', operator: '', value: null });
+        this.conditions.push({ fieldApiName: '', operator: '', value: null, disabled: false });
+    }
+
+    onConditionChange(event, condition: Condition) {
+        var disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
+        if (disabledValuesOperators.some(x => x === +event.value)) {
+            condition.disabled = true;
+            condition.value = 'true';
+        }
+        else {
+            condition.disabled = false;
+            condition.value = '';
+        }
     }
 
     getTypeForCondition(item: Condition) {
@@ -79,6 +85,7 @@ export class FieldConditionGrid implements OnInit, OnChanges {
     }
 
     getValues(item: Condition) {
+        if (item.disabled) return [];
         return this.getFieldType(item).Values;
     }
 
@@ -93,4 +100,6 @@ export class Condition {
     fieldApiName: string;
     operator: string;
     value: any;
+
+    disabled: boolean = true;
 }

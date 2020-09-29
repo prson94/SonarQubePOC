@@ -72,8 +72,7 @@ namespace d360.core.enums
             OperatorFieldTypeRequirements(false)
         ]
         After,
-        [
-            NotYetUsed, 
+        [ 
             Name("is between"), 
             Description(""), 
             OperatorValueCountRange(2, 2), 
@@ -130,7 +129,6 @@ namespace d360.core.enums
         ]
         GreaterThanOrEquals,
         [
-            NotYetUsed, 
             Name("in"), 
             Description(""), 
             OperatorValueCountRange(1, 1000), 
@@ -139,7 +137,6 @@ namespace d360.core.enums
             ]
         In,
         [
-            NotYetUsed, 
             Name("not in"), 
             Description(""), 
             OperatorValueCountRange(1, 1000), 

@@ -15,7 +15,6 @@ export class FieldTypeAPIModelField {
 }
 
 export class FieldType {
-
     constructor(type?: string) {
         switch (type) {
             case 'Boolean':
@@ -505,3 +504,13 @@ export class Score implements ICommonOptions {
     Search: Search = new Search();
 }
 
+export class FieldTypeHelper {
+    public static getFieldType(field: FieldType): string {
+        return Object.keys(field)[0];
+    }
+
+    public static isFieldForOperator(field: FieldType): boolean {
+        let allowedFieldTypes = ['Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'JSON', 'JsonElement', 'Lookup', 'Number', 'Text'];
+        return allowedFieldTypes.some(x => x === this.getFieldType(field));
+    }
+}

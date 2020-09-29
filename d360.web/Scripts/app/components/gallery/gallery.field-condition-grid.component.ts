@@ -1,6 +1,10 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { FieldsObservableService } from '../../services/fieldsObservable.service';
 import { FieldTypeAPIModelFieldCondition } from '../shared/controls/field-condition-grid/field-condition-grid.models';
+import { CompanySettingsService } from '../../services/settings.service';
+import { CurrentCompanySettings } from '../../static/company-settings';
+import { OperatorModel } from '../../models/operator.model';
+import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 
 
 @Component({
@@ -19,7 +23,7 @@ import { FieldTypeAPIModelFieldCondition } from '../shared/controls/field-condit
         `
     ],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService]
+    providers: [FieldsObservableService, CompanySettingsService]
 })
 
 export class GalleryFieldConditionGridComponent implements OnInit {
@@ -28,19 +32,13 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     protected isLoading1: boolean = true;
     protected isLoading2: boolean = false;
 
-    assetTypeUid: string = '4a35d6dc-2ece-4676-adc1-b83cb469b2aa';
+    assetTypeUid: string = '2dc15e42-b2fc-4eb4-bc0d-40850c54b9aa';
     fields: FieldTypeAPIModelFieldCondition[];
-
-    private operators = [
-        { label: 'Is', value: 'Is' },
-        { label: 'Is not', value: 'Is not' },
-        { label: 'In', value: 'In' },
-        { label: 'Not In', value: 'Not In' },
-        { label: 'Contains', value: 'Does not contain' }
-    ];
+    operators: OperatorModel[] = [];
 
     constructor(
-        private fieldsService: FieldsObservableService
+        private fieldsService: FieldsObservableService,
+        private settingsService: CompanySettingsService
     ) {
 
     }
@@ -50,12 +48,43 @@ export class GalleryFieldConditionGridComponent implements OnInit {
         this.properties = new Array();
         this.properties.push({ Name: "items", Type: "Array<PopupMenuItem>", Description: "Array of menu items", Default: "Empty []" });
 
+        this.settingsService.getOperators().subscribe(operators => {
+            this.operators = operators;
+            this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
+                this.fields = [];
+                res.forEach(f => {
+                    if (FieldTypeHelper.isFieldForOperator(f.Type)) {
+                        this.fields.push(f as FieldTypeAPIModelFieldCondition);
+                    }
+                });
 
-        this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
-            this.fields = res as FieldTypeAPIModelFieldCondition[];
-            this.fields.forEach(f => {
-                f.Operators = JSON.parse(JSON.stringify(this.operators));
+                this.fields.forEach(f => {
+                    f.Operators = [];
+                    this.operators.forEach(op => {
+                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                            f.Operators.push({ label: op.Name, value: op.ID });
+                        }
+
+                        if (FieldTypeHelper.getFieldType(f.Type) === 'Lookup') {
+                            f.Values = [];
+                            f.Values.push({ value: 'Value 1', label: 'Label 1' });
+                            f.Values.push({ value: 'Value 2', label: 'Label 2' });
+                            f.Values.push({ value: 'Value 3', label: 'Label 3' });
+                            f.Values.push({ value: 'Value 4', label: 'Label 4' });
+                            f.Values.push({ value: 'Value 5', label: 'Label 5' });
+                            f.Values.push({ value: 'Value 6', label: 'Label 6' });
+                        }
+
+                        if (FieldTypeHelper.getFieldType(f.Type) === 'Boolean') {
+                            f.Values = [];
+                            f.Values.push({ value: 'true', label: 'True' });
+                            f.Values.push({ value: 'false', label: 'False' });
+                        }
+                    });
+
+                });
             });
-        });
+        })
+
     }
 }
