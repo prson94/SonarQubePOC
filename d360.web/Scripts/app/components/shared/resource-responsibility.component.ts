@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
-import { Resource, CountObject } from '../../models/resource.model';
+import { CountObject } from '../../models/resource.model';
 
 declare var CurrentResourceID;
 
@@ -43,7 +43,8 @@ declare var CurrentResourceID;
 export class ResourceResponsibilityComponent implements OnChanges {
     @Input() responsibilityTypeId: number = 0;
     @Input() resourceId: any = 0;
-    @Input() resource: Resource = null;
+    @Input() resource: any = null;
+    private itemsres: any[] = [];
     private items: CountObject[] = new Array<CountObject>();
     private selected: CountObject;
     isLoading = false;
@@ -69,7 +70,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.resource != null)
-            this.resourceId = this.resource.ID;
+            this.resourceId = this.resource.ResourceID;
 
         this.isMe = (this.resourceId == CurrentResourceID);
 
@@ -82,7 +83,10 @@ export class ResourceResponsibilityComponent implements OnChanges {
                 if (this.resource == null)
                     this.resourcesService.getResource(this.resourceId)
                         .subscribe(res => {
-                            this.resource = res;
+                            this.itemsres = res.items;
+                            if (this.itemsres.length > 0) {
+                                this.resource = this.itemsres[0];
+                            }
                             this.isLoading = false;
                         });
                 else

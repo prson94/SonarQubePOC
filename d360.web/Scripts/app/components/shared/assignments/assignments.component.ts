@@ -3,7 +3,6 @@ import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
 import { Count } from '../../../models/counts.model';
-import { Resource } from '../../../models/resource.model';
 import { WorkflowType } from '../../../models/workflow.model';
 
 @Component({
@@ -65,7 +64,9 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     private selected: Count;
     private daysToLookBack: number = 7;
     private isLoaded: boolean = false;
-    private resource: Resource = null;
+    private items: any[] = [];
+    private resource: any = null;
+
 
     constructor(private workflowService: WorkflowService, private resourcesService: ResourcesService) {
         super();
@@ -85,7 +86,10 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
                 if (loadResource)
                     this.resourcesService.getResource(this.resourceId)
                         .subscribe(r => {
-                            this.resource = r;
+                            this.items = r.items;
+                            if (this.items.length > 0) {
+                                this.resource = this.items[0];
+                            }
                             this.isLoading = false;
                             this.isLoaded = true;
                         });

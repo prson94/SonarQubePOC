@@ -31,13 +31,17 @@ export class ResourcesService extends BaseObservableService {
 
     }
 
-    getResource(id: number): Observable<Resource> {
-        return this.http.get(`/api/resources/1/${id}`)
-            .pipe(
-                map(response => <Resource>response),
-                catchError(err => this.handleError(err))
-            );
-
+    getResource(id: number): Observable<any> {
+        return this.http.get(`/api/v2/membership/users?ResourceID=${id}`).pipe(
+            map(response => {
+                return <any>response;
+            }),
+            catchError(err => {
+                if (this.isErrorFromFilterExpression(err)) {
+                    return throwError(err);
+                }
+                return this.handleError(err);
+            }));
     }
 
     public saveResource(        
