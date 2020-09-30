@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "select";
+    activeControl: string = "radio-button";
     controls = [
         { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
@@ -33,6 +33,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Popup Menu', key: 'popup-menu' },
         { label: 'Select', key: 'select' },
         { label: 'Property Group', key: 'propery-group' },
+        { label: 'Radio Button', key: 'radio-button' },
     ];
 
     ngOnInit(): void {

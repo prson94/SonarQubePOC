@@ -57,6 +57,8 @@ import { GalleryDropDownComponent } from './gallery.dropdown.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
+import { GalleryRadioButtonComponent } from './gallery.radio-button.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @NgModule({
     imports: [
@@ -90,7 +92,8 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
         SiteModalModule,
         PopupMenuModule,
         OverlayPanelModule,
-        DropdownModule
+        DropdownModule,
+        RadioButtonModule,
     ],
     declarations: [
         GalleryComponent,
@@ -117,7 +120,8 @@ import { PropertyGroupModule } from '../shared/controls/property-group/property-
         GalleryCheckboxComponent,
         GalleryDropDownComponent,
         GalleryCheckboxComponent,
-        GalleryPropertyGroupComponent
+        GalleryPropertyGroupComponent,
+        GalleryRadioButtonComponent
     ],
     providers: [
         GalleryGuard,
