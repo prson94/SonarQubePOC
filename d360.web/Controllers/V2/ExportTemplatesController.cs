@@ -450,6 +450,7 @@ namespace d360.web.Controllers.V2
             else
             {
                 template.ID = currentTemplate.ID;
+                template.Uid = templateUid;
             }
 
             var validationStatus = ValidateTemplate(template, assetType);
@@ -457,7 +458,7 @@ namespace d360.web.Controllers.V2
             {
                 return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
             }
-                
+
             var updateTemplateSQL = $@"update AssetTypeExportTemplate 
                                         set Name = @name,Description = @desc, 
                                             ExportViewType = @exp, 
@@ -676,7 +677,7 @@ namespace d360.web.Controllers.V2
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Name must not exceed 250 characters.");
             }
 
-            if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name))
+            if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name && ((template.Uid == null || template.Uid == Guid.Empty) || (template.Uid != null && t.Uid!=template.Uid))))
             {
                 return new WorkHttpStatus(HttpStatusCode.Conflict, "Conflict", $"Template named '{template.Name}' already exists for Asset Type '{assetType.Name}'.");
             }
