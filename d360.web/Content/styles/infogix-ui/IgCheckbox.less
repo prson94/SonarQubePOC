@@ -3,12 +3,14 @@
 @import '../_Variables.less';
 
 .ui-chkbox {
+    margin-top: -1px;
     .ig-checkbox {
         &.ui-chkbox-box {
             width: 16px;
             height: 16px;
             border: 1px solid rgba(0,0,0,0.2);
             border-radius: 4px;
+            margin-right: 5px;
 
             &:hover:not(.ui-state-disabled) {
                 border: 1px solid rgba(0,0,0,0.4);
@@ -33,6 +35,10 @@
                 font-weight: bold;
             }
         }
+
+    }
+    .ui-chkbox-label {
+        color: @ig-black;
     }
 
     .ui-state-disabled {
@@ -44,6 +50,12 @@
             span:not(.pi-times):not(.pi-check) {
                 &:before {
                     content: "\e90f";
+                }
+            }
+
+            span.pi-times {
+                &:before {
+                    content: "";
                 }
             }
         }
