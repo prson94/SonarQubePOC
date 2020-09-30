@@ -160,58 +160,60 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     handleKeyboardEvent(event: KeyboardEvent) {
         if (this.isVisible) {
             this.pressedKeys[event.keyCode] = true;
+            let isNavigationKey: boolean = [39, 37, 40, 38].indexOf(event.keyCode) != -1;
 
-            let el: PopupMenuItem = null;
-            if ([39, 37, 40, 38].indexOf(event.keyCode) != -1) {
-                var activeItemIndex = this.navigationArr.indexOf(this.navigationArr.filter(x => x.hasHoverState)[0]);
-                el = this.getLastHoveredElement(this.items);
-                if (el == undefined) {
-                    this.items[0].hasHoverState = true;
-                }
-            }
-            else {
-                this.typedCharacters.push(event.key);
-                this.search();
-            }
-
-
-            //Arrow right
-            if (event.keyCode === 39) {
-                if (el && el.items) {
-                    this.navigationArr = el.items;
-                    el.isSubMenuOpened = true;
-                    var firstActiveElement = this.navigationArr.filter(x => x.disabled != true)[0];
-                    this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
-                }
-            }
-
-            //Arrow left
-            if (event.keyCode === 37) {
-                if (el && el.parent) {
-                    var items = el.parent.parent;
-                    el.parent.isSubMenuOpened = false;
-                    if (items) {
-                        this.navigationArr = items.items;
+            if (isNavigationKey) {
+                let el: PopupMenuItem = null;
+                if ([39, 37, 40, 38].indexOf(event.keyCode) != -1) {
+                    var activeItemIndex = this.navigationArr.indexOf(this.navigationArr.filter(x => x.hasHoverState)[0]);
+                    el = this.getLastHoveredElement(this.items);
+                    if (el == undefined) {
+                        this.items[0].hasHoverState = true;
                     }
-                    else {
-                        this.navigationArr = this.items;
+                }
+                else {
+                    this.typedCharacters.push(event.key);
+                    this.search();
+                }
+
+
+                //Arrow right
+                if (event.keyCode === 39) {
+                    if (el && el.items) {
+                        this.navigationArr = el.items;
+                        el.isSubMenuOpened = true;
+                        var firstActiveElement = this.navigationArr.filter(x => x.disabled != true)[0];
+                        this.moveThroughElements(this.navigationArr.indexOf(firstActiveElement) - 1, true, this.navigationArr);
                     }
-                    this.moveThroughElements(this.navigationArr.indexOf(el.parent) - 1, true, this.navigationArr);
+                }
+
+                //Arrow left
+                if (event.keyCode === 37) {
+                    if (el && el.parent) {
+                        var items = el.parent.parent;
+                        el.parent.isSubMenuOpened = false;
+                        if (items) {
+                            this.navigationArr = items.items;
+                        }
+                        else {
+                            this.navigationArr = this.items;
+                        }
+                        this.moveThroughElements(this.navigationArr.indexOf(el.parent) - 1, true, this.navigationArr);
+                    }
+                }
+
+                //Arrow down
+                if (event.keyCode === 40) {
+                    event.preventDefault();
+                    this.moveThroughElements(activeItemIndex, true, this.navigationArr);
+                }
+
+                //Arrow up
+                if (event.keyCode === 38) {
+                    event.preventDefault();
+                    this.moveThroughElements(activeItemIndex, false, this.navigationArr);
                 }
             }
-
-            //Arrow down
-            if (event.keyCode === 40) {
-                event.preventDefault();
-                this.moveThroughElements(activeItemIndex, true, this.navigationArr);
-            }
-
-            //Arrow up
-            if (event.keyCode === 38) {
-                event.preventDefault();
-                this.moveThroughElements(activeItemIndex, false, this.navigationArr);
-            }
-
             //Escape
             if (event.keyCode === 27) {
                 this.isVisible = false;
@@ -221,7 +223,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             //Space
             if (event.keyCode === 32) {
                 event.preventDefault();
-                el = this.getLastHoveredElement(this.items);
+                var el = this.getLastHoveredElement(this.items);
                 if (el) {
                     this.select(el, event);
                 }
