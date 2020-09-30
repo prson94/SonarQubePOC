@@ -852,22 +852,8 @@ for json path";
                 }
 
                 if (lookupValues.Length > 0)
-                {
-                    if(lookupValues.Any(x => x.All(char.IsDigit)))
-                    {
-                        lookupSQL = $@"{lookupSQL}
-                                      UNION
-                                      Select
-                                        *
-                                      from
-                                        FieldLookupValue
-                                      where
-                                        fieldTypeId = @fieldTypeId
-                                        and
-                                        Value in @lookupIdValues";
-                    }
-
-                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues, lookupIdValues = lookupValues.Where(x => x.All(char.IsDigit)) });
+                {                    
+                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues});
 
                     List<string> fieldValues = new List<string>();
                     foreach (var lookupValue in lookupValues)
