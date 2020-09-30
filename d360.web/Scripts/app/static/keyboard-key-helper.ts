@@ -1,6 +1,13 @@
 ﻿export class KeyMapHelpers {
 
-    static getCharForKeyCode(code: number): string {
+    static getCharForKeyCode(code: number, isMac: boolean): string {
+        if (isMac) {
+            if (code === 224) return '⌘';
+            if (code === 16) return '⇧';
+            if (code === 17) return '^';
+            if (code === 46) return '⌫';
+        }
+
         return this.toTitleCase(this.keyboardMap[code]);
     }
     private static toTitleCase(str) {

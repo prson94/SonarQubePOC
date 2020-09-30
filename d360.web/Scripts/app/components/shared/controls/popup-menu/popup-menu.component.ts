@@ -37,8 +37,11 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
 
     toggleInProgress: boolean = false;
     typedCharacters: any[] = [];
-    constructor(public cdRef: ChangeDetectorRef) {
 
+    isMac: boolean = false;
+
+    constructor(public cdRef: ChangeDetectorRef) {
+        this.isMac = navigator.platform.indexOf('Mac') > -1;
     }
     reset() {
         this.navigationArr = this.items;
@@ -115,6 +118,20 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 i.icon = null;
             }
             nextId += 1;
+
+            //If there are keys, but Mac keys are not set, populate mac keys array and replace CTRL->Command key
+            if ((i.keys && i.keys.length > 0) && (!i.keysMac || i.keysMac.length == 0)) {
+                i.keysMac = [];
+                i.keys.forEach(x => {
+                    if (x === 17) {
+                        i.keysMac.push(224);
+                    } else {
+                        i.keysMac.push(x);
+                    }
+
+                })
+            }
+
             if (i.items) {
                 this.assignUniqueIDs(i.items, i.itemID + 10000, i);
             }
@@ -234,6 +251,18 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 if (item.keys && item.keys.length > 0) {
                     var doesMatch = true;
                     item.keys.forEach(key => {
+                        if (!this.pressedKeys[key.toString()]) {
+                            doesMatch = false;
+                        }
+                    })
+                    if (doesMatch) {
+                        this.select(item, { event: 'shortcut' });
+                    }
+                }
+
+                if (item.keysMac && item.keysMac.length > 0) {
+                    var doesMatch = true;
+                    item.keysMac.forEach(key => {
                         if (!this.pressedKeys[key.toString()]) {
                             doesMatch = false;
                         }
@@ -402,10 +431,17 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     getShortcutString(item: PopupMenuItem): string {
         if (item.keys) {
             var arr: string[] = [];
-            item.keys.forEach(k => {
-                arr.push(KeyMapHelpers.getCharForKeyCode(k));
-            })
-            return arr.join('+');
+            if (this.isMac) {
+                item.keysMac.forEach(k => {
+                    arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
+                })
+            }
+            else {
+                item.keys.forEach(k => {
+                    arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
+                })
+            }
+            return this.isMac ? arr.join('') : arr.join('+');
         }
         return '';
     }
@@ -522,6 +558,7 @@ export class PopupMenuItem {
     hasCheckbox: boolean = false;
     isChecked: boolean = null;
     keys: number[] = [];
+    keysMac: number[] = [];
     badge: PopupMenuItemBadge;
 
     isSeparator?: boolean;
