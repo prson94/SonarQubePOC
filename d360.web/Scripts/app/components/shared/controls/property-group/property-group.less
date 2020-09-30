@@ -1,0 +1,82 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import "../../../../../../Content/styles/_Variables.less";
+
+.ig-propert-group {
+    border-top: 1px solid @ig-grey-t5;
+    padding-top: 4px;
+
+    .ig-pg-header {
+        display: inline-flex;
+        width: 100%;
+        cursor: pointer;
+
+        &:focus {
+            outline: none !important;
+
+            .fa {
+                border: 1px solid @ig-lightblue;
+                border-radius: 16px;
+                padding: 1px;
+                line-height: 13px;
+            }
+        }
+
+        .fa {
+            height: 16px;
+            transition: transform 200ms ease;
+
+            &.down {
+                transform: rotate(90deg);
+            }
+        }
+
+        .pg-title {
+            float: left;
+            display: inline-flex;
+            flex-grow: 1;
+            line-height: 14px;
+            padding: 0px 0px 16px 8px;
+
+            &.close {
+                padding: 0px 0px 0px 8px;
+            }
+        }
+
+        .badge-containers {
+            .badge-feedback {
+                padding: 4px;
+                border-radius: 4px;
+
+                &:not(:first-child) {
+                    margin-left: 4px;
+                }
+
+                &:focus {
+                    outline: none !important;
+                    border: 1px solid @ig-lightblue;
+                }
+
+                &.req {
+                    background: @ig-lightblue-t2;
+                }
+
+                &.inv {
+                    background: @ig-red-t4;
+                }
+            }
+        }
+    }
+
+    .pg-collapsable-content {
+        padding-left: 20px;
+        transition: height 200ms ease;
+        overflow: hidden;
+        height: auto;
+        padding-top: 4px;
+
+        &.close {
+            height: 0px;
+            opacity: 0;
+        }
+    }
+}

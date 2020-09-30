@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnChanges } from '@angular/core';
 import { ResourcesService } from '../../services/resources.service';
-import { Resource, CountObject } from '../../models/resource.model';
+import { CountObject } from '../../models/resource.model';
 import { BaseComponent } from '../shared/base.component';
 
 declare var CurrentResourceID;
@@ -35,7 +35,8 @@ declare var CurrentResourceID;
 
 export class ResourceFollowingTile extends BaseComponent implements OnChanges {
     @Input() resourceId: any = 0;
-    @Input() resource: Resource = null;
+    @Input() resource: any = null;
+    private itemsres: any[] = [];
     private items: CountObject[] = new Array<CountObject>();
     private selected: CountObject;
 
@@ -63,7 +64,7 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
         this.isLoading = true;
 
         if (this.resource != null)
-            this.resourceId = this.resource.ID;
+            this.resourceId = this.resource.ResourceID;
 
         this.isMe = (this.resourceId == CurrentResourceID);
 
@@ -76,7 +77,10 @@ export class ResourceFollowingTile extends BaseComponent implements OnChanges {
                 if (this.resource == null)
                     this.resourcesService.getResource(this.resourceId)
                         .subscribe(res => {
-                            this.resource = res;
+                            this.itemsres = res.items;
+                            if (this.itemsres.length > 0) {
+                                this.resource = this.itemsres[0];
+                            }
                             this.isLoading = false;
                         });
                 else

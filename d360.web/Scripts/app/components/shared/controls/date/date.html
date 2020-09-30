@@ -1,5 +1,5 @@
 ﻿<div class="control-container"  tabindex="-1">
-    <p-calendar [tabindex]="tabindex"
+    <p-calendar #cal [tabindex]="tabindex"
                 [ngModel]="value"
                 (ngModelChange)="tryChangeValue($event)"
                 [name]="name"

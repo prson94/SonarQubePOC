@@ -14,7 +14,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Button Directive', key: 'button' },
         { label: 'Icon Picker', key: 'icon-picker' },
         { label: 'Tag Picker', key: 'tag-picker' },
-        { label: 'Input Directive', key: 'input' },
+        { label: 'Text Field', key: 'input' },
         { label: 'Auto Complete', key: 'auto-complete' },
         { label: 'Tooltip', key: 'tooltip' },
         { label: 'Auto Focus Directive', key: 'auto-focus' },
@@ -32,6 +32,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Checkbox', key: 'checkbox' },
         { label: 'Popup Menu', key: 'popup-menu' },
         { label: 'Select', key: 'select' },
+        { label: 'Property Group', key: 'propery-group' },
         { label: 'Field Condition Grid', key: 'field-condition-grid' },
     ];
 

@@ -55,6 +55,8 @@ import { PopupMenuModule } from '../shared/controls/popup-menu/popup-menu.compon
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { GalleryDropDownComponent } from './gallery.dropdown.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
+import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
 import { GalleryFieldConditionGridComponent } from './gallery.field-condition-grid.component';
 import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
 
@@ -69,6 +71,7 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
 
         GalleryRoutingModule,
 
+        PropertyGroupModule,
         SwitchModule,
         IconPickerModule,
         TagPickerModule,
@@ -117,6 +120,8 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
         GalleryPopupMenuComponent,
         GalleryCheckboxComponent,
         GalleryDropDownComponent,
+        GalleryCheckboxComponent,
+        GalleryPropertyGroupComponent,
         GalleryFieldConditionGridComponent
     ],
     providers: [

@@ -8,10 +8,11 @@
     ChangeDetectorRef,
     ViewEncapsulation,
     ChangeDetectionStrategy,
-    forwardRef
+    forwardRef,
+    ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CalendarModule } from 'primeng/calendar';
+import { CalendarModule, Calendar } from 'primeng/calendar';
 import {
     FormsModule,
     ReactiveFormsModule,
@@ -32,7 +33,11 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
     encapsulation: ViewEncapsulation.None,
     providers: [IG_DATE_VALUE_ACCESSOR],
     styleUrls: ['./date.less'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: {
+        "(click)": "focus($event)",
+        '(focus)': 'focus($event)',
+    }
 })
 export class IgDate implements ControlValueAccessor, OnInit  {    
     @Input() style: string;
@@ -50,6 +55,8 @@ export class IgDate implements ControlValueAccessor, OnInit  {
     @Input() name: string;
     @Input() label: string;
 
+
+    @ViewChild("cal", { static: false }) calendar: Calendar;
 
     protected value = null;
 
@@ -98,6 +105,10 @@ export class IgDate implements ControlValueAccessor, OnInit  {
 
     setDisabledState?(isDisabled: boolean): void {
         this.disabled = isDisabled
+    }
+
+    public focus(evt) {
+        this.calendar.inputfieldViewChild.nativeElement.focus();
     }
 }
 
