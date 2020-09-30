@@ -337,7 +337,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Double:
                     return val != null;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val != -1;
+                    return val != null && (int)val > 0;
                 case CriteriaValueDataType.String:
                     return !string.IsNullOrEmpty((string)val);
             }
@@ -354,7 +354,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Double:
                     return val == null;
                 case CriteriaValueDataType.Lookup:
-                    return (int)val != -1;
+                    return val == null || (int)val < 1;
                 case CriteriaValueDataType.String:
                     return string.IsNullOrEmpty((string)val);
             }
