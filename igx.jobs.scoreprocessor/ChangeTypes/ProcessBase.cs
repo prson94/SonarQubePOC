@@ -134,6 +134,72 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 {
                                     switch (i.Operator)
                                     {
+                                        case Operator.IsFalse:
+                                            if (assetField.Value != null)
+                                            {
+                                                dynamic fieldValue;
+                                                if (fieldType.Type == DataType.Boolean.ToString())
+                                                {
+                                                    fieldValue = bool.Parse(assetField.Value);
+
+                                                    if (!fieldValue) 
+                                                    {
+                                                        conditionsMetCount++;
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case Operator.IsTrue:
+                                            if (assetField.Value != null)
+                                            {
+                                                dynamic fieldValue;
+                                                if (fieldType.Type == DataType.Boolean.ToString())
+                                                {
+                                                    fieldValue = bool.Parse(assetField.Value);
+
+                                                    if (fieldValue)
+                                                    {
+                                                        conditionsMetCount++;
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case Operator.Populated:
+                                            if (!string.IsNullOrEmpty(assetField.Value))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
+                                        case Operator.NotPopulated:
+                                            if (string.IsNullOrEmpty(assetField.Value))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
+                                        case Operator.Contains:
+                                            if ((assetField.Value ?? "").Contains(i.Values[0]))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
+                                        case Operator.NotContains:
+                                            if (!(assetField.Value ?? "").Contains(i.Values[0]))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
+                                        case Operator.StartsWith:
+                                            if ((assetField.Value ?? "").StartsWith(i.Values[0]))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
+                                        case Operator.EndsWith:
+                                            if ((assetField.Value ?? "").EndsWith(i.Values[0]))
+                                            {
+                                                conditionsMetCount++;
+                                            }
+                                            break;
                                         case Operator.Equals:
                                             if ((assetField.Value ?? "") == i.Values[0])
                                             {

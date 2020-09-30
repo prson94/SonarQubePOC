@@ -72,6 +72,11 @@ namespace d360.core.entities.Metric
                 return newConditionHash;
             }
         }
+
+        /// <summary>
+        /// Property below used solely for processing incoming data.
+        /// </summary>
+        public MetricAllocation Allocation { get; set; }
     }
 
     [DataContract]
@@ -108,6 +113,15 @@ namespace d360.core.entities.Metric
         public Operator Operator { get; set; }
         [DataMember] 
         public List<string> Values { get; set; }
+
+        /// <summary>
+        /// Property below used solely for processing incoming data.
+        /// </summary>
+        public int AssetTypeID { get; set; }
+        /// <summary>
+        /// Property below used solely for processing incoming data.
+        /// </summary>
+        public int FieldTypeID { get; set; }
     }
 
     [DataContract]
@@ -126,6 +140,68 @@ namespace d360.core.entities.Metric
         public MetricAssetDefinitionGovernanceOwnerViewModel Owner { get; set; }
         [DataMember] 
         public MetricAssetDefinitionGovernanceExternalViewModel External { get; set; }
+
+        public string ValidateCheckObjectCorrespondsToCheck()
+        {
+            string errorMessage = null;
+            string standardMissingObjectError = $"Because you selected {Check} as the type of check, you must provide a {Check} object property under Definition. ";
+            string otherObjectPropertiesPopulatedError = $"Because you selected {Check} as the type of check, you may not populate any other object properties under Definition.";
+            switch (Check)
+            {
+                case MetricGovernanceCheckType.External:
+                    if (External == null)
+                    {
+                        errorMessage = standardMissingObjectError;
+                    }
+                    if (Field != null || Owner != null || Predicate != null || Relation != null)
+                    {
+                        errorMessage += otherObjectPropertiesPopulatedError;
+                    }
+                    break;
+                case MetricGovernanceCheckType.Field:
+                    if (Field == null)
+                    {
+                        errorMessage = standardMissingObjectError;
+                    }
+                    if (External != null || Owner != null || Predicate != null || Relation != null)
+                    {
+                        errorMessage += otherObjectPropertiesPopulatedError;
+                    }
+                    break;
+                case MetricGovernanceCheckType.Owner:
+                    if (Owner == null)
+                    {
+                        errorMessage = standardMissingObjectError;
+                    }
+                    if (Field != null || External != null || Predicate != null || Relation != null)
+                    {
+                        errorMessage += otherObjectPropertiesPopulatedError;
+                    }
+                    break;
+                case MetricGovernanceCheckType.Predicate:
+                    if (Predicate == null)
+                    {
+                        errorMessage = standardMissingObjectError;
+                    }
+                    if (Field != null || Owner != null || External != null || Relation != null)
+                    {
+                        errorMessage += otherObjectPropertiesPopulatedError;
+                    }
+                    break;
+                case MetricGovernanceCheckType.Relation:
+                    if (Relation == null)
+                    {
+                        errorMessage = standardMissingObjectError;
+                    }
+                    if (Field != null || Owner != null || Predicate != null || External != null)
+                    {
+                        errorMessage += otherObjectPropertiesPopulatedError;
+                    }
+                    break;
+            }
+
+            return errorMessage;
+        }
     }
 
     [DataContract]
@@ -141,9 +217,6 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionGovernanceFieldViewModel
     {
-        [DataMember]
-        public Guid AssetTypeUid { get; set; }
-
         [DataMember] 
         public string FieldTypeName { get; set; }
         
@@ -161,8 +234,8 @@ namespace d360.core.entities.Metric
         public Guid PredicateUid { get; set; }
         [DataMember] 
         public Operator Operator { get; set; }
-        [DataMember] 
-        public List<string> Values { get; set; }
+        //[DataMember] 
+        //public List<string> Values { get; set; }
     }
 
     [DataContract]
