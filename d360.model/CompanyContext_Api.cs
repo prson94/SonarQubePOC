@@ -676,7 +676,7 @@ where	ExecutionID = @executionID
                                         ,F.FieldValue as [FormattedValue]
                                         ,getutcdate() as [UpdatedOn]
                                         ,@resourceId as [UpdatedBy]
-                                        {(hasAssetID ? ",A.AssetID as [AssetID]" : " ")}                    
+                                        {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                         
                                 from    {tableName} A
                                         inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                                             and F.ItemNumber = A.ItemNumber 
@@ -692,8 +692,7 @@ where	ExecutionID = @executionID
 
             // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
             if (isInsert)
-            {
-                
+            {                
                 Connection.Execute(
                     $@"
                         INSERT INTO 
@@ -4808,7 +4807,7 @@ end",
                                     if (relationshipTypeHasFieldTypes)
                                     {
                                         sw.Restart();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect'", "A.IntersectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, "MergeFields", sw.ElapsedMilliseconds, ++step);
                                     }
 
