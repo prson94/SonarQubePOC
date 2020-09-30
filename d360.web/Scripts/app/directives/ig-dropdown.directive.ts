@@ -41,9 +41,14 @@ export class DropdownDirective implements AfterViewInit {
             if (this.isOverlayVisible !== this.dropdownRef.overlayVisible) {
                 if (this.dropdownRef.overlayVisible && this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
                     this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
+
+                    var input = this.dropdownRef.overlay.getElementsByTagName('input')[0];
+
+                    if (input)
+                        input.className = 'ig-input';
                 }
                 this.isOverlayVisible = this.dropdownRef.overlayVisible;
-
+                
                 if (this.dropdownRef.options.length > 10) {
                     this.dropdownRef.filter = true;
                     this.dropdownRef.filterPlaceholder = 'Search fields';
@@ -53,7 +58,6 @@ export class DropdownDirective implements AfterViewInit {
                 }
 
             }
-
         }, 10);
 
     }
