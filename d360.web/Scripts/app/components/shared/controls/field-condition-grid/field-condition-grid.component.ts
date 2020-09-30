@@ -1,9 +1,8 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, DoCheck, OnDestroy } from '@angular/core';
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
 import { SelectItem } from 'primeng/api';
 import { FieldTypeAPIModelFieldCondition } from './field-condition-grid.models';
-import { OperatorModel, Operator } from '../../../../models/operator.model';
+import { Operator } from '../../../../models/operator.model';
 
 @Component({
     selector: 'field-condition-grid',
@@ -15,6 +14,8 @@ import { OperatorModel, Operator } from '../../../../models/operator.model';
 export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
     @Input() conditions: Condition[] = [];
+
+    @Output() onChange = new EventEmitter();
 
     fieldsSelect: SelectItem[] = [];
 
@@ -53,6 +54,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
         this.formGroup.valueChanges.subscribe(obs => {
             setInterval(() => {
                 this.addNewCondition();
+                this.onChange.emit({ event: 'Value changed', value: this.conditions });
             });
         });
     }

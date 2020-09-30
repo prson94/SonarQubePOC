@@ -2,7 +2,6 @@
 import { FieldsObservableService } from '../../services/fieldsObservable.service';
 import { FieldTypeAPIModelFieldCondition } from '../shared/controls/field-condition-grid/field-condition-grid.models';
 import { CompanySettingsService } from '../../services/settings.service';
-import { CurrentCompanySettings } from '../../static/company-settings';
 import { OperatorModel } from '../../models/operator.model';
 import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 
@@ -28,11 +27,10 @@ import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 
 export class GalleryFieldConditionGridComponent implements OnInit {
     protected properties: Array<any>;
-    protected sampleUsage: string = '<ig-popup-menu [items]="items"></ig-popup-menu>';
-    protected isLoading1: boolean = true;
-    protected isLoading2: boolean = false;
+    protected sampleUsage: string = '<field-condition-grid [fields]="simpleExample" [conditions]="simpleValue" (onChange)="eventValue = $event"></field-condition-grid>';
+    protected isLoading: boolean = true;
 
-    assetTypeUid: string = '2dc15e42-b2fc-4eb4-bc0d-40850c54b9aa';
+    assetTypeUid: string = '';
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
 
@@ -43,10 +41,20 @@ export class GalleryFieldConditionGridComponent implements OnInit {
 
     }
 
+    private cleanJsonExamples = {};
 
     ngOnInit(): void {
         this.properties = new Array();
-        this.properties.push({ Name: "items", Type: "Array<PopupMenuItem>", Description: "Array of menu items", Default: "Empty []" });
+        this.properties.push({ Name: "fields", Type: "Array<FieldTypeAPIModelFieldCondition>", Description: "Array of field items", Default: "Empty []" });
+        this.properties.push({ Name: "conditions", Type: "Array<any>", Description: "Selection Value", Default: "Empty []" });
+        this.properties.push({ Name: "onChange", Type: "Event Array<any>", Description: "Triggers on every change in grid condition form. Returns value.", Default: "initial value" });
+
+        this.cleanJsonExamples['simpleExample'] = JSON.parse(JSON.stringify(this.simpleExample));
+        this.cleanJsonExamples['preselectedExample'] = JSON.parse(JSON.stringify(this.preselectedExample));
+
+    }
+
+    private loadData() {
 
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
@@ -85,51 +93,186 @@ export class GalleryFieldConditionGridComponent implements OnInit {
                 });
 
                 this.fields = tempFields;
-                this.selectedValue = JSON.parse(JSON.stringify(this.selectedValueTemp));
             });
         })
 
     }
 
-    private selectedValue = null;
 
-    private selectedValueTemp = [
+    private preselectedExample = [
         {
-            "field": "Booleanvalue",
-            "operator": 11,
-            "value": ""
+            "field": "StepNo",
+            "operator": 9,
+            "value": 12,
+            "value2": 34
+        },
+        {
+            "field": "GovernanceRole",
+            "operator": 1,
+            "value": "Value 1",
         },
         {
             "field": "Dateofservice",
             "operator": 8,
             "value": this.getFormattedDate(new Date())
-        },
-        {
-            "field": "Booleanvalue",
-            "operator": 1,
-            "value": "true"
-        },
-        {
-            "field": "Name",
-            "operator": 2,
-            "value": "test"
-        },
-        {
-            "field": "Countrypicker",
-            "operator": 17,
-            "value": "Value 5"
-        },
-        {
-            "field": "StepNo",
-            "operator": 2,
-            "value": 2
-        },
-        {
-            "field": "",
-            "operator": "",
-            "value": null
         }
-    ]
+    ];
+
+
+    private simpleExample = [{
+        "Name": "StepNo",
+        "FriendlyName": "Step No",
+        "Type": {
+            "Decimal": {}
+        },
+        "Operators": [{
+            "label": "is",
+            "value": 1
+        }, {
+            "label": "is between",
+            "value": 9
+        }, {
+            "label": "is greater than",
+            "value": 12
+        }, {
+            "label": "is greater than or equal to",
+            "value": 15
+        }, {
+            "label": "is less than",
+            "value": 14
+        }, {
+            "label": "is less than or equal to",
+            "value": 13
+        }, {
+            "label": "is not",
+            "value": 2
+        }, {
+            "label": "is not populated",
+            "value": 11
+        }, {
+            "label": "is populated",
+            "value": 10
+        }]
+    }, {
+        "Name": "Name",
+        "FriendlyName": "Name",
+        "Type": {
+            "Text": {}
+        },
+        "Operators": [{
+            "label": "contains",
+            "value": 3
+        }, {
+            "label": "does not contain",
+            "value": 4
+        }, {
+            "label": "ends with",
+            "value": 6
+        }, {
+            "label": "is",
+            "value": 1
+        }, {
+            "label": "is not",
+            "value": 2
+        }, {
+            "label": "is not populated",
+            "value": 11
+        }, {
+            "label": "is populated",
+            "value": 10
+        }, {
+            "label": "starts with",
+            "value": 5
+        }]
+    }, {
+        "Name": "GovernanceRole",
+        "FriendlyName": "Governance Role",
+        "Type": {
+            "Lookup": {}
+        },
+        "Operators": [{
+            "label": "in",
+            "value": 16
+        }, {
+            "label": "is",
+            "value": 1
+        }, {
+            "label": "is not",
+            "value": 2
+        }, {
+            "label": "is not populated",
+            "value": 11
+        }, {
+            "label": "is populated",
+            "value": 10
+        }, {
+            "label": "not in",
+            "value": 17
+        }],
+        "Values": [{
+            "value": "Value 1",
+            "label": "Label 1"
+        }, {
+            "value": "Value 2",
+            "label": "Label 2"
+        }, {
+            "value": "Value 3",
+            "label": "Label 3"
+        }, {
+            "value": "Value 4",
+            "label": "Label 4"
+        }, {
+            "value": "Value 5",
+            "label": "Label 5"
+        }, {
+            "value": "Value 6",
+            "label": "Label 6"
+        }]
+    },
+    {
+        "Name": "Dateofservice",
+        "FriendlyName": "Date of service",
+        "Type": {
+            "Date": {}
+        },
+        "Operators": [{
+            "label": "is",
+            "value": 1
+        }, {
+            "label": "is after",
+            "value": 8
+        }, {
+            "label": "is before",
+            "value": 7
+        }, {
+            "label": "is between",
+            "value": 9
+        }, {
+            "label": "is not",
+            "value": 2
+        }, {
+            "label": "is not populated",
+            "value": 11
+        }, {
+            "label": "is populated",
+            "value": 10
+        }]
+    },
+    {
+        "Name": "Registrationtime",
+        "FriendlyName": "Registration time",
+        "Type": {
+            "DateTime": {}
+        },
+        "Operators": [{
+            "label": "is not populated",
+            "value": 11
+        }, {
+            "label": "is populated",
+            "value": 10
+        }]
+    }
+    ];
 
     private getFormattedDate(date) {
         let year = date.getFullYear();
