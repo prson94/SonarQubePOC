@@ -29,6 +29,12 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupSecondaryOwner_Name", Description = "GroupSecondaryOwner_Description")]
         public int? SecondaryOwnerResourceID { get; set; }
 
+        [DataMember, NotMapped]
+        public Guid? PrimaryOwnerUid { get; set; }
+
+        [DataMember, NotMapped]
+        public Nullable<Guid> SecondaryOwnerUid { get; set; }
+
         [DataMember]
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupIsActiveDirectory_Name", Description = "GroupIsActiveDirectory_Description")] 
         public bool IsActiveDirectoryGroup { get; set; } = false;

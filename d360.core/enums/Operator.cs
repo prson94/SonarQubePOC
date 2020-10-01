@@ -194,7 +194,7 @@ namespace d360.core.enums
         public List<OperatorMetricGovernanceCheckTypeInfo> AllowedMeasureChecks { get; set; }
         public bool FieldRequiresMultipleValueSupport { get; set; }
     }
-    public class OperatorDataTypeInfo 
+    public class OperatorDataTypeInfo
     {
         public DataType ID { get; set; }
         public string Name { get; set; }

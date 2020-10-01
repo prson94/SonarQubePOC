@@ -25,7 +25,6 @@
             <div class="row">medium(308px)</div>
             <p-dropdown igDropdown
                         igSize="medium"
-                        [appendTo]="'body'"
                         [(ngModel)]="value"
                         [options]="cars"></p-dropdown>
         </div>
@@ -34,7 +33,6 @@
             <div class="row">large(624px)</div>
             <p-dropdown igDropdown
                         igSize="large"
-                        [appendTo]="'body'"
                         [(ngModel)]="value"
                         [options]="cars"></p-dropdown>
         </div>
@@ -43,7 +41,7 @@
             <div class="row">full(100%)</div>
             <p-dropdown igDropdown
                         igSize="full"
-                        [appendTo]="'body'"
+
                         [(ngModel)]="value"
                         [options]="cars"></p-dropdown>
         </div>
@@ -56,7 +54,6 @@
             <p-dropdown igDropdown
                         required
                         igSize="medium"
-                        [appendTo]="'body'"
                         [(ngModel)]="reqValue"
                         [options]="cars"></p-dropdown>
         </div>
@@ -70,7 +67,6 @@
             <p-dropdown igDropdown
                         disabled
                         igSize="medium"
-                        [appendTo]="'body'"
                         [(ngModel)]="reqValue"
                         [options]="cars"></p-dropdown>
         </div>
@@ -84,7 +80,6 @@
         <div class="row">
             <p-dropdown igDropdown
                         igSize="medium"
-                        [appendTo]="'body'"
                         [(ngModel)]="searchValue"
                         [options]="companies"></p-dropdown>
         </div>
@@ -109,7 +104,6 @@
                         <p-dropdown igDropdown
                                     required
                                     igSize="medium"
-                                    [appendTo]="'body'"
                                     name="selectValue"
                                     [(ngModel)]="formValue"
                                     [options]="companies"></p-dropdown>

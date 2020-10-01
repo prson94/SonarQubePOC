@@ -156,15 +156,14 @@ namespace d360.model.DataAccessLayer
             if(assetSQL.Trim() != "")
             {
                 assetSQL = $@"{assetSQL}
-                              {conditionStr}
-                              {orderBy}";
+                              {conditionStr}";
             }
 
             var sql = $@"{issueTypeSQL} 
                          {conditionStr}
-                         {orderBy}
-                         {assetSQL}";
-            
+                         {assetSQL}
+                         {orderBy}";
+
             return await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
         }
 
