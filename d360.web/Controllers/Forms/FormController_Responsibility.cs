@@ -378,6 +378,11 @@ namespace d360.web.Controllers
                 var existing = Company.GetById<ResponsibilityType>(model.ID, i => i.ResponsibilityTypeRelations);
                 if (existing == null) throw new NotFoundException("ownership type");
 
+                if (model.Name.Trim().Length > 250)
+                {
+                    return jsonException($"Name provided must be less then 250 characters in length.", HttpStatusCode.BadRequest);
+                }
+
                 existing.Name = model.Name;
                 existing.Description = model.Description;
 
@@ -440,6 +445,12 @@ namespace d360.web.Controllers
                 int allPermissions = Permission.DeleteAsset.GetList().Sum(i => i.Value);
                 model.ResponsibilityTypeRelations.ToList().
                     ForEach(x => { x.PermissionsBitMask = allPermissions; });
+
+                if (model.Name.Trim().Length > 250)
+                {
+                    return jsonException($"Name provided must be less then 250 characters in length.", HttpStatusCode.BadRequest);
+                }
+                
                 model.UID = Guid.NewGuid();
                 Company.Add(model);
 
