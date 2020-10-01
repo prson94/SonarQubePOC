@@ -34,6 +34,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Select', key: 'select' },
         { label: 'Property Group', key: 'propery-group' },
         { label: 'Radio Button', key: 'radio-button' },
+        { label: 'Field Condition Grid', key: 'field-condition-grid' },
     ];
 
     ngOnInit(): void {

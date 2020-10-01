@@ -25,16 +25,20 @@ export class DropdownDirective implements AfterViewInit {
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
+
+        var placeholder = this.el.nativeElement.getAttribute("placeholder");
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
 
-        if (this.required == null) {
-            this.dropdownRef.placeholder = 'Optional';
-            this.dropdownRef.showClear = true;
-        } else {
-            this.dropdownRef.placeholder = "Value required";
-            this.dropdownRef.showClear = false;
-            this.el.nativeElement.setAttribute("aria-required", true);
+        if (!placeholder && placeholder != '' && placeholder != null) {
+            if (this.required == null) {
+                this.dropdownRef.placeholder = 'Optional';
+                this.dropdownRef.showClear = true;
+            } else {
+                this.dropdownRef.placeholder = "Value required";
+                this.dropdownRef.showClear = false;
+                this.el.nativeElement.setAttribute("aria-required", true);
+            }
         }
         this.dropdownRef.scrollHeight = '340px';
         setInterval(() => {
@@ -48,8 +52,8 @@ export class DropdownDirective implements AfterViewInit {
                         input.className = 'ig-input';
                 }
                 this.isOverlayVisible = this.dropdownRef.overlayVisible;
-                
-                if (this.dropdownRef.options.length > 10) {
+
+                if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
                     this.dropdownRef.filter = true;
                     this.dropdownRef.filterPlaceholder = 'Search fields';
                 }

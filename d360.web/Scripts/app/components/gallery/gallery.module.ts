@@ -59,6 +59,8 @@ import { GalleryPropertyGroupComponent } from './gallery.propery-group.component
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
 import { GalleryRadioButtonComponent } from './gallery.radio-button.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { GalleryFieldConditionGridComponent } from './gallery.field-condition-grid.component';
+import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
 
 @NgModule({
     imports: [
@@ -94,6 +96,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         OverlayPanelModule,
         DropdownModule,
         RadioButtonModule,
+        FieldConditionGridModule
     ],
     declarations: [
         GalleryComponent,
@@ -121,6 +124,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         GalleryDropDownComponent,
         GalleryCheckboxComponent,
         GalleryPropertyGroupComponent,
+        GalleryFieldConditionGridComponent,
         GalleryRadioButtonComponent
     ],
     providers: [

@@ -1,0 +1,94 @@
+﻿<div class="tile tile-detail">
+    <header>FieldConditionGrid Component</header>
+    <p>Angular component that shows FieldConditionGrid Component</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>
+        Basic Usage
+    </header>
+    <code>{{sampleUsage}}</code>
+
+    <p>
+        Items property is object of type <span style="background-color: #eff2f6;">Array&#706;PopupMenuItem&#707;</span>
+    </p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>
+            Simple Example
+
+            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </h4>
+        <field-condition-grid [fields]="simpleExample" [conditions]="simpleValue" (onChange)="eventValue = $event"></field-condition-grid>
+
+        <strong>On change event: </strong>
+        <pre>
+                {{eventValue | json}}
+            </pre>
+
+
+        <hr />
+        <h4>
+            Value Binding
+        </h4>
+        <p>
+            Use [condition] input property to set value of field condition grid.
+            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide Input value JSON</label>
+            <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
+                <ng-template pTemplate>
+                    <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
+                </ng-template>
+            </p-overlayPanel>
+        </p>
+        <field-condition-grid [fields]="simpleExample" [conditions]="preselectedExample"></field-condition-grid>
+
+        <hr />
+
+        <h4>
+            Load data using v2 api
+        </h4>
+        <p>
+            Enter valid asset type uid for current environment and click on the button to load data.
+            If asset type uid is correct field condition grid will show up shortly.
+            <br />
+            <input igInput placeholder="Enter Asset Type GUID" [(ngModel)]="assetTypeUid" />
+            <button igButton label="Load Data" (click)="loadData()"></button>
+        </p>
+
+        <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields"></field-condition-grid>
+
+    </div>
+
+
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
