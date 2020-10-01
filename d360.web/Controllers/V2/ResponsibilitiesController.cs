@@ -748,6 +748,14 @@ namespace d360.web.Controllers.V2
                 if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
 
+                foreach (var type in responsibilityTypes)
+                {
+                    if (type.Name.Trim().Length > 250)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
+                    }
+                }
+
                 var execution = getApiExecution(responsibilityTypes.Count);
 
                 var upserts = new List<ResponsibilityTypeUpsertModel>();
@@ -847,6 +855,14 @@ namespace d360.web.Controllers.V2
 
                 if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
+
+                foreach (var type in responsibilityTypes)
+                {
+                    if (type.Name.Trim().Length > 250)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
+                    }
+                }
 
                 var execution = getApiExecution(responsibilityTypes.Count);
 
