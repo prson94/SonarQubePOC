@@ -39,7 +39,7 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
         '(focus)': 'focus($event)',
     }
 })
-export class IgDate implements ControlValueAccessor, OnInit  {        
+export class IgDate implements ControlValueAccessor, OnInit  {    
     @Input() style: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;

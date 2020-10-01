@@ -85,8 +85,8 @@ namespace igx.UnitTests.V2ControllerTests
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ConfirmResponse), data), XMsg.InvalidJSON);
+            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
 
         }
 

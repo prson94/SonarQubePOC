@@ -3,7 +3,7 @@ import {Router} from '@angular/router';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {GroupService} from '../../../services/group.service';
-import {GroupApiModel} from '../../../models/group.model';
+import {GroupApiModel, AddUserToGroup} from '../../../models/group.model';
 import {FormMode} from '../../../models/form.model';
 import {Title} from '@angular/platform-browser';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
@@ -23,6 +23,9 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     groupItems: GroupApiModel[];
     formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
+    theDeleteCallback: Function;
+    groupUid: string;
+    public showDelete: boolean = false;
 
     constructor(
         private router: Router,
@@ -36,6 +39,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.areaName = "Groups";
         this.adminHeading = "Security";
         this.setCommonItems();
+        this.theDeleteCallback = this.deleteService.bind(this);
     }
 
     ngOnInit() {
@@ -69,6 +73,7 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     delete(Uid: string) {
+        this.groupUid = Uid;
         this.selectedRow = this.groupItems.find(i => i.Uid == Uid);
         this.formMode = FormMode.Deleting;
     }
@@ -105,5 +110,16 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     error(e: any) {
         this.showMessageForResult(this.messagesService, e);
         this.formMode = FormMode.Default;
+    }
+
+    deleteService() {
+        this.groupService.deleteGroupWithUid(this.groupUid).subscribe(
+            result => {
+                this.showDelete = false;
+                this.formMode = FormMode.Default;
+                this.load();
+                this.showMessageForResult(this.messagesService, result);
+            }
+        );
     }
 }

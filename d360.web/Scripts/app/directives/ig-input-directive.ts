@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 })
 export class InputDirective implements AfterViewInit, OnDestroy {
 
-   
+
     public _size: string;
     @Input() required: boolean;
     @Input() disabled: boolean;
@@ -23,11 +23,17 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
+        var placeholder = this.el.nativeElement.getAttribute("placeholder");
 
-        if (this.required == null) {
-            this.el.nativeElement.setAttribute("placeholder", "Optional");
-        } else {
-            this.el.nativeElement.setAttribute("placeholder", "Value required");
+        if (!placeholder && placeholder != '') {
+            if (this.required == null) {
+                this.el.nativeElement.setAttribute("placeholder", "Optional");
+            } else {
+                this.el.nativeElement.setAttribute("placeholder", "Value required");
+            }
+        }
+
+        if (this.required) {
             this.el.nativeElement.setAttribute("aria-required", true);
         }
 
@@ -62,7 +68,7 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         }
     }
     ngOnDestroy() {
-        while (this.el.nativeElement.hasChildNodes()) { 
+        while (this.el.nativeElement.hasChildNodes()) {
             this.el.nativeElement.removeChild(this.el.nativeElement.lastChild);
         }
     }

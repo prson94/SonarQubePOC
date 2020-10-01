@@ -115,6 +115,11 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (model.ParentUid == Guid.Empty)
+                {
+                    model.ParentUid = null;
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     throw new WorkStatusException(HttpStatusCode.Unauthorized, "You are not allowed to update this metric.");
@@ -123,11 +128,6 @@ namespace d360.web.Controllers.V2
                 if (string.IsNullOrEmpty(model.Name) || (model.Name+"").Trim() == "")
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, $"Name must not be empty.");
-                }
-
-                if (model.Weight <= 0 || model.Weight > 1)
-                {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Weight must be a decimal greater than 0 and less than or equal to 1.");
                 }
 
                 if (model.Description != null)
@@ -146,6 +146,21 @@ namespace d360.web.Controllers.V2
                 if (model.AllocationUid == Guid.Empty)
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Asset Type UID and Score Type.");
+                }
+
+                var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
+                if (allocation == null)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, "There is no allocation for specified Allocation Uid.");
+                }
+                else
+                {
+                    model.Allocation = allocation;
+                }
+
+                if (!model.Allocation.IsExternallyCalculated && model.Weight <= 0 || model.Weight > 1)
+                {
+                    throw new WorkStatusException(HttpStatusCode.BadRequest, $"Weight must be a decimal greater than 0 and less than or equal to 1.");
                 }
 
                 if (model.ParentUid != null && model.ParentUid != Guid.Empty)
@@ -172,11 +187,6 @@ namespace d360.web.Controllers.V2
                 if (model.IsGroup && model.ConditionGroups.Count > 0)
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");
-                }
-
-                if (model.Definition == null)
-                {
-                    throw new WorkStatusException(HttpStatusCode.BadRequest, "Definition object property must not be empty.");
                 }
 
                 foreach (var cond in model.ConditionGroups)

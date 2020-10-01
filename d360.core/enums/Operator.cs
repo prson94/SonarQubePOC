@@ -11,15 +11,17 @@ namespace d360.core.enums
         [
             Name("is"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Equals = 1,
         [
             Name("is not"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -27,7 +29,8 @@ namespace d360.core.enums
         [
             Name("contains"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -35,7 +38,8 @@ namespace d360.core.enums
         [
             Name("does not contain"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -43,7 +47,8 @@ namespace d360.core.enums
         [
             Name("starts with"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -51,7 +56,8 @@ namespace d360.core.enums
         [
             Name("ends with"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -59,7 +65,8 @@ namespace d360.core.enums
         [
             Name("is before"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -67,7 +74,8 @@ namespace d360.core.enums
         [
             Name("is after"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -76,7 +84,8 @@ namespace d360.core.enums
             NotYetUsed, 
             Name("is between"), 
             Description(""), 
-            OperatorValueCountRange(2, 2), 
+            OperatorValueCountRange(2, 2),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -84,7 +93,8 @@ namespace d360.core.enums
         [
             Name("is populated"), 
             Description(""), 
-            OperatorValueCountRange(0, 0), 
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -92,7 +102,8 @@ namespace d360.core.enums
         [
             Name("is not populated"), 
             Description(""), 
-            OperatorValueCountRange(0, 0), 
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -100,7 +111,8 @@ namespace d360.core.enums
         [
             Name("is greater than"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
             ]
@@ -108,7 +120,8 @@ namespace d360.core.enums
         [
             Name("is less than or equal to"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -116,7 +129,8 @@ namespace d360.core.enums
         [
             Name("is less than"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -124,7 +138,8 @@ namespace d360.core.enums
         [
             Name("is greater than or equal to"), 
             Description(""), 
-            OperatorValueCountRange(1, 1), 
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
             OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
@@ -133,7 +148,8 @@ namespace d360.core.enums
             NotYetUsed, 
             Name("in"), 
             Description(""), 
-            OperatorValueCountRange(1, 1000), 
+            OperatorValueCountRange(1, 1000),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
             ]
@@ -142,11 +158,30 @@ namespace d360.core.enums
             NotYetUsed, 
             Name("not in"), 
             Description(""), 
-            OperatorValueCountRange(1, 1000), 
+            OperatorValueCountRange(1, 1000),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
         ]
-        NotIn
+        NotIn,
+        [
+            Name("is true"),
+            Description(""),
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Boolean),
+            OperatorFieldTypeRequirements(true)
+        ]
+        IsTrue,
+        [
+            Name("is false"),
+            Description(""),
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Boolean),
+            OperatorFieldTypeRequirements(true)
+        ]
+        IsFalse
     }
     public class OperatorInfo
     {
@@ -156,11 +191,17 @@ namespace d360.core.enums
         public int MinimumValueCount { get; set; }
         public int MaximumValueCount { get; set; }
         public List<OperatorDataTypeInfo> AllowedDataTypes { get; set; }
+        public List<OperatorMetricGovernanceCheckTypeInfo> AllowedMeasureChecks { get; set; }
         public bool FieldRequiresMultipleValueSupport { get; set; }
     }
-    public class OperatorDataTypeInfo 
+    public class OperatorDataTypeInfo
     {
         public DataType ID { get; set; }
+        public string Name { get; set; }
+    }
+    public class OperatorMetricGovernanceCheckTypeInfo
+    {
+        public MetricGovernanceCheckType ID { get; set; }
         public string Name { get; set; }
     }
     public static class OperatorClassExtensions
@@ -203,6 +244,7 @@ namespace d360.core.enums
         {
             var list = new List<OperatorInfo>();
 
+            var checkInfos = MetricGovernanceCheckType.External.GetAsList();
             var dataTypeInfos = DataType.Boolean.GetDataTypeInfoList();
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
@@ -217,6 +259,12 @@ namespace d360.core.enums
                                     select new OperatorDataTypeInfo { ID = dti.ID, Name = dti.ID.ToString() }
                                     ).ToList();
 
+                    var checkTypes = (
+                                     from dt in ((OperatorAllowedMeasureChecksAttribute)tm.GetCustomAttribute(typeof(OperatorAllowedMeasureChecksAttribute))).Checks
+                                     join dti in checkInfos on dt equals dti.ID
+                                     select new OperatorMetricGovernanceCheckTypeInfo { ID = dti.ID, Name = dti.ID.ToString() }
+                                     ).ToList();
+
                     list.Add(new OperatorInfo
                     {
                         Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
@@ -225,6 +273,7 @@ namespace d360.core.enums
                         MinimumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Min,
                         MaximumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Max,
                         AllowedDataTypes = dataTypes,
+                        AllowedMeasureChecks = checkTypes,
                         FieldRequiresMultipleValueSupport = ((OperatorFieldTypeRequirementsAttribute)tm.GetCustomAttribute(typeof(OperatorFieldTypeRequirementsAttribute))).FieldRequiresMultipleValueSupport
                     });
                 }

@@ -79,11 +79,12 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
     private save(): void {
         this.isLoading = true;
         if (this.id > 0 || this.uid) {
+            this.model.group.Uid = this.uid;
             this.groupService.putGroup(this.model.group).subscribe(
                 r => {
-                    if (r.type == 'confirm') {
+                    if (r[0].Success == true) {
                         this.onSuccess.emit(r);
-                    } else if (r.type == 'error') {
+                    } else if (r[0].Success == false) {
                         this.onError.emit(r);
                     }
 
@@ -94,9 +95,9 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
         } else {
             this.groupService.postGroup(this.model.group).subscribe(
                 r => {
-                    if (r.type == 'confirm') {
+                    if (r[0].Success == true) {
                         this.onSuccess.emit(r);
-                    } else if (r.type == 'error') {
+                    } else if (r[0].Success == false) {
                         this.onError.emit(r);
                     }
 
@@ -121,6 +122,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
             let x = this.primaryOwnerField.Value[0];
             this.model.group.PrimaryOwnerResourceID = x.split('|')[1];
             this.model.group.PrimaryOwnerName = x.split('|')[2];
+            this.model.group.PrimaryOwnerUid = x.split('|')[3];
             this.primaryOwnerGrid = false;
         }
     }
@@ -139,6 +141,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
             let x = this.secondaryOwnerField.Value[0];
             this.model.group.SecondaryOwnerResourceID = x.split('|')[1];
             this.model.group.SecondaryOwnerName = x.split('|')[2];
+            this.model.group.SecondaryOwnerUid = x.split('|')[3];
             this.secondaryOwnerGrid = false;
         }
     }
