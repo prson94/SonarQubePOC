@@ -72,16 +72,13 @@ export class GalleryPopupMenuComponent implements OnInit {
 
     simpleExample = [
         {
-            title: 'Edit',
-            icon: 'fa-pencil'
+            title: 'Edit'
         },
         {
-            title: 'New',
-            icon: 'fa-plus'
+            title: 'New'
         },
         {
-            title: 'Delete',
-            icon: 'fa-thrash'
+            title: 'Delete'
         },
         {
             isSeparator: true
