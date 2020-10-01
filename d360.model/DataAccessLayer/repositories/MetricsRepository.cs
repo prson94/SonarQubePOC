@@ -715,8 +715,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
 
                         // End-date the now previous version, if any.
                         var existingAssetVersions = Company.Connection.Query<MetricAssetVersion>(
-                            "select * from metrics.AssetVersion where AssetUid = @Uid and EffectiveEndDate is null order by EffectiveDate desc", 
-                            new { metricAsset.Uid }, 
+                            "select * from metrics.AssetVersion where AssetUid = @Uid and Uid <> @VersionUid and EffectiveEndDate is null order by EffectiveDate desc", 
+                            new { metricAsset.Uid, VersionUid = metricAssetVersion.Uid }, 
                             transaction: trans
                         ).ToList();
                         for (var i = 0; i < existingAssetVersions.Count; i++)
