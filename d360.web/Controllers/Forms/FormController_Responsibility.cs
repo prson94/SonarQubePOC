@@ -815,53 +815,66 @@ order by	case
 
         [HttpGet, ActionName("ResponsibilityTypeRelationRuleRelationships_FormData"), Route("ResponsibilityTypeRelationRuleRelationships_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
-        {
-            string crossApplyValue;
-            string labelValue;
+        {            
             string objType;
             string joinColumn;
-            int objId;
-
+            
             var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
             if (intersectType.Object == type.ToString() && intersectType.ObjectID == id)
             {
-                objType = intersectType.Subject;
-                objId = intersectType.SubjectID;
+                objType = intersectType.Subject;            
                 joinColumn = "Subject";
             }
             else
             {
-                objType = intersectType.Object;
-                objId = intersectType.ObjectID;
+                objType = intersectType.Object;                
                 joinColumn = "Object";
             }
 
             if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
-            {
-                crossApplyValue = "getassettextpathbyid(D.id, '/') atp";
-                labelValue = "atp.textpath";
+            {                
+                return new JsonNetResult
+                {
+                    Data = Company.Query<dynamic>($@"
+                        select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		                    atp.textpath as label 
+                        from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                            cross apply getassettextpathbyid(D.id, '/') atp
+                            order by atp.textpath"),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
             }
-            else
+            else if( (objType == SystemObjects.ArtifactType.ToString()) || (objType == SystemObjects.RuleType.ToString()))
             {
-                crossApplyValue = "dbo.GetAssetDisplayValueById(D.ID) DN";
-                labelValue = "DN.DisplayValue";
+                return new JsonNetResult
+                {
+                    Data = Company.Query<dynamic>($@"
+                        select D.Object + '|' + cast(D.ObjectID as varchar(30)) as value,
+		                    DN.DisplayValue as label
+                        from Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                            inner join AssetDisplayValue DN on DN.AssetID = D.ID
+                            order by DN.DisplayValuePrefix"),
+                            Formatting = Newtonsoft.Json.Formatting.None
+                };
             }
-
-            var items = Company.Query<dynamic>($@"
-                select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
-		            {labelValue} as label 
-                from	Asset D
-                    inner join AssetType DT on DT.ID = D.AssetTypeID
-                    inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
-                    cross apply {crossApplyValue}
-                    order by {labelValue}");
 
             return new JsonNetResult
-            {
-                Data = items,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
+                {
+                    Data = Company.Query<dynamic>($@"
+                        select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+		                    DN.DisplayValue as label 
+                        from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                            cross apply dbo.GetAssetDisplayValueById(D.ID) DN
+                            order by DN.DisplayValue"),
+                    Formatting = Newtonsoft.Json.Formatting.None
+            };                       
         }
 
         #endregion
