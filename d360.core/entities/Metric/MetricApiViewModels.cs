@@ -234,8 +234,6 @@ namespace d360.core.entities.Metric
         public Guid PredicateUid { get; set; }
         [DataMember] 
         public Operator Operator { get; set; }
-        //[DataMember] 
-        //public List<string> Values { get; set; }
     }
 
     [DataContract]

@@ -137,14 +137,15 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         case Operator.IsFalse:
                                             if (assetField.Value != null)
                                             {
-                                                dynamic fieldValue;
                                                 if (fieldType.Type == DataType.Boolean.ToString())
                                                 {
-                                                    fieldValue = bool.Parse(assetField.Value);
-
-                                                    if (!fieldValue) 
+                                                    bool fieldValue;
+                                                    if (bool.TryParse(assetField.Value, out fieldValue))
                                                     {
-                                                        conditionsMetCount++;
+                                                        if (!fieldValue)
+                                                        {
+                                                            conditionsMetCount++;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -152,11 +153,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         case Operator.IsTrue:
                                             if (assetField.Value != null)
                                             {
-                                                dynamic fieldValue;
-                                                if (fieldType.Type == DataType.Boolean.ToString())
+                                                bool fieldValue;
+                                                if (bool.TryParse(assetField.Value, out fieldValue))
                                                 {
-                                                    fieldValue = bool.Parse(assetField.Value);
-
                                                     if (fieldValue)
                                                     {
                                                         conditionsMetCount++;
@@ -218,62 +217,104 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         case Operator.LessThanOrEquals:
                                             if (assetField.Value != null)
                                             {
+                                                bool successfullyParsed = false;
                                                 dynamic conditionValue;
                                                 dynamic fieldValue;
                                                 if (fieldType.Type == DataType.Boolean.ToString())
                                                 {
-                                                    conditionValue = bool.Parse(i.Values[0]);
-                                                    fieldValue = bool.Parse(assetField.Value);
+                                                    if (bool.TryParse(i.Values[0], out _) && bool.TryParse(assetField.Value, out _))
+                                                    {
+                                                        conditionValue = bool.Parse(i.Values[0]);
+                                                        fieldValue = bool.Parse(assetField.Value);
+                                                        successfullyParsed = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        conditionValue = false;
+                                                        fieldValue = false;
+                                                    }
                                                 }
                                                 else if (fieldType.Type == DataType.Date.ToString() || fieldType.Type == DataType.DateTime.ToString())
                                                 {
-                                                    conditionValue = DateTime.Parse(i.Values[0]);
-                                                    fieldValue = DateTime.Parse(assetField.Value);
+                                                    if (DateTime.TryParse(i.Values[0], out _) && DateTime.TryParse(assetField.Value, out _))
+                                                    {
+                                                        conditionValue = DateTime.Parse(i.Values[0]);
+                                                        fieldValue = DateTime.Parse(assetField.Value);
+                                                        successfullyParsed = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        conditionValue = false;
+                                                        fieldValue = false;
+                                                    }
                                                 }
                                                 else if (fieldType.Type == DataType.Decimal.ToString())
                                                 {
-                                                    conditionValue = decimal.Parse(i.Values[0]);
-                                                    fieldValue = decimal.Parse(assetField.Value);
+                                                    if (decimal.TryParse(i.Values[0], out _) && decimal.TryParse(assetField.Value, out _))
+                                                    {
+                                                        conditionValue = decimal.Parse(i.Values[0]);
+                                                        fieldValue = decimal.Parse(assetField.Value);
+                                                        successfullyParsed = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        conditionValue = false;
+                                                        fieldValue = false;
+                                                    }
                                                 }
                                                 else if (fieldType.Type == DataType.Number.ToString())
                                                 {
-                                                    conditionValue = int.Parse(i.Values[0]);
-                                                    fieldValue = int.Parse(assetField.Value);
+                                                    if (int.TryParse(i.Values[0], out _) && int.TryParse(assetField.Value, out _))
+                                                    {
+                                                        conditionValue = int.Parse(i.Values[0]);
+                                                        fieldValue = int.Parse(assetField.Value);
+                                                        successfullyParsed = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        conditionValue = false;
+                                                        fieldValue = false;
+                                                    }
                                                 }
                                                 else
                                                 {
                                                     conditionValue = i.Values[0];
                                                     fieldValue = assetField.Value;
+                                                    successfullyParsed = true;
                                                 }
 
-                                                switch (i.Operator)
-                                                {
-                                                    case Operator.GreaterThan:
-                                                        if (fieldValue > conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.GreaterThanOrEquals:
-                                                        if (fieldValue >= conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.LessThan:
-                                                        if (fieldValue < conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.LessThanOrEquals:
-                                                        if (fieldValue <= conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
+                                                if (successfullyParsed)
+                                                { 
+                                                    switch (i.Operator)
+                                                    {
+                                                        case Operator.GreaterThan:
+                                                            if (fieldValue > conditionValue)
+                                                            {
+                                                                conditionsMetCount++;
+                                                            }
+                                                            break;
+                                                        case Operator.GreaterThanOrEquals:
+                                                            if (fieldValue >= conditionValue)
+                                                            {
+                                                                conditionsMetCount++;
+                                                            }
+                                                            break;
+                                                        case Operator.LessThan:
+                                                            if (fieldValue < conditionValue)
+                                                            {
+                                                                conditionsMetCount++;
+                                                            }
+                                                            break;
+                                                        case Operator.LessThanOrEquals:
+                                                            if (fieldValue <= conditionValue)
+                                                            {
+                                                                conditionsMetCount++;
+                                                            }
+                                                            break;
+                                                    }
                                                 }
                                             }
+
                                             break;
                                     }
                                 }

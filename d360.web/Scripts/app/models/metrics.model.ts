@@ -98,7 +98,6 @@ export class MetricAssetDefinitionGovernanceFieldViewModel {
 export class MetricAssetDefinitionGovernancePredicateViewModel {
     PredicateUid: string;
     Operator: Operator;
-    //Values: string[];
 }
 export class MetricAssetDefinitionGovernanceRelationViewModel {
     IntersectTypeUid: string;
