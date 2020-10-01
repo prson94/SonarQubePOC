@@ -1,15 +1,21 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
+    [JsonConverter(typeof(StringEnumConverter), true)]
     public enum Operator
     {
         [
             Name("is"), 
+            EnumMember(Value = "Equals"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
@@ -18,7 +24,8 @@ namespace d360.core.enums
         ]
         Equals = 1,
         [
-            Name("is not"), 
+            Name("is not"),
+            EnumMember(Value = "NotEquals"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
@@ -27,7 +34,8 @@ namespace d360.core.enums
         ]
         NotEquals,
         [
-            Name("contains"), 
+            Name("contains"),
+            EnumMember(Value = "Contains"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -36,7 +44,8 @@ namespace d360.core.enums
         ]
         Contains,
         [
-            Name("does not contain"), 
+            Name("does not contain"),
+            EnumMember(Value = "NotContains"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -45,7 +54,8 @@ namespace d360.core.enums
         ]
         NotContains,
         [
-            Name("starts with"), 
+            Name("starts with"),
+            EnumMember(Value = "StartsWith"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -54,7 +64,8 @@ namespace d360.core.enums
         ]
         StartsWith,
         [
-            Name("ends with"), 
+            Name("ends with"),
+            EnumMember(Value = "EndsWith"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -63,7 +74,8 @@ namespace d360.core.enums
         ]
         EndsWith,
         [
-            Name("is before"), 
+            Name("is before"),
+            EnumMember(Value = "Before"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -72,7 +84,8 @@ namespace d360.core.enums
         ]
         Before,
         [
-            Name("is after"), 
+            Name("is after"),
+            EnumMember(Value = "After"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -82,7 +95,8 @@ namespace d360.core.enums
         After,
         [
             NotYetUsed, 
-            Name("is between"), 
+            Name("is between"),
+            EnumMember(Value = "Between"),
             Description(""), 
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -91,7 +105,8 @@ namespace d360.core.enums
         ]
         Between,
         [
-            Name("is populated"), 
+            Name("is populated"),
+            EnumMember(Value = "Populated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
@@ -100,7 +115,8 @@ namespace d360.core.enums
         ]
         Populated,
         [
-            Name("is not populated"), 
+            Name("is not populated"),
+            EnumMember(Value = "NotPopulated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
@@ -109,7 +125,8 @@ namespace d360.core.enums
         ]
         NotPopulated,
         [
-            Name("is greater than"), 
+            Name("is greater than"),
+            EnumMember(Value = "GreaterThan"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -118,7 +135,8 @@ namespace d360.core.enums
             ]
         GreaterThan,
         [
-            Name("is less than or equal to"), 
+            Name("is less than or equal to"),
+            EnumMember(Value = "LessThanOrEquals"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -127,7 +145,8 @@ namespace d360.core.enums
         ]
         LessThanOrEquals,
         [
-            Name("is less than"), 
+            Name("is less than"),
+            EnumMember(Value = "LessThan"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -136,7 +155,8 @@ namespace d360.core.enums
         ]
         LessThan,
         [
-            Name("is greater than or equal to"), 
+            Name("is greater than or equal to"),
+            EnumMember(Value = "GreaterThanOrEquals"),
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -146,7 +166,8 @@ namespace d360.core.enums
         GreaterThanOrEquals,
         [
             NotYetUsed, 
-            Name("in"), 
+            Name("in"),
+            EnumMember(Value = "In"),
             Description(""), 
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
@@ -156,7 +177,8 @@ namespace d360.core.enums
         In,
         [
             NotYetUsed, 
-            Name("not in"), 
+            Name("not in"),
+            EnumMember(Value = "NotIn"),
             Description(""), 
             OperatorValueCountRange(1, 1000),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
@@ -166,6 +188,7 @@ namespace d360.core.enums
         NotIn,
         [
             Name("is true"),
+            EnumMember(Value = "IsTrue"),
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
@@ -175,6 +198,7 @@ namespace d360.core.enums
         IsTrue,
         [
             Name("is false"),
+            EnumMember(Value = "IsFalse"),
             Description(""),
             OperatorValueCountRange(0, 0),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
