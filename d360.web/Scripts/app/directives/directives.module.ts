@@ -9,6 +9,7 @@ import { TextAreaDirective, TextAreaModule } from './ig-textarea-directive';
 import { AutoFocusDirective } from './ig-autofocus.directive';
 import { CheckboxDirective } from './ig-checkbox-directive';
 import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
+import { RadioButtonDirective } from './ig-radio-button-directive';
 
 
 @NgModule({ 
@@ -24,7 +25,8 @@ import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
         CopyClipboardDirective,
         ClickOutsideDirective,
         AutoFocusDirective,
-        CheckboxDirective,        
+        CheckboxDirective,    
+        RadioButtonDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -36,7 +38,8 @@ import { DropdownModule, DropdownDirective } from './ig-dropdown.directive';
         AutocompleteDirective,
         AutoFocusDirective,
         CheckboxDirective,
-        DropdownDirective
+        DropdownDirective,
+        RadioButtonDirective
     ]
 })
 export class DirectivesModule { }

@@ -1,0 +1,108 @@
+﻿<div class="tile tile-detail">
+    <header>Radio Button Directive</header>
+    <p>Angular directive that can be applied to <strong>p-radio</strong> input controls.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <p>Am I a good radio button?</p>
+            <div class="row">
+                <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Of Course!" label="Yes"></p-radioButton>
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="groupName" [(ngModel)]="val" value="Hell No!" label="No"></p-radioButton>
+                <p>Value: {{val}}</p>
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>tabindex</h4>
+        <div>
+            <p>
+                Click on the first input then tab using your tab keys(space bar check the checkbox).
+            </p>
+            <div class="row">
+                <input igInput type="text" />
+            </div>
+            <div class="row">
+                <input igInput type="text" />
+            </div>
+            <div class="row">
+                <input igInput type="text" />
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="yetAnotherGroupName" [(ngModel)]="val3" value="four" label="Im 4th!"></p-radioButton>
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="yetAnotherGroupName" [(ngModel)]="val3" value="five" label="Im 5th!"></p-radioButton>
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="yetAnotherGroupName" [(ngModel)]="val3" value="six" label="Im 6th!"></p-radioButton>
+            </div>
+            <div class="row">
+                <input igInput type="text" />
+            </div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Validation</h4>
+        <div>
+            Form validation.
+        </div>
+        <div class="row">&nbsp;</div>
+        <div>
+            <form #myForm="ngForm">
+                <div class="row">
+                    <b>Template driven forms</b>
+                    <p>Select an option to enable button</p>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="row">
+                            <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="formValue" required value="Hello!" label="Hello"></p-radioButton>
+                        </div>
+                        <div class="row">
+                            <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="formValue" value="Goodbye!" label="Goodbye"></p-radioButton>
+                        </div>
+                        <div class="row">
+                            <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="formValue" value="See you later!" label="See you later"></p-radioButton>
+                        </div>
+                    </div>
+                    <div class="row">&nbsp;</div>
+                    <div class="row">
+                        <button igButton type="submit" [disabled]="!myForm.valid" (click)="test()" label="Save"></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <div class="row">
+                <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="val2" value="Of Course!" label="Hello"></p-radioButton>
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="val2" value="Goodbye!" label="Goodbye"></p-radioButton>
+            </div>
+            <div class="row">
+                <p-radioButton igRadioButton name="anotherGroupName" [(ngModel)]="val2" value="Im late!" disabled label="Disabled"></p-radioButton>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <strong>* All properties that are available on current version of PrimeNG checkbox/tristatecheckbox components</strong>
+</div>
+
