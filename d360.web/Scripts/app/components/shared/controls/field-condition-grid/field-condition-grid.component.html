@@ -2,7 +2,7 @@
     <form name="conditionForm" #conditionsForm="ngForm">
         <div *ngFor="let condition of conditions; let i = index">
             <div class="row condition-row">
-                <div class="condition-option">
+                <div class="condition-option condition-field">
                     <p-dropdown igDropdown
                                 igSize="medium"
                                 [name]="'condition_' + i"
