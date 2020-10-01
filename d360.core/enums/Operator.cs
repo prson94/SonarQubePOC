@@ -9,144 +9,179 @@ namespace d360.core.enums
     public enum Operator
     {
         [
-            Name("is"),
-            Description(""),
+            Name("is"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Equals = 1,
         [
-            Name("is not"),
-            Description(""),
+            Name("is not"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         NotEquals,
         [
-            Name("contains"),
-            Description(""),
+            Name("contains"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Contains,
         [
-            Name("does not contain"),
-            Description(""),
+            Name("does not contain"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         NotContains,
         [
-            Name("starts with"),
-            Description(""),
+            Name("starts with"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         StartsWith,
         [
-            Name("ends with"),
-            Description(""),
+            Name("ends with"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         EndsWith,
         [
-            Name("is before"),
-            Description(""),
+            Name("is before"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Date),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Date), 
             OperatorFieldTypeRequirements(false)
         ]
         Before,
         [
-            Name("is after"),
-            Description(""),
+            Name("is after"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Date),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Date), 
             OperatorFieldTypeRequirements(false)
         ]
         After,
         [
-            NotYetUsed,
-            Name("is between"),
-            Description(""),
+            NotYetUsed, 
+            Name("is between"), 
+            Description(""), 
             OperatorValueCountRange(2, 2),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
         Between,
         [
-            Name("is populated"),
-            Description(""),
+            Name("is populated"), 
+            Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Populated,
         [
-            Name("is not populated"),
-            Description(""),
+            Name("is not populated"), 
+            Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         NotPopulated,
         [
-            Name("is greater than"),
-            Description(""),
+            Name("is greater than"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
             ]
         GreaterThan,
         [
-            Name("is less than or equal to"),
-            Description(""),
+            Name("is less than or equal to"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
         LessThanOrEquals,
         [
-            Name("is less than"),
-            Description(""),
+            Name("is less than"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
         LessThan,
         [
-            Name("is greater than or equal to"),
-            Description(""),
+            Name("is greater than or equal to"), 
+            Description(""), 
             OperatorValueCountRange(1, 1),
-            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Decimal, DataType.Number), 
             OperatorFieldTypeRequirements(false)
         ]
         GreaterThanOrEquals,
         [
-            NotYetUsed,
-            Name("in"),
-            Description(""),
+            NotYetUsed, 
+            Name("in"), 
+            Description(""), 
             OperatorValueCountRange(1, 1000),
-            OperatorAllowedDataTypes(DataType.Lookup),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
             ]
         In,
         [
-            NotYetUsed,
-            Name("not in"),
-            Description(""),
+            NotYetUsed, 
+            Name("not in"), 
+            Description(""), 
             OperatorValueCountRange(1, 1000),
-            OperatorAllowedDataTypes(DataType.Lookup),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
         ]
-        NotIn
+        NotIn,
+        [
+            Name("is true"),
+            Description(""),
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Boolean),
+            OperatorFieldTypeRequirements(true)
+        ]
+        IsTrue,
+        [
+            Name("is false"),
+            Description(""),
+            OperatorValueCountRange(0, 0),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Boolean),
+            OperatorFieldTypeRequirements(true)
+        ]
+        IsFalse
     }
     public class OperatorInfo
     {
@@ -156,11 +191,17 @@ namespace d360.core.enums
         public int MinimumValueCount { get; set; }
         public int MaximumValueCount { get; set; }
         public List<OperatorDataTypeInfo> AllowedDataTypes { get; set; }
+        public List<OperatorMetricGovernanceCheckTypeInfo> AllowedMeasureChecks { get; set; }
         public bool FieldRequiresMultipleValueSupport { get; set; }
     }
     public class OperatorDataTypeInfo
     {
         public DataType ID { get; set; }
+        public string Name { get; set; }
+    }
+    public class OperatorMetricGovernanceCheckTypeInfo
+    {
+        public MetricGovernanceCheckType ID { get; set; }
         public string Name { get; set; }
     }
     public static class OperatorClassExtensions
@@ -203,6 +244,7 @@ namespace d360.core.enums
         {
             var list = new List<OperatorInfo>();
 
+            var checkInfos = MetricGovernanceCheckType.External.GetAsList();
             var dataTypeInfos = DataType.Boolean.GetDataTypeInfoList();
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
@@ -217,6 +259,12 @@ namespace d360.core.enums
                                     select new OperatorDataTypeInfo { ID = dti.ID, Name = dti.ID.ToString() }
                                     ).ToList();
 
+                    var checkTypes = (
+                                     from dt in ((OperatorAllowedMeasureChecksAttribute)tm.GetCustomAttribute(typeof(OperatorAllowedMeasureChecksAttribute))).Checks
+                                     join dti in checkInfos on dt equals dti.ID
+                                     select new OperatorMetricGovernanceCheckTypeInfo { ID = dti.ID, Name = dti.ID.ToString() }
+                                     ).ToList();
+
                     list.Add(new OperatorInfo
                     {
                         Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
@@ -225,6 +273,7 @@ namespace d360.core.enums
                         MinimumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Min,
                         MaximumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Max,
                         AllowedDataTypes = dataTypes,
+                        AllowedMeasureChecks = checkTypes,
                         FieldRequiresMultipleValueSupport = ((OperatorFieldTypeRequirementsAttribute)tm.GetCustomAttribute(typeof(OperatorFieldTypeRequirementsAttribute))).FieldRequiresMultipleValueSupport
                     });
                 }

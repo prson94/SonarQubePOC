@@ -7,7 +7,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service'; 
 import { Spinner } from 'primeng/spinner';
 import { Calendar } from 'primeng/calendar';
-import { OperatorModel } from '../../../models/operator.model';
+import { OperatorModel, Operator } from '../../../models/operator.model';
 
 
 @Component({
@@ -167,7 +167,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     if (conditions && conditions.length > 0) {
                         let fieldIds = conditions.map(x => { return x.ConditionFieldTypeName });
                         conditions.forEach(x => {
-                            if (!x.ConditionFieldTypeName || !x.Operator || !x.SingleValue) {
+                            let isValueRequired = (x.Operator != Operator.NotPopulated && x.Operator != Operator.Populated);
+                            if (!x.ConditionFieldTypeName || !x.Operator || (isValueRequired && !x.SingleValue)) {
                                 valid = false;
                             }
                         });
