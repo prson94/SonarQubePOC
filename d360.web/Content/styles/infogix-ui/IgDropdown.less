@@ -12,14 +12,14 @@
         height: 32px;
         padding: 0px;
         border-radius: 4px;
-        border: 1px solid @ig-field-border-color;
+        border: 1px solid @ig-select-border-color;
         width: 100%;
 
         &.ui-state-focus {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
-            border-color: @ig-field-border-color;
+            border-color: @ig-select-border-color;
             background: none;
         }
     }
@@ -28,6 +28,8 @@
         overflow: hidden;
         white-space: nowrap !important;
         text-overflow: ellipsis;
+        padding-top: 4px;
+        padding-left: 2px;
         padding-right: 48px;
     }
 
@@ -36,7 +38,7 @@
     }
 
     .ui-dropdown-trigger {
-        background-color: #f1f1f3;
+        background-color: @ig-select-button-color;
         width: 24px;
         height: 24px;
         top: 3px;
@@ -53,20 +55,24 @@
         width: 24px;
         height: 24px;
         right: 30px;
-        background-color: rgba(0,0,0,0.07);
+        background-color: @ig-select-button-color;
         top: 10px;
         font-size: 14px;
         padding: 5px;
         border-radius: 4px;
 
         &:hover {
-            background-color: rgba(0,0,0,0.14);
+            background-color: @ig-select-button-hover-color;
+        }
+
+        &:active {
+            background-color: @ig-select-button-active-color;
         }
     }
 
     &.ng-dirty.ng-invalid > .ui-dropdown {
-        border-color: @ig-field-border-color;
-        border-bottom: 1px solid @ig-field-border-color;
+        border-color: @ig-select-border-color;
+        border-bottom: 1px solid @ig-select-border-color;
     }
 
     &[required].ng-invalid {
@@ -78,24 +84,28 @@
     }
 
     &.ig-input-small {
-        width: @ig-field-width-small !important;
+        width: 100%;
+        max-width: @ig-field-width-small !important;
     }
 
     &.ig-input-medium {
-        width: @ig-field-width-medium !important;
+        width: 100%;
+        max-width: @ig-field-width-medium !important;
     }
 
     &.ig-input-large {
-        width: @ig-field-width-large !important;
+        width: 100%;
+        max-width: @ig-field-width-large !important;
     }
 
     &.ig-input-full {
-        width: @ig-field-width-full !important;
+        width: 100%;
+        max-width: @ig-field-width-full !important;
     }
 }
 
 .ig-dropdown-overlay {
-    border-radius: 4px;
+    border-radius: 4px !important;
 
     .ui-dropdown-items-wrapper {
         border-radius: 4px;
@@ -105,6 +115,7 @@
         padding: 0;
 
         li {
+            margin: 0px 0px;
             height: 32px;
             color: black;
             padding: 6px 12px;
@@ -121,18 +132,13 @@
 
     .ui-dropdown-filter-container {
         padding: 4px;
+    }
 
-        input {
-            height: 32px;
-            border-radius: 4px;
-            padding: 0px 24px 0px 8px;
-            border: 1px solid @ig-midblue-t3;
-        }
+    .ig-input {
+        width: 100%;
     }
 
     .ui-dropdown-filter-icon {
-        position: absolute;
-        top: 16px;
-        right: 16px;
+        top: 0.9em !important;
     }
 }
