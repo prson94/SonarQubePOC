@@ -80,9 +80,9 @@ namespace d360.model.workflow
             // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
             if (changedFields != null && item.FieldTypeId > 0)
             {
-                var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
-
-                if (value == null) return false;
+                var field = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
+                var value = field?.Value ?? null;
+                var formattedVal = field?.FormattedValue ?? null;
 
                 //special case for changed operator. If it's in the list of changed fields, return true
                 if (item.Operator == core.enums.Workflow.CriteriaOperator.Changed)
@@ -90,11 +90,11 @@ namespace d360.model.workflow
 
                 if (item.ValueDataType == core.enums.Workflow.CriteriaValueDataType.Lookup)
                 {
-                    if (!item.IsValueMatch(value.Value)) return false;
+                    if (!item.IsValueMatch(value)) return false;
                 }
                 else
                 {
-                    if (!item.IsValueMatch(value.FormattedValue)) return false;
+                    if (!item.IsValueMatch(formattedVal)) return false;
                 }
             }            
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
