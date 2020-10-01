@@ -12,7 +12,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class ResponsibilityRelationsComponent extends BaseComponent implements OnChanges {
     @Input() queryType: string;
-    @Input() id: number;
+    @Input() id: string;
 
     @Input() title: string = 'Asset Assignment';
 
@@ -95,7 +95,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
                     });
             }
             else {
-                this.responsibilityTypeService.getRelationsByResponsibilityType(this.id)
+                this.responsibilityTypeService.getRelationsByResponsibilityType(+this.id)
                     .subscribe(data => {
                         this.rows = data;
                         this.selectedRow = null;
@@ -125,7 +125,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     add(): void {
         this.selectedRow = new ResponsibilityTypeRelation();
-        this.selectedRow.ResponsibilityTypeID = this.id;
+        //this.selectedRow.ResponsibilityTypeID = this.id;
         this.isEditing = true;
         this.isDeleting = false;
         this.onAdd.emit();

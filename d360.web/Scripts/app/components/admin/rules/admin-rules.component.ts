@@ -76,7 +76,7 @@ import { StringConstants } from '../../../static/string-constants';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <object-detail [objectType]="'RuleType'" [objectID]="selected?.ID"></object-detail>
+                    <object-detail [objectType]="'RuleType'" [objectUID]="selected?.uid" [objectID]="selected?.ID"></object-detail>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@ import { StringConstants } from '../../../static/string-constants';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+                    <d3s-responsibility-relations queryType="A" [id]="selected?.uid" [showAddButton]="false"></d3s-responsibility-relations>
                 </div>
             </div>
         </div>

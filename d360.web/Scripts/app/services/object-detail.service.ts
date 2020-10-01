@@ -41,6 +41,17 @@ export class ObjectDetailService extends BaseObservableService {
             );
     }
 
+    getObjectDetailByUid(
+        objectUid: string,
+        objectType: string
+    ): Observable<any> {
+        return this.http.get(`api/${objectType}/${objectUid}/detail`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getObject(
         objectID: number,
         objectType: string

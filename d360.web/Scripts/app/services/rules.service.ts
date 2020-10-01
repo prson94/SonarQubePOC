@@ -15,7 +15,8 @@ export class RulesService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getRuleTypes(): Observable<RuleType[]> {
-        return this.http.get('api/ruletypes')
+        return this.http.get('api/v2/assets/types?Class=Rule')
+        //return this.http.get('api/ruletypes')
             .pipe(
                 map(response => <RuleType[]>response),
                 catchError(err => this.handleError(err))

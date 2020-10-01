@@ -80,7 +80,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         if (this.objectType == "IntersectType")
             this.showIsPartOfKey = false;
         this.isLoading = true;
-        this.hasKeyFields = false
+        this.hasKeyFields = false;
         this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             data => {
                 this.fieldDefinitions = data;

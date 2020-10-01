@@ -2332,8 +2332,8 @@ from    ResponsibilityTypeRelation R
             return list;
         }
 
-        [Route("ownership/types/asset/{id:int}/relations")]
-        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(int id)
+        [Route("ownership/types/asset/{id:Guid}/relations")]
+        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(Guid id)
         {
             var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
 select  R.ResponsibilityTypeID,
@@ -2346,7 +2346,7 @@ select  R.ResponsibilityTypeID,
         R.PermissionsBitMask
 from    ResponsibilityTypeRelation R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id 
+        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.uid = @id 
         cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
             new { id }).ToList().OrderBy(i => i.ClassName).ThenBy(i => i.AssetTypeName).ToList();
 
@@ -2879,11 +2879,52 @@ order by    Name
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, Guid uid)
         {
             int objectId = -1;
+            var model = new DetailReadOnlyModel() { columns = 2 };
             switch (type)
             {
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return GetObjectDetailFields(type, objectId);
+                case SystemObjects.RuleType:
+                    #region Fields
+                    var ruleType = Company.Filter<AssetType>(i => i.uid == uid && i.Object == "RuleType").SingleOrDefault();
+                    //var id = Company.Filter<Asset>(i => i.uid == uid).SingleOrDefault();
+                    //objectId = (int)Company.Assets.FirstOrDefault(x => x.uid == uid).ID;
+                    var ruleDetail = Company.GetObjectDetail("RuleType", ruleType.ObjectID);
+                    if (ruleType != null)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Name_Name, FieldName = "RuleTypeName", Value = ruleType.Name }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.ID_Name, FieldName = "RuleTypeID", Value = ruleType.ObjectID.ToString() }
+                            }
+                        });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = ruleDetail.UID.ToString()  }
+                            }
+                        });
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.Description_Name, FieldName = "RuleTypeDescription", DataType = "Html", Value = string.IsNullOrEmpty(ruleType.Description) ? "None provided" : ruleType.Description }
+                            }
+                        });
+                    }
+                    ruleType = null;
+                    return model;
+                #endregion
                 default:
                     return null;
             }
