@@ -20,6 +20,10 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     @Output() onComplete = new EventEmitter();
     @Input() model: BulkWorkflowReassignModel = null;
     @Input() title: string = 'Form Reassignment';
+
+    private items: any[] = [];
+    private resource: any;
+
     field: EditorField;
     selectedResourceName: string = '';
     sendFormEmails: boolean = false;
@@ -44,7 +48,11 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
 
         this.resourcesService.getResource(this.model.OriginalAssigneeResourceID)
             .subscribe(response => {
-                this.model.OriginalAssigneeResourceName = `${response.FirstName} ${response.LastName}`;
+                this.items = response.items;
+                if (this.items.length > 0) {
+                    this.resource = this.items[0];
+                }
+                this.model.OriginalAssigneeResourceName = `${this.resource.FirstName} ${this.resource.LastName}`;
             });
     }
 

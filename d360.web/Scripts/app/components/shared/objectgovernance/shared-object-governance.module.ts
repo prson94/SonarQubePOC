@@ -23,6 +23,7 @@ import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 import { SimpleCarouselModule } from '../small-widgets/carausel/simple-carousel.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 declare var require: any;
 export function highchartsFactory() {
@@ -48,6 +49,7 @@ export function highchartsFactory() {
         ButtonModule,
         SharedModule,  
         TreeTableModule,
+        TooltipModule,
 
         //charts        
         ChartModule,
