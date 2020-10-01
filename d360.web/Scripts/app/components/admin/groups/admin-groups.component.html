@@ -54,8 +54,8 @@
             <d3s-group-form [id]="0" [uid]="selectedRow?.Uid" [title]="'Edit ' + selectedRow.Name" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
-            <d3s-delete-form [uri]="'/form/DeleteGroupByID?id=0&uid=' + selectedRow.Uid"
-                         [method]="'delete'"
+            <d3s-delete-form [callback]="theDeleteCallback"
+                             [method]="'callback'"
                          [prompt]="'Are you sure you want to remove ' + selectedRow.Name + '?'"
                          (onDeleteSuccess)="confirmDelete($event);"
                          (onDeleteFail)="errorDelete($event)"
