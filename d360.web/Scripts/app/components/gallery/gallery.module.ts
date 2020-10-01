@@ -57,6 +57,8 @@ import { GalleryDropDownComponent } from './gallery.dropdown.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { GalleryPropertyGroupComponent } from './gallery.propery-group.component';
 import { PropertyGroupModule } from '../shared/controls/property-group/property-group.component';
+import { GalleryRadioButtonComponent } from './gallery.radio-button.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { GalleryFieldConditionGridComponent } from './gallery.field-condition-grid.component';
 import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
 
@@ -93,7 +95,7 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
         PopupMenuModule,
         OverlayPanelModule,
         DropdownModule,
-
+        RadioButtonModule,
         FieldConditionGridModule
     ],
     declarations: [
@@ -122,7 +124,8 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
         GalleryDropDownComponent,
         GalleryCheckboxComponent,
         GalleryPropertyGroupComponent,
-        GalleryFieldConditionGridComponent
+        GalleryFieldConditionGridComponent,
+        GalleryRadioButtonComponent
     ],
     providers: [
         GalleryGuard,

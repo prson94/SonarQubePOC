@@ -192,7 +192,7 @@ namespace d360.web.Controllers.V2
 
             template.AssetTypeID = assetType?.ID ?? 0;
 
-            var validationStatus = validateTemplate(template, assetType);
+            var validationStatus = ValidateTemplate(template, assetType);
             if (validationStatus.StatusCode != HttpStatusCode.OK)
                 return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
@@ -439,26 +439,24 @@ namespace d360.web.Controllers.V2
 
             AssetTypeExportTemplate template = new AssetTypeExportTemplate { Name = model.Name, Description = model.Description, UsageNotes = model.UsageNotes, IncludeFieldTypes = model.IncludeFieldTypes, IncludeUrl = model.IncludeUrl, IncludeParent = model.IncludeParent, ExportViewType = model.ExportViewType, AssetTypeUID = model.AssetTypeUID, Uid = templateUid };
 
-            template.AssetTypeID = assetType?.ID ?? 0;            
-
-            var validationStatus = validateTemplate(template, assetType);
-            if (validationStatus.StatusCode != HttpStatusCode.OK)
-                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
+            template.AssetTypeID = assetType?.ID ?? 0;
 
             //check that there is a export template exists
             var currentTemplate = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == templateUid);
-            if (currentTemplate.ID <= 0)
+            if (currentTemplate == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found",  "Export Template not found matching the Uid Provided.");
+                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found", "Export Template not found matching the Uid Provided.");
             }
             else
             {
                 template.ID = currentTemplate.ID;
+                template.Uid = templateUid;
             }
 
-            if (template.ID <= 0)
+            var validationStatus = ValidateTemplate(template, assetType);
+            if (validationStatus.StatusCode != HttpStatusCode.OK)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Template not Found", "Export Template not found matching the Uid Provided.");
+                return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
             }
 
             var updateTemplateSQL = $@"update AssetTypeExportTemplate 
@@ -656,7 +654,7 @@ namespace d360.web.Controllers.V2
             return result < 0 ? result : Company.Database.Connection.ExecuteAsync(createIncludeFieldTypeList, parameters).Result;
         }
 
-        private WorkHttpStatus validateTemplate(AssetTypeExportTemplate template, AssetType assetType)
+        private WorkHttpStatus ValidateTemplate(AssetTypeExportTemplate template, AssetType assetType)
         {
             if(assetType ==null)
             {
@@ -679,7 +677,7 @@ namespace d360.web.Controllers.V2
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Name must not exceed 250 characters.");
             }
 
-            if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name))
+            if (Company.AssetTypeExportTemplates.Any(t => t.AssetTypeID == template.AssetTypeID && t.Name == template.Name && ((template.Uid == null || template.Uid == Guid.Empty) || (template.Uid != null && t.Uid!=template.Uid))))
             {
                 return new WorkHttpStatus(HttpStatusCode.Conflict, "Conflict", $"Template named '{template.Name}' already exists for Asset Type '{assetType.Name}'.");
             }

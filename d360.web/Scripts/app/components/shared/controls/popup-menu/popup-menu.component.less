@@ -107,6 +107,7 @@
             &.label {
                 opacity: 1;
                 font-weight: bold;
+                color: @ig-grey;
 
                 .icon-part {
                     display: none;
@@ -123,6 +124,7 @@
 
                 .title-part {
                     padding-right: 16px;
+                    white-space: nowrap;
                 }
 
                 .menu-icon {
@@ -133,6 +135,11 @@
                 .checkbox-part {
                     min-width: 20px;
                     max-height: 15px;
+
+                    .fa {
+                        position: absolute;
+                        top: 12px;
+                    }
                 }
 
                 .shortcuts-part {
