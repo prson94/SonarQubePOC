@@ -282,39 +282,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Group : Delete
-
-        [HttpDelete, Route("DeleteGroup")]
-        public JsonResult DeleteGroup(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("group");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Group>(id);
-                if (model == null) throw new NotFoundException("group");
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(model);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region Group : Edit
 
         [HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]

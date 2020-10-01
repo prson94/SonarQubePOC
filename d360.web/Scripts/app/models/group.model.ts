@@ -8,8 +8,6 @@ export interface IGroupService {
     getGroup(id: number, uid: string): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
-    deleteGroup(id: number): Observable<JsonResult>;
-    deleteResourceGroup(groupID: number, resourceID: number): Observable<JsonResult>;
     getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
 

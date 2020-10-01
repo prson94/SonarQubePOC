@@ -92,13 +92,6 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    deleteGroup(id: number): Observable<JsonResult> {
-        return this.http.delete(`form/DeleteGroupByID?id=${id}`).pipe(
-            map(response => <JsonResult>response),
-            catchError(err => this.handleError(err))
-        );
-    }
-
     addUsersToGroup(groupUid: string, users: AddUserToGroup[]): Observable<any> {
         return this.http.post(`api/v2/membership/groups/${groupUid}/members`, users).pipe(
             map(response => <any>response),
@@ -109,16 +102,6 @@ export class GroupService extends BaseObservableService implements IGroupService
     deleteUsersFromGroup(groupUid: string, userUid: string): Observable<any> {
         return this.http.delete(`api/v2/membership/groups/${groupUid}/${userUid}`).pipe(
             map(response => <any>response),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    deleteResourceGroup(
-        groupID: number,
-        resourceID: number
-    ): Observable<JsonResult> {
-        return this.http.delete(`form/ResourceGroup?groupID=${groupID}&resourceID=${resourceID}`).pipe(
-            map(response => <JsonResult>response),
             catchError(err => this.handleError(err))
         );
     }
