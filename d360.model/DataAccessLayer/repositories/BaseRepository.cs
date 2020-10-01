@@ -798,7 +798,7 @@ namespace d360.model.DataAccessLayer.repositories
             return null;
         }
 
-        protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
+        protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields, int totalRows = -1)
         {
             int index = 1;
             foreach (var field in fields)
@@ -812,7 +812,9 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else
                     {
-                        document.AutoFitColumn(index);
+                        //dont autofit colums if there are > 2000 rows or json fields as this process is slow for these
+                        if(field.Type != "JSON" && totalRows< 2000)
+                            document.AutoFitColumn(index);
                     }
                     index++;
                 }
