@@ -9,7 +9,6 @@ namespace d360.core.queue
         AssetMeasures,
         ExternalMeasureResultsCreated,
         ExternalScoresCreated,
-        MeasureCreated,
         MeasureChanged,
         MeasureRemoved,
         RollupPathChanged,

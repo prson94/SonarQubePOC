@@ -337,12 +337,13 @@ from	metrics.Asset A
                                     ConditionUid = conditionValidator.SelectedConditionUid
                                 };
 
+                                var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
                                 // Now perform analysis based on measure type and check type.
                                 switch (measure.ScoreType)
                                 {
                                     case ScoreType.DataQuality:
                                         #region
-                                        var dqDefinition = JsonConvert.DeserializeObject<DataQualityMeasureDefinition>(measure.Definition);
+                                        var dqDefinition = definition.DataQuality;
                                         // Do something with rollups here.
                                         if (measure.RollupPath == null)
                                         {
@@ -389,13 +390,13 @@ from	metrics.Asset A
                                                 float resultOperationValue = 0;
                                                 switch (dqDefinition.ResultOperation)
                                                 {
-                                                    case MeasureResultOperation.Average:
+                                                    case MetricRuleResultOperation.Average:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
                                                         break;
-                                                    case MeasureResultOperation.Max:
+                                                    case MetricRuleResultOperation.Maximum:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
                                                         break;
-                                                    case MeasureResultOperation.Minimum:
+                                                    case MetricRuleResultOperation.Minimum:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
                                                         break;
                                                 }
@@ -421,23 +422,29 @@ from	metrics.Asset A
                                         break;
                                         #endregion
                                     case ScoreType.Governance:
-                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition ?? "{}");
+                                        var gDefinition = definition.Governance;
                                         switch (gDefinition.Check)
                                         {
-                                            case GovernanceMeasureCheck.External:
+                                            case MetricGovernanceCheckType.External:
                                                 scoreItem.Value = n.Result;
                                                 break;
-                                            case GovernanceMeasureCheck.Field:
-                                                //assetFields.FirstOrDefault(f => f.FieldTypeID == gDefinition.TypeUid)
+                                            case MetricGovernanceCheckType.Field:
+                                                if (gDefinition.Field != null)
+                                                {
+                                                    var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.Name == gDefinition.Field.FieldTypeName);
+                                                    if (assetFieldForFieldCheck != null)
+                                                    {
+                                                        //gDefinition.Field.Operator
+                                                    }
+                                                }
+                                                break;
+                                            case MetricGovernanceCheckType.Owner:
                                                 //scoreItem.Value = n.Result;
                                                 break;
-                                            case GovernanceMeasureCheck.Ownership:
+                                            case MetricGovernanceCheckType.Predicate:
                                                 //scoreItem.Value = n.Result;
                                                 break;
-                                            case GovernanceMeasureCheck.Predicate:
-                                                //scoreItem.Value = n.Result;
-                                                break;
-                                            case GovernanceMeasureCheck.Relationship:
+                                            case MetricGovernanceCheckType.Relation:
                                                 //scoreItem.Value = n.Result;
                                                 break;
                                             default:

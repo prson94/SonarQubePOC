@@ -89,6 +89,8 @@ namespace d360.core.entities.Metric
         public MetricAssetDefinitionGovernanceViewModel Governance { get; set; }
     }
 
+    #region DataQuality Definition Models
+
     [DataContract]
     public class MetricAssetDefinitionDataQualityViewModel
     {
@@ -123,6 +125,10 @@ namespace d360.core.entities.Metric
         /// </summary>
         public int FieldTypeID { get; set; }
     }
+
+    #endregion
+
+    #region Governance Definition Models
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceViewModel
@@ -253,6 +259,37 @@ namespace d360.core.entities.Metric
         [DataMember] 
         public Guid ResponsibilityTypeUid { get; set; }
     }
+
+    #endregion
+
+    #region Perceptual Definition Models
+
+    public class MetricAssetDefinitionPerceptualViewModel
+    {
+        public Guid QuestionTypeUid { get; set; }
+        public int NumberOfSurveysToConsider { get; set; }
+    }
+
+    #endregion
+
+    #region Rollup Definition Models
+
+    public class MetricAssetDefinitionRollupViewModel
+    {
+        public MetricRuleResultOperation ResultOperation { get; set; }
+        public bool CrossDescendancy { get; set; }
+    }
+
+    #endregion
+
+    #region User Definition Models
+
+    public class MetricAssetDefinitionUserViewModel
+    {
+        public MetricRuleResultOperation ResultOperation { get; set; }
+    }
+
+    #endregion
 
     [DataContract]
     public class MetricAssetViewDetailModel : MetricAssetViewModel

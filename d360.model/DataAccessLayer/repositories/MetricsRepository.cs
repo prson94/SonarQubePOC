@@ -1041,7 +1041,7 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                 }
             }
 
-            Company.SendScoreEventWithPayload(Guid.NewGuid(), isNew ? ScoreQueueChangeType.MeasureCreated : ScoreQueueChangeType.MeasureChanged, metricAsset);
+            Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
