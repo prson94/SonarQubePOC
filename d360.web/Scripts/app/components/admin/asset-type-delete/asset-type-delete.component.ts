@@ -14,6 +14,7 @@ import { ActivatedRoute } from '@angular/router';
 export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     @Input() callback: Function;
     @Input() artifactTypeId: number;
+    @Input() artifactTypeUid: string;
     @Input() assetTypeId: number;
     @Input() assetTypeClass: AssetTypeClass;
     @Input() assetTypeName: string = 'Unknown';
@@ -71,7 +72,11 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
         this.isLoading = true;
 
         if (this.callback) {
-            this.callback(this.artifactTypeId);
+            if (this.artifactTypeUid)
+                this.callback(this.artifactTypeUid);
+            else
+                this.callback(this.artifactTypeId);
+
         }
 
         this.isLoading = false;
