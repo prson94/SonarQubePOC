@@ -211,6 +211,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                                 conditionsMetCount++;
                                             }
                                             break;
+                                        case Operator.After:
+                                        case Operator.Before:
                                         case Operator.GreaterThan:
                                         case Operator.GreaterThanOrEquals:
                                         case Operator.LessThan:
@@ -287,6 +289,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                                 { 
                                                     switch (i.Operator)
                                                     {
+                                                        case Operator.After:
                                                         case Operator.GreaterThan:
                                                             if (fieldValue > conditionValue)
                                                             {
@@ -299,6 +302,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                                                 conditionsMetCount++;
                                                             }
                                                             break;
+                                                        case Operator.Before:
                                                         case Operator.LessThan:
                                                             if (fieldValue < conditionValue)
                                                             {

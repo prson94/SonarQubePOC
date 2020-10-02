@@ -65,19 +65,19 @@ namespace d360.web.Controllers.V2
                         Field = new MetricAssetDefinitionGovernanceFieldViewModel
                         {
                             FieldTypeName = "FieldApiName",
-                            Operator = Operator.Contains,
+                            Operator = Operator.NotEquals,
                             Values = new List<string>() { "Country" }
                         },
                         Owner = new MetricAssetDefinitionGovernanceOwnerViewModel { 
                          ResponsibilityTypeUid = Guid.Empty
                         },
                         Predicate = new MetricAssetDefinitionGovernancePredicateViewModel { 
-                         Operator = Operator.Populated,
+                         Operator = Operator.Equals,
                          PredicateUid = Guid.Empty
                         },
                         Relation = new MetricAssetDefinitionGovernanceRelationViewModel { 
                          IntersectTypeUid = Guid.Empty,
-                         Operator = Operator.In,
+                         Operator = Operator.Equals,
                          Values = new List<string>() { Guid.Empty.ToString() }
                         }
                     }
@@ -167,7 +167,28 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
+/*
+ Enum operators to be used in a later sprint.
+- Equals (1)
+- NotEquals (2)
+- Contains (3)
+- NotContains (4)
+- StartsWith (5)
+- EndsWith (6)
+- Before (7)
+- After (8)
+- Between (9)
+- Populated (10)
+- NotPopulated (11)
+- GreaterThan (12)
+- LessThanOrEquals (13)
+- LessThan (14)
+- GreaterThanOrEquals (15)
+- In (16)
+- NotIn (17)
+- IsTrue (18)
+- IsFalse (19)         
+ */
         /// <summary>
         /// Add or updates a metric.
         /// </summary>
@@ -185,25 +206,12 @@ namespace d360.web.Controllers.V2
         ///     - Based on the check selected above, you must provide the child property that has the same name.
         /// 
         /// Whenever you see an Operator property, the possible values are:
-        /// - Equals (1) : 
-        /// - NotEquals (2)
-        /// - Contains (3)
-        /// - NotContains (4)
-        /// - StartsWith (5)
-        /// - EndsWith (6)
-        /// - Before (7)
-        /// - After (8)
-        /// - Between (9)
-        /// - Populated (10)
-        /// - NotPopulated (11)
-        /// - GreaterThan (12)
-        /// - LessThanOrEquals (13)
-        /// - LessThan (14)
-        /// - GreaterThanOrEquals (15)
-        /// - In (16)
-        /// - NotIn (17)
-        /// - IsTrue (18)
-        /// - IsFalse (19)
+        /// - Equals
+        /// - NotEquals
+        /// - GreaterThan
+        /// - LessThanOrEquals
+        /// - LessThan
+        /// - GreaterThanOrEquals
         /// 
         /// For an up-to-date list of operators as well as the rules of use, please see the operator endpoint at (_/api/v2/environment/operators_).
         /// </remarks>

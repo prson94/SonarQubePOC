@@ -182,8 +182,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                                         if (valueModel) {
                                             c.SingleValue = valueModel.Value;//c.Values[0];
                                             c.ValuesText = valueModel.Text;
-                                            console.log(c.SingleValue);
-                                            console.log(c.lookupOptions);
                                         }
                                     }
                                 }
@@ -195,7 +193,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case 'DateTime':
                         if (c.Values && c.Values.length > 0) {
                             if (c.Values[0]) {
-                                c.SingleValue = new Date(c.Values[0]);
+                                let dt = new Date(c.Values[0]);
+                                c.SingleValue = new Date(dt.getTime() + (dt.getTimezoneOffset() * 60000));
                                 c.ValuesText = c.Values[0];
                             }
                         }
