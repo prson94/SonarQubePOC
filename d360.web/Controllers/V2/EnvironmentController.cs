@@ -25,8 +25,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/environment"),
-        Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        Authorize
     ]
     public class EnvironmentController : BaseV2ApiController
     {
@@ -36,7 +35,7 @@ namespace d360.web.Controllers.V2
             _storage = storage;
         }
 
-        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds")]
+        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> GetRebuilds()
         {
             try
@@ -57,7 +56,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> Rebuild(CompanyRebuildJobRequest model)
         {
             try
@@ -94,7 +93,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpGet, Route("styles")]
+        [HttpGet, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
         public HttpResponseMessage StyleCustomizations()
         {
             var css = "";
@@ -119,7 +118,7 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, css);
         }
 
-        [HttpPut, Route("styles")]
+        [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
         public HttpResponseMessage UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -174,6 +173,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("settings"),
             SwaggerParameter("_settingId", "Optional parameter to filter by setting ID.", DataType = "integer", ParameterType = "query", Required = false),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage Settings()
         {
@@ -238,7 +238,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("settings")
+            Route("settings"), ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
         {
@@ -394,8 +394,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("operators"),
-            SwaggerConsumes("application/json"),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerConsumes("application/json")
         ]
         public async Task<IHttpActionResult> GetOperators()
         {

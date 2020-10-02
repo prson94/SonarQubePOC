@@ -1,16 +1,20 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
+    [JsonConverter(typeof(StringEnumConverter), true)]
     public enum MetricMatchType
     {
-        [Name("Any"), ReadOnly(false), Description("")]
+        [Name("Any"), EnumMember(Value = "Any"), ReadOnly(false), Description("")]
         Any = 1,
-        [Name("All"), ReadOnly(false), Description("")]
+        [Name("All"), EnumMember(Value = "All"), ReadOnly(false), Description("")]
         All = 2
     }
     public class MetricMatchTypeInfo

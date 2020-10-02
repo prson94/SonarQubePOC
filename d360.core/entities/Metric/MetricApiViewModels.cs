@@ -259,6 +259,12 @@ namespace d360.core.entities.Metric
     {
         [DataMember, JsonProperty(Order = 100)]
         public List<MetricAssetVersionViewModel> Versions { get; set; }
+
+        /// <summary>
+        /// Used to help parse the json from the database.
+        /// </summary>
+        [IgnoreDataMember]
+        public string DefinitionJson { get; set; }
     }
 
     [DataContract]

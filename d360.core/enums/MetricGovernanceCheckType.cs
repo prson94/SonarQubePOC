@@ -1,22 +1,26 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
+    [JsonConverter(typeof(StringEnumConverter), true)]
     public enum MetricGovernanceCheckType
     {
-        [Name("External Check"), Description("")]
+        [Name("External Check"), EnumMember(Value = "External"), Description("")]
         External = 0,
-        [Name("Field Check"), Description("")]
+        [Name("Field Check"), EnumMember(Value = "Field"), Description("")]
         Field = 1,
-        [Name("Owner Check"), Description("")]
+        [Name("Owner Check"), EnumMember(Value = "Owner"), Description("")]
         Owner = 2,
-        [Name("Predicate Check"), Description("")]
+        [Name("Predicate Check"), EnumMember(Value = "Predicate"), Description("")]
         Predicate = 3,
-        [Name("Relationship Check"), Description("")]
+        [Name("Relationship Check"), EnumMember(Value = "Relation"), Description("")]
         Relation = 4
     }
     public class MetricGovernanceCheckTypeInfo
