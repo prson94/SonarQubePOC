@@ -521,7 +521,8 @@ namespace d360.web.Controllers.V2
     SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
     SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false)
+    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
 
 ]
         public async Task<IHttpActionResult> GetGroups()

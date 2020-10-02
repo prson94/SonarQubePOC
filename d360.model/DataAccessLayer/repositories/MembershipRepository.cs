@@ -32,6 +32,7 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
             List<string> condition = new List<string>();
+            string resourceString = "";
             if (queryParams != null)
             {
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
@@ -61,6 +62,19 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "resourceuid"))
+                {
+
+                    var user = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value.Trim();
+                    if (!string.IsNullOrEmpty(user))
+                    {
+                        resourceString = @"left join Asset U on U.[uid] = @user
+                                        left join[dbo].[ResourceGroup] RG on RG.[ResourceID] = U.ObjectID ";
+                        condition.Add("RG.[GroupID] = G.ID");
+                        dbArgs.Add("user", user);
+                    }
+                }
+
             }
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
@@ -68,13 +82,13 @@ namespace d360.model.DataAccessLayer
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {whereStatements}  order by G.Name  ";
+                {resourceString + whereStatements}  order by G.Name  ";
 
             var countSql = $@"Select count(*) from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {whereStatements}  ";
+                {resourceString + whereStatements}  ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
