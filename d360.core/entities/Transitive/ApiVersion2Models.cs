@@ -831,7 +831,8 @@ namespace d360.core.entities
 
     public class ActionUpsertRequest
     {
-        public Guid AssetUid { get; set; }
+        public Guid? AssetUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
