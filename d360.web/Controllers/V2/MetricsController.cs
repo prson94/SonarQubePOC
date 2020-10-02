@@ -30,6 +30,84 @@ using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
+    #region Swagger Example For Endpoints Below
+
+    public class UpsertAsset_Example : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new MetricAssetViewModel
+            {
+                AllocationUid = Guid.Empty,
+                Definition = new MetricAssetDefinitionViewModel
+                {
+                    DataQuality = new MetricAssetDefinitionDataQualityViewModel { 
+                     FilterMatchType = MetricMatchType.All,
+                     Filters = new List<MetricAssetDefinitionDataQualityFilterViewModel>() { 
+                      new MetricAssetDefinitionDataQualityFilterViewModel { 
+                       AssetTypeUid = Guid.Empty,
+                       FieldTypeName = "Dimension",
+                       Operator = Operator.Equals,
+                       Values = new List<string>() { "Accuracy" }
+                      }
+                     },
+                     ResultOperation = MetricRuleResultOperation.Average,
+                     ResultPathUid = Guid.Empty
+                    },
+                    Governance = new MetricAssetDefinitionGovernanceViewModel
+                    {
+                        Check = MetricGovernanceCheckType.External,
+                        External = new MetricAssetDefinitionGovernanceExternalViewModel
+                        {
+                            Instructions = "Technical instructions to be consumed by a third party calculation engine.",
+                            UpdateFrequency = MetricUpdateFrequency.None
+                        },
+                        Field = new MetricAssetDefinitionGovernanceFieldViewModel
+                        {
+                            FieldTypeName = "FieldApiName",
+                            Operator = Operator.Contains,
+                            Values = new List<string>() { "Country" }
+                        },
+                        Owner = new MetricAssetDefinitionGovernanceOwnerViewModel { 
+                         ResponsibilityTypeUid = Guid.Empty
+                        },
+                        Predicate = new MetricAssetDefinitionGovernancePredicateViewModel { 
+                         Operator = Operator.Populated,
+                         PredicateUid = Guid.Empty
+                        },
+                        Relation = new MetricAssetDefinitionGovernanceRelationViewModel { 
+                         IntersectTypeUid = Guid.Empty,
+                         Operator = Operator.In,
+                         Values = new List<string>() { Guid.Empty.ToString() }
+                        }
+                    }
+                },
+                Name = "My measure display name",
+                Description = "A friendly description of the purpose and definition of this measure.",
+                EffectiveDate = DateTime.UtcNow.Date,
+                IsGroup = false,
+                MatchConditionsOnly = true,
+                Weight = 0.25M,
+                ConditionGroups = new List<MetricAssetVersionConditionViewModel>() {
+                    new MetricAssetVersionConditionViewModel {
+                     MatchType = MetricMatchType.Any,
+                      Position = 1,
+                      ConditionItems = new List<MetricAssetVersionConditionItemViewModel>(){
+                       new MetricAssetVersionConditionItemViewModel {
+                        ConditionType = MetricConditionType.And,
+                        Operator = Operator.Equals,
+                        ConditionFieldTypeName = "Name",
+                        Values = new List<string>(){ "An asset name" }
+                       }
+                      }
+                    }
+                }
+            };
+        }
+    }
+
+    #endregion
+
     /// <summary>
     /// This service houses all endpoints handling metrics and scoring for assets throughout your environment.
     /// </summary>
@@ -55,8 +133,6 @@ namespace d360.web.Controllers.V2
         }
 
         #endregion
-
-
 
         /// <summary>
         /// Gets a metric by its Uid.
@@ -95,12 +171,49 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Add or updates a metric.
         /// </summary>
+        /// <remarks>
+        /// When creating or updating a measure, under the Definition:  
+        /// - DataQuality
+        ///     - Be sure to remove the Governance child property under Definition.
+        ///     - FilterMatchType may be: "Any" or "All"
+        ///     - ResultOperation may be: "Average", "Minimum" or "Maximum" 
+        ///     - ResultPathUid should be a valid identifier that can be retrieved from the path options endpoint (_{assetTypeUid:Guid}/{scoreType}/pathoptions_) on this service.
+        ///     - Filters is a list of fields to filter by, with the asset types being those contained within the path option selected above.
+        /// - Governance
+        ///     - Be sure to remove the DataQuality child property under Definition.    
+        ///     - Check may be: "External", "Field", "Owner", "Predicate", or "Relation"
+        ///     - Based on the check selected above, you must provide the child property that has the same name.
+        /// 
+        /// Whenever you see an Operator property, the possible values are:
+        /// - Equals (1) : 
+        /// - NotEquals (2)
+        /// - Contains (3)
+        /// - NotContains (4)
+        /// - StartsWith (5)
+        /// - EndsWith (6)
+        /// - Before (7)
+        /// - After (8)
+        /// - Between (9)
+        /// - Populated (10)
+        /// - NotPopulated (11)
+        /// - GreaterThan (12)
+        /// - LessThanOrEquals (13)
+        /// - LessThan (14)
+        /// - GreaterThanOrEquals (15)
+        /// - In (16)
+        /// - NotIn (17)
+        /// - IsTrue (18)
+        /// - IsFalse (19)
+        /// 
+        /// For an up-to-date list of operators as well as the rules of use, please see the operator endpoint at (_/api/v2/environment/operators_).
+        /// </remarks>
         /// <param name="model">The definition of the metric itself. If updating an existing metric, ensure that you populate the Uid property.</param>
         /// <returns>An HTTP status code with an appropriate status message.</returns>
         [
             HttpPost,
             Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(MetricAssetViewModel), typeof(UpsertAsset_Example)),
             SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the ADD request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not autheorized to make this change.", typeof(ErrorResponse)),

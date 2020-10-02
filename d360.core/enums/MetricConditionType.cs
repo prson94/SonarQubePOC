@@ -1,16 +1,20 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
+    [JsonConverter(typeof(StringEnumConverter), true)]
     public enum MetricConditionType
     {
-        [Name("And"), ReadOnly(false), Description("")]
+        [Name("And"), EnumMember(Value = "And"), ReadOnly(false), Description("")]
         And = 1,
-        [Name("Or"), ReadOnly(false), Description("")]
+        [Name("Or"), EnumMember(Value = "Or"), ReadOnly(false), Description("")]
         Or = 2
     }
     public class MetricConditionTypeInfo

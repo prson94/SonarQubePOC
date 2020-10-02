@@ -70,6 +70,51 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to add actions on this asset..
+        /// </summary>
+        internal static string AssetAddActionPermissionsDenied {
+            get {
+                return ResourceManager.GetString("AssetAddActionPermissionsDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset with Uid {0} could not be found..
+        /// </summary>
+        internal static string AssetNotFound {
+            get {
+                return ResourceManager.GetString("AssetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not allowed to add actions on this asset type..
+        /// </summary>
+        internal static string AssetTypeAddActionPermissionsDenied {
+            get {
+                return ResourceManager.GetString("AssetTypeAddActionPermissionsDenied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type with Uid {0} could not be found..
+        /// </summary>
+        internal static string AssetTypeNotFound {
+            get {
+                return ResourceManager.GetString("AssetTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One of Asset Type Uid or Asset Uid should be provided.
+        /// </summary>
+        internal static string AssetTypeOrAssetRequired {
+            get {
+                return ResourceManager.GetString("AssetTypeOrAssetRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} is not a valid Asset Type Uid..
         /// </summary>
         internal static string AssetTypeUidIsNotValid {
@@ -102,6 +147,24 @@ namespace Resources {
         internal static string InvalidActionTypeUid {
             get {
                 return ResourceManager.GetString("InvalidActionTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid AssetTypeUid provided..
+        /// </summary>
+        internal static string InvalidAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid AssetUid provided..
+        /// </summary>
+        internal static string InvalidAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidAssetUid", resourceCulture);
             }
         }
         

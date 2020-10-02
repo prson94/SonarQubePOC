@@ -310,6 +310,10 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
+
+            if(groupUid == Guid.Empty)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid passed in is empty. Please provided a valid group"));
+            
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
 
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();

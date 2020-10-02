@@ -1,26 +1,30 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace d360.core.enums
 {
+    [JsonConverter(typeof(StringEnumConverter), true)]
     public enum MetricUpdateFrequency
     {
-        [Name("Not Applicable"), ReadOnly(false), Description("")]
+        [Name("Not Applicable"), EnumMember(Value = "None"), ReadOnly(false), Description("")]
         None = 0,
-        [Name("Hourly"), ReadOnly(false), Description("")]
+        [Name("Hourly"), EnumMember(Value = "Hourly"), ReadOnly(false), Description("")]
         Hourly = 1,
-        [Name("Daily"), ReadOnly(false), Description("")]
+        [Name("Daily"), EnumMember(Value = "Daily"), ReadOnly(false), Description("")]
         Daily = 2,
-        [Name("Weekly"), ReadOnly(false), Description("")]
+        [Name("Weekly"), EnumMember(Value = "Weekly"), ReadOnly(false), Description("")]
         Weekly = 3,
-        [Name("Monthly"), ReadOnly(false), Description("")]
+        [Name("Monthly"), EnumMember(Value = "Monthly"), ReadOnly(false), Description("")]
         Monthly = 4,
-        [Name("Quarterly"), ReadOnly(false), Description("")]
+        [Name("Quarterly"), EnumMember(Value = "Quarterly"), ReadOnly(false), Description("")]
         Quarterly = 5,
-        [Name("Annually"), ReadOnly(false), Description("")]
+        [Name("Annually"), EnumMember(Value = "Annually"), ReadOnly(false), Description("")]
         Annually = 6
     }
     public class MetricUpdateFrequencyInfo

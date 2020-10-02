@@ -130,7 +130,7 @@
                                     <p-dropdown *ngIf="item.CheckType == 'F' && item.IsLookup && !item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }"></p-dropdown>
                                     <input *ngIf="item.CheckType == 'F' && !item.IsLookup && !item.IsBool" [ngModelOptions]="{standalone: true}" required name="name" pInputText type="text" [(ngModel)]="item.Value" style="width: 95%;" />
 
-                                    <p-dropdown *ngIf="item.CheckType == 'R' && !item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }" (onChange)="parseRelationshipWhenValue(item)"></p-dropdown>
+                                    <p-dropdown *ngIf="item.CheckType == 'R' && !item.IsBool" [ngModelOptions]="{standalone: true}" [options]="item.ValueOptions" [(ngModel)]="item.Value" [style]="{ 'width' : '95%' }" (onChange)="parseRelationshipWhenValue(item)" [virtualScroll]="item?.ValueOptions?.length > 100" itemSize="20" [filter]="true"></p-dropdown>
                                 </td>
                                 <td><a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="removeWhenCondition(i)"><i class='fa fa-trash' title='Remove'></i></a></td>
                             </tr>

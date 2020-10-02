@@ -95,10 +95,7 @@ namespace d360.model.DataAccessLayer
                                 Uid = g.Uid,
                                 Weight = g.Weight
                             }).ToList(),
-                            Definition = new MetricAssetDefinitionViewModel {
-                                DataQuality = (a.Allocation.ScoreType == ScoreType.DataQuality) ? new MetricAssetDefinitionDataQualityViewModel { } : null,
-                                Governance = (a.Allocation.ScoreType == ScoreType.Governance) ? new MetricAssetDefinitionGovernanceViewModel { } : null
-                            },
+                            DefinitionJson = v.Definition,
                             Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
                                 ConditionAndOr = v.ConditionAndOr,
                                 Description = v.Description,
@@ -121,8 +118,21 @@ namespace d360.model.DataAccessLayer
                             Uid = a.Uid,
                             Weight = v.Weight
                         }).FirstOrDefault();
-            
 
+            if (model != null)
+            {
+                model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(model.DefinitionJson ?? "{}");
+                //var scoreType = ScoreType.Governance;
+                //switch (scoreType)
+                //{
+                //    case ScoreType.DataQuality:
+                //        model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(model.DefinitionJson ?? "{}");
+                //        break;
+                //    case ScoreType.Governance:
+                //        model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionGovernanceViewModel>(model.DefinitionJson ?? "{}");
+                //        break;
+                //}
+            }
 
             return model;
         }
