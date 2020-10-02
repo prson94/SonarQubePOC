@@ -2084,20 +2084,13 @@ order by wi.StartedOn desc";
             return fieldTypes;
         }
 
+
         private string FormatFormDescription(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic fields = XmlToDynamic(data);
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
-                string desc = fields.form["@description"];
-                fieldTypes.ForEach(x =>
-                {
-                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                    var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = (x.Type==DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                    desc = desc.Replace(f, t);
-                });
-                fields.form["@description"] = desc;
+                fields.form["@description"] = FormatWorkflowProperty(fields.form["@description"], fieldTypes);
                 return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
             }
             return data;
@@ -2108,15 +2101,7 @@ order by wi.StartedOn desc";
             dynamic fields = XmlToDynamic(data);
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
-                string desc = fields.form["@description"];
-                fieldTypes.ForEach(x =>
-                {
-                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                    var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                    desc = desc.Replace(t, f);
-                });
-                fields.form["@description"] = desc;
+                fields.form["@description"] = DeFormatWorkflowProperty(fields.form["@description"], fieldTypes);
                 return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
             }
             return data;
@@ -2125,32 +2110,19 @@ order by wi.StartedOn desc";
         private string FormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic settings = XmlToDynamic(data);
+
             if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null))
             {
                 if (settings.MessageBodyTemplate != null)
                 {
-                    string msg = settings.MessageBodyTemplate;
-                    fieldTypes.ForEach(x =>
-                    {
-                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                        var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                        msg = msg.Replace(f, t);
-                    });
-                    settings.MessageBodyTemplate = msg;
+                    settings.MessageBodyTemplate = FormatWorkflowProperty(settings.MessageBodyTemplate, fieldTypes);
                 }
+
                 if (settings.MessageSubjectTemplate != null)
                 {
-                    string msg = settings.MessageSubjectTemplate;
-                    fieldTypes.ForEach(x =>
-                    {
-                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                        var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                        msg = msg.Replace(f, t);
-                    });
-                    settings.MessageSubjectTemplate = msg;
+                    settings.MessageSubjectTemplate = FormatWorkflowProperty(settings.MessageSubjectTemplate, fieldTypes);
                 }
+
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
             }
             return data;
@@ -2163,32 +2135,42 @@ order by wi.StartedOn desc";
             {
                 if (settings.MessageBodyTemplate != null)
                 {
-                    string msg = settings.MessageBodyTemplate;
-                    fieldTypes.ForEach(x =>
-                    {
-                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                        var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                        msg = msg.Replace(t, f);
-                    });
-                    settings.MessageBodyTemplate = msg;
+                    settings.MessageBodyTemplate = DeFormatWorkflowProperty(settings.MessageBodyTemplate, fieldTypes);
                 }
 
                 if (settings.MessageSubjectTemplate != null)
                 {
-                    string msg = settings.MessageSubjectTemplate;
-                    fieldTypes.ForEach(x =>
-                    {
-                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                        var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
-                        msg = msg.Replace(t, f);
-                    });
-                    settings.MessageSubjectTemplate = msg;
+                    settings.MessageSubjectTemplate = DeFormatWorkflowProperty(settings.MessageSubjectTemplate, fieldTypes);
                 }
+
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
             }
             return data;
+        }
+
+
+        private string FormatWorkflowProperty(string msg, List<FieldType> fieldTypes)
+        {
+            fieldTypes.ForEach(x =>
+            {
+                var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                var f = "[" + fieldType + " :: " + x.Name + "]";
+                var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
+                msg = msg.Replace(f, t);
+            });
+            return msg;
+        }
+
+        private string DeFormatWorkflowProperty(string msg, List<FieldType> fieldTypes)
+        {
+            fieldTypes.ForEach(x =>
+            {
+                var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                var f = "[" + fieldType + " :: " + x.Name + "]";
+                var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
+                msg = msg.Replace(t, f);
+            });
+            return msg;
         }
 
 

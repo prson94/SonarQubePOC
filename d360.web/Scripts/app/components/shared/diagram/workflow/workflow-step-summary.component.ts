@@ -14,7 +14,6 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
-import { map } from 'rxjs/operators';
 import { SelectItem } from 'primeng/api';
 
 

@@ -61,10 +61,11 @@
         <div class="col s12">
             <div class="FieldName">Body</div>
             <div>
-                <textarea igTextArea [ngModel]="step.settings.HTTPRequest.Body" (ngModelChange)="step.settings.HTTPRequest.Body = $event; stepChange.emit(step)" style="width: 95%;" class="resize">
-                </textarea>
+                <div class="textarea-editor" style="border-bottom: none;">
+                    <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="append($event)"></d3s-workflow-template-tool>
+                </div>
+                <textarea [ngModel]="step.settings.HTTPRequest.Body" (ngModelChange)="step.settings.HTTPRequest.Body = $event; stepChange.emit(step)" class="textarea-editor" style="height: 8em"></textarea>
             </div>
-        </div>
     </div>
     <div class="row">
         <div class="col s12">
