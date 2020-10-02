@@ -981,9 +981,9 @@ namespace d360.model
                 var response = await client.SendAsync(request);
 
                 //save results
-                if (!string.IsNullOrEmpty(item.Settings))
+                if (!string.IsNullOrEmpty(item.Fields))
                 {
-                    var root = XElement.Parse(item.Settings);
+                    var root = XElement.Parse(item.Fields);
 
                     var xResponse = new XElement("HTTPResponse");
 
@@ -991,7 +991,7 @@ namespace d360.model
                     xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
 
                     root.Add(xResponse);
-                    item.Settings = root.ToString();
+                    item.Fields = root.ToString();
                     await SaveChangesAsync();
                 }
             }

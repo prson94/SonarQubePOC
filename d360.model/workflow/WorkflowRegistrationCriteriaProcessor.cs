@@ -123,10 +123,10 @@ namespace d360.model.workflow
             }
             else if (item.VersionStepId > 0)
             {
-                //load the results of the form version step
-                var formStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x => x.Step).OrderByDescending(x => x.ID).FirstOrDefault();
+                //load the results of the version step
+                var versionStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x => x.Step).OrderByDescending(x => x.ID).FirstOrDefault();
 
-                if (formStep == null)
+                if (versionStep == null)
                 {
                     Console.WriteLine("DEBUG - CANNOT FIND THE RESULTS OF THE FORM STEP SELECTED.");
 
@@ -134,7 +134,7 @@ namespace d360.model.workflow
                 }
 
                 //get the results of the form input with the specified id
-                var xml = formStep.Fields;
+                var xml = versionStep.Fields;
 
                 if (string.IsNullOrEmpty(xml))
                 {
@@ -145,7 +145,7 @@ namespace d360.model.workflow
 
                 var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
 
-                if ((formStep.Step == null) || string.IsNullOrEmpty(formStep.Step.Settings))
+                if ((versionStep.Step == null) || string.IsNullOrEmpty(versionStep.Step.Settings))
                 {
                     Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
 
@@ -153,7 +153,7 @@ namespace d360.model.workflow
                 }
 
                 //check the form response type is it all, first or majority
-                var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(formStep.Step.Settings));
+                var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Step.Settings));
 
                 switch (formSettings.ResponseType)
                 {

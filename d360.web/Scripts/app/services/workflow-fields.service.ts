@@ -10,6 +10,7 @@ export class WorkflowFieldsService {
 
 
     private formFields: any[] = [];
+    private httpFields: any[] = [];
     private usedFields: any[] = [];
 
 

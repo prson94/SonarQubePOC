@@ -1,4 +1,4 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild } from '@angular/core';
 import * as _ from 'lodash';
 import { Editor } from 'primeng/editor';
 
@@ -6,24 +6,19 @@ import { BaseComponent } from '../../../shared/base.component';
 import {
     NodeModel,
     WorkflowForm,
-    WorkflowFormField,
     WorkflowFormFieldType,
     FormResponseType,
     EmailTaskRecipientType,
-    EmailTaskRecipientTypeInfo,
 } from '../../../../models/workflow.model';
-import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
-import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { GroupService } from '../../../../services/group.service';
 import { FormMode, SelectItem } from '../../../../models/form.model';
-import { map } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'd3s-workflow-step-form-editor',
-    providers: [WorkflowService, ResponsibilityTypeService, GroupService],
+    providers: [WorkflowService, GroupService],
     templateUrl: './workflow-step-form-editor.component.html'
 })
 
@@ -83,7 +78,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private responsibilityService: ResponsibilityTypeService,
         private groupService: GroupService ) {
         super();
     }
