@@ -38,4 +38,16 @@ namespace d360.core.entities
         public string Inverse { get; set; }
 
     }
+    public class GetRelationshipSingleApiModel
+    {
+        public Guid Uid { get; set; }
+        public Guid RelationshipTypeUid { get; set; }
+        public State State { get; set; }
+        public string Owner { get; set; }
+        public string CustomField1 { get; set; }
+        public string CustomField2 { get; set; }
+        public GetRelationshipEdgeApiModel Subject { get; set; }
+        public GetRelationshipEdgeApiModel Object { get; set; }
+        public GetRelationshipPredicateApiModel Predicate { get; set; }
+    }
 }

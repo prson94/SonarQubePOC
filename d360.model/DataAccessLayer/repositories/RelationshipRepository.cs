@@ -158,6 +158,16 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.[State] = @state";
                     }
                 }
+                if (queryParamsList.Any(q => q.Key.ToLower() == "uid"))
+                {
+                    Guid uid;
+                    var uidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "state").Value;
+                    if (Guid.TryParse(uidString, out uid))
+                    {
+                        dbArgs.Add("@uid", uid);
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.[Uid] = @uid";
+                    }
+                }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "predicateuid"))
                 {
                     Guid predicateUid;
@@ -224,7 +234,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
                             if (fieldType != null)
                             {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + 
+                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") +
                                 $@" case {(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then @F{fieldType.ID}_AllValue " : "")}
                                     when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
                                     {(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else @defaultValueF{fieldType.ID} " : "")}
@@ -277,8 +287,8 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
-            
-               var sql = $@"
+
+            var sql = $@"
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
@@ -309,7 +319,90 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
 
-          return models;
+            return models;
+        }
+        public async Task<JObject> GetRelationship(Guid uid)
+        {
+            var dbArgs = new DynamicParameters();
+
+            var baseTableSql = @"from [Intersect] I 
+inner join IntersectType T on T.ID = I.IntersectTypeID 
+left join [Predicate] P on P.ID = T.PredicateID 
+left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
+left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
+left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
+left join graph.AssetNodeKeyPath SKP on SKP.ID = S.ID
+left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
+left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
+left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID 
+";
+            var whereClause = " WHERE I.[Uid] = @uid ";
+            dbArgs.Add("@uid", uid);
+            
+            List<FieldType> fieldTypes = null;
+            var relationshipTypeUid = companyContext.Query<Guid>(
+                $@"select IT.Uid from FieldType F 
+                    inner join IntersectType IT 
+                    on F.Object = 'IntersectType' and IT.ID = F.ObjectID
+                    inner join [intersect] I  on I.IntersectTypeID = IT.ID
+                    WHERE I.uid = '{uid}'").SingleOrDefault();
+            if (relationshipTypeUid != null)
+            {
+                fieldTypes = companyContext.Query<FieldType>(
+                $"select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid"
+                , new { relationshipTypeUid }, ApiTimeout).ToList();
+            }
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
+            if (fieldTypes != null)
+            {
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
+            }
+
+            var stateSql = "case I.State ";
+            State.Active.GetList().ForEach(s =>
+            {
+                stateSql += $"when {(int)s.ID} then '{s.ID.ToString()}' ";
+            });
+            stateSql += " end as State, ";
+
+            var predicateTypeSql = "case P.Type ";
+            PredicateType.DataLineage.GetAsList().ForEach(p =>
+            {
+                predicateTypeSql += $"when {(int)p.ID} then '{p.ID.ToString()}' ";
+            });
+            predicateTypeSql += " end as 'Predicate.Type', ";
+
+            string fieldColumnsSql = "";
+            if (fieldColumns.Count > 0)
+                fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+
+            var sql = $@"
+        select	lower(I.Uid) as Uid,
+				lower(T.Uid) as RelationshipTypeUid,
+				{stateSql}
+                I.[Owner],
+				{fieldColumnsSql}
+				lower(P.UID) as 'Predicate.Uid',
+				{predicateTypeSql}
+				P.Name as 'Predicate.Name',
+				P.Inverse as 'Predicate.Inverse',
+				lower(S.Uid) as 'Subject.Uid',
+                SKP.KeyPath as 'Subject.Path',
+				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
+				lower(O.Uid) as 'Object.Uid',
+                OKP.KeyPath as 'Object.Path',
+				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
+		{baseTableSql}
+        {string.Join("\n", fieldJoins)}
+        {whereClause} 
+        for json path, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER";
+
+            var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs, ApiTimeout);
+
+            return models;
         }
 
         public IQueryable<IntersectType> GetIntersectTypeById(int id)
