@@ -24,9 +24,11 @@ import { forkJoin } from 'rxjs';
 
 export class WorkflowStepFormEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() step: NodeModel;
+    @Input() diagram: go.Diagram;
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() issueObject: string;
+    @Input() httpFields: any[] = [];
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed', { static: false }) ed: Editor;
     @ViewChild('fed', { static: false }) fed: Editor;

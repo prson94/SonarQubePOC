@@ -2090,7 +2090,7 @@ order by wi.StartedOn desc";
             dynamic fields = XmlToDynamic(data);
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
-                fields.form["@description"] = FormatWorkflowProperty(fields.form["@description"], fieldTypes);
+                fields.form["@description"] = FormatWorkflowProperty(fields.form["@description"].ToString(), fieldTypes);
                 return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
             }
             return data;
@@ -2115,12 +2115,12 @@ order by wi.StartedOn desc";
             {
                 if (settings.MessageBodyTemplate != null)
                 {
-                    settings.MessageBodyTemplate = FormatWorkflowProperty(settings.MessageBodyTemplate, fieldTypes);
+                    settings.MessageBodyTemplate = FormatWorkflowProperty(settings.MessageBodyTemplate.ToString(), fieldTypes);
                 }
 
                 if (settings.MessageSubjectTemplate != null)
                 {
-                    settings.MessageSubjectTemplate = FormatWorkflowProperty(settings.MessageSubjectTemplate, fieldTypes);
+                    settings.MessageSubjectTemplate = FormatWorkflowProperty(settings.MessageSubjectTemplate.ToString(), fieldTypes);
                 }
 
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
@@ -2135,12 +2135,12 @@ order by wi.StartedOn desc";
             {
                 if (settings.MessageBodyTemplate != null)
                 {
-                    settings.MessageBodyTemplate = DeFormatWorkflowProperty(settings.MessageBodyTemplate, fieldTypes);
+                    settings.MessageBodyTemplate = DeFormatWorkflowProperty(settings.MessageBodyTemplate.ToString(), fieldTypes);
                 }
 
                 if (settings.MessageSubjectTemplate != null)
                 {
-                    settings.MessageSubjectTemplate = DeFormatWorkflowProperty(settings.MessageSubjectTemplate, fieldTypes);
+                    settings.MessageSubjectTemplate = DeFormatWorkflowProperty(settings.MessageSubjectTemplate.ToString(), fieldTypes);
                 }
 
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();

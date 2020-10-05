@@ -60,7 +60,13 @@
                     <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                         <p-header>
                             <d3s-editor-header></d3s-editor-header>
-                            <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                            <d3s-workflow-template-tool 
+                                                        [step]="step"
+                                                        [diagram]="diagram"
+                                                        [issueObject]="issueObject" 
+                                                        [objectType]="objectType" 
+                                                        [objectId]="objectId" 
+                                                        (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
                         </p-header>
                     </p-editor>
                 </div>
@@ -86,6 +92,8 @@
             <d3s-workflow-step-form-editor [objectType]="objectType"
                                            [objectId]="objectId"
                                            [step]="step"
+                                           [diagram]="diagram"
+                                           [httpFields]="httpFields" 
                                            [issueObject]="issueObject"
                                            (stepChange)="step = $event; stepChange.emit(step)">
             </d3s-workflow-step-form-editor>
@@ -103,6 +111,7 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.FieldChange">
             <d3s-workflow-step-field-change [formFields]="formFields"
+                                            [httpFields]="httpFields" 
                                             [objectId]="objectId"
                                             [objectType]="objectType"
                                             [issueObject]="issueObject"

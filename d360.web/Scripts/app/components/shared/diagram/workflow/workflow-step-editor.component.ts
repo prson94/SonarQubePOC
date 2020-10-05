@@ -64,7 +64,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private procedures: WorkflowTaskProcedure[] = [];
 
     private fieldsSub;
+    private httpFieldsSub;
     private formFields = [];
+    private httpFields = [];
     private formRelationshipFields = [];
     private formRelationship;
 
@@ -75,6 +77,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ngOnInit() {
         this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
             this.filterFormFields();
+        });
+
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+            this.filterHttpFields();
         });
 
         this.workflowService.getEmailTaskRecipientType()
@@ -167,6 +173,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             if (this.step.settings.HTTPRequest.Headers == null) {
                 this.step.settings.HTTPRequest.Headers = [];
             }
+
+            this.filterHttpFields();
+
         }
         else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
@@ -211,6 +220,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         if (this.fieldsSub) {
             this.fieldsSub.unsubscribe();
         }
+
+        if (this.httpFieldsSub) {
+            this.httpFieldsSub.unsubscribe();
+        }
     }
 
     appendField(e: string) {
@@ -237,6 +250,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     filterFormFields() {
         this.formFields = [];
+
         this.formRelationshipFields = [];
         if (this.diagram == null) return;
 
@@ -258,6 +272,26 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         });
 
         this.stepChange.emit(this.step);
+    }
+
+    filterHttpFields() {
+        console.log('filter http fields');
+        this.httpFields = [];
+        let fields = this.workflowFieldsService.getHttpFields();
+        let upstreamSteps = [];
+        this.traverseDiagram(this.step.key, upstreamSteps);
+
+        fields.forEach(f => {
+            let k = upstreamSteps.filter(u => u == f['@stepId']);
+            if (k != null && k.length > 0) {
+                f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
+                f['@FormLabel'] = 'HTTP Request :: ' + f['@label'];
+                this.httpFields.push(f);
+            }
+        });
+
+        this.stepChange.emit(this.step);
+
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {

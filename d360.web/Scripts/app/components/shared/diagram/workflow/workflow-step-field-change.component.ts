@@ -32,6 +32,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     @Input() objectType: string;
     @Input() fieldUpdate: any = {};
     @Input() formFields = [];
+    @Input() httpFields = [];
     @Input() issueObject: string;
     @Output() fieldUpdateChange = new EventEmitter();
 

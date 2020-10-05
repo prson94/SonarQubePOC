@@ -224,6 +224,7 @@ export class LinkModel {
     condition: any = [];
     settings: any = {};
     formInputs: any = [];
+    httpInputs: any = [];
 
     valid: boolean = true;
     errors: string[] = [];
@@ -484,6 +485,11 @@ export enum EmailTaskRecipientType {
     SpecificUser,
     Followers,
     Group
+}
+
+export enum HttpRequestFields {
+    StatusCode = 1,
+    ResponseBody = 2
 }
 
 //#endregion

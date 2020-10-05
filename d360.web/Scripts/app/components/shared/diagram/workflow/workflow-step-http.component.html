@@ -62,7 +62,7 @@
             <div class="FieldName">Body</div>
             <div>
                 <div class="textarea-editor" style="border-bottom: none;">
-                    <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="append($event)"></d3s-workflow-template-tool>
+                    <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="append($event)" ></d3s-workflow-template-tool>
                 </div>
                 <textarea [ngModel]="step.settings.HTTPRequest.Body" (ngModelChange)="step.settings.HTTPRequest.Body = $event; stepChange.emit(step)" class="textarea-editor" style="height: 8em"></textarea>
             </div>

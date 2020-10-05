@@ -24,6 +24,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() objectType: string;
     @Input() objectId: number;
     @Input() formFields: any[] = [];
+    @Input() httpFields: any[] = [];
     @Input() condition: any = null;
     @Input() changeType: WorkflowChangeType = null;
     @Input() diagram: go.Diagram;
@@ -71,13 +72,15 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     ngOnChanges(changes: SimpleChanges) {
 
-        //this.load();
+        let formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
+        let changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
+        let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
 
-        if ((changes['formFields'] != null && !changes['formFields'].isFirstChange()) ||
-            (changes['changeType'] != null && !changes['changeType'].isFirstChange()))    {
-
+        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged)    {
+            console.log('condition editor changed');
             this.loadContextualFields();
             this.loadFormFields();
+            this.loadHttpFields();
 
             this.fieldList = [];
 
@@ -102,14 +105,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             }
 
         }
-       // console.log(this.fields, this.fieldList, this.formFields);
     }
 
     load() {
         this.isLoading = true;
         this.loadObjectFields()
             .pipe(
-            //.then(() => this.loadFormFields())
             map(() => this.loadContextualFields()),
             map(() => {
                     this.fieldList = [];
@@ -130,7 +131,17 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                                 label: 'Form :: ' + f['@label']
                             });
                         });
-                    }
+                }
+
+                console.log('load condition', this.httpFields);
+                if (this.httpFields.length > 0) {
+                    this.httpFields.forEach(f => {
+                        this.fieldList.push({
+                            value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
+                            label: 'HTTPRequest :: ' + f['@label']
+                        });
+                    });
+                }
 
                     if (this.contextualFields.length > 0) {
                         this.fieldList = this.fieldList.concat(this.contextualFields);
@@ -162,10 +173,21 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadFormFields() {
         if (this.formFields.length > 0) {
             this.formFields.forEach(f => {
-              //  console.log(f);
                 this.fieldList.push({
                     value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                     label: 'Form :: ' + f['@label']
+                });
+            });
+        }
+    }
+
+    loadHttpFields() {
+        console.log('loadHttpFields', this.httpFields);
+        if (this.httpFields.length > 0) {
+            this.httpFields.forEach(f => {
+                this.fieldList.push({
+                    value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
+                    label: 'HTTP Request :: ' + f['@label']
                 });
             });
         }
@@ -179,7 +201,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.selectedField = e;
         this.selectedIssueObject = null;
 
-        //console.log('selectField: ', e);
+        console.log('selectField: ', e);
 
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
@@ -285,6 +307,29 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             //console.log('selectField: ', e, special, this.selectedType, this.selectedField);
 
         }
+        else if (this.selectedField.split('|')[0] == 'HTTPRequest') {
+            let field = this.httpFields.find(f => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
+            console.log('selected field reached httprequest section', this.selectedField, field);
+
+            delete this.condition['@FormInputID'];
+            delete this.condition['@VersionStepID'];
+            delete this.condition['@label'];
+            delete this.condition['@id'];
+            delete this.condition['@type'];
+            delete this.condition['@ContextualFieldID'];
+            delete this.condition['@Operator'];
+            delete this.condition['@Value'];
+
+            let fieldId = this.selectedField.split('|')[2];
+
+            this.selectedType = fieldId == 1 ? 'number' : 'text';
+            this.setOperators(this.selectedType, null);
+
+            this.condition['@FieldName'] = 'HTTP Request :: ' + field['@label'];
+            this.condition['@ValueType'] = this.getValueType(this.selectedType);
+            this.condition['@VersionStepID'] = field['@stepId'];
+            this.condition['@FormInputID'] = field['@id'];
+        }
     }
 
     setOperators(type: string = '', fieldType: string = '') {
@@ -317,6 +362,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 ];
                 break;
         }
+
         //only supporting fields at the moment
         if (fieldType == 'FieldType') {
             this.operators.push({ value: 'C', label: 'value changed' });
@@ -333,8 +379,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'list':
             case 'relationshiptype':
                 return 'L';
-            //case 'FusionLookup':
-            //    return 'FL';
             case 'decimal':
             case 'number':
             case 'integer':

@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, Output, EventEmitter, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -25,12 +25,13 @@ import { NodeModel } from '../../../../models/workflow.model';
     `]
 })
 
-export class WorkflowStepHttpComponent extends BaseComponent implements OnChanges {
+export class WorkflowStepHttpComponent extends BaseComponent implements OnChanges, OnInit {
     @Input() step: NodeModel;
     @Output() stepChange: EventEmitter<NodeModel> = new EventEmitter<NodeModel>();
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() formFields = [];
+    @Input() httpFields = [];
     @Input() issueObject: string;
 
     methods = [
@@ -40,16 +41,25 @@ export class WorkflowStepHttpComponent extends BaseComponent implements OnChange
         'DELETE'
     ];
 
-    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
+    constructor(
+        private workflowService: WorkflowService,
+        private workflowFieldsService: WorkflowFieldsService) {
         super();
     }
 
-    ngOnChanges() {
+    ngOnInit() {
         this.load();
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        //let httpFieldsChangedOnly = changes['httpFields'] != null && changes['httpFields'].currentValue != changes['httpFields'].previousValue && changes['httpFields'].currentValue != null && changes.length == 1;
+        //if (httpFieldsChangedOnly)
+
+        //this.load();
+    }
+
     load() {
-        //this.isLoading = true;
+        this.workflowFieldsService.pushHttpFields(this.step);
     }
 
     initField(f: any) {

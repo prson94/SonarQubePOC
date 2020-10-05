@@ -608,7 +608,41 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }));
             });
         }
+        console.log('forms', forms);
+
         return forms;
+    }
+
+    private getAvailableHttpInputs(link: LinkModel): string[] {
+        let links = [];
+        let requests = [];
+        let visited = [];
+
+        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map(n => {
+            return (<any>n).key;
+        }));
+
+        while (nodes.length > 0) {
+            links = [];
+            nodes.forEach(n => {
+                if ((<NodeModel>n).activityType == WorkflowActivityType.HTTPRequest) {
+                    requests.push((<NodeModel>n).key);
+                }
+
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+            });
+            nodes = [];
+            links.forEach(l => {
+                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+                nodes = nodes.concat(newNodes);
+                visited = visited.concat(newNodes.map(n => {
+                    return (<any>n).key;
+                }));
+            });
+        }
+        console.log('requests', requests);
+        return requests;
     }
 
     private getActivityTypes(): Observable<any> {
@@ -705,6 +739,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (n.transitionType == TransitionType.Condition) {
                 n.formInputs = this.getAvailableFormInputs(n);
+                n.httpInputs = this.getAvailableHttpInputs(n);
             }
 
             this.setTransitionIcon(n);
@@ -1140,7 +1175,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (!desc) return errors;
 
         var results = desc.match(/(\[)(.*?)(?=\])/g);
-
         if (results && results.length) {
             results.forEach(x => {
                 var fieldData = x.split('::');
@@ -1152,8 +1186,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (fieldType == 'Action Field') {
                         f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
                     }
-                    else {
+                    else if (fieldType == 'Asset Field' {
                         f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
+                    } else if (fieldType == 'HTTP Request') {
+                        f = true;
                     }
                     if (!f) {
                         errors.push('Invalid field type');
@@ -1403,8 +1439,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             l.settings = e.settings;
             l.icon = e.icon;
             l.formInputs = this.getAvailableFormInputs(e);
+            l.httpInputs = this.getAvailableHttpInputs(e);
             if (this.selectedData != null && this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                 this.selectedData.formInputs = l.formInputs;
+                this.selectedData.httpInputs = l.httpInputs;
             }
 
             this.setTransitionIcon(l);
@@ -1463,18 +1501,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     this.showLinkTabs = false;
                     this.selectedStepId = this.selectedData.key;
                     this.selectedStepIdChange.emit(this.selectedData.key);
-
-                    let i = this.diagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    /*if (i > -1) {
-                        // this.selectedData = this.myDiagram.model.nodeDataArray[i];
-                    }*/
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                     this.showNodeTabs = false;
                     this.showLinkTabs = true;
-                    let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    /*if (i > -1) {
-                        //this.selectedData = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
-                    }*/
                 }
             }
         }
@@ -1491,6 +1520,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (l > -1) {
             let k = (<LinkModel>(<go.GraphLinksModel>this.diagram.model).linkDataArray[l]);
             k.formInputs = this.getAvailableFormInputs(k);
+            k.httpInputs = this.getAvailableHttpInputs(k);
         }
     }
 
@@ -1566,6 +1596,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 } else {
                     coll.push(this.diagram.findPartForData(n));
                 }
+            } else if (n.activityType == WorkflowActivityType.HTTPRequest) {
+            
             } else {
                 coll.push(this.diagram.findPartForData(n));
             }
