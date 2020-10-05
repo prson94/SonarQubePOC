@@ -43,6 +43,8 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
+        
+        public string ApiExecutionFieldTable { get; set; } = "api.executionfield"; // table to use to load field values from
 
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
@@ -146,8 +148,8 @@ where	E.ExecutionID = @executionID;",
 
         private void LoadMissingKeyFields(Guid executionID, AssetType at, int timeout = 3600)
         {
-            Connection.Execute(@"
-insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+            Connection.Execute($@"
+insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
 	select	A.ExecutionID,
             A.ItemNumber,
 			FT.Name,
@@ -159,7 +161,7 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			inner join FieldType FT on FT.AssetTypeID = @assetTypeID 
 										and FT.IsPartOfKey = 1
 			inner join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
-			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
 	where	A.ExecutionID = @executionID 
             and F.ItemNumber is null;
 
@@ -174,8 +176,8 @@ from    api.ExecutionAsset T
 
             if (at.Class == AssetTypeClass.Reference)
             {
-                Connection.Execute(@"
-insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+                Connection.Execute($@"
+insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
 	select	A.ExecutionID,
             A.ItemNumber,
 			'Code',
@@ -185,7 +187,7 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			1
 	from	[api].[ExecutionAsset] A
             inner join Asset R on A.Object =  R.Object and R.ObjectID = A.ObjectID
-			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
 	where	A.ExecutionID = @executionID 
 	and A.Object = 'ReferenceItem' 
     and F.ItemNumber is null;",
@@ -194,8 +196,8 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 
             if (at.Class == AssetTypeClass.FusionAttribute)
             {
-                Connection.Execute(@"
-insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+                Connection.Execute($@"
+insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
 	select	A.ExecutionID,
             A.ItemNumber,
 			'Name',
@@ -205,13 +207,13 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			1
 	from	[api].[ExecutionAsset] A
             inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
-			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
+			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Name'
 	where	A.ExecutionID = @executionID 
             and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
 
-                Connection.Execute(@"
-insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+                Connection.Execute($@"
+insert into {ApiExecutionFieldTable} (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
 	select	A.ExecutionID,
             A.ItemNumber,
 			'FusionID',
@@ -221,7 +223,7 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			1
 	from	[api].[ExecutionAsset] A
             inner join FusionAttribute R on A.Object = 'FusionAttribute' and R.ID = A.ObjectID
-			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+			left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
 	where	A.ExecutionID = @executionID 
             and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
@@ -351,7 +353,7 @@ where	ExecutionID = @executionID
 
         private void LogNullIsRequiredFields(Guid executionID, int timeout = 3600)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
             drop table if exists #tempreqfield;
             
             select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
@@ -359,7 +361,7 @@ where	ExecutionID = @executionID
             from api.ExecutionAsset A
             inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
             left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
-            left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+            left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
             where A.executionid = @executionID 
             and (trim(EF.Value) is null or EF.Value = char(0))
             and (trim(F.FieldValue) is null or trim(F.FieldValue) = char(0))
@@ -444,25 +446,25 @@ where	ExecutionID = @executionID
 
         private void LogErrorsWhereChildFusionConfigDifferentFromParent(Guid executionID, int timeout = 3600)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 update	E
 set		E.Message = 'Unable to add or update child asset as the fusion configuration does not match it''s parent''s configuration.',
 		E.Success = 0
 from	api.ExecutionAsset E
 		inner join FusionAttribute P on P.ID = E.ParentObjectID and E.ParentObject = 'FusionAttribute'
-		inner join api.ExecutionField C on C.ExecutionID = E.ExecutionID and C.FieldName = 'FusionID' and C.FieldValue <> P.FusionID
+		inner join {ApiExecutionFieldTable} C on C.ExecutionID = E.ExecutionID and C.FieldName = 'FusionID' and C.FieldValue <> P.FusionID
 where	E.ExecutionID = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
         private void LogInvalidFusionIDFields(Guid executionID, int timeout = 3600)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 update	E
 set		E.Message = 'Invalid FusionID value for this Asset type',
 		E.Success = 0
 from	api.ExecutionAsset E
-	where E.ExecutionID = @executionID and not exists(select F.ID from api.ExecutionField EF
+	where E.ExecutionID = @executionID and not exists(select F.ID from {ApiExecutionFieldTable} EF
 	inner join api.ExecutionAsset EA on EF.ExecutionID = EA.ExecutionID
 	inner join FusionAttributeType FAT on FAT.ID = EA.ObjectTypeID
 	inner join FusionType FT on FT.ID = FAT.FusionTypeID
@@ -491,7 +493,7 @@ from	{targetTable} T
 								inner join FieldType FT on FT.Object = @obj
 															and FT.ObjectID = @objID
 															and FT.[Type] = 'Lookup'
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+								inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
                     where       A.ExecutionID = @executionID
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
@@ -516,7 +518,7 @@ from	{targetTable} T
                                                     inner join FieldType FT on FT.Object = @obj
 								                        and FT.ObjectID = @objID
 									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
-								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+								                    inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
                                                     cross apply string_split(F.FieldValue, ',') V								                    
                                                     inner join IntersectType IT on IT.ID = FT.LookupObjectID
 													left join (
@@ -630,7 +632,7 @@ where	ExecutionID = @executionID
                             EA.ObjectID, 
                             EF.FieldTypeID AS Id 
                     from    {tableName} EA 
-	                        inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+	                        inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
                                             and EF.ItemNumber = EA.ItemNumber 
                                             and EA.ObjectID is not null 
                                             and EF.FieldTypeID is not null
@@ -649,7 +651,7 @@ where	ExecutionID = @executionID
                             EA.ObjectID, 
                             EF.FieldTypeID AS Id 
                     from    {tableName} EA 
-	                        inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+	                        inner join {ApiExecutionFieldTable} EF on EF.ExecutionID = EA.ExecutionID 
                                             and EF.ItemNumber = EA.ItemNumber 
                                             and EA.ObjectID is not null 
                                             and EF.FieldTypeID is not null
@@ -678,7 +680,7 @@ where	ExecutionID = @executionID
                                         ,@resourceId as [UpdatedBy]
                                         {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                                         
                                 from    {tableName} A
-                                        inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                        inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
                                             and F.ItemNumber = A.ItemNumber 
                                             and A.ObjectID is not null 
                                             and F.FieldTypeID is not null
@@ -707,7 +709,7 @@ where	ExecutionID = @executionID
                     DELETE Field
                     FROM Field F
                     	inner join {tableName} E on E.ExecutionID = @executionID 
-                    	inner join api.ExecutionField EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
+                    	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
                     	inner join Asset A on A.uid = E.Uid
                     WHERE E.ExecutionID = @executionID
                      and EF.ItemNumber between @beginItemNumber and @endItemNumber
@@ -781,7 +783,7 @@ where	ExecutionID = @executionID
                                 end as switchObject
                         from    {tableName} A
                                 inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
-                                inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
                                     and F.ItemNumber = A.ItemNumber 
                                     and A.ObjectID is not null 
                                     and F.FieldTypeID is not null
@@ -875,7 +877,7 @@ where	ExecutionID = @executionID
 
                         insert into #DeletedRelationships WITH(TABLOCK)
                             select I.[uid]  from api.ExecutionAsset A
-                                inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
                                     and F.ItemNumber = A.ItemNumber 
                                     and A.ObjectID is not null 
                                     and F.FieldTypeID is not null
@@ -938,7 +940,7 @@ where	ExecutionID = @executionID
                     select  F.ID, 
                             F.Value 
                     from    Field F 
-                            inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+                            inner join {ApiExecutionFieldTable} E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
                             inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
                             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
@@ -978,7 +980,7 @@ where	ExecutionID = @executionID
                     delete from FieldJsonProperty where fieldid in(
                     select  F.ID
                     from    Field F 
-                            inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+                            inner join {ApiExecutionFieldTable} E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
                             inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID)",
                             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
@@ -1119,40 +1121,40 @@ where T.ExecutionId = @executionid;
 
         private void ResolveRuleTypeLookupValues(Guid executionID, int timeout = 3600)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
                         update  T 
                         set     T.Success = 0,
                                 T.Message = coalesce(T.Message, '') + 'Rule asset contains an invalid threshold; '
                         from    api.ExecutionAsset T
-                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
+                                inner join {ApiExecutionFieldTable} S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
                         ", new { executionID }, commandTimeout: timeout);
         }
 
         private void ResolveColorValues(Guid executionID, int timeout = 3600)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 
                         update  F
                         set     F.LookupValue = C.Id
-                        from    api.ExecutionField F
+                        from    {ApiExecutionFieldTable} F
                                 left join Color C on C.Name = F.FieldValue
                         where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) <> '#'
 
                         update  F
                         set     F.LookupValue = F.FieldValue
-                        from    api.ExecutionField F
+                        from    {ApiExecutionFieldTable} F
                         where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) = '#'
 
                         update  F
                         set     F.LookupValue = null
-                        from    api.ExecutionField F
+                        from    {ApiExecutionFieldTable} F
                         where   F.ExecutionID = @executionID and F.FieldName = 'Color' and coalesce(F.FieldValue, '') = ''
                         
                         update  T 
                         set     T.Success = 0,
                                 T.Message = coalesce(T.Message, '') + 'Color value is not a valid Govern color; '
                         from    api.ExecutionAsset T
-                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
+                                inner join {ApiExecutionFieldTable} S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
                         where   S.LookupValue is null and coalesce(S.FieldValue, '') <> ''
                         ", new { executionID }, commandTimeout: timeout);
         }
@@ -3143,7 +3145,7 @@ where   ExecutionID = @ExecutionID
             client.TrackEvent($"API v2 Execution ID[{execution.ExecutionID}]", propsToSend, metrics);
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTableForFields = false)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -3157,7 +3159,6 @@ where   ExecutionID = @ExecutionID
             FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
 
             // duplicate items in load checks is only applicable if there is > 1 item
             if (import.Count() > 1)
@@ -3231,6 +3232,7 @@ where   ExecutionID = @ExecutionID
                 errorTable.Columns.Add("Message", typeof(string));
 
                 var fieldTable = new DataTable();
+
                 fieldTable.Columns.Add("ExecutionID", typeof(Guid));
                 fieldTable.Columns.Add("ItemNumber", typeof(int));
                 fieldTable.Columns.Add("FieldName", typeof(string));
@@ -3457,6 +3459,13 @@ where   ExecutionID = @ExecutionID
                     {
                         try
                         {
+                            // if needed create temp tables for data
+                            CreateWorkareaTempTables(useTempTableForFields, transaction);
+
+                            AddMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
+
+                            sw.Restart();
+
                             using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
                             {
                                 // assets
@@ -3500,11 +3509,11 @@ where   ExecutionID = @ExecutionID
                                 }
                             }
 
-                            using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction))
+                            using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, (useTempTableForFields ? SqlBulkCopyOptions.TableLock : SqlBulkCopyOptions.Default), transaction))
                             {
                                 // fields
                                 bulkCopy.BatchSize = SqlBulkBatchSize;
-                                bulkCopy.DestinationTableName = "api.ExecutionField";
+                                bulkCopy.DestinationTableName = ApiExecutionFieldTable;
                                 bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                                 bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -3546,13 +3555,13 @@ where   ExecutionID = @ExecutionID
                     {
                         if (lookupFieldsPassedByValue)
                         {
-                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
                             AddMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
                         else
                         {
-                            ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
+                            ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
                             AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
@@ -3619,7 +3628,7 @@ where   ExecutionID = @ExecutionID
                         LogInvalidFusionIDFields(execution.ExecutionID);
                     }
 
-                    CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID);
+                    CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID, fieldTable: ApiExecutionFieldTable);
                     AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
@@ -3729,9 +3738,9 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
                     N.FieldValue as Name,
                     FS.FieldValue as SourceID
             from    api.ExecutionAsset A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
-                    inner join api.ExecutionField N on N.ExecutionID = A.ExecutionID and N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
-                    left join api.ExecutionField FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
+                    inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'FusionID'
+                    inner join {ApiExecutionFieldTable} N on N.ExecutionID = A.ExecutionID and N.ItemNumber = A.ItemNumber and N.FieldName = 'Name'
+                    left join {ApiExecutionFieldTable} FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
@@ -3762,7 +3771,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
     set		T.Name = N.FieldValue
     from	FusionAttribute T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-            inner join api.ExecutionField N on N.ExecutionID = S.ExecutionID and N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
+            inner join {ApiExecutionFieldTable} N on N.ExecutionID = S.ExecutionID and N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3826,7 +3835,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
             select  A.ItemNumber,
                     CR.LookupValue as Color
             from    api.ExecutionAsset A
-                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                    left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
@@ -3861,7 +3870,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
             T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
     from	[Asset] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql}
-            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+            left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
 
     update	api.ExecutionAsset
@@ -3887,8 +3896,8 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
                     T.FieldValue as Threshold,
                     CR.LookupValue as Color
             from    api.ExecutionAsset A
-                    inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
-                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                    inner join {ApiExecutionFieldTable} T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
+                    left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
@@ -3925,8 +3934,8 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
-            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+            left join {ApiExecutionFieldTable} FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
+            left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3952,9 +3961,9 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
                                                                         CR.LookupValue as [Color],
                                                                         I.FieldValue as [Icon]
                                                                 from    api.ExecutionAsset A
-                                                                        inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
-                                                                        left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
-                                                                        left join api.ExecutionField I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
+                                                                        inner join {ApiExecutionFieldTable} C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
+                                                                        left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                                                                        left join {ApiExecutionFieldTable} I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
                                                                 where   A.ExecutionID = @ExecutionID
                                                                         and A.Success is null
                                                                         and A.ItemNumber between @beginItemNumber and @endItemNumber
@@ -3987,9 +3996,9 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
                                                                 T.UpdatedOn = @D
                                                         from	Asset T
 		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-                                                                inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
-                                                                left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-                                                                left join api.ExecutionField I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
+                                                                inner join {ApiExecutionFieldTable} C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
+                                                                left join {ApiExecutionFieldTable} CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+                                                                left join {ApiExecutionFieldTable} I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
@@ -4237,6 +4246,30 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             return results;
         }
 
+        private void CreateWorkareaTempTables(bool useTempTableForFields, SqlTransaction trans)
+        {
+            if (useTempTableForFields)
+            {
+                ApiExecutionFieldTable = "#ExecutionField";
+                //create a ExecutionFields temp table version
+                Connection.Execute($@"
+                    drop table if exists #ExecutionField;
+        
+                    create table #ExecutionField (
+                            [ExecutionID] [uniqueidentifier] NOT NULL,
+                            [ItemNumber] [int] NOT NULL,
+	                        [FieldName] [nvarchar](250) NOT NULL,
+	                        [FieldValue] [nvarchar](max) NULL,
+	                        [FieldTypeID] [int] NULL,
+	                        [LookupValue] [nvarchar](max) NULL,
+	                        [Ignore] [bit] NULL,
+                    );
+
+                    CREATE NONCLUSTERED INDEX IX_TempExecutionField ON #ExecutionField ( ExecutionID ASC, ItemNumber ASC, FieldName ASC );
+                ", transaction: trans);
+            }
+        }
+
         public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true)
         {
             var swBegin = Stopwatch.StartNew();
@@ -4436,7 +4469,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         {
 
                             bulkCopy.BatchSize = SqlBulkBatchSize;
-                            bulkCopy.DestinationTableName = "api.ExecutionField";
+                            bulkCopy.DestinationTableName = ApiExecutionFieldTable;
                             bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -4460,7 +4493,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         }
                         else
                         {
-                            ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
+                            ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
                         }
                         AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();

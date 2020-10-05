@@ -826,6 +826,7 @@ namespace d360.web.Controllers.V2
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <param name="useTempTablesForFieldValues">Optional query string parameter that allows you to specify false to preserve field values in a static table usually for troubleshooting.  The default value for this is true.</param>
         /// <param name="assets">The payload of your request.</param>        
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -838,7 +839,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForFieldValues = true)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
@@ -874,7 +875,7 @@ namespace d360.web.Controllers.V2
                 {
                 }
 
-                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue);
+                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -908,6 +909,7 @@ namespace d360.web.Controllers.V2
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <param name="useTempTablesForFieldValues">Optional query string parameter that allows you to specify false to preserve field values in a static table usually for troubleshooting.  The default value for this is true.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -920,7 +922,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForFieldValues = true)
         {
             var prefix = "Assets.PutAssetsAsync => ";
             var errorMessage = "";
@@ -952,7 +954,7 @@ namespace d360.web.Controllers.V2
                 {
                 }
 
-                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue);
+                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
