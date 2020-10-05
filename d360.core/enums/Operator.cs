@@ -170,7 +170,7 @@ namespace d360.core.enums
             EnumMember(Value = "In"),
             Description(""), 
             OperatorValueCountRange(1, 1000),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
             ]
@@ -181,7 +181,7 @@ namespace d360.core.enums
             EnumMember(Value = "NotIn"),
             Description(""), 
             OperatorValueCountRange(1, 1000),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
             OperatorAllowedDataTypes(DataType.Lookup), 
             OperatorFieldTypeRequirements(true)
         ]
@@ -228,6 +228,7 @@ namespace d360.core.enums
         public MetricGovernanceCheckType ID { get; set; }
         public string Name { get; set; }
     }
+    
     public static class OperatorClassExtensions
     {
         public static string GetDisplayName(this Operator type)
@@ -306,5 +307,184 @@ namespace d360.core.enums
             return list.OrderBy(i => i.Name).ToList();
         }
 
+        /// <summary>
+        /// Use this operator to compare a value to a set of values, applying its proper data type to the comparison.
+        /// </summary>
+        /// <param name="operator">The operator to use for comparison.</param>
+        /// <param name="dataType">The data type to convert to (string values are from the DataType enumeration)</param>
+        /// <param name="allowMultipleValues">Does field type allow multiple values.</param>
+        /// <param name="values">The value set to check against, for comparison.</param>
+        /// <param name="valueToCompare">The value that we are checking for match, based on operator and data type. An example would be the Value from the field we are checking.</param>
+        /// <returns></returns>
+        public static bool TestTwoValues(this Operator @operator, string dataType, bool allowMultipleValues, List<string> values, string valueToCompare)
+        {
+            bool result = false;
+
+            switch (@operator)
+            {
+                case Operator.After:
+                    if (dataType == DataType.Date.ToString() || dataType == DataType.DateTime.ToString())
+                    {
+                        if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
+                        {
+                            var conditionValue = DateTime.Parse(values[0]);
+                            var fieldValue = DateTime.Parse(valueToCompare);
+                            result = (fieldValue > conditionValue);
+                        }
+                    }
+                    break;
+                case Operator.Before:
+                    if (dataType == DataType.Date.ToString() || dataType == DataType.DateTime.ToString())
+                    {
+                        if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
+                        {
+                            var conditionValue = DateTime.Parse(values[0]);
+                            var fieldValue = DateTime.Parse(valueToCompare);
+                            result = (fieldValue < conditionValue);
+                        }
+                    }
+                    break;
+                case Operator.Between:
+                    switch (dataType)
+                    {
+                        case "Date":
+                        case "DateTime":
+                            if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(values[1], out _) && DateTime.TryParse(valueToCompare, out _))
+                            {
+                                var beforeValue = DateTime.Parse(values[0]);
+                                var afterValue = DateTime.Parse(values[1]);
+                                var fieldValue = DateTime.Parse(valueToCompare);
+                                result = (fieldValue >= beforeValue && fieldValue <= afterValue);
+                            }
+                            break;
+                        case "Decimal":
+                            if (decimal.TryParse(values[0], out _) && decimal.TryParse(values[1], out _) && decimal.TryParse(valueToCompare, out _))
+                            {
+                                var beforeValue = decimal.Parse(values[0]);
+                                var afterValue = decimal.Parse(values[1]);
+                                var fieldValue = decimal.Parse(valueToCompare);
+                                result = (fieldValue >= beforeValue && fieldValue <= afterValue);
+                            }
+                            break;
+                        case "Number":
+                            if (long.TryParse(values[0], out _) && long.TryParse(values[1], out _) && long.TryParse(valueToCompare, out _))
+                            {
+                                var beforeValue = long.Parse(values[0]);
+                                var afterValue = long.Parse(values[1]);
+                                var fieldValue = long.Parse(valueToCompare);
+                                result = (fieldValue >= beforeValue && fieldValue <= afterValue);
+                            }
+                            break;
+                    }
+                    break;
+                case Operator.Contains:
+                    result = (valueToCompare ?? "").Contains(values[0]);
+                    break;
+                case Operator.EndsWith:
+                    result = (valueToCompare ?? "").EndsWith(values[0]);
+                    break;
+                case Operator.Equals:
+                    result = (valueToCompare.ToLower() == values[0].ToLower());
+                    break;
+                case Operator.GreaterThan:
+                case Operator.GreaterThanOrEquals:
+                case Operator.LessThan:
+                case Operator.LessThanOrEquals:
+                    switch (dataType)
+                    {
+                        case "Decimal":
+                            if (decimal.TryParse(values[0], out _) && decimal.TryParse(valueToCompare, out _))
+                            {
+                                var conditionValue = decimal.Parse(values[0]);
+                                var fieldValue = decimal.Parse(valueToCompare);
+                                switch (@operator)
+                                {
+                                    case Operator.GreaterThan:
+                                        result = (fieldValue > conditionValue);
+                                        break;
+                                    case Operator.GreaterThanOrEquals:
+                                        result = (fieldValue >= conditionValue);
+                                        break;
+                                    case Operator.LessThan:
+                                        result = (fieldValue < conditionValue);
+                                        break;
+                                    case Operator.LessThanOrEquals:
+                                        result = (fieldValue <= conditionValue);
+                                        break;
+                                }
+                                
+                            }
+                            break;
+                        case "Number":
+                            if (long.TryParse(values[0], out _) && long.TryParse(valueToCompare, out _))
+                            {
+                                var conditionValue = long.Parse(values[0]);
+                                var fieldValue = long.Parse(valueToCompare);
+                                switch (@operator)
+                                {
+                                    case Operator.GreaterThan:
+                                        result = (fieldValue > conditionValue);
+                                        break;
+                                    case Operator.GreaterThanOrEquals:
+                                        result = (fieldValue >= conditionValue);
+                                        break;
+                                    case Operator.LessThan:
+                                        result = (fieldValue < conditionValue);
+                                        break;
+                                    case Operator.LessThanOrEquals:
+                                        result = (fieldValue <= conditionValue);
+                                        break;
+                                }
+                            }
+                            break;
+                    }
+                    break;
+                case Operator.In:
+                    var fieldValuesIn = (valueToCompare ?? "").Split(',');
+                    result = fieldValuesIn.Intersect(values).Any();
+                    break;
+                case Operator.IsFalse:
+                    if (!string.IsNullOrEmpty(valueToCompare) && dataType == DataType.Boolean.ToString())
+                    {
+                        bool bValue;
+                        if (bool.TryParse(valueToCompare, out bValue))
+                        {
+                            result = !bValue;
+                        }
+                    }
+                    break;
+                case Operator.IsTrue:
+                    if (!string.IsNullOrEmpty(valueToCompare) && dataType == DataType.Boolean.ToString())
+                    {
+                        bool bValue;
+                        if (bool.TryParse(valueToCompare, out bValue))
+                        {
+                            result = bValue;
+                        }
+                    }
+                    break;
+                case Operator.NotContains:
+                    result = !(valueToCompare ?? "").Contains(values[0]);
+                    break;
+                case Operator.NotEquals:
+                    result = !(valueToCompare ?? "").Equals(values[0]);
+                    break;
+                case Operator.NotIn:
+                    var fieldValuesNotIn = (valueToCompare ?? "").Split(',');
+                    result = !fieldValuesNotIn.Intersect(values).Any();
+                    break;
+                case Operator.NotPopulated:
+                    result = (valueToCompare == null);
+                    break;
+                case Operator.Populated:
+                    result = (valueToCompare != null);
+                    break;
+                case Operator.StartsWith:
+                    result = (valueToCompare ?? "").StartsWith(values[0]);
+                    break;
+            }
+
+            return result;
+        }
     }
 }

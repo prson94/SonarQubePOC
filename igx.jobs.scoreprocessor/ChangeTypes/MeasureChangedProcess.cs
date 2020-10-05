@@ -23,7 +23,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             {
                 // We can continue processing it.
                 var Db = GetCompanyContext();
-                var maxUpdatedOnForThisVersion = Db.Filter<ScoreItem>(i => i.AssetVersionUid == measureChangedModel.MetricAssetVersionUid).Max(i => i.UpdatedOn);
+                var maxScoreItem = Db.Filter<ScoreItem>(i => i.AssetVersionUid == measureChangedModel.MetricAssetVersionUid).OrderByDescending(i => i.UpdatedOn).FirstOrDefault();
+                var maxUpdatedOnForThisVersion = DateTime.UtcNow.AddDays(-7);
+                if (maxScoreItem != null)
+                {
+                    maxUpdatedOnForThisVersion = maxScoreItem.UpdatedOn;
+                }
                 if (DateTime.UtcNow.Subtract(maxUpdatedOnForThisVersion).TotalDays > 1)
                 {
                     var version = Db.Filter<MetricAssetVersion>(v => v.Uid == measureChangedModel.MetricAssetVersionUid, v => v.Asset.Allocation).SingleOrDefault();

@@ -4227,6 +4227,39 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
+
+                    // Send score recalculation notifications.
+                    sw.Restart();
+                    var measureUids = Query<Guid>(@"select	M.Uid 
+from	metrics.Allocation A 
+		inner join metrics.Asset M on M.AllocationUid = A.Uid 
+		and A.AssetTypeUid = @AssetTypeUid 
+		and M.State = 1 and A.ScoreType = 1 and M.IsGroup = 0
+		cross apply (
+			select	Definition
+			from	metrics.AssetVersion 
+			where	AssetUid = M.Uid
+					and EffectiveDate <= getutcdate()
+					and EffectiveEndDate is null
+					and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+					and Definition <> '{}') V", new { AssetTypeUid = at.uid }).ToList();
+
+                    if (measureUids.Count > 0)
+                    {
+                        var measures = (
+                                       from a in results
+                                       from m in measureUids
+                                       select new ExternalMeasureResultsCreatedModel
+                                       {
+                                           EffectiveDate = DateTime.UtcNow,
+                                           AssetUid = a.uid,
+                                           MetricAssetUid = m,
+                                           Result = false
+                                       }
+                                       ).ToList();
+                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
+                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);                    
+                    }
                 }
             }
 
@@ -4883,6 +4916,46 @@ end",
                         SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 
                     AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+
+
+                    #region Send score recalculation notifications.
+                    
+                    sw.Restart();
+                    var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
+select	distinct
+		SA.Uid as MetricAssetUid,
+		S.Uid as AssetUid,
+		@utc as EffectiveDate,
+		cast(0 as bit) as Result
+from	api.ExecutionRelationship ER
+		inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.Success = 1
+		inner join IntersectType T on T.ID = R.IntersectTypeID 
+        inner join [Predicate] P on P.ID = T.PredicateID 
+		inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
+		inner join AssetType ST on ST.ID = S.AssetTypeID
+		inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+		inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+		cross apply (
+			select	Definition
+			from	metrics.AssetVersion 
+			where	AssetUid = SA.Uid
+					and EffectiveDate <= getutcdate()
+					and EffectiveEndDate is null
+                    and (
+                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+                    or 
+                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+                    )
+					and Definition <> '{}'
+		) V", new { execution.ExecutionID }).ToList();
+
+                    if (measureAssets.Count > 0)
+                    {
+                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+                    }
+
+                    #endregion
                 }
             }
             AddMeasurement(metrics, "End Method", swBegin.ElapsedMilliseconds, ++step);
@@ -5106,6 +5179,8 @@ insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], In
                 int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                 int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
+                var measureAssets = new List<ExternalMeasureResultsCreatedModel>(); // For scoring
+
                 for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                 {
                     bool runCompleted = false;
@@ -5159,6 +5234,40 @@ from    [Field] T
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Subject] and A.ObjectID = I.SubjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                 Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Object] and A.ObjectID = I.ObjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+
+                                #endregion
+
+                                #region Track the impacted assets to re-execute scoring.
+
+                                // Send score recalculation notifications.
+                                measureAssets.AddRange(
+                                    Connection.Query<ExternalMeasureResultsCreatedModel>(@"declare @utc date = getutcdate()
+select	distinct
+		SA.Uid as MetricAssetUid,
+		S.Uid as AssetUid,
+		@utc as EffectiveDate,
+		cast(0 as bit) as Result
+from	api.ExecutionDeletedRelationship ER
+		inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.ItemNumber between @beginItemNumber and @endItemNumber and ER.Success is null
+		inner join IntersectType T on T.ID = R.IntersectTypeID 
+        inner join [Predicate] P on P.ID = T.PredicateID
+		inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
+		inner join AssetType ST on ST.ID = S.AssetTypeID
+		inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+		inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+		cross apply (
+			select	Definition
+			from	metrics.AssetVersion 
+			where	AssetUid = SA.Uid
+					and EffectiveDate <= getutcdate()
+					and EffectiveEndDate is null
+					and (
+                        (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+                        or 
+                        (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+                        )
+					and Definition <> '{}'
+		) V", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans));
 
                                 #endregion
 
@@ -5232,6 +5341,12 @@ from    [Intersect] T
 
                 if (sendWorkflowEvents)
                     SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
+
+
+                if (measureAssets.Count > 0)
+                {
+                    SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                }
             }
 
             return results;

@@ -150,6 +150,7 @@ namespace d360.model.DataAccessLayer
         public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model)
         {
             MetricAsset metricAsset = null;
+            MetricAssetVersion metricAssetVersion = null;
             AssetType targetAssetType = null;
             bool isNew = true;
 
@@ -203,7 +204,7 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            Func<List<string>, string, bool> checkValidValuesByDataType = delegate(List<string> values, string dataType) {
+            Func<List<string>, string, string, int?, bool> checkValidValuesByDataType = delegate(List<string> values, string dataType, string lookupObject, int? lookupObjectID) {
                 var validForType = true;
                 values.ForEach(v =>
                 {
@@ -228,7 +229,16 @@ namespace d360.model.DataAccessLayer
                             }
                             break;
                         case "Lookup":
-                            if (!Guid.TryParse(v, out _))
+                            Guid lookupUid;
+                            if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
+                            {
+                                lookupObject += "Type";
+                                if (!Company.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                                {
+                                    validForType = false;
+                                }
+                            }
+                            else
                             {
                                 validForType = false;
                             }
@@ -310,7 +320,7 @@ namespace d360.model.DataAccessLayer
                                                           join l in dq.Filters on f.Name equals l.FieldTypeName
                                                           join a in Company.AssetTypes on f.AssetTypeID equals a.ID
                                                           where l.AssetTypeUid == a.uid
-                                                          select new { l.AssetTypeUid, FieldTypeID = f.ID, l.FieldTypeName, f.Type, f.AllowMultipleValues, AssetTypeID = a.ID }
+                                                          select new { l.AssetTypeUid, FieldTypeID = f.ID, l.FieldTypeName, f.Type, f.AllowMultipleValues, AssetTypeID = a.ID, f.LookupObjectType, f.LookupObjectID }
                                                          ).Distinct().ToList();
                                 bool isSuccess = true;
                                 var dqFilterErrorMessage = "";
@@ -327,7 +337,7 @@ namespace d360.model.DataAccessLayer
                                             dqFilterErrorMessage += $"A DataQuality filter uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {dqFilterFieldType.Type}. ";
                                         }
 
-                                        var dqValuesValidForType = checkValidValuesByDataType(f.Values, dqFilterFieldType.Type);
+                                        var dqValuesValidForType = checkValidValuesByDataType(f.Values, dqFilterFieldType.Type, dqFilterFieldType.LookupObjectType, dqFilterFieldType.LookupObjectID);
                                         if (!dqValuesValidForType)
                                         {
                                             isSuccess = false;
@@ -397,7 +407,7 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, governanceFieldCheckValueCountErrorMessage);
                             }
 
-                            var governanceFieldCheckValuesValidForType = checkValidValuesByDataType(gov.Field.Values, governanceCheckFieldType.Type);
+                            var governanceFieldCheckValuesValidForType = checkValidValuesByDataType(gov.Field.Values, governanceCheckFieldType.Type, governanceCheckFieldType.LookupObjectType, governanceCheckFieldType.LookupObjectID);
                             if (!governanceFieldCheckValuesValidForType)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your Governance Field Check are not supported by the data type ({governanceCheckFieldType.Type}) of the referenced field.");
@@ -524,7 +534,7 @@ namespace d360.model.DataAccessLayer
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"A DataQuality filter uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {fieldType.Type}. ");
                         }
 
-                        var conditionValuesValidForType = checkValidValuesByDataType(condition.Values, fieldType.Type);
+                        var conditionValuesValidForType = checkValidValuesByDataType(condition.Values, fieldType.Type, fieldType.LookupObjectType, fieldType.LookupObjectID);
                         if (!conditionValuesValidForType)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your DataQuality filters are not supported by the data type ({fieldType.Type}) of the referenced field. ");
@@ -681,7 +691,7 @@ from	metrics.AssetVersion V
 where	V.AssetUid = @Uid
 		and V.EffectiveDate = @effectiveDate
 for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transaction: trans);
-                    var metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
+                    metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
                     string newConditionHash = model.CurrentConditionHash;
 
                     if (metricAssetVersion == null)
@@ -757,6 +767,10 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the condition type of this metric without also altering its effective date.");
                             }
 
+                            if (metricAssetVersion.Conditions == null)
+                            {
+                                metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+                            }
                             var existingHashItems = from g in metricAssetVersion.Conditions
                                                     from c in g.Items
                                                     from v in c.Values
@@ -1051,7 +1065,15 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                 }
             }
 
-            Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
+            if (metricAsset != null && metricAssetVersion != null)
+            { 
+                Company.SendScoreEventWithPayload(
+                    Guid.NewGuid(), 
+                    ScoreQueueChangeType.MeasureChanged, 
+                    new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
+                    );            
+            }
+
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }

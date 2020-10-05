@@ -55,9 +55,6 @@ namespace igx.jobs.scoreprocessor
                     case ScoreQueueChangeType.MeasureChanged:
                         process = new MeasureChangedProcess();
                         break;
-                    case ScoreQueueChangeType.MeasureCreated:
-                        process = new MeasureCreatedProcess();
-                        break;
                     case ScoreQueueChangeType.MeasureRemoved:
                         process = new MeasureRemovedProcess();
                         break;
