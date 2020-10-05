@@ -111,7 +111,14 @@
                         </div>
                         <div class="row">
                             <label for="myFormColor" class="ig-label">Property2</label>
-                            <ig-color-picker formControlName="myFormColor" tabindex="1" [colors]="defaultColors" required [placeholder]="'Required'" [styleClass]="colorpicker?.errors?.required ? 'required' : ''"></ig-color-picker>
+                            <p-dropdown igDropdown
+                                        required
+                                        igSize="small"
+                                        name="selectValue"
+                                        placeholder="Value Required"
+                                        appendTo="body"
+                                        formControlName="myFormColor"
+                                        [options]="cars"></p-dropdown>
                             <div *ngIf="multiTestForm.get('myFormColor').invalid && (multiTestForm.get('myFormColor').dirty || multiTestForm.get('myFormColor').touched)" class="ig-text-required">
                                 <div *ngIf="multiTestForm.get('myFormColor').errors.required">
                                     Value required
