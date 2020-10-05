@@ -163,8 +163,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.stateService.reloadLeftNavMenu();
     }
 
-    private deleteArtifactType(id: number) {
-        var data = this.getAssetTypeById(id);
+    private deleteArtifactType(uid: string) {
+        let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        let data: any = node ? node.data : null;
+
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
                 result.title = 'Success!';
@@ -175,10 +177,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.stateService.reloadLeftNavMenu();
             })
         }
-    }
-
-    private getAssetTypeById(id: number): any {
-        return this.artifactTypes.filter(x => x.data['ID'] == id)[0].data;
     }
 
     private loadDataAndExecuteAction(action: Function) {

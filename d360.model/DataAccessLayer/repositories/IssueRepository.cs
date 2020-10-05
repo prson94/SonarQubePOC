@@ -148,10 +148,17 @@ namespace d360.model.DataAccessLayer
 
             var conditionStr = conditions.Count > 0 ? string.Join(" AND ", conditions.ToArray()) : "";
 
-            if (conditionStr.Trim() != "" && assetSQL.Trim() == "")
+            if (conditionStr.Trim() != "")
             {
-                issueTypeSQL = $"{issueTypeSQL} Where ";
-            }
+                if(assetSQL.Trim() == "")
+                {
+                    issueTypeSQL = $"{issueTypeSQL} Where ";
+                }
+                else
+                {
+                    conditionStr = $"AND {conditionStr}";
+                }                
+            }            
 
             if(assetSQL.Trim() != "")
             {

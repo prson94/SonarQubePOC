@@ -75,7 +75,7 @@
     </div>
     <div *ngIf="isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count" [assetTypeName]="this.selectedRow.data.name"></d3s-asset-type-delete>
+            <d3s-asset-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeUid]="selectedRow.data.uid" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count" [assetTypeName]="this.selectedRow.data.name"></d3s-asset-type-delete>
         </div>
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">
