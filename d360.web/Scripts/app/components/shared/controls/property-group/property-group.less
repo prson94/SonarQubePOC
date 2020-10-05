@@ -24,6 +24,10 @@
         .fa {
             height: 16px;
             transition: transform 200ms ease;
+            border: 1px solid transparent;
+            border-radius: 16px;
+            padding: 1px;
+            line-height: 13px;
 
             &.down {
                 transform: rotate(90deg);
@@ -36,6 +40,11 @@
             flex-grow: 1;
             line-height: 14px;
             padding: 0px 0px 16px 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 8px;
+            white-space: nowrap;
+            display: block;
 
             &.close {
                 padding: 0px 0px 0px 8px;
@@ -46,6 +55,7 @@
             .badge-feedback {
                 padding: 4px;
                 border-radius: 4px;
+                white-space: nowrap;
 
                 &:not(:first-child) {
                     margin-left: 4px;
