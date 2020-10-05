@@ -122,16 +122,6 @@ namespace d360.model.DataAccessLayer
             if (model != null)
             {
                 model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(model.DefinitionJson ?? "{}");
-                //var scoreType = ScoreType.Governance;
-                //switch (scoreType)
-                //{
-                //    case ScoreType.DataQuality:
-                //        model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(model.DefinitionJson ?? "{}");
-                //        break;
-                //    case ScoreType.Governance:
-                //        model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionGovernanceViewModel>(model.DefinitionJson ?? "{}");
-                //        break;
-                //}
             }
 
             return model;
@@ -228,7 +218,7 @@ namespace d360.model.DataAccessLayer
                             }
                             break;
                         case "Lookup":
-                            if (!Guid.TryParse(v, out _))
+                            if (!Guid.TryParse(v, out _) && !int.TryParse(v, out _))
                             {
                                 validForType = false;
                             }
@@ -521,13 +511,13 @@ namespace d360.model.DataAccessLayer
                         var operatorInfo = condition.Operator.GetAsInfo();
                         if (!operatorInfo.AllowedDataTypes.Any(dt => dt.Name == fieldType.Type))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"A DataQuality filter uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {fieldType.Type}. ");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"A condition uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {fieldType.Type}. ");
                         }
 
                         var conditionValuesValidForType = checkValidValuesByDataType(condition.Values, fieldType.Type);
                         if (!conditionValuesValidForType)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your DataQuality filters are not supported by the data type ({fieldType.Type}) of the referenced field. ");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your condition is not supported by the data type ({fieldType.Type}) of the referenced field. ");
                         }
 
                         var conditionValueCountErrorMessage = checkValidValuesCount(condition.Values, operatorInfo, "Condition Value");
@@ -585,7 +575,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         {
                             var parentExists = Company.Connection
                                 .Query<bool>(
-                                    "select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and ParentUid = @p", 
+                                    "select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and Uid = @p", 
                                     new { a = model.AllocationUid, p = model.ParentUid.Value }, transaction: trans)
                                 .Single();
                             

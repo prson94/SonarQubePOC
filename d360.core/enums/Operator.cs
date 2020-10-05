@@ -19,7 +19,7 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Equals = 1,
@@ -34,6 +34,7 @@ namespace d360.core.enums
         ]
         NotEquals,
         [
+            NotYetUsed,
             Name("contains"),
             EnumMember(Value = "Contains"),
             Description(""), 
@@ -44,6 +45,7 @@ namespace d360.core.enums
         ]
         Contains,
         [
+            NotYetUsed,
             Name("does not contain"),
             EnumMember(Value = "NotContains"),
             Description(""), 
@@ -54,6 +56,7 @@ namespace d360.core.enums
         ]
         NotContains,
         [
+            NotYetUsed,
             Name("starts with"),
             EnumMember(Value = "StartsWith"),
             Description(""), 
@@ -64,6 +67,7 @@ namespace d360.core.enums
         ]
         StartsWith,
         [
+            NotYetUsed,
             Name("ends with"),
             EnumMember(Value = "EndsWith"),
             Description(""), 
@@ -79,7 +83,7 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date), 
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime), 
             OperatorFieldTypeRequirements(false)
         ]
         Before,
@@ -89,7 +93,7 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date), 
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime), 
             OperatorFieldTypeRequirements(false)
         ]
         After,
@@ -105,6 +109,7 @@ namespace d360.core.enums
         ]
         Between,
         [
+            NotYetUsed,
             Name("is populated"),
             EnumMember(Value = "Populated"),
             Description(""), 
@@ -115,6 +120,7 @@ namespace d360.core.enums
         ]
         Populated,
         [
+            NotYetUsed,
             Name("is not populated"),
             EnumMember(Value = "NotPopulated"),
             Description(""), 
@@ -187,6 +193,7 @@ namespace d360.core.enums
         ]
         NotIn,
         [
+            NotYetUsed,
             Name("is true"),
             EnumMember(Value = "IsTrue"),
             Description(""),
@@ -197,6 +204,7 @@ namespace d360.core.enums
         ]
         IsTrue,
         [
+            NotYetUsed,
             Name("is false"),
             EnumMember(Value = "IsFalse"),
             Description(""),

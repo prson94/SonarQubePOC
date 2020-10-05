@@ -87,4 +87,29 @@ set		[Operator] = case [Operator]
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update 	T 
+set		T.[Operator] = case
+						when T.[Operator] = 13 then 7
+						when T.[Operator] = 14 then 7
+						when T.[Operator] = 12 then 8
+						when T.[Operator] = 15 then 8
+					 end
+from	metrics.AssetVersionConditionItem T
+		inner join FieldType S on S.ID = T.ConditionFieldTypeID and S.[Type] in ('Date', 'DateTime') and T.[Operator] between 12 and 15
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
