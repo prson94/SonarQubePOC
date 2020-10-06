@@ -1,11 +1,6 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { Title } from '@angular/platform-browser';
-import {
-    WorkflowEventRegistration,
-    EventCondition,
-    WorkflowChangeType,
-} from '../../../../models/workflow.model';
+import { WorkflowChangeType } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';

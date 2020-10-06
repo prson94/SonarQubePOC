@@ -487,11 +487,6 @@ export enum EmailTaskRecipientType {
     Group
 }
 
-export enum HttpRequestFields {
-    StatusCode = 1,
-    ResponseBody = 2
-}
-
 //#endregion
 
 export class WorkflowAssignmentSummary {

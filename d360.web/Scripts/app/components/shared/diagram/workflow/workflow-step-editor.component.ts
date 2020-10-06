@@ -83,6 +83,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.filterHttpFields();
         });
 
+
         this.workflowService.getEmailTaskRecipientType()
             .subscribe(r => {
                 r.forEach(e => {
@@ -174,6 +175,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 this.step.settings.HTTPRequest.Headers = [];
             }
 
+            this.workflowFieldsService.pushHttpFields(this.step);
             this.filterHttpFields();
 
         }
@@ -275,7 +277,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     }
 
     filterHttpFields() {
-        console.log('filter http fields');
         this.httpFields = [];
         let fields = this.workflowFieldsService.getHttpFields();
         let upstreamSteps = [];
@@ -291,7 +292,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         });
 
         this.stepChange.emit(this.step);
-
     }
 
     traverseDiagram(key: any, upstreamSteps: any[]) {

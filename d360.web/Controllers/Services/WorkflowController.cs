@@ -280,10 +280,14 @@ order by wi.StartedOn desc";
 
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
             var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
+            var model = new WorkflowDiagramModel()
+            {
+                Event = @event,
+                Nodes = nodes
+            };
 
             @event.ConditionObject = XmlToDynamic(GetConditionLabels(@event.Condition));
-            List<FieldType> fieldTypes = GetFieldsForDiagramModel(new WorkflowDiagramModel() { Event = @event });
-
+            List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
             nodes.ForEach(n =>
             {
                 n.SettingsObject = XmlToDynamic(this.DeFormatMessageBodyTemplate(@event.Object, fieldTypes, n.Settings), false);
@@ -1728,8 +1732,13 @@ order by wi.StartedOn desc";
 
 
                     List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
-
                     Dictionary<int, int> keyMapping = new Dictionary<int, int>();
+                    List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
+                    {
+                        WorkflowActivityType.Form,
+                        WorkflowActivityType.EmailNotification,
+                        WorkflowActivityType.HTTPRequest
+                    };
 
                     if (newVersion)
                     {
@@ -1789,6 +1798,21 @@ order by wi.StartedOn desc";
                                     var node = Company.GetById<WorkflowVersionStep>(key);
                                     node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
 
+                                }
+                                if (tokenTypes.Contains(n.ActivityType))
+                                {
+                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|-([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                                    foreach (var field in fields)
+                                    {
+                                        var parts = field.ToString().Split('|');
+                                        int key;
+                                        if (!int.TryParse(parts[1], out key)) return;
+                                        if (keyMapping.ContainsKey(key))
+                                            key = keyMapping[key];
+                                        var node = Company.GetById<WorkflowVersionStep>(key);
+                                        node.Settings = n.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{key}|{parts[2]}");
+                                    }
                                 }
                             });
                             Company.SaveChanges();
@@ -1950,6 +1974,23 @@ order by wi.StartedOn desc";
                                     var node = Company.GetById<WorkflowVersionStep>(key);
                                     node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
 
+                                }
+                                if (tokenTypes.Contains(n.ActivityType))
+                                {
+                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|-([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                                    foreach (var field in fields)
+                                    {
+                                        var parts = field.ToString().Split('|');
+                                        int key;
+                                        if (!int.TryParse(parts[1], out key)) return;
+                                        if (keyMapping.ContainsKey(key))
+                                            key = keyMapping[key];
+
+                                        var node = Company.GetById<WorkflowVersionStep>(key);
+
+                                        node.Settings = n.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{key}|{parts[2]}");
+                                    }
                                 }
                             });
                             Company.SaveChanges();
@@ -2158,6 +2199,8 @@ order by wi.StartedOn desc";
                 var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                 msg = msg.Replace(f, t);
             });
+
+
             return msg;
         }
 

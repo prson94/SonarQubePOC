@@ -96,11 +96,10 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 });
 
                 this.httpFields.forEach(f => {
-                    let fieldType = 'HTTP Request';
-
+                    let label = 'HTTP Request :: ' + f['@label'];
                     this.fields.push({
-                        value: '[HTTPREQUEST|' + f['@stepId'] + '|' + f['@id'] + ']#[' + fieldType + ' :: ' + f['@label'] + ']',
-                        label: fieldType + ' :: ' + f['@label']
+                        value: '[HTTPREQUEST|' + f['@stepId'] + '|' + f['@id'] + ']',
+                        label: label
                     });
                 });
             });

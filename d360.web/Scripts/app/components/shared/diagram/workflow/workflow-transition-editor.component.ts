@@ -142,7 +142,6 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     filterHttpFields() {
-        console.log(this.transition);
         this.httpFields = this.workflowFieldsService.getHttpFields();
         this.httpFields = this.httpFields.filter(f => this.transition.httpInputs.indexOf(f['@stepId']) > -1);
     }

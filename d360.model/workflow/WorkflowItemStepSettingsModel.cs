@@ -49,7 +49,7 @@ namespace d360.model.workflow
         public List<WorkflowFieldUpdateSettings> FieldUpdateSettings { get; set; }
 
         public List<WorkflowRelationshipUpdateSettings> RelationshipUpdateSettings { get; set; }
-        public WorkflowHttpRequestSettings HttpRequestSettings { get; set; }
+        public WorkflowHttpRequestSettingsModel HttpRequestSettings { get; set; }
 
         public static WorkflowItemStepSettingModel ParseXml(string root)
         {
@@ -77,7 +77,7 @@ namespace d360.model.workflow
             var messageBody = "";
             List<WorkflowFieldUpdateSettings> fieldUpdateSettings = new List<WorkflowFieldUpdateSettings>();
             List<WorkflowRelationshipUpdateSettings> relationshipUpdateSettings = new List<WorkflowRelationshipUpdateSettings>();
-            var httpRequestSettings = new WorkflowHttpRequestSettings();
+            var httpRequestSettings = new WorkflowHttpRequestSettingsModel();
 
             if (root != null)
             {
@@ -155,7 +155,7 @@ namespace d360.model.workflow
 
                 if (root.Element(HTTP_REQUEST_SETTINGS) != null)
                 {
-                    httpRequestSettings = WorkflowHttpRequestSettings.ParseXml(root.Element(HTTP_REQUEST_SETTINGS));
+                    httpRequestSettings = WorkflowHttpRequestSettingsModel.ParseXml(root.Element(HTTP_REQUEST_SETTINGS));
                 }
             }
 

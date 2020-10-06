@@ -6,7 +6,6 @@ import {
     Input,
     OnInit,
     ElementRef,
-    OnDestroy,
     ViewChild,
     HostListener,
     Output,
@@ -31,16 +30,13 @@ import {
     StepType,
     TransitionType,
     ActivityTypeInfo,
-    WorkflowEventRegistration,
-    WorkflowListItem,
     WorkflowChangeType,
     FormResponseType,
     WorkflowActivityType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
-import { Observable,of, ConnectableObservable } from 'rxjs';
-import { WorkflowStepHttpComponent } from './workflow-step-http.component';
+import { Observable, of } from 'rxjs';
  
 declare var window: any;
 
@@ -426,6 +422,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             }
 
+            if (n.activityType == WorkflowActivityType.HTTPRequest) {
+                this.workflowFieldsService.pushHttpFields(n);
+            }
+
             this.diagram.model.addNodeData(n)
         });
         linkList.forEach(l => dm.addLinkData(l));
@@ -608,7 +608,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }));
             });
         }
-        console.log('forms', forms);
 
         return forms;
     }
@@ -641,7 +640,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }));
             });
         }
-        console.log('requests', requests);
         return requests;
     }
 
@@ -702,9 +700,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 conditions.forEach(c => n.condition.push(c));
 
                 n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                    if (i >= 0)
-                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                    this.setConditionLabel(c);
                 });
 
             } else if (m.ConditionObject != null) {
@@ -717,9 +713,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                    if (i >= 0)
-                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                    this.setConditionLabel(c);
                 });
 
             } else {
@@ -929,6 +923,24 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         } else {
             console.error(`model value ${model} is not valid`);
             return null;
+        }
+    }
+
+    private setConditionLabel(condition: any) {
+        let i = this.fieldTypes.findIndex(f => f.ID == condition['@FieldTypeID']);
+        if (i >= 0)
+            condition['@FieldName'] = this.fieldTypes[i].FriendlyName;
+
+
+        if (condition['@FormInputID'] != null) {
+            switch (condition['@FormInputID']) {
+                case 'statusCode':
+                    condition['@FieldName'] = 'HTTP Request :: Status Code';
+                    break;
+                case 'responseBody':
+                    condition['@FieldName'] = 'HTTP Request :: Response Body';
+                    break;
+            }
         }
     }
 
@@ -1186,10 +1198,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (fieldType == 'Action Field') {
                         f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
                     }
-                    else if (fieldType == 'Asset Field' {
+                    else if (fieldType == 'Asset Field') {
                         f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
-                    } else if (fieldType == 'HTTP Request') {
-                        f = true;
+                    } else if (fieldType == 'HTTPREQUEST') {
+                        f = this.workflowFieldsService.getHttpFields().find(x => x['@stepId'] == fieldData[1].trim());
                     }
                     if (!f) {
                         errors.push('Invalid field type');
@@ -1596,8 +1608,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 } else {
                     coll.push(this.diagram.findPartForData(n));
                 }
-            } else if (n.activityType == WorkflowActivityType.HTTPRequest) {
-            
             } else {
                 coll.push(this.diagram.findPartForData(n));
             }

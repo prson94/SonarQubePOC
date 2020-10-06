@@ -9,28 +9,31 @@ namespace d360.model.workflow
 {
 
 
-    public class WorkflowHttpRequestSettings
+    public class WorkflowHttpRequestSettingsModel
     {
         private static string METHOD_VALUE = "Method";
         private static string URL_VALUE = "Url";
         private static string HEADERS_VALUE = "Headers";
         private static string TIMEOUT_VALUE = "Timeout";
         private static string BODY_VALUE = "Body";
+        private static string STATUS_CODE_VALUE = "StatusCode";
 
         public string Method { get; set; }
 
         public string Url { get; set; }
         public int Timeout { get; set; }
+        public int StatusCode { get; set; }
         public string Body { get; set; }
         public List<WorkflowHttpRequestHeader> Headers { get; set; }
 
 
 
-        public static WorkflowHttpRequestSettings ParseXml(XElement xml)
+        public static WorkflowHttpRequestSettingsModel ParseXml(XElement xml)
         {
-            var model = new WorkflowHttpRequestSettings();
+            var model = new WorkflowHttpRequestSettingsModel();
             var headers = new List<WorkflowHttpRequestHeader>();
             int timeout = 90;
+            int statusCode = 0;
 
             if (xml.Element(METHOD_VALUE) != null)
             {
@@ -53,6 +56,14 @@ namespace d360.model.workflow
             }
 
             model.Timeout = timeout;
+
+
+            if (xml.Element(STATUS_CODE_VALUE) != null)
+            {
+                int.TryParse(xml.Element(STATUS_CODE_VALUE).Value, out statusCode);
+            }
+            model.StatusCode = statusCode;
+
 
             if (xml.Element(HEADERS_VALUE) != null)
             {

@@ -236,7 +236,6 @@ namespace d360.model.DataAccessLayer
             model.EffectiveDate = model.EffectiveDate.Date;
 
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
-            var operatorErrorMessage = "";
 
             if (!model.IsGroup)
             {

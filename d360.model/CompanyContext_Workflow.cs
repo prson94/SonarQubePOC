@@ -2388,6 +2388,44 @@ namespace d360.model
                 }
             }
 
+            if (Regex.IsMatch(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldTypeIdStringitem = item.Replace("[HTTPREQUEST", "");
+                    fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+                    var stepId = -1;
+                    var property = fieldTypeIdStringitem.Split('|')[1];
+
+                    int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+                    var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
+
+                    if (step != null)
+                    {
+                        var stepFields = step.FieldsDocument;
+
+                        if (stepFields != null)
+                        {
+                            switch (property.ToUpper())
+                            {
+                                case "STATUSCODE":
+                                    result = result.Replace(item, stepFields.Element("StatusCode")?.Value ?? "");
+                                    break;
+                                case "RESPONSEBODY":
+                                    result = result.Replace(item, stepFields.Element("ResponseBody")?.Value ?? "");
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (result.Contains("[OBJECT_TYPE]"))
             {
                 string path = null;

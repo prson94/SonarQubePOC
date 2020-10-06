@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject} from 'rxjs';
-import { WorkflowChangeType, NodeModel, HttpRequestFields } from '../models/workflow.model';
+import { WorkflowChangeType, NodeModel } from '../models/workflow.model';
 
 
 @Injectable()
@@ -63,20 +63,20 @@ export class WorkflowFieldsService {
         let f: any;
         let i: number;
 
-        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == HttpRequestFields.StatusCode);
+        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == 'statusCode');
         if (i == -1) {
             f = {};
             f['@stepId'] = step.key;
-            f['@id'] = HttpRequestFields.StatusCode;
+            f['@id'] = 'statusCode';
             f['@label'] = 'Status Code';
             this.httpFields.push(f);
         }
 
-        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == HttpRequestFields.ResponseBody);
+        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == 'responseBody');
         if (i == -1) {
             f = {};
             f['@stepId'] = step.key;
-            f['@id'] = HttpRequestFields.ResponseBody;
+            f['@id'] = 'responseBody';
             f['@label'] = 'Response Body';
             this.httpFields.push(f);
         }
