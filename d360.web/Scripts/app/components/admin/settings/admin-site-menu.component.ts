@@ -138,6 +138,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         if (files[0] != null) {
             if (files[0].size > (1024 * 1024)) {
                 this.messagesService.showError('File too large.', `Navigation icon image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                target.value = null;
                 return;
             }
         }
