@@ -23,7 +23,7 @@
         <h4>Basic with reactive form (3 required fields with validation. <b>Type No, Bug or Defect for invalid state</b>) </h4>
         <div class="gallery-form-container">
             <form *ngIf="testForm != null" [formGroup]="testForm" (ngSubmit)="submitTemplateForm(myForm)">
-                <ig-property-group [igformGroup]="testForm" [title]="'PropertGroup1'">
+                <ig-property-group [igformGroup]="testForm" [title]="'PropertyGroup1'">
                     <div inputs>
                         <div class="row">
                             <label for="myFormName" class="ig-label">Property1</label>
@@ -111,12 +111,13 @@
                         </div>
                         <div class="row">
                             <label for="myFormColor" class="ig-label">Property2</label>
-                            <p-dropdown igDropdown
+                            <p-dropdown #dd igDropdown
                                         required
                                         igSize="small"
                                         name="selectValue"
                                         placeholder="Value Required"
                                         appendTo="body"
+                                        (focus)="applyFocus(dd)"
                                         formControlName="myFormColor"
                                         [options]="cars"></p-dropdown>
                             <div *ngIf="multiTestForm.get('myFormColor').invalid && (multiTestForm.get('myFormColor').dirty || multiTestForm.get('myFormColor').touched)" class="ig-text-required">

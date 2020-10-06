@@ -53,7 +53,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
 
     ngOnInit(): void {
         this.testForm = this.fb.group({
-            myFormName: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
+            myFormName: ["bug", { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormAddr: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormEmail: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }]
         });
@@ -64,7 +64,11 @@ export class GalleryPropertyGroupComponent implements OnInit {
             myFormAddr: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormEmail: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }]
         });
+
+        //must mark as dirty so validation message will appear for invalid example.
+        this.testForm.get("myFormName").markAsDirty();
         this.testForm.updateValueAndValidity();
+
         this.assetService.getAllColors().subscribe(x => { this.defaultColors = x; });
         this.properties = new Array();
         this.properties.push({ Name: "igformGroup", Type: "FormGroup", Description: "The angular FormGroup object that contains the inputs.", Default: "" });
@@ -83,6 +87,10 @@ export class GalleryPropertyGroupComponent implements OnInit {
                 };
             return null;
         };
+    }
+
+    applyFocus(dd) {
+        dd.applyFocus();
     }
     cars = [
         { label: 'Audi', value: 'Audi' },
