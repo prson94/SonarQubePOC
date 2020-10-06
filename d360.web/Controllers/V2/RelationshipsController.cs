@@ -511,7 +511,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route("relationship/{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A single relationships.", typeof(GetRelationshipSingleApiModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
