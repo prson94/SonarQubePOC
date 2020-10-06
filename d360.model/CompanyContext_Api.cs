@@ -6373,7 +6373,11 @@ where   ER.ExecutionID = @ExecutionID
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            row["Name"] = model.Name.Trim();
+                            if(model.Name == null)
+                                row["Name"] = "";
+                            else {
+                                row["Name"] = model.Name.Trim();
+                            }
                             row["Description"] = model.Description;
                             if (model.Uid.HasValue)
                                 row["Uid"] = model.Uid;
