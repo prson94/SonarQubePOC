@@ -26,7 +26,7 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                                     <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                                 </div>                      
                             </div>
-                            <div class="col s12" [innerHtml]="comment.Body"></div>                            
+                            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>                            
                             <div class="col s12">
                                 <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
                             </div>
