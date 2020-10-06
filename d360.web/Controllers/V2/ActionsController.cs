@@ -409,7 +409,8 @@ for json path";
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                     {
-                        if (!Company.AssetTypes.Any(i => i.uid == Guid.Parse(assetTypeUidParam.Value) && i.ID == asset.AssetTypeID))
+                        var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
+                        if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
                         {
                             return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid does not match the Asset Type provided."));
                         }
@@ -823,7 +824,7 @@ for json path";
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.Value));
                 }                    
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.ReadAsset))
+                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
                 }

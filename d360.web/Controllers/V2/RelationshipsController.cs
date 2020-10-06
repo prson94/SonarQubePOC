@@ -503,6 +503,60 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Retrieves the details for the specified relationship.
+        /// </summary>
+        /// <param name="uid">The uid of a relationship to return.</param>
+        /// <returns>Details for the specified relationship</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("relationship/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A single relationships.", typeof(GetRelationshipSingleApiModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipAsync(Guid uid)
+        {
+            var prefix = "Relationships.GetRelationshipAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                
+                var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
+                if(intersect == null || uid == Guid.Empty)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, $"Specified relationship with uid [{uid}] could not be found.");
+                }
+                
+                var hasObjectReadPermission = Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ReadRelationships);
+                var hasSubjectReadPermission = Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.ReadRelationships);
+                if (!hasObjectReadPermission || !hasSubjectReadPermission)
+                {
+                    return ReturnApiError(HttpStatusCode.Forbidden, $"You are not allowed to view this relationship.");
+                }
+
+                var result = await RelationshipRepository.GetRelationship(uid);
+                var response = Request.CreateResponse(HttpStatusCode.OK, result);
+                if(response == null)
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"Invalid GUID {uid}.");
+                }
+                return response;
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// GET a list of relationship uids and the uids for the subject / object items in a given relationship type if applicable.
         /// </summary>
         /// <remarks>

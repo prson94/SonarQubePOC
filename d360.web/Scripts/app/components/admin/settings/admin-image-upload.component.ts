@@ -21,12 +21,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
         <div class="row">
             <div class="col s6">
                 <div class="directions">
-                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The image will be scaled to 40px high as necessary.
+                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The image will be scaled to 40px high as necessary and up to a maximum file size of 1MB.
                 </div>
             </div>
             <div class="col s6">
                 <div class="directions">
-                    You may upload a custom web icon (.ICO file) for your company.
+                    You may upload a custom web icon (.ICO file) for your company, up to a maximum file size of 1MB.
                 </div>
             </div>
         </div>
@@ -113,7 +113,17 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
         let target = event.target || event.srcElement;
         let files = target.files;
 
+        if (files[0] != null)
+        {
+            if (files[0].size > (1024 * 1024)) {
+                this.messagesService.showError('File too large.', `Company logo image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                target.value = null;
+                return;
+            }
+        }
+
         this.companyLogo.file = files[0];
+
         this.companyLogo.setDataUrl();
 
         this.companyLogoChange.emit(this.companyLogo);
@@ -131,7 +141,16 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
         let target = event.target || event.srcElement;
         let files = target.files;
 
+        if (files[0] != null) {
+            if (files[0].size > (1024 * 1024)) {
+                this.messagesService.showError('File too large.', `Company icon image upload failed - the file is too large. Please choose an image file no bigger than 1MB. `);
+                target.value = null;
+                return;
+            }
+        }
+
         this.companyIcon.file = files[0];
+
         this.companyIcon.setDataUrl();
 
         this.companyIconChange.emit(this.companyIcon);

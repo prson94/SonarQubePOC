@@ -205,7 +205,6 @@
     <Compile Include="ChangeTypes\ExternalMeasureResultsCreatedProcess.cs" />
     <Compile Include="ChangeTypes\ExternalScoresCreatedProcess.cs" />
     <Compile Include="ChangeTypes\IScoreProcess.cs" />
-    <Compile Include="ChangeTypes\MeasureCreatedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureRemovedProcess.cs" />
     <Compile Include="ChangeTypes\RollupPathChangedProcess.cs" />

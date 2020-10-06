@@ -135,6 +135,15 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         let target = event.target || event.srcElement;
         let files = target.files;
 
+        if (files[0] != null) {
+            if (files[0].size > (1024 * 1024)) {
+                this.messagesService.showError('File too large.', `Navigation icon image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                target.value = null;
+                return;
+            }
+        }
+
+
         this.iconImage.file = files[0];
         this.iconImage.setDataUrl();
         if (this.formMode == FormMode.Editing) {
