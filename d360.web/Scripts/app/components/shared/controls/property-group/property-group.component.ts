@@ -2,7 +2,7 @@
 import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
-import { Tooltip, TooltipModule } from 'primeng/tooltip';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
     selector: 'ig-property-group',
@@ -17,6 +17,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     invalidCount: number = 0;
     requiredCount: number = 0;
     expanded: boolean = true;
+
+    private requiredPos: number = 0; 
+    private invalidPos: number = 0; 
 
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
     constructor(private ref: ChangeDetectorRef) {
@@ -69,7 +72,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         let found = false;
         if (!this.expanded)
             this.expanded = true;
-
+        let fcCount = this.getFormControlCount("errors");
+        let idx = 0;
         Object.keys(this.igformGroup.controls).forEach(x => {
             let control = <FormControl>this.igformGroup.get(x);
             if (control && control.errors && !found) {
@@ -78,8 +82,15 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                     let elem = this.getFormControlDomElement(x);
 
                     if (elem) {
-                        elem.focus();
-                        found = true;
+                        idx++;
+                        if ((idx > this.invalidPos)) {
+                            this.invalidPos++;
+                            if (this.invalidPos >= fcCount) {
+                                this.invalidPos = 0;
+                            }
+                            elem.focus();
+                            found = true;
+                        }
                     }
                 }
             }
@@ -90,14 +101,23 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         event.stopPropagation();
         let found = false;
         if (!this.expanded)
-            this.expanded = true;
-        Object.keys(this.igformGroup.controls).forEach(x => {
+            this.expanded = true
+        let fcCount = this.getFormControlCount("required");
+        let idx = 0;
+        Object.keys(this.igformGroup.controls).forEach((x) => {
             let control = <FormControl>this.igformGroup.get(x);
             if (control && control.errors && control.errors["required"] == true && !found) {
                 let elem = <HTMLElement>this.getFormControlDomElement(x);
                 if (elem) {
-                    elem.focus();
-                    found = true;
+                    idx++;
+                    if ((idx > this.requiredPos)) {                      
+                        this.requiredPos++;
+                        if (this.requiredPos >= fcCount) {
+                            this.requiredPos = 0;
+                        }
+                        elem.focus();
+                        found = true;
+                    }
                 }
             }
         });
@@ -109,6 +129,35 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                 this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
         }
     }
+
+    getFormControlCount(type: string): number {
+        let count = 0;
+        Object.keys(this.igformGroup.controls).forEach(x => {
+            let control = <FormControl>this.igformGroup.get(x);
+            if (control) {
+                if (type == "required") {
+                    if (control && control.errors && control.errors["required"] == true) {
+                        let elem = <HTMLElement>this.getFormControlDomElement(x);
+                        if (elem) {
+                            count++;
+                        }
+                    }
+                }
+                if (type == "errors") {
+                    if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
+                        let elem = <HTMLElement>this.getFormControlDomElement(x);
+                        if (elem) {
+                            count++;
+                        }
+                    }
+
+                }
+                
+            }
+        });
+        return count;
+    }
+
 
     onInputKeyUp(event) {
         event.preventDefault();

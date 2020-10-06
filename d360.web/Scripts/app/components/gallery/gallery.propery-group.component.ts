@@ -22,6 +22,9 @@ import { AssetService } from '../../services/asset.service';
             padding: 16px;
             list-style-type: circle;
         }
+        .gallery-form-container{
+            max-width: 320px;
+        }
         `
     ],
     providers: [AssetService],
@@ -32,11 +35,11 @@ export class GalleryPropertyGroupComponent implements OnInit {
     properties: Array<any>;
     value: any;
     sampleUsage: string = `
-<ig-propert-group [form]="myForm">
+<ig-property-group [form]="myForm">
     <div inputs>
         <-- form inputs here -->
     </div>
-</ig-propert-group>
+</ig-property-group>
 `;
     testForm: FormGroup = null;
     multiTestForm: FormGroup = null;
@@ -50,7 +53,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
 
     ngOnInit(): void {
         this.testForm = this.fb.group({
-            myFormName: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
+            myFormName: ["bug", { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormAddr: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }],
             myFormEmail: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }]
         });
@@ -62,10 +65,14 @@ export class GalleryPropertyGroupComponent implements OnInit {
             myFormEmail: [null, { validators: [Validators.required, this.wordsIDontLike(["No", "Defect", "Bug"])], updateOn: "blur" }]
         });
 
+        //must mark as dirty so validation message will appear for invalid example.
+        this.testForm.get("myFormName").markAsDirty();
+        this.testForm.updateValueAndValidity();
+
         this.assetService.getAllColors().subscribe(x => { this.defaultColors = x; });
         this.properties = new Array();
         this.properties.push({ Name: "igformGroup", Type: "FormGroup", Description: "The angular FormGroup object that contains the inputs.", Default: "" });
-        this.properties.push({ Name: "title", Type: "string", Description: "the text to display at the top of the form group.", Default: "" });
+        this.properties.push({ Name: "title", Type: "string", Description: "The text to display at the top of the form group.", Default: "" });
     }
 
     wordsIDontLike(wordsIDontLikeArr: string[]): ValidatorFn {
@@ -74,13 +81,30 @@ export class GalleryPropertyGroupComponent implements OnInit {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 return {};
-            if (control.value == null || wordsIDontLikeArr.indexOf(control.value) != -1)
+            if (control.value == null || wordsIDontLikeArr.map(x => { return x.toLowerCase() }).indexOf(control.value.toLowerCase()) != -1)
                 return {
                     notNiceWord: { value: control.value }
                 };
             return null;
         };
     }
+
+    applyFocus(dd) {
+        dd.applyFocus();
+    }
+    cars = [
+        { label: 'Audi', value: 'Audi' },
+        { label: 'BMW', value: 'BMW' },
+        { label: 'Fiat', value: 'Fiat' },
+        { label: 'Ford', value: 'Ford' },
+        { label: 'Honda', value: 'Honda' },
+        { label: 'Jaguar', value: 'Jaguar' },
+        { label: 'Mercedes', value: 'Mercedes' },
+        { label: 'Renault', value: 'Renault' },
+        { label: 'VW', value: 'VW' },
+        { label: 'Volvo', value: 'Volvo' }
+    ];
+
     get diagnostic() {
         return JSON.stringify(this.model);
     }
