@@ -119,9 +119,9 @@ namespace d360.model
         private bool TypeHasWorkflows(string @object, int objectID, ChangeType? changeType)
         {
             if (changeType.HasValue)
-                return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 and [changetype] = @change), 0)", new { obj = @object, objId = objectID, change = changeType.Value }) > 0;
+                return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 and [changetype] = @change), 0)", new { obj = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true }, objId = objectID, change = changeType.Value }) > 0;
 
-            return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 ), 0)", new { obj = @object, objId = objectID }) > 0;
+            return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 ), 0)", new { obj = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true }, objId = objectID }) > 0;
         }
 
         private CurrentExecutionLocationModel GetCurrentExecutionLocation(Guid executionID, string targetTable)
@@ -497,7 +497,7 @@ from	{targetTable} T
                     where       A.ExecutionID = @executionID
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-", new { executionID, obj, objID }, commandTimeout: timeout);
+", new { executionID, obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
         }
 
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
@@ -544,7 +544,7 @@ from	{targetTable} T
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
 					                    group by	A.ExecutionID, A.ItemNumber
 					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-                    ", new { executionID, obj, objID }, commandTimeout: timeout);
+                    ", new { executionID, obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
 
         }
 
@@ -3276,7 +3276,7 @@ where   ExecutionID = @ExecutionID
                     sw.Restart();
 
                     // Get field types.
-                    fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
+                    fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { @Object = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, at.ObjectID }).ToList();
                     jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                     requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                     hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
@@ -3288,7 +3288,7 @@ where   ExecutionID = @ExecutionID
 
                     if (predicateType.HasValue)
                     {
-                        it = Database.Connection.QueryFirstOrDefault<IntersectType>("select i.[Subject],i.[SubjectID],i.[uid],i.ID from [dbo].[intersecttype] i inner join [predicate] p on (i.predicateid = p.id) where i.[Object] = @obj and i.[ObjectID] = @objID and p.[Type] = @predicate", new { obj = at.Object, objID = at.ObjectID, predicate = predicateType });
+                        it = Database.Connection.QueryFirstOrDefault<IntersectType>("select i.[Subject],i.[SubjectID],i.[uid],i.ID from [dbo].[intersecttype] i inner join [predicate] p on (i.predicateid = p.id) where i.[Object] = @obj and i.[ObjectID] = @objID and p.[Type] = @predicate", new { obj = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, objID = at.ObjectID, predicate = predicateType });
                         if (it != null)
                         {
                             parentObject = it.Subject;
@@ -3858,7 +3858,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
     {updateAssetInfoOnExecutionRecordsSql}
 
     {insertGraphAssetNode}",
-                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             else
@@ -3876,7 +3876,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             break;
