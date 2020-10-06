@@ -4229,36 +4229,39 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     }
 
                     // Send score recalculation notifications.
-                    sw.Restart();
-                    var measureUids = Query<Guid>(@"select	M.Uid 
-from	metrics.Allocation A 
-		inner join metrics.Asset M on M.AllocationUid = A.Uid 
-		and A.AssetTypeUid = @AssetTypeUid 
-		and M.State = 1 and A.ScoreType = 1 and M.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = M.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-					and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
-					and Definition <> '{}') V", new { AssetTypeUid = at.uid }).ToList();
-
-                    if (measureUids.Count > 0)
+                    if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
-                        var measures = (
-                                       from a in results
-                                       from m in measureUids
-                                       select new ExternalMeasureResultsCreatedModel
-                                       {
-                                           EffectiveDate = DateTime.UtcNow,
-                                           AssetUid = a.uid,
-                                           MetricAssetUid = m,
-                                           Result = false
-                                       }
-                                       ).ToList();
-                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
-                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);                    
+                        sw.Restart();
+                        var measureUids = Query<Guid>(@"select	M.Uid 
+    from	metrics.Allocation A 
+		    inner join metrics.Asset M on M.AllocationUid = A.Uid 
+		    and A.AssetTypeUid = @AssetTypeUid 
+		    and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+		    cross apply (
+			    select	Definition
+			    from	metrics.AssetVersion 
+			    where	AssetUid = M.Uid
+					    and EffectiveDate <= getutcdate()
+					    and EffectiveEndDate is null
+					    and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+					    and Definition <> '{}') V", new { AssetTypeUid = at.uid }).ToList();
+
+                        if (measureUids.Count > 0)
+                        {
+                            var measures = (
+                                           from a in results
+                                           from m in measureUids
+                                           select new ExternalMeasureResultsCreatedModel
+                                           {
+                                               EffectiveDate = DateTime.UtcNow,
+                                               AssetUid = a.uid,
+                                               MetricAssetUid = m,
+                                               Result = false
+                                           }
+                                           ).ToList();
+                            SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
+                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);                    
+                        }                    
                     }
                 }
             }

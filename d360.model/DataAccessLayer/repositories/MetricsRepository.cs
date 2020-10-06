@@ -1159,7 +1159,7 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
             else
-                effectiveDate = effectiveDate.Value.ToUniversalTime();
+                effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
             
             string sql = $@"
 drop table if exists #results;
