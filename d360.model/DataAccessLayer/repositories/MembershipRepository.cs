@@ -78,17 +78,28 @@ namespace d360.model.DataAccessLayer
             }
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
-            ; var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid, G.IsActiveDirectoryGroup from [Group] G
-            inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
-            left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
-            left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {resourceString + whereStatements}  order by G.Name  ";
+            var sql = $@"
+                   Select 
+                       A.Uid,
+                       G.Name,
+                       G.Description,
+                       gr1.uid as PrimaryOwnerUid,
+                       gr2.uid as SecondaryOwnerUid,
+                       G.IsActiveDirectoryGroup 
+                       from [Group] G
+                           inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
+                           left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
+                           left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
+                           {resourceString} 
+                           {whereStatements}  
+                           order by G.Name  ";
 
             var countSql = $@"Select count(*) from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {resourceString + whereStatements}  ";
+                {resourceString} 
+                {whereStatements}  ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout);
             var count = countResults.First();
