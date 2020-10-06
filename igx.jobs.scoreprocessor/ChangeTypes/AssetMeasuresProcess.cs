@@ -337,12 +337,14 @@ from	metrics.Asset A
                                     ConditionUid = conditionValidator.SelectedConditionUid
                                 };
 
+                                var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
+                                
                                 // Now perform analysis based on measure type and check type.
                                 switch (measure.ScoreType)
                                 {
                                     case ScoreType.DataQuality:
                                         #region
-                                        var dqDefinition = JsonConvert.DeserializeObject<DataQualityMeasureDefinition>(measure.Definition);
+                                        var dqDefinition = definition.DataQuality;
                                         // Do something with rollups here.
                                         if (measure.RollupPath == null)
                                         {
@@ -389,13 +391,13 @@ from	metrics.Asset A
                                                 float resultOperationValue = 0;
                                                 switch (dqDefinition.ResultOperation)
                                                 {
-                                                    case MeasureResultOperation.Average:
+                                                    case MetricRuleResultOperation.Average:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
                                                         break;
-                                                    case MeasureResultOperation.Max:
+                                                    case MetricRuleResultOperation.Maximum:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
                                                         break;
-                                                    case MeasureResultOperation.Minimum:
+                                                    case MetricRuleResultOperation.Minimum:
                                                         resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
                                                         break;
                                                 }
@@ -421,24 +423,136 @@ from	metrics.Asset A
                                         break;
                                         #endregion
                                     case ScoreType.Governance:
-                                        var gDefinition = JsonConvert.DeserializeObject<GovernanceMeasureDefinition>(measure.Definition ?? "{}");
+                                        var gDefinition = definition.Governance;
                                         switch (gDefinition.Check)
                                         {
-                                            case GovernanceMeasureCheck.External:
+                                            case MetricGovernanceCheckType.External:
                                                 scoreItem.Value = n.Result;
                                                 break;
-                                            case GovernanceMeasureCheck.Field:
-                                                //assetFields.FirstOrDefault(f => f.FieldTypeID == gDefinition.TypeUid)
-                                                //scoreItem.Value = n.Result;
+                                            case MetricGovernanceCheckType.Field:
+                                                if (gDefinition.Field != null)
+                                                {
+                                                    var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.Name == gDefinition.Field.FieldTypeName);
+                                                    var assetFieldType = fieldTypes.FirstOrDefault(i => i.Name == gDefinition.Field.FieldTypeName);
+                                                    string value = (assetFieldForFieldCheck != null) ? assetFieldForFieldCheck.Value : null;
+                                                    string dataType = (assetFieldType != null) ? assetFieldType.Type : "Text";
+                                                    bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
+                                                    if (assetFieldType != null && assetFieldForFieldCheck != null)
+                                                    {
+                                                        if (assetFieldType.Type == DataType.Lookup.ToString())
+                                                        {
+                                                            int objectID;
+                                                            if (int.TryParse(assetFieldForFieldCheck.Value, out objectID))
+                                                            {
+                                                                var lookupObject = assetFieldType.LookupObjectType + "Type";
+                                                                var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
+                                                                if (assetDetail != null)
+                                                                {
+                                                                    value = assetDetail.uid.ToString();
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    scoreItem.Value = gDefinition.Field.Operator.TestTwoValues(dataType, allowMultipleValues, gDefinition.Field.Values, value);
+                                                }
                                                 break;
-                                            case GovernanceMeasureCheck.Ownership:
-                                                //scoreItem.Value = n.Result;
+                                            case MetricGovernanceCheckType.Owner:
+                                                if (gDefinition.Owner != null)
+                                                {
+                                                    scoreItem.Value = company.Query<bool>(
+                                                        "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                        "from ResponsibilityDetail R " +
+                                                        "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
+                                                        "inner join Asset A on A.ID = R.AssetID and A.Uid = @AssetUid", 
+                                                        new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }
+                                                        ).Single();
+                                                }
+                                                else
+                                                {
+                                                    scoreItem.Value = false;
+                                                }
                                                 break;
-                                            case GovernanceMeasureCheck.Predicate:
-                                                //scoreItem.Value = n.Result;
+                                            case MetricGovernanceCheckType.Predicate:
+                                                if (gDefinition.Predicate != null)
+                                                {
+                                                    var predicateExistenceSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                        "from IntersectDetail I " +
+                                                        "inner join [Predicate] P on P.ID = I.PredicateID " +
+                                                        "and P.Uid = @PredicateUid " +
+                                                        "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)";
+                                                    
+                                                    switch (gDefinition.Predicate.Operator)
+                                                    {
+                                                        case Operator.Populated:
+                                                            scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                            break;
+                                                        case Operator.NotPopulated:
+                                                            scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    scoreItem.Value = false;
+                                                }
                                                 break;
-                                            case GovernanceMeasureCheck.Relationship:
-                                                //scoreItem.Value = n.Result;
+                                            case MetricGovernanceCheckType.Relation:
+                                                if (gDefinition.Relation != null)
+                                                {
+                                                    var relationBaseSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                        "from IntersectDetail I inner join IntersectType T on T.ID = I.IntersectTypeID and T.Uid = @IntersectTypeUid ";
+                                                    switch (gDefinition.Relation.Operator)
+                                                    {
+                                                        case Operator.Equals:
+                                                            scoreItem.Value = company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"), 
+                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                ).Single();
+                                                            break;
+                                                        case Operator.In:
+                                                            scoreItem.Value = company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
+                                                                new
+                                                                {
+                                                                    gDefinition.Relation.IntersectTypeUid,
+                                                                    n.AssetUid,
+                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
+                                                                }
+                                                                ).Single();
+                                                            break;
+                                                        case Operator.NotEquals:
+                                                            scoreItem.Value = !company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
+                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                ).Single();
+                                                            break;
+                                                        case Operator.NotIn:
+                                                            scoreItem.Value = !company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"), 
+                                                                new { 
+                                                                    gDefinition.Relation.IntersectTypeUid, 
+                                                                    n.AssetUid,
+                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }) }
+                                                                ).Single();
+                                                            break;
+                                                        case Operator.NotPopulated:
+                                                            scoreItem.Value = !company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
+                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                ).Single();
+                                                            break;
+                                                        case Operator.Populated:
+                                                            scoreItem.Value = company.Query<bool>(
+                                                                string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
+                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                ).Single();
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    scoreItem.Value = false;
+                                                }
                                                 break;
                                             default:
                                                 scoreItem.Value = false;

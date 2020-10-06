@@ -988,4 +988,23 @@ update fieldtype set defaultvalue = null where [type] = 'link' and defaultvalue 
 ]]>
     </sql>
   </changeSet>
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12158">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update assettype set hashvalue = null where [object] = 'ArtifactType'
+]]>
+		</sql>
+	</changeSet>
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10896">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+      <![CDATA[
+update metrics.AssetVersion set Definition = replace(Definition, '"Check":0', '"Check":"External"') where Definition like '%"Check":0%';
+
+update metrics.AssetVersion set Definition = '{"DataQuality":null,"Governance":{"Check":"External","Field":null,"Predicate":null,"Relation":null,"Owner":null,"External":{"UpdateFrequency":0,"Instructions":null}}}' 
+where Definition = '{ "Check": "External" }' or Definition = '{ "Check": "External"}'; 
+
+update metrics.AssetVersion set Definition ='{}' where Definition = 'null' or Definition is null;
+]]>
+    </sql>
+  </changeSet>
  </databaseChangeLog>
