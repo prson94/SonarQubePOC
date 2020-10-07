@@ -582,6 +582,8 @@ namespace d360.model.DataAccessLayer
             }
 
             bool includeParent = false;
+            bool includeParentInCount = false;
+            bool includeAssetPathInCount = false;
             string parentFieldSQL = @" Parent.uid as ParentAssetUid,
 					Parent.DisplayValue as ParentDisplayName,";
             string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
@@ -632,6 +634,12 @@ namespace d360.model.DataAccessLayer
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     List<int> filteredFields = new List<int>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+
+                    // advanced filter contains a filter on the parent.  Technically this parent join should be an Inner join because the parent MUST be one of the values and not null
+                    if (value.Contains("ParentDisplayName"))
+                    {
+                        includeParentInCount = true;
+                    }
 
                     if (includeOnlyListableFields || includeFieldsList.Any())
                     {
@@ -715,7 +723,7 @@ namespace d360.model.DataAccessLayer
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
-            {
+            {                
                 var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
@@ -737,6 +745,7 @@ namespace d360.model.DataAccessLayer
                         else if (ft.Type == DataType.Path.ToString())
                         {
                             simpleFilters.Add($"Node.DisplayPath like @simpleFilter");
+                            includeAssetPathInCount = true; // asset path field and simple filter must include asset path in join for count
                         }
                         else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {
@@ -756,6 +765,7 @@ namespace d360.model.DataAccessLayer
                     if (includeParent)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+                        includeParentInCount = true; // simple filter AND the asset has a parent which posibly impacts the count
                     }
 
                     if (assetType.Class == AssetTypeClass.Reference)
@@ -822,12 +832,12 @@ namespace d360.model.DataAccessLayer
                 {populatePremissionAssetTableSQL}
                 select  count(*)
                 from    Asset A 
-                        left join graph.AssetNodeDisplayPath Node on Node.Uid = a.uid 
+                {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.Uid = a.uid" : "" )} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", countJoins)}
-                {(includeParent ? parentApplySQL : "")}
+                {(includeParentInCount ? parentApplySQL : "")}
                 {whereSql}";
 
             var hierachy = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
@@ -869,7 +879,7 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
-                left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
+                {(includeSegments || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1090,8 +1100,11 @@ namespace d360.model.DataAccessLayer
             document.SetCellValue(1, 2, results.pageSize);
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, results.pageNum);
-            document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, (int)results.total);
+            if (results.total.HasValue)
+            {
+                document.SetCellValue(3, 1, "total");
+                document.SetCellValue(3, 2, (int)results.total);
+            }
 
 
             document.SelectWorksheet(assetSheetName);
