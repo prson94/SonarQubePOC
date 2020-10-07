@@ -2474,7 +2474,7 @@ namespace d360.model
                 if (versionStep != null)
                 {
                     var version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
-                    result = result.Replace("[WORKFLOW_ID]", version?.TypeID?.ToString() ?? "");
+                    result = result.Replace("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
                 }
             }
 
