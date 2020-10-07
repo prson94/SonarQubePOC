@@ -56,5 +56,8 @@ namespace d360.core.entities.Metric
 
         [DataMember, ForeignKey("AssetVersionUid")]
         public virtual ICollection<MetricAssetVersionCondition> Conditions { get; set; }
+
+        [DataMember, ForeignKey("AssetVersionUid")]
+        public virtual ICollection<MetricAssetVersionRollupPath> RollupPaths { get; set; }
     }
 }
