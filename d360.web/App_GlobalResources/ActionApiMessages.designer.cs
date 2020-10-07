@@ -106,7 +106,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One of Asset Type Uid or Asset Uid should be provided.
+        ///   Looks up a localized string similar to Either AssetTypeUid or AssetUid must be provided..
         /// </summary>
         internal static string AssetTypeOrAssetRequired {
             get {

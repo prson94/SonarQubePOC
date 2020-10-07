@@ -133,7 +133,7 @@
     <value>Asset Type with Uid {0} could not be found.</value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>One of Asset Type Uid or Asset Uid should be provided</value>
+    <value>Either AssetTypeUid or AssetUid must be provided.</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Type Uid.</value>
