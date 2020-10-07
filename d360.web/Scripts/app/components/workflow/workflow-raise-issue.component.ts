@@ -20,6 +20,7 @@ import {D3SObjectHelpers} from '../../static/d3s-object-helpers';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {HeaderActions} from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 
@@ -185,7 +186,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                 this.selectedOption = 'current';
                 this.selectedObjectId = this.objectID;
                 this.selectedObjectType = this.objectType;
-                if (this.selectedObjectType == 'Artifact') {
+                if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
                     this.selectedAssetUid = res.UID ?? res['Uid'];
                 }                
 
