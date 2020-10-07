@@ -202,6 +202,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                 else
                     val = '<i class="fa fa-times disabled"></i>';
             }
+        } else if (field.Type == 'Date') {
+            val = val.substr(0, val.indexOf(' '));
         }
         if (field.Suffix)
             val += ' ' + field.Suffix;
