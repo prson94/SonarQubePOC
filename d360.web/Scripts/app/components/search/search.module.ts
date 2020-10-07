@@ -22,6 +22,7 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { ChipsFilterModule } from '../shared/small-widgets/chips-filter/chips-filter-module';
 import { SearchRoutingModule } from './search.routes';
 import { ExplainWidgetModule } from './explain-widget/explain-widget.module';
+import { AssetPathWidgetModule } from './asset-path-widget/asset-path-widget.module';
 
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -31,12 +32,12 @@ import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { MenuModule } from 'primeng/menu';
+import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
-import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
 
 @NgModule({
     imports: [
@@ -71,7 +72,9 @@ import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
         ChipsFilterModule,
         TagViewModule,
         TypeaheadSearchModule,
-        ExplainWidgetModule
+        ExplainWidgetModule,
+        IgBadgeModule,
+        AssetPathWidgetModule
     ],
     declarations: [
         HomeSearchComponent,
@@ -90,8 +93,7 @@ import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
             useClass: GovernRequestInterceptor,
             multi: true
         },
-        SearchStateService,
-        AssetpathSeparatorPipe
+        SearchStateService
     ]
 })
 export class SearchModule { }

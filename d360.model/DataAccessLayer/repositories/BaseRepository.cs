@@ -758,46 +758,6 @@ namespace d360.model.DataAccessLayer.repositories
             }
         }
 
-        protected string[][] GetPathFromSegments(string segments)
-        {
-            List<string[]> returnlist = new List<string[]>();
-
-            if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
-            {
-                XElement segmentXML = XElement.Parse(segments);
-                List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
-                int currentlevel = 1;
-                int level = 0;
-                int position = 0;
-                List<string> elementPath = new List<string>();
-
-                foreach (XElement element in segmentList)
-                {
-                    if (int.TryParse(element.Attribute("level").Value, out level))
-                    {
-                        if (int.TryParse(element.Attribute("position").Value, out position))
-                        {
-                            if (level != currentlevel)
-                            {
-                                returnlist.Add(elementPath.ToArray());
-                                currentlevel = level;
-                                elementPath = new List<string>();
-                            }
-                            elementPath.Add(element.Value);
-                        }
-                    }
-                }
-                //capture the last element path
-                if (elementPath.Any())
-                {
-                    returnlist.Add(elementPath.ToArray());
-                }
-
-                return returnlist.ToArray();
-            }
-            return null;
-        }
-
         protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields, int totalRows = -1)
         {
             int index = 1;

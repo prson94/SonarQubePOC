@@ -2578,14 +2578,58 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
-        public async Task<string[][]> GetAssetPath(Guid assetUid)
+        public async Task<List<PathComponent>> GetAssetPath(Guid assetUid)
         {
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@assetUid", assetUid.ToString());
 
             var sql = $@"SELECT	Segments FROM graph.AssetNode WHERE Uid = @assetUid";
-            string segment = await CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
-            return GetPathFromSegments(segment);
+            string segments = await CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
+
+            List<PathComponent> returnlist = new List<PathComponent>();
+
+            if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
+            {
+                XElement segmentXML = XElement.Parse(segments);
+                List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
+                int currentlevel = 1;
+                int level = 0;
+                int position = 0;
+                int assetTypeId = -1;
+                List<string> elementPath = new List<string>();
+
+                foreach (XElement element in segmentList)
+                {
+                    if (int.TryParse(element.Attribute("level").Value, out level))
+                    {
+                        if (int.TryParse(element.Attribute("position").Value, out position))
+                        {
+                            if (level != currentlevel)
+                            {
+                                returnlist.Add(new PathComponent
+                                {
+                                    Key = elementPath.ToArray(),
+                                    AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                                });
+                                currentlevel = level;
+                                elementPath = new List<string>();
+                            }
+                            elementPath.Add(element.Value);
+                            int.TryParse(element.Attribute("assetTypeId").Value, out assetTypeId);
+                        }
+                    }
+                }
+                //capture the last element path
+                if (elementPath.Any())
+                {
+                    returnlist.Add(new PathComponent
+                    {
+                        Key = elementPath.ToArray(),
+                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                    });
+                }
+            }
+            return returnlist;
         }
 
         public async Task<dynamic> GetAssetTypeDetails(AssetType type)
