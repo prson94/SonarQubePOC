@@ -1030,7 +1030,7 @@ for json path";
 
                 List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
 
-                foreach (var assetTypeUid in assetTypeUids)
+                foreach (var assetTypeUid in assetTypeUids.Distinct())
                 {
                     if (!Guid.TryParse(assetTypeUid, out Guid uid))
                     {
