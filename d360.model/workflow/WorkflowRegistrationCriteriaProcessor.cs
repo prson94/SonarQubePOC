@@ -158,6 +158,7 @@ namespace d360.model.workflow
                 switch(versionStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.Form:
+                    case WorkflowActivityType.None:
                         var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
 
                         switch (stepSettings.ResponseType)
