@@ -3,6 +3,8 @@ import { Router }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService } from '../../services/resources.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Resource } from '../../models/resource.model';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-resource-groups',
@@ -51,9 +53,10 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class ResourceGroupsComponent extends BaseComponent implements OnInit{
-    @Input() resourceId: number;
+    @Input() resourceUid: string;
 
     private groups: any[];
+    private user: Observable<Resource>;
 
     constructor(private router: Router, private resourcesService: ResourcesService) {
         super();        
@@ -65,7 +68,7 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
 
     private load() {
         this.isLoading = true;
-        this.resourcesService.getUserGroups(this.resourceId)
+        this.resourcesService.getUserGroups(this.resourceUid)
             .subscribe(res => {
                 this.groups = res;
                 this.isLoading = false;

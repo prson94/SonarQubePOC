@@ -142,8 +142,9 @@ export class ResourcesService extends BaseObservableService {
             );
     }
 
-    getUserGroups(resourceID: number): Observable<any[]> {
-        return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
+    getUserGroups(resourceUid: string): Observable<any[]> {
+        //return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
+        return this.http.get(`/api/v2/membership/groups?ResourceUid=${resourceUid}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
