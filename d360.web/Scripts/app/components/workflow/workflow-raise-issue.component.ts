@@ -20,6 +20,7 @@ import {D3SObjectHelpers} from '../../static/d3s-object-helpers';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {HeaderActions} from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 
@@ -189,7 +190,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                 if (this.selectedObjectType == 'Artifact') {
                     this.selectedAssetUid = res.UID ?? res['Uid'];
                 }              
-                if (this.selectedObjectType == 'ArtifactType') {
+                if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
                     this.selectedAssetTypeUid = res.UID ?? res['Uid'];
                 } 
 
