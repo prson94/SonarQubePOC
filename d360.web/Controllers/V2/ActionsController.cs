@@ -692,6 +692,7 @@ for json path";
         /// </summary>        
         /// <param name="actionTypeUid">The Uid of the action type</param>
         /// <param name="models">Collection of Issues/Actions</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <returns>Response with the uid of the action created.</returns>
         [
             HttpPost,
@@ -702,7 +703,7 @@ for json path";
             SwaggerResponse(HttpStatusCode.NotFound, "Invalid request parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Insufficient permissions for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models)
+        public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
         {
             bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
 
@@ -722,7 +723,7 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found."));
             }
 
-            WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType);
+            WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
             if (validationStatus.StatusCode != HttpStatusCode.OK)
             {
                 return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
@@ -797,7 +798,7 @@ for json path";
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
         }
 
-        private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, out Asset asset, out AssetType assetType)
+        private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, out Asset asset, out AssetType assetType, bool lookupFieldsPassedByValue = false)
         {
             asset = null;
             assetType = null;
@@ -807,9 +808,9 @@ for json path";
             if ((model.AssetTypeUid == null && model.AssetUid == null) || (model.AssetTypeUid != null && model.AssetUid != null))
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.AssetTypeOrAssetRequired);
-            }            
+            }
 
-            if(model.AssetUid != null)
+            if (model.AssetUid != null)
             {
 
                 if (model.AssetUid.Value == Guid.Empty)
@@ -822,13 +823,13 @@ for json path";
                 if (asset == null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.Value));
-                }                    
+                }
 
                 if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
                 }
-                    
+
                 assetTypeID = asset.AssetTypeID;
 
                 assetTypeName = asset.AssetType.Name;
@@ -847,7 +848,7 @@ for json path";
                 {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value));
                 }
-                    
+
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied);
@@ -873,68 +874,76 @@ for json path";
             fieldTable.Columns.Add("FieldValue", typeof(string));
             fieldTable.Columns.Add("FieldTypeID", typeof(int));
 
+            foreach (var type in fieldTypes.Where(ft => ft.Type == DataType.Link.ToString()))
+            {
+                if (model.Fields.ContainsKey(type.Name + "_Name"))
+                {
+                    if(!string.IsNullOrEmpty(model.Fields[type.Name + "_Name"]) || !string.IsNullOrEmpty(model.Fields[type.Name + "_Url"]))
+                    {
+                        model.Fields.Add(type.Name, $"{model.Fields[type.Name + "_Name"]}|{model.Fields[type.Name + "_Url"]}");
+                    }                    
+                    model.Fields.Remove(type.Name + "_Name");
+                    model.Fields.Remove(type.Name + "_Url");
+                }
+            }
+
             Company.ValidateFields(SystemObjects.IssueType.ToString(), issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);
 
             if (!success)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage);
             }
-
-            foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
-            {                
-                var lookupSQL = @"Select 
+            
+            if (!lookupFieldsPassedByValue)
+            { 
+                foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
+                {                   
+                    var lookupSQL = @"Select 
                                     * 
-                                  from 
+                                    from 
                                     FieldLookupValue 
-                                  where 
+                                    where 
                                     fieldTypeId = @fieldTypeId 
                                     and 
                                     text in @lookupValues
-                                  ";
+                                    ";
 
-                string[] lookupValues = { };
+                    string[] lookupValues = { };
 
-                if (model.Fields.ContainsKey(ft.Name))
-                {
-                    lookupValues = model.Fields[ft.Name].Trim().Split(',');
-                }
-
-                if (lookupValues.Length > 0)
-                {                    
-                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues});
-
-                    List<string> fieldValues = new List<string>();
-                    foreach (var lookupValue in lookupValues)
+                    if (model.Fields.ContainsKey(ft.Name))
                     {
-                        if (!fieldLookupValues.Any(x => x.Value.ToString() == lookupValue))
+                        lookupValues = model.Fields[ft.Name].Trim().Split(',');
+                    }
+
+                    if (lookupValues.Length > 0)
+                    {
+                        var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues });
+
+                        List<string> fieldValues = new List<string>();
+                        foreach (var lookupValue in lookupValues)
                         {
                             if (fieldLookupValues.Any(x => x.Text == lookupValue))
-                            {  
+                            {
                                 fieldValues.Add(fieldLookupValues.FirstOrDefault(x => x.Text == lookupValue).Value.ToString());
                             }
                             else
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
-                            }
+                            }                           
                         }
-                        else
-                        {
-                            fieldValues.Add(lookupValue);
-                        }
+
+                        model.Fields[ft.Name] = string.Join(",", fieldValues.Distinct());
                     }
-                    
-                    model.Fields[ft.Name] = string.Join(",", fieldValues.Distinct());
                 }
             }
-
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        private WorkHttpStatus PopulateRequest(List<ActionUpsertRequest> models, ref List<IssueInsertAPIModel> issues, IssueType issueType)
+        private WorkHttpStatus PopulateRequest(List<ActionUpsertRequest> models, ref List<IssueInsertAPIModel> issues, IssueType issueType, bool lookupFieldsPassedByValue = false)
         {
             foreach (var model in models)
             {                           
-                var validationStatus = ValidateRequest(issueType, model, out Asset asset, out AssetType assetType);
+                var validationStatus = ValidateRequest(issueType, model, out Asset asset, out AssetType assetType, lookupFieldsPassedByValue);
 
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
