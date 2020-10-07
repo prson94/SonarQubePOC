@@ -245,6 +245,8 @@ namespace d360.model.workflow
 
                         }
                         break;
+                    default:
+                        return false;
                 }
 
 
