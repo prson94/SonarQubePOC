@@ -120,11 +120,6 @@
                                         (focus)="applyFocus(dd)"
                                         formControlName="myFormColor"
                                         [options]="cars"></p-dropdown>
-                            <div *ngIf="multiTestForm.get('myFormColor').invalid && (multiTestForm.get('myFormColor').dirty || multiTestForm.get('myFormColor').touched)" class="ig-text-required">
-                                <div *ngIf="multiTestForm.get('myFormColor').errors.required">
-                                    Value required
-                                </div>
-                            </div>
                         </div>
                         <div class="row">
                             <label for="myFormPetName" class="ig-label">Property3</label>
