@@ -17,18 +17,25 @@
                 <div class="gov-hr hr-dark"></div>
                 <d3s-simple-carousel [data]="scoresPoints">
                     <div class="carousel-item" *ngFor="let score of scoresPoints">
-                        <span class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
-                            <ng-container [ngSwitch]="score.ScoreProgression">
-                                <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
-                                <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
-                                <i *ngSwitchDefault
-                                   class="fa fa-square turn" 
-                                   pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
-                                   tooltipPosition="top" 
-                                   tooltipStyleClass="ig-tooltip" ></i>
-                            </ng-container>
-                            {{score.EffectiveDate | utcDate | date:'shortDate'}}
-                        </span>
+                        <ng-container [ngSwitch]="score.ScoreProgression">
+                            <span *ngSwitchCase="1" class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
+                                <i class="fa fa-caret-up arrow-up"></i>
+                                {{score.EffectiveDate | utcDate | date:'shortDate'}}
+                            </span>
+                            <span *ngSwitchCase="-1" class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
+                                <i class="fa fa-caret-down arrow-down"></i>
+                                {{score.EffectiveDate | utcDate | date:'shortDate'}}
+                            </span>
+                            <span *ngSwitchDefault
+                                  pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                  tooltipPosition="top"
+                                  tooltipStyleClass="ig-tooltip"
+                                  class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}"
+                                  (click)="onCarouselScoreClick(score)">
+                                <i class="fa fa-square turn"></i>
+                                {{score.EffectiveDate | utcDate | date:'shortDate'}}
+                            </span>
+                        </ng-container>
                     </div>
                 </d3s-simple-carousel>
             </div>
@@ -69,18 +76,22 @@
                     <div class="body">
                         <div class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
                             <div class="col s6 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
-                            <div class="col s6 column">
-                                <ng-container [ngSwitch]="item.ScoreProgression">
-                                    <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
-                                    <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
-                                    <i *ngSwitchDefault
-                                       class="fa fa-square turn"
-                                       pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
-                                       tooltipPosition="top"
-                                       tooltipStyleClass="ig-tooltip"></i>
-                                </ng-container>
-                                {{item.Score}}%
-                            </div>
+                            <ng-container [ngSwitch]="item.ScoreProgression">
+                                <div *ngSwitchCase="1" class="col s6 column">
+                                    <i class="fa fa-caret-up arrow-up"></i> {{item.Score}}%
+                                </div>
+                                <div *ngSwitchCase="-1" class="col s6 column">
+                                    <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i> {{item.Score}}%
+                                </div>
+                                <div *ngSwitchDefault
+                                     pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                     tooltipPosition="top"
+                                     tooltipStyleClass="ig-tooltip"
+                                     class="col s6 column">
+                                    <i class="fa fa-square turn"></i>
+                                    {{item.Score}}%
+                                </div>
+                            </ng-container>
                         </div>
                         <div class="row">
 
