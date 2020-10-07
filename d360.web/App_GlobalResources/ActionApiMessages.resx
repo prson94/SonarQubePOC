@@ -120,6 +120,21 @@
   <data name="AddAllocationsSuccessful" xml:space="preserve">
     <value>Allocations added successfully</value>
   </data>
+  <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
+    <value>You are not allowed to add actions on this asset.</value>
+  </data>
+  <data name="AssetNotFound" xml:space="preserve">
+    <value>Asset with Uid {0} could not be found.</value>
+  </data>
+  <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
+    <value>You are not allowed to add actions on this asset type.</value>
+  </data>
+  <data name="AssetTypeNotFound" xml:space="preserve">
+    <value>Asset Type with Uid {0} could not be found.</value>
+  </data>
+  <data name="AssetTypeOrAssetRequired" xml:space="preserve">
+    <value>One of Asset Type Uid or Asset Uid should be provided</value>
+  </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
     <value>{0} is not a valid Asset Type Uid.</value>
   </data>
@@ -131,6 +146,12 @@
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
     <value>A valid Action Type Uid is required.</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>Invalid AssetTypeUid provided.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>Invalid AssetUid provided.</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
     <value>No Matching Allocation for '{0}' on Action Type '{1}'</value>

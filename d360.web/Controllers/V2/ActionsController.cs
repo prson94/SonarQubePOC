@@ -409,7 +409,8 @@ for json path";
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                     {
-                        if (!Company.AssetTypes.Any(i => i.uid == Guid.Parse(assetTypeUidParam.Value) && i.ID == asset.AssetTypeID))
+                        var assetTypeuUid = Guid.Parse(assetTypeUidParam.Value);
+                        if (!Company.AssetTypes.Any(i => i.uid == assetTypeuUid && i.ID == asset.AssetTypeID))
                         {
                             return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid does not match the Asset Type provided."));
                         }
@@ -691,6 +692,7 @@ for json path";
         /// </summary>        
         /// <param name="actionTypeUid">The Uid of the action type</param>
         /// <param name="models">Collection of Issues/Actions</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <returns>Response with the uid of the action created.</returns>
         [
             HttpPost,
@@ -701,7 +703,7 @@ for json path";
             SwaggerResponse(HttpStatusCode.NotFound, "Invalid request parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Insufficient permissions for this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models)
+        public async Task<IHttpActionResult> CreateAction(Guid actionTypeUid, List<ActionUpsertRequest> models, bool lookupFieldsPassedByValue = false)
         {
             bool isWriteActionDescriptionEnabled = IsWriteActionDescriptionEnabled();
 
@@ -711,17 +713,17 @@ for json path";
 
             if (actionTypeUid == null || actionTypeUid == Guid.Empty)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "Invalid ActionTypeUid provided."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, "Invalid ActionTypeUid provided."));
             }
 
             var issueType = Company.Filter<IssueType>(i => i.uid == actionTypeUid).SingleOrDefault();
 
             if (issueType == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found.."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not Found", $"Action Type with Uid {actionTypeUid} could not be found."));
             }
 
-            WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType);
+            WorkHttpStatus validationStatus = PopulateRequest(models, ref issueModels, issueType, lookupFieldsPassedByValue);
             if (validationStatus.StatusCode != HttpStatusCode.OK)
             {
                 return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
@@ -796,24 +798,71 @@ for json path";
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
         }
 
-        private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, Asset asset)
+        private WorkHttpStatus ValidateRequest(IssueType issueType, ActionUpsertRequest model, out Asset asset, out AssetType assetType, bool lookupFieldsPassedByValue = false)
         {
-            if (model.AssetUid == null || model.AssetUid == Guid.Empty)
+            asset = null;
+            assetType = null;
+            int assetTypeID = 0;
+            string assetTypeName = "";
+
+            if ((model.AssetTypeUid == null && model.AssetUid == null) || (model.AssetTypeUid != null && model.AssetUid != null))
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", "Invalid AssetUid provided.");
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.AssetTypeOrAssetRequired);
             }
 
-            if (asset == null)
-                return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.AssetUid} could not be found.");
+            if (model.AssetUid != null)
+            {
 
-            if (!Company.HasAssetPermission(asset.ID, Permission.ReadAsset))
-                return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add actions on this asset.");
+                if (model.AssetUid.Value == Guid.Empty)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetUid);
+                }
+
+                asset = assetRepository.GetAssetByUID(model.AssetUid.Value);
+
+                if (asset == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.Value));
+                }
+
+                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID, Permission.ReadAsset))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
+                }
+
+                assetTypeID = asset.AssetTypeID;
+
+                assetTypeName = asset.AssetType.Name;
+            }
+
+            if (model.AssetTypeUid != null)
+            {
+                if (model.AssetTypeUid.Value == Guid.Empty)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetTypeUid);
+                }
+
+                assetType = assetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
+
+                if (assetType == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, model.AssetTypeUid.Value));
+                }
+
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied);
+                }
+
+                assetTypeID = assetType.ID;
+                assetTypeName = assetType.Name;
+            }
 
             var allocations = Company.Filter<IssueTypeRelation>(r => r.IssueTypeID == issueType.ID).ToList();
 
-            if (allocations.Count > 0 && !allocations.Any(a => a.AssetTypeID == asset.AssetTypeID))
+            if (allocations.Count > 0 && !allocations.Any(a => a.AssetTypeID == assetTypeID))
             {
-                return new WorkHttpStatus(HttpStatusCode.NotFound, "Not found", $"Allocation does not exist for Asset Type '{asset.AssetType.Name}' on Action Type '{issueType.Name}'.");
+                return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetTypeName, issueType.Name));
             }
 
             var fieldTypes = Company.Filter<FieldType>(ft => ft.Object == SystemObjects.IssueType.ToString() && ft.ObjectID == issueType.ID);
@@ -825,70 +874,76 @@ for json path";
             fieldTable.Columns.Add("FieldValue", typeof(string));
             fieldTable.Columns.Add("FieldTypeID", typeof(int));
 
+            foreach (var type in fieldTypes.Where(ft => ft.Type == DataType.Link.ToString()))
+            {
+                if (model.Fields.ContainsKey(type.Name + "_Name"))
+                {
+                    if(!string.IsNullOrEmpty(model.Fields[type.Name + "_Name"]) || !string.IsNullOrEmpty(model.Fields[type.Name + "_Url"]))
+                    {
+                        model.Fields.Add(type.Name, $"{model.Fields[type.Name + "_Name"]}|{model.Fields[type.Name + "_Url"]}");
+                    }                    
+                    model.Fields.Remove(type.Name + "_Name");
+                    model.Fields.Remove(type.Name + "_Url");
+                }
+            }
+
             Company.ValidateFields(SystemObjects.IssueType.ToString(), issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);
 
             if (!success)
             {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", errorMessage);
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, errorMessage);
             }
-
-            foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
-            {                
-                var lookupSQL = @"Select 
+            
+            if (!lookupFieldsPassedByValue)
+            { 
+                foreach (var ft in fieldTypes.Where(x => x.Type == DataType.Lookup.ToString()))
+                {                   
+                    var lookupSQL = @"Select 
                                     * 
-                                  from 
+                                    from 
                                     FieldLookupValue 
-                                  where 
+                                    where 
                                     fieldTypeId = @fieldTypeId 
                                     and 
                                     text in @lookupValues
-                                  ";
+                                    ";
 
-                string[] lookupValues = { };
+                    string[] lookupValues = { };
 
-                if (model.Fields.ContainsKey(ft.Name))
-                {
-                    lookupValues = model.Fields[ft.Name].Trim().Split(',');
-                }
-
-                if (lookupValues.Length > 0)
-                {                    
-                    var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues});
-
-                    List<string> fieldValues = new List<string>();
-                    foreach (var lookupValue in lookupValues)
+                    if (model.Fields.ContainsKey(ft.Name))
                     {
-                        if (!fieldLookupValues.Any(x => x.Value.ToString() == lookupValue))
+                        lookupValues = model.Fields[ft.Name].Trim().Split(',');
+                    }
+
+                    if (lookupValues.Length > 0)
+                    {
+                        var fieldLookupValues = Company.Database.Connection.Query<FieldLookupValue>(lookupSQL, new { fieldTypeId = ft.ID, lookupValues });
+
+                        List<string> fieldValues = new List<string>();
+                        foreach (var lookupValue in lookupValues)
                         {
                             if (fieldLookupValues.Any(x => x.Text == lookupValue))
-                            {  
+                            {
                                 fieldValues.Add(fieldLookupValues.FirstOrDefault(x => x.Text == lookupValue).Value.ToString());
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Request", $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
-                            }
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, $"Lookup Value  '{lookupValue}' is not valid for lookup '{ft.Name}'.");
+                            }                           
                         }
-                        else
-                        {
-                            fieldValues.Add(lookupValue);
-                        }
+
+                        model.Fields[ft.Name] = string.Join(",", fieldValues.Distinct());
                     }
-                    
-                    model.Fields[ft.Name] = string.Join(",", fieldValues.Distinct());
                 }
             }
-
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        private WorkHttpStatus PopulateRequest(List<ActionUpsertRequest> models, ref List<IssueInsertAPIModel> issues, IssueType issueType)
+        private WorkHttpStatus PopulateRequest(List<ActionUpsertRequest> models, ref List<IssueInsertAPIModel> issues, IssueType issueType, bool lookupFieldsPassedByValue = false)
         {
             foreach (var model in models)
-            {
-                Asset asset = assetRepository.GetAssetByUID(model.AssetUid);
-
-                var validationStatus = ValidateRequest(issueType, model, asset);
+            {                           
+                var validationStatus = ValidateRequest(issueType, model, out Asset asset, out AssetType assetType, lookupFieldsPassedByValue);
 
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                 {
@@ -902,12 +957,22 @@ for json path";
                     UpdatedBy = Company.CurrentResourceID,
                     UpdatedOn = DateTime.UtcNow,
                     IssueTypeID = issueType.ID,
-                    Object = asset.Object,
-                    ObjectID = asset.ObjectID,
-                    ObjectType = asset.AssetType.Object,
-                    ObjectTypeID = asset.AssetType.ObjectID,
                     CommentID = 0
                 };
+
+                if (asset != null)
+                {
+                    issue.Object = asset.Object;
+                    issue.ObjectID = asset.ObjectID;
+                    issue.ObjectType = asset.AssetType.Object;
+                    issue.ObjectTypeID = asset.AssetType.ObjectID;
+                }
+                else if(assetType != null){
+                    issue.Object = assetType.Object;
+                    issue.ObjectID = assetType.ObjectID;
+                    issue.ObjectType = assetType.Object;
+                    issue.ObjectTypeID = assetType.ObjectID;
+                }                
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, issue.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueType.ID).ToList(), model.Fields, null);
 

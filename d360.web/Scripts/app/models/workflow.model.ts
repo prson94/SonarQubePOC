@@ -663,3 +663,9 @@ export class WorkflowStepRelationshipChangeDetail {
     AppendValue: boolean;
     ClearValue: boolean;
 }
+
+export class ActionEditorModel {
+    AssetUid: string;
+    AssetTypeUid: string;
+    Fields: any;
+}

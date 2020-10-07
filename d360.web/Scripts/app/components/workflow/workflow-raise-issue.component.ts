@@ -11,7 +11,7 @@ import {ObjectDetailService} from '../../services/object-detail.service';
 import {TagService} from '../../services/tag.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
 import {SocialCommentType} from '../../models/social.model';
-import {WorkflowType, WorkflowIssueType} from '../../models/workflow.model';
+import {WorkflowType, WorkflowIssueType, ActionEditorModel} from '../../models/workflow.model';
 import {Subscription, SubscriptionLike as ISubscription} from 'rxjs';
 import {SecondaryNavItem} from '../../models/secondaryNav.model';
 import {ObjectDetail} from '../../models/object-detail.model';
@@ -20,6 +20,7 @@ import {D3SObjectHelpers} from '../../static/d3s-object-helpers';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {HeaderActions} from '../../models/header.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 
@@ -117,6 +118,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectedObjectType: string;
     private selectedObjectId: number;
     private selectedAssetUid: string;
+    private selectedAssetTypeUid: string;
     private objectDetail: ObjectDetail;
     private terms: Tag[] = [];
     private term: Tag;
@@ -185,9 +187,12 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                 this.selectedOption = 'current';
                 this.selectedObjectId = this.objectID;
                 this.selectedObjectType = this.objectType;
-                if (this.selectedObjectType == 'Artifact') {
+                if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
                     this.selectedAssetUid = res.UID ?? res['Uid'];
-                }                
+                }              
+                if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
+                    this.selectedAssetTypeUid = res.UID ?? res['Uid'];
+                } 
 
                 this.isLoading = false;
 
@@ -211,12 +216,41 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private save(data) {
-        this.isLoading = true;
-        data.item.ObjectID = this.selectedObjectId;
-        data.item.ObjectType = this.selectedObjectType;
-        this.workflowService.raiseIssue(data.item)
+        this.isLoading = true;        
+        let values: any = {};
+        let action: ActionEditorModel = new ActionEditorModel();
+        action.Fields = {};
+
+        if (this.selectedObjectType == 'ArtifactType') {
+            action.AssetTypeUid = this.selectedAssetTypeUid;
+        } else {
+            action.AssetUid = this.selectedAssetUid;
+        }
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in data.item) {
+            if (data.item.hasOwnProperty(p)) {
+                if (Array.isArray(data.item[p])) {
+                    values[p] = data.item[p].join();
+                } else {
+                    values[p] = data.item[p];
+                }
+            }
+        }
+
+        //populate field collection
+        for (var p in values) {
+            if (p.toUpperCase() == "ISSUETYPEID") {
+                //ignore
+            }            
+            else {
+                action.Fields[p] = values[p];
+            }
+        }
+
+        this.workflowService.raiseIssues(this.issueType.Uid, action)
             .subscribe(res => {
-                this.showMessageForResult(this.messagesService, res);
+                this.showMessageForApiResponse(this.messagesService, res);
                 this.isLoading = false;
                 this.location.back();
             });

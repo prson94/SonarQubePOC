@@ -598,8 +598,6 @@ namespace d360.web.Controllers
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
-                case "ISSUE":
-                    return AddIssue(form);
                 case "ISSUETYPE":
                     return AddIssueType(form);
                 case "ISSUETYPERELATION":

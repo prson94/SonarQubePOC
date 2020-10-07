@@ -132,83 +132,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 }
                                 else
                                 {
-                                    switch (i.Operator)
+                                    if (i.Operator.TestTwoValues(fieldType.Type, fieldType.AllowMultipleValues, i.Values, assetField.Value))
                                     {
-                                        case Operator.Equals:
-                                            if ((assetField.Value ?? "") == i.Values[0])
-                                            {
-                                                conditionsMetCount++;
-                                            }
-                                            break;
-                                        case Operator.NotEquals:
-                                            if ((assetField.Value ?? "") != i.Values[0])
-                                            {
-                                                conditionsMetCount++;
-                                            }
-                                            break;
-                                        case Operator.GreaterThan:
-                                        case Operator.GreaterThanOrEquals:
-                                        case Operator.LessThan:
-                                        case Operator.LessThanOrEquals:
-                                            if (assetField.Value != null)
-                                            {
-                                                dynamic conditionValue;
-                                                dynamic fieldValue;
-                                                if (fieldType.Type == DataType.Boolean.ToString())
-                                                {
-                                                    conditionValue = bool.Parse(i.Values[0]);
-                                                    fieldValue = bool.Parse(assetField.Value);
-                                                }
-                                                else if (fieldType.Type == DataType.Date.ToString() || fieldType.Type == DataType.DateTime.ToString())
-                                                {
-                                                    conditionValue = DateTime.Parse(i.Values[0]);
-                                                    fieldValue = DateTime.Parse(assetField.Value);
-                                                }
-                                                else if (fieldType.Type == DataType.Decimal.ToString())
-                                                {
-                                                    conditionValue = decimal.Parse(i.Values[0]);
-                                                    fieldValue = decimal.Parse(assetField.Value);
-                                                }
-                                                else if (fieldType.Type == DataType.Number.ToString())
-                                                {
-                                                    conditionValue = int.Parse(i.Values[0]);
-                                                    fieldValue = int.Parse(assetField.Value);
-                                                }
-                                                else
-                                                {
-                                                    conditionValue = i.Values[0];
-                                                    fieldValue = assetField.Value;
-                                                }
-
-                                                switch (i.Operator)
-                                                {
-                                                    case Operator.GreaterThan:
-                                                        if (fieldValue > conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.GreaterThanOrEquals:
-                                                        if (fieldValue >= conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.LessThan:
-                                                        if (fieldValue < conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                    case Operator.LessThanOrEquals:
-                                                        if (fieldValue <= conditionValue)
-                                                        {
-                                                            conditionsMetCount++;
-                                                        }
-                                                        break;
-                                                }
-                                            }
-                                            break;
+                                        conditionsMetCount++;
                                     }
                                 }
                             }

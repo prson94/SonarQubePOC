@@ -87,7 +87,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private selectedData = null;
     private conditions: any[] = [];
     private newKey = -1;
-
+    private HideSqlProcedure: boolean = false;
 
     menuItems: MenuItem[] = [];
     private isWindowVisible = false;
@@ -130,6 +130,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.overlayWidth = 600;
             this.tab = 'history';
             this.isWindowVisible = true;
+            this.HideSqlProcedure = false;
         }
 
         this.isLoading = true;
@@ -658,7 +659,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
                     excluded = r.findIndex(a => a.ID == WorkflowActivityType.Procedure && a.IsShow == false); 
                     if (excluded >= 0)
+                    {
                         r.splice(excluded, 1);
+                        this.HideSqlProcedure = true;
+                    }
+                        
 
                     excluded = r.findIndex(a => a.ID == WorkflowActivityType.StateChange);
                     if (excluded >= 0)
@@ -786,6 +791,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 n.icon = activityType.Icon;
                 n.activityName = activityType.Name;
                 n.activityDescription = activityType.Description;
+            }
+            else if (n.activityType == WorkflowActivityType.StateChange)
+            {
+                n.fore = "#fff";
+                n.activityDescription = "State Change (Unsupported Activity)";
+            }
+            else
+            {
+                n.fore = "#fff";
             }
 
             if (m.SettingsObject != null && m.SettingsObject.settings != null)
@@ -1240,6 +1254,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let startNodes = 0;
         let finishNodes = 0;
         let missingInputCount = 0;
+        let StateChangeCount = 0;
+        let SqlProcedureCount = 0;
         let missingOutputCount = 0;
         let invalidFieldReferences = 0;
 
@@ -1268,6 +1284,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             //special case, steps from timer transitions don't require an output
             if (to != null && (+node.stepType == StepType.Task && (<LinkModel>to).transitionType == TransitionType.Timer))
                 return;
+
+            if (to != null && (+node.stepType == StepType.Task && +node.activityType == WorkflowActivityType.StateChange)) {
+                StateChangeCount++;
+            }
+
+            if (this.HideSqlProcedure && to != null && (+node.stepType == StepType.Task && +node.activityType == WorkflowActivityType.Procedure))
+            {
+                SqlProcedureCount++;
+            }
+
+            
 
             if (to == null && +node.stepType != StepType.Start)
                 missingInputCount++;
@@ -1316,6 +1343,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (invalidFieldReferences > 0)
             this.errors.push(`There are ${invalidFieldReferences} invalid field references in workflow`);
 
+        if (StateChangeCount > 0)
+            this.errors.push(`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
+
+        if (SqlProcedureCount > 0)
+            this.errors.push(`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
+        
         if (this.errors.length > 0)
             this.isValid = false;
 

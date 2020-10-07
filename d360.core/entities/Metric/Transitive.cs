@@ -29,6 +29,13 @@ namespace d360.core.entities.Metric
         public bool? Result { get; set; }
     }
 
+    public class MeasureChangedModel
+    {
+        public Guid MetricAssetUid { get; set; }
+        public Guid MetricAssetVersionUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+    }
+
 
     public class MetricScoreApiModel
     {

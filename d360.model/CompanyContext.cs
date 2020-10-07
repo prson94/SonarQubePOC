@@ -848,7 +848,7 @@ select	ID,
 		Type,
 	    TypeID
 from	AssetDetail
-where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = objectType }).SingleOrDefault();
+where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new DbString { Value = objectType, IsFixedLength = true, Length = 20, IsAnsi = true } }).SingleOrDefault();
 
             return model;
         }
@@ -1084,9 +1084,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             var sql = @"select a.Id from PredicateIntersect I
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     inner join Asset a on a.object = i.subject and a.objectid = i.subjectid
-                    where I.PredicateType = @type and I.[Object] = @object and I.ObjectID = @objectId";
-
-            var parentId = Query<int>(sql, new { type = (int)predicateType, @object = obj.ToString(), objectId = id }).FirstOrDefault();
+                    where I.PredicateType = @type and I.[Object] = @obj and I.ObjectID = @objectId";
+            
+            var parentId = Query<int>(sql, new { type = (int)predicateType, obj = new DbString { Value = obj.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, objectId = id }).FirstOrDefault();
             if (parentId < 1)
                 return default(AssetDetail);
 

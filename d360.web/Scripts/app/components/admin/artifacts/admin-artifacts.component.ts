@@ -88,7 +88,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     load(uid: string = '') {
-        this.isLoading = true;
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
             .subscribe(data => {
                 let temp: TreeNode[] = [];
@@ -99,13 +98,25 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.artifactTypes = AssetCount.ListToTree(temp);
                 if (!uid) {
                     this.selectedRow = this.artifactTypes[0];
+                    this.selectedItemChange();
                 } else {
                     this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
-
+                    if (this.selectedRow.data.parentUid) {
+                        this.expandParent(this.selectedRow.data.parentUid);
+                    }
+                    this.selectedItemChange();
                 }
-                this.selectedItemChange();
-                this.isLoading = false;
             });
+    }
+
+    expandParent(uid) {
+        let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        if (node) {
+            node.expanded = true;
+        }
+        if (node.data.parentUid) {
+            this.expandParent(node.data.parentUid)
+        }
     }
 
     delete(uid: string) {
@@ -151,20 +162,21 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.selectedRow = { data: { ID: 0 } };
-        this.load();
+        this.load(this.selectedRow ? this.selectedRow.data.uid : null);
     }
 
     actionComplete(e: any, type: string = ''): void {
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load(e.id ? e.id : '');
+        this.load(e.Uid);
         this.stateService.reloadLeftNavMenu();
     }
 
-    private deleteArtifactType(id: number) {
-        var data = this.getAssetTypeById(id);
+    private deleteArtifactType(uid: string) {
+        let node = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        let data: any = node ? node.data : null;
+
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
                 result.title = 'Success!';
@@ -175,10 +187,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.stateService.reloadLeftNavMenu();
             })
         }
-    }
-
-    private getAssetTypeById(id: number): any {
-        return this.artifactTypes.filter(x => x.data['ID'] == id)[0].data;
     }
 
     private loadDataAndExecuteAction(action: Function) {

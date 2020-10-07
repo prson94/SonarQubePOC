@@ -27,6 +27,7 @@ import {
     WorkflowItemStep,
     BulkWorkflowReassignModel,
     WorkflowTypeItem,
+    ActionEditorModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -37,6 +38,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { DynamicGridResultsInData } from '../models/grid-definition.model';
 import { Observable,of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 @Injectable()
 export class WorkflowService extends BaseObservableService {
@@ -91,8 +93,15 @@ export class WorkflowService extends BaseObservableService {
             );
     }
   
-    raiseIssue(issue: any): Observable<JsonResult> {
-        return this.postDynamic(this.http, 'issue', issue);
+    raiseIssues(actionTypeUid: string, action: any): Observable<ApiResult & ErrorResponse> {
+        let actionArray: ActionEditorModel[] = [];
+        actionArray.push(action);
+
+        return this.http.post(`/api/v2/actions/${actionTypeUid}?lookupFieldsPassedByValue=true`, actionArray)
+            .pipe(
+                map(response => <ApiResult & ErrorResponse> response[0]),
+                catchError(err => this.handleError(err))
+            );  
     }
    
     getWorkflowIssueTypes(object: string = null, objectId: number = null, params: any): Observable<WorkflowIssueType[]> {

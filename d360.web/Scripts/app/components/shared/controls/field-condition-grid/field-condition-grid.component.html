@@ -1,0 +1,89 @@
+﻿<div class="field-condition-grid">
+    <form name="conditionForm" #conditionsForm="ngForm">
+        <div *ngFor="let condition of conditions; let i = index">
+            <div class="row condition-row">
+                <div class="condition-option condition-field">
+                    <p-dropdown igDropdown
+                                igSize="medium"
+                                [name]="'condition_' + i"
+                                [(ngModel)]="condition.field"
+                                (onChange)="onFieldChange($event, condition)"
+                                placeholder="Choose a field"
+                                [appendTo]="'body'"
+                                [options]="fieldsSelect"></p-dropdown>
+
+                </div>
+                <div class="condition-option" *ngIf="condition.field">
+                    <p-dropdown igDropdown
+                                igSize="small"
+                                [name]="'operator_' + i"
+                                [(ngModel)]="condition.operator"
+                                (onChange)="onConditionChange($event, condition)"
+                                placeholder="Choose a field"
+                                [appendTo]="'body'"
+                                [options]="getOperators(condition)"></p-dropdown>
+                </div>
+                <div class="condition-option" *ngIf="condition.operator">
+
+                    <ng-container [ngSwitch]="getTypeForCondition(condition)">
+                        <ng-container *ngSwitchCase="getTypeForCondition(condition) === 'Lookup' || getTypeForCondition(condition) === 'Boolean' ? getTypeForCondition(condition) : ''">
+                            <p-dropdown igDropdown
+                                        required
+                                        placeholder="{{condition.disabled ? '' : 'Choose a value'}}"
+                                        [disabled]="condition.disabled"
+                                        igSize="small"
+                                        [name]="'value_' + i"
+                                        [(ngModel)]="condition.value"
+                                        [appendTo]="'body'"
+                                        [options]="getValues(condition)"></p-dropdown>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Number'">
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" required disabled="{{condition.disabled}}" igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Decimal'">
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" required disabled="{{condition.disabled}}" igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Date'">
+                            <ig-date placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" [name]="'value_' + i" [(ngModel)]="condition.value"></ig-date>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'DateTime'">
+                            <ig-date placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" [name]="'value_' + i" [(ngModel)]="condition.value"></ig-date>
+                        </ng-container>
+                        <ng-container *ngSwitchDefault>
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" disabled="{{condition.disabled}}" required igSize="small" [name]="'value_' + i" [(ngModel)]="condition.value" />
+                        </ng-container>
+                    </ng-container>
+
+                </div>
+                <div class="condition-option remove-condition" *ngIf="condition.field">
+                    <button pTooltip="Remove condition" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" type="button" tooltip="Delete" (click)="deleteCondition(condition)"></button>
+                </div>
+            </div>
+
+            <div class="row condition-row" *ngIf="condition.operator === 9">
+                <div class="condition-option empty"></div>
+                <div class="condition-option" *ngIf="condition.field">
+                    <input igInput value="and" igSize="small" disabled="disabled" />
+                </div>
+                <div class="condition-option" *ngIf="condition.operator">
+
+                    <ng-container [ngSwitch]="getTypeForCondition(condition)">
+                        <ng-container *ngSwitchCase="'Number'">
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" required disabled="{{condition.disabled}}" igSize="small" [name]="'value_' + i2" [(ngModel)]="condition.value2" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Decimal'">
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" required disabled="{{condition.disabled}}" igSize="small" [name]="'value_' + i2" [(ngModel)]="condition.value2" type="number" />
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'Date'">
+                            <ig-date placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" [name]="'value_' + i2" [(ngModel)]="condition.value2"></ig-date>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'DateTime'">
+                            <ig-date placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" [name]="'value_' + i2" [(ngModel)]="condition.value2"></ig-date>
+                        </ng-container>
+                    </ng-container>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

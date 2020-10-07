@@ -85,7 +85,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.core", "d360.core\d360
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.company", "d360.utils.company\d360.utils.company.csproj", "{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions", "igx.functions\igx.functions.csproj", "{E847AC05-71C8-4D30-AAC6-C88B56C45A5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.consumption", "igx.functions\igx.functions.consumption.csproj", "{E847AC05-71C8-4D30-AAC6-C88B56C45A5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -263,7 +263,7 @@ Global
 		{E847AC05-71C8-4D30-AAC6-C88B56C45A5D} = {27F0D451-FD9F-4E23-AFCF-F2CE94522A50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal

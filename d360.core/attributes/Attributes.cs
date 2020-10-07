@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.enums;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 
@@ -241,6 +242,15 @@ namespace d360.core
         public OperatorAllowedDataTypesAttribute(params DataType[] dataTypes)
         {
             DataTypes = dataTypes;
+        }
+    }
+
+    public class OperatorAllowedMeasureChecksAttribute : Attribute
+    {
+        public MetricGovernanceCheckType[] Checks { get; private set; }
+        public OperatorAllowedMeasureChecksAttribute(params MetricGovernanceCheckType[] checks)
+        {
+            Checks = checks;
         }
     }
 

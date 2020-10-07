@@ -221,7 +221,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
-
+            SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),          
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -271,7 +271,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid _includeTotal value passed in the request"));
 
 
-                if (queryParams.Any(x => x.Key.ToLower() == "exporttemplateuid") && !isStreamResponse)
+                if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid") && !isStreamResponse)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Export Template UID parameter must be used with 'Accept' header set to 'application/octet-stream'."));
                 }
@@ -280,10 +280,10 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    if (queryParams.Any(x => x.Key.ToLower() == "exporttemplateuid"))
+                    if (queryParams.Any(x => x.Key.ToLower() == "_exporttemplateuid"))
                     {
                         Guid exportTemplateUID;
-                        if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "exporttemplateuid").Value, out exportTemplateUID))
+                        if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_exporttemplateuid").Value, out exportTemplateUID))
                         {
                             return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid exportTemplateUID value."));
                         }

@@ -20,12 +20,13 @@
 <div class="tile tile-detail">
     <header>Examples</header>
     <div class="gallery-section">
-        <h4>Basic with reactive form (3 required fields with validation. Type No, Invalid or Defect for invalid state) </h4>
-        <div>
+        <h4>Basic with reactive form (3 required fields with validation. <b>Type No, Bug or Defect for invalid state</b>) </h4>
+        <div class="gallery-form-container">
             <form *ngIf="testForm != null" [formGroup]="testForm" (ngSubmit)="submitTemplateForm(myForm)">
-                <ig-property-group [igformGroup]="testForm">
+                <ig-property-group [igformGroup]="testForm" [title]="'PropertyGroup1'">
                     <div inputs>
                         <div class="row">
+                            <label for="myFormName" class="ig-label">Property1</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': testForm.get('myFormName')?.errors?.notNiceWord}" formControlName="myFormName" required />
                             <div *ngIf="testForm.get('myFormName').invalid && (testForm.get('myFormName').dirty || testForm.get('myFormName').touched)">
                                 <div *ngIf="testForm.get('myFormName').errors.notNiceWord" class="ig-text-required">
@@ -34,6 +35,7 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label for="myFormAddr" class="ig-label">Property2</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': testForm.get('myFormAddr')?.errors?.notNiceWord}" formControlName="myFormAddr" required />
                             <div *ngIf="testForm.get('myFormAddr').invalid && (testForm.get('myFormAddr').dirty || testForm.get('myFormAddr').touched)">
                                 <div *ngIf="testForm.get('myFormAddr').errors.notNiceWord" class="ig-text-required">
@@ -42,6 +44,7 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label for="myFormEmail" class="ig-label">Property3</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': testForm.get('myFormEmail')?.errors?.notNiceWord}" formControlName="myFormEmail" required />
                             <div *ngIf="testForm.get('myFormEmail').invalid && (testForm.get('myFormEmail').dirty || testForm.get('myFormEmail').touched)">
                                 <div *ngIf="testForm.get('myFormEmail').errors.notNiceWord" class="ig-text-required">
@@ -60,13 +63,13 @@
     </div>
     <div class="gallery-section">
         <h4>Basic with template driven form (1 required, 1 optional)</h4>
-        <div>
+        <div class="gallery-form-container">
             <form #myForm="ngForm" (ngSubmit)="submitTemplateForm(myForm)">
                 <div class="row">
                     <b>Template driven forms</b>
                     <p>template model: {{diagnostic}}</p>
                 </div>
-                <ig-property-group [igformGroup]="myForm.form" [title]="'Custom Header'">
+                <ig-property-group [igformGroup]="myForm.form" [title]="'Custom Header that has a really long name so it should elide'">
                     <div inputs>
                         <div class="row">
                             <b>Template driven forms</b>
@@ -74,9 +77,11 @@
                         </div>
                         <div class="form-group">
                             <div class="row">
+                                <label for="theName" class="ig-label">Property1</label>
                                 <input tabindex="1" igInput [(ngModel)]="model.theName" id="theName" name="theName" #theName="ngModel" required [ngModelOptions]="{ updateOn: 'blur' }" />
                             </div>
                             <div class="row">
+                                <label for="theAddr" class="ig-label">Propertylabel that has a long name but should wrap to the next line.</label>
                                 <input tabindex="1" igInput [(ngModel)]="model.theAddr" id="theAddr" name="theAddr" #theAddr="ngModel" [ngModelOptions]="{ updateOn: 'blur' }" />
                             </div>
                         </div>
@@ -84,18 +89,19 @@
                 </ig-property-group>
                 <div class="row">&nbsp;</div>
                 <div class="row">
-                    <button igButton type="submit" [disabled]="!multiTestForm.valid" label="Save"></button>
+                    <button igButton type="submit" [disabled]="!myForm.valid" label="Save"></button>
                 </div>
             </form>
         </div>
     </div>
     <div class="gallery-section">
-        <h4>2 sections with reactive form (5 required fields with validation. Type No, Invalid or Defect for invalid state) </h4>
-        <div>
+        <h4>2 sections with reactive form (5 required fields with validation. <b>Type No, Bug or Defect for invalid state</b>) </h4>
+        <div class="gallery-form-container">
             <form *ngIf="multiTestForm != null" [formGroup]="multiTestForm" (ngSubmit)="submitTemplateForm(myForm)">
                 <ig-property-group [igformGroup]="multiTestForm" [title]="'top 3 items'">
                     <div inputs>
                         <div class="row">
+                            <label for="myFormName" class="ig-label">Property1</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormName')?.errors?.notNiceWord}" formControlName="myFormName" required />
                             <div *ngIf="multiTestForm.get('myFormName').invalid && (multiTestForm.get('myFormName').dirty || multiTestForm.get('myFormName').touched)">
                                 <div *ngIf="multiTestForm.get('myFormName').errors.notNiceWord" class="ig-text-required">
@@ -104,14 +110,19 @@
                             </div>
                         </div>
                         <div class="row">
-                            <ig-color-picker formControlName="myFormColor" tabindex="1" [colors]="defaultColors" required [placeholder]="'Required'" [styleClass]="colorpicker?.errors?.required ? 'required' : ''"></ig-color-picker>
-                            <div *ngIf="multiTestForm.get('myFormColor').invalid && (multiTestForm.get('myFormColor').dirty || multiTestForm.get('myFormColor').touched)" class="ig-text-required">
-                                <div *ngIf="multiTestForm.get('myFormColor').errors.required">
-                                    Value required
-                                </div>
-                            </div>
+                            <label for="myFormColor" class="ig-label">Property2</label>
+                            <p-dropdown #dd igDropdown
+                                        required
+                                        igSize="small"
+                                        name="selectValue"
+                                        placeholder="Value Required"
+                                        appendTo="body"
+                                        (focus)="applyFocus(dd)"
+                                        formControlName="myFormColor"
+                                        [options]="cars"></p-dropdown>
                         </div>
                         <div class="row">
+                            <label for="myFormPetName" class="ig-label">Property3</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormPetName')?.errors?.notNiceWord}" formControlName="myFormPetName" required />
                             <div *ngIf="multiTestForm.get('myFormPetName').invalid && (multiTestForm.get('myFormPetName').dirty || multiTestForm.get('myFormPetName').touched)">
                                 <div *ngIf="multiTestForm.get('myFormPetName').errors.notNiceWord" class="ig-text-required">
@@ -124,6 +135,7 @@
                 <ig-property-group [igformGroup]="multiTestForm" [title]="'bottom 2 items'">
                     <div inputs>
                         <div class="row">
+                            <label for="myFormAddr" class="ig-label">Property4</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormAddr')?.errors?.notNiceWord}" formControlName="myFormAddr" required />
                             <div *ngIf="multiTestForm.get('myFormAddr').invalid && (multiTestForm.get('myFormAddr').dirty || multiTestForm.get('myFormAddr').touched)">
                                 <div *ngIf="multiTestForm.get('myFormAddr').errors.notNiceWord" class="ig-text-required">
@@ -132,6 +144,7 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label for="myFormEmail" class="ig-label">Property5</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormEmail')?.errors?.notNiceWord}" formControlName="myFormEmail" required />
                             <div *ngIf="multiTestForm.get('myFormEmail').invalid && (multiTestForm.get('myFormEmail').dirty || multiTestForm.get('myFormEmail').touched)">
                                 <div *ngIf="multiTestForm.get('myFormEmail').errors.notNiceWord" class="ig-text-required">
@@ -148,44 +161,26 @@
             </form>
         </div>
     </div>
-
-    <div class="gallery-section">
-        <h4>1 sections with template form</h4>
-        <form #form="ngForm">
-            <div class="row">
-                <b>Required bool(yes/no)</b>
-            </div>
-            <div class="row">
-                <ig-property-group [igformGroup]="form.form" [title]="'group with switch'">
-                    <div inputs>
-                        <div class="row">
-                            <ig-switch name="somebool" tabindex="1" [(ngModel)]="formVal" #somebool="ngModel" required [styleClass]="somebool?.errors?.required ? 'switch-required-unset' : ''"></ig-switch>
-                            <div *ngIf="somebool.invalid && (somebool.dirty || somebool.touched)" class="ig-text-required">
-                                <div *ngIf="somebool.errors.required">
-                                    Value required
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <ig-date name="myDate" tabindex="1" [(ngModel)]="formDateVal" #myDate="ngModel" required="true"></ig-date>
-                            <div *ngIf="myDate.invalid && (myDate.dirty || myDate.touched)">
-                                <div *ngIf="myDate.errors.required" class="ig-text-required">
-                                    Please select a date
-                                </div>
-                            </div>
-                            <div class="row">value: {{formDateVal}}</div>
-                        </div>
-                    </div>
-                </ig-property-group>
-            </div>
-            <div class="row">&nbsp;</div>
-            <div class="row">
-                <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
-            </div>
-        </form>
-    </div>
 </div>
 <div class="tile tile-detail">
     <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
 </div>
 
