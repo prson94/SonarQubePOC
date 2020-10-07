@@ -422,7 +422,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     downloadCustomExcel(option: AssetTypeExportTemplate) {
         var params = JSON.parse(JSON.stringify(this.getParams()));
-        params['exporttemplateuid'] = option.Uid;
+        params['_exporttemplateuid'] = option.Uid;
 
         this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, 'Filtered ' + this.gridObject.Name + ' List');
     }
