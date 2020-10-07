@@ -68,7 +68,6 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
         });
 
         this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
-            console.log('httpFieldsSub transistion editor');
             this.filterHttpFields();
         });
     }

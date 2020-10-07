@@ -72,7 +72,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
 
         if (formFieldsChanged || httpFieldsChanged || changeTypeChanged)    {
-            console.log('condition editor changed');
             this.loadContextualFields();
             this.loadFormFields();
             this.loadHttpFields();
@@ -128,7 +127,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                         });
                 }
 
-                console.log('load condition', this.httpFields);
                 if (this.httpFields.length > 0) {
                     this.httpFields.forEach(f => {
                         this.fieldList.push({
@@ -177,7 +175,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadHttpFields() {
-        console.log('loadHttpFields', this.httpFields);
         if (this.httpFields.length > 0) {
             this.httpFields.forEach(f => {
                 this.fieldList.push({
@@ -196,13 +193,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.selectedField = e;
         this.selectedIssueObject = null;
 
-        console.log('selectField: ', e);
-
         if (this.selectedField.split('|')[0] == 'FieldType') {
 
             let field = this.fields.find(f => f.ID == +this.selectedField.split('|')[1]);
-
-            //console.log('selectField: ', e, field);
 
             this.selectedType = field.Type.toLowerCase();
 
@@ -226,7 +219,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             if (this.condition['@ValueType'] == 'L') {
                 this.workflowService.getLookupList(this.condition['@FieldTypeID'])
                     .subscribe(r => {
-                        console.log(r);
                         this.lookups = r;
                     });
             }
@@ -246,7 +238,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                         let formField = node.fields.form.field.find(i => i['@id'] == input['@id']);
                         if (formField != null) {
                             let fieldId = +formField['@referenceFieldId'] || 0;
-                            //console.log('formField', formField, fieldId);
                             if (fieldId != null && fieldId > 0) {
                                 this.workflowService.getReferenceItemsForField(fieldId)
                                     .subscribe(r => {
@@ -304,7 +295,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
         else if (this.selectedField.split('|')[0] == 'HTTPRequest') {
             let field = this.httpFields.find(f => f['@stepId'] == this.selectedField.split('|')[1] && f['@id'] == this.selectedField.split('|')[2]);
-            console.log('selected field reached httprequest section', this.selectedField, field);
 
             delete this.condition['@FormInputID'];
             delete this.condition['@VersionStepID'];
