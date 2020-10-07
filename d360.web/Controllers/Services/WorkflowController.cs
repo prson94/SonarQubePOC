@@ -1437,7 +1437,12 @@ order by wi.StartedOn desc";
                 //Workflow type creation
 
                 var @type = new d360.core.entities.Workflow.Type();
-
+                List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
+                    {
+                        WorkflowActivityType.Form,
+                        WorkflowActivityType.EmailNotification,
+                        WorkflowActivityType.HTTPRequest
+                    };
 
                 @type.ID = 0;
                 @type.CreatedBy = Company.CurrentResourceID;
@@ -1539,6 +1544,21 @@ order by wi.StartedOn desc";
                         var node = Company.GetById<WorkflowVersionStep>(key);
                         node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
 
+                    }
+                    if (tokenTypes.Contains(n.ActivityType))
+                    {
+                        var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                        foreach (var field in fields)
+                        {
+                            int key;
+                            if (!int.TryParse(n.Key, out key)) return;
+                            if (keyMapping.ContainsKey(key))
+                                key = keyMapping[key];
+
+                            var node = Company.GetById<WorkflowVersionStep>(key);
+                            MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
+                        }
                     }
                 });
                 Company.SaveChanges();
@@ -1801,17 +1821,17 @@ order by wi.StartedOn desc";
                                 }
                                 if (tokenTypes.Contains(n.ActivityType))
                                 {
-                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|-([0-9.]+)\\|([a-zA-Z]+)\\]");
+                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
 
                                     foreach (var field in fields)
                                     {
-                                        var parts = field.ToString().Split('|');
                                         int key;
-                                        if (!int.TryParse(parts[1], out key)) return;
+                                        if (!int.TryParse(n.Key, out key)) return;
                                         if (keyMapping.ContainsKey(key))
                                             key = keyMapping[key];
+
                                         var node = Company.GetById<WorkflowVersionStep>(key);
-                                        node.Settings = n.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{key}|{parts[2]}");
+                                        MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
                                     }
                                 }
                             });
@@ -1973,23 +1993,22 @@ order by wi.StartedOn desc";
 
                                     var node = Company.GetById<WorkflowVersionStep>(key);
                                     node.Settings = MapWorkflowRelationshipUpdateSettings(node.Settings, keyMapping);
+                                    
 
                                 }
                                 if (tokenTypes.Contains(n.ActivityType))
                                 {
-                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|-([0-9.]+)\\|([a-zA-Z]+)\\]");
+                                    var fields = Regex.Matches(n.Settings, "\\[HTTPREQUEST\\|(-?)([0-9.]+)\\|([a-zA-Z]+)\\]");
 
                                     foreach (var field in fields)
                                     {
-                                        var parts = field.ToString().Split('|');
                                         int key;
-                                        if (!int.TryParse(parts[1], out key)) return;
+                                        if (!int.TryParse(n.Key, out key)) return;
                                         if (keyMapping.ContainsKey(key))
                                             key = keyMapping[key];
 
                                         var node = Company.GetById<WorkflowVersionStep>(key);
-
-                                        node.Settings = n.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{key}|{parts[2]}");
+                                        MapWorkflowHttpSettings(node, key, field.ToString(), keyMapping);
                                     }
                                 }
                             });
@@ -3795,6 +3814,22 @@ order by wi.StartedOn desc";
 
             return settingsString;
         }
+
+        private void MapWorkflowHttpSettings(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
+        {
+            var parts = field.ToString().Split('|');
+            int httpKey = 0;
+            int.TryParse(parts[1], out httpKey);
+
+            if (key != 0 && httpKey != 0)
+            {
+                if (keyMapping.ContainsKey(httpKey))
+                    httpKey = keyMapping[httpKey];
+
+                node.Settings = node.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{httpKey}|{parts[2]}");
+            }
+        }
+
         #endregion
     }
 }

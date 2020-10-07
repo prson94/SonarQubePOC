@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using System.Data.Entity;
+using d360.core.enums.Workflow;
 
 namespace d360.model.workflow
 {
@@ -85,10 +86,10 @@ namespace d360.model.workflow
                 var formattedVal = field?.FormattedValue ?? null;
 
                 //special case for changed operator. If it's in the list of changed fields, return true
-                if (item.Operator == core.enums.Workflow.CriteriaOperator.Changed)
+                if (item.Operator == CriteriaOperator.Changed)
                     return changedFields.Contains(item.FieldTypeId);
 
-                if (item.ValueDataType == core.enums.Workflow.CriteriaValueDataType.Lookup)
+                if (item.ValueDataType == CriteriaValueDataType.Lookup)
                 {
                     if (!item.IsValueMatch(value)) return false;
                 }
@@ -143,7 +144,7 @@ namespace d360.model.workflow
                     return false;
                 }
 
-                var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
+                
 
                 if ((versionStep.Step == null) || string.IsNullOrEmpty(versionStep.Step.Settings))
                 {
@@ -152,76 +153,101 @@ namespace d360.model.workflow
                     return false;
                 }
 
-                //check the form response type is it all, first or majority
-                var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Step.Settings));
+                var stepSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Step.Settings));
 
-                switch (formSettings.ResponseType)
+                switch(versionStep.Step.ActivityType)
                 {
-                    case core.enums.Workflow.FormResponseType.FirstResponse:
+                    case WorkflowActivityType.Form:
+                        var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
+
+                        switch (stepSettings.ResponseType)
                         {
-                            //check if the value matches
-                            var formValue = formModel.GetFormValueById(item.FormInputId);
+                            case FormResponseType.FirstResponse:
+                                {
+                                    //check if the value matches
+                                    var formValue = formModel.GetFormValueById(item.FormInputId);
 
-                            if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
-                            {
-                                //
-                                if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
-                            }
-                            else
-                            {
-                                //true operator
-                                if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                    if (item.Operator == CriteriaOperator.NotEqual)
+                                    {
+                                        //
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                    }
+                                    else
+                                    {
+                                        //true operator
+                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
 
-                            }
-                            break;
+                                    }
+                                    break;
+                                }
+                            case FormResponseType.All:
+                                {
+                                    // ALL USERS NEED TO RESPOND AND APPROVE
+
+                                    // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
+                                    var formValues = formModel.GetFormValuesById(item.FormInputId);
+
+                                    foreach (var val in formValues)
+                                    {
+                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                        }
+                                        else
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
+                                        }
+
+                                    }
+                                    return true;
+                                }
+                            case FormResponseType.Majority:
+                                {
+                                    var formValues = formModel.GetFormValuesById(item.FormInputId);
+
+                                    var matchCount = 0;
+
+                                    foreach (var val in formValues)
+                                    {
+                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
+                                        }
+                                        else
+                                        {
+                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
+                                        }
+
+                                    }
+
+                                    return matchCount > (formValues.Count / 2);
+                                }
+                            default:
+                                Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
+
+                                return false;
                         }
-                    case core.enums.Workflow.FormResponseType.All:
+                        break;
+                    case WorkflowActivityType.HTTPRequest:
+                        switch(item.FormInputId.ToUpper())
                         {
-                            // ALL USERS NEED TO RESPOND AND APPROVE
-
-                            // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
-                            var formValues = formModel.GetFormValuesById(item.FormInputId);
-
-                            foreach (var val in formValues)
-                            {
-                                if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
+                            case "STATUSCODE":
+                                var statusCodeString = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("StatusCode")?.Value ?? "";
+                                if (int.TryParse(statusCodeString, out int _))
                                 {
-                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                    item.ValueDataType = CriteriaValueDataType.Integer;
+                                    return item.IsValueMatch(statusCodeString);
                                 }
-                                else
-                                {
-                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-                                }
+                                break;
+                            case "RESPONSEBODY":
+                                var responseBody = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("Body")?.Value ?? "";
+                                return item.IsValueMatch(responseBody);
 
-                            }
-                            return true;
                         }
-                    case core.enums.Workflow.FormResponseType.Majority:
-                        {
-                            var formValues = formModel.GetFormValuesById(item.FormInputId);
-
-                            var matchCount = 0;
-
-                            foreach (var val in formValues)
-                            {
-                                if (item.Operator == core.enums.Workflow.CriteriaOperator.NotEqual)
-                                {
-                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
-                                }
-                                else
-                                {
-                                    if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
-                                }
-
-                            }
-
-                            return matchCount > (formValues.Count / 2);
-                        }
-                    default:
-                        Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
-
-                        return false;
+                        break;
                 }
+
+
             }
 
             return true;

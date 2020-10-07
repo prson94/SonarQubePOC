@@ -2396,7 +2396,7 @@ namespace d360.model
                 {
                     var item = field.ToString();
 
-                    var fieldTypeIdStringitem = item.Replace("[HTTPREQUEST", "");
+                    var fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
                     fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
 
                     var stepId = -1;
@@ -2408,17 +2408,18 @@ namespace d360.model
 
                     if (step != null)
                     {
-                        var stepFields = step.FieldsDocument;
+                        var response = step.FieldsDocument;
+                        response = response.Element("HTTPResponse");
 
-                        if (stepFields != null)
+                        if (response != null)
                         {
                             switch (property.ToUpper())
                             {
                                 case "STATUSCODE":
-                                    result = result.Replace(item, stepFields.Element("StatusCode")?.Value ?? "");
+                                    result = result.Replace(item, response.Element("StatusCode")?.Value ?? "");
                                     break;
                                 case "RESPONSEBODY":
-                                    result = result.Replace(item, stepFields.Element("ResponseBody")?.Value ?? "");
+                                    result = result.Replace(item, response.Element("Body")?.Value ?? "");
                                     break;
                             }
                         }
@@ -2455,6 +2456,26 @@ namespace d360.model
                 }
 
                 result = result.Replace("[OBJECT_TYPE]", itemLink);
+            }
+
+            if (result.Contains("[WORKFLOW_STEP_ID]"))
+            {
+                result = result.Replace("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
+            }
+
+            if (result.Contains("[WORKFLOW_INSTANCE_ID]"))
+            {
+                result = result.Replace("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
+            }
+
+            if (result.Contains("[WORKFLOW_ID]"))
+            {
+                var versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
+                if (versionStep != null)
+                {
+                    var version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
+                    result = result.Replace("[WORKFLOW_ID]", version?.TypeID?.ToString() ?? "");
+                }
             }
 
             if (result.Contains("[RECIPIENT_RESPONSIBILITY]"))
@@ -2528,25 +2549,6 @@ namespace d360.model
                 result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
             }
 
-            if (result.Contains("[RESPONSE_STATUS_CODE]"))
-            {
-                var root = XElement.Parse(itemStep.Settings);
-                if (root.Element("HTTPResponse") != null)
-                {
-                    var status = root.Element("HTTPResponse").Element("StatusCode")?.Value ?? "";
-                    result = result.Replace("[RESPONSE_STATUS_CODE]", status);
-                }
-            }
-
-            if (result.Contains("[RESPONSE_BODY]"))
-            {
-                var root = XElement.Parse(itemStep.Settings);
-                if (root.Element("HTTPResponse") != null)
-                {
-                    var body = root.Element("HTTPResponse").Element("Body")?.Value ?? "";
-                    result = result.Replace("[RESPONSE_BODY]", body);
-                }
-            }
 
             return result;
         }
