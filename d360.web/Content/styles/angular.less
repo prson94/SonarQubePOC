@@ -4586,6 +4586,11 @@ button.tab-scroller {
                                 width: auto;
                                 scrollbar-width: none !important; /* Firefox */
                                 -ms-overflow-style: none !important; /* IE 10+ */
+
+                                &.is-overflowing {
+                                    margin-left: 24px;
+                                    margin-right: 24px;
+                                }
                             }
 
                             &::-webkit-scrollbar { /* WebKit hide scrollbar */
@@ -4605,7 +4610,7 @@ button.tab-scroller {
                             border-top: 3px solid transparent;
                             justify-content: center;
                             padding: 0;
-                            width: 20px;
+                            width: 24px;
 
                             &:focus, &.focused {
                                 box-shadow: none;
@@ -4652,7 +4657,7 @@ button.tab-scroller {
 
                         .search-result-field:not(:first-of-type)::before {
                             content: '\25cf';
-                            padding: 0px 0.5em;
+                            padding: 0px 8px;
                             vertical-align: top;
                         }
 
