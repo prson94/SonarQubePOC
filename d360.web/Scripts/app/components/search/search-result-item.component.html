@@ -29,7 +29,7 @@
             <button *ngIf="showScrollButtons" class="left field-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
                 <i class="fa fa-chevron-circle-left"></i>
             </button>
-            <div #fieldScroller class="field-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 20 : 0,'margin-right.px': showScrollButtons ? 20 : 0}">
+            <div #fieldScroller class="field-bar can-overflow" [ngClass]="{'is-overflowing' : showScrollButtons}">
                 <div class="search-result-field" *ngFor="let item of result?.Fields">
                     <ng-container *ngIf="item.Prefix || item.Suffix; else labelvalue">
                         <div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
