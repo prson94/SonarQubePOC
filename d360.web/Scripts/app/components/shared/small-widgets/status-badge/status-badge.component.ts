@@ -12,6 +12,7 @@ import * as _ from 'lodash';
 export class StatusBadgeComponent implements OnInit, OnChanges {
 
     @Input() status: string;
+    @Input() igBadgeStyle: boolean = false;
     private formattedStatus: string;
     useDefinedColor: boolean;
     singleUndefinedColor: boolean;
@@ -45,6 +46,14 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
             this.singleUndefinedColor = false;
         }
     }
+
+    getStatusText() {
+        if (this.useDefinedColor && this.colorObjects.length > 0)
+            return this.colorObjects.map(c => c.name).join('/');
+        else
+            return this.status;
+    }
+
     getBackgroundColor(name: string = "") {
         status = this.status.toLowerCase().trim();
         if (name)

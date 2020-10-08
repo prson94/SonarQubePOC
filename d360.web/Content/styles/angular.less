@@ -4508,6 +4508,7 @@ button.tab-scroller {
                 flex-direction: column;
                 margin-left: 15px;
                 flex-grow: 1;
+                min-width: 200px;
 
                 d3s-search-results {
                     flex-grow: 1;
@@ -4667,9 +4668,21 @@ button.tab-scroller {
                             margin-top: 16px;
                         }
 
+                        &.elide-container {
+                            position: relative;
+                            min-height: 21px;
+
+                            .elided {
+                                position: absolute;
+                                top: 0;
+                                max-width: 100%;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-overflow: ellipsis;
+                            }
+                        }
+
                         &.description {
-                            max-height: 110px;
-                            overflow-y: hidden;
                             color: @igx-darkblue-xlight;
                         }
 
@@ -4692,6 +4705,14 @@ button.tab-scroller {
                             &.asset-path {
                                 color: @igx-darkblue-xlight;
                                 word-break: break-all;
+                            }
+
+                            .asset-path {
+                                display: inline-block;
+
+                                .assettype {
+                                    color: @igx-darkblue-xlight;
+                                }
                             }
                         }
 
@@ -4719,45 +4740,38 @@ button.tab-scroller {
                     }
                 }
 
-                .title {
-                    display: inline-flex;
-                    flex-shrink: 1;
-                    flex-direction: row;
-                    align-items: flex-end;
-                    align-self: stretch;
+                .title-row {
+                    margin-top: 16px !important;
+                    display: flex;
+                    flex-wrap: nowrap;
+                    justify-content: space-between;
+                    align-items: baseline;
+
+                    .right-container {
+                        margin-left: auto;
+                        display: inline-flex;
+                        justify-content: flex-end;
+                        align-items: baseline;
+
+                        .menu-container {
+                            margin-left: 8px;
+                        }
+                    }
 
                     .name {
-                        position: relative;
-                        flex-grow: 1;
-                        flex-shrink: 1;
-                        height: 28px;
                         margin-left: 8px;
+                        margin-right: 8px;
+                        line-height: 28px;
+                        font-size: 18px;
+                        font-weight: 300;
+                        color: @ig-midblue;
+                        cursor: pointer;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
 
-                        .inner {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            bottom: 0;
-                            max-width: 100%;
-                            line-height: 28px;
-                            font-size: 18px;
-                            font-weight: 300;
-                            color: #0971b9;
-                            cursor: pointer;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-
-                            &:hover {
-                                text-decoration: underline;
-                            }
-
-                            em {
-                                background-color: transparent;
-                                text-decoration: none;
-                                font-style: normal;
-                                font-weight: 300;
-                            }
+                        &:hover {
+                            text-decoration: underline;
                         }
                     }
                 }

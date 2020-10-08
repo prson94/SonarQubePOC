@@ -164,8 +164,8 @@ import { TreeModule } from 'primeng/tree';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DialogModule } from 'primeng/dialog';
 import { SharedModule } from 'primeng/api';
+import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
 
-import { PipesModule } from '../../../pipes/pipes.module';
 
 
 @NgModule({
@@ -176,7 +176,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         RouterModule,
 
         //d3s
-        PipesModule,
+        AssetPathWidgetModule,
 
         //primeng        
         AutoCompleteModule,

@@ -3,6 +3,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterView
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { AssetScore } from '../../../../models/search-result.model';
+import { ScoreDisplayPipe } from '../../../../pipes/score-display.pipe';
 
 @Component({
     selector: 'd3s-score-badge',
@@ -21,12 +22,15 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() lowerThreshold: number = 50; //50%
     @Input() upperThreshold: number = 90; //90%
 
+    @Input() igBadgeStyle: boolean = false;
+
     scoreBadgeClass: string;
 
     private changeWait: any;
     constructor(
         private ref: ChangeDetectorRef,
-        private router: Router
+        private router: Router,
+        private scoreDislpayPipe: ScoreDisplayPipe
     ) {
     }
 
@@ -61,6 +65,10 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
         return type;
     }
 
+    getBadgeText(): string {
+        return this.getType() + ' ' + this.scoreDislpayPipe.transform(this.score.Value);
+    }
+
     getValuePct() {
         return this.score.Value.toFixed(1);
     }
@@ -75,7 +83,15 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
 
-    getScoreCSSClass() {
+    getScoreVariantColor(): string {
+        if (this.score.Value <= this.lowerThreshold / 100)
+            return 'negative';
+        if (this.score.Value <= this.upperThreshold / 100)
+            return 'warning';
+        return 'positive';
+    }
+
+    getScoreCSSClass(): string {
         if (this.score.Value <= this.lowerThreshold / 100)
             return 'score-poor'; //red
         if (this.score.Value <= this.upperThreshold / 100)
