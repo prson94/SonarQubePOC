@@ -253,6 +253,7 @@ namespace d360.model.DataAccessLayer
             bool includeColor = true;
             var includeTotal = true;
             bool isHierachyItem = false;
+            bool hasAssetPathField = false;
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
                         
@@ -281,7 +282,7 @@ namespace d360.model.DataAccessLayer
                     fieldTypes = fieldTypes.Where(x => x.IsListable == true).ToList();
                 }
             }
-
+                        
             var includeFieldsList = new List<string>();
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
             {
@@ -332,6 +333,13 @@ namespace d360.model.DataAccessLayer
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includecolor").Value, out includeColor);
             }
+
+            //check for asset path fields now after include fields have been filtered
+            if (fieldTypes.Any(x => x.Type == "Path"))
+            {
+                hasAssetPathField = true;
+            }
+
 
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -832,7 +840,7 @@ namespace d360.model.DataAccessLayer
                 {populatePremissionAssetTableSQL}
                 select  count(*)
                 from    Asset A 
-                {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.Uid = a.uid" : "" )} 
+                {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "" )} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -879,7 +887,7 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
-                {(includeSegments || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
+                {(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
                 {(includePermissionDetails ? permissionDetailSQL : "")}
