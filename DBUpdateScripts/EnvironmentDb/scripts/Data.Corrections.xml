@@ -1007,4 +1007,13 @@ update metrics.AssetVersion set Definition ='{}' where Definition = 'null' or De
 ]]>
     </sql>
   </changeSet>
+    <changeSet author="Bhoward" id="Data.Corrections.GOV-12417">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+	UPDATE dbo.FieldType
+	Set AssetTypeID = null 
+	Where [Object] in ('IssueType','IntersectType')
+]]>
+    </sql>
+  </changeSet>
  </databaseChangeLog>
