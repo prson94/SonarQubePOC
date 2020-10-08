@@ -497,7 +497,7 @@ from	{targetTable} T
                     where       A.ExecutionID = @executionID
 					group by	A.ExecutionID, A.ItemNumber
 					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-", new { executionID, obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
         }
 
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
@@ -544,7 +544,7 @@ from	{targetTable} T
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
 					                    group by	A.ExecutionID, A.ItemNumber
 					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-                    ", new { executionID, obj = new DbString { Value = obj, IsFixedLength = true, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+                    ", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
 
         }
 
@@ -3858,7 +3858,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
     {updateAssetInfoOnExecutionRecordsSql}
 
     {insertGraphAssetNode}",
-                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             else
@@ -3876,7 +3876,7 @@ insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid,
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, IsFixedLength = true, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true }, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
                                             break;
