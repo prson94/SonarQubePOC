@@ -41,7 +41,7 @@
         width: @ig-field-width-full !important;
     }
 
-    &:enabled:focus:not(.ui-state-error) {
+    &:enabled:focus {
         outline: 0 none;
         outline-offset: 0;
         box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
@@ -62,6 +62,13 @@
             background: @ig-white;
             border-color: none;
             box-shadow: none;
+        }
+
+        &:enabled:focus {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 @ig-focus-width @ig-midblue-t3;
+            border-color: @ig-field-border-color;
         }
     }
 
