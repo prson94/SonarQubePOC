@@ -207,7 +207,22 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            if (!model.Allocation.IsExternallyCalculated)
+
+            if (model.Allocation.IsExternallyCalculated)
+            {
+                if (model.Definition != null)
+                {
+                    if (model.Definition.DataQuality != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "A measure belonging to an externally calculated score may not have a DataQuality definition.");
+                    }
+                    else if (model.Definition.Governance != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "A measure belonging to an externally calculated score may not have a Governance definition.");
+                    }
+                }
+            }
+            else
             {
                 if (model.Weight <= 0 || model.Weight > 1)
                 {
@@ -245,10 +260,19 @@ namespace d360.model.DataAccessLayer
                             break;
                         case "Lookup":
                             Guid lookupUid;
+                            int lookupId;
                             if (Guid.TryParse(v, out lookupUid) && lookupObjectID.HasValue)
                             {
                                 lookupObject += "Type";
                                 if (!Company.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == lookupObjectID && i.uid == lookupUid).Any())
+                                {
+                                    validForType = false;
+                                }
+                            }
+                            else if (int.TryParse(v, out lookupId) && lookupObjectID.HasValue)
+                            {
+                                lookupObject += "Type";
+                                if (!Company.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == lookupObjectID && i.ObjectID == lookupId).Any())
                                 {
                                     validForType = false;
                                 }
@@ -822,7 +846,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                     }
 
                     var definitionToSave = model.Definition.CloneThis();
-                    if (model.Allocation.ScoreType == ScoreType.DataQuality) 
+                    if (model.Allocation.ScoreType == ScoreType.DataQuality && definitionToSave.DataQuality != null && !model.Allocation.IsExternallyCalculated) 
                     {
                         // These are saved in a table.
                         definitionToSave.DataQuality.FilterMatchType = null;
@@ -931,7 +955,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             Company.Connection.Execute("delete metrics.AssetVersionRollupPath where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
                         }
 
-                        if (!model.IsGroup)
+                        if (!model.IsGroup && model.Definition.DataQuality != null)
                         {
                             var assetVersionRollupPath = new MetricAssetVersionRollupPath
                             {
@@ -1246,7 +1270,6 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                     new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
                     );            
             }
-
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
         }
