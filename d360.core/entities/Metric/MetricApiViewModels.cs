@@ -97,9 +97,9 @@ namespace d360.core.entities.Metric
         [DataMember] 
         public MetricRuleResultOperation ResultOperation { get; set; }
         [DataMember] 
-        public Guid ResultPathUid { get; set; }
+        public Guid? ResultPathUid { get; set; }
         [DataMember] 
-        public MetricMatchType FilterMatchType { get; set; }
+        public MetricMatchType? FilterMatchType { get; set; }
         [DataMember] 
         public List<MetricAssetDefinitionDataQualityFilterViewModel> Filters { get; set; }
     }
@@ -302,6 +302,9 @@ namespace d360.core.entities.Metric
         /// </summary>
         [IgnoreDataMember]
         public string DefinitionJson { get; set; }
+
+        [IgnoreDataMember]
+        public IEnumerable<MetricAssetVersionRollupPath> RollupPaths { get; set; }
     }
 
     [DataContract]

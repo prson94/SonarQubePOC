@@ -65,7 +65,11 @@ namespace d360.model.DataAccessLayer
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
         {
             var model = (
-                        from a in Company.MetricAssets.Include("Allocation")
+                        from a in Company.MetricAssets
+                            .Include("Allocation")
+                            .Include("Versions.RollupPaths.Filters.AssetType")
+                            .Include("Versions.RollupPaths.Filters.FieldType")
+                            .Include("Versions.RollupPaths.Filters.Values")
                             .Include("Versions.Conditions.Items.Values")
                             .Include("Versions.Conditions.Items.ConditionFieldType")
                             .Include("Versions.Conditions.Items.ConditionIntersectType")
@@ -96,6 +100,7 @@ namespace d360.model.DataAccessLayer
                                 Weight = g.Weight
                             }).ToList(),
                             DefinitionJson = v.Definition,
+                            RollupPaths = v.RollupPaths,
                             Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
                                 ConditionAndOr = v.ConditionAndOr,
                                 Description = v.Description,
@@ -122,6 +127,26 @@ namespace d360.model.DataAccessLayer
             if (model != null)
             {
                 model.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(model.DefinitionJson ?? "{}");
+
+                if (model.RollupPaths != null && model.Definition.DataQuality != null)
+                {
+                    var rollupPath = model.RollupPaths.FirstOrDefault();
+                    if (rollupPath != null)
+                    { 
+                        model.Definition.DataQuality.FilterMatchType = rollupPath.FilterMatchType;
+                        model.Definition.DataQuality.ResultPathUid = rollupPath.RollupPathUid;
+                        if (rollupPath.Filters != null)
+                        {
+                            model.Definition.DataQuality.Filters = rollupPath.Filters.Select(f => new MetricAssetDefinitionDataQualityFilterViewModel { 
+                             AssetTypeUid = f.AssetType.uid,
+                             FieldTypeName = f.FieldType.Name,
+                             Operator = f.Operator,
+                             Values = f.Values.Select(v => v.Value).ToList()
+                            }).ToList();
+                        }                    
+                    }
+
+                }
             }
 
             return model;
@@ -279,6 +304,8 @@ namespace d360.model.DataAccessLayer
                 switch (model.Allocation.ScoreType)
                 {
                     case ScoreType.DataQuality:
+                        #region
+
                         var dq = model.Definition.DataQuality;
                         if (dq == null)
                         {
@@ -287,6 +314,17 @@ namespace d360.model.DataAccessLayer
                         if (model.Definition.Governance != null)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not provide a Governance object property under Definition.");
+                        }
+                        if (model.Definition.DataQuality.ResultPathUid == Guid.Empty)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "ResultPathUid may not be an empty identifier.");
+                        }
+                        else
+                        {
+                            if (!Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.RollupPath where Uid = @ResultPathUid and AssetTypeID = @ID", new { model.Definition.DataQuality.ResultPathUid, targetAssetType.ID }).Single())
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"ResultPathUid with the specified identifier {model.Definition.DataQuality.ResultPathUid} does not exist or does not correspond to the asset type you are scoring.");
+                            }
                         }
                         if (model.Allocation.IsThresholdBased)
                         {
@@ -299,19 +337,40 @@ namespace d360.model.DataAccessLayer
                             }
                             else
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Because the score definition is threshold-based, you must provide a valid threshold between 0 and 1.");
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Because the score definition is threshold-based, you must provide a valid Threshold between 0 and 1.");
+                            }
+                        }
+                        else
+                        {
+                            if (model.Threshold.HasValue)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.");
                             }
                         }
                         if (dq.Filters != null)
                         {
                             if (dq.Filters.Count > 0)
                             {
-                                var dqFilterFieldTypes = (from f in Company.FieldTypes
-                                                          join l in dq.Filters on f.Name equals l.FieldTypeName
-                                                          join a in Company.AssetTypes on f.AssetTypeID equals a.ID
-                                                          where l.AssetTypeUid == a.uid
-                                                          select new { l.AssetTypeUid, FieldTypeID = f.ID, l.FieldTypeName, f.Type, f.AllowMultipleValues, AssetTypeID = a.ID, f.LookupObjectType, f.LookupObjectID }
-                                                         ).Distinct().ToList();
+                                if (dq.Filters.Any(f => f.AssetTypeUid == Guid.Empty))
+                                {
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide valid (non-empty) asset type identifiers when using Rule Result Filters.");
+                                }
+
+                                if (dq.Filters.Any(f => string.IsNullOrEmpty(f.FieldTypeName)))
+                                {
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide valid (non-empty) field names (API Name of the field definition) when using Rule Result Filters.");
+                                }
+
+                                var dqFilterFieldTypes = Company.Query<dynamic>(@"
+select  distinct
+		A.ID as AssetTypeID, A.Uid as AssetTypeUid,
+		F.ID as FieldTypeID, F.Name as FieldTypeName, F.Type,
+		F.AllowMultipleValues, F.LookupObjectType, F.LookupObjectID
+from	metrics.RollupPath P
+		inner join metrics.RollupPathSegment S on S.RollupPathUid = P.Uid and P.Uid = @ResultPathUid
+		inner join AssetType A on A.ID = S.AssetTypeID
+		inner join FieldType F on F.AssetTypeID = S.AssetTypeID", new { dq.ResultPathUid }).ToList();
+
                                 bool isSuccess = true;
                                 var dqFilterErrorMessage = "";
                                 dq.Filters.ForEach(f =>
@@ -320,11 +379,28 @@ namespace d360.model.DataAccessLayer
 
                                     if (dqFilterFieldType != null)
                                     {
-                                        var operatorInfo = f.Operator.GetAsInfo();
-                                        if (!operatorInfo.AllowedDataTypes.Any(dt => dt.Name == dqFilterFieldType.FieldTypeName))
+                                        f.AssetTypeID = dqFilterFieldType.AssetTypeID;
+                                        f.FieldTypeID = dqFilterFieldType.FieldTypeID;
+
+                                        var dqFilterOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == f.Operator);
+                                        if (dqFilterOperatorInfo == null)
                                         {
                                             isSuccess = false;
-                                            dqFilterErrorMessage += $"A DataQuality filter uses an operator ({operatorInfo.Name}) that is not valid for fields with a data type of {dqFilterFieldType.Type}. ";
+                                            dqFilterErrorMessage += $"A DataQuality filter uses an invalid operator. ";
+                                        }
+                                        else
+                                        {
+                                            if (!dqFilterOperatorInfo.AllowedDataTypes.Any(dt => dt.Name == dqFilterFieldType.Type))
+                                            {
+                                                isSuccess = false;
+                                                dqFilterErrorMessage += $"A DataQuality filter uses an operator ({dqFilterOperatorInfo.Name}) that is not valid for fields with a data type of {dqFilterFieldType.Type}. ";
+                                            }
+                                            var dqValueCountErrorMessage = checkValidValuesCount(f.Values, dqFilterOperatorInfo, "Data Quality Result Filter");
+                                            if (!string.IsNullOrEmpty(dqValueCountErrorMessage))
+                                            {
+                                                isSuccess = false;
+                                                dqFilterErrorMessage = dqValueCountErrorMessage;
+                                            }
                                         }
 
                                         var dqValuesValidForType = checkValidValuesByDataType(f.Values, dqFilterFieldType.Type, dqFilterFieldType.LookupObjectType, dqFilterFieldType.LookupObjectID);
@@ -332,13 +408,6 @@ namespace d360.model.DataAccessLayer
                                         {
                                             isSuccess = false;
                                             dqFilterErrorMessage += $"One or more values used on your DataQuality filters are not supported by the data type ({dqFilterFieldType.Type}) of the referenced field. ";
-                                        }
-
-                                        var dqValueCountErrorMessage = checkValidValuesCount(f.Values, operatorInfo, "Data Quality Result Filter");
-                                        if (!string.IsNullOrEmpty(dqValueCountErrorMessage))
-                                        {
-                                            isSuccess = false;
-                                            dqFilterErrorMessage = dqValueCountErrorMessage;
                                         }
                                     }
                                     else
@@ -356,8 +425,12 @@ namespace d360.model.DataAccessLayer
                                 }
                             }
                         }
+
+                        #endregion
                         break;
                     case ScoreType.Governance:
+                        #region
+
                         var gov = model.Definition.Governance;
                         if (gov == null)
                         {
@@ -380,7 +453,12 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The field type name ({gov.Field.FieldTypeName}) used on your Governance Field Check does not exist on this asset type.");
                             }
 
-                            var fieldCheckOperatorInfo = operatorInfos.Single(o => o.ID == gov.Field.Operator);
+                            var fieldCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Field.Operator);
+                            if (fieldCheckOperatorInfo == null)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Field Check does not support the selected operator.");
+                            }
+                            
                             if (!fieldCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Field Check does not support the selected operator.");
@@ -432,7 +510,11 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Predicate Check does not correspond to a known predicate.");
                             }
 
-                            var predicateCheckOperatorInfo = operatorInfos.Single(o => o.ID == gov.Predicate.Operator);
+                            var predicateCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Predicate.Operator);
+                            if (predicateCheckOperatorInfo == null)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Predicate Check does not support the selected operator.");
+                            }
                             if (!predicateCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Predicate Check does not support the selected operator.");
@@ -451,7 +533,11 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Relation Check does not correspond to a known relationship type.");
                             }
 
-                            var relationCheckOperatorInfo = operatorInfos.Single(o => o.ID == gov.Relation.Operator);
+                            var relationCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Relation.Operator);
+                            if (relationCheckOperatorInfo == null)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Relation Check does not support the selected operator.");
+                            }
                             if (!relationCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Relation Check does not support the selected operator.");
@@ -480,6 +566,8 @@ namespace d360.model.DataAccessLayer
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your Governance Relation Check are not supported. All values must correspond to existing asset Uids.");
                             }
                         }
+                        
+                        #endregion
                         break;
                 }
             }
@@ -491,6 +579,31 @@ namespace d360.model.DataAccessLayer
             {
                 foreach (var group in model.ConditionGroups)
                 {
+                    #region Condition group validation
+                    var groupErrorPrefix = $"Condition group in position {group.Position}";
+                    if (model.Allocation.IsThresholdBased)
+                    {
+                        if (group.Threshold.HasValue)
+                        {
+                            if (group.Threshold <= 0 || group.Threshold > 1)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"{groupErrorPrefix} must contain a Threshold value between 0 and 1");
+                            }
+                        }
+                        else
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"Because the score definition is threshold-based, {groupErrorPrefix} must contain a valid Threshold between 0 and 1.");
+                        }
+                    }
+                    else
+                    {
+                        if (group.Threshold.HasValue)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"{groupErrorPrefix} must not provide a value for the Threshold property since the measure you are adding does not belong to a threshold-based score definition.");
+                        }
+                    }
+                    #endregion
+
                     foreach (var condition in group.ConditionItems)
                     {
                         var fieldType = new FieldType();
@@ -684,6 +797,39 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                     metricAssetVersion = JsonConvert.DeserializeObject<MetricAssetVersion>(string.Join("", metricAssetVersionJsonFragments));
                     string newConditionHash = model.CurrentConditionHash;
 
+                    if (model.Allocation.IsExternallyCalculated)
+                    {
+                        // Since this is external, clear out the definition.
+                        if (model.Definition == null)
+                        {
+                            model.Definition = new MetricAssetDefinitionViewModel();
+                        }
+                        model.Definition.DataQuality = null;
+                        model.Definition.Governance = null;
+                    }
+                    else
+                    {
+                        if (!model.IsGroup && model.Definition.Governance != null)
+                        {
+                            if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
+                            {
+                                if (model.Definition.Governance.External != null)
+                                {
+                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                }
+                            }
+                        }
+                    }
+
+                    var definitionToSave = model.Definition.CloneThis();
+                    if (model.Allocation.ScoreType == ScoreType.DataQuality) 
+                    {
+                        // These are saved in a table.
+                        definitionToSave.DataQuality.FilterMatchType = null;
+                        definitionToSave.DataQuality.Filters = null;
+                        definitionToSave.DataQuality.ResultPathUid = null;
+                    }
+                    
                     if (metricAssetVersion == null)
                     {
                         metricAssetVersion = new MetricAssetVersion
@@ -700,23 +846,9 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             Weight = model.Weight,
                             State = metricAsset.State,
                             EffectiveEndDate = null,
-                            Definition = JsonConvert.SerializeObject(model.Definition),
+                            Definition = definitionToSave.AsJson(),
                             UpdateFrequency = MetricUpdateFrequency.None
                         };
-
-                        if (!model.IsGroup && !model.Allocation.IsExternallyCalculated)
-                        {
-                            if (model.Definition.Governance != null)
-                            {
-                                if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
-                                {
-                                    if (model.Definition.Governance.External != null)
-                                    {
-                                        metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
-                                    }
-                                }
-                            }
-                        }
 
                         Company.Connection.Execute(
                             "insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)", 
@@ -780,23 +912,74 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
-                        metricAssetVersion.Definition = JsonConvert.SerializeObject(model.Definition);
+                        metricAssetVersion.Definition = definitionToSave.AsJson();
                         metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
-                        
-                        if (model.Definition.Governance != null)
-                        {
-                            if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
-                            {
-                                if (model.Definition.Governance.External != null) 
-                                {
-                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
-                                }
-                            }
-                        }
 
                         Company.Connection.Execute(
                             "update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid", 
                             metricAssetVersion, transaction: trans);
+                    }
+
+                    #endregion
+
+                    #region Process data quality rule filtering
+
+                    if (model.Allocation.ScoreType == ScoreType.DataQuality)
+                    {
+                        if (!isNew)
+                        {
+                            Company.Connection.Execute("delete metrics.AssetVersionRollupPath where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+                        }
+
+                        if (!model.IsGroup)
+                        {
+                            var assetVersionRollupPath = new MetricAssetVersionRollupPath
+                            {
+                                AssetVersionUid = metricAssetVersion.Uid,
+                                FilterMatchType = model.Definition.DataQuality.FilterMatchType.Value,
+                                RollupPathUid = model.Definition.DataQuality.ResultPathUid.Value,
+                                Uid = Guid.NewGuid()
+                            };
+
+                            var assetVersionRollupPathFilters = new List<MetricAssetVersionRollupPathFilter>();
+                            var assetVersionRollupPathFilterValues = new List<MetricAssetVersionRollupPathFilterValue>();
+
+                            if (model.Definition.DataQuality.Filters.Count > 0)
+                            {
+                                model.Definition.DataQuality.Filters.ForEach(f => {
+                                    var assetVersionRollupPathFilter = new MetricAssetVersionRollupPathFilter { 
+                                        AssetTypeID = f.AssetTypeID, 
+                                        AssetVersionRollupPathUid = assetVersionRollupPath.Uid,
+                                        FieldTypeID = f.FieldTypeID,
+                                        Operator = f.Operator,
+                                        Uid = Guid.NewGuid()
+                                    };
+                                    assetVersionRollupPathFilters.Add(assetVersionRollupPathFilter);
+
+                                    f.Values.ForEach(v =>
+                                    {
+                                        assetVersionRollupPathFilterValues.Add(
+                                            new MetricAssetVersionRollupPathFilterValue {
+                                                AssetVersionRollupPathFilterUid = assetVersionRollupPathFilter.Uid,
+                                                Value = v
+                                            }
+                                        );
+                                    });
+                                });
+                            }
+
+                            Company.Connection.Execute("insert into metrics.AssetVersionRollupPath (Uid, RollupPathUid, AssetVersionUid, FilterMatchType) values (@Uid, @RollupPathUid, @AssetVersionUid, @FilterMatchType)", assetVersionRollupPath, transaction: trans);
+
+                            assetVersionRollupPathFilters.ForEach(f =>
+                            {
+                                Company.Connection.Execute("insert into metrics.AssetVersionRollupPathFilter (Uid, AssetVersionRollupPathUid, AssetTypeID, FieldTypeID, Operator) values (@Uid, @AssetVersionRollupPathUid, @AssetTypeID, @FieldTypeID, @Operator)", f, transaction: trans);
+                            });
+
+                            assetVersionRollupPathFilterValues.ForEach(v =>
+                            {
+                                Company.Connection.Execute("insert into metrics.AssetVersionRollupPathFilterValue (AssetVersionRollupPathFilterUid, [Value]) values (@AssetVersionRollupPathFilterUid, @Value)", v, transaction: trans);
+                            });
+                        }                    
                     }
 
                     #endregion

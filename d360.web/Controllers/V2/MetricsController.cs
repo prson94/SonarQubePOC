@@ -215,6 +215,10 @@ namespace d360.web.Controllers.V2
         /// - LessThanOrEquals
         /// - LessThan
         /// - GreaterThanOrEquals
+        /// - Before
+        /// - After
+        /// - OnOrAfter
+        /// - OnOrBefore
         /// 
         /// For an up-to-date list of operators as well as the rules of use, please see the operator endpoint at (_/api/v2/environment/operators_).
         /// </remarks>

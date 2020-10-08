@@ -349,7 +349,7 @@ from	metrics.Asset A
                                         if (measure.RollupPath == null)
                                         {
                                             scoreItem.Value = false;
-                                            scoreItem.Evidence = "{ IsError: true, ErrorMessage: \"Rollup Path is invalid. An asset type or relationship type may have been removed.\" }";
+                                            scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path is invalid. An asset type or relationship type may have been removed." });
                                         }
                                         else
                                         {
@@ -357,67 +357,97 @@ from	metrics.Asset A
                                             var tableSql = "from ";
                                             var whereSql = "";
                                             var matchQuery = "";
-                                            measure.RollupPath.SegmentLinks.ForEach(s =>
+                                            if (measure.RollupPath.SegmentLinks == null)
                                             {
-                                                if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
-                                                {
-                                                    matchQuery += $"<-(E{s.IntersectTypeID})-N{s.EndAssetTypeID} AND  N{s.StartAssetTypeID}-(RE2)->R<-(RE1)-N{s.EndAssetTypeID}";
-                                                    tableSql += $"graph.AssetEdge E{s.IntersectTypeID}, graph.AssetNode N{s.EndAssetTypeID}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
-                                                    whereSql += $" and N{s.EndAssetTypeID}.AssetTypeID = {s.EndAssetTypeID} and E{s.IntersectTypeID}.IntersectTypeID = {s.IntersectTypeID} and E{s.IntersectTypeID}.PredicateType = {(int)s.PredicateType} ";
-                                                }
-                                                else 
-                                                {
-                                                    matchQuery = matchQuery.Replace($"N{s.StartAssetTypeID}", "") +
-                                                                 $"N{s.StartAssetTypeID}-(E{s.IntersectTypeID})->N{s.EndAssetTypeID}";
-
-                                                    tableSql = tableSql.Replace($"graph.AssetNode N{s.StartAssetTypeID}, ", "") +
-                                                               $"graph.AssetNode N{s.StartAssetTypeID}, graph.AssetEdge E{s.IntersectTypeID}, graph.AssetNode N{s.EndAssetTypeID}, ";
-
-                                                    whereSql = whereSql.Replace($"and N{s.StartAssetTypeID}.AssetTypeID = {s.StartAssetTypeID}", "") +
-                                                               $"and N{s.StartAssetTypeID}.AssetTypeID = {s.StartAssetTypeID} and E{s.IntersectTypeID}.IntersectTypeID = {s.IntersectTypeID} and N{s.EndAssetTypeID}.AssetTypeID = {s.EndAssetTypeID}";
-                                                }
-                                            });
-                                            whereSql += $"and N{assetEffectiveDate.AssetTypeId}.Uid = @AssetUid";
-                                            if (measure.EffectiveEndDate.HasValue)
+                                                scoreItem.Value = false;
+                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path Segments do not exist. An asset type or relationship type may have been removed." });
+                                            }
+                                            else 
                                             {
-                                                whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                int whereAssetTypePosition = 0;
+                                                measure.RollupPath.SegmentLinks.ForEach(s =>
+                                                {
+                                                    var tIntersect = $"E{s.IntersectTypeID}_{s.StartPosition}_{s.EndPosition}";
+                                                    var tStart = $"N{s.StartAssetTypeID}_{s.StartPosition}";
+                                                    var tEnd = $"N{s.EndAssetTypeID}_{s.EndPosition}";
+                                                    if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
+                                                    {
+                                                        matchQuery += $"<-({tIntersect})-{tEnd} AND  {tStart}-(RE2)->R<-(RE1)-{tEnd}";
+                                                        tableSql += $"graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
+                                                        whereSql += $" and {tEnd}.AssetTypeID = {s.EndAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tIntersect}.PredicateType = {(int)s.PredicateType} ";
+                                                    }
+                                                    else 
+                                                    {
+                                                        matchQuery = matchQuery.Replace($"{tStart}", "") +
+                                                                     $"{tStart}-({tIntersect})->{tEnd}";
+
+                                                        tableSql = tableSql.Replace($"graph.AssetNode {tStart}, ", "") +
+                                                                   $"graph.AssetNode {tStart}, graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, ";
+
+                                                        whereSql = whereSql.Replace($"and {tStart}.AssetTypeID = {s.StartAssetTypeID}", "") +
+                                                                   $"and {tStart}.AssetTypeID = {s.StartAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tEnd}.AssetTypeID = {s.EndAssetTypeID}";
+                                                    }
+                                                    
+                                                    if (assetEffectiveDate.AssetTypeId == s.StartAssetTypeID && whereAssetTypePosition == 0)
+                                                    {
+                                                        whereAssetTypePosition = s.StartPosition;
+                                                    }
+                                                    else if (assetEffectiveDate.AssetTypeId == s.EndAssetTypeID && whereAssetTypePosition == 0)
+                                                    {
+                                                        whereAssetTypePosition = s.EndPosition;
+                                                    }
+                                                });
+                                                whereSql += $"and N{assetEffectiveDate.AssetTypeId}_{whereAssetTypePosition}.Uid = @AssetUid";
+                                                if (measure.EffectiveEndDate.HasValue)
+                                                {
+                                                    whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                }
+
+                                                var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
+                                                try
+                                                {
+                                                    var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
+
+                                                    if (rollupPathResults.Count > 0)
+                                                    {
+                                                        float resultOperationValue = 0;
+                                                        switch (dqDefinition.ResultOperation)
+                                                        {
+                                                            case MetricRuleResultOperation.Average:
+                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
+                                                                break;
+                                                            case MetricRuleResultOperation.Maximum:
+                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
+                                                                break;
+                                                            case MetricRuleResultOperation.Minimum:
+                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
+                                                                break;
+                                                        }
+
+                                                        if (measure.IsThresholdBased)
+                                                        {
+                                                            scoreItem.Value = (measure.Threshold <= resultOperationValue);
+                                                        }
+                                                        else
+                                                        {
+                                                            // This will be used when adjusting max and actual weights.
+                                                            scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        scoreItem.Value = true;
+                                                    }
+
+                                                    scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    scoreItem.Value = false;
+                                                    scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
+                                                }
                                             }
 
-                                            var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
-                                            var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
-
-                                            if (rollupPathResults.Count > 0)
-                                            {
-                                                float resultOperationValue = 0;
-                                                switch (dqDefinition.ResultOperation)
-                                                {
-                                                    case MetricRuleResultOperation.Average:
-                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
-                                                        break;
-                                                    case MetricRuleResultOperation.Maximum:
-                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
-                                                        break;
-                                                    case MetricRuleResultOperation.Minimum:
-                                                        resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
-                                                        break;
-                                                }
-
-                                                if (measure.IsThresholdBased)
-                                                {
-                                                    scoreItem.Value = (measure.Threshold <= resultOperationValue);
-                                                }
-                                                else
-                                                {
-                                                    // This will be used when adjusting max and actual weights.
-                                                    scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                scoreItem.Value = true;
-                                            }
-
-                                            scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
                                         }
 
                                         break;

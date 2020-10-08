@@ -33,6 +33,18 @@ namespace d360.model
 
         public DbSet<MetricAssetVersionConditionItemValue> MetricAssetVersionConditionItemValues { get; set; }
 
+        public DbSet<MetricAssetVersionRollupPath> MetricAssetVersionRollupPaths { get; set; }
+
+        public DbSet<MetricAssetVersionRollupPathFilter> MetricAssetVersionRollupPathFilters { get; set; }
+
+        public DbSet<MetricAssetVersionRollupPathFilterValue> MetricAssetVersionRollupPathFilterValues { get; set; }
+
+        public DbSet<MetricRollupPath> MetricRollupPaths { get; set; }
+
+        public DbSet<MetricRollupPathLink> MetricRollupPathLinks { get; set; }
+
+        public DbSet<MetricRollupPathSegment> MetricRollupPathSegments { get; set; }
+
         public DbSet<Score> Scores { get; set; }
 
         #endregion
