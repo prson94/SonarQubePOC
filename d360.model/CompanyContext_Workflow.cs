@@ -928,10 +928,7 @@ namespace d360.model
             using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
             {
                 cnn.Open();
-
                 prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
-
-                cnn.Close();
             }
 
             HttpRequestMessage request = new HttpRequestMessage();
