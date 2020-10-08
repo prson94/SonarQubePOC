@@ -199,9 +199,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.model.MatchConditionsOnly = true;
 
         this.model.Definition = new MetricAssetDefinitionViewModel();
-        this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
-        this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
-        this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+        if (!this.isExternallyCalculated) {
+            this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+            this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
+            this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+        }
 
         this.model.ConditionGroups.forEach(g => {
             g.ConditionItems.forEach(c => {
