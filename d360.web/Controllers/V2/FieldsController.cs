@@ -461,7 +461,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<HttpResponseMessage> GetLookups(string fieldtypename, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, bool isNg = false)
+        public async Task<HttpResponseMessage> GetLookups(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
         {
             var prefix = "Fields.GetLookups => ";
             var errorMessage = "";
@@ -471,8 +471,6 @@ namespace d360.web.Controllers.V2
                 #region Load static lists
 
                 int id = 0;
-                int fieldtypeid = 0;
-                FieldType fieldType;
                 SystemObjects type = SystemObjects.ArtifactType;
                 AssetTypeClass @class = AssetTypeClass.Generic;
                 if (AssetTypeUid != null)
@@ -481,27 +479,23 @@ namespace d360.web.Controllers.V2
                     id = assetType.ObjectID;
                     Enum.TryParse(assetType.Object, out type);
                     @class = assetType.Class;
-                    fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else if (ActionTypeUid != null)
                 {
                     var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
                     id = issueType.ID;
                     type = SystemObjects.IssueType;
-                    fieldType = Company.Filter<FieldType>(x => x.Object == "IssueType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else if (RelationshipTypeUid != null)
                 {
                     var intersectType = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
                     id = intersectType.ID;
                     type = SystemObjects.IntersectType;
-                    fieldType = Company.Filter<FieldType>(x => x.Object == "IntersectType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else
                 {
                     throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
                 }
-                fieldtypeid = fieldType == null ? 0 : fieldType.ID;
 
                 var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
                 var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
@@ -541,14 +535,6 @@ namespace d360.web.Controllers.V2
                         (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
                     )
                 ).ToList();
-
-                IEnumerable<int> LookupObjectIDs = await Company.QueryAsync<int>(@"select distinct LookupObjectID from [FieldType] ft 
-                                                                  where (Object = @objectType and ObjectID = @objectid) 
-                                                                  and (LookupObjectID is not null) and Type = 'Relationship' 
-                                                                  and not exists (select 1 from [FieldType] ft2 
-                                                                                  where ft2.id = @ffieldtypeid
-                                                                                  and   ft2.LookupObjectID = ft.LookupObjectID
-                                                                                  and   ft2.LookupObjectID is not null)", new { objectType = sType, objectid = id, ffieldtypeid = fieldtypeid });
 
                 var Field_Relationships = allRelationships
                     .Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))

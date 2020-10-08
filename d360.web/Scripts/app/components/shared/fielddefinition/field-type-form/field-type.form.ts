@@ -214,7 +214,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                 .subscribe(ret => {
                     this.getFieldTypeEditorHandler(ret);
-                    this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
+                    this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                         .subscribe(s => {
                             this.getLookupsHandler(s);
                             this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
@@ -237,7 +237,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldTypeAPIModelField();
 
-            this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
+            this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                 .subscribe(x => {
                     this.getLookupsHandler(x);
                     this.model.FieldType.Type = new FieldType(); //Set as Empty to allow for selection.
@@ -819,7 +819,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (index !== 0) {
             uid = last.AssetTypeUid;
         }
-        console.log(item);
+
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
                 return this.fieldsService.getChildRelations(uid)
