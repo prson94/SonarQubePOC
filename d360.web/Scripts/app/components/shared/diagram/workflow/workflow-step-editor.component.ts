@@ -1,21 +1,13 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
-    WorkflowEventRegistration,
-    WorkflowObjectType,
     WorkflowChangeType,
-    ChangeTypeInfo,
-    EventCondition,
-    WorkflowListItem,
-    WorkflowDiagramModel,
-    WorkflowDiagramNode,
     NodeModel,
     WorkflowActivityType,
     WorkflowTaskProcedure,
     EmailTaskRecipientType,
     StepType,
 } from '../../../../models/workflow.model';
-import { FieldType } from '../../../../models/fields.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -72,7 +64,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     private procedures: WorkflowTaskProcedure[] = [];
 
     private fieldsSub;
+    private httpFieldsSub;
     private formFields = [];
+    private httpFields = [];
     private formRelationshipFields = [];
     private formRelationship;
 
@@ -84,6 +78,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         this.fieldsSub = this.workflowFieldsService.formFields$.subscribe(s => {
             this.filterFormFields();
         });
+
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+            this.filterHttpFields();
+        });
+
 
         this.workflowService.getEmailTaskRecipientType()
             .subscribe(r => {
@@ -164,7 +163,23 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
             this.filterFormFields();
 
-        } else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
+        }
+        else if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
+            if (this.step.settings.HTTPRequest == null) {
+                this.step.settings.HTTPRequest = {};
+            }
+            if (this.step.settings.HTTPRequest.Timeout == null) {
+                this.step.settings.HTTPRequest.Timeout = 90;
+            }
+            if (this.step.settings.HTTPRequest.Headers == null) {
+                this.step.settings.HTTPRequest.Headers = [];
+            }
+
+            this.workflowFieldsService.pushHttpFields(this.step);
+            this.filterHttpFields();
+
+        }
+        else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
                 this.step.settings.RelationshipUpdate = {};
             if (this.step.settings.RelationshipUpdate.Relationship == null)
@@ -207,6 +222,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         if (this.fieldsSub) {
             this.fieldsSub.unsubscribe();
         }
+
+        if (this.httpFieldsSub) {
+            this.httpFieldsSub.unsubscribe();
+        }
     }
 
     appendField(e: string) {
@@ -233,6 +252,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     filterFormFields() {
         this.formFields = [];
+
         this.formRelationshipFields = [];
         if (this.diagram == null) return;
 
@@ -250,6 +270,24 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 if (f['@type'] == 'relationshipType') {
                     this.formRelationshipFields.push(f);
                 }
+            }
+        });
+
+        this.stepChange.emit(this.step);
+    }
+
+    filterHttpFields() {
+        this.httpFields = [];
+        let fields = this.workflowFieldsService.getHttpFields();
+        let upstreamSteps = [];
+        this.traverseDiagram(this.step.key, upstreamSteps);
+
+        fields.forEach(f => {
+            let k = upstreamSteps.filter(u => u == f['@stepId']);
+            if (k != null && k.length > 0) {
+                f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
+                f['@FormLabel'] = 'HTTP Request :: ' + f['@label'];
+                this.httpFields.push(f);
             }
         });
 
@@ -285,6 +323,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         this.stepChange.emit(this.step);
     }
+
     changeValueType(e: any, field: string) {
         this.step.settings.RelationshipUpdate.Relationship[field] = e;
         if (field == '@AppendValue' && e == true) {

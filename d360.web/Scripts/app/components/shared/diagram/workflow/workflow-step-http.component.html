@@ -1,0 +1,78 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Headers</div>
+            <div>
+                <header>
+                    &nbsp;
+                    <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="addHeader()"></d3s-tile-actions>
+                </header>
+                <p-table #dt [value]="step.settings.HTTPRequest.Headers" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th style="width: 40px"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item let-i="index">
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                <input type="text" style="width: 95%" [ngModel]="item.key" (ngModelChange)="item.key = $event; stepChange.emit(step)" />
+                            </td>
+                            <td>
+                                <input type="text" style="width: 95%" [ngModel]="item.value" (ngModelChange)="item.value = $event; stepChange.emit(step)" />
+                            </td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="removeHeader(i)"><i class="fa fa-trash"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Method</div>
+            <div>
+                <select [ngModel]="step.settings.HTTPRequest.Method" (ngModelChange)="step.settings.HTTPRequest.Method = $event; stepChange.emit(step)" style="width: 95%">
+                    <option value=""></option>
+                    <option *ngFor="let m of methods" [value]="m">{{m}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Url</div>
+            <div>
+                <input type="text" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Url" (ngModelChange)="step.settings.HTTPRequest.Url = $event; stepChange.emit(step)" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Body</div>
+            <div>
+                <div class="textarea-editor" style="border-bottom: none;">
+                    <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="append($event)" ></d3s-workflow-template-tool>
+                </div>
+                <textarea [ngModel]="step.settings.HTTPRequest.Body" (ngModelChange)="step.settings.HTTPRequest.Body = $event; stepChange.emit(step)" class="textarea-editor" style="height: 8em"></textarea>
+            </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="FieldName">Request Timeout</div>
+            <div>
+                <input type="number" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Timeout" (ngModelChange)="step.settings.HTTPRequest.Timeout = $event; stepChange.emit(step)" />
+            </div>
+        </div>
+    </div>
+</div>

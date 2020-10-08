@@ -1,8 +1,10 @@
-﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges, AfterViewChecked, ElementRef, ViewChild, SimpleChange, SimpleChanges, OnDestroy } from '@angular/core';
 import * as _ from 'lodash';
 
 import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
+import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { NodeModel } from '../../../../models/workflow.model';
 
 @Component({
     selector: 'd3s-workflow-template-tool',
@@ -10,15 +12,19 @@ import { WorkflowService } from '../../../../services/workflow.service';
     templateUrl: './workflow-template-tool.component.html'
 })
 
-export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
+export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, OnDestroy {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
     @Input() issueObject: string;
+    @Input() step: NodeModel;
+    @Input() diagram: any;
     @ViewChild('sel', { static: false }) select;
     @ViewChild('cont', { static: false }) container;
 
     fields = [];
+    httpFields = [];
+    httpFieldsSub: any;
 
     private defaultFields = [
         { value: '[OBJECT_NAME]', label: 'Object Name' },
@@ -30,6 +36,9 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
         { value: '[RECIPIENT_TYPE]', label: 'Recipient Type' },
         { value: '[RECIPIENT_RESPONSIBILITY]', label: 'Recipient Responsibility' },
+        { value: '[WORKFLOW_STEP_ID]', label: 'Workflow Step ID' },
+        { value: '[WORKFLOW_ID]', label: 'Workflow ID' },
+        { value: '[WORKFLOW_INSTANCE_ID]', label: 'Workflow Instance ID' },
     ];
 
     private relationshipFields = [
@@ -39,32 +48,61 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
 
     selected = "none";
 
-    constructor(private workflowService: WorkflowService) {
+    constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
     }
 
     ngOnInit() {
         this.fields = _.cloneDeep(this.defaultFields);
+
+        this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(s => {
+            this.filterHttpFields();
+        });
+
     }
 
-    ngOnChanges() {
-        if (this.objectType != null && this.objectId != null)
-            this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
-                .subscribe(r => {
-                    this.fields = [];
-                    this.fields = _.cloneDeep(this.defaultFields);
+    ngOnChanges(changes: SimpleChanges) {
+        let objectTypeChanged = changes['objectType'] != null && changes['objectType'].currentValue != changes['objectType'].previousValue && changes['objectType'].currentValue != null;
+        let objectIdChanged = changes['objectId'] != null && changes['objectId'].currentValue != changes['objectId'].previousValue && changes['objectId'].currentValue != null;
+        let stepChanged = changes['step'] != null && changes['step'].currentValue != changes['step'].previousValue && changes['step'].currentValue != null;
 
-                    if (this.objectType == 'IntersectType')
-                        this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
-                
-                    r.forEach(f => {
-                        let fieldType = f.Object == "IssueType" ? "Action Field" : "Asset Field";
-                        
-                        this.fields.push({
-                            value: (f.Type == "JsonElement" ? '[JSON' : '[FIELD') + f.ID + ']#[' + fieldType + ' :: ' + f.Name + ']',
-                            label: fieldType + ' :: ' + f.Name
-                        });
+        if (objectTypeChanged || objectIdChanged || stepChanged) {
+            this.filterHttpFields();
+        }
+
+    }
+
+    ngOnDestroy() {
+        if (this.httpFieldsSub) {
+            this.httpFieldsSub.unsubscribe();
+        }
+    }
+
+    load() {
+        this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
+            .subscribe(r => {
+                this.fields = [];
+                this.fields = _.cloneDeep(this.defaultFields);
+
+                if (this.objectType == 'IntersectType')
+                    this.fields = this.fields.concat(_.cloneDeep(this.relationshipFields));
+
+                r.forEach(f => {
+                    let fieldType = f.Object == "IssueType" ? "Action Field" : "Asset Field";
+
+                    this.fields.push({
+                        value: (f.Type == "JsonElement" ? '[JSON' : '[FIELD') + f.ID + ']#[' + fieldType + ' :: ' + f.Name + ']',
+                        label: fieldType + ' :: ' + f.Name
                     });
                 });
+
+                this.httpFields.forEach(f => {
+                    let label = 'HTTP Request :: ' + f['@label'];
+                    this.fields.push({
+                        value: '[HTTPREQUEST|' + f['@stepId'] + '|' + f['@id'] + ']',
+                        label: label
+                    });
+                });
+            });
     }
 
     ngAfterViewChecked() {
@@ -82,6 +120,45 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
                 this.container.nativeElement.removeChild(node);
             }
         }
+    }
+
+    filterHttpFields() {
+        this.httpFields = [];
+        if (this.step == null || this.diagram == null) {
+            this.load();
+            return;
+        }
+
+        let fields = this.workflowFieldsService.getHttpFields();
+        let upstreamSteps = [];
+        this.traverseDiagram(this.step.key, upstreamSteps);
+
+        fields.forEach(f => {
+            let k = upstreamSteps.filter(u => u == f['@stepId']);
+            if (k != null && k.length > 0) {
+                f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
+                f['@FormLabel'] = 'HTTP Request :: ' + f['@label'];
+                this.httpFields.push(f);
+            }
+        });
+
+        this.load();
+    }
+
+    traverseDiagram(key: any, upstreamSteps: any[]) {
+        let steps = <any[]>this.diagram.model.nodeDataArray;
+        let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
+
+        let step = steps.find(s => s.key == key);
+        let toLinks = links.filter(l => l.to == key);
+
+        if (_.includes(upstreamSteps, key)) return;
+        upstreamSteps.push(step.key);
+
+        if (toLinks == null || toLinks.length < 1) return;
+
+        toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
+
     }
 
     clickItem(e: any) {

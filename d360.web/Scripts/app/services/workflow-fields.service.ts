@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject} from 'rxjs';
-import { WorkflowChangeType } from '../models/workflow.model';
+import { WorkflowChangeType, NodeModel } from '../models/workflow.model';
+
 
 @Injectable()
 export class WorkflowFieldsService {
@@ -8,7 +9,10 @@ export class WorkflowFieldsService {
     private formFieldsSource = new Subject<any[]>();
     formFields$ = this.formFieldsSource.asObservable();
 
+    private httpFieldsSource = new Subject<any[]>();
+    httpFields$ = this.httpFieldsSource.asObservable();
 
+    private httpFields: any[] = [];
     private formFields: any[] = [];
     private usedFields: any[] = [];
 
@@ -30,13 +34,65 @@ export class WorkflowFieldsService {
     }
 
     getUsedFields() {
-       // console.log(this.usedFields);
         return this.usedFields;
     }
 
     getFields() {
-        //console.log(this.formFields);
         return this.formFields;
+    }
+
+    getHttpFields() {
+        return this.httpFields;
+    }
+
+    clearHttpFields() {
+        this.httpFields = [];
+    }
+
+    setHttpFields(fields: any[]) {
+        this.httpFields = fields;
+        this.httpFieldsSource.next(this.httpFields);
+    }
+
+    pushHttpField(field: any) {
+        this.httpFields.push(field);
+        this.httpFieldsSource.next(this.httpFields);
+    }
+
+    pushHttpFields(step: NodeModel) {
+        let f: any;
+        let i: number;
+
+        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == 'statusCode');
+        if (i == -1) {
+            f = {};
+            f['@stepId'] = step.key;
+            f['@id'] = 'statusCode';
+            f['@label'] = 'Status Code';
+            this.httpFields.push(f);
+        }
+
+        i = this.httpFields.findIndex(f => f['@stepId'] == step.key && f['@id'] == 'responseBody');
+        if (i == -1) {
+            f = {};
+            f['@stepId'] = step.key;
+            f['@id'] = 'responseBody';
+            f['@label'] = 'Response Body';
+            this.httpFields.push(f);
+        }
+        this.httpFieldsSource.next(this.httpFields);
+    }
+
+    forceHttpFieldUpdate() {
+        this.httpFieldsSource.next(this.httpFields);
+    }
+
+    deleteHttpField(field: any) {
+        let i = this.httpFields.findIndex(f => f['@stepId'] == field['@stepId'] && f['@id'] == field['@id']);
+        if (i > -1) {
+            this.httpFields.splice(i, 1);
+            this.httpFieldsSource.next(this.httpFields);
+        }
     }
 
     clearFormFields() {
@@ -52,7 +108,6 @@ export class WorkflowFieldsService {
     pushFormField(field: any) {
         this.formFields.push(field);
         this.formFieldsSource.next(this.formFields);
-       // console.log(this.formFields);
     }
 
     pushFormFields(fields: any[]) {

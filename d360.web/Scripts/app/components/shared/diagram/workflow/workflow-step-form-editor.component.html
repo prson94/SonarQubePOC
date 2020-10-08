@@ -19,7 +19,7 @@
                 <p-editor [ngModel]="step.fields.form['@description']" (ngModelChange)="mapHTMLToFormProperty($event, '@description'); stepChange.emit(step)"  #fed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)"></d3s-workflow-template-tool>
+                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendFieldDescription($event)" ></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
@@ -114,7 +114,13 @@
                 <p-editor [ngModel]="step.settings.MessageBodyTemplate" (ngModelChange)="step.settings.MessageBodyTemplate = $event; stepChange.emit(step)" #ed>
                     <p-header>
                         <d3s-editor-header></d3s-editor-header>
-                        <d3s-workflow-template-tool [issueObject]="issueObject" [objectType]="objectType" [objectId]="objectId" (onItemClick)="appendField($event)"></d3s-workflow-template-tool>
+                        <d3s-workflow-template-tool 
+                                                    [issueObject]="issueObject" 
+                                                    [objectType]="objectType" 
+                                                    [objectId]="objectId" 
+                                                    (onItemClick)="appendField($event)" 
+                                                    [step]="step" 
+                                                    [diagram]="diagram"></d3s-workflow-template-tool>
                     </p-header>
                 </p-editor>
             </div>
