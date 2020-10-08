@@ -1039,7 +1039,7 @@ for json path";
 
                     var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
-                    if (assetType == null)
+                    if (assetType == null || assetType.Class == AssetTypeClass.Diagram)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
                     }
