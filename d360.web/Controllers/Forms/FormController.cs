@@ -270,66 +270,100 @@ namespace d360.web.Controllers
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
         public JsonResult DynamicEditorEditFields(string o, int oid)
         {
+            JsonResult res;
             switch ((o ?? "").ToUpper())
             {
                 case "APIFIELD":
-                    return CustomAPIVersionField_EditFields(oid);
+                    res = CustomAPIVersionField_EditFields(oid);
+                    break;
                 case "ARTIFACT":
-                    return Artifact_EditFields(oid);
+                    res = Artifact_EditFields(oid);
+                    break;
                 case "CONTRACT":
-                    return Contract_EditFields(oid);
+                    res = Contract_EditFields(oid);
+                    break;
                 case "ENDPOINT":
-                    return CustomAPIServiceEndpoint_EditFields(oid);
+                    res = CustomAPIServiceEndpoint_EditFields(oid);
+                    break;
                 case "EXPORTTEMPLATE":
-                    return ExportTemplate_EditFields(oid);
+                    res = ExportTemplate_EditFields(oid);
+                    break;
                 case "FUSION":
-                    return Fusion_EditFields(oid);
+                    res = Fusion_EditFields(oid);
+                    break;
                 case "FUSIONATTRIBUTE":
-                    return FusionAttribute_EditFields(oid);
+                    res = FusionAttribute_EditFields(oid);
+                    break;
                 case "INTERSECTTYPE":
-                    return Relationship_EditFields(oid);
+                    res = Relationship_EditFields(oid);
+                    break;
                 case "ISSUETYPE":
-                    return IssueType_EditFields(oid);
+                    res = IssueType_EditFields(oid);
+                    break;
                 case "MAP":
-                    return Map_EditFields(oid);                
+                    res = Map_EditFields(oid);
+                    break;
                 case "NAMESPACE":
-                    return CustomAPINamespace_EditFields(oid);
+                    res = CustomAPINamespace_EditFields(oid);
+                    break;
                 case "ORGANIZATION":
-                    return Organization_EditFields(oid);
+                    res = Organization_EditFields(oid);
+                    break;
                 case "ORGANIZATIONDOMAIN":
-                    return OrganizationDomain_EditFields(oid);
+                    res = OrganizationDomain_EditFields(oid);
+                    break;
                 case "ORGANIZATIONINVITATION":
-                    return OrganizationInvitation_EditFields(oid);
+                    res = OrganizationInvitation_EditFields(oid);
+                    break;
                 case "POLICY":
-                    return Hierarchy_EditFields(SystemObjects.Policy, oid);
+                    res = Hierarchy_EditFields(SystemObjects.Policy, oid);
+                    break;
                 case "PREDICATE":
-                    return Predicate_EditFields(oid);
+                    res = Predicate_EditFields(oid);
+                    break;
                 case "REFERENCEITEM":
-                    return ReferenceItem_EditFields(oid);
+                    res = ReferenceItem_EditFields(oid);
+                    break;
                 case "RESOURCESELF":
-                    return Resource_EditMyInfoFields();
+                    res = Resource_EditMyInfoFields();
+                    break;
                 case "RESOURCETYPE":
-                    return Resource_EditFields(oid);
+                    res = Resource_EditFields(oid);
+                    break;
                 case "RULE":
-                    return Rule_EditFields(oid);                
+                    res = Rule_EditFields(oid);
+                    break;
                 case "RULETYPE":
-                    return RuleType_EditFields(oid);
+                    res = RuleType_EditFields(oid);
+                    break;
                 case "SERVICE":
-                    return CustomAPIService_EditFields(oid);
+                    res = CustomAPIService_EditFields(oid);
+                    break;
                 case "SURVEYTYPE":
-                    return SurveyType_EditFields(oid);
+                    res = SurveyType_EditFields(oid);
+                    break;
                 case "TAG":
-                    return Tag_EditFields(oid);
+                    res = Tag_EditFields(oid);
+                    break;
                 case "TASKTYPE":
-                    return Diagram_EditFields(oid);
+                    res = Diagram_EditFields(oid);
+                    break;
                 case "TAXONOMY":
-                    return Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
+                    res = Hierarchy_EditFields(SystemObjects.Taxonomy, oid);
+                    break;
                 case "VERSION":
-                    return CustomAPIServiceEndpointVersion_EditFields(oid);
+                    res = CustomAPIServiceEndpointVersion_EditFields(oid);
+                    break;
                 case "URI":
-                    return CustomAPIVersionUri_EditFields(oid);                
+                    res = CustomAPIVersionUri_EditFields(oid);
+                    break;
+                default:
+                    throw new Exception("Invalid or non implemented editor type");
             }
-            throw new Exception("Invalid or non implemented editor type");
+            
+
+            res.MaxJsonLength = int.MaxValue;
+            return res;
         }
 
         [HttpGet, Route("dynamiceditor/new/uid/{uid}/type/{objectType?}")]
@@ -364,67 +398,99 @@ namespace d360.web.Controllers
         [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
         public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
         {
+            JsonResult res;
             switch ((objectType ?? "").ToUpper())
             {
                 case "APIFIELD":
-                    return CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
+                    res = CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
+                    break;
                 case "ARTIFACT":
-                    return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "CONTRACT":
-                    return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
+                    res =  Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
+                    break;
                 case "ENDPOINT":
-                    return CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
+                    res =  CustomAPIServiceEndpoint_AddFields(parentID.GetValueOrDefault());
+                    break;
                 case "EXPORTTEMPLATE":
-                    return ExportTemplate_AddFields();
+                    res = ExportTemplate_AddFields();
+                    break;
                 case "FUSION":
-                    return Fusion_AddFields(objectID.GetValueOrDefault());
+                    res = Fusion_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "FUSIONATTRIBUTE":
-                    return FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
+                    res = FusionAttribute_AddFields(objectID.GetValueOrDefault(), typeID.GetValueOrDefault());
+                    break;
                 case "ISSUE":
-                    return Issue_AddFields(objectID.GetValueOrDefault());
+                    res = Issue_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "ISSUETYPE":
-                    return IssueType_AddFields();
+                    res = IssueType_AddFields();
+                    break;
                 case "ISSUETYPERELATION":
-                    return IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
+                    res = IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
+                    break;
                  case "MAP":
-                    return Map_AddFields();                
+                    res = Map_AddFields();
+                    break;
                 case "NAMESPACE":
-                    return CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
+                    res = CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
+                    break;
                 case "ORGANIZATION":
-                    return Organization_AddFields(objectID.GetValueOrDefault());
+                    res = Organization_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "ORGANIZATIONDOMAIN":
-                    return OrganizationDomain_AddFields(objectID.Value);
+                    res = OrganizationDomain_AddFields(objectID.Value);
+                    break;
                 case "ORGANIZATIONINVITATION":
-                    return OrganizationInvitation_AddFields(objectID.Value);
+                    res = OrganizationInvitation_AddFields(objectID.Value);
+                    break;
                 case "POLICY":
-                    return Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Hierarchy_AddFields(SystemObjects.PolicyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "PREDICATE":
-                    return Predicate_AddFields();
+                    res = Predicate_AddFields();
+                    break;
                 case "REFERENCEITEM":
-                    return ReferenceItem_AddFields(objectID.GetValueOrDefault());
+                    res = ReferenceItem_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "RESOURCETYPE":
-                    return Resource_AddFields(objectID.GetValueOrDefault());
+                    res =  Resource_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "RULE":
-                    return Rule_AddFields(objectID.GetValueOrDefault());                
+                    res =  Rule_AddFields(objectID.GetValueOrDefault());
+                    break;
                 case "RULETYPE":
-                    return RuleType_AddFields();
+                    res = RuleType_AddFields();
+                    break;
                 case "SERVICE":
-                    return CustomAPIService_AddFields();
+                    res =  CustomAPIService_AddFields();
+                    break;
                 case "SURVEYTYPE":
-                    return SurveyType_AddFields();
+                    res =  SurveyType_AddFields();
+                    break;
                 case "TAG":
-                    return Tag_AddFields();
+                    res =  Tag_AddFields();
+                    break;
                 case "TASK":
-                    return Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res =  Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "TAXONOMY":
-                    return Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    res = Hierarchy_AddFields(SystemObjects.TaxonomyType, objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
+                    break;
                 case "VERSION":
-                    return CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
+                    res  = CustomAPIServiceEndpointVersion_AddFields(parentID.GetValueOrDefault());
+                    break;
                 case "URI":
-                    return CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
+                    res = CustomAPIVersionUri_AddFields(parentID.GetValueOrDefault());
+                    break;
+                default:
+                    throw new Exception("Invalid or non implemented editor type");
 
             }
-            throw new Exception("Invalid or non implemented editor type");
+            res.MaxJsonLength = int.MaxValue;
+            return res;
         }
 
         [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectUID}/{targetType}/{targetID:int}")]
