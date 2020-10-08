@@ -16,6 +16,7 @@ using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 using d360.core.exceptions;
+using System.Runtime.CompilerServices;
 
 namespace d360.model.DataAccessLayer
 {
@@ -807,19 +808,25 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         model.Definition.DataQuality = null;
                         model.Definition.Governance = null;
                     }
-                    else
-                    {
-                        if (!model.IsGroup && model.Definition.Governance != null)
+
+                    Action setVersionUpdateFrequency = () => {
+                        metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
+
+                         if (!model.Allocation.IsExternallyCalculated)
                         {
-                            if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
+                            if (!model.IsGroup && model.Definition.Governance != null)
                             {
-                                if (model.Definition.Governance.External != null)
+                                if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
                                 {
-                                    metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                    if (model.Definition.Governance.External != null)
+                                    {
+                                        metricAssetVersion.UpdateFrequency = model.Definition.Governance.External.UpdateFrequency;
+                                    }
                                 }
                             }
-                        }
-                    }
+                        }                   
+                    };
+
 
                     var definitionToSave = model.Definition.CloneThis();
                     if (model.Allocation.ScoreType == ScoreType.DataQuality) 
@@ -849,6 +856,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             Definition = definitionToSave.AsJson(),
                             UpdateFrequency = MetricUpdateFrequency.None
                         };
+
+                        setVersionUpdateFrequency();
 
                         Company.Connection.Execute(
                             "insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)", 
@@ -913,7 +922,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         metricAssetVersion.Threshold = model.Threshold;
                         metricAssetVersion.Weight = model.Weight;
                         metricAssetVersion.Definition = definitionToSave.AsJson();
-                        metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
+
+                        setVersionUpdateFrequency();
 
                         Company.Connection.Execute(
                             "update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid", 
