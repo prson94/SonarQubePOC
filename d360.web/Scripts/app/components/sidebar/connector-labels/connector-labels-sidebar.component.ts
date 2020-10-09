@@ -36,7 +36,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     isSaving: boolean = false;
 
     showConsolidationPopup: boolean = false;
-    consolidateValue: string = '';
+    consolidateValue: string;
 
 
     @ViewChild('dt', { static: false }) tableEl: any;
@@ -116,6 +116,11 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     consolidateClick() {
+        if (!this.consolidateValue || this.consolidateValue.trim() == "") {
+            console.error("Cannot consolidate connectors without selecting a connector to keep.")
+            return;
+        }
+        this.isSaving = true;
         var children = [];
         this.selected.forEach(label => {
             if (label.uid != this.consolidateValue) {
@@ -161,8 +166,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
                     this.getLabels();
                 }
-                this.selected = null;
-                this.selected = [this.labels[0]];
+                this.selected = [];
+                this.consolidateValue = null;
                 this.showConsolidate = false;
                 this.showConsolidationPopup = false;
                 this.showEditor = false;
