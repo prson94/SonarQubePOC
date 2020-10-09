@@ -18,7 +18,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
     selected: ConnectorLabel[] = [];
     rowsPerPage: number = 25;
-
+    rowsPerModal: number = 5;
     error: any;
 
     showDelete: boolean = false;

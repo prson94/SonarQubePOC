@@ -2620,6 +2620,12 @@ div.home-image-title-text {
         }
     }
 
+    [prompt] {
+        display: flex;
+        flex-direction: column;
+        min-height: 32px;
+    }
+
     .content {
 
         table {
@@ -2710,6 +2716,7 @@ div.home-image-title-text {
     flex-grow: 1;
     flex-shrink: 1;
     min-height: 32px;
+    overflow-y:auto;
 }
 
 .modal-overlay.show .modal-dialog {
@@ -3619,7 +3626,7 @@ button.tab-scroller {
 
         .error-message {
             position: relative;
-            top: -16px;
+            top: 4px;
         }
 
         .warningMessage {
