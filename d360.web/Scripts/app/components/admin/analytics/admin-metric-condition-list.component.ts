@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, ScoreTypeAllocation, MetricConditionType } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel } from '../../../models/operator.model';
@@ -96,6 +96,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     save(e: MetricAssetVersionConditionItemViewModel) {
         e.OperatorText = this.operators.find(o => o.ID === e.Operator).Name;
+        e.ConditionType = MetricConditionType.NotApplicable;
 
         if (!e.IsEditMode) {
             this.conditions.push(e);

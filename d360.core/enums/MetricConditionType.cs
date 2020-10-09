@@ -12,9 +12,11 @@ namespace d360.core.enums
     [JsonConverter(typeof(StringEnumConverter), true)]
     public enum MetricConditionType
     {
-        [Name("And"), EnumMember(Value = "And"), ReadOnly(false), Description("")]
+        [Name("N/A"), EnumMember(Value = "NotApplicable"), Description("")]
+        NotApplicable = 0,
+        [Name("And"), EnumMember(Value = "And"), Description("")]
         And = 1,
-        [Name("Or"), EnumMember(Value = "Or"), ReadOnly(false), Description("")]
+        [Name("Or"), EnumMember(Value = "Or"), Description("")]
         Or = 2
     }
     public class MetricConditionTypeInfo

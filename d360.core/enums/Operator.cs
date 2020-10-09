@@ -109,24 +109,22 @@ namespace d360.core.enums
         ]
         Between,
         [
-            NotYetUsed,
             Name("is populated"),
             EnumMember(Value = "Populated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
+            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Populated,
         [
-            NotYetUsed,
             Name("is not populated"),
             EnumMember(Value = "NotPopulated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
+            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         NotPopulated,
