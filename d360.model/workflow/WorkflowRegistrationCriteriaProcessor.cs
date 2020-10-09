@@ -236,7 +236,6 @@ namespace d360.model.workflow
                                 var statusCodeString = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("StatusCode")?.Value ?? "";
                                 if (int.TryParse(statusCodeString, out int _))
                                 {
-                                    item.ValueDataType = CriteriaValueDataType.Integer;
                                     return item.IsValueMatch(statusCodeString);
                                 }
                                 break;

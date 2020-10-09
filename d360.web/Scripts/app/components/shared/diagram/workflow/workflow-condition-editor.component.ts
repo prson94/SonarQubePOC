@@ -305,9 +305,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@Operator'];
             delete this.condition['@Value'];
 
-            let fieldId = this.selectedField.split('|')[2];
-
-            this.selectedType = fieldId == 1 ? 'number' : 'text';
+            this.selectedType = field['@type'].toLowerCase();
             this.setOperators(this.selectedType, null);
 
             this.condition['@FieldName'] = 'HTTP Request :: ' + field['@label'];
