@@ -162,7 +162,7 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
+                        <ng-template pTemplate="summary">
                             <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selected.length"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
@@ -214,7 +214,7 @@
                                     </td>
                                 </tr>
                             </ng-template>
-                            <ng-template *ngIf="usageTableConsolidate.totalRecords" pTemplate="summary">
+                            <ng-template pTemplate="summary">
                                 <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
