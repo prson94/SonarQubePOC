@@ -71,8 +71,8 @@
                             <td>{{item.Occurrences}}</td>
                         </tr>
                     </ng-template>
-                    <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
-                        <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usage.length"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
 
