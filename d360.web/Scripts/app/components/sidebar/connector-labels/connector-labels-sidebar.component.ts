@@ -167,7 +167,6 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                     this.getLabels();
                 }
                 this.selected = null;
-                this.selected = [this.labels[0]];
                 this.showConsolidate = false;
                 this.showConsolidationPopup = false;
                 this.showEditor = false;
