@@ -23,7 +23,7 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
 
         [DataMember]
-        public int? UpdatedBy { get; set; }
+        public Guid? UpdatedByUid { get; set; }
 
         [DataMember]
         public bool IsSystem { get; set; }

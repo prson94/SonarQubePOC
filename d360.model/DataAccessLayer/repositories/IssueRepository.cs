@@ -40,10 +40,12 @@ namespace d360.model.DataAccessLayer
                                         IT.Name, 
                                         IT.Description, 
                                         IT.IsSystem, 
-                                        IT.UpdatedOn, 
-                                        IT.UpdatedBy 
+                                        IT.UpdatedOn,
+                                        R.Uid as UpdatedByUid
                                     from 
-                                        IssueType IT";        
+                                        IssueType IT
+                                        LEFT JOIN 
+                                        [reporting].[Global_Resource] R on R.ResourceID = IT.UpdatedBy ";        
 
             issueTypeSQL = baseIssueTypesSql;
 

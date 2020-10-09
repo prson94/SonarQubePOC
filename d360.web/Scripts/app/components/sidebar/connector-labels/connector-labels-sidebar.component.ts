@@ -212,6 +212,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         setTimeout(() => {
             this.deletePopupTitle = this.selected ? 'Delete Connector Label' : 'Delete Connector Labels';
             this.deleteConfirmationText = `Delete the Connector Label '${this.selected[0].Value}'`;
+            this.isUsageLoading = false;
             this.showDelete = true;
             this.cdRef.markForCheck();
         }, 100);
