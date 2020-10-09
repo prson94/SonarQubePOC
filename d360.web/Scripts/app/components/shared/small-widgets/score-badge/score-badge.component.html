@@ -1,4 +1,4 @@
-﻿<div class="{{scoreBadgeClass}}">
+﻿<div class="d3s-score-badge">
     <div class="score-tooltip">
         <span class="item">
             <span class="item-name"><strong class="gov-bold">{{getType()}}</strong></span> {{score.Value | scoreDisplay:1}}
@@ -26,14 +26,5 @@
             <strong class="gov-bold">Last Run Date</strong> {{lastRunDate | date:'shortDate'}}
         </span>
     </div>
-    <ng-container *ngIf="igBadgeStyle; else oldschool">
-        <ig-badge [text]="getBadgeText()" [variant]="getScoreVariantColor()"></ig-badge>
-    </ng-container>
-    <ng-template #oldschool>
-        <div *ngIf="score.ScoreType" [class]="displayAsFieldClass">{{getType()}}</div>
-        <div class="d3s-score-pill {{getScoreCSSClass()}}">
-            <d3s-dynamic-percentage *ngIf="!mast && showSparkline" [percentage]="getValuePct()"></d3s-dynamic-percentage>
-            <div class="text">{{score.Value | scoreDisplay:1}}</div>
-        </div>
-    </ng-template>
+    <ig-badge [text]="getBadgeText()" [variant]="getScoreVariantColor()"></ig-badge>
 </div>
