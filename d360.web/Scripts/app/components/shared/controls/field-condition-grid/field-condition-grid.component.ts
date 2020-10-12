@@ -38,7 +38,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
         if (!this.conditions)
             this.conditions = [];
 
-        this.addNewCondition();
+        this.tryAddNewCondition();
 
         this.dataCheck = setInterval(() => {
 
@@ -53,8 +53,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
 
         this.formGroup.valueChanges.subscribe(obs => {
             setInterval(() => {
-                this.addNewCondition();
-                this.onChange.emit({ event: 'Value changed', value: this.conditions });
+                this.tryAddNewCondition();
             });
         });
     }
@@ -78,20 +77,26 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     deleteCondition(item: Condition) {
         this.conditions = this.conditions.filter(x => x != item);
         if (this.conditions.length == 0) {
-            this.addNewCondition();
+            this.tryAddNewCondition();
         }
     }
 
 
-    addNewCondition() {
+    tryAddNewCondition() {
         var lastCondition = this.conditions[this.conditions.length - 1];
+        var availableFields = this.getAvailableFields(null);
         if (!lastCondition || (lastCondition.operator != null && lastCondition.operator != '')) {
-            this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null });
+            if (availableFields.length > 0)
+                this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null });
         }
+
+        this.onChange.emit({ event: 'Value changed', value: this.conditions });
+
     }
     onFieldChange($event, condition: Condition) {
         condition.operator = '';
         condition.value = '';
+        this.tryAddNewCondition();
     }
 
     onConditionChange(event, condition: Condition) {
@@ -113,6 +118,10 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
 
     getOperators(item: Condition) {
         var ft = this.getFieldType(item);
+        if (ft && ft.Operators && !item.operator) {
+            item.operator = ft.Operators[0].value;
+            this.tryAddNewCondition();
+        }
         return ft ? ft.Operators : [];
     }
 
@@ -126,6 +135,17 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
             return this.fields.filter(x => x.Name === item.field)[0];
 
         return null;
+    }
+
+    getAvailableFields(item: Condition) {
+        var allowedFields = this.fieldsSelect.filter(x => !this.conditions.some(c => c.field === x.value));
+
+        if (item && item.field) {
+            var field = this.fields.filter(x => x.Name == item.field)[0];
+            allowedFields.push({ value: field.Name, label: field.FriendlyName });
+            allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);
+        }
+        return allowedFields;
     }
 }
 export class Condition {
