@@ -30,7 +30,9 @@ export class DropdownDirective implements AfterViewInit {
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
 
-        if (!placeholder && placeholder != '' && placeholder != null) {
+        let isPlaceholderSet = !(placeholder == undefined || placeholder == null || placeholder == '');
+
+        if (!isPlaceholderSet) {
             if (this.required == null) {
                 this.dropdownRef.placeholder = 'Optional';
                 this.dropdownRef.showClear = true;
