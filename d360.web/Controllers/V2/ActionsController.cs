@@ -381,12 +381,17 @@ for json path";
             {
                 if (Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid))
                 {
-                    var validUid = Company.AssetTypes.Any(i => i.uid == assetTypeUid);
+                    var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);                    
 
-                    if (!validUid)
+                    if (assetType == null)
                     {
                         return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type Uid provided does not exist."));
                     }
+                    else if (assetType.Class == AssetTypeClass.Diagram)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                    }
+
                 }
                 else
                 {
@@ -405,6 +410,10 @@ for json path";
                     if (asset == null)
                     {
                         return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Uid provided does not exist."));
+                    }
+                    else if(asset.AssetType.Class == AssetTypeClass.Diagram)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
                     }
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
