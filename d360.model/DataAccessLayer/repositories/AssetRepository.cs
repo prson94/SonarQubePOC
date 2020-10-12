@@ -644,7 +644,7 @@ namespace d360.model.DataAccessLayer
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 
                     // advanced filter contains a filter on the parent.  Technically this parent join should be an Inner join because the parent MUST be one of the values and not null
-                    if (value.Contains("ParentDisplayName"))
+                    if (value.Contains("ParentDisplayName") || value.Contains("ParentUid"))
                     {
                         includeParentInCount = true;
                     }
