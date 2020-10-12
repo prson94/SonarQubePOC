@@ -413,7 +413,7 @@ for json path";
                     }
                     else if(asset.AssetType.Class == AssetTypeClass.Diagram)
                     {
-                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid."));
                     }
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
@@ -428,7 +428,7 @@ for json path";
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid."));
                 }
             }
 
