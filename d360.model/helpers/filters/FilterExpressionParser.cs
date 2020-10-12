@@ -41,6 +41,7 @@ namespace d360.model.helpers
             if (includeParent)
             {
                 allowedDefaultFields.Add(new DefaultFilter("ParentDisplayName", "Parent.DisplayValue", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("ParentUid", "Parent.Uid", SqlFieldType.Text));
             }
 
             allowedDefaultFields.Add(new DefaultFilter("CreatedOn", "A.CreatedOn", SqlFieldType.DateTime));
