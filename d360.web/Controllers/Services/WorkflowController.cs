@@ -2171,7 +2171,7 @@ order by wi.StartedOn desc";
         {
             dynamic settings = XmlToDynamic(data);
 
-            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null))
+            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null || settings.HTTPRequest != null))
             {
                 if (settings.MessageBodyTemplate != null)
                 {
@@ -2183,15 +2183,29 @@ order by wi.StartedOn desc";
                     settings.MessageSubjectTemplate = FormatWorkflowProperty(settings.MessageSubjectTemplate.ToString(), fieldTypes);
                 }
 
+                if (settings.HTTPRequest != null)
+                {
+                    if (settings.HTTPRequest.Body != null)
+                    {
+                        settings.HTTPRequest.Body = FormatWorkflowProperty(settings.HTTPRequest.Body.ToString(), fieldTypes);
+                    }
+                    if (settings.HTTPRequest.Url != null)
+                    {
+                        settings.HTTPRequest.Url = FormatWorkflowProperty(settings.HTTPRequest.Url.ToString(), fieldTypes);
+                    }
+                }
+
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
+
             }
+
             return data;
         }
 
         private string DeFormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic settings = XmlToDynamic(data);
-            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null))
+            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null || settings.HTTPRequest != null))
             {
                 if (settings.MessageBodyTemplate != null)
                 {
@@ -2203,8 +2217,21 @@ order by wi.StartedOn desc";
                     settings.MessageSubjectTemplate = DeFormatWorkflowProperty(settings.MessageSubjectTemplate.ToString(), fieldTypes);
                 }
 
+                if (settings.HTTPRequest != null)
+                {
+                    if (settings.HTTPRequest.Body != null)
+                    {
+                        settings.HTTPRequest.Body = DeFormatWorkflowProperty(settings.HTTPRequest.Body.ToString(), fieldTypes);
+                    }
+                    if (settings.HTTPRequest.Url != null)
+                    {
+                        settings.HTTPRequest.Url = DeFormatWorkflowProperty(settings.HTTPRequest.Url.ToString(), fieldTypes);
+                    }
+                }
+
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
             }
+
             return data;
         }
 
