@@ -162,7 +162,7 @@ export class GalleryPopupMenuComponent implements OnInit {
             isSeparator: true
         },
         {
-            title: 'Child has tooltip',
+            title: 'Tooltip',
             items: [{
                 title: 'Hover over me',
                 tooltip: 'I am tooltip and I am positioned above element. I am cool.'

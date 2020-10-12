@@ -124,7 +124,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 i.keysMac = [];
                 i.keys.forEach(x => {
                     if (x === 17) {
-                        i.keysMac.push(224);
+                        i.keysMac.push(55);
                     } else {
                         i.keysMac.push(x);
                     }
@@ -466,6 +466,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         if (item.default) {
             cs += ' default';
         }
+
         return cs;
     }
 
