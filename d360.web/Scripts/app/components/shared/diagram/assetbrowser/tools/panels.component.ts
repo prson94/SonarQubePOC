@@ -10,6 +10,7 @@ import { AssetBrowserPanelCommand, DiagramType } from '../../../../../models/lin
 })
 export class AssetBrowserPanelsComponent {
     @Input() enableAdd: boolean;
+    @Input() enableDownload: boolean;
     @Input() enableInformation: boolean;
 
     @Input() addSelected: boolean;

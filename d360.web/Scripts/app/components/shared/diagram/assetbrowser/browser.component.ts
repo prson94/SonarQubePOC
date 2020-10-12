@@ -150,6 +150,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly selectionPathHighlightColor: string = '#F5C2FF';
     private readonly leafBackColor: string = 'transparent';
 
+    private readonly maxDescendantCount: number = 500;
+
     //#endregion
 
     //#region Component Base Methods
@@ -879,6 +881,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //}
     }
 
+    private helper_CountDescendants(data: AssetBrowserResponseModel): number {
+        if (data && data.nodes) {
+            return data.nodes.filter(n => n.group != null && n.group != '').length;
+        }
+
+        return 0;
+    }
+
     private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
         let model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
 
@@ -1307,13 +1317,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagramData = data;
                     this.loadingText = "Determining links and meaning...";
 
-                    this.helper_ParseTranslatedData(data);
+                    if (isLineage && this.helper_CountDescendants(data) > this.maxDescendantCount) {
+                        this.errorText = `Asset has too many descendants to display.`;
+                        this.isError = true;
+                        this.isLoading = false;
+                    }
+                    else {
+                        this.helper_ParseTranslatedData(data);
 
-                    this.helper_ResizeDiagram();
-                    this.helper_ScaleDiagram(1);
-                    this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                    this.loadingText = "";
-                    this.isLoading = false;
+                        this.helper_ResizeDiagram();
+                        this.helper_ScaleDiagram(1);
+                        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                        this.loadingText = "";
+                        this.isLoading = false;
+                    }
                 }
                 else {
                     this.errorText = `Unable to retrieve ${(isLineage ? "lineage" : "impact")} content.`;
