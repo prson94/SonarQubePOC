@@ -127,7 +127,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.secondaryNavService.showItem(this.itemsOwn);
                     this.memberGroups = new SecondaryNavItem(
                         'Groups', 'memberGroup', ['fa-user-circle'],
-                        `/sidebar/membergroup/${resourceId}`,null,5
+                        `/sidebar/membergroup/${this.resource.Uid}`, null, 5
                     );
                     this.secondaryNavService.showItem(this.memberGroups);
                     this.itemsFollow = new SecondaryNavItem(

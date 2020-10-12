@@ -11,7 +11,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile">  
-                        <d3s-resource-groups [resourceId]="resourceId" ></d3s-resource-groups>
+                        <d3s-resource-groups [resourceUid]="resourceUid" ></d3s-resource-groups>
                     </div>
                 </div>
             </div>
@@ -21,7 +21,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 
 export class MemberGroupComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    resourceId: number;
+    resourceUid: string;
     
     constructor(
         private route: ActivatedRoute,
@@ -35,7 +35,7 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
+            this.resourceUid = params['resourceUid'];
             
             this.checkSecondaryNavLocalStorage();
         });

@@ -3,10 +3,13 @@ import { Router }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { ResourcesService } from '../../services/resources.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Resource } from '../../models/resource.model';
+import { Observable } from 'rxjs';
+import { AssetService } from '../../services/asset.service';
 
 @Component({
     selector: 'd3s-resource-groups',
-    providers: [ResourcesService],
+    providers: [ResourcesService, AssetService],
     template: `                 
                 <div class="tile tile-detail">
                    <header>Member Groups
@@ -36,7 +39,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                     </td>
                                     <td>
                                         <div class="RowTools">
-                                            <d3s-preview-tooltip objectType="Group" [objectId]="item.ID"><a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-preview-tooltip>
+                                            <d3s-preview-tooltip objectType="Group" [objectId]="item.Uid"><a [routerLink]="groupUrl(item.ID)" style="cursor:pointer;"><i class="fa fa-info"></i></a></d3s-preview-tooltip>
                                         </div>
                                     </td>
                                 </tr>
@@ -51,11 +54,13 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 })
 
 export class ResourceGroupsComponent extends BaseComponent implements OnInit{
-    @Input() resourceId: number;
+    @Input() resourceUid: string;
 
     private groups: any[];
+    private user: Observable<Resource>;
+    private id: number;
 
-    constructor(private router: Router, private resourcesService: ResourcesService) {
+    constructor(private router: Router, private resourcesService: ResourcesService, private assetService: AssetService) {
         super();        
     }
 
@@ -65,9 +70,9 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
 
     private load() {
         this.isLoading = true;
-        this.resourcesService.getUserGroups(this.resourceId)
+        this.resourcesService.getUserGroups(this.resourceUid)
             .subscribe(res => {
-                this.groups = res;
+                this.groups = res.items;
                 this.isLoading = false;
             });
     }
@@ -77,6 +82,9 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
     }
 
     private doSelect(group) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('group', group.ID));
+        this.assetService.getAssetLegacyUri(group.Uid).subscribe(uri => {
+                this.router.navigateByUrl(uri);
+            });
+       
     }
 };
