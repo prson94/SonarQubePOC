@@ -3,11 +3,11 @@
         <div *ngIf="result?.Icon" class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></div>
         <div *ngIf="result?.ImageUrl" class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></div>
         <div (click)="navigateLink()" class="name" [innerHtml]="result?.DisplayName"></div>
-        <d3s-status-badge *ngIf="showStatus" [status]="status" [igBadgeStyle]="true">
+        <d3s-status-badge *ngIf="showStatus" [status]="status">
         </d3s-status-badge>
         <div class="right-container">
             <div #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
-                <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score" [igBadgeStyle]="true">
+                <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
                 </d3s-score-badge>
             </div>
             <div *ngIf="result?.Uid" class="menu-container">
