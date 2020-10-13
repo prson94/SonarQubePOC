@@ -69,6 +69,7 @@ export class WorkflowFieldsService {
             f['@stepId'] = step.key;
             f['@id'] = 'statusCode';
             f['@label'] = 'Status Code';
+            f['@type'] = 'number';
             this.httpFields.push(f);
         }
 
@@ -78,6 +79,7 @@ export class WorkflowFieldsService {
             f['@stepId'] = step.key;
             f['@id'] = 'responseBody';
             f['@label'] = 'Response Body';
+            f['@type'] = 'text';
             this.httpFields.push(f);
         }
         this.httpFieldsSource.next(this.httpFields);

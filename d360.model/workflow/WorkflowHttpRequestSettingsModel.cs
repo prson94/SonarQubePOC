@@ -67,7 +67,7 @@ namespace d360.model.workflow
 
             if (xml.Element(HEADERS_VALUE) != null)
             {
-                foreach (var field in xml.Element(HEADERS_VALUE).Elements(HEADERS_VALUE))
+                foreach (var field in xml.Elements(HEADERS_VALUE))
                 {
                     headers.Add(WorkflowHttpRequestHeader.ParseXml(field));
                 }
@@ -91,13 +91,13 @@ namespace d360.model.workflow
         {
             var model = new WorkflowHttpRequestHeader();
 
-            if (xml.Attribute("key") != null)
+            if (xml.Element("key") != null)
             {
-                model.Value = xml.Attribute("key").Value;
+                model.Key = xml.Element("key").Value;
             }
-            if (xml.Attribute("value") != null)
+            if (xml.Element("value") != null)
             {
-                model.Value = xml.Attribute("value").Value;
+                model.Value = xml.Element("value").Value;
             }
 
             return model;
