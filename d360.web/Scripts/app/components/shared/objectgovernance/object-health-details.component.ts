@@ -119,7 +119,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                     }
 
-                    this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 0;
+                    this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 2;
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
                         chart: {

@@ -26,13 +26,18 @@
                                 <i class="fa fa-caret-down arrow-down"></i>
                                 {{score.EffectiveDate | utcDate | date:'shortDate'}}
                             </span>
-                            <span *ngSwitchDefault
+                            <span *ngSwitchCase="0"
                                   pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
                                   tooltipPosition="top"
                                   tooltipStyleClass="ig-tooltip"
                                   class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}"
                                   (click)="onCarouselScoreClick(score)">
                                 <i class="fa fa-square turn"></i>
+                                {{score.EffectiveDate | utcDate | date:'shortDate'}}
+                            </span>
+                            <span *ngSwitchDefault 
+                                  (click)="onCarouselScoreClick(score)"
+                                  class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}">
                                 {{score.EffectiveDate | utcDate | date:'shortDate'}}
                             </span>
                         </ng-container>
@@ -83,12 +88,15 @@
                                 <div *ngSwitchCase="-1" class="col s6 column">
                                     <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i> {{item.Score}}%
                                 </div>
-                                <div *ngSwitchDefault
+                                <div *ngSwitchCase="0"
                                      pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
                                      tooltipPosition="top"
                                      tooltipStyleClass="ig-tooltip"
                                      class="col s6 column">
                                     <i class="fa fa-square turn"></i>
+                                    {{item.Score}}%
+                                </div>
+                                <div *ngSwitchDefault class="col s6 column">
                                     {{item.Score}}%
                                 </div>
                             </ng-container>
