@@ -122,7 +122,9 @@ namespace d360.model.DataAccessLayer
                             ParentUid = a.ParentUid,
                             Threshold = v.Threshold,
                             Uid = a.Uid,
-                            Weight = v.Weight
+                            Weight = v.Weight,
+                            AssetTypeUid = a.Allocation.AssetTypeUid,
+                            ScoreType = a.Allocation.ScoreType
                         }).FirstOrDefault();
 
             if (model != null)

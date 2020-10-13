@@ -294,6 +294,12 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetViewDetailModel : MetricAssetViewModel
     {
+        [DataMember, JsonProperty(Order = 98)]
+        public Guid AssetTypeUid { get; set; }
+
+        [DataMember, JsonProperty(Order = 99)]
+        public ScoreType ScoreType { get; set; }
+
         [DataMember, JsonProperty(Order = 100)]
         public List<MetricAssetVersionViewModel> Versions { get; set; }
 
