@@ -124,7 +124,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                 i.keysMac = [];
                 i.keys.forEach(x => {
                     if (x === 17) {
-                        i.keysMac.push(55);
+                        i.keysMac.push(91);
                     } else {
                         i.keysMac.push(x);
                     }
