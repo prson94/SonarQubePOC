@@ -217,10 +217,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 user.Fields[key] = e.item[key];
             }
         }
-
-        this.resourcesService.saveResource(user)
+        this.isLoading = true;
+        this.resourcesService.saveResource(user, true)
             .subscribe(
                 result => {
+                    this.isLoading = false;
                     if (result.Message == "" && result.Success) {
                         result.Message = 'Info successfully updated.';
                     }

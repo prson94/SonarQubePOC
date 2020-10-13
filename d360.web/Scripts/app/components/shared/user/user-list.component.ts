@@ -265,7 +265,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         }
 
         this.isLoading = true;
-        this.resourcesService.saveResource(user)
+        this.resourcesService.saveResource(user,true)
             .subscribe(
                 result => {                    
                     this.showMessageForApiResult(this.messagesService, result, `User successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);

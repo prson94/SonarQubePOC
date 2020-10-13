@@ -76,7 +76,17 @@ namespace d360.web.Controllers.V2
             {
 
                 var settings = Community.GetCompanySettings();
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                bool IsCurrentUser = false;
+
+                if (ResourceID != null)
+                {
+                    if (ResourceID == Company.CurrentResourceID)
+                    {
+                        IsCurrentUser = true;
+                    }
+                }
+
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
                 string finalSql = "";
@@ -770,8 +780,28 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
         {
             var prefix = "Membership.PutUsers => ";
+            bool IsCurrentUser = false;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
+                if (users != null && users.Count == 1)
+                {
+                    foreach (var user in users)
+                    {
+                        Guid RUid = Guid.NewGuid();
+                        var resource = Community.Filter<Resource>(i => i.Uid == user.uid, i => i.CompanyResources).SingleOrDefault();
+                        if (resource != null)
+                        {
+                            if (resource.ID == Company.CurrentResourceID)
+                            {
+                                IsCurrentUser = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
             if (users == null || users.Count == 0)

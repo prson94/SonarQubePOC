@@ -107,8 +107,8 @@ export class ResourcePasswordComponent extends BaseComponent{
                         }
                     }
 
-                    this.isLoading = true;
-                    this.resourcesService.saveResource(user)
+                        this.isLoading = true;
+                        this.resourcesService.saveResource(user, false)
                         .subscribe(
                             result => {
                                 this.isLoading = false;
