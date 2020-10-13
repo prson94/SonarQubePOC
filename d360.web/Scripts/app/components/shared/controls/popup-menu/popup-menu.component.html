@@ -5,9 +5,11 @@
 </div>
 
 <ng-template #menuItemsTemplate let-items let-class="class">
-    <ul class="menu-items {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
+    <ul class="menu-items {{(hasCheckboxes(items) || hasIcons(items) ? 'no-left-padding' : 'default-padding')}} {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
         <li *ngFor="let item of items"
-            pTooltip="{{item.tooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip"
+            pTooltip="{{item.tooltip}}" 
+            tooltipPosition="top" 
+            tooltipStyleClass="ig-tooltip"
             tabindex="-1"
             [attr.class]="getItemClass(item)"
             (click)="select(item,$event)"
