@@ -37,8 +37,8 @@ ig-number-input {
         }
 
         &.invalid {
-            background: @ig-red-t5 !important;
-            border-color: none !important;
+            background: @ig-red-t5;
+            border-color: none;
         }
 
         &:required {
@@ -61,13 +61,6 @@ ig-number-input {
         }
     }
 
-    &.ng-invalid[required], .ng-invalid.required {
-        .ig-number-field {
-            background: @ig-lightblue-t4;
-            border-color: @ig-field-border-color;
-        }
-    }
-
     &.ng-dirty.ng-invalid,
     &.ng-touched.ng-invalid {
         .ig-number-field {
@@ -78,6 +71,13 @@ ig-number-input {
                 background: @ig-lightblue-t4;
                 border-color: @ig-field-border-color;
             }
+        }
+    }
+
+    &.ng-invalid[required], .ng-invalid.required {
+        .ig-number-field {
+            background: @ig-lightblue-t4;
+            border-color: @ig-field-border-color;
         }
     }
 }
