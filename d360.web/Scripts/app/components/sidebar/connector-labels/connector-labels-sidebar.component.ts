@@ -40,6 +40,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
 
     @ViewChild('dt', { static: false }) tableEl: any;
+    @ViewChild('usageTable', { static: false }) tableEl1: any;
+    @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
     lastSelectedElement: ConnectorLabel;
 
     constructor(private router: Router,
@@ -328,6 +330,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 var el = (<any>(event.target)).parentNode;
                 this.selectElement(el);
             }
+            this.tableEl1.totalRecords = this.selected.length;
+            this.tableEl2.totalRecords = this.selected.length;
             this.lastSelectedElement = item;
         }
     }
