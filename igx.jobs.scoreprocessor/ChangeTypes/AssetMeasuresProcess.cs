@@ -42,7 +42,16 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     // Wait a moment in case there are multiple queue messages
                     Thread.Sleep(new Random().Next(3000, 7000));
 
-                    var currentlyRunningExecutions = company.Query<bool>("select cast(iif(count(1) > 0, 1, 0) as bit) from api.Execution where ExecutionID <> @id and [Route] like '/api/v2/scoring/%/results' and MarkedForProcessing = 1", new { id = Info.ExecutionUid }).Single();
+                    var currentlyRunningExecutions = company.Query<bool>(@"
+select  cast(iif(count(1) > 0, 1, 0) as bit) 
+from    api.Execution 
+where   ExecutionID <> @id 
+        and [Route] like '/api/v2/scoring/%/results' 
+        and MarkedForProcessing = 1 
+        and (
+    (Total <= 1000 and ProcessingStartedOn > dateadd(mi, -10, getutcdate())) OR
+    (Total > 1000 and Total <= 10000 and ProcessingStartedOn > dateadd(mi, -30, getutcdate())) OR
+    (Total > 10000 and ProcessingStartedOn > dateadd(hh, -3, getutcdate()))  )", new { id = Info.ExecutionUid }).Single();
                     if (currentlyRunningExecutions)
                     {
                         throw new ScoresCurrentlyProcessingException();
