@@ -10,10 +10,12 @@ import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-admin-rules-component',
-    providers: [RulesService],
+    providers: [RulesService, AssetTypeService, AssetService],
     template: `
 <div class="row">
     <div class="col l4 s12">
@@ -131,6 +133,8 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     constructor(private stateService: StateService, protected secondaryNavService: SecondaryNavService,
         private rulesService: RulesService,
         protected messagesService: MessagesObservableService,
+        private assetTypeService: AssetTypeService,
+        private assetsService: AssetService,
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {
@@ -197,7 +201,18 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
     }
 
-    selectedItemChange(objectId: number) {        
-            this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+    selectedItemChange(objectId: number) {  
+        this.loadDataAndExecuteAction();
+        this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+    }
+
+    private loadDataAndExecuteAction() {
+        if (this.selected) {
+            this.assetsService.getAssetTypeLegacyData(this.selected.uid)
+                .subscribe(res => {
+                    this.selected.ID = res.ObjectID;
+                    this.selected.AssetTypeID = res.AssetTypeID;
+                });
+        }
     }
 }

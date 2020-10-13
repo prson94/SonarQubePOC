@@ -2332,9 +2332,10 @@ from    ResponsibilityTypeRelation R
             return list;
         }
 
-        [Route("ownership/types/asset/{id:Guid}/relations")]
-        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(Guid id)
+        [Route("ownership/types/asset/{uid:Guid}/relations")]
+        public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByAssetType(Guid uid)
         {
+            var id = Company.AssetTypes.FirstOrDefault(x => x.uid == uid).ObjectID;
             var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
 select  R.ResponsibilityTypeID,
         O.Name as ResponsibilityTypeName,
@@ -2346,7 +2347,7 @@ select  R.ResponsibilityTypeID,
         R.PermissionsBitMask
 from    ResponsibilityTypeRelation R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.uid = @id 
+        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id 
         cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
             new { id }).ToList().OrderBy(i => i.ClassName).ThenBy(i => i.AssetTypeName).ToList();
 
@@ -2706,28 +2707,6 @@ from    (
         #endregion
 
         #region Rules
-
-        [Route("ruletypes")]
-        public IEnumerable<dynamic> GetRuleTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-            return Company.Query<dynamic>(@"
-select      ID as AssetTypeID, 
-            ObjectID as ID, 
-            Name, 
-            Description, 
-            CreatedOn, 
-            CreatedBy, 
-            UpdatedOn, 
-            UpdatedBy, 
-            DisplayFormat,
-            uid
-from        AssetType 
-where       Object = 'RuleType'
-order by    Name
-");
-        }
 
         [Route("ruletypes/{id:int}")]
         public HttpResponseMessage GetRuleType(int id)

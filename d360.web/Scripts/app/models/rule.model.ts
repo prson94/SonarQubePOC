@@ -9,7 +9,9 @@ export class RuleType {
     AutoDisplayDescription: boolean;
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
+    AssetTypeID: number;
     HasWorkflow: boolean;
+    uid: string;
 
     public static AsGridObject(ruleType: RuleType): AssetGridObject {
         var ago = new AssetGridObject();
