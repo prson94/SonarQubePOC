@@ -836,4 +836,12 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
+    public class WorkflowScoredAsset : IWorkflowEnabledAsset
+    {
+        public ChangeType ChangeType => ChangeType.ScoreUpdate;
+
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public bool Success { get; set; } = true;
+    }
 }

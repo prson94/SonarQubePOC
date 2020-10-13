@@ -1159,7 +1159,7 @@ where T.ExecutionId = @executionid;
                         ", new { executionID }, commandTimeout: timeout);
         }
 
-        private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
+        public void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
         {
             try
             {
