@@ -859,7 +859,7 @@ namespace d360.model
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.HTTPRequest:
-                        await SendHttpRequest(itemStep, objectInfo, stepSettings);
+                        await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
                     default:
@@ -914,7 +914,7 @@ namespace d360.model
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
         }
 
-        private async Task SendHttpRequest(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+        private async Task SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
         {
             if (settings == null)
                 throw new Exception($"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
@@ -977,7 +977,7 @@ namespace d360.model
 
                 var response = await client.SendAsync(request);
 
-                await SaveHttpRequestResults(item, requestSettings, response);
+                await SaveHttpResponseResultsAsync(item, requestSettings, response);
             }
         }
 
@@ -2073,7 +2073,7 @@ namespace d360.model
             }
         }
 
-        private async Task SaveHttpRequestResults(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
+        private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
         {
             if (!string.IsNullOrEmpty(item.Fields) && response != null)
             {
