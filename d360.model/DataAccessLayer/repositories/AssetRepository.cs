@@ -649,6 +649,14 @@ namespace d360.model.DataAccessLayer
                         includeParentInCount = true;
                     }
 
+                    // check if the advanced filter contains a filter by asset path
+                    foreach (var fieldTypeId in filteredFields)
+                    {
+                        var fieldType = allFieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+
+                        if (fieldType != null && fieldType.Type == "Path") includeAssetPathInCount = true;
+                    }
+
                     if (includeOnlyListableFields || includeFieldsList.Any())
                     {
                         tempArgs = new DynamicParameters();
