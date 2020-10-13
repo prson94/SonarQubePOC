@@ -8,7 +8,7 @@ import { RuleType } from '../../../models/rule.model';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset.model';
+import { AssetTypeClass, AssetTypeApiModel } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetService } from '../../../services/asset.service';
@@ -48,12 +48,12 @@ import { AssetService } from '../../../services/asset.service';
                             <td>{{item.Name}}</td>
                             <td>
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;loadDataAndExecuteAction()"><i class="fa fa-pencil"></i></a>
                                 </div>
                             </td>
                             <td>
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;loadDataAndExecuteAction()"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -96,7 +96,7 @@ import { AssetService } from '../../../services/asset.service';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <d3s-responsibility-relations queryType="A" [id]="selected?.uid" [showAddButton]="false"></d3s-responsibility-relations>
+                    <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
                 </div>
             </div>
         </div>
@@ -122,8 +122,8 @@ import { AssetService } from '../../../services/asset.service';
 })
 
 export class AdminRulesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
-    ruleTypes: RuleType[] = [];
-    selected: RuleType;
+    ruleTypes: AssetTypeApiModel[] = [];
+    selected: AssetTypeApiModel;
     showEditor: boolean = false;
     showDelete: boolean = false;
     assetTypeClass: AssetTypeClass;
@@ -155,7 +155,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     protected getRuleTypes() {
         this.isLoading = true;
-        this.rulesService.getRuleTypes()
+        this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Rule)
             .subscribe(result => {
                 this.ruleTypes = result;
                 this.isLoading = false;

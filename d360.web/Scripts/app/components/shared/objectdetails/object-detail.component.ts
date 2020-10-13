@@ -91,49 +91,6 @@ export class ObjectDetailComponent implements OnChanges {
                     this.cdRef.markForCheck();
                 });
         }
-        else if (this.objectType && this.objectUID) {
-            this.isLoading = true;
-            this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType)
-                .subscribe(data => {
-                    this.rows = data.rows;
-                    this.categories = [];
-                    for (var i = 0; i < this.rows.length; i++) {
-                        if (this.rows[i].Category != null && this.rows[i].Category == '') {
-                            this.rows[i].Category = null;
-                        }
-                    }
-
-                    this.populateSystemProperties(this.rows);
-
-                    //remove system property rows.
-                    this.rows = this.rows.filter(r => !r.Category || r.Category.toUpperCase() != this.systemProperties.toUpperCase());
-
-                    this.rows.forEach(r => {
-                        if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
-                            this.categories.push(new Category(r.Category));
-
-                        this.populateRow(r)
-                    });
-
-                    let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
-                    if (this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
-                        this.categories.push(this.categories.splice(this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
-                    }
-                    for (let i = 0; i < this.categories.length; i++) {
-                        let items = this.rows.filter(r => r.Category == this.categories[i].name);
-                        this.categories[i].rows = [];
-                        for (let j of items) {
-                            if ((j.FirstColumnFields && j.FirstColumnFields.length > 0) || (j.SecondColumnFields && j.SecondColumnFields.length)) {
-                                this.categories[i].rows.push(j);
-                            }
-                        }
-                    }
-                    this.rows = displayRows;
-                    this.loadCategory();
-                    this.isLoading = false;
-                    this.cdRef.markForCheck();
-                });
-        }
     }
 
     private setDetailFieldType(field: DetailField) {
