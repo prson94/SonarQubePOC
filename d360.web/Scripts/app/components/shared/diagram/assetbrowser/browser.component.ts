@@ -1318,7 +1318,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.loadingText = "Determining links and meaning...";
 
                     if (isLineage && this.helper_CountDescendants(data) > this.maxDescendantCount) {
-                        this.errorText = `Asset has too many descendants to display.`;
+                        this.errorText = `Sorry, we cannot display an asset with more than 500 descendants. Please choose a child asset or use the filters to display fewer items.`;
                         this.isError = true;
                         this.isLoading = false;
                     }
