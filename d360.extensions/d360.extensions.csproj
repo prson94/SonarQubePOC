@@ -132,7 +132,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="azuregraph\AzureGraphProvider.cs" />
-    <Compile Include="caching\MemoryCachingProvider.cs" />
     <Compile Include="caching\DummyCachingProvider.cs" />
     <Compile Include="info\UriSecurityContextProvider.cs" />
     <Compile Include="IQueueSource.cs" />

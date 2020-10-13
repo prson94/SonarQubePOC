@@ -361,6 +361,7 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="caching\MemoryCachingProvider.cs" />
     <Compile Include="Controllers\Forms\FormController_Artifact.cs" />
     <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
     <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
