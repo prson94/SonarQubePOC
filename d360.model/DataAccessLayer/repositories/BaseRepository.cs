@@ -424,7 +424,7 @@ namespace d360.model.DataAccessLayer.repositories
                              @defaultValue{tableAlias} as name FROM AssetType AT 
 					                            INNER JOIN Asset A ON A.AssetTypeID = AT.ID
 					                            cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
-					                            WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} A.ObjectID = {f.DefaultValue} FOR JSON PATH)
+					                            WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} and A.ObjectID = {f.DefaultValue} FOR JSON PATH)
                             ) defaultColorValue{tableAlias}(color)";
                         fieldJoins.Add(defaultSql);
                     }
