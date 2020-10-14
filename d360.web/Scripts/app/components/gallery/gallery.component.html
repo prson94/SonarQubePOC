@@ -5,7 +5,10 @@
 <div class="row">
     <div class="col s2">
         <div class="collection">
-            <a *ngFor="let control of controls" (click)="activeControl = control.key;" [class]="(activeControl == control.key ? 'collection-item active' : 'collection-item')">{{control.label}}</a>
+            <div class="control-category" *ngFor="let cat of categories">
+                <label>{{cat.type}}</label>
+                <a *ngFor="let control of cat.controls" (click)="activeControl = control.key;" [class]="(activeControl == control.key ? 'collection-item active' : 'collection-item')">{{control.label}}</a>
+            </div>
         </div>
     </div>
     <div class="col s10">
