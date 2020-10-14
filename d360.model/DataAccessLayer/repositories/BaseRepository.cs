@@ -415,6 +415,8 @@ namespace d360.model.DataAccessLayer.repositories
 
                     if (!string.IsNullOrEmpty(f.DefaultValue))
                     {
+
+                        string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
                         string defaultSql = $@"
                             outer apply(
                             select FormattedValue = 
@@ -422,7 +424,7 @@ namespace d360.model.DataAccessLayer.repositories
                              @defaultValue{tableAlias} as name FROM AssetType AT 
 					                            INNER JOIN Asset A ON A.AssetTypeID = AT.ID
 					                            cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
-					                            WHERE A.ObjectID = 24 FOR JSON PATH)
+					                            WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} A.ObjectID = {f.DefaultValue} FOR JSON PATH)
                             ) defaultColorValue{tableAlias}(color)";
                         fieldJoins.Add(defaultSql);
                     }
