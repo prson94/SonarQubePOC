@@ -297,16 +297,16 @@ namespace d360.web.Controllers.V2
         /// <param name="groupUid">The unique identifier of the Group.</param>
         /// <param name="users">The users that need to be added to the group</param>
         [
-   HttpPost,
-   MapToApiVersion("2.0"),
-   Route("groups/{groupUid:Guid}/members"),
-   SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
-   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-   SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
-   SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
-   SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-   SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-]
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupUid:Guid}/members"),
+           SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
+           SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
         public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
@@ -525,16 +525,15 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns></returns>
         [
-    HttpGet,
-    Route("groups"),
-    SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-    SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
-
-]
+            HttpGet,
+            Route("groups"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
+        ]
         public async Task<IHttpActionResult> GetGroups()
         {
             var prefix = "Membership.GetGroups => ";
@@ -722,7 +721,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -782,7 +781,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)

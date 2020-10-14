@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="Table.api.ExecutionUser-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionUser')
+BEGIN
+	CREATE TABLE [api].[ExecutionUser](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		Username nvarchar(500) null,
+		[Uid] uniqueidentifier,
+		ResourceID int,
+		FirstName nvarchar(500),
+		LastName nvarchar(500),
+		[State] int,
+		IsAdministrator bit not null,
+		IsNew bit not null,
+		Success bit null,
+		Message nvarchar(max),
+		[Object] varchar(50),
+		ObjectID int not null,
+		ObjectType varchar(50),
+		ObjectTypeID int not null
+	 CONSTRAINT [PK_ApiExecutionUser] PRIMARY KEY CLUSTERED 
+	(
+		[ExecutionID] ASC,
+		[ItemNumber] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
