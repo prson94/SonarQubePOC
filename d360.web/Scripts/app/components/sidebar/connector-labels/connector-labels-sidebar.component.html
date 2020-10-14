@@ -163,7 +163,7 @@
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
-                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selected.length"></d3s-grid-paging-info>
+                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selectedCount"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </div>
@@ -219,6 +219,10 @@
                                     <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
                                 </ng-template>
                             </p-table>
+                        </div>
+                        <div class="row"><br />
+                            All occurrences of the unselected labels will be replaced by occurrences of the selected label.<br />
+                            The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone.
                         </div>
                     </div>
                 </div>
