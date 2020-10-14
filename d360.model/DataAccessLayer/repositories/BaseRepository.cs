@@ -126,7 +126,7 @@ namespace d360.model.DataAccessLayer.repositories
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                     }
                     else if (f.Type == "Lookup" && listColorsAsJSON)
                     {
@@ -169,6 +169,10 @@ namespace d360.model.DataAccessLayer.repositories
                         else if (f.Type == "Score")
                         {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                        }
+                        else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
+                        {
+                            fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -408,6 +412,20 @@ namespace d360.model.DataAccessLayer.repositories
 									 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql})                                
                             ){tableAlias}(FormattedValue, [Value]) ";
                     fieldJoins.Add(sql);
+
+                    if (!string.IsNullOrEmpty(f.DefaultValue))
+                    {
+                        string defaultSql = $@"
+                            outer apply(
+                            select FormattedValue = 
+                            (SELECT COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color, 
+                             @defaultValue{tableAlias} as name FROM AssetType AT 
+					                            INNER JOIN Asset A ON A.AssetTypeID = AT.ID
+					                            cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
+					                            WHERE A.ObjectID = 24 FOR JSON PATH)
+                            ) defaultColorValue{tableAlias}(color)";
+                        fieldJoins.Add(defaultSql);
+                    }
                 }
                 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
                 {
