@@ -8,8 +8,10 @@
     ChangeDetectorRef,
     ViewEncapsulation,
     ChangeDetectionStrategy,
-    forwardRef,
-    ViewChild
+    forwardRef,
+
+    ViewChild,
+    AfterViewInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarModule, Calendar } from 'primeng/calendar';
@@ -39,7 +41,7 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
         '(focus)': 'focus($event)',
     }
 })
-export class IgDate implements ControlValueAccessor, OnInit  {    
+export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
     @Input() style: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;
@@ -59,6 +61,7 @@ export class IgDate implements ControlValueAccessor, OnInit  {
     @ViewChild("cal", { static: false }) calendar: Calendar;
 
     protected value = null;
+    private isOverlayVisible: boolean = false;
 
     onModelChange: Function = () => { };
 
@@ -66,12 +69,22 @@ export class IgDate implements ControlValueAccessor, OnInit  {
 
     constructor(
         protected ref: ChangeDetectorRef
-    )
-    {
+    ) {
     }
-    
-    ngOnInit(): void {        
+
+    ngOnInit(): void {
         this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
+    }
+
+    ngAfterViewInit() {
+        setInterval(() => {
+            if (this.isOverlayVisible !== this.calendar.overlayVisible) {
+                if (this.calendar.overlayVisible && this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
+                    this.calendar.overlay.classList.add(this.getStyleClass);
+                }
+                this.isOverlayVisible = this.calendar.overlayVisible;
+            }
+        }, 10);
     }
 
     get getStyleClass(): string {

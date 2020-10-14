@@ -119,159 +119,181 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     ];
 
 
-    private simpleExample = [{
-        "Name": "StepNo",
-        "FriendlyName": "Step No",
-        "Type": {
-            "Decimal": {}
+    private simpleExample = [
+        {
+            "Name": "cstm_op",
+            "FriendlyName": "Custom Operators Field",
+            "Type": {
+                "Text": {}
+            },
+            "Operators": [{
+                "label": "zzz operator",
+                "value": 2000
+            }, {
+                "label": "good operator",
+                "value": 9
+            }, {
+                "label": "bad operator",
+                "value": 12
+            }, {
+                "label": "no sorting here",
+                "value": 15
+            }
+            ]
         },
-        "Operators": [{
-            "label": "is",
-            "value": 1
+        {
+            "Name": "StepNo",
+            "FriendlyName": "Step No",
+            "Type": {
+                "Decimal": {}
+            },
+            "Operators": [{
+                "label": "is",
+                "value": 1
+            }, {
+                "label": "is between",
+                "value": 9
+            }, {
+                "label": "is greater than",
+                "value": 12
+            }, {
+                "label": "is greater than or equal to",
+                "value": 15
+            }, {
+                "label": "is less than",
+                "value": 14
+            }, {
+                "label": "is less than or equal to",
+                "value": 13
+            }, {
+                "label": "is not",
+                "value": 2
+            }, {
+                "label": "is not populated",
+                "value": 11
+            }, {
+                "label": "is populated",
+                "value": 10
+            }]
         }, {
-            "label": "is between",
-            "value": 9
+            "Name": "Name",
+            "FriendlyName": "Name",
+            "Type": {
+                "Text": {}
+            },
+            "Operators": [{
+                "label": "contains",
+                "value": 3
+            }, {
+                "label": "does not contain",
+                "value": 4
+            }, {
+                "label": "ends with",
+                "value": 6
+            }, {
+                "label": "is",
+                "value": 1
+            }, {
+                "label": "is not",
+                "value": 2
+            }, {
+                "label": "is not populated",
+                "value": 11
+            }, {
+                "label": "is populated",
+                "value": 10
+            }, {
+                "label": "starts with",
+                "value": 5
+            }]
         }, {
-            "label": "is greater than",
-            "value": 12
-        }, {
-            "label": "is greater than or equal to",
-            "value": 15
-        }, {
-            "label": "is less than",
-            "value": 14
-        }, {
-            "label": "is less than or equal to",
-            "value": 13
-        }, {
-            "label": "is not",
-            "value": 2
-        }, {
-            "label": "is not populated",
-            "value": 11
-        }, {
-            "label": "is populated",
-            "value": 10
-        }]
-    }, {
-        "Name": "Name",
-        "FriendlyName": "Name",
-        "Type": {
-            "Text": {}
+            "Name": "GovernanceRole",
+            "FriendlyName": "Governance Role",
+            "Type": {
+                "Lookup": {}
+            },
+            "Operators": [{
+                "label": "in",
+                "value": 16
+            }, {
+                "label": "is",
+                "value": 1
+            }, {
+                "label": "is not",
+                "value": 2
+            }, {
+                "label": "is not populated",
+                "value": 11
+            }, {
+                "label": "is populated",
+                "value": 10
+            }, {
+                "label": "not in",
+                "value": 17
+            }],
+            "Values": [{
+                "value": "Value 1",
+                "label": "Label 1"
+            }, {
+                "value": "Value 2",
+                "label": "Label 2"
+            }, {
+                "value": "Value 3",
+                "label": "Label 3"
+            }, {
+                "value": "Value 4",
+                "label": "Label 4"
+            }, {
+                "value": "Value 5",
+                "label": "Label 5"
+            }, {
+                "value": "Value 6",
+                "label": "Label 6"
+            }]
         },
-        "Operators": [{
-            "label": "contains",
-            "value": 3
-        }, {
-            "label": "does not contain",
-            "value": 4
-        }, {
-            "label": "ends with",
-            "value": 6
-        }, {
-            "label": "is",
-            "value": 1
-        }, {
-            "label": "is not",
-            "value": 2
-        }, {
-            "label": "is not populated",
-            "value": 11
-        }, {
-            "label": "is populated",
-            "value": 10
-        }, {
-            "label": "starts with",
-            "value": 5
-        }]
-    }, {
-        "Name": "GovernanceRole",
-        "FriendlyName": "Governance Role",
-        "Type": {
-            "Lookup": {}
+        {
+            "Name": "Dateofservice",
+            "FriendlyName": "Date of service",
+            "Type": {
+                "Date": {}
+            },
+            "Operators": [{
+                "label": "is",
+                "value": 1
+            }, {
+                "label": "is after",
+                "value": 8
+            }, {
+                "label": "is before",
+                "value": 7
+            }, {
+                "label": "is between",
+                "value": 9
+            }, {
+                "label": "is not",
+                "value": 2
+            }, {
+                "label": "is not populated",
+                "value": 11
+            }, {
+                "label": "is populated",
+                "value": 10
+            }]
         },
-        "Operators": [{
-            "label": "in",
-            "value": 16
-        }, {
-            "label": "is",
-            "value": 1
-        }, {
-            "label": "is not",
-            "value": 2
-        }, {
-            "label": "is not populated",
-            "value": 11
-        }, {
-            "label": "is populated",
-            "value": 10
-        }, {
-            "label": "not in",
-            "value": 17
-        }],
-        "Values": [{
-            "value": "Value 1",
-            "label": "Label 1"
-        }, {
-            "value": "Value 2",
-            "label": "Label 2"
-        }, {
-            "value": "Value 3",
-            "label": "Label 3"
-        }, {
-            "value": "Value 4",
-            "label": "Label 4"
-        }, {
-            "value": "Value 5",
-            "label": "Label 5"
-        }, {
-            "value": "Value 6",
-            "label": "Label 6"
-        }]
-    },
-    {
-        "Name": "Dateofservice",
-        "FriendlyName": "Date of service",
-        "Type": {
-            "Date": {}
-        },
-        "Operators": [{
-            "label": "is",
-            "value": 1
-        }, {
-            "label": "is after",
-            "value": 8
-        }, {
-            "label": "is before",
-            "value": 7
-        }, {
-            "label": "is between",
-            "value": 9
-        }, {
-            "label": "is not",
-            "value": 2
-        }, {
-            "label": "is not populated",
-            "value": 11
-        }, {
-            "label": "is populated",
-            "value": 10
-        }]
-    },
-    {
-        "Name": "Registrationtime",
-        "FriendlyName": "Registration time",
-        "Type": {
-            "DateTime": {}
-        },
-        "Operators": [{
-            "label": "is not populated",
-            "value": 11
-        }, {
-            "label": "is populated",
-            "value": 10
-        }]
-    }
+        {
+            "Name": "Registrationtime",
+            "FriendlyName": "Registration time",
+            "Type": {
+                "DateTime": {}
+            },
+            "Operators": [{
+                "label": "is not populated",
+                "value": 11
+            }, {
+                "label": "is populated",
+                "value": 10
+            }]
+        }
     ];
 
     private getFormattedDate(date) {
