@@ -2161,7 +2161,7 @@ order by wi.StartedOn desc";
             dynamic fields = XmlToDynamic(data);
             if (fields != null && fields.form != null && fields.form["@description"] != null)
             {
-                fields.form["@description"] = DeFormatWorkflowProperty(fields.form["@description"], fieldTypes);
+                fields.form["@description"] = DeFormatWorkflowProperty(fields.form["@description"].ToString(), fieldTypes);
                 return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
             }
             return data;
