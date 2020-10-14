@@ -1,5 +1,4 @@
 ﻿import { Injectable } from '@angular/core';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType } from '../models/grid-definition.model';
 import { RuleType, Rule, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
@@ -13,14 +12,6 @@ import { MessagesObservableService } from './messages-observable.service';
 export class RulesService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
-
-    getRuleTypes(): Observable<RuleType[]> {
-        return this.http.get('api/v2/assets/types?Class=Rule')
-            .pipe(
-                map(response => <RuleType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
     getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
