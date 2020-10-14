@@ -29,6 +29,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     @Input() objectId: number;
     @Input() step: NodeModel;
     @Input() issueObject: string;
+    @Input() showSensitiveInfo = true;
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;
