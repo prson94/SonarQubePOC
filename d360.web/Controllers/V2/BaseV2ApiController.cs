@@ -261,7 +261,7 @@ namespace d360.web.Controllers.V2
                     return "Invalid pageNum value provided.";
                 if (long.TryParse(_pageNum, out pageNum))
                 {
-                    if (pageNum > 10000) return "Invalid pageNum value provided. Number is too large";
+                    if (pageNum > 100000) return "Invalid pageNum value provided. Number is too large";
                     if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
                 }
                 else
