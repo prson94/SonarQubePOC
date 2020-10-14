@@ -166,7 +166,7 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool IsPwdChange = false)
         {
             const int ResourceTypeID = 1;
 
@@ -325,6 +325,8 @@ namespace d360.model.DataAccessLayer
             foreach (var user in users)
             {
                 var row = userTable.NewRow();
+                var CurrPassword = "";
+                var NewPassword = "";
 
                 var success = true;
                 var messages = new List<string>();
@@ -378,6 +380,27 @@ namespace d360.model.DataAccessLayer
                     {
                         success = false;
                         messages.Add("Resource not found for this Uid");
+                    }
+
+                    //Password Change
+                    if (IsPwdChange)
+                    {
+                        NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
+                        CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
+                        user.Password = NewPassword;
+                        var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
+                        var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
+                        if (existing == null)
+                        {
+                            success = false;
+                            messages.Add("Your password was not updated, since the provided current password does not match.");
+                        }
+
+                        if (NewPassword == CurrPassword)
+                        {
+                            success = false;
+                            messages.Add("New password may not be the same as current password");
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(user.Password))
@@ -439,13 +462,13 @@ namespace d360.model.DataAccessLayer
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
-                if (user.State.HasValue) row["State"] = (int)user.State;
+                if (user.State.HasValue && !IsPwdChange) row["State"] = (int)user.State;
                 row["IsAdministrator"] = user.IsAdministrator;
                 row["IsNew"] = user.IsNew;
 
                 userTable.Rows.Add(row);
 
-                if (user.Fields != null)
+                if (user.Fields != null && !IsPwdChange)
                 {
                     foreach (var field in user.Fields.Keys)
                     {
@@ -570,6 +593,8 @@ namespace d360.model.DataAccessLayer
 
                     #region Validation
 
+                    if (!IsPwdChange)
+                    { 
                     await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
@@ -611,39 +636,40 @@ namespace d360.model.DataAccessLayer
 
                         ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
-                    if (lookupFieldsPassedByValue)
-                    {
-                        CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);                        
-                    }
-                    else
-                    {
-                        CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
-                    }
+                        if (lookupFieldsPassedByValue)
+                        {
+                            CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);                        
+                        }
+                        else
+                        {
+                            CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+                        }
+
+
+                        //validate lookup fields
+                        await CompanyContext.Connection.ExecuteAsync(@"
+                            update  U
+                            set     U.Success = 0,
+                                    U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
+                            from    #UserAssets U
+                            inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
+                            inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+                            where U.ExecutionID = @executionID and F.LookupValue is null
+                            ", new { executionID }, transaction: trans);
                     
+                            await CompanyContext.Connection.ExecuteAsync(@"
+                                insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+                                select  ExecutionID,
+                                ItemNumber,
+                                FieldName,
+                                FieldValue,
+                                FieldTypeID,
+                                LookupValue,
+                                0 as Ignore
+                                from #UserFields
+                                ", transaction: trans);
 
-                    //validate lookup fields
-                    await CompanyContext.Connection.ExecuteAsync(@"
-                        update  U
-                        set     U.Success = 0,
-                                U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
-                        from    #UserAssets U
-                        inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
-                        inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
-                        where U.ExecutionID = @executionID and F.LookupValue is null
-                        ", new { executionID }, transaction: trans);
-
-                    await CompanyContext.Connection.ExecuteAsync(@"
-                        insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
-                        select  ExecutionID,
-                        ItemNumber,
-                        FieldName,
-                        FieldValue,
-                        FieldTypeID,
-                        LookupValue,
-                        0 as Ignore
-                        from #UserFields
-                        ", transaction: trans);
-
+                    }
                     validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>("select * from #UserAssets", transaction: trans)).ToList();
 
                     trans.Commit();
@@ -677,27 +703,31 @@ namespace d360.model.DataAccessLayer
 
                         bool success;
                         string message;
-                        var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
-                        CompanyContext.ValidateFields("ResourceType", 
-                            ResourceTypeID, 
-                            !user.ResourceID.HasValue, 
-                            fieldTypes, 
-                            requiredFieldNames, 
-                            user.Fields, 
-                            executionID, 
-                            user.ItemNumber, 
-                            null,
-                            out success, 
-                            out message);
-
-                        if (success == false)
+                        if (!IsPwdChange)
                         {
-                            result.Success = false;
-                            result.Message += message;
+                            var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
-                            results.Add(result);
-                            continue;
+                            CompanyContext.ValidateFields("ResourceType",
+                                ResourceTypeID,
+                                !user.ResourceID.HasValue,
+                                fieldTypes,
+                                requiredFieldNames,
+                                user.Fields,
+                                executionID,
+                                user.ItemNumber,
+                                null,
+                                out success,
+                                out message);
+
+                                if (success == false)
+                                {
+                                    result.Success = false;
+                                    result.Message += message;
+
+                                    results.Add(result);
+                                    continue;
+                                }
                         }
 
 
@@ -762,67 +792,71 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        CompanyResource companyResource;
-
-                        if (user.CompanyResourceState.HasValue)
+                        if (!IsPwdChange)
                         {
-                            companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
 
-                            if (companyResource != null)
+                            CompanyResource companyResource;
+
+                            if (user.CompanyResourceState.HasValue)
                             {
-                                companyResource.IsAdministrator = user.IsAdministrator;
-                                companyResource.State = user.State ?? companyResource.State;
+                                companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
 
-                                CommunityContext.Update(companyResource);
+                                if (companyResource != null)
+                                {
+                                    companyResource.IsAdministrator = user.IsAdministrator;
+                                    companyResource.State = user.State ?? companyResource.State;
+
+                                    CommunityContext.Update(companyResource);
+                                }
                             }
-                        }
-                        else
-                        {
-                            companyResource = new CompanyResource()
+                            else
                             {
-                                ResourceID = (int)user.ResourceID,
-                                CompanyID = CompanyContext.CurrentCompanyID,
-                                State = CompanyResourceState.Active,
-                                IsAdministrator = user.IsAdministrator
-                            };
+                                companyResource = new CompanyResource()
+                                {
+                                    ResourceID = (int)user.ResourceID,
+                                    CompanyID = CompanyContext.CurrentCompanyID,
+                                    State = CompanyResourceState.Active,
+                                    IsAdministrator = user.IsAdministrator
+                                };
 
-                            CommunityContext.Add(companyResource);
+                                CommunityContext.Add(companyResource);
 
-                        }
+                            }
 
-                        var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+                            var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
 
-                        if (globalResource != null)
-                        {
-                            globalResource.FirstName = user.FirstName;
-                            globalResource.LastName = user.LastName;
-                            globalResource.Email = user.Username;
-                            globalResource.IsAdministrator = user.IsAdministrator;
-                            globalResource.State = user.State ?? companyResource.State;
-                            globalResource.UpdatedOn = DateTime.UtcNow;
-
-                            CompanyContext.Update(globalResource);
-                        }
-                        else
-                        {
-                            globalResource = new GlobalReportingResource
+                            if (globalResource != null)
                             {
-                                IsAdministrator = user.IsAdministrator,
-                                ResourceID = (int)user.ResourceID,
-                                Email = user.Username,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
-                                State = user.State ?? companyResource.State,
-                                UpdatedOn = DateTime.UtcNow,
-                                Uid = (Guid)user.uid
-                            };
+                                globalResource.FirstName = user.FirstName;
+                                globalResource.LastName = user.LastName;
+                                globalResource.Email = user.Username;
+                                globalResource.IsAdministrator = user.IsAdministrator;
+                                globalResource.State = user.State ?? companyResource.State;
+                                globalResource.UpdatedOn = DateTime.UtcNow;
 
-                            CompanyContext.Add(globalResource);
-                        }
+                                CompanyContext.Update(globalResource);
+                            }
+                            else
+                            {
+                                globalResource = new GlobalReportingResource
+                                {
+                                    IsAdministrator = user.IsAdministrator,
+                                    ResourceID = (int)user.ResourceID,
+                                    Email = user.Username,
+                                    FirstName = user.FirstName,
+                                    LastName = user.LastName,
+                                    State = user.State ?? companyResource.State,
+                                    UpdatedOn = DateTime.UtcNow,
+                                    Uid = (Guid)user.uid
+                                };
+
+                                CompanyContext.Add(globalResource);
+                            }
+                        }                    
                     }
 
                     //merge field values
-                    if (user?.Fields?.Any() ?? false)
+                    if (user?.Fields?.Any() ?? false && !IsPwdChange)
                     {
                         try
                         {

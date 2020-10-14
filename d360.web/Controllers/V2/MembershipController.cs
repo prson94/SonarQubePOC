@@ -732,7 +732,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue,false);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -781,6 +781,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             var prefix = "Membership.PutUsers => ";
             bool IsCurrentUser = false;
+            bool IsPwdChange1 = false;
+            bool IsPwdChange2 = false;
+            bool IsPwdChange = false;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -801,6 +804,32 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
             }
 
+            //check change password request
+            if (users != null && users.Count == 1)
+            {
+                foreach (var user in users)
+                {
+                    if (user.Fields != null & user.Fields.Count == 2)
+                    {
+                        foreach (var userfield in user.Fields.Keys)
+                        {
+                            if (userfield == "NewPassword")
+                            {
+                                IsPwdChange1 = true;
+                            }
+                            else if (userfield == "CurrentPassword")
+                            {
+                                IsPwdChange2 = true;
+                            }
+                        }
+                        if (IsPwdChange1 && IsPwdChange2)
+                        {
+                            IsPwdChange = true;
+                        }
+                    }
+                }
+            }
+
             if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
@@ -812,7 +841,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, IsPwdChange);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
