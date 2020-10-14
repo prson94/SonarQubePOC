@@ -106,6 +106,8 @@ export class AssetTypeApiModel {
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
     FlowObjectType: FlowObjectType;
+    ID: number;
+    AssetTypeID: number;
 }
 
 export class IconStyle {

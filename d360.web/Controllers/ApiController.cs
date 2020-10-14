@@ -2707,28 +2707,6 @@ from    (
 
         #region Rules
 
-        [Route("ruletypes")]
-        public IEnumerable<dynamic> GetRuleTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-            return Company.Query<dynamic>(@"
-select      ID as AssetTypeID, 
-            ObjectID as ID, 
-            Name, 
-            Description, 
-            CreatedOn, 
-            CreatedBy, 
-            UpdatedOn, 
-            UpdatedBy, 
-            DisplayFormat,
-            uid
-from        AssetType 
-where       Object = 'RuleType'
-order by    Name
-");
-        }
-
         [Route("ruletypes/{id:int}")]
         public HttpResponseMessage GetRuleType(int id)
         {
