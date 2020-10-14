@@ -109,10 +109,15 @@ namespace d360.core.entities.Membership
 
     public class UserApiUpsertResult : IExecutionItem
     {
+        [DataMember]
         public int ItemNumber { get; set; }
+        [DataMember] 
         public Guid? uid { get; set; }
+        [DataMember] 
         public Guid? ExecutionItemUid { get; set; }
+        [DataMember] 
         public string Message { get; set; }
+        [DataMember] 
         public bool Success { get; set; }
     }
     public class DeleteGroupModel

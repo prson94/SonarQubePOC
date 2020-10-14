@@ -621,7 +621,7 @@ where	ExecutionID = @executionID
             }
         }
 
-        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false)
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false)
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
@@ -738,7 +738,7 @@ where	ExecutionID = @executionID
             return res;
         }
 
-        private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
+        public void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = try_cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
@@ -876,7 +876,7 @@ where	ExecutionID = @executionID
 
 
                         insert into #DeletedRelationships WITH(TABLOCK)
-                            select I.[uid]  from api.ExecutionAsset A
+                            select I.[uid]  from {tableName} A
                                 inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID
                                     and F.ItemNumber = A.ItemNumber 
                                     and A.ObjectID is not null 
