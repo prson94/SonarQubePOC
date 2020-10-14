@@ -31,7 +31,7 @@ import { BaseComponent } from "../shared/base.component";
                     <div class="col s6">                
                         <div>
                             <span class="FieldName">
-                                Timeout:
+                                Request Timeout:
                             </span>
                             <span>
                                 {{step?.Settings?.HTTPRequest?.Timeout}}
