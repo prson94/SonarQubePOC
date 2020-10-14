@@ -67,7 +67,6 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
     }
 
     stepChange($event) {
-        console.log('stepChange', $event);
         if ($event) {
             this.itemStepId = $event.ID;
             this.detailVisible = true;

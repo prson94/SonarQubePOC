@@ -111,7 +111,7 @@ step.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' :
             <div *ngSwitchCase="WorkflowActivityType.HTTPRequest"
                  class="row"
                  style="padding-top:10px">
-                <div class="col s12" *ngIf="step?.settings?.HTTPRequest?.Headers">
+                <div class="col s12" *ngIf="step?.settings?.HTTPRequest?.Headers && showSensitiveInfo">
                     <div class="FieldName">
                         Headers
                     </div>
@@ -163,7 +163,7 @@ step.settings['MessageRecipientType'] == 'SpecificUser' ? 'Specific User' :
                         {{step?.settings?.HTTPRequest?.Url}}
                     </div>
                 </div>
-                <div class="col s12">
+                <div class="col s12" *ngIf="showSensitiveInfo">
                     <div class="FieldName">
                         Body
                     </div>
