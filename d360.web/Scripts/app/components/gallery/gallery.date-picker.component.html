@@ -17,6 +17,12 @@
         </div>
     </div>
     <div class="gallery-section">
+        <h4>Basic (appended to body)</h4>
+        <div>
+            <ig-date [appendTo]="'body'"></ig-date>
+        </div>
+    </div>
+    <div class="gallery-section">
         <h4>Required</h4>
         <div>
             <ig-date required="true"></ig-date>
@@ -64,7 +70,7 @@
             Selection limited to next 7 days
         </p>
         <div class="row">
-            <ig-date [minDate]="today" 
+            <ig-date [minDate]="today"
                      [maxDate]="nextWeek">
             </ig-date>
         </div>
