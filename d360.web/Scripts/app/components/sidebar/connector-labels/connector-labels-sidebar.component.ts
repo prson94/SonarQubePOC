@@ -42,6 +42,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     @ViewChild('dt', { static: false }) tableEl: any;
     @ViewChild('usageTable', { static: false }) tableEl1: any;
     @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
+
+    selectedCount: number = 0;
     lastSelectedElement: ConnectorLabel;
 
     constructor(private router: Router,
@@ -278,6 +280,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 }
 
                 this.lastSelectedElement = item;
+                this.selectedCount = this.selected.length;
                 return;
             }
             if (event.shiftKey) {
@@ -302,6 +305,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 }
 
                 this.lastSelectedElement = item;
+                this.selectedCount = this.selected.length;
                 return;
             }
 
@@ -330,10 +334,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 var el = (<any>(event.target)).parentNode;
                 this.selectElement(el);
             }
-            this.tableEl1.totalRecords = this.selected.length;
-            this.tableEl2.totalRecords = this.selected.length;
+            if (this.tableEl1)
+                this.tableEl1.totalRecords = this.selected.length;
+
+            if (this.tableEl2)
+                this.tableEl2.totalRecords = this.selected.length;
             this.lastSelectedElement = item;
         }
+        this.selectedCount = this.selected.length;
     }
     private deselectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);
