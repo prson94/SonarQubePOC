@@ -166,7 +166,7 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool IsPwdChange = false)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust  = false)
         {
             const int ResourceTypeID = 1;
 
@@ -383,11 +383,26 @@ namespace d360.model.DataAccessLayer
                     }
 
                     //Password Change
-                    if (IsPwdChange)
+                    if (IsChangePasswordReqeust)
                     {
                         NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
                         CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
-                        user.Password = NewPassword;
+                        if (NewPassword == null)
+                        {
+                            success = false;
+                            messages.Add("NewPassword parameter value missing.");
+                        }
+                        else
+                        {
+                            user.Password = NewPassword;
+                        }
+
+                        if (CurrPassword == null)
+                        {
+                            success = false;
+                            messages.Add("CurrentPassword parameter value missing.");
+                        }
+
                         var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
                         var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
                         if (existing == null)
@@ -462,13 +477,13 @@ namespace d360.model.DataAccessLayer
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
-                if (user.State.HasValue && !IsPwdChange) row["State"] = (int)user.State;
+                if (user.State.HasValue && !IsChangePasswordReqeust) row["State"] = (int)user.State;
                 row["IsAdministrator"] = user.IsAdministrator;
                 row["IsNew"] = user.IsNew;
 
                 userTable.Rows.Add(row);
 
-                if (user.Fields != null && !IsPwdChange)
+                if (user.Fields != null && !IsChangePasswordReqeust)
                 {
                     foreach (var field in user.Fields.Keys)
                     {
@@ -593,7 +608,7 @@ namespace d360.model.DataAccessLayer
 
                     #region Validation
 
-                    if (!IsPwdChange)
+                    if (!IsChangePasswordReqeust)
                     { 
                     await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
@@ -704,7 +719,7 @@ namespace d360.model.DataAccessLayer
                         bool success;
                         string message;
 
-                        if (!IsPwdChange)
+                        if (!IsChangePasswordReqeust)
                         {
                             var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
@@ -792,7 +807,7 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        if (!IsPwdChange)
+                        if (!IsChangePasswordReqeust)
                         {
 
                             CompanyResource companyResource;
@@ -856,7 +871,7 @@ namespace d360.model.DataAccessLayer
                     }
 
                     //merge field values
-                    if (user?.Fields?.Any() ?? false && !IsPwdChange)
+                    if (user?.Fields?.Any() ?? false && !IsChangePasswordReqeust)
                     {
                         try
                         {

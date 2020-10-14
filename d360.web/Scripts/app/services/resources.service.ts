@@ -46,7 +46,8 @@ export class ResourcesService extends BaseObservableService {
 
     public saveResource(        
         resource: ResourceApiModel,
-        lookupFieldsPassedByValue: boolean = true
+        lookupFieldsPassedByValue: boolean = true,
+        IsChangePasswordReqeust: boolean = false
     ): Observable<ApiResult> {
 
         const httpOptions = {
@@ -59,7 +60,7 @@ export class ResourcesService extends BaseObservableService {
 
             return this
                 .http
-                .put(`api/v2/membership/users?lookupFieldsPassedByValue=${lookupFieldsPassedByValue}`, resourceArray, httpOptions)
+                .put(`api/v2/membership/users?lookupFieldsPassedByValue=${lookupFieldsPassedByValue}&IsChangePasswordReqeust=${IsChangePasswordReqeust}`, resourceArray, httpOptions)
                 .pipe(
                     map((res: ApiResult) => {
                         return res[0];

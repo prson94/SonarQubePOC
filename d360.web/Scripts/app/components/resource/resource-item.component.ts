@@ -218,7 +218,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
             }
         }
         this.isLoading = true;
-        this.resourcesService.saveResource(user, true)
+        this.resourcesService.saveResource(user, true, false)
             .subscribe(
                 result => {
                     this.isLoading = false;

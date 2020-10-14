@@ -102,7 +102,7 @@ export class ResourcePasswordComponent extends BaseComponent{
                         user.Fields['CurrentPassword'] = this.currentPassword;
 
                         this.isLoading = true;
-                        this.resourcesService.saveResource(user, false)
+                        this.resourcesService.saveResource(user, false, true)
                         .subscribe(
                             result => {
                                 this.isLoading = false;

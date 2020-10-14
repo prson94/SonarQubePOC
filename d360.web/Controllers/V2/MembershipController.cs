@@ -767,6 +767,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </remarks>        
         /// <param name="users">A list of users to update.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <param name="IsChangePasswordReqeust">Optional query string parameter that allows you to password changed request.  The default value for this is false.</param>
+
         [
             HttpPut,
             Route("users"),
@@ -777,21 +779,17 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
         {
             var prefix = "Membership.PutUsers => ";
             bool IsCurrentUser = false;
-            bool IsPwdChange1 = false;
-            bool IsPwdChange2 = false;
-            bool IsPwdChange = false;
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (!Company.CurrentResourceIsAdmin || IsChangePasswordReqeust)
             {
                 if (users != null && users.Count == 1)
                 {
                     foreach (var user in users)
                     {
-                        Guid RUid = Guid.NewGuid();
                         var resource = Community.Filter<Resource>(i => i.Uid == user.uid, i => i.CompanyResources).SingleOrDefault();
                         if (resource != null)
                         {
@@ -804,29 +802,20 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
             }
 
-            //check change password request
-            if (users != null && users.Count == 1)
+            //change password request Checks
+            if (IsChangePasswordReqeust)
             {
-                foreach (var user in users)
+                if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
                 {
-                    if (user.Fields != null & user.Fields.Count == 2)
-                    {
-                        foreach (var userfield in user.Fields.Keys)
-                        {
-                            if (userfield == "NewPassword")
-                            {
-                                IsPwdChange1 = true;
-                            }
-                            else if (userfield == "CurrentPassword")
-                            {
-                                IsPwdChange2 = true;
-                            }
-                        }
-                        if (IsPwdChange1 && IsPwdChange2)
-                        {
-                            IsPwdChange = true;
-                        }
-                    }
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms"));
+                }
+                if (!IsCurrentUser)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user"));
+                }
+                if (users != null && users.Count > 1)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true."));
                 }
             }
 
@@ -841,7 +830,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, IsPwdChange);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, IsChangePasswordReqeust);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
