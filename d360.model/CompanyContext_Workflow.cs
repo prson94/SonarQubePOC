@@ -964,7 +964,12 @@ namespace d360.model
                 {
                     requestSettings.Headers.ForEach(h =>
                     {
-                        request.Headers.Add(h.Key, h.Value);
+                        if (request.Headers.Contains(h.Key))
+                        {
+                            request.Headers.Remove(h.Key);
+                        }
+
+                        request.Headers.TryAddWithoutValidation(h.Key, h.Value);
                     });
                 }
 
