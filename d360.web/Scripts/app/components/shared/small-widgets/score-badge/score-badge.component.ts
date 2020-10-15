@@ -1,5 +1,5 @@
 ﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { AssetScore } from '../../../../models/search-result.model';
@@ -11,20 +11,16 @@ import { ScoreDisplayPipe } from '../../../../pipes/score-display.pipe';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
+export class ScoreBadgeComponent implements OnInit, OnChanges {
 
     @Input() score: AssetScore;
-    @Input() mast: boolean = false;
-    @Input() showSparkline: boolean = true;
-    @Input() displayAsField: boolean = false;
-    @Input() displayAsFieldClass: string = "";
 
     @Input() lowerThreshold: number = 50; //50%
     @Input() upperThreshold: number = 90; //90%
 
     @Input() igBadgeStyle: boolean = false;
 
-    scoreBadgeClass: string;
+    _type: string;
 
     private changeWait: any;
     constructor(
@@ -35,15 +31,7 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
     public ngOnInit() {
-        this.scoreBadgeClass = this.displayAsField ? "d3s-score-badge-inline" : "d3s-score-badge";
-        if (this.displayAsFieldClass == "") {
-            this.displayAsFieldClass = "scoretitle";
-        }
-        this.scoreBadgeClass += (this.mast) ? " mast" : " nomast";
-    }
-
-    ngAfterViewInit(): void {
-
+        this._type = this.score.ScoreType.split(/(?=[A-Z])/).join(' ');
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -55,14 +43,7 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
     getType(): string {
-        var type = this.score.ScoreType.split(/(?=[A-Z])/).join(' ');
-        if (this.mast || this.displayAsField) {
-            type += ' Score';
-            if (this.displayAsField) {
-                type += ': ';
-            }
-        }
-        return type;
+        return this._type;
     }
 
     getBadgeText(): string {

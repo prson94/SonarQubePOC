@@ -7,6 +7,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { FieldConditionGrid } from './field-condition-grid.component';
 import { IgDateModule } from '../date/date';
+import { IgNumberFieldModule } from '../number-picker/number-input.component';
 
 @NgModule({
     imports: [
@@ -16,6 +17,7 @@ import { IgDateModule } from '../date/date';
         ReactiveFormsModule,
         IgBadgeModule,
         IgDateModule,
+        IgNumberFieldModule,
 
         DropdownModule,
         DirectivesModule

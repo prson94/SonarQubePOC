@@ -166,7 +166,8 @@
                             <d3s-workflow-step-summary [step]="selectedData"
                                 [objectId]="model.Event.ObjectID"
                                 [object]="model.Event.Object"
-                                [issueObject]="model.Event.IssueObject"></d3s-workflow-step-summary>
+                                [issueObject]="model.Event.IssueObject"
+                                [showSensitiveInfo]="!readonly"></d3s-workflow-step-summary>
                         </div>
                         <div *ngIf="selectedData != null && selectedData.diagramObjectType == DiagramObjectType.Link"
                              class="pt-10px">

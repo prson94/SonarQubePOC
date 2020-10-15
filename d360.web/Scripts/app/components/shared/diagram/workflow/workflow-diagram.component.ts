@@ -827,6 +827,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 });
             }
 
+            if (n.activityType == WorkflowActivityType.HTTPRequest) {
+                if (n.settings.HTTPRequest == null)
+                    n.settings.HTTPRequest = {};
+                if (n.settings.HTTPRequest.Headers == null) {
+                    n.settings.HTTPRequest.Headers = [];
+                } else if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
+                    n.settings.HTTPRequest.Headers = [n.settings.HTTPRequest.Headers];
+                }
+            }
+
             if (n.activityType == WorkflowActivityType.RelationshipUpdate) {
                 if (n.settings.RelationshipUpdate == null)
                     n.settings.RelationshipUpdate = {};

@@ -8,12 +8,14 @@ import { RuleType } from '../../../models/rule.model';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset.model';
+import { AssetTypeClass, AssetTypeApiModel } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-admin-rules-component',
-    providers: [RulesService],
+    providers: [RulesService, AssetTypeService, AssetService],
     template: `
 <div class="row">
     <div class="col l4 s12">
@@ -46,12 +48,12 @@ import { StringConstants } from '../../../static/string-constants';
                             <td>{{item.Name}}</td>
                             <td>
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true;loadDataAndExecuteAction()"><i class="fa fa-pencil"></i></a>
                                 </div>
                             </td>
                             <td>
                                 <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true;loadDataAndExecuteAction()"><i class="fa fa-trash-o"></i></a>
                                 </div>
                             </td>
                         </tr>
@@ -76,7 +78,7 @@ import { StringConstants } from '../../../static/string-constants';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <object-detail [objectType]="'RuleType'" [objectID]="selected?.ID"></object-detail>
+                    <object-detail [objectType]="'RuleType'" [objectUID]="selected?.uid" [objectID]="selected?.ID"></object-detail>
                 </div>
             </div>
         </div>
@@ -120,8 +122,8 @@ import { StringConstants } from '../../../static/string-constants';
 })
 
 export class AdminRulesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
-    ruleTypes: RuleType[] = [];
-    selected: RuleType;
+    ruleTypes: AssetTypeApiModel[] = [];
+    selected: AssetTypeApiModel;
     showEditor: boolean = false;
     showDelete: boolean = false;
     assetTypeClass: AssetTypeClass;
@@ -131,6 +133,8 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     constructor(private stateService: StateService, protected secondaryNavService: SecondaryNavService,
         private rulesService: RulesService,
         protected messagesService: MessagesObservableService,
+        private assetTypeService: AssetTypeService,
+        private assetsService: AssetService,
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {
@@ -151,7 +155,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     protected getRuleTypes() {
         this.isLoading = true;
-        this.rulesService.getRuleTypes()
+        this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Rule)
             .subscribe(result => {
                 this.ruleTypes = result;
                 this.isLoading = false;
@@ -197,7 +201,18 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
     }
 
-    selectedItemChange(objectId: number) {        
-            this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+    selectedItemChange(objectId: number) {  
+        this.loadDataAndExecuteAction();
+        this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+    }
+
+    private loadDataAndExecuteAction() {
+        if (this.selected) {
+            this.assetsService.getAssetTypeLegacyData(this.selected.uid)
+                .subscribe(res => {
+                    this.selected.ID = res.ObjectID;
+                    this.selected.AssetTypeID = res.AssetTypeID;
+                });
+        }
     }
 }

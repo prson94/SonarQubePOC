@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.enums;
 using d360.extensions.caching;
+using d360.web.caching;
 using Dapper;
 using IdentityModel;
 using IdentityModel.Client;
@@ -116,7 +117,7 @@ namespace d360.web
         public ConcurrentBag<usercompany> Users
         {
             get {
-                var cache = new MemoryCachingProvider();// RedisCachingProvider();
+                var cache = new MemoryCachingProvider();
                 var users = cache.GetItem<ConcurrentBag<usercompany>>("Users");
                 if (users == null)
                 {

@@ -12,7 +12,6 @@ import * as _ from 'lodash';
 export class StatusBadgeComponent implements OnInit, OnChanges {
 
     @Input() status: string;
-    @Input() igBadgeStyle: boolean = false;
     private formattedStatus: string;
     useDefinedColor: boolean;
     singleUndefinedColor: boolean;
@@ -179,19 +178,6 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
                 default:
                     return this.hslStringIsLight(this.getBackgroundColor(), 170) ? dark : light;
             }
-        }
-    }
-
-    getStatusIcon() {
-        switch (this.status.toLowerCase().trim()) {
-            case 'draft':
-                return 'fa-adjust fa-flip-horizontal';
-            case 'certified':
-                return 'fa-check-circle-o';
-            case 'under review':
-                return 'fa-circle';
-            default:
-                return 'fa-circle-o';
         }
     }
 };

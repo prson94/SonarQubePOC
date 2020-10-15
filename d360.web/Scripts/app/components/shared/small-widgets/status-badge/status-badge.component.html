@@ -1,22 +1,6 @@
-﻿<ng-container *ngIf="igBadgeStyle; else oldschool">
-    <ig-badge *ngIf="useDefinedColor && !singleUndefinedColor"
-              [text]="getStatusText()" [backgroundColor]="getBackgroundGradient()" [textColor]="getForegroundColor()"></ig-badge>
-    <ig-badge *ngIf="useDefinedColor && singleUndefinedColor"
-              [text]="getStatusText()" [textColor]="getForegroundColor()"></ig-badge>
-    <ig-badge *ngIf="!useDefinedColor"
-              [text]="getStatusText()" [backgroundColor]="getBackgroundColor()" [textColor]="getForegroundColor()"></ig-badge>
-</ng-container>
-<ng-template #oldschool>
-    <div *ngIf="useDefinedColor && !singleUndefinedColor" class="d3s-status-badge" [ngStyle]="{'background':getBackgroundGradient()}" [style.color]="getForegroundColor()">
-        <div class="icon-container"><i class="fa" [ngClass]="getStatusIcon()"></i></div><div class="text">{{formattedStatus}}</div>
-    </div>
-
-    <div *ngIf="useDefinedColor && singleUndefinedColor" class="d3s-status-badge undefined-color" [style.color]="getForegroundColor()">
-        <div class="text no-icon">{{formattedStatus}}</div>
-    </div>
-
-    <div *ngIf="!useDefinedColor" class="d3s-status-badge" [style.background-color]="getBackgroundColor()" [style.color]="getForegroundColor()">
-        <div class="icon-container"><i class="fa" [ngClass]="getStatusIcon()"></i></div>
-        <div class="text">{{status}}</div>
-    </div>
-</ng-template>
+﻿<ig-badge *ngIf="useDefinedColor && !singleUndefinedColor"
+            [text]="getStatusText()" [backgroundColor]="getBackgroundGradient()" [textColor]="getForegroundColor()"></ig-badge>
+<ig-badge *ngIf="useDefinedColor && singleUndefinedColor"
+            [text]="getStatusText()" [textColor]="getForegroundColor()"></ig-badge>
+<ig-badge *ngIf="!useDefinedColor"
+            [text]="getStatusText()" [backgroundColor]="getBackgroundColor()" [textColor]="getForegroundColor()"></ig-badge>

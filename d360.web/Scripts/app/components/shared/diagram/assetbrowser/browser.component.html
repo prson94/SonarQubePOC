@@ -71,7 +71,7 @@
                             </div>
                             <div class="scores">
                                 <span class="d3s-score-container" *ngIf="panelModel.InformationVisible && displayConfiguration.DisplayScores && selectedDiagramAsset?.Scores">
-                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" [showSparkline]="false"></d3s-score-badge>
+                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score"></d3s-score-badge>
                                 </span>
                             </div>
                             <div class="clearfix"></div>

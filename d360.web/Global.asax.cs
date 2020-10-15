@@ -31,7 +31,7 @@ namespace d360.web
 
             #region Config Setting Reader            
             builder.RegisterType<d360.extensions.search.ElasticSearchSource>().As<ISearchSource>().InstancePerRequest();
-            builder.RegisterType<d360.extensions.caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
+            builder.RegisterType<d360.web.caching.MemoryCachingProvider>().As<ICachingProvider>().InstancePerRequest();
             builder.RegisterType<d360.extensions.queue.AzureQueueSource>().As<IQueueSource>().InstancePerRequest();
             builder.RegisterType<d360.extensions.storage.AzureStorageProvider>().As<IStorageProvider>().InstancePerRequest();
             #endregion

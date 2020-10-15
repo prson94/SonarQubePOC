@@ -210,7 +210,7 @@ namespace d360.model.DataAccessLayer
             userTable.Columns.Add("Success", typeof(bool));
             userTable.Columns.Add("Message", typeof(string));
             userTable.Columns.Add("Object", typeof(string));
-            userTable.Columns.Add("ObjectID", typeof(int));
+            userTable.Columns.Add("ObjectID", typeof(int)); 
             userTable.Columns.Add("ObjectType", typeof(string));
             userTable.Columns.Add("ObjectTypeID", typeof(int));
 
@@ -651,7 +651,6 @@ namespace d360.model.DataAccessLayer
                             CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
                         }
 
-
                         //validate lookup fields
                         await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
@@ -689,7 +688,6 @@ namespace d360.model.DataAccessLayer
                     #endregion
 
                     trans.Commit();
-
                 }
                 catch (Exception ex)
                 {

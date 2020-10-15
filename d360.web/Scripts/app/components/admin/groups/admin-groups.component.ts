@@ -102,13 +102,13 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     success(e: any) {
-        this.showMessageForResult(this.messagesService, e);
+        this.showMessageForApiResponse(this.messagesService, e[0]);
         this.formMode = FormMode.Default;
         this.load();
     }
 
     error(e: any) {
-        this.showMessageForResult(this.messagesService, e);
+        this.showMessageForApiResponse(this.messagesService, e[0]);
         this.formMode = FormMode.Default;
     }
 

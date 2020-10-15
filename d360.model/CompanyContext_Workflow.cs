@@ -859,7 +859,7 @@ namespace d360.model
                         isStepCompleted = true;
                         break;
                     case WorkflowActivityType.HTTPRequest:
-                        SendHttpRequest(itemStep, objectInfo, stepSettings);
+                        await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
                         isStepCompleted = true;
                         break;
                     default:
@@ -914,7 +914,7 @@ namespace d360.model
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
         }
 
-        private async Task SendHttpRequest(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+        private async Task SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
         {
             if (settings == null)
                 throw new Exception($"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
@@ -964,7 +964,12 @@ namespace d360.model
                 {
                     requestSettings.Headers.ForEach(h =>
                     {
-                        request.Headers.Add(h.Key, h.Value);
+                        if (request.Headers.Contains(h.Key))
+                        {
+                            request.Headers.Remove(h.Key);
+                        }
+
+                        request.Headers.TryAddWithoutValidation(h.Key, h.Value);
                     });
                 }
 
@@ -977,20 +982,7 @@ namespace d360.model
 
                 var response = await client.SendAsync(request);
 
-                //save results
-                if (!string.IsNullOrEmpty(item.Fields))
-                {
-                    var root = XElement.Parse(item.Fields);
-
-                    var xResponse = new XElement("HTTPResponse");
-
-                    xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
-                    xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
-
-                    root.Add(xResponse);
-                    item.Fields = root.ToString();
-                    await SaveChangesAsync();
-                }
+                await SaveHttpResponseResultsAsync(item, requestSettings, response);
             }
         }
 
@@ -2084,6 +2076,52 @@ namespace d360.model
                 item.Settings = root.ToString();
                 SaveChanges();
             }
+        }
+
+        private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
+        {
+            if (!string.IsNullOrEmpty(item.Fields) && response != null)
+            {
+                var root = XElement.Parse(item.Fields);
+                var xResponse = new XElement("HTTPResponse");
+                xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
+                xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
+
+                root.Add(xResponse);
+                item.Fields = root.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(item.Settings))
+            {
+                var root = XElement.Parse(item.Settings);
+
+                var xRequest = new XElement("HTTPRequest");
+                xRequest.Add(new XElement("Url", response.RequestMessage.RequestUri.ToString()));
+                xRequest.Add(new XElement("Method", settings.Method.ToUpper()));
+                xRequest.Add(new XElement("Timeout", settings.Timeout.ToString()));
+                if (settings?.Headers?.Any() == true)
+                {
+                    foreach(var header in settings.Headers)
+                    {
+                        var h = new XElement("Headers");
+                        h.Add(new XElement("Key", header.Key));
+                        h.Add(new XElement("Value", header.Value));
+                        xRequest.Add(h);
+                    }
+                }
+                else
+                {
+                    xRequest.Add(new XElement("Headers", null));
+                }
+
+                xRequest.Add(new XElement("Body", settings.Body));
+
+                root.Add(xRequest);
+                item.Settings = root.ToString();
+            }
+
+            await SaveChangesAsync();
+            
         }
 
         public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)

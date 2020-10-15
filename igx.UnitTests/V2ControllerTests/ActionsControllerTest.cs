@@ -65,7 +65,7 @@ namespace igx.UnitTests.V2ControllerTests
         public void CheckMaxPageNum()
         {
             string pageSize = "5";
-            string pageNum = "50000";
+            string pageNum = "150000";
             Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
             string result = actionsController.isPageSizeAndNumValid(pageParams);

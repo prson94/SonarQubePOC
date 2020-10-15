@@ -2838,10 +2838,6 @@ modal-overlay .modal-dialog .content {
         .checkbox {
             white-space: nowrap;
         }
-
-        &.has-scoring {
-            padding-top: 26px;
-        }
     }
 
     .icon {
@@ -4939,10 +4935,6 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
         position: relative;
     }
 
-    &.secondary-nav {
-        top: -11px;
-    }
-
     .score-tooltip {
         z-index: 2000;
         display: none;
@@ -4993,103 +4985,19 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
     display: flex;
 }
 
-.d3s-score-badge-inline,
 .d3s-score-badge {
-    .scoretitle {
-        width: 80px;
-        height: 16px;
-        font-size: 11px;
-        font-weight: 600;
-        line-height: 1.27;
-        text-align: center;
-        color: @ig-grey-s2;
-
-        .nomast& {
-            width: 80px;
-        }
-
-        .mast& {
-            width: 104px;
-            height: 23px;
-            font-size: 12px;
-            line-height: 23px;
-        }
-    }
-
-    .d3s-score-pill {
-        height: 24px;
-        width: 80px;
-        border-radius: 12px;
-        display: flex;
-
-        .nomast& {
-            width: 80px;
-        }
-
-        .mast& {
-            height: 30px;
-            width: 104px;
-            border-radius: 15px;
-        }
-
-        .text {
-            width: 55px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 14px;
-            font-weight: 600;
-            color: @ig-white;
-
-            .nomast& {
-                width: 80px;
-            }
-
-            .mast& {
-                width: 104px;
-                height: 30px;
-                line-height: 30px;
-                font-size: 18px;
-            }
-        }
-
-        .d3s-chart {
-            width: 16px;
-            display: inline-block;
-            margin-top: 4px;
-            margin-left: 4px;
-
-            .d3s-circular-chart {
-                display: inline;
-                margin: 0;
-                max-width: 100%;
-                max-height: 250px;
-                background-color: transparent;
-
-                .d3s-circle-bg {
-                    stroke-width: 16;
-                    stroke: rgba(255, 255, 255, 0.3);
-                }
-
-                .d3s-circle {
-                    stroke-width: 16;
-                }
-            }
-        }
-    }
 }
 
 .score-poor {
-    background-color: #ed3765;
+    background-color: @d3s-primary-red;
 }
 
 .score-average {
-    background-color: #f8a41a;
+    background-color: @d3s-primary-yellow;
 }
 
 .score-good {
-    background-color: #4ecc89;
+    background-color: @d3s-primary-green;
 }
 
 

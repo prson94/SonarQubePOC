@@ -528,7 +528,7 @@ namespace d360.web.Controllers.V2
                 var intersect = Company.Intersects.FirstOrDefault(x => x.uid == uid);
                 if(intersect == null || uid == Guid.Empty)
                 {
-                    return ReturnApiError(HttpStatusCode.BadRequest, $"Specified relationship with uid [{uid}] could not be found.");
+                    return ReturnApiError(HttpStatusCode.NotFound, $"Specified relationship with uid [{uid}] could not be found.");
                 }
                 
                 var hasObjectReadPermission = Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.ReadRelationships);
@@ -539,12 +539,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var result = await RelationshipRepository.GetRelationship(uid);
-                var response = Request.CreateResponse(HttpStatusCode.OK, result);
-                if(response == null)
+                if(result == null)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, $"Invalid GUID {uid}.");
                 }
-                return response;
+                return Request.CreateResponse(HttpStatusCode.OK, result);
 
             }
             catch (Exception ex)
