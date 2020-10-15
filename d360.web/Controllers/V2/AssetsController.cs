@@ -2004,6 +2004,7 @@ namespace d360.web.Controllers.V2
                                       FROM [api].[Execution]
                                       where Route = '/api/v2/assets/single'
                                       and completedon is null
+                                      and Method = 'DELETE'
                                       and Fields = @fields";
 
                 var fieldObj = new ApiExecutionFields_DeleteAssetTypes { AssetTypeUid = assetType.Uid };
