@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.graph.AssetBrowser_Initial-v7">
+  <changeSet author="MDonato" id="Procedure.graph.AssetBrowser_Initial-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -22,6 +22,8 @@ begin
 	set nocount on;
 	declare @functionalTypesToInclude table (ID int)
 	declare @offLimitImpactFunctionalTypes table (ID int)
+	declare @maxLineageDescendants int = 500;
+	declare @dataLimitReached bit = 0;
 
 	if @ancestry = 3
 	begin	-- This is impact
@@ -76,6 +78,23 @@ begin
 
 		insert into @directParentAncestryLinks
 			select ID, lvl from h;
+
+		declare @descendantCount int = 0;
+		select	@descendantCount = count(*) 
+		from		@directParentAncestryLinks 
+		where		lvl > 1;
+
+		--too many descendants to reasonably display on the diagram
+    --set flag and return empty dataset
+		if @descendantCount > @maxLineageDescendants 
+		begin
+			select null;
+			select null;
+			select null;
+			select null;
+			select cast(1 as bit) as dataLimitReached;
+			return;
+		end
 
 		if @ancestry = 2
 		begin
@@ -665,6 +684,8 @@ begin
 				and H.Hop = @hopCount
 		group by H.hierarchyKey
 	end
+	
+	select @dataLimitReached;
 end
 		]]>
     </sql>
@@ -777,10 +798,10 @@ begin
 					E.Uid,
 					S.ID,
 					@backSubjectSalt,
-					utility.GetHash(@backSubjectSalt + '|' + cast(S.ID as varchar)),
+					utility.GetHash(@backSubjectSalt + '|A' + cast(S.ID as varchar)),
 					T.ID,
 					@backObjectSalt,
-					utility.GetHash(@backObjectSalt + '|' + cast(T.ID as varchar)),
+					utility.GetHash(@backObjectSalt + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
 					-@currentHop
 			from	graph.AssetNode S,
@@ -803,10 +824,10 @@ begin
 					E.Uid,
 					S.ID,
 					@foreSubjectSalt,
-					utility.GetHash(@foreSubjectSalt + '|' + cast(S.ID as varchar)),
+					utility.GetHash(@foreSubjectSalt + '|A' + cast(S.ID as varchar)),
 					T.ID,
 					@foreObjectSalt,
-					utility.GetHash(@foreObjectSalt + '|' + cast(T.ID as varchar)),
+					utility.GetHash(@foreObjectSalt + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
 					@currentHop
 			from	graph.AssetNode S,
@@ -847,7 +868,7 @@ begin
 		-- Put self into the table.
 		insert into #hopAssets
 			select	ID, 1, @backSubjectSalt
-			from	Asset 
+			from	Asset
 			where	Uid = @uid;
 	end
 
@@ -912,9 +933,96 @@ begin
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
 			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal from h
 
+		if not exists (select 1 from #hierarchies)
+		begin
+			
+			with hp as (
+				select	L.Salt,
+						L.Hop,
+						A.Uid,
+						A.ID,
+						A.AssetTypeID,
+						A.Object,
+						A.ObjectID,
+						P.ID as ParentID,
+						P.Object as ParentObject,
+						P.ObjectID as ParentObjectID,
+						case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal,
+						0 as [level]
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+						inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+				union all
+				select	hp.Salt,
+						hp.Hop,
+						A.Uid,
+						A.ID,
+						A.AssetTypeID,
+						A.Object,
+						A.ObjectID,
+						I.ParentID,
+						I.Subject as ParentObject,
+						I.SubjectID as ParentObjectID,
+						hp.focal,
+						hp.[level]-1 as [level]
+				from	hp
+						inner join Asset A on A.ID = hp.ParentID
+						outer apply (
+							select	P.ID as ParentID,
+									I.Subject,
+									I.SubjectID
+							from	PredicateIntersect I 
+									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+							where	I.PredicateType in (3,4) and I.Object = hp.ParentObject and I.ObjectID = hp.ParentObjectID
+						) I
+			)
+
+			insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+				select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal from hp;
+
+			with h as (
+				select	L.Salt,
+						L.Hop,
+						A.Uid,
+						A.ID,
+						A.AssetTypeID,
+						A.Object,
+						A.ObjectID,
+						cast(null as bigint) as ParentID,
+						cast(null as varchar(50)) as ParentObject,
+						cast(null as int) as ParentObjectID,
+						case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal,
+						0 as [level]
+				from	Asset A
+						inner join #hopAssets L on L.ID = A.ID
+				union all
+				select	h.Salt,
+						h.Hop,
+						C.Uid,
+						C.ID,
+						C.AssetTypeID,
+						C.Object,
+						C.ObjectID,
+						h.ID as ParentID,
+						h.Object as ParentObject,
+						h.ObjectID as ParentObjectID,
+						h.focal,
+						h.[level]+1 as [level]
+				from	h
+						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = h.Object and I.SubjectID = h.ObjectID
+						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			)
+
+			insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+				select	distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal 
+				from	h 
+				where	Uid not in (select Uid from #hierarchies)
+		end
+
 		update	H
-		set		H.[Key] = utility.GetHash(H.Salt + '|' + cast(H.ID as varchar)),
-				H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(H.Salt + '|' + cast(H.ParentID as varchar)) end
+		set		H.[Key] = utility.GetHash(H.Salt + '|A' + cast(H.ID as varchar)),
+				H.[ParentKey] = case when H.ParentID is null then null else utility.GetHash(H.Salt + '|A' + cast(H.ParentID as varchar)) end
 		from	#hierarchies H;
 	end
 	else if @ancestry = 2	-- direct-ancestry lineage
@@ -924,9 +1032,9 @@ begin
 					L.Hop,
 					A.Uid,
 					A.ID,
-					utility.GetHash(L.Salt + '|' + cast(L.ID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(L.ID as varchar)),
 					P.ID ParentID,
-					utility.GetHash(L.Salt + '|' + cast(P.ID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(P.ID as varchar)),
 					A.AssetTypeID,
 					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
 			from	Asset A
@@ -944,7 +1052,7 @@ begin
 					h.Hop,
 					P.Uid,
 					P.ID,
-					utility.GetHash(h.Salt + '|' + cast(h.ParentID as varchar)),
+					utility.GetHash(h.Salt + '|A' + cast(h.ParentID as varchar)),
 					P.AssetTypeID,
 					h.focal
 			from	#hierarchies h
@@ -960,8 +1068,8 @@ begin
 					A.Uid,
 					A.ID,
 					A.AssetTypeID,
-					utility.GetHash(L.Salt + '|' + cast(A.ID as varchar)),
-					utility.GetHash(L.Salt + '|' + cast(A.AssetTypeID as varchar)),
+					utility.GetHash(L.Salt + '|A' + cast(A.ID as varchar)),
+					utility.GetHash(L.Salt + '|T' + cast(A.AssetTypeID as varchar)),
 					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
 			from	Asset A
 					inner join #hopAssets L on L.ID = A.ID;
@@ -1002,7 +1110,7 @@ begin
 			select		O.Salt,
 						O.Hop,
 						O.AssetTypeID,
-						utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar)),
+						utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar)),
 						CAST(0x0 AS UNIQUEIDENTIFIER),
 						O.focal
 			from		#hierarchies O
@@ -1019,7 +1127,7 @@ begin
 			select		O.Salt,
 						O.Hop,
 						O.AssetTypeID,
-						utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar)),
+						utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar)),
 						CAST(0x0 AS UNIQUEIDENTIFIER)
 			from		#hierarchies O
 						left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
@@ -1030,7 +1138,7 @@ begin
 
 		-- Update parent key for single-level assets with key for asset type records added above.
 		update	O
-		set		O.ParentKey = utility.GetHash(O.Salt + '|' + cast(O.AssetTypeID as varchar))
+		set		O.ParentKey = utility.GetHash(O.Salt + '|T' + cast(O.AssetTypeID as varchar))
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
