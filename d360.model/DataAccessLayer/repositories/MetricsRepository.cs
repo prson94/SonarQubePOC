@@ -928,11 +928,13 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             {
                                 metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
                             }
-                            var existingHashItems = from g in metricAssetVersion.Conditions
-                                                    from c in g.Items
-                                                    from v in c.Values
+                            var existingHashItems = (
+                                                    from g in metricAssetVersion.Conditions
+                                                    from c in (g.Items ?? new List<MetricAssetVersionConditionItem>())
+                                                    from v in (c.Values ?? new List<MetricAssetVersionConditionItemValue>())
                                                     orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
-                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
+                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}"
+                                                    ).ToList();
                             string existingConditionHash = string.Join("|", existingHashItems);
                             existingConditionHash = existingConditionHash.GetD3sHashString();
                             if (newConditionHash != existingConditionHash)
@@ -1253,7 +1255,15 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                         {
                             if (!isNew)
                             {
-                                Company.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+                                Company.Connection.Execute(@"
+update  T
+set     T.ConditionUid = null
+from    metrics.ScoreItem T
+        inner join metrics.AssetVersionCondition G on G.Uid = T.ConditionUid and G.AssetVersionUid = @Uid
+        left join metrics.AssetVersionConditionItem I on I.AssetVersionConditionUid = G.Uid
+where   I.Uid is null;
+
+delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
                             }
                         }
                     }
