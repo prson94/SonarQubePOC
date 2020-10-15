@@ -18,7 +18,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     labels: ConnectorLabel[] = [];
     selected: ConnectorLabel[] = [];
     rowsPerPage: number = 25;
-
+    rowsPerModal: number = 5;
     error: any;
 
     showDelete: boolean = false;
@@ -36,10 +36,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     isSaving: boolean = false;
 
     showConsolidationPopup: boolean = false;
-    consolidateValue: string = '';
+    consolidateValue: string;
 
 
     @ViewChild('dt', { static: false }) tableEl: any;
+    @ViewChild('usageTable', { static: false }) tableEl1: any;
+    @ViewChild('usageTableConsolidate', { static: false }) tableEl2: any;
+
+    selectedCount: number = 0;
     lastSelectedElement: ConnectorLabel;
 
     constructor(private router: Router,
@@ -116,6 +120,11 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     consolidateClick() {
+        if (!this.consolidateValue || this.consolidateValue.trim() == "") {
+            console.error("Cannot consolidate connectors without selecting a connector to keep.")
+            return;
+        }
+        this.isSaving = true;
         var children = [];
         this.selected.forEach(label => {
             if (label.uid != this.consolidateValue) {
@@ -161,8 +170,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
                     this.getLabels();
                 }
-                this.selected = null;
-                this.selected = [this.labels[0]];
+                this.selected = [];
+                this.consolidateValue = null;
                 this.showConsolidate = false;
                 this.showConsolidationPopup = false;
                 this.showEditor = false;
@@ -212,6 +221,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         setTimeout(() => {
             this.deletePopupTitle = this.selected ? 'Delete Connector Label' : 'Delete Connector Labels';
             this.deleteConfirmationText = `Delete the Connector Label '${this.selected[0].Value}'`;
+            this.isUsageLoading = false;
             this.showDelete = true;
             this.cdRef.markForCheck();
         }, 100);
@@ -270,6 +280,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 }
 
                 this.lastSelectedElement = item;
+                this.selectedCount = this.selected.length;
                 return;
             }
             if (event.shiftKey) {
@@ -294,6 +305,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 }
 
                 this.lastSelectedElement = item;
+                this.selectedCount = this.selected.length;
                 return;
             }
 
@@ -322,8 +334,14 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
                 var el = (<any>(event.target)).parentNode;
                 this.selectElement(el);
             }
+            if (this.tableEl1)
+                this.tableEl1.totalRecords = this.selected.length;
+
+            if (this.tableEl2)
+                this.tableEl2.totalRecords = this.selected.length;
             this.lastSelectedElement = item;
         }
+        this.selectedCount = this.selected.length;
     }
     private deselectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);

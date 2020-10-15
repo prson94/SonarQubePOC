@@ -109,24 +109,22 @@ namespace d360.core.enums
         ]
         Between,
         [
-            NotYetUsed,
             Name("is populated"),
             EnumMember(Value = "Populated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
+            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Populated,
         [
-            NotYetUsed,
             Name("is not populated"),
             EnumMember(Value = "NotPopulated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
+            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         NotPopulated,
@@ -213,7 +211,27 @@ namespace d360.core.enums
             OperatorAllowedDataTypes(DataType.Boolean),
             OperatorFieldTypeRequirements(true)
         ]
-        IsFalse
+        IsFalse,
+        [
+            Name("is on or before"),
+            EnumMember(Value = "OnOrBefore"),
+            Description(""),
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
+            OperatorFieldTypeRequirements(false)
+        ]
+        OnOrBefore,
+        [
+            Name("is on or after"),
+            EnumMember(Value = "OnOrAfter"),
+            Description(""),
+            OperatorValueCountRange(1, 1),
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
+            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
+            OperatorFieldTypeRequirements(false)
+        ]
+        OnOrAfter
     }
     public class OperatorInfo
     {
@@ -331,24 +349,30 @@ namespace d360.core.enums
             switch (@operator)
             {
                 case Operator.After:
-                    if (dataType == DataType.Date.ToString() || dataType == DataType.DateTime.ToString())
-                    {
-                        if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
-                        {
-                            var conditionValue = DateTime.Parse(values[0]);
-                            var fieldValue = DateTime.Parse(valueToCompare);
-                            result = (fieldValue > conditionValue);
-                        }
-                    }
-                    break;
                 case Operator.Before:
+                case Operator.OnOrAfter:
+                case Operator.OnOrBefore:
                     if (dataType == DataType.Date.ToString() || dataType == DataType.DateTime.ToString())
                     {
                         if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
                         {
                             var conditionValue = DateTime.Parse(values[0]);
                             var fieldValue = DateTime.Parse(valueToCompare);
-                            result = (fieldValue < conditionValue);
+                            switch (@operator)
+                            {
+                                case Operator.After:
+                                    result = (fieldValue > conditionValue);
+                                    break;
+                                case Operator.Before:
+                                    result = (fieldValue < conditionValue);
+                                    break;
+                                case Operator.OnOrAfter:
+                                    result = (fieldValue >= conditionValue);
+                                    break;
+                                case Operator.OnOrBefore:
+                                    result = (fieldValue <= conditionValue);
+                                    break;
+                            }
                         }
                     }
                     break;

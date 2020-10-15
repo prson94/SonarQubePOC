@@ -1,26 +1,29 @@
 ﻿<div class="card-res">
-    <div class="card-row badges" *ngIf="showBadges()">
-        <d3s-status-badge *ngIf="showStatus"
-                          [status]="status">
+    <div class="card-row title-row">
+        <div *ngIf="result?.Icon" class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></div>
+        <div *ngIf="result?.ImageUrl" class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></div>
+        <div (click)="navigateLink()" class="name" [innerHtml]="result?.DisplayName"></div>
+        <d3s-status-badge *ngIf="showStatus" [status]="status">
         </d3s-status-badge>
-        <span><!--space-between-spacer ensures scores ends up to the right--></span>
-        <span #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
-            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
-            </d3s-score-badge>
-        </span>
-    </div>
-    <div class="card-row title">
-        <span *ngIf="result?.Icon" class="d3s-icon asset-icon"><i class="fa {{result?.Icon}}"></i></span>
-        <span *ngIf="result?.ImageUrl" class="d3s-icon asset-icon"><img [src]="result.ImageUrl" /></span>
-        <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-    </div>
-    <div class="card-row">
-        <div class="path category">
-            {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+        <div class="right-container">
+            <div #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
+                <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
+                </d3s-score-badge>
+            </div>
+            <div *ngIf="result?.Uid" class="menu-container">
+                <d3s-preview-popup [uid]="result.Uid" [(display)]="displayInfopopup" [seed]="getDataForPreview()"></d3s-preview-popup>
+                <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu"></p-menu>
+                <button igButton #cardmenubutton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="More..."></button>
+            </div>
         </div>
-        <div class="path asset-path" *ngIf="searchDetails && searchDetails?.AssetDetail?.Path" [innerHtml]="formattedPath"></div>
     </div>
-    <div class="card-row description" *ngIf="result?.Description" [innerHtml]="result.Description"></div>
+    <div class="card-row elide-container">
+        <div class="path category elided">
+            {{result?.Group}}<span *ngIf="result?.AssetPath"><i class="fa fa-angle-right"></i><asset-path-widget [path]="result.AssetPath" [withType]="true"></asset-path-widget></span>
+        </div>
+        
+    </div>
+    <div class="card-row elide-container description" *ngIf="result?.Description"><div class="elided" [innerHtml]="result.Description" title="{{result.Description}}"></div></div>
     <div *ngIf="result?.Tags && result?.Tags.length > 0" class="card-row tags tagsnomanagewidth">
         <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
     </div>
@@ -29,7 +32,7 @@
             <button *ngIf="showScrollButtons" class="left field-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
                 <i class="fa fa-chevron-circle-left"></i>
             </button>
-            <div #fieldScroller class="field-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 20 : 0,'margin-right.px': showScrollButtons ? 20 : 0}">
+            <div #fieldScroller class="field-bar can-overflow" [ngClass]="{'is-overflowing' : showScrollButtons}">
                 <div class="search-result-field" *ngFor="let item of result?.Fields">
                     <ng-container *ngIf="item.Prefix || item.Suffix; else labelvalue">
                         <div class="statement" title="{{getFieldDisplayValue(item, true)}}" [innerHtml]="getFieldDisplayValue(item)"></div>
@@ -43,14 +46,6 @@
                 <i class="fa fa-chevron-circle-right"></i>
             </button>
         </div>
-    </div>
-
-
-
-    <div class="card-row button" *ngIf="result?.Uid">
-        <d3s-preview-popup [uid]="result.Uid" [(display)]="displayInfopopup" [seed]="getDataForPreview()"></d3s-preview-popup>
-        <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu"></p-menu>
-        <button igButton #cardmenubutton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="More..."></button>
     </div>
     <div class="card-row" *ngIf="result?.Explanation"><explain-widget [json]="result?.Explanation"></explain-widget></div>
 </div>

@@ -4,6 +4,11 @@
     Highlight: string;
 }
 
+export class SearchPathComponent {
+    Key: string[];
+    AssetType: string;
+}
+
 export class SearchResult {
     Name: string;
     DisplayName: string;
@@ -12,7 +17,7 @@ export class SearchResult {
     Url: string;
     Icon: string;
     ImageUrl: string;
-    AssetPath: string[][];
+    AssetPath: SearchPathComponent[];
     Uid: string;
     AssetTypeUid: string;
     Tags: SearchResultTags[];

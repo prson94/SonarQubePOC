@@ -131,7 +131,7 @@
                              [value]="selected"
                              [pageLinks]="3"
                              [paginator]="true"
-                             [rows]="10"
+                             [rows]="rowsPerModal"
                              class="ig-table"
                              [loading]="isUsageLoading"
                              [loadingIcon]="'fa fa-spinner fa-spin'">
@@ -162,8 +162,8 @@
                                 </td>
                             </tr>
                         </ng-template>
-                        <ng-template *ngIf="usageTable.totalRecords" pTemplate="summary">
-                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="usageTable.totalRecords"></d3s-grid-paging-info>
+                        <ng-template pTemplate="summary">
+                            <d3s-grid-paging-info [first]="usageTable.first" [rows]="usageTable.rows" [totalRecords]="selectedCount"></d3s-grid-paging-info>
                         </ng-template>
                     </p-table>
                 </div>
@@ -176,48 +176,54 @@
                        [isVisible]="showConsolidationPopup">
                 <div prompt>
                     <div class="content">
-                        <p>Please select the one Connector Label you wish to keep:</p>
+                        <div class="row">
+                            <p>Please select the one Connector Label you wish to keep:</p>
 
-                        <p-table #usageTableConsolidate
-                                 [value]="selected"
-                                 [pageLinks]="3"
-                                 [paginator]="true"
-                                 [rows]="10"
-                                 class="ig-table"
-                                 [loading]="isUsageLoading"
-                                 [loadingIcon]="'fa fa-spinner fa-spin'">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'Value'" style="width: 60%">
-                                        Connector Label
-                                        <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                        Where Used
-                                        <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
-                                    </th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr>
-                                    <td>
-                                        <input [(ngModel)]="consolidateValue" type="radio" id="val_{{item.uid}}" name="consolidateTo" value="{{item.uid}}" />
-                                        <label class="default-label" for="val_{{item.uid}}">{{item.Value}}</label>
-                                    </td>
-                                    <td>
-                                        <d3s-where-used [displayValue]="item.Value"
-                                                        [uid]="item.uid"
-                                                        [objectType]="'ConnectorLabel'"
-                                                        [showAsModal]="true">
-                                            {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
-                                        </d3s-where-used>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="usageTableConsolidate.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
+                            <p-table #usageTableConsolidate
+                                     [value]="selected"
+                                     [pageLinks]="3"
+                                     [paginator]="true"
+                                     [rows]="rowsPerModal"
+                                     class="ig-table"
+                                     [loading]="isUsageLoading"
+                                     [loadingIcon]="'fa fa-spinner fa-spin'">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th [pSortableColumn]="'Value'" style="width: 60%">
+                                            Connector Label
+                                            <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                        </th>
+                                        <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                            Where Used
+                                            <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr>
+                                        <td>
+                                            <input [(ngModel)]="consolidateValue" type="radio" id="val_{{item.uid}}" name="consolidateTo" value="{{item.uid}}" />
+                                            <label class="default-label" for="val_{{item.uid}}">{{item.Value}}</label>
+                                        </td>
+                                        <td>
+                                            <d3s-where-used [displayValue]="item.Value"
+                                                            [uid]="item.uid"
+                                                            [objectType]="'ConnectorLabel'"
+                                                            [showAsModal]="true">
+                                                {{item.UseCount}} {{item.UseCount == 1 ? 'diagram' : 'diagrams'}}
+                                            </d3s-where-used>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="usageTableConsolidate.first" [rows]="usageTableConsolidate.rows" [totalRecords]="usageTableConsolidate.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                        <div class="row"><br />
+                            All occurrences of the unselected labels will be replaced by occurrences of the selected label.<br />
+                            The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone.
+                        </div>
                     </div>
                 </div>
                 <div class="action-bar">

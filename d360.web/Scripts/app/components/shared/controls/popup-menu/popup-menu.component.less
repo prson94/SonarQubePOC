@@ -5,6 +5,8 @@
     position: absolute;
     z-index: 20000;
 
+
+
     .menu-items {
         background-color: white;
         padding: 4px 0;
@@ -33,7 +35,7 @@
 
         .sub-menu {
             position: absolute;
-            margin-top: -12px;
+            margin-top: -4px;
         }
 
 
@@ -51,7 +53,7 @@
                     right: 0px;
                     transform: translateX(100%) translateY(-100%);
                     background-color: white;
-                    top: 50px;
+                    top: 44px;
                 }
             }
         }
@@ -62,7 +64,7 @@
                     transform: translateX(-100%) translateY(-100%);
                     left: 0px;
                     right: initial;
-                    top: 54px;
+                    top: 44px;
                 }
             }
 
@@ -70,22 +72,22 @@
                 &.sub-menu {
                     transform: translateX(-100%) translateY(0%);
                     left: 0px;
-                    top: 10px;
+                    top: 2px;
                     right: initial;
                 }
             }
         }
 
         .menu-sub-item {
-            min-height: 36px;
-            padding: 8px 16px;
+            max-height: 36px;
+            padding: 0px 16px;
 
             &.hover {
                 background-color: @ig-orange-t4;
                 cursor: pointer;
             }
 
-            &.active {
+            &.active, &:active {
                 background-color: @ig-orange-t3;
             }
 
@@ -108,6 +110,7 @@
                 opacity: 1;
                 font-weight: bold;
                 color: @ig-grey;
+                max-height: unset;
 
                 .icon-part {
                     display: none;
@@ -122,6 +125,11 @@
                 display: inline-flex;
                 width: 100%;
 
+                .icon-part {
+                    width: 40px;
+                    text-align: center;
+                }
+
                 .title-part {
                     padding-right: 16px;
                     white-space: nowrap;
@@ -133,13 +141,8 @@
                 }
 
                 .checkbox-part {
-                    min-width: 20px;
-                    max-height: 15px;
-
-                    .fa {
-                        position: absolute;
-                        top: 12px;
-                    }
+                    width: 40px;
+                    text-align: center;
                 }
 
                 .shortcuts-part {
@@ -149,6 +152,32 @@
                         float: right;
                     }
                 }
+            }
+
+            .part {
+                line-height: 36px;
+            }
+        }
+
+        &.no-left-padding {
+            li {
+                padding-left: 0px;
+            }
+
+            .menu-sub-item.label {
+                padding-left: 14px;
+
+                .title-part {
+                    padding-top: 6px;
+                    padding-bottom: 6px;
+                    line-height: 21px;
+                }
+            }
+        }
+
+        &.default-padding {
+            li {
+                padding-left: 16px;
             }
         }
     }

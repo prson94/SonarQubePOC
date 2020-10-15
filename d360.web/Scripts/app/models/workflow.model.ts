@@ -224,6 +224,7 @@ export class LinkModel {
     condition: any = [];
     settings: any = {};
     formInputs: any = [];
+    httpInputs: any = [];
 
     valid: boolean = true;
     errors: string[] = [];
@@ -435,7 +436,8 @@ export enum WorkflowActivityType {
     FieldChange = 5,
     RelationshipUpdate = 6,
     StateChange = 7,
-    Delete = 8
+    Delete = 8,
+    HTTPRequest = 9
 }
 
 export enum DiagramObjectType {

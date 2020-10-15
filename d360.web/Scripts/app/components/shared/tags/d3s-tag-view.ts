@@ -390,7 +390,10 @@ export class TagView extends BaseComponent implements OnInit {
     }
 
     manageWidth() {
-        if (this.ignoreResizing) return;
+        if (this.ignoreResizing) {
+            this.setVisibility();
+            return;
+        }
 
         if (this.container) {
             let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');

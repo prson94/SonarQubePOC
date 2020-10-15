@@ -45,7 +45,9 @@ export class ResourcesService extends BaseObservableService {
     }
 
     public saveResource(        
-        resource: ResourceApiModel
+        resource: ResourceApiModel,
+        lookupFieldsPassedByValue: boolean = true,
+        IsChangePasswordReqeust: boolean = false
     ): Observable<ApiResult> {
 
         const httpOptions = {
@@ -58,7 +60,7 @@ export class ResourcesService extends BaseObservableService {
 
             return this
                 .http
-                .put(`api/v2/membership/users?lookupFieldsPassedByValue=true`, resourceArray, httpOptions)
+                .put(`api/v2/membership/users?lookupFieldsPassedByValue=${lookupFieldsPassedByValue}&IsChangePasswordReqeust=${IsChangePasswordReqeust}`, resourceArray, httpOptions)
                 .pipe(
                     map((res: ApiResult) => {
                         return res[0];
@@ -69,7 +71,7 @@ export class ResourcesService extends BaseObservableService {
         else {
             return this
                 .http
-                .post(`api/v2/membership/users?lookupFieldsPassedByValue=true`, resourceArray, httpOptions)
+                .post(`api/v2/membership/users?lookupFieldsPassedByValue=${lookupFieldsPassedByValue}`, resourceArray, httpOptions)
                 .pipe(
                     map((res: ApiResult[]) => {
                         return res[0];
@@ -196,8 +198,8 @@ export class ResourcesService extends BaseObservableService {
             );
     }
 
-    getUserGroups(resourceID: number): Observable<any[]> {
-        return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
+    getUserGroups(resourceUid: string): Observable<any> {
+        return this.http.get(`/api/v2/membership/groups?ResourceUid=${resourceUid}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

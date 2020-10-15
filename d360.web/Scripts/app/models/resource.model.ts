@@ -14,6 +14,7 @@ export class Resource {
     Status: string;
     IsAdministrator: boolean;
     ID: number;
+    Uid: string;
 
     public FullName() : string {
         return `${this.FirstName} ${this.LastName}`;

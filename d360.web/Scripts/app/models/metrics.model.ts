@@ -267,6 +267,7 @@ export enum MetricGovernanceCheckType {
 }
 
 export enum MetricConditionType {
+    NotApplicable = 0,
     And = 1,
     Or = 2
 }

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v7">
-    <comment>GOV-10916</comment>
+  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v8">
+    <comment>GOV-12420</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -259,6 +259,7 @@ begin
 			from	Issue T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
 			delete	T
 			from	IssueTypeRelation T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -269,6 +270,13 @@ begin
 					inner join metrics.Score S on S.Uid = L.ScoreUid
 					inner join Asset O on O.Uid = S.AssetUid
 					inner join api.ExecutionDeletedAssetType E on E.AssetTypeID = O.AssetTypeID and E.ExecutionID = @executionUid and E.ItemNumber = @itemNumber;
+
+			delete	T
+			from	[metrics].[ScoreItem] T
+					inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
+					inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
+					inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
+					inner join api.ExecutionDeletedAssetType S on S.Uid = A.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
 			delete	T
 			from	[metrics].[Score] T
@@ -706,8 +714,11 @@ begin
 			
 			delete	T
 			from	[metrics].[ScoreItem] T
-					inner join Asset O on O.Uid = T.AssetUid
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+					inner join metrics.Score S on S.Uid = L.ScoreUid
+					inner join Asset O on O.Uid = S.AssetUid
+					inner join api.ExecutionDeletedAssetType E on E.AssetTypeID = O.AssetTypeID and E.ExecutionID = @executionUid and E.ItemNumber = @itemNumber;
+
 			delete	T
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid

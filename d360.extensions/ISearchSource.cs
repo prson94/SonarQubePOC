@@ -166,7 +166,7 @@ namespace d360.extensions
 
         public string Icon { get; set; }
         public string ImageUrl { get; set; }
-        public string[][] AssetPath { get; set; }
+        public List<PathComponent> AssetPath { get; set; }
         public Guid? Uid { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public List<IndexTag> Tags { get; set; }
@@ -209,6 +209,12 @@ namespace d360.extensions
         public string value { get; set; }
         public bool exact { get; set; }
         public SearchConnector connector { get; set; }
+    }
+
+    public class PathComponent
+    {
+        public string[] Key { get; set; }
+        public string AssetType { get; set; }
     }
 
     #endregion

@@ -1422,8 +1422,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
         else
-            this.diagramRef.nativeElement.style.height = (height - 265) + 'px';
-
+            this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+        setTimeout(() => {
+            if (this.diagram) {
+                this.diagram.redraw();
+            }
+        }, 20);
         this.helper_DisableDragging();
     }
 
@@ -1943,8 +1947,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             stroke: this.fontLabelColor,
                             visible: false,
                             maxLines: this.textMaxLines,
-                            overflow: this.textOverflowStyle, 
-                            margin: new go.Margin(0,-4,0,0)
+                            overflow: this.textOverflowStyle,
+                            margin: new go.Margin(0, -4, 0, 0)
                         },
                         new go.Binding("text", "highlight").makeTwoWay(),
                         new go.Binding("visible", "highlight_visible").makeTwoWay(),

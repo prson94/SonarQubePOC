@@ -45,6 +45,14 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
             this.singleUndefinedColor = false;
         }
     }
+
+    getStatusText() {
+        if (this.useDefinedColor && this.colorObjects.length > 0)
+            return this.colorObjects.map(c => c.name).join('/');
+        else
+            return this.status;
+    }
+
     getBackgroundColor(name: string = "") {
         status = this.status.toLowerCase().trim();
         if (name)
@@ -170,19 +178,6 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
                 default:
                     return this.hslStringIsLight(this.getBackgroundColor(), 170) ? dark : light;
             }
-        }
-    }
-
-    getStatusIcon() {
-        switch (this.status.toLowerCase().trim()) {
-            case 'draft':
-                return 'fa-adjust fa-flip-horizontal';
-            case 'certified':
-                return 'fa-check-circle-o';
-            case 'under review':
-                return 'fa-circle';
-            default:
-                return 'fa-circle-o';
         }
     }
 };

@@ -6,7 +6,6 @@ import {
     Input,
     OnInit,
     ElementRef,
-    OnDestroy,
     ViewChild,
     HostListener,
     Output,
@@ -31,15 +30,13 @@ import {
     StepType,
     TransitionType,
     ActivityTypeInfo,
-    WorkflowEventRegistration,
-    WorkflowListItem,
     WorkflowChangeType,
     FormResponseType,
     WorkflowActivityType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
-import { Observable,of, ConnectableObservable } from 'rxjs';
+import { Observable, of } from 'rxjs';
  
 declare var window: any;
 
@@ -142,8 +139,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     public ngOnChanges(changes: SimpleChanges) {
         let isModelPassed = changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue;
         let isVelueReadOnly = changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue;
-        // let isIdAndCurrentIdNotEqualToPrevious = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
-        // let isVesionAndCurrentVersionNotEqualToPrevious = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+        let isIdChanged = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
+        let isVersionChanged = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+        let isUidChanged = changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue;
+        let isSelectedStepIdChanged = changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue;
 
         if (isVelueReadOnly) {
             this.isReadOnly = this.readonly.toString().toLowerCase() == 'true' ? true : false;
@@ -159,10 +158,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
         //else we need at least an id and preferably a id/version combo
         //without a version we just load the most recent one
-        // isIdAndCurrentIdNotEqualToPrevious || isVesionAndCurrentVersionNotEqualToPrevious
-        else if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue) ||
-            (changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue) ||
-            (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue)) {
+        else if (isIdChanged || isVersionChanged || isUidChanged) {
             if (this.diagram != null && this.diagram.div != null) {
                 this.diagram.div = null;
             }
@@ -180,7 +176,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if a step selection binding changes, select the appropriate step and show the history for it
-        if (changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue) {
+        if (isSelectedStepIdChanged) {
             this.diagram.clearSelection();
             let part = this.diagram.findPartForKey(changes['selectedStepId'].currentValue);
             let node = this.diagram.findNodeForKey(changes['selectedStepId'].currentValue);
@@ -427,6 +423,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
             }
 
+            if (n.activityType == WorkflowActivityType.HTTPRequest) {
+                this.workflowFieldsService.pushHttpFields(n);
+            }
+
             this.diagram.model.addNodeData(n)
         });
         linkList.forEach(l => dm.addLinkData(l));
@@ -609,7 +609,39 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }));
             });
         }
+
         return forms;
+    }
+
+    private getAvailableHttpInputs(link: LinkModel): string[] {
+        let links = [];
+        let requests = [];
+        let visited = [];
+
+        let nodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == link.from);
+        visited = visited.concat(nodes.map(n => {
+            return (<any>n).key;
+        }));
+
+        while (nodes.length > 0) {
+            links = [];
+            nodes.forEach(n => {
+                if ((<NodeModel>n).activityType == WorkflowActivityType.HTTPRequest) {
+                    requests.push((<NodeModel>n).key);
+                }
+
+                links = links.concat((<go.GraphLinksModel>this.diagram.model).linkDataArray.filter(l => (<LinkModel>l).to == (<NodeModel>n).key));
+            });
+            nodes = [];
+            links.forEach(l => {
+                let newNodes = this.diagram.model.nodeDataArray.filter(n => (<any>n).key == (<any>l).from && visited.findIndex(v => v == (<any>n).key) == -1);
+                nodes = nodes.concat(newNodes);
+                visited = visited.concat(newNodes.map(n => {
+                    return (<any>n).key;
+                }));
+            });
+        }
+        return requests;
     }
 
     private getActivityTypes(): Observable<any> {
@@ -673,9 +705,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 conditions.forEach(c => n.condition.push(c));
 
                 n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                    if (i >= 0)
-                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                    this.setConditionLabel(c);
                 });
 
             } else if (m.ConditionObject != null) {
@@ -688,9 +718,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 }
 
                 n.condition.forEach(c => {
-                    let i = this.fieldTypes.findIndex(f => f.ID == c['@FieldTypeID']);
-                    if (i >= 0)
-                        c['@FieldName'] = this.fieldTypes[i].FriendlyName;
+                    this.setConditionLabel(c);
                 });
 
             } else {
@@ -710,6 +738,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (n.transitionType == TransitionType.Condition) {
                 n.formInputs = this.getAvailableFormInputs(n);
+                n.httpInputs = this.getAvailableHttpInputs(n);
             }
 
             this.setTransitionIcon(n);
@@ -796,6 +825,16 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     let field = this.fieldTypes.find(t => t.ID.toString() == id);
                     if (field) f['@FieldName'] = field.FriendlyName;
                 });
+            }
+
+            if (n.activityType == WorkflowActivityType.HTTPRequest) {
+                if (n.settings.HTTPRequest == null)
+                    n.settings.HTTPRequest = {};
+                if (n.settings.HTTPRequest.Headers == null) {
+                    n.settings.HTTPRequest.Headers = [];
+                } else if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
+                    n.settings.HTTPRequest.Headers = [n.settings.HTTPRequest.Headers];
+                }
             }
 
             if (n.activityType == WorkflowActivityType.RelationshipUpdate) {
@@ -908,6 +947,24 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         } else {
             console.error(`model value ${model} is not valid`);
             return null;
+        }
+    }
+
+    private setConditionLabel(condition: any) {
+        let i = this.fieldTypes.findIndex(f => f.ID == condition['@FieldTypeID']);
+        if (i >= 0)
+            condition['@FieldName'] = this.fieldTypes[i].FriendlyName;
+
+
+        if (condition['@FormInputID'] != null) {
+            switch (condition['@FormInputID']) {
+                case 'statusCode':
+                    condition['@FieldName'] = 'HTTP Request :: Status Code';
+                    break;
+                case 'responseBody':
+                    condition['@FieldName'] = 'HTTP Request :: Response Body';
+                    break;
+            }
         }
     }
 
@@ -1117,6 +1174,32 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 if (n.settings.State == null || n.settings.State == '')
                     return false;
                 break;
+            case WorkflowActivityType.HTTPRequest:
+                if (n.settings.HTTPRequest == null)
+                    return false;
+                if (n.settings.HTTPRequest.Url == null)
+                    return false;
+                else {
+                    if (n.settings.HTTPRequest.Url.length < 7)
+                        return false;
+                    if (n.settings.HTTPRequest.Url.indexOf('http://') != 0
+                        && n.settings.HTTPRequest.Url.indexOf('https://') != 0) {
+                        return false;
+                    }
+                }
+
+                if (n.settings.HTTPRequest.Timeout == null)
+                    return false;
+                else {
+                    if (isNaN(n.settings.HTTPRequest.Timeout))
+                        return false;
+                    if (+n.settings.HTTPRequest.Timeout < 1 || +n.settings.HTTPRequest.Timeout > 600)
+                        return false;
+                }
+
+                if (n.settings.HTTPRequest.Method == null || n.settings.HTTPRequest.Method == '')
+                    return false;
+                break;
         }
 
         return true;
@@ -1128,7 +1211,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (!desc) return errors;
 
         var results = desc.match(/(\[)(.*?)(?=\])/g);
-
         if (results && results.length) {
             results.forEach(x => {
                 var fieldData = x.split('::');
@@ -1140,8 +1222,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (fieldType == 'Action Field') {
                         f = this.fieldTypes.find(x => x.Object == 'IssueType' && x.Name == fieldName);
                     }
-                    else {
+                    else if (fieldType == 'Asset Field') {
                         f = this.fieldTypes.find(x => x.Object != 'IssueType' && x.Name == fieldName);
+                    } else if (fieldType == 'HTTPREQUEST') {
+                        f = this.workflowFieldsService.getHttpFields().find(x => x['@stepId'] == fieldData[1].trim());
                     }
                     if (!f) {
                         errors.push('Invalid field type');
@@ -1373,6 +1457,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             case WorkflowActivityType.StateChange: //status change
                 n.settings.State = e.settings.State;
                 break;
+            case WorkflowActivityType.HTTPRequest:
+                n.settings.HTTPRequest = e.settings.HTTPRequest;
+                break;
         }
 
         if (e.hasMultipleInputs && e.settings.WaitForAllTransitions != null) {
@@ -1407,8 +1494,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             l.settings = e.settings;
             l.icon = e.icon;
             l.formInputs = this.getAvailableFormInputs(e);
+            l.httpInputs = this.getAvailableHttpInputs(e);
             if (this.selectedData != null && this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                 this.selectedData.formInputs = l.formInputs;
+                this.selectedData.httpInputs = l.httpInputs;
             }
 
             this.setTransitionIcon(l);
@@ -1467,18 +1556,9 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     this.showLinkTabs = false;
                     this.selectedStepId = this.selectedData.key;
                     this.selectedStepIdChange.emit(this.selectedData.key);
-
-                    let i = this.diagram.model.nodeDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    /*if (i > -1) {
-                        // this.selectedData = this.myDiagram.model.nodeDataArray[i];
-                    }*/
                 } else if (this.selectedData.diagramObjectType == DiagramObjectType.Link) {
                     this.showNodeTabs = false;
                     this.showLinkTabs = true;
-                    let i = (<go.GraphLinksModel>this.diagram.model).linkDataArray.findIndex(n => (<any>n).key == this.selectedData.key);
-                    /*if (i > -1) {
-                        //this.selectedData = (<go.GraphLinksModel>this.myDiagram.model).linkDataArray[i];
-                    }*/
                 }
             }
         }
@@ -1495,6 +1575,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (l > -1) {
             let k = (<LinkModel>(<go.GraphLinksModel>this.diagram.model).linkDataArray[l]);
             k.formInputs = this.getAvailableFormInputs(k);
+            k.httpInputs = this.getAvailableHttpInputs(k);
         }
     }
 

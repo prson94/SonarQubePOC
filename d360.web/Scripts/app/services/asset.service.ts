@@ -191,6 +191,7 @@ export class AssetService extends BaseObservableService {
         //Setup paging for export
         params['_pageNum'] = 1;
         params['_pageSize'] = 200000;
+        params['_includeTotal'] = false;
 
         var qString = '';
         if (params) {

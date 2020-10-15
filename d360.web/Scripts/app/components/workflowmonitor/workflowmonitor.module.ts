@@ -23,6 +23,7 @@ import { WorkflowMonitorStepFormDetailsComponent } from './workflowmonitor-step-
 import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step-email-details.component';
 import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-details.component';
 import { WorkflowMonitorStepFieldChangeDetailsComponent } from './workflowmonitor-step-field-change-details.component';
+import { WorkflowMonitorStepHttpDetailsComponent } from './workflowmonitor-step-http-details.component';
 import { WorkflowMonitorStepRelationshipChangeDetailsComponent } from './workflowmonitor-step-relationship-change-details';
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
@@ -85,6 +86,7 @@ import { TooltipModule } from 'primeng/tooltip';
         WorkflowMonitorActionDetailsComponent,
         WorkflowMonitorStepFieldChangeDetailsComponent,
         WorkflowMonitorStepRelationshipChangeDetailsComponent,
+        WorkflowMonitorStepHttpDetailsComponent,
     ],
     exports: [
         WorkflowMonitorComponent,  

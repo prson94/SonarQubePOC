@@ -35,10 +35,12 @@ import { WorkflowStepFieldChangeComponent } from './workflow-step-field-change.c
 import { WorkflowStepSummaryComponent } from './workflow-step-summary.component'
 import { WorkflowTransitionSummaryComponent } from './workflow-transition-summary.component';
 import { WorkflowResponsibilitySelectorComponent } from './workflow-responsibility-selector.component';
+import { WorkflowStepHttpComponent } from './workflow-step-http.component';
 import { PipesModule } from '../../../../pipes/pipes.module';
 
 
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
+import { DirectivesModule } from '../../../../directives/directives.module';
 
 
 @NgModule({
@@ -55,6 +57,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         D3SEditorHeaderModule,
         SharedGridPagingInfoModule,
         ToggleButtonModule,
+        DirectivesModule,
 
         //prime        
         EditorModule,
@@ -79,6 +82,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         WorkflowFormHistoryComponent,
         WorkflowStepFieldChangeComponent,
         WorkflowStepSummaryComponent,
+        WorkflowStepHttpComponent,
         WorkflowTransitionSummaryComponent,
         WorkflowResponsibilitySelectorComponent,
     ],

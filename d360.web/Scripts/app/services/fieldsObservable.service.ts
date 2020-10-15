@@ -179,7 +179,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldTypeName: string): Observable<Lookups> {
+    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<Lookups> {
         let url = "";
         if (assetTypeUid)
             url = `AssetTypeUid=${assetTypeUid}`;
@@ -190,7 +190,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
         return this
             .http
-            .get<Lookups>(`api/v2/fields/GetLookups?fieldtypename=${fieldTypeName}&${url}&isNg=true`)
+            .get<Lookups>(`api/v2/fields/GetLookups?${url}`)
             .pipe(
                 map(response => <any>response),
                 map(

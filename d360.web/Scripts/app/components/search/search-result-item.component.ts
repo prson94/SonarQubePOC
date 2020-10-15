@@ -1,7 +1,7 @@
 ﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchFullResult, SearchDetail, SearchResultFieldDisplay } from '../../models/search-result.model';
+import { SearchFullResult, SearchDetail, SearchResultFieldDisplay, SearchPathComponent } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -12,7 +12,6 @@ import { ObjectStatisticsService } from '../../services/object-statistics.servic
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { isUndefined } from 'util';
-import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
 
 declare var CompanySettings;
 
@@ -75,8 +74,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         private objectStatisticsService: ObjectStatisticsService,
-        private ref: ChangeDetectorRef,
-        private assetSeparatorPipe: AssetpathSeparatorPipe) {
+        private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -85,13 +83,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.showShoppingCart = true;
 
         this.loadDetails();
-        if (this.result.AssetPath) {
-            this.formattedPath = this.assetSeparatorPipe.transform(this.result.AssetPath);
-            this.showPath = true;
-            this.ref.markForCheck();
-        } else {
-            this.showPath = false;
-        }
         //Need to wait for ViewChildren, but can't use AfterOnInit
         setTimeout(() => {
             this.checkSize();
@@ -108,14 +99,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                         this.showStatus = true;
                     } else {
                         this.showStatus = false;
-                    }
-                    if (isUndefined(this.formattedPath)) {
-                        if (this.searchDetails && Array.isArray(this.searchDetails.AssetDetail.Path)) {
-                            this.formattedPath = this.assetSeparatorPipe.transform(this.searchDetails.AssetDetail.Path);
-                            this.showPath = true;
-                        } else {
-                            this.showPath = false;
-                        }
                     }
                     this.ref.markForCheck();
                 }
@@ -202,6 +185,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                 else
                     val = '<i class="fa fa-times disabled"></i>';
             }
+        } else if (field.Type == 'Date') {
+            val = val.substr(0, val.indexOf(' '));
         }
         if (field.Suffix)
             val += ' ' + field.Suffix;

@@ -381,12 +381,17 @@ for json path";
             {
                 if (Guid.TryParse(assetTypeUidParam.Value.Trim(), out Guid assetTypeUid))
                 {
-                    var validUid = Company.AssetTypes.Any(i => i.uid == assetTypeUid);
+                    var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == assetTypeUid);                    
 
-                    if (!validUid)
+                    if (assetType == null)
                     {
                         return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Type Uid provided does not exist."));
                     }
+                    else if (assetType.Class == AssetTypeClass.Diagram)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                    }
+
                 }
                 else
                 {
@@ -406,6 +411,10 @@ for json path";
                     {
                         return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset Uid provided does not exist."));
                     }
+                    else if(asset.AssetType.Class == AssetTypeClass.Diagram)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid."));
+                    }
 
                     if (assetTypeUidParam.Key != null && assetTypeUidParam.Value != null && !string.IsNullOrWhiteSpace(assetTypeUidParam.Value))
                     {
@@ -419,7 +428,7 @@ for json path";
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type Uid provided is invalid."));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Uid provided is invalid."));
                 }
             }
 
@@ -1030,7 +1039,7 @@ for json path";
 
                 List<IssueTypeRelation> allocations = new List<IssueTypeRelation>();
 
-                foreach (var assetTypeUid in assetTypeUids)
+                foreach (var assetTypeUid in assetTypeUids.Distinct())
                 {
                     if (!Guid.TryParse(assetTypeUid, out Guid uid))
                     {
@@ -1039,7 +1048,7 @@ for json path";
 
                     var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
-                    if (assetType == null)
+                    if (assetType == null || assetType.Class == AssetTypeClass.Diagram)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
                     }

@@ -61,6 +61,11 @@
                 <ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
                     <d3s-workflow-monitor-step-relationship-change-details [relationshipChange]="step.RelationshipChange"></d3s-workflow-monitor-step-relationship-change-details>
                 </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
+                    <d3s-workflow-monitor-step-http-details [step]="step"></d3s-workflow-monitor-step-http-details>
+                </ng-container>
+
                 <ng-container *ngSwitchCase="WorkflowActivityType.StateChange">
                     <div class="row">
                         <div class="col s6">
@@ -84,7 +89,7 @@
                                 Form was reassigned to another User
                             </div>
                             <div *ngFor="let r of bulkReassignments; let i = index">
-                                {{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last"/>
+                                {{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last" />
                             </div>
                         </div>
                     </div>

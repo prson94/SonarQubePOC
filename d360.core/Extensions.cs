@@ -11,6 +11,7 @@ using System.Text;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using d360.core.entities;
+using Newtonsoft.Json;
 
 namespace d360.core
 {
@@ -297,6 +298,19 @@ namespace d360.core
             }
 
             return error;
+        }
+
+        public static string AsJson<T>(this T item)
+        {
+            var json = JsonConvert.SerializeObject(item);
+            return json;
+        }
+
+        public static T CloneThis<T>(this T item)
+        {
+            var json = JsonConvert.SerializeObject(item);
+            T newItem = JsonConvert.DeserializeObject<T>(json);
+            return newItem;
         }
     }
 

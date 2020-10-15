@@ -166,12 +166,11 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
             const int ResourceTypeID = 1;
 
             CompanyContext.Add(execution);
-
 
             var executionID = execution.ExecutionID;
             var results = new List<UserApiUpsertResult>();
@@ -179,7 +178,11 @@ namespace d360.model.DataAccessLayer
 
             var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "ResourceType").ToList();
 
+            var hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
+
+
             #region Data Tables
+
             var resourceTable = new DataTable();
             var userTable = new DataTable();
             var fieldTable = new DataTable();
@@ -206,6 +209,10 @@ namespace d360.model.DataAccessLayer
             userTable.Columns.Add("IsNew", typeof(bool));
             userTable.Columns.Add("Success", typeof(bool));
             userTable.Columns.Add("Message", typeof(string));
+            userTable.Columns.Add("Object", typeof(string));
+            userTable.Columns.Add("ObjectID", typeof(int)); 
+            userTable.Columns.Add("ObjectType", typeof(string));
+            userTable.Columns.Add("ObjectTypeID", typeof(int));
 
 
             fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -216,7 +223,6 @@ namespace d360.model.DataAccessLayer
             fieldTable.Columns.Add("LookupValue", typeof(string));
 
             #endregion
-
 
             #region Process Community
 
@@ -259,7 +265,6 @@ namespace d360.model.DataAccessLayer
                             [uid] uniqueidentifier,
                             CompanyResourceState int
                         )
-
                         ", transaction: trans);
 
 
@@ -325,6 +330,8 @@ namespace d360.model.DataAccessLayer
             foreach (var user in users)
             {
                 var row = userTable.NewRow();
+                var CurrPassword = "";
+                var NewPassword = "";
 
                 var success = true;
                 var messages = new List<string>();
@@ -380,6 +387,42 @@ namespace d360.model.DataAccessLayer
                         messages.Add("Resource not found for this Uid");
                     }
 
+                    //Password Change
+                    if (IsChangePasswordReqeust)
+                    {
+                        NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
+                        CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
+                        if (NewPassword == null)
+                        {
+                            success = false;
+                            messages.Add("NewPassword parameter value missing.");
+                        }
+                        else
+                        {
+                            user.Password = NewPassword;
+                        }
+
+                        if (CurrPassword == null)
+                        {
+                            success = false;
+                            messages.Add("CurrentPassword parameter value missing.");
+                        }
+
+                        var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
+                        var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
+                        if (existing == null)
+                        {
+                            success = false;
+                            messages.Add("Your password was not updated, since the provided current password does not match.");
+                        }
+
+                        if (NewPassword == CurrPassword)
+                        {
+                            success = false;
+                            messages.Add("New password may not be the same as current password");
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(user.Password))
                     {
                         if (!validatePassword(user.Password))
@@ -397,7 +440,7 @@ namespace d360.model.DataAccessLayer
                         success = false;
                         messages.Add($"User for uid [{user.uid}] not found");
                     }
-                    if(string.IsNullOrEmpty(user.FirstName))
+                    if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
                         messages.Add("Must provide a First Name");
@@ -414,7 +457,7 @@ namespace d360.model.DataAccessLayer
                     success = false;
                     messages.Add("Username is not in a valid email format");
                 }
-                else if(users.Count(u=>u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase))>1)
+                else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
                 {
                     success = false;
                     messages.Add("Username must be unique within the request");
@@ -439,13 +482,17 @@ namespace d360.model.DataAccessLayer
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
-                if (user.State.HasValue) row["State"] = (int)user.State;
+                if (user.State.HasValue && !IsChangePasswordReqeust) row["State"] = (int)user.State;
                 row["IsAdministrator"] = user.IsAdministrator;
                 row["IsNew"] = user.IsNew;
+                row["Object"] = "Resource";
+                row["ObjectID"] = user.ResourceID ?? 0;
+                row["ObjectType"] = "ResourceType";
+                row["ObjectTypeID"] = ResourceTypeID;
 
                 userTable.Rows.Add(row);
 
-                if (user.Fields != null)
+                if (user.Fields != null  && !IsChangePasswordReqeust)
                 {
                     foreach (var field in user.Fields.Keys)
                     {
@@ -467,41 +514,21 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                row["Success"] = success;
+                if (!success) row["Success"] = false;
                 row["Message"] = messages.Any() ? string.Join(". ", messages) + ". " : "";
 
             }
 
-
             #region Bulk Copy Company
 
             if (CompanyContext.Connection.State == ConnectionState.Closed)
-             await CompanyContext.Connection.OpenAsync();
+                await CompanyContext.Connection.OpenAsync();
 
             using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
             {
                 try
                 {
                     await CompanyContext.Connection.ExecuteAsync(@"
-                        drop table if exists #UserAssets;
-                        create table #UserAssets
-                        (
-                            ExecutionID uniqueidentifier not null,
-                            ExecutionItemUid uniqueidentifier,
-                            ItemNumber int not null,
-                            Username nvarchar(500),
-                            Uid uniqueidentifier,
-                            ResourceID int,
-                            FirstName nvarchar(500),
-                            LastName nvarchar(500),
-                            Password nvarchar(500),
-                            [State] int,
-                            IsAdministrator bit not null,
-                            IsNew bit not null,
-                            Success bit not null,
-                            Message nvarchar(max)
-                        );
-
                         drop table if exists #UserFields;
                         create table #UserFields
                         (
@@ -516,7 +543,7 @@ namespace d360.model.DataAccessLayer
                         ", transaction: trans);
 
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans);
-                    bulkCopy.DestinationTableName = "#UserAssets";
+                    bulkCopy.DestinationTableName = "api.ExecutionUser";
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
@@ -527,12 +554,15 @@ namespace d360.model.DataAccessLayer
 
                     bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
                     bulkCopy.ColumnMappings.Add("LastName", "LastName");
-                    bulkCopy.ColumnMappings.Add("Password", "Password");
                     bulkCopy.ColumnMappings.Add("State", "State");
                     bulkCopy.ColumnMappings.Add("IsAdministrator", "IsAdministrator");
                     bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
                     bulkCopy.ColumnMappings.Add("Success", "Success");
                     bulkCopy.ColumnMappings.Add("Message", "Message");
+                    bulkCopy.ColumnMappings.Add("Object", "Object");
+                    bulkCopy.ColumnMappings.Add("ObjectID", "ObjectID");
+                    bulkCopy.ColumnMappings.Add("ObjectType", "ObjectType");
+                    bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
 
                     await bulkCopy.WriteToServerAsync(userTable);
 
@@ -555,9 +585,9 @@ namespace d360.model.DataAccessLayer
                     await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.ResourceID = G.ResourceID
-                        from    #UserAssets U
+                        from    api.ExecutionUser U
                                 inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
-                        where   U.Success = 1 and U.IsNew = 0;
+                        where   U.Success is null and U.IsNew = 0;
 
                         update  U
                         set     U.FieldTypeID = F.ID
@@ -569,18 +599,19 @@ namespace d360.model.DataAccessLayer
                     #endregion
 
                     #region Validation
-
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                    if (!IsChangePasswordReqeust)
+                    {
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'Resource for this uid not found. '
-                        from    #UserAssets U
-                        where   U.Success = 1 and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
+                        from    api.ExecutionUser U
+                        where   U.Success is null and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
 
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'One or more field values supplied is missing a field type. '
-                        from    #UserAssets U
+                        from    api.ExecutionUser U
                                 cross apply (
                                     select  count(*) as MissingCount 
                                     from    #UserFields F 
@@ -588,12 +619,12 @@ namespace d360.model.DataAccessLayer
                                             and F.ExecutionID = U.ExecutionID
                                             and F.FieldTypeID is null
                                 ) C
-                        where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0;
+                        where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
 
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'Missing required fields. '
-                        from    #UserAssets U
+                        from    api.ExecutionUser U
                                 cross apply (
                                     select  count(*) as MissingCount
                                     from    FieldType F
@@ -607,32 +638,31 @@ namespace d360.model.DataAccessLayer
                                                         and R.FieldTypeID = F.ID
                                             )
                                 ) C
-                        where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0;
+                        where   U.Success is null and U.ExecutionID = @executionID and C.MissingCount > 0;
 
                         ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
-                    if (lookupFieldsPassedByValue)
-                    {
-                        CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);                        
-                    }
-                    else
-                    {
-                        CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
-                    }
-                    
+                        if (lookupFieldsPassedByValue)
+                        {
+                            CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);
+                        }
+                        else
+                        {
+                            CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+                        }
 
-                    //validate lookup fields
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                        //validate lookup fields
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
-                        from    #UserAssets U
+                        from    api.ExecutionUser U
                         inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
                         inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
                         where U.ExecutionID = @executionID and F.LookupValue is null
                         ", new { executionID }, transaction: trans);
 
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
                         select  ExecutionID,
                         ItemNumber,
@@ -643,23 +673,41 @@ namespace d360.model.DataAccessLayer
                         0 as Ignore
                         from #UserFields
                         ", transaction: trans);
+                    }
 
-                    validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>("select * from #UserAssets", transaction: trans)).ToList();
+                    validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>(@"
+                        select ItemNumber, 
+                        uid, 
+                        ExecutionItemUid, 
+                        Message, 
+                        coalesce(Success, cast(1 as bit)) as Success 
+                        from api.ExecutionUser 
+                        where ExecutionID = @executionID", new { executionID }, transaction: trans))
+                        .ToList();
+
+                    #endregion
 
                     trans.Commit();
-                    #endregion
                 }
                 catch (Exception ex)
                 {
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
                     execution.CompletedOn = DateTime.UtcNow;
                     CompanyContext.Update(execution);
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
 
-                    trans.Rollback();
                     throw ex;
                 }
             }
-
 
             #endregion
 
@@ -674,33 +722,34 @@ namespace d360.model.DataAccessLayer
 
                     if (user != null)
                     {
-
-                        bool success;
-                        string message;
-                        var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
-
-                        CompanyContext.ValidateFields("ResourceType", 
-                            ResourceTypeID, 
-                            !user.ResourceID.HasValue, 
-                            fieldTypes, 
-                            requiredFieldNames, 
-                            user.Fields, 
-                            executionID, 
-                            user.ItemNumber, 
-                            null,
-                            out success, 
-                            out message);
-
-                        if (success == false)
+                        if (!IsChangePasswordReqeust)
                         {
-                            result.Success = false;
-                            result.Message += message;
+                            bool success;
+                            string message;
+                            var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
-                            results.Add(result);
-                            continue;
+                            CompanyContext.ValidateFields("ResourceType",
+                               ResourceTypeID,
+                               isInsert,
+                               fieldTypes,
+                               requiredFieldNames,
+                               user.Fields,
+                               executionID,
+                               user.ItemNumber,
+                               null,
+                               out success,
+                               out message);
+
+                            if (success == false)
+                            {
+                                result.Success = false;
+                                result.Message += message;
+
+                                results.Add(result);
+                                continue;
+                            }
+
                         }
-
-
                         //add resource
                         if (!user.ResourceID.HasValue)
                         {
@@ -748,7 +797,7 @@ namespace d360.model.DataAccessLayer
 
                                     resource.Email = user.Username;
                                     resource.Username = user.Username;
-                                    
+
                                 }
 
                                 if (!string.IsNullOrEmpty(user.Password))
@@ -762,100 +811,65 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        CompanyResource companyResource;
-
-                        if (user.CompanyResourceState.HasValue)
+                        if (!IsChangePasswordReqeust)
                         {
-                            companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
+                            CompanyResource companyResource;
 
-                            if (companyResource != null)
+                            if (user.CompanyResourceState.HasValue)
                             {
-                                companyResource.IsAdministrator = user.IsAdministrator;
-                                companyResource.State = user.State ?? companyResource.State;
+                                companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
 
-                                CommunityContext.Update(companyResource);
+                                if (companyResource != null)
+                                {
+                                    companyResource.IsAdministrator = user.IsAdministrator;
+                                    companyResource.State = user.State ?? companyResource.State;
+
+                                    CommunityContext.Update(companyResource);
+                                }
                             }
-                        }
-                        else
-                        {
-                            companyResource = new CompanyResource()
+                            else
                             {
-                                ResourceID = (int)user.ResourceID,
-                                CompanyID = CompanyContext.CurrentCompanyID,
-                                State = CompanyResourceState.Active,
-                                IsAdministrator = user.IsAdministrator
-                            };
+                                companyResource = new CompanyResource()
+                                {
+                                    ResourceID = (int)user.ResourceID,
+                                    CompanyID = CompanyContext.CurrentCompanyID,
+                                    State = CompanyResourceState.Active,
+                                    IsAdministrator = user.IsAdministrator
+                                };
 
-                            CommunityContext.Add(companyResource);
+                                CommunityContext.Add(companyResource);
 
-                        }
+                            }
 
-                        var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+                            var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
 
-                        if (globalResource != null)
-                        {
-                            globalResource.FirstName = user.FirstName;
-                            globalResource.LastName = user.LastName;
-                            globalResource.Email = user.Username;
-                            globalResource.IsAdministrator = user.IsAdministrator;
-                            globalResource.State = user.State ?? companyResource.State;
-                            globalResource.UpdatedOn = DateTime.UtcNow;
-
-                            CompanyContext.Update(globalResource);
-                        }
-                        else
-                        {
-                            globalResource = new GlobalReportingResource
+                            if (globalResource != null)
                             {
-                                IsAdministrator = user.IsAdministrator,
-                                ResourceID = (int)user.ResourceID,
-                                Email = user.Username,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
-                                State = user.State ?? companyResource.State,
-                                UpdatedOn = DateTime.UtcNow,
-                                Uid = (Guid)user.uid
-                            };
+                                globalResource.FirstName = user.FirstName;
+                                globalResource.LastName = user.LastName;
+                                globalResource.Email = user.Username;
+                                globalResource.IsAdministrator = user.IsAdministrator;
+                                globalResource.State = user.State ?? companyResource.State;
+                                globalResource.UpdatedOn = DateTime.UtcNow;
 
-                            CompanyContext.Add(globalResource);
-                        }
-                    }
+                                CompanyContext.Update(globalResource);
+                            }
+                            else
+                            {
+                                globalResource = new GlobalReportingResource
+                                {
+                                    IsAdministrator = user.IsAdministrator,
+                                    ResourceID = (int)user.ResourceID,
+                                    Email = user.Username,
+                                    FirstName = user.FirstName,
+                                    LastName = user.LastName,
+                                    State = user.State ?? companyResource.State,
+                                    UpdatedOn = DateTime.UtcNow,
+                                    Uid = (Guid)user.uid
+                                };
 
-                    //merge field values
-                    if (user?.Fields?.Any() ?? false)
-                    {
-                        try
-                        {
-                            await CompanyContext.Connection.ExecuteAsync(@"
-                                merge   [Field] as T
-                                using   (
-                                        select  'Resource' as [Object],
-                                                @objectId as ObjectID,
-                                                F.FieldTypeID,
-                                                coalesce(F.LookupValue, F.FieldValue) as [Value],
-                                                F.FieldValue as FormattedValue
-                                        from    api.ExecutionField F
-                                        where   F.ExecutionID = @executionID
-                                                and F.ItemNumber = @itemNumber  
-                                ) as S
-                                on      (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
-                                when matched    and T.[Value] <> S.[Value] COLLATE SQL_Latin1_General_CP1_CS_AS 
-                                                or T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update 
-                                set T.[Value] = S.[Value], 
-                                    T.FormattedValue = S.FormattedValue, 
-                                    T.UpdatedBy = @resourceId 
-                                when not matched by target then
-                                insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy)
-                                values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId);
-                                ", new { objectId = user.ResourceID, executionID, resourceId = CompanyContext.CurrentResourceID, user.ItemNumber});
-                        }
-                        catch (Exception ex)
-                        {
-                            execution.ErrorMessage = ex.GetFullExceptionData(false);
-                            execution.CompletedOn = DateTime.UtcNow;
-                            CompanyContext.Update(execution);
-
-                            throw ex;
+                                CompanyContext.Add(globalResource);
+                            }
                         }
                     }
                 }
@@ -865,9 +879,109 @@ namespace d360.model.DataAccessLayer
 
             #endregion
 
+            #region Merge Fields
+
+            if (CompanyContext.Connection.State == ConnectionState.Closed)
+                await CompanyContext.Connection.OpenAsync();
+
+            using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
+            {
+                try
+                {
+                    await CompanyContext.Connection.ExecuteAsync(@"
+                        drop table if exists #UserResults;
+                        create table #UserResults
+                        (
+                            ExecutionID uniqueidentifier not null,
+                            ItemNumber int not null,
+                            [uid] uniqueidentifier null,
+                            Success bit null,
+                            Message nvarchar(max)
+                        );
+                        ", transaction: trans);
+
+                    var resultsTable = new DataTable();
+
+                    resultsTable.Columns.Add("ExecutionID", typeof(Guid));
+                    resultsTable.Columns.Add("ItemNumber", typeof(int));
+                    resultsTable.Columns.Add("uid", typeof(Guid));
+                    resultsTable.Columns.Add("Success", typeof(bool));
+                    resultsTable.Columns.Add("Message", typeof(string));
+
+                    results.ForEach(r =>
+                    {
+                        var row = resultsTable.NewRow();
+                        row["ExecutionID"] = executionID;
+                        row["ItemNumber"] = r.ItemNumber;
+                        if (r.uid.HasValue) row["uid"] = r.uid;
+                        if (r.Success == false) row["Success"] = false;
+                        row["Message"] = r.Message ?? "";
+
+                        resultsTable.Rows.Add(row);
+                    });
+
+                    var bulkCopy = new SqlBulkCopy(CompanyContext.Connection, SqlBulkCopyOptions.Default, trans);
+                    bulkCopy.DestinationTableName = "#UserResults";
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+
+                    await bulkCopy.WriteToServerAsync(resultsTable);
+
+                    await CompanyContext.Connection.ExecuteAsync(@"
+                        update U
+                        set U.ObjectID = GR.ResourceID,
+                            U.ResourceID = GR.ResourceID
+                        from api.ExecutionUser U
+                        inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and U.ObjectID = 0
+                        inner join reporting.Global_resource GR on GR.uid = R.uid
+
+                        update U
+                        set U.Success = 0,
+                            U.Message = R.Message
+                        from api.ExecutionUser U
+                        inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and R.Success = 0
+                        ", transaction: trans);
+
+                    if (!IsChangePasswordReqeust)
+                    { 
+                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsert);
+
+                        if (hasRelationshipFieldTypes)
+                        {
+                            CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+                        }
+                    }
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    CompanyContext.Update(execution);
+                    try
+                    {
+                        if (trans != null)
+                        {
+                            trans.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    throw ex;
+                }
+            }
+
+            #endregion
+
             execution.CompletedOn = DateTime.UtcNow;
-            execution.Error = results.Count(r => !r.Success);
-            execution.Processed = results.Count(r => r.Success);
+            execution.Error = results.Count(r => r.Success == false);
+            execution.Processed = results.Count(r => r.Success == true);
             CompanyContext.Update(execution);
 
             return results;

@@ -365,21 +365,6 @@ from	FollowDetail F
             };
         }
 
-        [HttpGet, Route("_GroupsByResourceID"), NonNullableParameters]
-        public JsonResult _GroupsByResourceID(int id)
-        {
-            return Json(
-                Company.Filter<ResourceGroup>(i => i.ResourceID == id)
-                    .Select(i => i.Group)
-                    .Select(i => new
-                    {
-                        i.ID,
-                        i.Name
-                    }),
-                JsonRequestBehavior.AllowGet
-            );
-        }
-
         [HttpPost, Route("UpdateFollowStatus"), NonNullableParameters, AjaxValidateAntiForgeryToken]
         public JsonResult UpdateFollowStatus(SystemObjects type, int id, bool includeChildren = false)
         {

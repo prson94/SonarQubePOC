@@ -30,8 +30,8 @@
         overflow: hidden;
         white-space: nowrap !important;
         text-overflow: ellipsis;
-        padding-top: 4px;
-        padding-left: 2px;
+        padding-top: 5px;
+        padding-left: 0px;
         padding-right: 48px;
     }
 
@@ -62,6 +62,18 @@
         font-size: 14px;
         padding: 5px;
         border-radius: 4px;
+
+        &:hover {
+            background-color: @ig-select-button-hover-color;
+        }
+
+        &:active {
+            background-color: @ig-select-button-active-color;
+        }
+    }
+
+    .ui-dropdown-trigger {
+        background-color: @ig-select-button-color;
 
         &:hover {
             background-color: @ig-select-button-hover-color;

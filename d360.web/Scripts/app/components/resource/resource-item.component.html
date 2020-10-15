@@ -1,4 +1,5 @@
-﻿<div class="row" *ngIf="!isLoading" [ngSwitch]="pageMode">
+﻿<d3s-loading [isLoading]="isSavingProcess">Saving is in process...</d3s-loading>
+<div class="row" *ngIf="!isLoading" [ngSwitch]="pageMode">
     <div *ngSwitchDefault>
         <div class="col s12 m6 l6">
             <div class="tile tile-detail">
@@ -8,7 +9,7 @@
                     </header>
                     <div class="col l3 m3 s12">
                         <img [src]="'/resources/image/' + resourceId + '?size=200'" style="margin-top:5px;width:100%" />
-                    </div>                    
+                    </div>
                     <div class="col l9 m9 s12">
                         <div style="padding-bottom:0">
                             <object-detail [objectType]="'Resource'" [objectID]="resourceId"></object-detail>
@@ -29,8 +30,7 @@
     <div *ngSwitchCase="PageMode.EditingInfo">
         <div class="col s12">
             <div class="tile tile-detail">
-                <d3s-dynamic-editor
-                                    objectType="resourceself"
+                <d3s-dynamic-editor objectType="resourceself"
                                     title="Your Bio"
                                     objectID="-1"
                                     hasCloseButton="true"

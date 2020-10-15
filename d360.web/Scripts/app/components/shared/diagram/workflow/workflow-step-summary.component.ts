@@ -14,7 +14,6 @@ import { WorkflowService } from '../../../../services/workflow.service';
 import { GroupService } from '../../../../services/group.service';
 
 import * as _ from 'lodash';
-import { map } from 'rxjs/operators';
 import { SelectItem } from 'primeng/api';
 
 
@@ -30,6 +29,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     @Input() objectId: number;
     @Input() step: NodeModel;
     @Input() issueObject: string;
+    @Input() showSensitiveInfo = true;
 
     WorkflowActivityType = WorkflowActivityType;
     StepType = StepType;

@@ -76,7 +76,17 @@ namespace d360.web.Controllers.V2
             {
 
                 var settings = Community.GetCompanySettings();
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                bool IsCurrentUser = false;
+
+                if (ResourceID != null)
+                {
+                    if (ResourceID == Company.CurrentResourceID)
+                    {
+                        IsCurrentUser = true;
+                    }
+                }
+
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
                 string finalSql = "";
@@ -297,16 +307,16 @@ namespace d360.web.Controllers.V2
         /// <param name="groupUid">The unique identifier of the Group.</param>
         /// <param name="users">The users that need to be added to the group</param>
         [
-   HttpPost,
-   MapToApiVersion("2.0"),
-   Route("groups/{groupUid:Guid}/members"),
-   SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
-   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-   SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
-   SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
-   SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-   SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-]
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupUid:Guid}/members"),
+           SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
+           SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
         public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
@@ -525,16 +535,15 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <returns></returns>
         [
-    HttpGet,
-    Route("groups"),
-    SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-    SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
-    SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
-
-]
+            HttpGet,
+            Route("groups"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
+        ]
         public async Task<IHttpActionResult> GetGroups()
         {
             var prefix = "Membership.GetGroups => ";
@@ -722,7 +731,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -757,6 +766,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </remarks>        
         /// <param name="users">A list of users to update.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <param name="IsChangePasswordReqeust">Optional query string parameter that allows you to password changed request.  The default value for this is false.</param>
+
         [
             HttpPut,
             Route("users"),
@@ -767,11 +778,47 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
         {
             var prefix = "Membership.PutUsers => ";
+            bool IsCurrentUser = false;
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (!Company.CurrentResourceIsAdmin || IsChangePasswordReqeust)
+            {
+                if (users != null && users.Count == 1)
+                {
+                    foreach (var user in users)
+                    {
+                        var resource = Community.Filter<Resource>(i => i.Uid == user.uid, i => i.CompanyResources).SingleOrDefault();
+                        if (resource != null)
+                        {
+                            if (resource.ID == Company.CurrentResourceID)
+                            {
+                                IsCurrentUser = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //change password request Checks
+            if (IsChangePasswordReqeust)
+            {
+                if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms"));
+                }
+                if (!IsCurrentUser)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user"));
+                }
+                if (users != null && users.Count > 1)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true."));
+                }
+            }
+
+            if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
             if (users == null || users.Count == 0)
@@ -782,7 +829,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false , IsChangePasswordReqeust);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -1086,6 +1133,11 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (i.Name == null)
                 {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
+                }
+
+                if (i.PrimaryOwnerUid == Guid.Empty)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Primary Owner is empty/missing in one or more of the requests. Primary Owner must be provided."));
                 }
 
                 models.Add(new UpdateGroupModel

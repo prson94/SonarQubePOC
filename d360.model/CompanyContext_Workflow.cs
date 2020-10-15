@@ -18,6 +18,8 @@ using System.Xml.Linq;
 using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http;
+using System.IO;
 
 namespace d360.model
 {
@@ -856,6 +858,10 @@ namespace d360.model
                         ChangeItemState(itemStep);
                         isStepCompleted = true;
                         break;
+                    case WorkflowActivityType.HTTPRequest:
+                        await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
+                        isStepCompleted = true;
+                        break;
                     default:
                         isStepCompleted = true;
                         break;
@@ -906,6 +912,78 @@ namespace d360.model
             Console.WriteLine($"Executing - [workflow].[changeItemState] {item.Step.Version.TypeID}, {item.Step.ID}, {item.ItemID} ");
 
             Database.Connection.Execute("[workflow].[changeItemState] @id, @stepId, @itemId", new { id = item.Step.Version.TypeID, @stepId = item.Step.ID, @itemId = item.ItemID });
+        }
+
+        private async Task SendHttpRequestAsync(WorkflowItemStep item, EventObjectInfo info, WorkflowItemStepSettingModel settings)
+        {
+            if (settings == null)
+                throw new Exception($"ERROR - INVALID HTTP REQUEST SETTINGS SPECIFIED.");
+
+            var requestSettings = settings.HttpRequestSettings;
+
+            if (string.IsNullOrEmpty(requestSettings.Url))
+                throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
+
+            var prefix = "";
+            using (var cnn = new System.Data.SqlClient.SqlConnection(core.constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
+                prefix = cnn.Query<string>(@"select UrlPrefix from CompanyDomainSetting where CompanyID = @c and IsPrimary = 1", new { c = CurrentCompanyID }).FirstOrDefault();
+            }
+
+            HttpRequestMessage request = new HttpRequestMessage();
+            using (HttpClient client = new HttpClient())
+            {
+
+                switch (requestSettings.Method.ToUpper())
+                {
+                    case "GET":
+                        request.Method = HttpMethod.Get;
+                        break;
+                    case "DELETE":
+                        request.Method = HttpMethod.Delete;
+                        break;
+                    case "POST":
+                        request.Method = HttpMethod.Post;
+                        break;
+                    case "PUT":
+                        request.Method = HttpMethod.Put;
+                        break;
+                    default:
+                        throw new Exception($"ERROR - INVALID METHOD PASSED TO HTTP REQUEST.");
+                }
+
+                var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+
+                if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+                    throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
+
+                request.RequestUri = new Uri(uri);
+                
+                if (requestSettings?.Headers?.Any() == true)
+                {
+                    requestSettings.Headers.ForEach(h =>
+                    {
+                        if (request.Headers.Contains(h.Key))
+                        {
+                            request.Headers.Remove(h.Key);
+                        }
+
+                        request.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(requestSettings.Body))
+                {
+                    var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
+                    var contentArray = Encoding.UTF8.GetBytes(body);
+                    request.Content = new ByteArrayContent(contentArray);
+                }
+
+                var response = await client.SendAsync(request);
+
+                await SaveHttpResponseResultsAsync(item, requestSettings, response);
+            }
         }
 
         private void DeleteItemWorkflowActivity(EventObjectInfo objectInfo)
@@ -2000,6 +2078,52 @@ namespace d360.model
             }
         }
 
+        private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
+        {
+            if (!string.IsNullOrEmpty(item.Fields) && response != null)
+            {
+                var root = XElement.Parse(item.Fields);
+                var xResponse = new XElement("HTTPResponse");
+                xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
+                xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
+
+                root.Add(xResponse);
+                item.Fields = root.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(item.Settings))
+            {
+                var root = XElement.Parse(item.Settings);
+
+                var xRequest = new XElement("HTTPRequest");
+                xRequest.Add(new XElement("Url", response.RequestMessage.RequestUri.ToString()));
+                xRequest.Add(new XElement("Method", settings.Method.ToUpper()));
+                xRequest.Add(new XElement("Timeout", settings.Timeout.ToString()));
+                if (settings?.Headers?.Any() == true)
+                {
+                    foreach(var header in settings.Headers)
+                    {
+                        var h = new XElement("Headers");
+                        h.Add(new XElement("Key", header.Key));
+                        h.Add(new XElement("Value", header.Value));
+                        xRequest.Add(h);
+                    }
+                }
+                else
+                {
+                    xRequest.Add(new XElement("Headers", null));
+                }
+
+                xRequest.Add(new XElement("Body", settings.Body));
+
+                root.Add(xRequest);
+                item.Settings = root.ToString();
+            }
+
+            await SaveChangesAsync();
+            
+        }
+
         public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
         {
             return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml);
@@ -2299,6 +2423,45 @@ namespace d360.model
                 }
             }
 
+            if (Regex.IsMatch(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[HTTPREQUEST\\|([0-9.]+)\\|([a-zA-Z]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldTypeIdStringitem = item.Replace("[HTTPREQUEST|", "");
+                    fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+                    var stepId = -1;
+                    var property = fieldTypeIdStringitem.Split('|')[1];
+
+                    int.TryParse(fieldTypeIdStringitem.Split('|')[0], out stepId);
+
+                    var step = WorkflowItemSteps.FirstOrDefault(s => s.StepID == stepId && s.ItemID == itemStep.ItemID);
+
+                    if (step != null)
+                    {
+                        var response = step.FieldsDocument;
+                        response = response.Element("HTTPResponse");
+
+                        if (response != null)
+                        {
+                            switch (property.ToUpper())
+                            {
+                                case "STATUSCODE":
+                                    result = result.Replace(item, response.Element("StatusCode")?.Value ?? "");
+                                    break;
+                                case "RESPONSEBODY":
+                                    result = result.Replace(item, response.Element("Body")?.Value ?? "");
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (result.Contains("[OBJECT_TYPE]"))
             {
                 string path = null;
@@ -2328,6 +2491,26 @@ namespace d360.model
                 }
 
                 result = result.Replace("[OBJECT_TYPE]", itemLink);
+            }
+
+            if (result.Contains("[WORKFLOW_STEP_ID]"))
+            {
+                result = result.Replace("[WORKFLOW_STEP_ID]", itemStep.StepID.ToString());
+            }
+
+            if (result.Contains("[WORKFLOW_INSTANCE_ID]"))
+            {
+                result = result.Replace("[WORKFLOW_INSTANCE_ID]", itemStep.ItemID.ToString());
+            }
+
+            if (result.Contains("[WORKFLOW_ID]"))
+            {
+                var versionStep = WorkflowVersionSteps.FirstOrDefault(s => s.ID == itemStep.StepID);
+                if (versionStep != null)
+                {
+                    var version = WorkflowVersions.FirstOrDefault(v => v.ID == versionStep.VersionID);
+                    result = result.Replace("[WORKFLOW_ID]", version?.TypeID.ToString() ?? "");
+                }
             }
 
             if (result.Contains("[RECIPIENT_RESPONSIBILITY]"))
@@ -2400,6 +2583,7 @@ namespace d360.model
 
                 result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
             }
+
 
             return result;
         }

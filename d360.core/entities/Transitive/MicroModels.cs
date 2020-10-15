@@ -402,7 +402,7 @@ namespace d360.core.entities
 
     public class TypeIdentifierInfoModel
     {
-        public int ID { get; set; }
+        public int? ID { get; set; }
 
         public string Object { get; set; }
         public int ObjectID { get; set; }

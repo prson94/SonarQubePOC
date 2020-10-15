@@ -1,5 +1,5 @@
 <div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
-    <div class="title {{searchDetails && searchDetails.Scores.length > 0 ? 'has-scoring' : ''}}">
+    <div class="title">
         <span *ngIf="!IsIcon(area.icon)" class="d3s-icon asset-icon"><img [src]="GetURL(area.icon)" /></span>
         <span *ngIf="IsIcon(area.icon)" class="d3s-icon asset-icon"><i class="fa {{area.icon}}"></i></span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
@@ -52,8 +52,8 @@
                 </d3s-delete-form>
             </ng-container>
         </div>
-        <span (click)="OpenScoring()" #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container secondary-nav">
-            <d3s-score-badge [mast]="true" *ngFor="let score of searchDetails.Scores" [score]="score">
+        <span (click)="OpenScoring()" #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
+            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
             </d3s-score-badge>
         </span>
     </div>

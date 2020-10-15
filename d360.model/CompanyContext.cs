@@ -352,16 +352,16 @@ namespace d360.model
             switch (type)
             {
                 case TypeIdentifierInfoModelType.ActionType:
-                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid });
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IssueType' as Object, ID as ObjectID from IssueType where Uid = @uid", new { uid = guid });
                     break;
                 case TypeIdentifierInfoModelType.AssetType:
                     result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, Object, ObjectID from AssetType where Uid = @uid", new { uid = guid });
                     break;
                 case TypeIdentifierInfoModelType.RelationshipType:
-                    result = await QueryAsync<TypeIdentifierInfoModel>("select ID, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid });
+                    result = await QueryAsync<TypeIdentifierInfoModel>("select null, Uid, 'IntersectType' as Object, ID as ObjectID from IntersectType where Uid = @uid", new { uid = guid });
                     break;
                 default:
-                    throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                    throw new Exception("Invalid TypeIdentifierInfoModel.");
             }
             return result;
         }
@@ -1012,7 +1012,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join [Predicate] P on P.ID = I.PredicateID
                     inner join AssetType AT on AT.Object = I.Object and AT.ObjectID = I.ObjectID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
-            var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
+            var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = obj.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id });
 
             if (!childIds.Any())
                 return new List<AssetType>();
@@ -1027,7 +1027,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public bool TypeHasChildren(SystemObjects type, int id)
@@ -1037,7 +1037,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public bool ObjectHasParent(SystemObjects type, int id)
@@ -1046,7 +1046,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     where I.PredicateType = @type and I.[Object] = @object and I.ObjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public bool ObjectHasChildren(SystemObjects type, int id)
@@ -1055,7 +1055,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                     inner join IntersectType T on T.ID = I.IntersectTypeID
                     where I.PredicateType = @type and I.[Subject] = @object and I.SubjectID = @objectId";
 
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
+            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
