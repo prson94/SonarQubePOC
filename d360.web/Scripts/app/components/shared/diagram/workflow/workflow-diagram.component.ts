@@ -431,7 +431,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
         linkList.forEach(l => dm.addLinkData(l));
 
-        dm.linkDataArray.forEach(l => (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l));
+        dm.linkDataArray.forEach(l => {
+            (<LinkModel>l).formInputs = this.getAvailableFormInputs(<LinkModel>l);
+            (<LinkModel>l).httpInputs = this.getAvailableHttpInputs(<LinkModel>l);
+        });
 
         //get deep copy of lists
         this.initialLinks = _.cloneDeep(linkList);
