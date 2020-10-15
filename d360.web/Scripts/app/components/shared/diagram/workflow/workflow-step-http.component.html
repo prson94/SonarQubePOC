@@ -16,7 +16,7 @@
                             <th style="width: 40px"></th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-item let-i="index">
+                    <ng-template pTemplate="body" let-item let-i="rowIndex">
                         <tr [pSelectableRow]="item">
                             <td>
                                 <input type="text" style="width: 95%" [ngModel]="item.key" (ngModelChange)="item.key = $event; stepChange.emit(step)" />
