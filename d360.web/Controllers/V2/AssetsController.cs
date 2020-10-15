@@ -1969,6 +1969,7 @@ namespace d360.web.Controllers.V2
             Route("single"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to delete this asset type is invalid, possibly due to an deletion already in progress.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
