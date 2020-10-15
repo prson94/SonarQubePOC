@@ -82,6 +82,7 @@ namespace d360.core.entities
 
     public class ApiExecutionFields_DeleteAssetTypes
     {
+        public Guid? AssetTypeUid { get; set; }
     }
 
     public class ApiExecutionFields_DeletePredicates
