@@ -42,6 +42,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceId = -1;
     private items: any[] = [];
     private resource: any;
+    private isSavingProcess : boolean =  false;
     private isMe = false;
     private totNumber = 0;
     private days = 90;
@@ -127,7 +128,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.secondaryNavService.showItem(this.itemsOwn);
                     this.memberGroups = new SecondaryNavItem(
                         'Groups', 'memberGroup', ['fa-user-circle'],
-                        `/sidebar/membergroup/${this.resource.Uid}`, null, 5
+                        `/sidebar/membergroup/${this.resource.uid}`, null, 5
                     );
                     this.secondaryNavService.showItem(this.memberGroups);
                     this.itemsFollow = new SecondaryNavItem(
@@ -217,10 +218,13 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                 user.Fields[key] = e.item[key];
             }
         }
-
-        this.resourcesService.saveResource(user)
+        this.isLoading = true;
+        this.isSavingProcess = true;
+        this.resourcesService.saveResource(user, true, false)
             .subscribe(
                 result => {
+                    this.isLoading = false;
+                    this.isSavingProcess = false;
                     if (result.Message == "" && result.Success) {
                         result.Message = 'Info successfully updated.';
                     }

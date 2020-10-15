@@ -166,7 +166,7 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {
             const int ResourceTypeID = 1;
 
@@ -330,6 +330,8 @@ namespace d360.model.DataAccessLayer
             foreach (var user in users)
             {
                 var row = userTable.NewRow();
+                var CurrPassword = "";
+                var NewPassword = "";
 
                 var success = true;
                 var messages = new List<string>();
@@ -385,6 +387,42 @@ namespace d360.model.DataAccessLayer
                         messages.Add("Resource not found for this Uid");
                     }
 
+                    //Password Change
+                    if (IsChangePasswordReqeust)
+                    {
+                        NewPassword = user.Fields.Where(z => z.Key == "NewPassword").Select(z => z.Value).FirstOrDefault();
+                        CurrPassword = user.Fields.Where(z => z.Key == "CurrentPassword").Select(z => z.Value).FirstOrDefault();
+                        if (NewPassword == null)
+                        {
+                            success = false;
+                            messages.Add("NewPassword parameter value missing.");
+                        }
+                        else
+                        {
+                            user.Password = NewPassword;
+                        }
+
+                        if (CurrPassword == null)
+                        {
+                            success = false;
+                            messages.Add("CurrentPassword parameter value missing.");
+                        }
+
+                        var CurrPasswordHash = CommunityContext.HashPassword(CurrPassword);
+                        var existing = CommunityContext.Filter<Resource>(i => i.Password == CurrPasswordHash && i.Uid == user.uid).FirstOrDefault();
+                        if (existing == null)
+                        {
+                            success = false;
+                            messages.Add("Your password was not updated, since the provided current password does not match.");
+                        }
+
+                        if (NewPassword == CurrPassword)
+                        {
+                            success = false;
+                            messages.Add("New password may not be the same as current password");
+                        }
+                    }
+
                     if (!string.IsNullOrEmpty(user.Password))
                     {
                         if (!validatePassword(user.Password))
@@ -402,7 +440,7 @@ namespace d360.model.DataAccessLayer
                         success = false;
                         messages.Add($"User for uid [{user.uid}] not found");
                     }
-                    if(string.IsNullOrEmpty(user.FirstName))
+                    if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
                         messages.Add("Must provide a First Name");
@@ -419,7 +457,7 @@ namespace d360.model.DataAccessLayer
                     success = false;
                     messages.Add("Username is not in a valid email format");
                 }
-                else if(users.Count(u=>u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase))>1)
+                else if (users.Count(u => u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase)) > 1)
                 {
                     success = false;
                     messages.Add("Username must be unique within the request");
@@ -444,7 +482,7 @@ namespace d360.model.DataAccessLayer
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
                 row["Password"] = user.Password;
-                if (user.State.HasValue) row["State"] = (int)user.State;
+                if (user.State.HasValue && !IsChangePasswordReqeust) row["State"] = (int)user.State;
                 row["IsAdministrator"] = user.IsAdministrator;
                 row["IsNew"] = user.IsNew;
                 row["Object"] = "Resource";
@@ -454,7 +492,7 @@ namespace d360.model.DataAccessLayer
 
                 userTable.Rows.Add(row);
 
-                if (user.Fields != null)
+                if (user.Fields != null  && !IsChangePasswordReqeust)
                 {
                     foreach (var field in user.Fields.Keys)
                     {
@@ -484,7 +522,7 @@ namespace d360.model.DataAccessLayer
             #region Bulk Copy Company
 
             if (CompanyContext.Connection.State == ConnectionState.Closed)
-             await CompanyContext.Connection.OpenAsync();
+                await CompanyContext.Connection.OpenAsync();
 
             using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
             {
@@ -561,8 +599,9 @@ namespace d360.model.DataAccessLayer
                     #endregion
 
                     #region Validation
-
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                    if (!IsChangePasswordReqeust)
+                    {
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'Resource for this uid not found. '
@@ -603,18 +642,17 @@ namespace d360.model.DataAccessLayer
 
                         ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
-                    if (lookupFieldsPassedByValue)
-                    {
-                        CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);
-                    }
-                    else
-                    {
-                        CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
-                    }
+                        if (lookupFieldsPassedByValue)
+                        {
+                            CompanyContext.CopyFieldLookupValuesAsIs(execution.ExecutionID, 3600, "#UserFields", trans);
+                        }
+                        else
+                        {
+                            CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+                        }
 
-
-                    //validate lookup fields
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                        //validate lookup fields
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
                                 U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
@@ -624,7 +662,7 @@ namespace d360.model.DataAccessLayer
                         where U.ExecutionID = @executionID and F.LookupValue is null
                         ", new { executionID }, transaction: trans);
 
-                    await CompanyContext.Connection.ExecuteAsync(@"
+                        await CompanyContext.Connection.ExecuteAsync(@"
                         insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
                         select  ExecutionID,
                         ItemNumber,
@@ -635,6 +673,7 @@ namespace d360.model.DataAccessLayer
                         0 as Ignore
                         from #UserFields
                         ", transaction: trans);
+                    }
 
                     validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>(@"
                         select ItemNumber, 
@@ -649,8 +688,8 @@ namespace d360.model.DataAccessLayer
                     #endregion
 
                     trans.Commit();
-
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
                     execution.ErrorMessage = ex.GetFullExceptionData(false);
                     execution.CompletedOn = DateTime.UtcNow;
@@ -683,33 +722,34 @@ namespace d360.model.DataAccessLayer
 
                     if (user != null)
                     {
-
-                        bool success;
-                        string message;
-                        var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
-
-                        CompanyContext.ValidateFields("ResourceType",
-                            ResourceTypeID,
-                            isInsert,
-                            fieldTypes,
-                            requiredFieldNames,
-                            user.Fields,
-                            executionID,
-                            user.ItemNumber,
-                            null,
-                            out success,
-                            out message);
-
-                        if (success == false)
+                        if (!IsChangePasswordReqeust)
                         {
-                            result.Success = false;
-                            result.Message += message;
+                            bool success;
+                            string message;
+                            var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
 
-                            results.Add(result);
-                            continue;
+                            CompanyContext.ValidateFields("ResourceType",
+                               ResourceTypeID,
+                               isInsert,
+                               fieldTypes,
+                               requiredFieldNames,
+                               user.Fields,
+                               executionID,
+                               user.ItemNumber,
+                               null,
+                               out success,
+                               out message);
+
+                            if (success == false)
+                            {
+                                result.Success = false;
+                                result.Message += message;
+
+                                results.Add(result);
+                                continue;
+                            }
+
                         }
-
-
                         //add resource
                         if (!user.ResourceID.HasValue)
                         {
@@ -771,62 +811,65 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        CompanyResource companyResource;
-
-                        if (user.CompanyResourceState.HasValue)
+                        if (!IsChangePasswordReqeust)
                         {
-                            companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
+                            CompanyResource companyResource;
 
-                            if (companyResource != null)
+                            if (user.CompanyResourceState.HasValue)
                             {
-                                companyResource.IsAdministrator = user.IsAdministrator;
-                                companyResource.State = user.State ?? companyResource.State;
+                                companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
 
-                                CommunityContext.Update(companyResource);
+                                if (companyResource != null)
+                                {
+                                    companyResource.IsAdministrator = user.IsAdministrator;
+                                    companyResource.State = user.State ?? companyResource.State;
+
+                                    CommunityContext.Update(companyResource);
+                                }
                             }
-                        }
-                        else
-                        {
-                            companyResource = new CompanyResource()
+                            else
                             {
-                                ResourceID = (int)user.ResourceID,
-                                CompanyID = CompanyContext.CurrentCompanyID,
-                                State = CompanyResourceState.Active,
-                                IsAdministrator = user.IsAdministrator
-                            };
+                                companyResource = new CompanyResource()
+                                {
+                                    ResourceID = (int)user.ResourceID,
+                                    CompanyID = CompanyContext.CurrentCompanyID,
+                                    State = CompanyResourceState.Active,
+                                    IsAdministrator = user.IsAdministrator
+                                };
 
-                            CommunityContext.Add(companyResource);
+                                CommunityContext.Add(companyResource);
 
-                        }
+                            }
 
-                        var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+                            var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
 
-                        if (globalResource != null)
-                        {
-                            globalResource.FirstName = user.FirstName;
-                            globalResource.LastName = user.LastName;
-                            globalResource.Email = user.Username;
-                            globalResource.IsAdministrator = user.IsAdministrator;
-                            globalResource.State = user.State ?? companyResource.State;
-                            globalResource.UpdatedOn = DateTime.UtcNow;
-
-                            CompanyContext.Update(globalResource);
-                        }
-                        else
-                        {
-                            globalResource = new GlobalReportingResource
+                            if (globalResource != null)
                             {
-                                IsAdministrator = user.IsAdministrator,
-                                ResourceID = (int)user.ResourceID,
-                                Email = user.Username,
-                                FirstName = user.FirstName,
-                                LastName = user.LastName,
-                                State = user.State ?? companyResource.State,
-                                UpdatedOn = DateTime.UtcNow,
-                                Uid = (Guid)user.uid
-                            };
+                                globalResource.FirstName = user.FirstName;
+                                globalResource.LastName = user.LastName;
+                                globalResource.Email = user.Username;
+                                globalResource.IsAdministrator = user.IsAdministrator;
+                                globalResource.State = user.State ?? companyResource.State;
+                                globalResource.UpdatedOn = DateTime.UtcNow;
 
-                            CompanyContext.Add(globalResource);
+                                CompanyContext.Update(globalResource);
+                            }
+                            else
+                            {
+                                globalResource = new GlobalReportingResource
+                                {
+                                    IsAdministrator = user.IsAdministrator,
+                                    ResourceID = (int)user.ResourceID,
+                                    Email = user.Username,
+                                    FirstName = user.FirstName,
+                                    LastName = user.LastName,
+                                    State = user.State ?? companyResource.State,
+                                    UpdatedOn = DateTime.UtcNow,
+                                    Uid = (Guid)user.uid
+                                };
+
+                                CompanyContext.Add(globalResource);
+                            }
                         }
                     }
                 }
@@ -903,13 +946,15 @@ namespace d360.model.DataAccessLayer
                         inner join #UserResults R on R.ExecutionID = U.ExecutionID and R.ItemNumber = U.ItemNumber and R.Success = 0
                         ", transaction: trans);
 
-                    CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsert);
+                    if (!IsChangePasswordReqeust)
+                    { 
+                        CompanyContext.MergeFields(executionID, trans, "api.ExecutionUser", "A.[Object]", "A.ObjectID", 0, itemNumber, sendWorkflowEvents: true, isInsert: isInsert);
 
-                    if (hasRelationshipFieldTypes)
-                    {
-                        CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+                        if (hasRelationshipFieldTypes)
+                        {
+                            CompanyContext.ImportRelationships(executionID, trans, "api.ExecutionUser", "A.Object", "A.ObjectID", 0, itemNumber, resolveRelationshipOnObjectId: lookupFieldsPassedByValue);
+                        }
                     }
-
                     trans.Commit();
                 }
                 catch (Exception ex)

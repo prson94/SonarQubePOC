@@ -76,7 +76,17 @@ namespace d360.web.Controllers.V2
             {
 
                 var settings = Community.GetCompanySettings();
-                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                bool IsCurrentUser = false;
+
+                if (ResourceID != null)
+                {
+                    if (ResourceID == Company.CurrentResourceID)
+                    {
+                        IsCurrentUser = true;
+                    }
+                }
+
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE" && IsCurrentUser == false)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
                 string finalSql = "";
@@ -721,7 +731,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, true, false);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -756,6 +766,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// </remarks>        
         /// <param name="users">A list of users to update.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+        /// <param name="IsChangePasswordReqeust">Optional query string parameter that allows you to password changed request.  The default value for this is false.</param>
+
         [
             HttpPut,
             Route("users"),
@@ -766,11 +778,47 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false)
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
         {
             var prefix = "Membership.PutUsers => ";
+            bool IsCurrentUser = false;
 
-            if (!Company.CurrentResourceIsAdmin)
+            if (!Company.CurrentResourceIsAdmin || IsChangePasswordReqeust)
+            {
+                if (users != null && users.Count == 1)
+                {
+                    foreach (var user in users)
+                    {
+                        var resource = Community.Filter<Resource>(i => i.Uid == user.uid, i => i.CompanyResources).SingleOrDefault();
+                        if (resource != null)
+                        {
+                            if (resource.ID == Company.CurrentResourceID)
+                            {
+                                IsCurrentUser = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //change password request Checks
+            if (IsChangePasswordReqeust)
+            {
+                if (Community.CurrentCompanySsoModel.AuthenticationType != core.enums.AuthenticationType.Forms)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true, Not allowed for authentication type other than Forms"));
+                }
+                if (!IsCurrentUser)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"IsChangePasswordReqeust set to true only for current user"));
+                }
+                if (users != null && users.Count > 1)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Only one request accepted for IsChangePasswordReqeust set to true."));
+                }
+            }
+
+            if (!Company.CurrentResourceIsAdmin && IsCurrentUser == false)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
             if (users == null || users.Count == 0)
@@ -781,7 +829,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false , IsChangePasswordReqeust);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
