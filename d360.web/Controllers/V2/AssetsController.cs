@@ -221,7 +221,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeFields", "A comma delimited list of fields to include in the results. By default all fields are included.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeColor", "Allows you to disable returning the Color value for assets. The default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),          
+            SwaggerParameter("_exporttemplateuid", "The Uid of the template which will be used when exporting results.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -1111,7 +1111,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(AssetsCountModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))           
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetEnvironmentAssetCountsAsync()
         {
@@ -1969,6 +1969,7 @@ namespace d360.web.Controllers.V2
             Route("single"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to delete this asset type is invalid, possibly due to an deletion already in progress.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
@@ -2000,7 +2001,26 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Asset Type with UID {assetType.Uid} does not exist."));
                 }
 
-                var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
+                string deletionInProgressQuery = @"SELECT count(*)
+                                      FROM [api].[Execution]
+                                      where Route = '/api/v2/assets/single'
+                                      and completedon is null
+                                      and Method = 'DELETE'
+                                      and Fields = @fields";
+
+                var fieldObj = new ApiExecutionFields_DeleteAssetTypes { AssetTypeUid = assetType.Uid };
+
+                var res = Company.Query<int>(
+                    deletionInProgressQuery,
+                    new { fields = JsonConvert.SerializeObject(fieldObj) })
+                    .FirstOrDefault();
+
+                if (res > 0)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Deletion of Asset Type with UID {assetType.Uid} already in progress."));
+                }
+
+                var execution = getApiExecution(1, fieldObj);
                 var deletes = new AssetTypeDeletes();
                 deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
 
