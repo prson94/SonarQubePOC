@@ -31,9 +31,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
-    @ViewChild('weight', { static: false }) weightInput: ElementRef;
-    @ViewChild('pc', { static: false }) calendar: Calendar;
-
     verb = "Add";
     child = "";
 
@@ -245,20 +242,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             });
     }
 
-    keyEvent(evt: KeyboardEvent) {
-        if (evt && evt.keyCode == 9) {
-            if (this.weightInput) {
-                let spinner = <any>this.weightInput as Spinner;
-                if (this.calendar && this.calendar.overlayVisible) {
-                    spinner.focus = true;
-                    spinner.el.nativeElement.firstChild.firstChild.focus();
-                    this.calendar.toggle();
-                }
-                    
-            }
-        }
-    }
-
     cancel() {
         this.load();
         this.onCancel.emit(this.model.Name);
@@ -276,28 +259,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         return FormHelpers.getLocaleDateString();
     }
 
-    private clamp(val: any, min: number, max: number, precision: number) {
-        if (!val) {
-            this.model.Weight = null;
-            this.valid();
-            return;
-        }
-        val = val / 100;
-        const newVal = FormHelpers.clamp(val, min, max, precision);
-
-        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined)
-            this.weightInput.nativeElement.value = newVal;
-
-        this.model.Weight = newVal;
-    }
-    doToggle(evt: MouseEvent, pc:any) {
-        let htmlEl = evt.target as Element;
-        if (htmlEl.classList.contains('ui-inputtext')) {
-            evt.stopPropagation();
-            return;
-        }
-        pc.toggle();
-    }
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.maxHeight = window.innerHeight - 240;

@@ -10,7 +10,11 @@
                 <div class="row">
                     <div>
                         <span class="ig-input-label">Description</span>
-                        <textarea igInput tabindex="2" class="text-area bottom-margin" [(ngModel)]="model.Description" rows="3" [style]="{'width' : '100%'}" maxlength="4000" name="description"></textarea>
+                        <textarea igTextArea tabindex="2" 
+                                  [(ngModel)]="model.Description" 
+                                  rows="3" 
+                                  maxlength="4000" 
+                                  name="description"></textarea>
                     </div>
                 </div>
                 <div class="measure-two-col">
@@ -19,9 +23,16 @@
                             <div class="ig-input-label">
                                 Effective From
                             </div>
-                            <div (click)="doToggle($event,pc)" class="ig-input bottom-margin calendar" [ngClass]="{'required': !model.EffectiveDate}" (keyup)="keyEvent($event)" >
-                                <p-calendar #pc tabindex="3" appendTo="body" [minDate]="currentEffectiveDate | utcDate" [baseZIndex]="20000" [ngModel]="date" (ngModelChange)="date = $event" [required]="true" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
-                                <i class="fa fa-calendar"></i>
+                            <div>
+                                <ig-date tabindex="3"
+                                         required
+                                         [appendTo]="'body'"
+                                         [minDate]="currentEffectiveDate | utcDate"
+                                         [ngModel]="date"
+                                         (ngModelChange)="date = $event"
+                                         [dateFormat]="getLocaleDateString()"
+                                         name="effectiveDate">
+                                </ig-date>
                             </div>
                         </div>
                         <div class="row bottom-space" *ngIf="!isExternallyCalculated">
@@ -39,8 +50,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="input-spinner" [ngClass]="{'required': !displayWeight}">
-                                <p-spinner #weight tabindex="4" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
+                            <div>
+                                <ig-number-input tabindex="4" [(ngModel)]="displayWeight" required [min]="1" [max]="100" [step]="1" name="weight"></ig-number-input>
                             </div>
                         </div>
                     </div>
