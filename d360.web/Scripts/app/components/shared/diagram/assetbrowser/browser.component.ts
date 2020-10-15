@@ -881,14 +881,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //}
     }
 
-    private helper_CountDescendants(data: AssetBrowserResponseModel): number {
-        if (data && data.nodes) {
-            return data.nodes.filter(n => n.group != null && n.group != '').length;
-        }
-
-        return 0;
-    }
-
     private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
         let model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
 
@@ -1317,7 +1309,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagramData = data;
                     this.loadingText = "Determining links and meaning...";
 
-                    if (isLineage && this.helper_CountDescendants(data) > this.maxDescendantCount) {
+                    if (isLineage && this.diagramData.dataLimitReached === true) {
                         this.errorText = `Sorry, we cannot display an asset with more than 500 descendants. Please choose a child asset or use the filters to display fewer items.`;
                         this.isError = true;
                         this.isLoading = false;

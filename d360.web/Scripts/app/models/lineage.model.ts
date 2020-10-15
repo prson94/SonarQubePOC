@@ -367,6 +367,7 @@ export class AssetBrowserResponseModel {
     links: AssetBrowserTranslationLink[];
     hierarchy: AssetBrowserTranslationHierarchy[];
     reveals: AssetBrowserRevealNode[];
+    dataLimitReached: boolean = false;
 }
 
 export class AssetBrowserRevealNode {

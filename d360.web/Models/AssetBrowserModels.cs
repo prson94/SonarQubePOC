@@ -64,6 +64,7 @@ namespace d360.web.Models
         public List<AssetBrowserLink> links { get; set; }
         public List<AssetBrowserHeirarchy> hierarchy { get; set; }
         public List<AssetBrowserRevealNode> reveals { get; set; }
+        public bool dataLimitReached { get; set; } = false;
     }
 
     public class AssetBrowserNodeOwnerCount
