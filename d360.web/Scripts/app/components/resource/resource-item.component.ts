@@ -42,6 +42,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceId = -1;
     private items: any[] = [];
     private resource: any;
+    private isSavingProcess : boolean =  false;
     private isMe = false;
     private totNumber = 0;
     private days = 90;
@@ -218,10 +219,12 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
             }
         }
         this.isLoading = true;
+        this.isSavingProcess = true;
         this.resourcesService.saveResource(user, true, false)
             .subscribe(
                 result => {
                     this.isLoading = false;
+                    this.isSavingProcess = false;
                     if (result.Message == "" && result.Success) {
                         result.Message = 'Info successfully updated.';
                     }
