@@ -160,6 +160,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
+    formatPathAsString(): string {
+        if (this.result.Group && this.result.AssetPath) {
+            return this.result.Group +' > ' + this.result.AssetPath.map(p => p.Key.join(' / ') + ' (' + p.AssetType + ')').join(' > ');
+        }
+        return '';
+    }
+
     /**
      * Formats display of field value.
      * Links are returned from API in format <url>|<displayvalue>, Booleans are displayed as an icon etc.
@@ -168,17 +175,14 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
      * @param forTitle Return is used in title, so booleans are shown as value and links shown as displayvalue
      */
     getFieldDisplayValue(field: SearchResultFieldDisplay, forTitle: boolean = false):string {
-        if (field.Empty)
-            return '---';
-
-        let val: string = field.Value;
+        let val: string = (field.Empty) ? '---' : field.Value;
         if (val === null || val === undefined)
             return '';
 
         if (field.Type == 'Link' && field.Value.length > 2 && field.Value.indexOf('|') > 0) {
             let link: string[] = field.Value.split('|', 2);
             val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
-        } else if (field.Type == 'Boolean') {
+        } else if (field.Type == 'Boolean' && !field.Empty) {
             if (!forTitle) {
                 if(field.Value == 'True')
                     val = '<i class="fa fa-check enabled"></i>';

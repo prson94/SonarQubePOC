@@ -18,7 +18,7 @@
         </div>
     </div>
     <div class="card-row elide-container">
-        <div class="path category elided">
+        <div class="path category elided" title="{{formatPathAsString()}}">
             {{result?.Group}}<span *ngIf="result?.AssetPath"><i class="fa fa-angle-right"></i><asset-path-widget [path]="result.AssetPath" [withType]="true"></asset-path-widget></span>
         </div>
         
