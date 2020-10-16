@@ -245,6 +245,7 @@ namespace igx.functions.databasetaskprocessor
                                 {
                                     case "A":   //Add
                                         indexObject.To = QueueAction.AddToIndex;
+                                        bool isValid = true;
 
                                         if (o == "Resource" && oid > 0)
                                         {
@@ -265,8 +266,12 @@ namespace igx.functions.databasetaskprocessor
                                                 if (indexObject.Fields.ContainsKey("Data3SixtyUser")) indexObject.Fields["Data3SixtyUser"] = userDetail.Data3SixtyUser;
                                                 else indexObject.Fields.Add("Data3SixtyUser", userDetail.Data3SixtyUser);
                                             }
+                                            else
+                                            {
+                                                isValid = false;
+                                            }
                                         }
-                                        indexCollectionModel.Adds.Add(indexObject);
+                                        if(isValid) indexCollectionModel.Adds.Add(indexObject);
                                         break;
                                     case "U":   //Update
                                         indexObject.To = QueueAction.UpdateInIndex;
