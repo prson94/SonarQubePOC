@@ -6,7 +6,7 @@ import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable()
 export class MetricsService extends BaseObservableService {

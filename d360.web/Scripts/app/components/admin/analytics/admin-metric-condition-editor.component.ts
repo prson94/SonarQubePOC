@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -15,14 +15,12 @@ import { OperatorModel, Operator } from '../../../models/operator.model';
 })
 
 export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit {
-    @Input() conditionItems: MetricAssetVersionConditionItemViewModel[] = [];
+    @Input() group: MetricAssetVersionConditionViewModel;
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
     @Input() assetTypeUid: string;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    @Output() matchTypeChange = new EventEmitter();
-    @Input() matchType: number;
     private fieldTypeDropdownOptions: SelectItem[] = []
     @Input() operators: OperatorModel[];
     private usedFieldTypes: string[] = [];
@@ -44,8 +42,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnInit() {
-        if (!this.conditionItems)
-            this.conditionItems = [];
+        if (!this.group) {
+            this.group = new MetricAssetVersionConditionViewModel();
+            this.group.MatchType = "All";
+        }
+        if (!this.group.ConditionItems) {
+            this.group.ConditionItems = [];
+        }
 
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
         this.conditionsValid = true;
@@ -71,9 +74,9 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     removeCondition(condition: MetricAssetVersionConditionItemViewModel) {
-        const index = this.conditionItems.indexOf(condition);
+        const index = this.group.ConditionItems.indexOf(condition);
         if (index > -1) {
-            let item = this.conditionItems.splice(index, 1)[0];
+            let item = this.group.ConditionItems.splice(index, 1)[0];
             let ftIndex = this.usedFieldTypes.indexOf(item.ConditionFieldTypeName);
 
             if (ftIndex > -1) {
@@ -87,7 +90,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     conditionFieldIsInvalid(condition: MetricAssetVersionConditionItemViewModel) {
         if (condition.ConditionFieldTypeName) {
-            let other = this.conditionItems.filter(x => { return x.ConditionFieldTypeName == condition.ConditionFieldTypeName })
+            let other = this.group.ConditionItems.filter(x => { return x.ConditionFieldTypeName == condition.ConditionFieldTypeName })
             return other.length > 1;
         }
         return false;
@@ -122,8 +125,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             condition.operatorOptions = this.createOperatorOptions(field);
 
             //check for duplicate fieldTypeNames
-            if (this.conditionItems.length > 1) {
-                let fieldNames = this.conditionItems.map(x => { return x.ConditionFieldTypeName });
+            if (this.group.ConditionItems.length > 1) {
+                let fieldNames = this.group.ConditionItems.map(x => { return x.ConditionFieldTypeName });
                 this.conditionsValid = !fieldNames.some((item, inx) => { return fieldNames.indexOf(item) != inx });
             }
             this.checkSelectedFields();
@@ -138,7 +141,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             ft.Disabled = false;
         });
 
-        this.usedFieldTypes = (this.conditionItems) ? this.conditionItems.map(x => { return x.ConditionFieldTypeName }) : [];
+        this.usedFieldTypes = (this.group.ConditionItems) ? this.group.ConditionItems.map(x => { return x.ConditionFieldTypeName }) : [];
 
         this.usedFieldTypes.forEach(i => {
             const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ApiName === i);
@@ -162,14 +165,16 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     formatConditions() {
-        this.conditionItems.forEach(c => {
+        this.group.ConditionItems.forEach(c => {
             const field = this.metricConditionEditorFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
+            const operator = this.operators.find(o => o.ID === c.Operator);
+            if (operator) {
+                c.OperatorText = operator.Name;
+            }
 
             if (field) {
                 c.FieldTypeName = field.Name;
                 c.FieldType = field;
-                this.ref.markForCheck();
                 switch (field.Type) {
                     case 'Lookup':
                         if (field.Values) {
@@ -180,12 +185,11 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                                         let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         valueModel = field.Values.find(o => o.Value === +c.Values[0]);
                                         if (valueModel) {
-                                            c.SingleValue = valueModel.Value;//c.Values[0];
+                                            c.SingleValue = valueModel.Value;
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
                                 }
-                                this.ref.markForCheck();
                             }
                         }
                         break;
@@ -210,8 +214,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 }
 
                 c.operatorOptions = this.createOperatorOptions(field);
-
-                this.ref.markForCheck();
             }
         });
     }
@@ -240,7 +242,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         if (this.newCondition && this.newCondition.ConditionFieldTypeName) {
             this.newCondition.Operator = Operator.Equals;
             this.selectFieldType(this.newCondition);
-            this.conditionItems.push({ ...this.newCondition });
+            this.group.ConditionItems.push({ ...this.newCondition });
             this.newCondition = new MetricAssetVersionConditionItemViewModel();
 
             this.checkSelectedFields();
@@ -248,10 +250,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
             this.ref.markForCheck();
         }
-    }
-
-    matchTypeChangeEvt() {
-        this.matchTypeChange.emit(this.matchType);
     }
     
     doToggle(evt: MouseEvent, pc: any) {
