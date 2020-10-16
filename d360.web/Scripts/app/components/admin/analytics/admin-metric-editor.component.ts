@@ -245,19 +245,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             });
     }
 
-    //changeConditionGroupMatchType(g: MetricAssetVersionConditionViewModel, mt: MetricMatchType) {
-    //    console.log(mt);
-    //    //let matchTypeString: keyof typeof MetricMatchType = mt;
-    //    //if (mt == 1) {
-    //    //    g.MatchType = MetricMatchType.Any;
-    //    //}
-    //    //else {
-    //    //    g.MatchType = MetricMatchType.All;
-    //    //}
-    //    //g.MatchType = mt;//MetricMatchType[matchTypeString];
-    //    console.log(g.MatchType);
-    //}
-
     keyEvent(evt: KeyboardEvent) {
         if (evt && evt.keyCode == 9) {
             if (this.weightInput) {

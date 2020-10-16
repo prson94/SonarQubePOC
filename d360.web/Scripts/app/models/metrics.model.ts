@@ -37,7 +37,7 @@ export class MetricAssetVersionConditionViewModel {
     Position: number;
     Threshold: number;
     Weight: number;
-    MatchType: MatchTypeString;//MetricMatchType;
+    MatchType: MatchTypeString;
 
     ConditionItems: MetricAssetVersionConditionItemViewModel[] = [];
 }
