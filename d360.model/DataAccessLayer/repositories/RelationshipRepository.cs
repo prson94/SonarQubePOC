@@ -341,18 +341,14 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
             dbArgs.Add("@uid", uid);
             
             List<FieldType> fieldTypes = null;
-            var relationshipTypeUid = companyContext.Query<Guid>(
-                $@"select IT.Uid from FieldType F 
-                    inner join IntersectType IT 
-                    on F.Object = 'IntersectType' and IT.ID = F.ObjectID
-                    inner join [intersect] I  on I.IntersectTypeID = IT.ID
-                    WHERE I.uid = '{uid}'").SingleOrDefault();
-            if (relationshipTypeUid != null)
-            {
-                fieldTypes = companyContext.Query<FieldType>(
-                $"select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid"
-                , new { relationshipTypeUid }, ApiTimeout).ToList();
-            }
+          
+            fieldTypes = companyContext.Query<FieldType>(
+                $@"select F.* from FieldType F 
+					inner join IntersectType IT on F.Object = 'IntersectType' and IT.ID = F.ObjectID 
+					inner join [intersect] I on I.IntersectTypeID = IT.ID
+                    WHERE I.uid = @uid"
+                , new { uid }, ApiTimeout).ToList();
+            
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
 
