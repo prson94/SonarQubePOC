@@ -273,11 +273,14 @@ namespace igx.jobs.databasetaskprocessor
                                                 FROM reporting.global_resource
                                                 WHERE ResourceID = @oid", new { oid }).SingleOrDefault();
 
-                                            if (indexObject.Fields.ContainsKey("Email")) indexObject.Fields["Email"] = userDetail.Email;
-                                            else indexObject.Fields.Add("Email", userDetail.Email);
+                                            if (userDetail != null)
+                                            {
+                                                if (indexObject.Fields.ContainsKey("Email")) indexObject.Fields["Email"] = userDetail.Email;
+                                                else indexObject.Fields.Add("Email", userDetail.Email);
 
-                                            if (indexObject.Fields.ContainsKey("Data3SixtyUser")) indexObject.Fields["Data3SixtyUser"] = userDetail.Data3SixtyUser;
-                                            else indexObject.Fields.Add("Data3SixtyUser", userDetail.Data3SixtyUser);
+                                                if (indexObject.Fields.ContainsKey("Data3SixtyUser")) indexObject.Fields["Data3SixtyUser"] = userDetail.Data3SixtyUser;
+                                                else indexObject.Fields.Add("Data3SixtyUser", userDetail.Data3SixtyUser);
+                                            }
                                         }
                                         indexCollectionModel.Adds.Add(indexObject);
                                         break;
