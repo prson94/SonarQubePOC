@@ -13,32 +13,39 @@
 
     &.default {
         background: @ig-grey-t5;
-        color: black;
-        border: 1px solid rgba(0,0,0,0.2);
+        color: @ig-black;
     }
 
     &.emphasis {
         background: @ig-slate;
-        color: white;
+        color: @ig-white;
     }
 
     &.positive {
         background: @ig-green;
-        color: white;
+        color: @ig-white;
     }
 
     &.negative {
         background: @ig-red;
-        color: white;
+        color: @ig-white;
     }
 
     &.warning {
         background: @ig-orange;
-        color: black;
+        color: @ig-black;
     }
 
     &.light {
         background: rgba(255,255,255,.33);
-        color: white;
+        color: @ig-white;
+    }
+
+    &.custom-light {
+        color: @ig-black;
+    }
+
+    &.custom-dark {
+        color: @ig-white;
     }
 }
