@@ -1,5 +1,5 @@
-﻿<div class="row condtions" *ngIf="conditionItems">
-    <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
+﻿<div class="row condtions" *ngIf="group.ConditionItems">
+    <div class="condition-row d3s-color-picker" *ngFor="let condition of group.ConditionItems">
         <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes: condition.ConditionFieldTypeName " (ngModelChange)="condition.ConditionFieldTypeName=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeName" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
@@ -25,7 +25,7 @@
                     <input type="text" igInput class="no-margin-btm" [(ngModel)]="condition.SingleValue" required placeholder="Value Required" [ngModelOptions]="{standalone: true}" maxlength="250" />
                 </div>
                 <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                    <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [dataKey]="'value'" [options]="condition.lookupOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
+                    <p-dropdown appendTo="body" [baseZIndex]="20000" [panelStyleClass]="'igx-blue'" required placeholder="Value Required" [class]="'condition-dropdown no-pad'" [options]="condition.lookupOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" scrollHeight="320px"></p-dropdown>
                 </div>
                 <div *ngIf="condition?.FieldType?.Type == 'Date'">
                     <div (click)="doToggle($event,pc1)" class="ig-input calendar" [ngClass]="{'required': !condition.SingleValue}">
@@ -60,20 +60,20 @@
                 </div>
             </ng-template>
         </p-dropdown>
-        <p-dropdown *ngIf="conditionItems.length == 0" [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true"></p-dropdown>
-        <div *ngIf="conditionItems.length == 0" class="input-container">
+        <p-dropdown *ngIf="group.ConditionItems.length == 0" [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true"></p-dropdown>
+        <div *ngIf="group.ConditionItems.length == 0" class="input-container">
             <input type="text" igInput class="no-margin-btm" disabled />
         </div>
-        <div *ngIf="conditionItems.length == 0" class="actions-btn">
+        <div *ngIf="group.ConditionItems.length == 0" class="actions-btn">
             <button igButton disabled icon="fa-trash" (click)="removeCondition(condition)" tooltip="Remove Condition"></button>
         </div>
     </div>
-    <div *ngIf="conditionItems.length == 0" class="condition-row d3s-color-picker">
-        <p-dropdown [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true">
+    <div *ngIf="group.ConditionItems.length == 0" class="condition-row d3s-color-picker">
+        <p-dropdown [class]="'condition-dropdown'" [options]="[]" placeholder="" [disabled]="true"> 
         </p-dropdown>
     </div>
 </div>
-<div class="matchtype-container" *ngIf="conditionItems && conditionItems.length > 1">
-    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="1" label="Match all conditions" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
-    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="2" label="Match any condition" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
+<div class="matchtype-container" *ngIf="group.ConditionItems && group.ConditionItems.length > 1"> 
+    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="All" label="Match all conditions" [(ngModel)]="group.MatchType"></p-radioButton></div>
+    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="Any" label="Match any condition" [(ngModel)]="group.MatchType"></p-radioButton></div>
 </div>

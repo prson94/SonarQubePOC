@@ -31,13 +31,13 @@ export class MetricAssetHistoryViewModel {
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     HasResults: boolean;
 }
-
+type MatchTypeString = 'All' | 'Any';
 export class MetricAssetVersionConditionViewModel {
     Uid: string;
     Position: number;
     Threshold: number;
     Weight: number;
-    MatchType: MetricMatchType;
+    MatchType: MatchTypeString;
 
     ConditionItems: MetricAssetVersionConditionItemViewModel[] = [];
 }

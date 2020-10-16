@@ -81,14 +81,16 @@
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
             <simple-accordion header="Asset Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes" [operators]="operators"></d3s-admin-metric-condition-editor>
-                </div>
+                    <d3s-admin-metric-condition-editor [group]="g"
+                                                       [metricConditionEditorFieldTypes]="metricEditorFieldTypes"
+                                                       [operators]="operators"></d3s-admin-metric-condition-editor> <!--(matchTypeChange)="changeConditionGroupMatchType(g, $event);" -->
+                </div> 
             </simple-accordion>
         </div>
     </form>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
-            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
+            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button> 
             <span class="grow"></span>
             <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
         </div>

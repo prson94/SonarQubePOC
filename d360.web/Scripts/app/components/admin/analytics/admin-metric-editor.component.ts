@@ -107,7 +107,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
-            dummyConditionGroup.MatchType = MetricMatchType.Any; 
+            dummyConditionGroup.MatchType = "All"; 
             this.model.ConditionGroups.push(dummyConditionGroup);
         }
 
