@@ -47,11 +47,19 @@
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Custom</h4>
+        <h4>Custom with variant <em>custom-light</em></h4>
         <div>
-            <ig-badge [text]="'Draft'" [backgroundColor]="'#3ca67d'" [textColor]="'#f2eb20'"></ig-badge>
+            <ig-badge [text]="'Draft'" [backgroundColor]="'#3ca67d'" [variant]="'custom-light'"></ig-badge>
         </div>
-    </div> 
+        <p>Custom-Light is for a backgroundColor override which is assumed to be light, hence the text is dark.</p>
+    </div>
+    <div class="gallery-section">
+        <h4>Custom with variant <em>custom-dark</em></h4>
+        <div>
+            <ig-badge [text]="'Draft'" [backgroundColor]="'#3ca67d'" [variant]="'custom-dark'"></ig-badge>
+        </div>
+        <p>Custom-Dark is for a backgroundColor override which is assumed to be dark, hence the text is white.</p>
+    </div>
 </div>
 
 <div class="tile tile-detail">
