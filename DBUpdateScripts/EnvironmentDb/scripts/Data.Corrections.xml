@@ -1016,4 +1016,24 @@ update metrics.AssetVersion set Definition ='{}' where Definition = 'null' or De
 ]]>
     </sql>
   </changeSet>
- </databaseChangeLog>
+
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12510">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update  T 
+set     T.EndDate = DATEADD(d, -1, M.EffectiveDate) 
+from    metrics.Score T 
+        inner join metrics.Score S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null 
+		inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.ScoreType = 2
+		cross apply (
+			        select      min(EffectiveDate) as EffectiveDate 
+                    from        metrics.Score
+			        where       AssetUid = T.AssetUid
+			                    and EffectiveDate > T.EffectiveDate 
+                                and AllocationUid = T.AllocationUid
+		) M
+]]>
+    </sql>
+	</changeSet>
+</databaseChangeLog>

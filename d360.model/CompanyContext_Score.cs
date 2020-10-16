@@ -559,7 +559,7 @@ where   ExecutionID = @ExecutionID
                                 , transaction: trans
                                 , commandTimeout: timeout);
 
-
+                            // End-date new scores and score items IF the effective date is not the latest effective date.
                             Connection.Execute($@"
 		                    update  M
 		                    set     M.EndDate = dateadd(d, -1, R.EffectiveDate)
@@ -576,7 +576,23 @@ where   ExecutionID = @ExecutionID
                                                             and AllocationUid = M.AllocationUid
 		                            ) R
                             where   M.EndDate is null", 
-                            new { execution.ExecutionID, scoreType = (int)scoreType }, transaction: trans, commandTimeout: timeout);
+                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                            // End-date earlier scores and score items.
+                            Connection.Execute($@"
+update  T 
+set     T.EndDate = DATEADD(d, -1, M.EffectiveDate) 
+from    metrics.Score T 
+        inner join api.ExecutionScore S on S.AllocationUid = T.AllocationUid and S.AssetUid = T.AssetUid and S.EffectiveDate > T.EffectiveDate and T.EndDate is null 
+                                            and S.ExecutionId = @executionID and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+		cross apply (
+			        select      min(EffectiveDate) as EffectiveDate 
+                    from        metrics.Score
+			        where       AssetUid = T.AssetUid
+			                    and EffectiveDate > T.EffectiveDate 
+                                and AllocationUid = T.AllocationUid
+		) M",
+                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
                             var batchResults = Connection.Query<ExternalScoreResultsApiResultsModel>( $@"
 select  E.ScoreUid, 
