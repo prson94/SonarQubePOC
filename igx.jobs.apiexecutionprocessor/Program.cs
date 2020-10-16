@@ -472,7 +472,7 @@ namespace igx.jobs.apiexecutionprocessor
         private async Task<bool> ShouldRunApiJob(CompanyContext company, Guid? executionID)
         {
             // call function in db to see if the api job should run
-            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID });
+            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID }, commandTimeout:300);
         }
 
         private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
