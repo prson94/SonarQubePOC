@@ -46,12 +46,12 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
 
     add() {
         this.currentID = 0;
+        this.currentUid = "00000000-0000-0000-0000-000000000000";
         this.workflow = new WorkflowDiagramModel();
         this.mode = PageMode.Editor;
     }
 
     save(e: WorkflowDiagramModel) {
-      //  console.log('base save', e);
         this.workflow = e;
         this.currentID = this.workflow.Type.ID;
         this.mode = PageMode.DiagramEditor;
