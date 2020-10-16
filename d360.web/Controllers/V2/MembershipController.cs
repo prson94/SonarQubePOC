@@ -1135,11 +1135,6 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
                 }
 
-                if (i.PrimaryOwnerUid == Guid.Empty)
-                {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Primary Owner is empty/missing in one or more of the requests. Primary Owner must be provided."));
-                }
-
                 models.Add(new UpdateGroupModel
                 {
                     Description = i.Description,

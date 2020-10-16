@@ -228,7 +228,8 @@ namespace d360.web.Controllers
                 var secondaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.SecondaryOwnerResourceID).FirstOrDefault();
                 group.PrimaryOwnerName = primaryOwner != null ? primaryOwner.LastName + ", " + primaryOwner.FirstName : "";
                 group.SecondaryOwnerName = secondaryOwner != null ? secondaryOwner.LastName + ", " + secondaryOwner.FirstName : "";
-                group.PrimaryOwnerUid = primaryOwner.Uid;
+                if(primaryOwner != null)
+                    group.PrimaryOwnerUid = primaryOwner.Uid;
                 if(secondaryOwner != null)
                     group.SecondaryOwnerUid = secondaryOwner.Uid;
 
