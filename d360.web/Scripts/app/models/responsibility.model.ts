@@ -2,10 +2,10 @@
 import { SelectItem } from '../models/form.model';
 import { Observable } from 'rxjs';
 
-export interface IResponsibilityService {
-    getResponsibilityDetail(assetID: number): Observable<ResponsibilityItemDetail[]>;
-    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Observable<ResponsibilityEditorModel>;
-    postResponsibility(responsibility: ResponsibilityItem): Observable<any>;
+export interface IResponsibilityService {    
+    getResponsibilityDetail(assetUid: string): Observable<ResponsibilityItemDetailV2[]> 
+    getResponsibilityItemEditor(assetID: number, responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel>;
+    postResponsibility(assetUid: string, responsibilityUid: string, responsibilityUids: any): Observable<any>;
 }
 
 export class ResponsibilityEditorModel {
@@ -22,8 +22,17 @@ export class ResponsibilityItem {
     ResponsibilityTypeID: number;
     AssetID: number;
     SecurityAsset: string;
-    SecurityAssetID: number;
+    SecurityAssetID: number;   
     Context: string;
+}
+
+export class ResponsibilityOverridePostModel {
+    ResourceUid: string[];
+    Description: string;
+}
+
+export class ResponsibilityOverrideDeleteModel {
+    ResourceUid: string;
 }
 
 export class ResponsibilityItemDetail {
@@ -54,4 +63,33 @@ export class ResponsibilityItemDetail {
     ObjectID: number;
     Type: string;
     TypeID: number;
+}
+
+export class ResponsibilityItemDetailV2 {
+    Responsibility: string;
+
+    ResponsibilityUid: string;
+
+    Resource: string;
+
+    ResourceUid: string;
+
+    GroupResourceUid: string;
+
+    Description: string;
+
+    Group: string;
+
+    AssignedBy: string;
+
+    IsVisible: boolean;
+
+    ResourceType: string;
+}
+
+export class ResponsibilityItemV2 {
+    ResponsibilityUid: string;
+    AssetUid: string;
+    Description: string;
+    ResourceUid: string;
 }

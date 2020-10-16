@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../../../models/responsibility.model';
+import { ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService, ResponsibilityItemDetailV2 } from '../../../models/responsibility.model';
 import { FormMessage } from '../../../models/form.model';
 import { ResponsibilityService } from '../../../services/responsibility.service';
 import { PermissionsService } from '../../../services/permissions.service';
@@ -7,6 +7,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router, ActivatedRoute } from '@angular/router';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-people-responsibilities-tile',
@@ -16,26 +17,37 @@ import * as _ from 'lodash';
 
 export class PeopleResponsibilitiesTile extends BaseComponent implements OnChanges {
     @Input() assetID: number;
+    @Input() assetUid: string;
     @Input() overrideItemID: number;
     @Input() title: string = "Responsibilities";
 
-    responsibilities = new Array<ResponsibilityItemDetail>();
-    selectedRow = new ResponsibilityItemDetail();
-    addingRow = new ResponsibilityItemDetail();
+    public deleteCallback: Function;
+   
+    responsibilities = new Array<ResponsibilityItemDetailV2>();
+    selectedRow = new ResponsibilityItemDetailV2();
+    addingRow = new ResponsibilityItemDetailV2();
 
     private isEditing = false;
     private isDeleting = false;
     private isAdding = false;
 
-    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, private router: Router) {
+    constructor(private responsibilityService: ResponsibilityService, private permissionsService: PermissionsService, protected messagesService: MessagesObservableService, private router: Router) {
         super();
+    }
+
+    ngOnInit() {
+        this.load();
+        this.deleteCallback = this.deleteResponsibility.bind(this);
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'assetID') {
                 this.assetID = changes['assetID'].currentValue;
-            }            
+            }
+            if (p == 'assetUid') {
+                this.assetUid = changes['assetUid'].currentValue;
+            } 
             if (p == 'overrideItemID') {
                 this.overrideItemID = changes['overrideItemID'].currentValue;
             }            
@@ -46,16 +58,16 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
     load(): void {
 
-        if (this.assetID == null)
+        if (this.assetUid == null)
             return;
 
         this.isLoading = true;
         
-        this.responsibilityService.getResponsibilityDetail(this.assetID)
-            .subscribe(data => {  
-                this.responsibilities = data;
+        this.responsibilityService.getResponsibilityDetail(this.assetUid)
+            .subscribe(data => {
+                this.responsibilities = data.filter(x => x.IsVisible==true);
                 this.selectedRow = this.responsibilities[0];
-                this.isLoading = false;                
+                this.isLoading = false;
             });
         this.loadPermissionsById(this.permissionsService, this.assetID);
     }
@@ -70,16 +82,10 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     add(): void {
-        this.addingRow = new ResponsibilityItemDetail();
-        this.addingRow.AssetID = this.assetID;
-        //this.addingRow.OverrideID = this.overrideItemID;
+        this.addingRow = new ResponsibilityItemDetailV2();        
         this.isAdding = true;
     }
 
-    confirmDeleteRow(id: number): void {
-        this.isDeleting = false;
-        this.load();
-    }
     
     navigate(url: string) {
         this.router.navigateByUrl(url);
@@ -98,5 +104,20 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
         //event.field = Field to sort
         //event.order = Sort order, 1 ascending , -1 descending                        
         this.responsibilities = _.orderBy(this.responsibilities, [item => item[event.field] ? item[event.field].toLowerCase() : item[event.field]], [event.order == -1 ? 'desc' : 'asc']);
-    }    
+    }
+
+    private deleteResponsibility() {
+
+        this.responsibilityService.deleteResponsibility(this.assetUid, this.selectedRow.ResponsibilityUid, this.selectedRow.GroupResourceUid ?? this.selectedRow.ResourceUid).
+            subscribe(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.isDeleting = false;    
+                this.load();                            
+
+            }, err => { this.showMessageForResult(this.messagesService, err); this.isDeleting = false; });
+    }
+
+    private deleteMessage() {
+        return `Are you sure you want to delete the ${this.selectedRow.Responsibility} - ${ this.selectedRow.Group ?? this.selectedRow.Resource }?`
+    }
 }
