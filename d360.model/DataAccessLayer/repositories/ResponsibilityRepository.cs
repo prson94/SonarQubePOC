@@ -73,7 +73,7 @@ namespace d360.model.DataAccessLayer
                       IsVisible,	  
                       CASE R.SecurityAsset
 	                    WHEN 'R' THEN 'User'
-	                    WHEN 'O' THEN 'Organisation'
+	                    WHEN 'O' THEN 'Organization'
 	                    WHEN 'G' THEN 'Group'
 	                    ELSE ''
 	                    END as ResourceType
@@ -690,7 +690,7 @@ where 1=1
                     A.ObjectId as SecurityAssetId, 
                     case A.Object 
 	                    when 'Group' then 'G'
-                        when 'Organisation' then 'O'
+                        when 'Organization' then 'O'
                         when 'Resource' then 'R'
 	                    else NULL
                     end as SecurityAsset,
@@ -704,7 +704,7 @@ where 1=1
                     inner join ResponsibilityType RT on rt.uid = @responsibilityUid
                     inner join Asset MainAsset on MainAsset.uid = @assetUid
                     left join ResponsibilityTypeRelationOverrideItem RTOG ON RTOG.ResponsibilityTypeId = RT.Id and RTOG.AssetId = mainasset.id and RTOG.securityassetid = a.objectid and A.object = 'Group' and RTOG.SecurityAsset ='G'
-                    left join ResponsibilityTypeRelationOverrideItem RTOO ON RTOO.ResponsibilityTypeId = RT.Id and RTOO.AssetId = mainasset.id and RTOO.securityassetid = a.objectid and A.object = 'Organisation' and RTOO.SecurityAsset ='O'
+                    left join ResponsibilityTypeRelationOverrideItem RTOO ON RTOO.ResponsibilityTypeId = RT.Id and RTOO.AssetId = mainasset.id and RTOO.securityassetid = a.objectid and A.object = 'Organization' and RTOO.SecurityAsset ='O'
                     left join ResponsibilityTypeRelationOverrideItem RTOR ON RTOR.ResponsibilityTypeId = RT.Id and RTOR.AssetId = mainasset.id and RTOR.securityassetid = a.objectid and A.object = 'Resource' and RTOR.SecurityAsset ='R'
                     where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
         }

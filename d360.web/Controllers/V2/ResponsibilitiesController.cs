@@ -996,7 +996,6 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-                //return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new { })));
                 return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully added"));
 
             }
