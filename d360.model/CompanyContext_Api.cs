@@ -674,7 +674,7 @@ where	ExecutionID = @executionID
                                         {objectSqlSyntax} as [Object]
                                         ,{objectIdSqlSyntax} as [ObjectID] 
                                         ,F.FieldTypeID as [FieldTypeID]
-                                        ,coalesce(F.LookupValue, F.FieldValue) as [Value]
+                                        ,F.LookupValue as [Value]
                                         ,F.FieldValue as [FormattedValue]
                                         ,getutcdate() as [UpdatedOn]
                                         ,@resourceId as [UpdatedBy]
