@@ -14,7 +14,7 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     @Input() status: string;
     private formattedStatus: string;
     useDefinedColor: boolean;
-    singleUndefinedColor: boolean;
+    undefinedColor: boolean;
     private colorObjects: any = null;
     private changeWait: any;
     constructor(
@@ -37,12 +37,10 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
         try {
             this.colorObjects = JSON.parse(this.status);
             this.useDefinedColor = true;
-            this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == 'transparent';
-            if (this.singleUndefinedColor)
-                this.formattedStatus = this.colorObjects[0].name;
+            this.undefinedColor = this.colorObjects.filter(c => c.color == 'transparent').length > 0;
         } catch{
             this.useDefinedColor = false;
-            this.singleUndefinedColor = false;
+            this.undefinedColor = false;
         }
     }
 
@@ -54,7 +52,7 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     }
 
     getBackgroundColor() {
-        if (this.useDefinedColor && !this.singleUndefinedColor)
+        if (this.useDefinedColor && !this.undefinedColor)
             return this.getBackgroundGradient();
         status = this.status.toLowerCase().trim();
         if (!this.useDefinedColor) {
@@ -151,8 +149,8 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
         let hsl = /^hsl\(\s*(\d{1,3})\s*,\s*(0|[1-9]\d?|100)%\s*,\s*(0|[1-9]\d?|100)%\s*\)$/i.exec(color);
         if (hsl) {
             let h = (360 + parseInt(hsl[1], 10)) % 360;
-            let s = parseInt(hsl[1], 10)/100;
-            let l = parseInt(hsl[1], 10)/100;
+            let s = parseInt(hsl[2], 10) * 0.01;
+            let l = parseInt(hsl[3], 10) * 0.01;
             var rgb = this.hsl2rgb(h, s, l).map(x => Math.round(x * 255));
             var luma = ((rgb[0] * 299) + (rgb[1] * 587) + (rgb[2] * 114)) / 1000;
             return (luma >= lumaLimit);
@@ -163,17 +161,17 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     getVariant() {
         var dark = 'custom-dark';
         var light = 'custom-light';
-        if (this.singleUndefinedColor)
+        if (this.undefinedColor)
             return light;
         if (this.useDefinedColor)
             return this.hslStringIsLight(this.getBackgroundColor(), 170) ? light : dark;
         else {
             switch (this.status.toLowerCase().trim()) {
                 case 'draft':
-                    return dark;
+                    return light;
                 case 'certified':
                 case 'under review':
-                    return light;
+                    return dark;
                 default:
                     return this.hslStringIsLight(this.getBackgroundColor(), 170) ? light : dark ;
             }
