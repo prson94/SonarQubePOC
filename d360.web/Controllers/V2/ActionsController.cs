@@ -237,20 +237,17 @@ namespace d360.web.Controllers.V2
 
             #region Build SQL statements
 
-            string workflowCheckSql = "exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)";
             string columns = string.Join(", ", selectColumns);
             string conditions = string.Empty;
             string joins = string.Join(" ", fieldJoins);
             if (queries.Count() > 0)
             {
-                conditions += " and " + string.Join(" and ", queries);
+                conditions += " where " + string.Join(" and ", queries);
                 conditions = conditions.Trim();
             }
 
-            string resultsSql = $"select {columns} from Issue I {joins} where {workflowCheckSql} {conditions} order by {_order} {_direction} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-            string countSql = string.IsNullOrEmpty(conditions) ?
-                $"select count(*) from Issue I where {workflowCheckSql}" :
-                $"select count(*) from Issue I {joins} where {workflowCheckSql} {conditions}";
+            string resultsSql = $"select {columns} from Issue I {joins} {conditions} order by {_order} {_direction} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+            string countSql = $"select count(*) from Issue I {joins} {conditions}";
 
             #endregion
 
