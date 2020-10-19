@@ -76,7 +76,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Field-FullText-v1" runInTransaction="false">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-FullText-v2" runInTransaction="false">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -87,9 +87,9 @@ BEGIN
 	CREATE FULLTEXT INDEX ON [dbo].[Field] KEY INDEX [UQ_Field_ID] ON [FieldCatalog]
 END
 
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Value' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
+IF EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Value' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
 BEGIN
-	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([Value] LANGUAGE 1033)
+	ALTER FULLTEXT INDEX ON [dbo].[Field] DROP ([Value])
 END
 
 IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'FormattedValue' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
