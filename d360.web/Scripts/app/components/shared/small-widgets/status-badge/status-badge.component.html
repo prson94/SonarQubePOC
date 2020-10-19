@@ -1,4 +1,4 @@
-﻿<ig-badge *ngIf="singleUndefinedColor"
-          [text]="getStatusText()" [variant]="getVariant()"></ig-badge>
-<ig-badge *ngIf="!singleUndefinedColor"
+﻿<ig-badge *ngIf="undefinedColor"
+          [text]="getStatusText()"></ig-badge>
+<ig-badge *ngIf="!undefinedColor"
           [text]="getStatusText()" [backgroundColor]="getBackgroundColor()" [variant]="getVariant()"></ig-badge>
