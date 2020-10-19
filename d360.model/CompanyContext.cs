@@ -828,7 +828,8 @@ select	ID,
 		ObjectID,
 		TypeName as AssetTypeName,
 		Type,
-	    TypeID
+	    TypeID,
+        uid
 from	AssetDetail
 where   ID = @id", new { id }).SingleOrDefault();
 

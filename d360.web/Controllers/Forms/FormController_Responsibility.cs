@@ -29,39 +29,43 @@ namespace d360.web.Controllers
         {
             var list = GetCompanyResources()
                 .Where(i => i.ResourceID > 0 && i.State == CompanyResourceState.Active)
-                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName })
+                .Select(i => new { ID = i.ResourceID, i.FirstName, i.LastName, i.Uid })
                 .ToList()
                 .Select(i => new SelectListItem
                 {
                     Text = $"User: {i.LastName}, {i.FirstName}",
-                    Value = $"R|{i.ID}",
+                    Value = $"R|{i.ID}|{i.Uid}",
                     Selected = ($"R|{i.ID}" == selectedID)
                 })
                 .OrderBy(i => i.Text)
-                .ToList();
+                .ToList();            
+
+            var groupSQL = $@"SELECT G.ID, G.Name, secasset.Uid FROM [Group] G INNER JOIN [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = g.id";
 
             list.AddRange(
-                Company.Table<Group>()
-                .Select(i => new { i.ID, i.Name })
+                Company.Query<dynamic>(groupSQL)
+                .Select(i => new { i.ID, i.Name, i.Uid })
                 .ToList()
                 .Select(i => new SelectListItem
                 {
                     Text = $"Group: {i.Name}",
-                    Value = $"G|{i.ID}",
+                    Value = $"G|{i.ID}|{i.Uid}",
                     Selected = ($"G|{i.ID}" == selectedID)
                 })
                 .OrderBy(i => i.Text)
                 .ToList()
             );
 
+            var organisationSQL = $@"SELECT O.ID, O.Name, secasset.Uid FROM Organization O INNER JOIN [Asset] secasset ON secasset.[Object] = 'Organization' AND secasset.ObjectID = O.id";
+
             list.AddRange(
-                Company.Table<Organization>()
-                .Select(i => new { i.ID, i.Name })
+                Company.Query<dynamic>(organisationSQL)
+                .Select(i => new { i.ID, i.Name, i.Uid })
                 .ToList()
                 .Select(i => new SelectListItem
                 {
                     Text = $"Organization: {i.Name}",
-                    Value = $"O|{i.ID}",
+                    Value = $"O|{i.ID}|{i.Uid}",
                     Selected = ($"O|{i.ID}" == selectedID)
                 })
                 .OrderBy(i => i.Text)
@@ -97,7 +101,7 @@ namespace d360.web.Controllers
         }
 
         [HttpGet, Route("Responsibility/Resources"), NonNullableParameters]
-        public JsonNetResult ResponsibilityResources(long assetID, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        public JsonNetResult ResponsibilityResources(long assetID, int resTypeId, string secAssettype, int secAssetTypeid, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? resTypeUid)
         {
             string querySql;
             string hideUsersSql = "";
@@ -107,6 +111,12 @@ namespace d360.web.Controllers
             {
                 hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com')";
             }
+
+            if (resTypeId == 0 && resTypeUid != null)
+            {
+                resTypeId = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == resTypeUid).ID;
+            }
+
             if (resTypeId == 0)
             {
                 querySql = @"
@@ -129,7 +139,8 @@ namespace d360.web.Controllers
                 {
                     dbArgs.Add("resourceId", -1);
                     dbArgs.Add("groupId", secAssetTypeid);
-                }
+                }                                               
+
                 querySql = @"
                     		select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
 							where   not exists   (select 1 from ResponsibilityDetail where AssetId =@assetId and SecurityAsset='G' and SecurityAssetID= g.Id and ResponsibilityTypeID=@responsibilityTypeID
@@ -171,8 +182,30 @@ namespace d360.web.Controllers
         }
 
         [HttpGet, Route("Responsibility"), NonNullableParameters]
-        public JsonNetResult Responsibility(long assetID, long? overrideID)
+        public JsonNetResult Responsibility(long assetID, long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
         {
+            if(assetUid.HasValue)
+            {
+                assetID = Company.Assets.FirstOrDefault(a => a.uid == assetUid.Value).ID;
+            }
+            if (responsibilityUid.HasValue && ResourceUid.HasValue)
+            {
+                var responsibilityID = Company.ResponsibilityTypes.FirstOrDefault(r => r.UID == responsibilityUid.Value).ID;
+                var Resource = Company.Assets.FirstOrDefault(a => a.uid == ResourceUid);
+                var resourceType = "R";
+                switch (Resource.Object)
+                {
+                    case "Group":
+                        resourceType = "G";
+                        break;
+                    case "Organisation":
+                    case "Organization":
+                        resourceType = "O";
+                        break;
+                }                    
+                overrideID = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType).ID;
+            }
+
             List<SelectListItem> resources;
             List<SelectListItem> responsibilityTypes;
             ResponsibilityTypeRelationOverrideItem responsibility;
@@ -181,12 +214,12 @@ namespace d360.web.Controllers
             {
                 responsibility = Company.GetById<ResponsibilityTypeRelationOverrideItem>(overrideID.Value, i => i.ResponsibilityType);
                 resources = getResponsibilityResources($"{responsibility.SecurityAsset}|{responsibility.SecurityAssetID}");
-                responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString(), Selected = (i.ID == responsibility.ResponsibilityTypeID) }).ToList();
+                responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.UID.ToString(), Selected = (i.ID == responsibility.ResponsibilityTypeID) }).ToList();
             }
             else
             {
                 resources = getResponsibilityResources();
-                responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.ID.ToString() }).ToList();
+                responsibilityTypes = Company.GetAllowedResponsibilityTypesByAsset(assetID).Select(i => new SelectListItem { Text = i.Name, Value = i.UID.ToString() }).ToList();
                 responsibility = new ResponsibilityTypeRelationOverrideItem { AssetID = assetID };
             }
             responsibilityTypes.Insert(0, new SelectListItem() { Text = "", Value = "" });
@@ -203,101 +236,7 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("Responsibility")]
-        public JsonResult Responsibility(ResponsibilityTypeRelationOverrideItem r)
-        {
-            ResponsibilityTypeRelationOverrideItem model;
-
-            if (r.ID == 0)
-            {
-                try
-                {
-                    if (!Company.HasAssetPermission(r.AssetID, Permission.ModifyResponsibilities))
-                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                    r.UpdatedBy = Company.CurrentResourceID;
-                    r.UpdatedOn = DateTime.UtcNow;
-
-                    Company.Add(r);
-                }
-                catch (BaseException ex)
-                {
-                    return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-                }
-                catch (Exception ex)
-                {
-                    SendException(ex);
-                    return jsonException(ex, HttpStatusCode.InternalServerError);
-                }
-
-                return jsonSuccess("Item successfully created.", r.ID.ToString(), "edit", HttpStatusCode.OK, new { AssetID = r.AssetID });
-            }
-            else
-            {
-                try
-                {
-                    model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(r.ID);
-                    if (model == null) throw new NotFoundException("responsibility");
-
-                    if (!Company.HasAssetPermission(model.AssetID, Permission.ModifyResponsibilities))
-                        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                    model.ResponsibilityTypeID = r.ResponsibilityTypeID;
-                    model.SecurityAsset = r.SecurityAsset;
-                    model.SecurityAssetID = r.SecurityAssetID;
-                    model.Context = r.Context;
-
-                    Company.Update(model);
-
-                }
-                catch (BaseException ex)
-                {
-                    return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-                }
-                catch (Exception ex)
-                {
-                    SendException(ex);
-                    return jsonException(ex, HttpStatusCode.InternalServerError);
-                }
-
-                return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { AssetID = model.AssetID });
-            }
-        }
-
-        [HttpPut, Route("Responsibility")]
-        public JsonResult OverrideResponsibility(ResponsibilityTypeRelationOverrideItem r)
-        {
-            ResponsibilityTypeRelationOverrideItem model;
-
-            try
-            {
-                model = Company.GetById<ResponsibilityTypeRelationOverrideItem>(r.ID);
-                if (model == null) throw new NotFoundException("responsibility");
-
-                if (!Company.HasAssetPermission(model.AssetID, Permission.ModifyResponsibilities))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.ResponsibilityTypeID = r.ResponsibilityTypeID;
-                model.SecurityAsset = r.SecurityAsset;
-                model.SecurityAssetID = r.SecurityAssetID;
-                model.Context = r.Context;
-
-                Company.Update(model);
-
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-
-            return jsonSuccess("Item successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { AssetID = model.AssetID });
-        }
+        
 
         #endregion
 

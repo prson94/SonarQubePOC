@@ -16,7 +16,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <d3s-people-responsibilities-tile [assetID]="assetID"
+                    <d3s-people-responsibilities-tile [assetID]="assetID" [assetUid]="uid"
                                                       [title]="'Responsibilities of ' + [objectName]"></d3s-people-responsibilities-tile>
                 </div>
             </div>
@@ -46,7 +46,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.route.params.subscribe(
-            params => {
+            params => {    
                 this.assetID = +params['assetID'];
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
@@ -61,6 +61,7 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
                         } else {
                             this.objectName = res.DisplayValue;
                         }
+                        this.uid = res.uid;
                         let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
                         if (reloadNav)

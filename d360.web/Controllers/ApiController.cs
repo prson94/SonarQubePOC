@@ -4493,14 +4493,6 @@ where v.id = {0}", id)).FirstOrDefault();
             return Company.GetFollowersByObject(type, id);
         }
 
-        [Route("{assetID:int}/ownership")]
-        public IQueryable<ResponsibilityDetail> GetResponsibilitiesByObject(long assetID)
-        {
-            var asset = Company.GetAssetDetail(assetID);
-            if (asset == null)
-                return null;
-            return Company.Filter<ResponsibilityDetail>(i => ((i.AssetID == assetID) || (i.AssetID == 0 && i.AssetTypeID == asset.AssetTypeID)) && i.IsVisible);
-        }
 
         [Route("{id:int}/permissionsbyid")]
         public List<PermissionInfo> GetPermissionsObject(int id)

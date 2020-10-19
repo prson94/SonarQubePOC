@@ -10,6 +10,7 @@ export class AssetDetail {
     Type: string;
     AssetTypeName: string;
     State: number;
+    uid: string;
 }
 
 export class DetailModel {
