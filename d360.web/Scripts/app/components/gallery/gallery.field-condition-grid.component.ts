@@ -1,9 +1,9 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
 import { FieldsObservableService } from '../../services/fieldsObservable.service';
-import { FieldTypeAPIModelFieldCondition } from '../shared/controls/field-condition-grid/field-condition-grid.models';
 import { CompanySettingsService } from '../../services/settings.service';
 import { OperatorModel } from '../../models/operator.model';
 import { FieldTypeHelper } from '../../models/fieldtype-api.model';
+import { FieldTypeAPIModelFieldCondition } from '../../models/field-condition-grid.models';
 
 
 @Component({

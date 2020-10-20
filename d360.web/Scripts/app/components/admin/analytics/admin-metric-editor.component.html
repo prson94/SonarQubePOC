@@ -1,54 +1,79 @@
 ﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height.px': maxHeight }">
+    <form [formGroup]="metricForm" *ngIf="model">
+        <!--<ig-property-group [igformGroup]="metricForm" [title]="'Details'">-->
+            <div inputs>
+                <div class="row">
+                    <label for="name" class="ig-label">Name</label>
+                    <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                </div>
+                <div class="row">
+                    <label for="description" class="ig-label">Description</label>
+                    <textarea igTextArea
+                              [(ngModel)]="model.Description"
+                              tabindex="2"
+                              rows="3"
+                              maxlength="4000"
+                              formControlName="description"></textarea>
+                </div>
+                <div class="row">
+                    <label for="effectiveDate" class="ig-label">Effective Date</label>
+                    <ig-date tabindex="3"
+                             [(ngModel)]="model.EffectiveDate"
+                             [required]="true"
+                             [appendTo]="'body'"
+                             [minDate]="currentEffectiveDate | utcDate"
+                             [dateFormat]="getLocaleDateString()"
+                             formControlName="effectiveDate">
+                    </ig-date>
+                </div>
+                <div class="row" *ngIf="!isExternallyCalculated">
+                    <label for="weight" class="ig-label">
+                        Weight(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
+                    </label>
+                    <ig-number-input tabindex="4"
+                                     [required]="true"
+                                     [min]="1"
+                                     [max]="100"
+                                     [step]="1"
+                                     formControlName="weight"
+                                     [(ngModel)]="model.Weight"></ig-number-input>
+                </div>
+                <div class="row" *ngIf="!isExternallyCalculated">
+                    <ng-container *ngIf="!parentUid && !model.ParentUid">
+                        <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
+                        <ig-switch tabindex="5"
+                                   formControlName="isGroup"
+                                   [(ngModel)]="model.IsGroup"></ig-switch>
+                    </ng-container>
+                </div>
+            </div>
+        <!--</ig-property-group>-->
+        <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup">
+            <div inputs>
+                <field-condition-grid #conditionGrid *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
+            </div>
+        </ig-property-group>
+    </form>
+    <div class="row" *ngIf="!isLoading">
+        <div class="action-bar" style="padding-top: 15px">
+            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
+        </div>
+    </div>
+    <!--<form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height.px': maxHeight }">
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
                     <span class="ig-input-label">Name</span>
                     <input igInput tabindex="1" class="bottom-margin" igSize="medium" type="text" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
                 </div>
-                <div class="row">
-                    <div>
-                        <span class="ig-input-label">Description</span>
-                        <textarea igTextArea tabindex="2" 
-                                  [(ngModel)]="model.Description" 
-                                  rows="3" 
-                                  maxlength="4000" 
-                                  name="description"></textarea>
-                    </div>
-                </div>
-                <div class="measure-two-col">
-                    <div class="left">
-                        <div class="row">
-                            <div class="ig-input-label">
-                                Effective From
-                            </div>
-                            <div>
-                                <ig-date tabindex="3"
-                                         required
-                                         [appendTo]="'body'"
-                                         [minDate]="currentEffectiveDate | utcDate"
-                                         [ngModel]="date"
-                                         (ngModelChange)="date = $event"
-                                         [dateFormat]="getLocaleDateString()"
-                                         name="effectiveDate">
-                                </ig-date>
-                            </div>
-                        </div>
+
                         <div class="row bottom-space" *ngIf="!isExternallyCalculated">
                             <div class="ig-input-label">
                                 Weight(%)
-                                <div class="info-tip">
-                                    <i class="fa fa-question-circle"></i>
-                                    <div class="tip-container">
-                                        <div class="tooltip-content">
-                                            Weight determines the contributions of this measure to the overall score calculated for an asset.
-                                            For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
-                                            The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).
-                                            Where they do not, they will be adjusted when used to calculate the score.
-                                        </div>
-                                    </div>
-                                </div>
+
                             </div>
                             <div>
                                 <ig-number-input tabindex="4" [(ngModel)]="displayWeight" required [min]="1" [max]="100" [step]="1" name="weight"></ig-number-input>
@@ -96,12 +121,18 @@
                 </div>
             </simple-accordion>
         </div>
-    </form>
-    <div class="row" *ngIf="!isLoading">
-        <div class="action-bar" style="padding-top: 15px">
-            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
-            <span class="grow"></span>
-            <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
-        </div>
-    </div>
+    </form>-->
 </div>
+
+
+<ng-template #weightTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{weightTootlip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #groupTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
