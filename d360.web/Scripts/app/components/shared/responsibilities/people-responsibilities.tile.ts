@@ -110,11 +110,12 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
 
         this.responsibilityService.deleteResponsibility(this.assetUid, this.selectedRow.ResponsibilityUid, this.selectedRow.GroupResourceUid ?? this.selectedRow.ResourceUid).
             subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.isDeleting = false;    
+                this.isDeleting = false;  
+                if (result) {
+                    this.showMessageForResult(this.messagesService, result);                  
+                }                
                 this.load();                            
-
-            }, err => { this.showMessageForResult(this.messagesService, err); this.isDeleting = false; });
+            });
     }
 
     private deleteMessage() {

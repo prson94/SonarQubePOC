@@ -751,7 +751,7 @@ where 1=1
             if (resources.Count == 0)
                 throw new ArgumentNullException("Resources cannot be empty.");
 
-            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R" || x.SecurityAsset == "R").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
+            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R" || x.SecurityAsset == "O").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
 
             var overrides = Company.ResponsibilityTypeRelationOverrideItems
                 .Where(x => x.ResponsibilityTypeID == responsibilityType.ID
