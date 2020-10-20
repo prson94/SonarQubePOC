@@ -27,7 +27,13 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log(changes);
+        if (changes && this.igformGroup && changes.igformGroup.currentValue != changes.igformGroup.previousValue) {
+            this.igformGroup.valueChanges.subscribe(x => {
+                this.requiredCount = this.getRequiredCount();
+                this.invalidCount = this.getInvalidCount();
+                this.ref.markForCheck();
+            });
+        }
     }
 
     ngAfterViewInit(): void {

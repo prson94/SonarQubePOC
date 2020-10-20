@@ -4,6 +4,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { OperatorModel } from '../../models/operator.model';
 import { FieldTypeHelper } from '../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition } from '../../models/field-condition-grid.models';
+import { FormGroup, FormBuilder } from '@angular/forms';
 
 
 @Component({
@@ -33,12 +34,13 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     assetTypeUid: string = '';
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
-
+    formGroup: FormGroup;
     constructor(
         private fieldsService: FieldsObservableService,
-        private settingsService: CompanySettingsService
+        private settingsService: CompanySettingsService,
+        private fb: FormBuilder
     ) {
-
+        this.formGroup = fb.group({});
     }
 
     private cleanJsonExamples = {};

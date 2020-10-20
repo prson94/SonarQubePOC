@@ -14,4 +14,6 @@ export class FieldCondition {
 
     disabled: boolean = true;
     isValid: boolean = false;
+
+    hash: string = '';
 }

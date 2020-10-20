@@ -19,8 +19,8 @@
     <div class="gallery-section">
         <h4>
             Simple Example
-
-            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            </h4>
+            <!--<label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
             <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
                 <ng-template pTemplate>
                     <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
@@ -35,7 +35,7 @@
             </pre>
 
 
-        <!--<hr />
+        <hr />
         <h4>
             Value Binding
         </h4>
@@ -63,8 +63,17 @@
             <button igButton label="Load Data" (click)="loadData()"></button>
         </p>
 
-        <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields"></field-condition-grid>-->
+        <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields"></field-condition-grid>
 
+
+        <hr />-->
+
+        <h4>Condition Grid Within Property Group</h4>
+        <ig-property-group [igformGroup]="formGroup" [title]="'Asset Condition'">
+            <div inputs>
+                <field-condition-grid [formGroup]="formGroup" [fields]="simpleExample" [conditions]="simpleValue" (onChange)="eventValue = $event"></field-condition-grid>
+            </div>
+        </ig-property-group>
     </div>
 
 

@@ -1,9 +1,8 @@
 ﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { NgForm } from '@angular/forms';
+import { NgForm, FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
-import { mergeWith } from 'lodash';
 
 @Component({
     selector: 'field-condition-grid',
@@ -13,6 +12,7 @@ import { mergeWith } from 'lodash';
     styleUrls: ['./field-condition-grid.component.less']
 })
 export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
+    @Input() formGroup: FormGroup;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
     @Input() conditions: FieldCondition[] = [];
 
@@ -24,9 +24,8 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
     private dataCheck: any;
 
-    @ViewChild('conditionsForm', { static: true }) formGroup: NgForm;
-    constructor(public cdRef: ChangeDetectorRef) {
-
+    constructor(public cdRef: ChangeDetectorRef, private fb: FormBuilder) {
+        this.formGroup = fb.group({});
     }
 
     ngOnDestroy() {
@@ -38,7 +37,16 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     ngOnInit() {
         if (!this.conditions)
             this.conditions = [];
-
+        else {
+            this.conditions.forEach(cond => {
+                if (!cond.hash) {
+                    cond.hash = this.randstr('id');
+                }
+                this.formGroup.addControl('option_' + cond.hash, new FormControl(''));
+                this.formGroup.addControl('condition_' + cond.hash, null);
+                this.formGroup.addControl('value_' + cond.hash, null);
+            })
+        }
         this.tryAddNewCondition();
 
         this.dataCheck = setInterval(() => {
@@ -102,8 +110,13 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
         var lastCondition = this.conditions[this.conditions.length - 1];
         var availableFields = this.getAvailableFields(null);
         if (!lastCondition || (lastCondition.operator != null && lastCondition.operator != '')) {
-            if (availableFields.length > 0)
-                this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null, isValid: false });
+            if (availableFields.length > 0) {
+                var hash = this.randstr('id');
+                this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null, isValid: false, hash: hash });
+                this.formGroup.addControl('option_' + hash, new FormControl(''));
+                this.formGroup.addControl('condition_' + hash, new FormControl(''));
+                this.formGroup.addControl('value_1_' + hash, new FormControl(''));
+            }
         }
 
         var conditionsSet = this.conditions.filter(x => x.field);
@@ -171,5 +184,9 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
 
     public get condition_form() {
         return this.formGroup;
+    }
+
+    private randstr(prefix) {
+        return Math.random().toString(36).replace('0.', prefix || '');
     }
 }
