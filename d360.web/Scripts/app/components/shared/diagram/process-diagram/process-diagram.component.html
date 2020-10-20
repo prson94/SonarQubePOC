@@ -223,3 +223,7 @@
                          [objectID]="selectedNodeData.objectId"
                          [objectType]="'Task'">
 </d3s-relationships-modal>
+
+<div class="asset-browser-controls-bottom {{isInfoPanelOpened ? 'info-panel-opened' : ''}}">
+    <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="true"></d3s-assetbrowser-zoom>
+</div>

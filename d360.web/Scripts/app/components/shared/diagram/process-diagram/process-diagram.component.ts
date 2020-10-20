@@ -85,6 +85,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private focusKey: string = '';
 
+    scale = 1;
+
     @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
 
 
@@ -412,6 +414,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 e.diagram.scrollToRect(rect);
                 self.diagramOriginalPosition = null;
             }
+
+            self.scale = self.myDiagram.scale;
+            self.cdRef.markForCheck();
         });
 
         this.myDiagram.addDiagramListener("BackgroundSingleClicked", function (e: go.DiagramEvent) {
@@ -1060,5 +1065,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         else {
             this.viewType = 'diagram';
         }
+    }
+
+    private zoom_Change(_scale: number) {
+        this.myDiagram.scale = _scale;
+        this.scale = _scale;
     }
 }
