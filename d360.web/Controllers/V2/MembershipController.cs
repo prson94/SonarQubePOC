@@ -556,6 +556,10 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
                 }
+                if (!this.IsValidGuid(queryParams, "resourceuid"))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Resource Uid provided in request"));
+                }
                 var results = await this.membershipRepository.GetGroups(queryParams);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
