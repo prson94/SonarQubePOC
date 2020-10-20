@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v9">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -641,6 +641,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
+							and E.ID not in (select IntersectID from #hops where Hop <> 1)
 					union all
 					select	distinct
 							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
@@ -656,6 +657,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
+							and E.ID not in (select IntersectID from #hops where Hop <> -1)
 					) O
 			group by [Predicate], ID, Uid, Direction
 			for json path
@@ -736,7 +738,7 @@ begin
 	create table #ids (ID bigint);
 
 	drop table if exists #hops;
-	create table #hops (Direction char(1), IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, SubjectSalt varchar(25), [from] varchar(50), ObjectId bigint, ObjectSalt varchar(25), [to] varchar(50), PredicateID int, Hop int);
+	create table #hops (Direction char(1), IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, SubjectSalt varchar(50), [from] varchar(50), ObjectId bigint, ObjectSalt varchar(50), [to] varchar(50), PredicateID int, Hop int);
 	create nonclustered index IX_TempHops_IntersectID on #hops (IntersectID asc);
 
 	if @ancestry = 3
@@ -809,9 +811,9 @@ begin
 
 	declare @currentHop int = 1;
 	drop table if exists #backwardIds
-	create table #backwardIds (ID bigint)
+	create table #backwardIds (ID bigint, Salt varchar(50) null)
 	drop table if exists #forwardIds
-	create table #forwardIds (ID bigint)
+	create table #forwardIds (ID bigint, Salt varchar(50) null)
 
 	insert into #backwardIds (ID)
 		select ID from #ids
@@ -832,11 +834,19 @@ begin
 					E.ID,
 					E.Uid,
 					S.ID,
-					@backSubjectSalt,
-					utility.GetHash(@backSubjectSalt + '|A' + cast(S.ID as varchar)),
+					@backSubjectSalt+cast(E.PredicateID as varchar(5)),
+					utility.GetHash(@backSubjectSalt+cast(E.PredicateID as varchar(5)) + '|A' + cast(S.ID as varchar)),
 					T.ID,
-					@backObjectSalt,
-					utility.GetHash(@backObjectSalt + '|A' + cast(T.ID as varchar)),
+					coalesce(
+						I.Salt, 
+						@backObjectSalt + iif(@currentHop = 1, '', cast(E.PredicateID as varchar(5)))
+					),
+					utility.GetHash(
+						coalesce(
+							I.Salt, 
+							@backObjectSalt + iif(@currentHop = 1, '', cast(E.PredicateID as varchar(5)))
+						) + '|A' + cast(T.ID as varchar)
+					),
 					E.PredicateID,
 					-@currentHop
 			from	graph.AssetNode S,
@@ -849,8 +859,8 @@ begin
 					and E.ID not in (select IntersectID from #hops);
 	
 		truncate table #backwardIds;
-		insert into #backwardIds (ID)
-			select SubjectID from #hops where Hop = -@currentHop
+		insert into #backwardIds (ID, Salt)
+			select SubjectID, SubjectSalt from #hops where Hop = -@currentHop
 
 		-- Forward
 		insert into #hops (Direction, IntersectID, IntersectUid, SubjectID, SubjectSalt, [from], ObjectId, ObjectSalt, [to], PredicateID, Hop)
@@ -858,11 +868,19 @@ begin
 					E.ID,
 					E.Uid,
 					S.ID,
-					@foreSubjectSalt,
-					utility.GetHash(@foreSubjectSalt + '|A' + cast(S.ID as varchar)),
+					coalesce(
+						I.Salt, 
+						@foreSubjectSalt + iif(@currentHop = 1, '', cast(E.PredicateID as varchar(5)))
+					),
+					utility.GetHash(
+						coalesce(
+							I.Salt, 
+							@foreSubjectSalt + iif(@currentHop = 1, '', cast(E.PredicateID as varchar(5)))
+						)+ '|A' + cast(S.ID as varchar)
+					),
 					T.ID,
-					@foreObjectSalt,
-					utility.GetHash(@foreObjectSalt + '|A' + cast(T.ID as varchar)),
+					@foreObjectSalt+cast(E.PredicateID as varchar(5)),
+					utility.GetHash(@foreObjectSalt+cast(E.PredicateID as varchar(5)) + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
 					@currentHop
 			from	graph.AssetNode S,
@@ -875,8 +893,8 @@ begin
 					and E.ID not in (select IntersectID from #hops);
 
 		truncate table #forwardIds;
-		insert into #forwardIds (ID)
-			select ObjectID from #hops where Hop = @currentHop
+		insert into #forwardIds (ID, Salt)
+			select ObjectID, ObjectSalt from #hops where Hop = @currentHop
 
 		-- Now reset salts to carry on.
 		set @backObjectSalt = @backSubjectSalt
@@ -888,7 +906,7 @@ begin
 	end
 
 	drop table if exists #hopAssets
-	create table #hopAssets (ID bigint, Hop int, Salt varchar(25))
+	create table #hopAssets (ID bigint, Hop int, Salt varchar(35))
 	insert into #hopAssets
 		select	SubjectID, Hop, SubjectSalt
 		from	#hops
@@ -909,7 +927,7 @@ begin
 
 	drop table if exists #hierarchies
 	create table #hierarchies (
-								Salt varchar(25), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
+								Salt varchar(50), Hop int, Uid uniqueidentifier, ID bigint, ParentID bigint, AssetTypeID int, [Key] varchar(50), [ParentKey] varchar(50),
 								UseAsTransformation bit default(0), IsSubjectInTransformation bit default(0), focal bit default(0), IsLeaf bit default(0),
 								HasAssetReadAccess bit default(1) not null,
 								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
