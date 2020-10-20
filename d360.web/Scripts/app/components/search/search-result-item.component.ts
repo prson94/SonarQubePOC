@@ -12,6 +12,7 @@ import { ObjectStatisticsService } from '../../services/object-statistics.servic
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { isUndefined } from 'util';
+import { DatePipe } from '@angular/common';
 
 declare var CompanySettings;
 
@@ -19,7 +20,7 @@ declare var CompanySettings;
     selector: 'd3s-search-result-item',
     templateUrl: './search-result-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ShoppingCartService, ObjectStatisticsService],
+    providers: [ShoppingCartService, ObjectStatisticsService, DatePipe],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -74,7 +75,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         private objectStatisticsService: ObjectStatisticsService,
-        private ref: ChangeDetectorRef) {
+        private ref: ChangeDetectorRef,
+        private datePipe: DatePipe) {
         super();
     }
 
@@ -179,18 +181,35 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (val === null || val === undefined)
             return '';
 
-        if (field.Type == 'Link' && field.Value.length > 2 && field.Value.indexOf('|') > 0) {
-            let link: string[] = field.Value.split('|', 2);
-            val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
-        } else if (field.Type == 'Boolean' && !field.Empty) {
-            if (!forTitle) {
-                if(field.Value == 'True')
-                    val = '<i class="fa fa-check enabled"></i>';
-                else
-                    val = '<i class="fa fa-times disabled"></i>';
+        if (!field.Empty) {
+            switch (field.Type.toLowerCase()) {
+                case 'link':
+                    if (field.Value.length > 2 && field.Value.indexOf('|') > 0) {
+                        let link: string[] = field.Value.split('|', 2);
+                        val = forTitle ? link[1] : '<a href="' + link[0] + '" target="_blank">' + link[1] + '</a>';
+                    }
+                    break;
+                case 'boolean':
+                    if (!forTitle) {
+                        if (field.Value == 'True')
+                            val = '<i class="fa fa-check enabled"></i>';
+                        else
+                            val = '<i class="fa fa-times disabled"></i>';
+                    }
+                    break;
+                case 'decimal':
+                case 'number':
+                    val = Number(val).toLocaleString();
+                    break;
+                case 'date':
+                    val = val.substr(0, val.indexOf(' '));
+                    break;
+                case 'datetime':
+                    //Date is UTC
+                    let utc = Date.parse(val + ' UTC');
+                    val = this.datePipe.transform(utc, 'medium');
+                    break;
             }
-        } else if (field.Type == 'Date') {
-            val = val.substr(0, val.indexOf(' '));
         }
         if (field.Suffix)
             val += ' ' + field.Suffix;
