@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v36">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v38">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,7 +26,7 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@filters AssetFiltersTable readonly 
 as
 begin
-	set nocount on;
+set nocount on;
 
 	declare @assetId bigint,
 			@type varchar(50)
@@ -428,7 +428,7 @@ begin
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
 		end
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists(select top 1 * from @filters)
 		begin
 			-- Resolve data types to send back to caller.
 			update	T
@@ -518,7 +518,7 @@ begin
 				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit) R
 		where	O.FieldTypeID = @fieldTypeId;
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists(select top 1 * from @filters)
 		begin
 			-- Common
 			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
@@ -613,7 +613,7 @@ begin
 			insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = A.AssetTypeID)')
 		end
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists(select top 1 * from @filters)
 		begin
 			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
 				select		ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
@@ -1206,7 +1206,7 @@ begin
 			
 			set @tableStatement = @tableStatement + ' ' + @joinPrefix + ' join graph.AssetNodeDisplayPath H'+@rn+'P on H'+@rn+'P.ID = H'+@rn+'.ID' +
 								  case @obj
-									when 'FusionAttributeType' then @joinPrefix + ' join Asset FA'+@rn+' on FA'+@rn+'.ID = H'+@rn+'.ID inner join FusionAttribute F'+@rn+' on FA'+@rn+'.Object = ''FusionAttribute'' and F'+@rn+'.ID = FA'+@rn+'.ObjectID'
+									when 'FusionAttributeType' then @joinPrefix + ' join Asset FA'+@rn+' on FA'+@rn+'.ID = H'+@rn+'.ID inner join FusionAttribute F'+@rn+' on FA'+@rn+'.Object = ''FusionAttribute'' and F'+@rn+'.ID = FA'+@rn+'.ObjectID and F'+@rn+'.Deleted = 0'
 									when 'ResourceType' then @joinPrefix + ' join reporting.Global_Resource U'+@rn+' on U'+@rn+'.uid = H'+@rn+'.Uid'
 									else ''
 								  end

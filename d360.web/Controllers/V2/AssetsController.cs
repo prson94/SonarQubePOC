@@ -1449,19 +1449,20 @@ namespace d360.web.Controllers.V2
 
                 }
 
+                var dbArgsCount = new DynamicParameters();
+
+                dbArgsCount.Add("object", asset.Object);
+                dbArgsCount.Add("objectId", asset.ObjectID);
+                dbArgsCount.Add("fieldTypeId", fieldType.ID);
+                dbArgsCount.Add("resourceId", Company.CurrentResourceID);
+                dbArgsCount.Add("pageSize", pageSize);
+                dbArgsCount.Add("pageNum", pageNum);
+                dbArgsCount.Add("simpleFilter", simpleFilter);
+                dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter",
-                     new
-                     {
-                         @object = asset.Object,
-                         objectId = asset.ObjectID,
-                         fieldTypeId = fieldType.ID,
-                         resourceId = Company.CurrentResourceID,
-                         pageSize,
-                         pageNum,
-                         simpleFilter
-                     }
+                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
+                     dbArgsCount
                      ).First();
 
                 if (isStreamResponse)
