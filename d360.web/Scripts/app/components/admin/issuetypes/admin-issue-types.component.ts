@@ -109,7 +109,6 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-
     constructor(secondaryNavService: SecondaryNavService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Workflow Actions";
@@ -179,8 +178,11 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     }
 
     private saveIssueType(event) {
+        this.isLoading = true;
+
         this.workflowService.saveIssueType(event.item)
             .subscribe(result => {
+                this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.load();                    
