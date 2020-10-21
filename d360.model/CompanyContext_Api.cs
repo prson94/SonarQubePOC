@@ -1681,6 +1681,12 @@ from	IntersectType I
 
         public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true)
         {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "RemoveAssets";
+            bool isLog = true; // trace info for all assets is extermely useful
+            var metrics = new Dictionary<string, double>();
+            var step = 0;
             var results = new List<DatabaseBulkAssetResult>();
             var graphResults = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
@@ -1690,9 +1696,17 @@ from	IntersectType I
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
+            var sw = Stopwatch.StartNew();
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
 
+            AddMeasurement(metrics, "Check for workflows", sw.ElapsedMilliseconds, ++step);
+            sw.Restart();
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            AddMeasurement(metrics, "Checking for duplicate execution uids", sw.ElapsedMilliseconds, ++step);
+            sw.Restart();
+
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
@@ -1700,7 +1714,12 @@ from	IntersectType I
             }
             else
             {
+
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+
+                AddMeasurement(metrics, "Checking for duplicate asset uids", sw.ElapsedMilliseconds, ++step);
+                sw.Restart();
+
                 if (uidDupes.Any())
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
@@ -1711,6 +1730,9 @@ from	IntersectType I
                     try
                     {
                         currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedAsset");
+
+                        AddMeasurement(metrics, "Getting execution current location", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
 
                         if (currentLocation.HighestItemNumberProcessed > 0)
                         {
@@ -1779,6 +1801,9 @@ from	IntersectType I
                             bulkCopy.WriteToServer(table);
                         }
 
+                        AddMeasurement(metrics, "BuildDatatable and initialization", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+
                         #endregion
 
                         #region Resolve assets based on UIDs
@@ -1793,6 +1818,9 @@ from	IntersectType I
 		    inner join AssetType ST on ST.Uid = @uid and ST.ID = S.AssetTypeID;",
                     new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
 
+                        AddMeasurement(metrics, "Resolve assets based on UIDs", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+
                         #endregion
 
                         #region Log lookup errors
@@ -1806,10 +1834,14 @@ from	IntersectType I
     update	api.ExecutionDeletedAsset
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-    where	ExecutionID = @ExecutionID and AssetID is null;
+    where	ExecutionID = @ExecutionID and AssetID is null;",
+            new { execution.ExecutionID }, commandTimeout: timeout);
 
+                        AddMeasurement(metrics, "Log lookup errors invalid asset uids or asset ids", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
 
-    --Check if asset Results exist 
+                        Connection.Execute($@"
+                        --Check if asset Results exist 
     update	T
     set		T.Success = 0,
 		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
@@ -1822,10 +1854,15 @@ from	IntersectType I
             and ARE.ResultCount > 0;",
             new { execution.ExecutionID }, commandTimeout: timeout);
 
+                        AddMeasurement(metrics, "Log error asset result exists with not enabled cascade", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
+
                         #endregion
 
                         // Validate permissions
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.DeleteAsset, "ExecutionDeletedAsset");
+                        AddMeasurement(metrics, "LogAssetPermissionErrors", sw.ElapsedMilliseconds, ++step);
+                        sw.Restart();
 
                         generalChecksCompleted = true;
                     }
@@ -1864,6 +1901,7 @@ from	IntersectType I
                                         if (at.Object == "FusionType")
                                         {
                                             var fusion = import.First();
+                                            sw.Restart();
                                             var data = Connection.Query<dynamic>($@"
                                                     create table #forDelete (ID int, Type varchar(50))
                                                     declare @result table (Status bit, Message varchar(255))
@@ -1932,6 +1970,9 @@ from	IntersectType I
                                                     select * from @result",
                                                     new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
 
+                                            AddMeasurement(metrics, $"Fusion type delete assets >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
+
                                             bool IsDeleted = false;
                                             if (bool.TryParse(data.Status.ToString(), out IsDeleted))
                                             {
@@ -1954,6 +1995,9 @@ from	IntersectType I
                                                     continue;
                                                 }
                                             }
+                                            AddMeasurement(metrics, $"update delete status for Fusion type delete assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
+
                                         }
                                         else
                                         {
@@ -1962,6 +2006,8 @@ from	IntersectType I
                                             // Parent/Child Relationships
                                             if (predicateType.HasValue)
                                             {
+                                                sw.Restart();
+
                                                 Connection.Execute($@" 
             if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
                 truncate TABLE #ExecutionDeletedAsset
@@ -2035,6 +2081,10 @@ from	IntersectType I
 			        and S.[Cascade] = 0", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
+            AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+            sw.Restart();
+
+
                                             // Workflows
                                             Connection.Execute($@" 
             if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
@@ -2086,44 +2136,15 @@ from	IntersectType I
 			where	{querySuffix}  and AssetId is not null
 			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            // Rule Implementations
-                                            if (at.Object == "RuleType")
-                                            {
-                                                Connection.Execute($@" 
-            if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
-                truncate TABLE #ExecutionDeletedAsset
-            else
-                create table #ExecutionDeletedAsset (
-                    ExecutionID	uniqueidentifier,
-                    [Root] uniqueidentifier,
-                    ItemNumber	int,
-                    Uid	uniqueidentifier,
-                    AssetID	bigint,
-                    FromHierarchy	bit
-                );
-            
-			update  S 
-            set     S.Success = 0 ,
-			        [Message] ='You have not enabled Cascade, yet there are implementations for this rule asset.'
-			from    api.ExecutionDeletedAsset S 
-			        inner join  (
-                                select      [Root] as UID,
-                                            ExecutionID,
-                                            ItemNumber  
-                                from        #ExecutionDeletedAsset
-			                    group by    [Root], ExecutionID, ItemNumber 
-                                            having (count (*) > 0)
-                                ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
-			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-                                            }
+            AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+            sw.Restart();
 
                                             #endregion
 
                                             // Get the hierarchy items we also need to remove
                                             if (predicateType.HasValue)
                                             {
+                                                sw.Restart();
                                                 Connection.Execute($@"
     with h as (
 	    select	S.ExecutionID,
@@ -2167,6 +2188,10 @@ from	IntersectType I
                 and [Level] > 0 
                 and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+        AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+        sw.Restart();
+
                                             }
 
                                             #region Delete workflow items
@@ -2204,6 +2229,8 @@ from	IntersectType I
     delete  [workflow].[Item] 
     where	ID in (Select ItemID from #w);",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            AddMeasurement(metrics, $"Delete workflow items>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             #endregion
 
@@ -2232,6 +2259,8 @@ from	IntersectType I
 	    from	AssetDetail O
 			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
                                             new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            AddMeasurement(metrics, $"De-index queue / Audit>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             #endregion
 
@@ -2242,6 +2271,8 @@ from	IntersectType I
     from	AssetCrossReference T
 		    inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            AddMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             #endregion
 
@@ -2250,6 +2281,8 @@ from	IntersectType I
                                             Connection.Execute(
                                                 $"delete Asset where Uid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            AddMeasurement(metrics, $"remove from asset table>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             #endregion
 
@@ -2271,6 +2304,9 @@ from	IntersectType I
                                                 Connection.Execute(
                                                     $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                                AddMeasurement(metrics, $"remove from {legacyTable} table >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                                sw.Restart();
                                             }
 
                                             #endregion                                            
@@ -2284,6 +2320,8 @@ from	IntersectType I
     from	[Intersect] T 
 		    inner join api.ExecutionDeletedAsset S on S.IntersectID = T.ID and {querySuffix};",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                AddMeasurement(metrics, $"remove from Intersect table-IntersectID>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                                sw.Restart();
                                             }
 
                                             Connection.Execute($@"
@@ -2296,6 +2334,8 @@ from	IntersectType I
             inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+                                            AddMeasurement(metrics, $"remove from Intersect-(subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
                                             #endregion
 
                                             #region Delete Social tables
@@ -2323,6 +2363,8 @@ from	IntersectType I
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+                                            AddMeasurement(metrics, $"remove from social tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
                                             #endregion
 
                                             #region Delete subsidiary tables
@@ -2341,6 +2383,8 @@ from	IntersectType I
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+                                            AddMeasurement(metrics, $"remove from subsidiary tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
                                             #endregion
 
                                             #region Delete owner tables
@@ -2355,12 +2399,17 @@ from	IntersectType I
 		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
+                                            AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
                                             #endregion
 
                                             // Update success flag
                                             Connection.Execute(
                                                 $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+ 
+                                            AddMeasurement(metrics, $"Update status flag >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             trans.Commit();
                                             runCompleted = true;
@@ -2385,18 +2434,23 @@ from	IntersectType I
 
                                         if (retryCount > API_V2_RETRY_LIMIT)
                                         {
+                                            sw.Restart();
                                             LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedAsset", ex.GetFullExceptionData(false), timeout);
+                                            AddMeasurement(metrics, $"LogLoopExecutionError >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
                                         }
                                     }
                                 }
                             }
-
+                            sw.Restart();
                             results.AddRange(
                                 Query<DatabaseBulkAssetResult>(
                                     $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and FromHierarchy = 0",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
+                            AddMeasurement(metrics, $"results.AddRange >> DatabaseBulkAssetResult>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
 
                             //include hierarchical records for graph tables
                             graphResults.AddRange(
@@ -2405,11 +2459,16 @@ from	IntersectType I
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
+                            AddMeasurement(metrics, $"graphResults.AddRange >> DatabaseBulkAssetResult >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
 
                             OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
                             {
                                 Results = results
                             });
+
+                            AddMeasurement(metrics, $"OnAssetsPartiallyProcessed >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
 
                             beginItemNumber += loopSize;
                             endItemNumber += loopSize;
@@ -2419,16 +2478,25 @@ from	IntersectType I
 
                         if (sendGraphEvents)
                         {
+                            sw.Restart();
                             SendAssetGraphEvents(graphResults);
+                            AddMeasurement(metrics, "SendAssetGraphEvents", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
                         }
 
                         if (sendWorkflowEvents)
                         {
                             SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                            AddMeasurement(metrics, "SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
+                            sw.Restart();
                         }
                     }
                 }
             }
+
+            AddMeasurement(metrics, $"End of Method", swBegin.ElapsedMilliseconds, ++step);
+
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
 
             return results;
         }
