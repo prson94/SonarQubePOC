@@ -1,8 +1,9 @@
-﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked } from '@angular/core';
 import { NgForm, FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
+import { settings } from 'cluster';
 
 @Component({
     selector: 'field-condition-grid',
@@ -11,7 +12,7 @@ import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../mod
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ['./field-condition-grid.component.less']
 })
-export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
+export class FieldConditionGrid implements OnChanges, OnDestroy {
     @Input() formGroup: FormGroup;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
     @Input() conditions: FieldCondition[] = [];
@@ -22,23 +23,19 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     visible: boolean = false;
 
     private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
-    private dataCheck: any;
 
     constructor(public cdRef: ChangeDetectorRef, private fb: FormBuilder) {
         this.formGroup = fb.group({});
     }
 
     ngOnDestroy() {
-        if (this.dataCheck) {
-            clearInterval(this.dataCheck);
-        }
+        this.conditions = null;
     }
 
-    ngOnInit() {
+    private initializeData() {
         this.visible = false;
         if (!this.conditions) {
             this.conditions = [];
-
             this.visible = true;
         }
         else {
@@ -51,7 +48,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
                 this.formGroup.addControl('value_1_' + cond.hash, new FormControl(''));
                 this.formGroup.addControl('value_2_' + cond.hash, new FormControl(''));
             });
-
+            this.cdRef.markForCheck();
             this.visible = true;
         }
         this.tryAddNewCondition();
@@ -61,7 +58,8 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
                 this.conditions.forEach(cond => {
                     if (this.disabledValuesOperators.some(x => x === +cond.operator))
                         cond.disabled = true;
-                    else cond.disabled = false;
+                    else
+                        cond.disabled = false;
 
                     cond.isValid = false;
 
@@ -81,10 +79,9 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
                 });
                 this.tryAddNewCondition();
                 this.cdRef.markForCheck();
-            })
+            });
         });
         this.cdRef.markForCheck();
-
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -97,7 +94,10 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
                     label: f.FriendlyName
                 });
             });
+        }
 
+        if (changes && changes.conditions && changes.conditions.currentValue != changes.conditions.previousValue) {
+            this.initializeData();
         }
         this.cdRef.detectChanges();
     }
