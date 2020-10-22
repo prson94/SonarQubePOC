@@ -468,9 +468,9 @@ namespace d360.core.entities.Workflow
         public string FieldsXml { get; set; }
 
         [JsonIgnore]
-        public string Response1 { get; set; }
+        public string ItemSettings { get; set; }
         [JsonIgnore]
-        public string Response2 { get; set; }
+        public string ItemFields { get; set; }
         public IList<WorkflowAssignmentApiViewModel> Assignments { get; set; }
 
         public Guid? StartedByUid { get; set; }
