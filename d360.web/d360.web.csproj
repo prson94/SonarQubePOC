@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -893,7 +893,6 @@
     <Content Include="images\heroAccent.png" />
     <Content Include="images\loading.gif" />
     <Content Include="images\x.png" />
-    <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
@@ -1408,7 +1407,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-nym-allocations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />

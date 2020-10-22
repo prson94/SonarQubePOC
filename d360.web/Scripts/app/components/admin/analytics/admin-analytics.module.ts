@@ -14,7 +14,6 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { AdminAnalyticsComponent } from './admin-analytics.component';
 import { AdminMetricAssetTypeListComponent } from './admin-metric-asset-type-list.component';
 import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
-import { AdminMetricConditionEditorComponent } from './admin-metric-condition-editor.component';
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
 import { AdminMetricEditorComponent } from './admin-metric-editor.component';
 import { AdminMetricListComponent } from './admin-metric-list.component';
@@ -52,6 +51,7 @@ import { PropertyGroupModule } from '../../shared/controls/property-group/proper
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
 import { FieldConditionGridModule } from '../../shared/controls/field-condition-grid/field-condition-grid.module';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
@@ -99,14 +99,14 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
         PropertyGroupModule,
         IgNumberFieldModule,
         FieldConditionGridModule,
-        IgMessageBoxModule
+        IgMessageBoxModule,
+        PopupMenuModule
 
     ],
     declarations: [
         AdminAnalyticsComponent,
         AdminMetricAssetTypeListComponent,
         AdminMetricConditionListComponent,
-        AdminMetricConditionEditorComponent,
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,

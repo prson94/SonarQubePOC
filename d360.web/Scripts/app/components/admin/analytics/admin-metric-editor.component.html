@@ -1,142 +1,97 @@
-﻿<div class="modal-measure-editor">
+﻿
+<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <form [formGroup]="metricForm" *ngIf="model">
-        <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
-            <div inputs>
-                <div class="row">
-                    <label for="name" class="ig-label">Name</label>
-                    <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
-                </div>
-                <div class="row">
-                    <label for="description" class="ig-label">Description</label>
-                    <textarea igTextArea
-                              [(ngModel)]="model.Description"
-                              tabindex="2"
-                              rows="3"
-                              maxlength="4000"
-                              formControlName="description"></textarea>
-                </div>
-                <div class="row">
-                    <label for="effectiveDate" class="ig-label">Effective Date</label>
-                    <div *ngIf="verb == 'Edit'" class="measure-info">
-                        <ig-message-box>
-                            <span *ngIf="model.HasResults">
-                                As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
-                                any changes you make to this measure will result in a  new version being created, with a new effective date.
-                            </span>
-                            <span *ngIf="!model.HasResults">
-                                Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
-                                Choose a later date to create a new version of the measure, which will be used in future calculations
-                            </span>
-                        </ig-message-box>
+    <div class="measure-form" [style.maxHeight.px]="maxHeight">
+        <form [formGroup]="metricForm" *ngIf="model">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
+                <div inputs>
+                    <div class="row">
+                        <label for="name" class="ig-label">Name</label>
+                        <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                    </div>
+                    <div class="row">
+                        <label for="description" class="ig-label">Description</label>
+                        <textarea igTextArea
+                                  [(ngModel)]="model.Description"
+                                  tabindex="2"
+                                  rows="3"
+                                  maxlength="4000"
+                                  formControlName="description"></textarea>
                     </div>
 
-                    <ig-date tabindex="3"
-                             [(ngModel)]="displayEffectiveDate"
-                             [required]="true"
-                             [appendTo]="'body'"
-                             [minDate]="currentEffectiveDate | utcDate"
-                             [dateFormat]="getLocaleDateString()"
-                             formControlName="effectiveDate">
-                    </ig-date>
+                    <div class="flex-row">
+                        <div class="flex-col">
+                            <div class="row">
+                                <label for="effectiveDate" class="ig-label">Effective Date</label>
+                                <ig-date tabindex="3"
+                                         [(ngModel)]="displayEffectiveDate"
+                                         [required]="true"
+                                         [appendTo]="'body'"
+                                         [minDate]="currentEffectiveDate | utcDate"
+                                         [dateFormat]="getLocaleDateString()"
+                                         formControlName="effectiveDate">
+                                </ig-date>
+                            </div>
+                            <div class="row" *ngIf="!isExternallyCalculated">
+                                <label for="weight" class="ig-label">
+                                    Weight(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
+                                </label>
+                                <ig-number-input tabindex="4"
+                                                 [required]="true"
+                                                 [min]="1"
+                                                 [max]="100"
+                                                 [step]="1"
+                                                 formControlName="weight"
+                                                 [(ngModel)]="displayWeight"></ig-number-input>
+                            </div>
+                        </div>
+                        <div class="flex-col effective-date-msg">
+                            <label></label>
+                            <div *ngIf="verb == 'Edit'">
+                                <ig-message-box>
+                                    <span *ngIf="model.HasResults">
+                                        As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
+                                        any changes you make to this measure will result in a  new version being created, with a new effective date.
+                                    </span>
+                                    <span *ngIf="!model.HasResults">
+                                        Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
+                                        Choose a later date to create a new version of the measure, which will be used in future calculations
+                                    </span>
+                                </ig-message-box>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" *ngIf="!isExternallyCalculated">
+                        <ng-container *ngIf="!parentUid && !model.ParentUid">
+                            <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
+                            <ig-switch tabindex="5"
+                                       formControlName="isGroup"
+                                       [(ngModel)]="model.IsGroup"></ig-switch>
+                        </ng-container>
+                    </div>
+                </div><br />
+            </ig-property-group>
+            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup">
+                <div inputs>
+                    <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
+                    <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
+                    <div class="row" *ngIf="showMatchPicker">
+                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                    </div>
                 </div>
-                <div class="row" *ngIf="!isExternallyCalculated">
-                    <label for="weight" class="ig-label">
-                        Weight(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
-                    </label>
-                    <ig-number-input tabindex="4"
-                                     [required]="true"
-                                     [min]="1"
-                                     [max]="100"
-                                     [step]="1"
-                                     formControlName="weight"
-                                     [(ngModel)]="displayWeight"></ig-number-input>
-                </div>
-                <div class="row" *ngIf="!isExternallyCalculated">
-                    <ng-container *ngIf="!parentUid && !model.ParentUid">
-                        <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
-                        <ig-switch tabindex="5"
-                                   formControlName="isGroup"
-                                   [(ngModel)]="model.IsGroup"></ig-switch>
-                    </ng-container>
-                </div>
-            </div>
-        </ig-property-group>
-        <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup">
-            <div inputs>
-                <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
-            </div>
-        </ig-property-group>
-    </form>
+            </ig-property-group>
+        </form>
+
+    </div>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
             <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
+            <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !validateConditions() || conditionFormMode != FormMode.Default || isSaving" (click)="save()"></button>
         </div>
     </div>
-    <!--<form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height.px': maxHeight }">
-        <div class="row" *ngIf="!isLoading && model != null">
-            <simple-accordion header="Details" active="true" class="ig-accordion">
-                <div class="row two-thirds">
-                    <span class="ig-input-label">Name</span>
-                    <input igInput tabindex="1" class="bottom-margin" igSize="medium" type="text" [(ngModel)]="model.Name" #name="ngModel" name="name" maxlength="250" required />
-                </div>
-
-                        <div class="row bottom-space" *ngIf="!isExternallyCalculated">
-                            <div class="ig-input-label">
-                                Weight(%)
-
-                            </div>
-                            <div>
-                                <ig-number-input tabindex="4" [(ngModel)]="displayWeight" required [min]="1" [max]="100" [step]="1" name="weight"></ig-number-input>
-                            </div>
-                        </div>
-                    </div>
-                    <div *ngIf="verb == 'Edit'" class="mesure-info">
-                        <i class="fa fa-info-circle"></i>
-                        <span *ngIf="model.HasResults" class="measure-message">
-                            As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
-                            any changes you make to this measure will result in a  new version being created, with a new effective date.
-                        </span>
-                        <span *ngIf="!model.HasResults" class="measure-message">
-                            Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
-                            Choose a later date to create a new version of the measure, which will be used in future calculations
-                        </span>
-                    </div>
-                </div>
-                <div class="row">
-                    <div *ngIf="!isExternallyCalculated">
-                        <ng-container *ngIf="!parentUid && !model.ParentUid">
-                            <div class="ig-input-label {{value == true ? 'checked' : ''}}">
-                                Grouping Measure
-                                <div class="info-tip">
-                                    <i class="fa fa-question-circle"></i>
-                                    <div class="tip-container">
-                                        <div class="tooltip-content group">
-                                            Grouping measures can be used to organize your measures, collecting together a group of a
-                                            similar nature (E.g. responsibility assignments, required field checks).
-                                            Grouping measures do not have asset conditions, as they are not applied directly to the assets.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <ig-switch tabindex="5" [(ngModel)]="model.IsGroup" [ngModelOptions]="{standalone: true}"></ig-switch>
-                        </ng-container>
-                    </div>
-                </div>
-            </simple-accordion>
-        </div>
-        <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
-            <simple-accordion header="Asset Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
-                <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes" [operators]="operators"></d3s-admin-metric-condition-editor>
-                </div>
-            </simple-accordion>
-        </div>
-    </form>-->
 </div>
-
 
 <ng-template #weightTooltip>
     <div class="info-tip">

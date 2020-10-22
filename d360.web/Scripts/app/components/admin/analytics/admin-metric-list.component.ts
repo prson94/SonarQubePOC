@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange  } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { TreeNode, MenuItem } from 'primeng/api';
@@ -40,16 +40,28 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    private menu: MenuItem[] = [
-        { label: 'Edit', command: (event) => { this.edit() } },
+    private menuOption = [
         {
-            label: 'Disable',
-            command: (event) => { this.delete(); }
-        }, {
-            label: 'Version History',
-            command: (event) => { this.showHistory(true); }
+            "title": "Edit"
+        },
+        {
+            "title": "Disable"
+        },
+        {
+            "title": "Version History"
         }
     ];
+
+    menuClicked($event) {
+        switch ($event.value) {
+            case 'Edit': this.edit();
+                break;
+            case 'Disable': this.delete();
+                break;
+            case 'Version History': this.showHistory(true);
+                break;
+        }
+    }
 
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
@@ -65,7 +77,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             this.load();
         }
         if (changes['scoreData'] && this.scoreData) {
-            this.scoreData = [ ...this.scoreData ];
+            this.scoreData = [...this.scoreData];
         }
     }
 
@@ -109,7 +121,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                     }
 
                                 });
-                                if (found) 
+                                if (found)
                                     node = found;
 
                             }
@@ -153,10 +165,10 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.updateSelectionMenuLabel();
     }
     updateSelectionMenuLabel() {
-        if (this.menu && this.menu.length > 0) {
-            let versionMenuItem = this.menu.find(x => x.label.indexOf("Version History") != -1);
+        if (this.menuOption && this.menuOption.length > 0) {
+            let versionMenuItem = this.menuOption.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
-                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
     }
@@ -165,7 +177,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         if (this.selection)
             this.previousSelection = { ...this.selection };
         if (this.selectedNode)
-        this.previousSelectedNode = { ...this.selectedNode };
+            this.previousSelectedNode = { ...this.selectedNode };
         if (!asChild) {
             this.selection = null;
             this.selectedNode = null;
@@ -182,7 +194,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     public delete() {
         this.formMode = FormMode.Deleting;
-    }    
+    }
     public close() {
         this.formMode = FormMode.Default;
         if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)

@@ -1,8 +1,8 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener, AfterViewChecked } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
-import { FormMode } from "../../../models/form.model";
+import { FormMode, SelectItem } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel } from '../../../models/operator.model';
@@ -40,7 +40,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     private displayWeight: number;
     private displayEffectiveDate: Date;
+    private matchType: string;
 
+    private isLoadingFields: boolean = false;
+    private isSaving: boolean = false;
     verb = "Add";
     child = "";
 
@@ -51,6 +54,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
     currentEffectiveDate: Date;
+
+    showMatchPicker: boolean = false;
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
         + 'Only those assets matching the conditions will be scored using these measures. '
@@ -76,6 +81,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         private settingsService: CompanySettingsService,
         private fieldsService: FieldsObservableService,
         private fb: FormBuilder,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -100,7 +106,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             description: null,
             effectiveDate: null,
             weight: null,
-            isGroup: null
+            isGroup: null,
+            matchType: null
         });
 
         this.conditionForm = this.fb.group({});
@@ -110,6 +117,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     loadFieldData() {
+        this.isLoadingFields = true;
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
 
@@ -129,13 +137,14 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         }
 
                         if (FieldTypeHelper.getFieldType(f.Type) === 'Lookup') {
+
+                            var options = this.metricEditorFieldTypes.find(x => x.ApiName === f.Name);
                             f.Values = [];
-                            f.Values.push({ value: 'Value 1', label: 'Label 1' });
-                            f.Values.push({ value: 'Value 2', label: 'Label 2' });
-                            f.Values.push({ value: 'Value 3', label: 'Label 3' });
-                            f.Values.push({ value: 'Value 4', label: 'Label 4' });
-                            f.Values.push({ value: 'Value 5', label: 'Label 5' });
-                            f.Values.push({ value: 'Value 6', label: 'Label 6' });
+                            if (options) {
+                                options.Values.forEach(val => {
+                                    f.Values.push({ value: val.Value.toString(), label: val.Text });
+                                })
+                            }
                         }
 
                         if (FieldTypeHelper.getFieldType(f.Type) === 'Boolean') {
@@ -148,6 +157,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 });
 
                 this.fields = tempFields.filter(x => x.Operators.length > 0);
+                this.isLoadingFields = false;
+                this.cdRef.markForCheck();
             });
         })
     }
@@ -164,7 +175,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
-                console.log(date);
             }
             this.isLoading = false;
         } else {
@@ -184,10 +194,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.displayWeight = Math.round(this.model.Weight * 100);
         }
 
+        if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0) {
+            if (this.model.ConditionGroups[0].MatchType.toString() === 'All') {
+                this.matchType = 'All';
+            }
+            else this.matchType = 'Any';
+        }
+
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) {
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
             dummyConditionGroup.MatchType = MetricMatchType.Any;
+            this.matchType = 'Any';
             this.model.ConditionGroups.push(dummyConditionGroup);
         }
 
@@ -205,6 +223,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
                     if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
                         cond.value = new Date(cond.value);
+                    }
+                    if (c.FieldType.Type == 'Lookup') {
+                        cond.value = cond.value.toString();
                     }
 
 
@@ -237,41 +258,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
     }
 
-    valid() {
+    validateConditions() {
         let valid = true;
-        if (this.model === null) {
-            valid = false;
-        } else {
-            if (this.model.Name === null || !this.model.Name) {
-                valid = false;
-            }
-            else {
-                if (this.model.Name.trim().length > 250 || this.model.Name.trim().length === 0) {
-                    valid = false;
-                }
-            }
+        var toEval = this.conditions.filter(x => x.field);
+        if (toEval.length > 1)
+            this.showMatchPicker = true;
+        else
+            this.showMatchPicker = false;
 
-            if (this.displayEffectiveDate === null)
-                valid = false;
-
-            if (!this.isExternallyCalculated) {
-                if (this.model.Weight === null || !this.model.Weight) {
-                    valid = false;
-                }
-                else {
-                    if (this.model.Weight === 0) {
-                        valid = false;
-                    }
-                }
-            }
-
-        }
-
-        return valid;
+        return this.conditionForm.valid;
     }
 
     save() {
-        this.isLoading = true;
+        this.isSaving = true;
         var prevDate: string | Date = null;
         var previousConditions = [...this.model.ConditionGroups];
 
@@ -294,6 +293,12 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
 
             var conditions = this.conditions.filter(x => x.field);
+
+            if (this.matchType == 'Any') {
+                this.model.ConditionGroups[0].MatchType = MetricMatchType.Any;
+            }
+            else this.model.ConditionGroups[0].MatchType = MetricMatchType.All;
+
             var arr = this.model.ConditionGroups[0].ConditionItems;
             while (arr.length > 0) {
                 arr.pop();
@@ -342,14 +347,14 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
                 if (r) {
-                    this.isLoading = false;
+                    this.isSaving = false;
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit(this.model.Name);
                 }
                 else {
                     this.displayEffectiveDate = prevDate as Date;
                     this.model.ConditionGroups = [...previousConditions];
-                    this.isLoading = false;
+                    this.isSaving = false;
                 }
             });
     }
@@ -374,6 +379,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.maxHeight = window.innerHeight - 240;
+        this.cdRef.markForCheck();
     }
 
 };

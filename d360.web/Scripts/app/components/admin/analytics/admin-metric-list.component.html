@@ -14,22 +14,19 @@
             </ng-template>
             <ng-template pTemplate="body" let-rowNode let-item="rowData">
                 <tr [ttSelectableRow]="rowNode">
-                    <td class="no-overflow"  [attr.title]="item.Name">
+                    <td class="no-overflow" [attr.title]="item.Name">
                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         {{item.Name}}
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                     <td>
-                        <div class="RowTools" *ngIf="item.IsGroup">
-                            <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
-                        </div>
+                        <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </td>
                     <td>
-                        <div class="RowTools">
-                            <p-menu #cardmenu [popup]="true" [model]="menu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                            <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>
-                        </div>
+                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                        <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOption" #menu [tabIndex]="1"></ig-popup-menu>
+
                     </td>
                 </tr>
             </ng-template>

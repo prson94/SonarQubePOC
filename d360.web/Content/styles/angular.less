@@ -2672,7 +2672,7 @@ div.home-image-title-text {
     }
 
     form {
-        input {
+        input:not(.ig-input) {
             width: 100%;
         }
     }
@@ -7192,6 +7192,10 @@ table {
 }
 
 .modal-measure {
+    .flex-row {
+        display: flex;
+    }
+
     .modal-measure-history {
         padding: 0px 24px 24px 24px;
         height: calc(100% - 40px);
@@ -7200,7 +7204,15 @@ table {
 
     .modal-measure-editor {
         padding: 0px 24px 24px 24px;
-        height: 100%;
+
+        .measure-form {
+            overflow: auto;
+        }
+
+        .effective-date-msg {
+            padding-left: 20px;
+            padding-top: 26px;
+        }
 
         .info-tip {
             display: inline;

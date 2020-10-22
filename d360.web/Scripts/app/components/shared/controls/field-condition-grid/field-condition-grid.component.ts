@@ -35,6 +35,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnInit() {
+        this.visible = false;
         if (!this.conditions) {
             this.conditions = [];
 
@@ -107,10 +108,10 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
         while (this.conditions.length > 0)
             tempArr.push(this.conditions.pop());
 
-        tempArr.forEach(c => {
-            if (c != item)
-                this.conditions.push(c);
-        })
+        var arr = tempArr.filter(x => x.field != item.field);
+        while (arr.length > 0) {
+            this.conditions.push(arr.pop());
+        }
 
         if (this.conditions.length == 0) {
             this.tryAddNewCondition();
