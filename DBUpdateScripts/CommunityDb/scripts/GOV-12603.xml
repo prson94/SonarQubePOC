@@ -1,0 +1,29 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-12603-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF (NOT EXISTS(SELECT 1 FROM [dbo].[Setting] WHERE [ID] = 75))
+		BEGIN
+			insert into [Setting] (ID, FieldName, Name, Description, DefaultValue, SettingType)
+			VALUES(75, 'EnableJsonAttribute', 'EnableJsonAttribute', 'Enable JSON Attribute field type support.  Enabling this stores all properties for all JSON fields in the govern environment as well as enabling this field type. Default false.  Changing this value requires reloading affected data to parse json properties.', 'false', 0)
+		END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+		delete from companysetting where settingid = 75
+		delete from setting where id = 75
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
