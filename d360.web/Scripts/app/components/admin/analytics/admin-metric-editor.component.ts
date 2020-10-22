@@ -1,11 +1,11 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener, AfterViewChecked } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { OperatorModel, Operator } from '../../../models/operator.model';
+import { OperatorModel, Operator, OperatorHelper } from '../../../models/operator.model';
 import { FormGroup, FormBuilder, NgForm } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
@@ -21,7 +21,7 @@ import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/f
 
 })
 
-export class AdminMetricEditorComponent extends BaseComponent implements OnInit, OnChanges, AfterViewChecked {
+export class AdminMetricEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() model: MetricAssetViewModel = null;
     @Input() allocationUid: string;
     @Input() uid: string;
@@ -38,6 +38,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     conditions: FieldCondition[] = [];
 
+    private displayWeight: number;
+    private displayEffectiveDate: Date;
 
     verb = "Add";
     child = "";
@@ -46,11 +48,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     metricItem: any = null;
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
-    private displayWeight: number = null;
     maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
     currentEffectiveDate: Date;
-    private date: Date;
+
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
         + 'Only those assets matching the conditions will be scored using these measures. '
         + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
@@ -93,13 +94,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
     }
 
-    ngAfterViewChecked() {
-
-        if (this.conditionGrid && !this.conditionForm) {
-            this.conditionForm = this.fb.group(this.conditionGrid.condition_form);
-        }
-    }
-
     ngOnInit() {
         this.metricForm = this.fb.group({
             name: null,
@@ -108,6 +102,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             weight: null,
             isGroup: null
         });
+
+        this.conditionForm = this.fb.group({});
 
         this.load();
         this.loadFieldData();
@@ -159,17 +155,17 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     load() {
         if (!this.model)
             this.model = new MetricAssetViewModel();
-        this.displayWeight = null;
         this.child = "";
         this.model.ParentUid = null;
         this.currentEffectiveDate = null;
         if (this.uid) {
             this.verb = "Edit"
             if (this.model.EffectiveDate !== null) {
-                this.date = this.utcToLocal(new Date(this.model.EffectiveDate));
-                this.currentEffectiveDate = this.model.EffectiveDate;
+                var date = this.utcToLocal(new Date(this.model.EffectiveDate));
+                this.currentEffectiveDate = new Date(this.model.EffectiveDate);
+                this.displayEffectiveDate = date;
+                console.log(date);
             }
-
             this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
@@ -193,6 +189,28 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             dummyConditionGroup.Position = 1;
             dummyConditionGroup.MatchType = MetricMatchType.Any;
             this.model.ConditionGroups.push(dummyConditionGroup);
+        }
+
+        if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0 && this.model.ConditionGroups[0].ConditionItems) {
+            var conditions = this.model.ConditionGroups[0].ConditionItems;
+            this.conditions = [];
+            if (conditions.length > 0) {
+                conditions.forEach(c => {
+                    var cond = new FieldCondition();
+                    cond['uid'] = c.Uid;
+                    cond.field = c.FieldType.ApiName;
+                    cond.isValid = true;
+                    cond.operator = c.Operator;
+                    cond.value = c.Values[0];
+
+                    if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
+                        cond.value = new Date(cond.value);
+                    }
+
+
+                    this.conditions.push(cond);
+                })
+            }
         }
 
         this.getMaxScoreDate();
@@ -233,7 +251,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
             }
 
-            if (this.date === null)
+            if (this.displayEffectiveDate === null)
                 valid = false;
 
             if (!this.isExternallyCalculated) {
@@ -246,6 +264,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     }
                 }
             }
+
         }
 
         return valid;
@@ -256,48 +275,71 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         var prevDate: string | Date = null;
         var previousConditions = [...this.model.ConditionGroups];
 
-        if (this.date !== null) {
-            prevDate = this.date;
-            let d = new Date(this.date);
+        this.model.MatchConditionsOnly = true;
+
+
+        if (this.displayEffectiveDate !== null) {
+            prevDate = this.displayEffectiveDate;
+            let d = new Date(this.displayEffectiveDate);
             let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate;
         }
 
-        this.model.MatchConditionsOnly = true;
 
         this.model.Definition = new MetricAssetDefinitionViewModel();
         if (!this.isExternallyCalculated) {
             this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
             this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
             this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
-        }
 
-        this.model.ConditionGroups.forEach(g => {
-            g.ConditionItems.forEach(c => {
-                if (!c.Values) {
-                    c.Values = [];
+            var conditions = this.conditions.filter(x => x.field);
+            var arr = this.model.ConditionGroups[0].ConditionItems;
+            while (arr.length > 0) {
+                arr.pop();
+            }
+
+            conditions.forEach(c => {
+                var fieldCondition = new MetricAssetVersionConditionItemViewModel();
+                fieldCondition.ConditionFieldTypeName = c.field;
+                fieldCondition.Operator = c.operator;
+                fieldCondition.FieldType = this.metricEditorFieldTypes.filter(x => x.ApiName == c.field)[0];
+
+                if (!fieldCondition.Values) {
+                    fieldCondition.Values = [];
                 }
-                if (c.Values.length === 0) {
-                    c.Values.push('');
+                if (fieldCondition.Values.length === 0) {
+                    fieldCondition.Values.push('');
                 }
-                switch (c.FieldType.Type) {
+                console.log(fieldCondition);
+                switch (fieldCondition.FieldType.Type) {
                     case 'Date':
                     case 'DateTime':
-                        const d = new Date(c.SingleValue as string);
-                        const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+                        let d = new Date(c.value);
+                        let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
                         condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-                        c.Values[0] = condate.toISOString();
+                        fieldCondition.Values[0] = condate.toISOString();
                         break;
                     case 'Lookup':
-                        c.Values[0] = c.SingleValue;
+                        fieldCondition.Values[0] = c.value;
                         break;
                     default:
-                        c.Values[0] = c.SingleValue;
+                        fieldCondition.Values[0] = c.value;
                         break;
                 }
-            });
-        });
+
+                if (c['uid']) {
+                    fieldCondition.Uid = c['uid'];
+                }
+                arr.push(fieldCondition);
+            })
+        }
+
+        if (!this.isExternallyCalculated) {
+            var weight = +this.displayWeight;
+            this.model.Weight = +(weight / 100).toFixed(2);
+        }
+
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
                 if (r) {
@@ -306,7 +348,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     this.onSave.emit(this.model.Name);
                 }
                 else {
-                    this.date = prevDate as Date;
+                    this.displayEffectiveDate = prevDate as Date;
                     this.model.ConditionGroups = [...previousConditions];
                     this.isLoading = false;
                 }
@@ -334,4 +376,5 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     private onResize(event) {
         this.maxHeight = window.innerHeight - 240;
     }
+
 };

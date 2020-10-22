@@ -19,7 +19,7 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     @Output() onChange = new EventEmitter();
 
     fieldsSelect: SelectItem[] = [];
-
+    visible: boolean = false;
 
     private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
     private dataCheck: any;
@@ -35,51 +35,55 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     }
 
     ngOnInit() {
-        if (!this.conditions)
+        if (!this.conditions) {
             this.conditions = [];
+
+            this.visible = true;
+        }
         else {
             this.conditions.forEach(cond => {
                 if (!cond.hash) {
                     cond.hash = this.randstr('id');
                 }
                 this.formGroup.addControl('option_' + cond.hash, new FormControl(''));
-                this.formGroup.addControl('condition_' + cond.hash, null);
-                this.formGroup.addControl('value_' + cond.hash, null);
-            })
+                this.formGroup.addControl('condition_' + cond.hash, new FormControl(''));
+                this.formGroup.addControl('value_1_' + cond.hash, new FormControl(''));
+                this.formGroup.addControl('value_2_' + cond.hash, new FormControl(''));
+            });
+
+            this.visible = true;
         }
         this.tryAddNewCondition();
 
-        this.dataCheck = setInterval(() => {
+        this.formGroup.valueChanges.subscribe(obs => {
+            setTimeout(() => {
+                this.conditions.forEach(cond => {
+                    if (this.disabledValuesOperators.some(x => x === +cond.operator))
+                        cond.disabled = true;
+                    else cond.disabled = false;
 
-            this.conditions.forEach(cond => {
-                if (this.disabledValuesOperators.some(x => x === +cond.operator))
-                    cond.disabled = true;
-                else cond.disabled = false;
+                    cond.isValid = false;
 
-                this.conditions.filter(x => x.field).forEach(newVal => {
-                    newVal.isValid = false;
-                    if (newVal.disabled === true) {
-                        if (newVal.field && +newVal.operator > 0) {
-                            newVal.isValid = true;
+                    if (cond.disabled === true) {
+                        if (cond.field && +cond.operator > 0) {
+                            cond.isValid = true;
                         }
                     }
                     else {
-                        if (newVal.field && +newVal.operator > 0 && newVal.value) {
-                            newVal.isValid = true;
+                        if (cond.field && +cond.operator > 0 && cond.value) {
+                            cond.isValid = true;
                         }
                     }
+                    if (!cond.field)
+                        cond.isValid = true;
+
                 });
-
-            });
-            this.cdRef.markForCheck();
-
-        }, 100);
-
-        this.formGroup.valueChanges.subscribe(obs => {
-            setInterval(() => {
                 this.tryAddNewCondition();
-            });
+                this.cdRef.markForCheck();
+            })
         });
+        this.cdRef.markForCheck();
+
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -99,7 +103,15 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
 
 
     deleteCondition(item: FieldCondition) {
-        this.conditions = this.conditions.filter(x => x != item);
+        let tempArr: FieldCondition[] = [];
+        while (this.conditions.length > 0)
+            tempArr.push(this.conditions.pop());
+
+        tempArr.forEach(c => {
+            if (c != item)
+                this.conditions.push(c);
+        })
+
         if (this.conditions.length == 0) {
             this.tryAddNewCondition();
         }
@@ -109,23 +121,22 @@ export class FieldConditionGrid implements OnInit, OnChanges, OnDestroy {
     tryAddNewCondition() {
         var lastCondition = this.conditions[this.conditions.length - 1];
         var availableFields = this.getAvailableFields(null);
-        if (!lastCondition || (lastCondition.operator != null && lastCondition.operator != '')) {
+        if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
             if (availableFields.length > 0) {
                 var hash = this.randstr('id');
-                this.conditions.push({ field: '', operator: '', value: null, disabled: false, value2: null, isValid: false, hash: hash });
+                this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
                 this.formGroup.addControl('option_' + hash, new FormControl(''));
                 this.formGroup.addControl('condition_' + hash, new FormControl(''));
                 this.formGroup.addControl('value_1_' + hash, new FormControl(''));
+                this.formGroup.addControl('value_2_' + hash, new FormControl(''));
             }
         }
 
-        var conditionsSet = this.conditions.filter(x => x.field);
-
-        this.onChange.emit({ event: 'Value changed', value: conditionsSet });
+        this.onChange.emit({ event: 'Value changed', value: this.conditions });
 
     }
     onFieldChange($event, condition: FieldCondition) {
-        condition.operator = '';
+        condition.operator = null;
         condition.value = '';
         this.tryAddNewCondition();
     }

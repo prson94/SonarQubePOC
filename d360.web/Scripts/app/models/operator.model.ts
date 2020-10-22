@@ -21,7 +21,7 @@ export class OperatorDataTypeModel {
     ID: number;
     Name: string;
 }
-export class OperatorModel{
+export class OperatorModel {
     ID: Operator;
     Name: string;
     Description: string;
@@ -29,4 +29,13 @@ export class OperatorModel{
     MaximumValueCount: number;
     AllowedDataTypes: OperatorDataTypeModel[];
     FieldRequiresMultipleValueSupport: boolean;
+}
+
+export class OperatorHelper {
+    static getStringValueForOperator(operator: number): string {
+        for (var enumMember in Operator) {
+            console.log("enum member: ", enumMember);
+        }
+        return 'test';
+    }
 }

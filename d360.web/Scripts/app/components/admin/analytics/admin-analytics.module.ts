@@ -51,6 +51,7 @@ import { IgDateModule } from '../../shared/controls/date/date';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
 import { FieldConditionGridModule } from '../../shared/controls/field-condition-grid/field-condition-grid.module';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 
 @NgModule({
     imports: [
@@ -97,7 +98,8 @@ import { FieldConditionGridModule } from '../../shared/controls/field-condition-
         IgDateModule,
         PropertyGroupModule,
         IgNumberFieldModule,
-        FieldConditionGridModule
+        FieldConditionGridModule,
+        IgMessageBoxModule
 
     ],
     declarations: [

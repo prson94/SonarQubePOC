@@ -1,7 +1,7 @@
 ﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <form [formGroup]="metricForm" *ngIf="model">
-        <!--<ig-property-group [igformGroup]="metricForm" [title]="'Details'">-->
+        <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
             <div inputs>
                 <div class="row">
                     <label for="name" class="ig-label">Name</label>
@@ -18,8 +18,21 @@
                 </div>
                 <div class="row">
                     <label for="effectiveDate" class="ig-label">Effective Date</label>
+                    <div *ngIf="verb == 'Edit'" class="measure-info">
+                        <ig-message-box>
+                            <span *ngIf="model.HasResults">
+                                As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
+                                any changes you make to this measure will result in a  new version being created, with a new effective date.
+                            </span>
+                            <span *ngIf="!model.HasResults">
+                                Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
+                                Choose a later date to create a new version of the measure, which will be used in future calculations
+                            </span>
+                        </ig-message-box>
+                    </div>
+
                     <ig-date tabindex="3"
-                             [(ngModel)]="model.EffectiveDate"
+                             [(ngModel)]="displayEffectiveDate"
                              [required]="true"
                              [appendTo]="'body'"
                              [minDate]="currentEffectiveDate | utcDate"
@@ -37,7 +50,7 @@
                                      [max]="100"
                                      [step]="1"
                                      formControlName="weight"
-                                     [(ngModel)]="model.Weight"></ig-number-input>
+                                     [(ngModel)]="displayWeight"></ig-number-input>
                 </div>
                 <div class="row" *ngIf="!isExternallyCalculated">
                     <ng-container *ngIf="!parentUid && !model.ParentUid">
@@ -48,10 +61,10 @@
                     </ng-container>
                 </div>
             </div>
-        <!--</ig-property-group>-->
+        </ig-property-group>
         <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup">
             <div inputs>
-                <field-condition-grid #conditionGrid *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
+                <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
             </div>
         </ig-property-group>
     </form>

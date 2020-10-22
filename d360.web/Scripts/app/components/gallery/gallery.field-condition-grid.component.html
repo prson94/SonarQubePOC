@@ -19,8 +19,7 @@
     <div class="gallery-section">
         <h4>
             Simple Example
-            </h4>
-            <!--<label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
+            <label (click)="OPsimpleExample.toggle($event)">    <i class="fa fa-plus-circle"></i>Show/Hide JSON</label>
             <p-overlayPanel #OPsimpleExample [appendTo]="'body'" [styleClass]="'gallery-overlay'">
                 <ng-template pTemplate>
                     <pre>{{cleanJsonExamples['simpleExample']| json}}</pre>
@@ -49,7 +48,10 @@
             </p-overlayPanel>
         </p>
         <field-condition-grid [fields]="simpleExample" [conditions]="preselectedExample"></field-condition-grid>
-
+        <strong>Value: </strong>
+        <pre>
+                {{preselectedExample | json}}
+            </pre>
         <hr />
 
         <h4>
@@ -66,7 +68,7 @@
         <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields"></field-condition-grid>
 
 
-        <hr />-->
+        <hr />
 
         <h4>Condition Grid Within Property Group</h4>
         <ig-property-group [igformGroup]="formGroup" [title]="'Asset Condition'">
