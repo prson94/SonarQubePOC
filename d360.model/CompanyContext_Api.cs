@@ -673,8 +673,11 @@ where	ExecutionID = @executionID
                                 select 
                                         {objectSqlSyntax} as [Object]
                                         ,{objectIdSqlSyntax} as [ObjectID] 
-                                        ,F.FieldTypeID as [FieldTypeID]
-                                        ,coalesce(F.LookupValue, F.FieldValue) as [Value]
+                                        ,F.FieldTypeID as [FieldTypeID]                                        
+                                        ,case 
+                                            when FT.Type = 'Link' then F.FieldValue
+                                            else F.LookupValue
+                                        end as [Value]
                                         ,F.FieldValue as [FormattedValue]
                                         ,getutcdate() as [UpdatedOn]
                                         ,@resourceId as [UpdatedBy]

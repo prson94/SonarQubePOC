@@ -2894,7 +2894,7 @@ select @err";
                 {
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case     
-    when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
+    when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
     else null 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
@@ -2906,7 +2906,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 {
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case     
-    when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as bigint)
+    when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
     else null 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
@@ -2920,7 +2920,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                     var sqlType = DetermineSqlDataTypeForFieldType(f);
 
-                    columns += $@"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
+                    columns += $@"try_cast({name}_P.FormattedValue as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
@@ -2973,7 +2973,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
-    when {name}_T.Value is not null then {name}_T.FormattedValue 
+    when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
     when {name}_TT.DefaultValue is not null then {name}_TT.DefaultFormattedValue 
     else '' 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
