@@ -750,7 +750,7 @@ namespace d360.web.Controllers.V2
 
                 foreach (var type in responsibilityTypes)
                 {
-                    if (type.Name.Trim().Length > 250)
+                    if (type.Name?.Trim().Length > 250)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
                     }
