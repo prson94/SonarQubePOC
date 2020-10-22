@@ -3228,6 +3228,13 @@ where   ExecutionID = @ExecutionID
             var step = 0;
             bool hasDuplicateUids = false;
             bool enableJsonAttributes = false;
+
+            try
+            {
+                enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+            }
+            catch { } 
+
             FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);

@@ -270,6 +270,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var isFusionEnabled = Community.IsFusionEnabled();
+                var isJsonAttributeFieldTypeEnabled = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, isFusionEnabled, existingFields, ExistingIntersectID);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -602,6 +604,19 @@ namespace d360.web.Controllers.V2
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
+                }
+
+                bool enableJsonAttributes = false;
+
+                try
+                {
+                    enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+                }
+                catch { }
+
+                if (!enableJsonAttributes)
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "JsonElement").ToList();
                 }
 
                 var disallowedPathClasses = new List<AssetTypeClass>() {
