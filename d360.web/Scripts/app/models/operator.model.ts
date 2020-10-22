@@ -30,12 +30,3 @@ export class OperatorModel {
     AllowedDataTypes: OperatorDataTypeModel[];
     FieldRequiresMultipleValueSupport: boolean;
 }
-
-export class OperatorHelper {
-    static getStringValueForOperator(operator: number): string {
-        for (var enumMember in Operator) {
-            console.log("enum member: ", enumMember);
-        }
-        return 'test';
-    }
-}

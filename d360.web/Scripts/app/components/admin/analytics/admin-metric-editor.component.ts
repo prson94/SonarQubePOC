@@ -5,7 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { OperatorModel, Operator, OperatorHelper } from '../../../models/operator.model';
+import { OperatorModel } from '../../../models/operator.model';
 import { FormGroup, FormBuilder, NgForm } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
@@ -114,7 +114,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.operators = operators;
 
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
-                var tempFields = [];
+                var tempFields: FieldTypeAPIModelFieldCondition[] = [];
                 res.forEach(f => {
                     if (FieldTypeHelper.isFieldForOperator(f.Type)) {
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
@@ -147,7 +147,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
                 });
 
-                this.fields = tempFields;
+                this.fields = tempFields.filter(x => x.Operators.length > 0);
             });
         })
     }
@@ -311,7 +311,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (fieldCondition.Values.length === 0) {
                     fieldCondition.Values.push('');
                 }
-                console.log(fieldCondition);
                 switch (fieldCondition.FieldType.Type) {
                     case 'Date':
                     case 'DateTime':
