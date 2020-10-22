@@ -410,6 +410,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
+            SwaggerParameter("_includeDisabled","Parameter to include disabled measures or not.", DataType = "Boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
         public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
@@ -421,9 +422,21 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                var queryParams = Request.GetQueryNameValuePairs();
+                bool includeDisabled = false;
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "_includedisabled"))
+                {
+                    var includeDisabledString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_includedisabled").Value;
+                    if (!bool.TryParse(includeDisabledString, out includeDisabled))
+                    {
+                        throw new ArgumentException($"Invalid value [{includeDisabledString}] provided in the request", "_includedisabled");
+                    }
+                }
                 List<MetricAssetViewModel> models = null;
-
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid);
+                List<State> states = new List<State>() { State.Active };
+                if (includeDisabled)
+                    states.Add(State.Deleted);
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
 
                 models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
                 if (models == null)

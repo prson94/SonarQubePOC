@@ -25,9 +25,10 @@ export class MetricsService extends BaseObservableService {
             .pipe(catchError(err => this.handleError(err)));
     }
 
-    public getMetricsByAllocation(allocationUid: string): Observable<MetricAssetViewModel[]> {
+    public getMetricsByAllocation(allocationUid: string, includeDisabled: boolean = false): Observable<MetricAssetViewModel[]> {
+
         return this.http
-            .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure`)
+            .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure?_includeDisabled=${includeDisabled}`)
             .pipe(catchError(err => this.handleError(err)));
     }
 
