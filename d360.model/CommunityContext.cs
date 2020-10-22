@@ -57,33 +57,11 @@ namespace d360.model
         public DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Setting> Settings { get; set; }
-
-        public DbSet<d360.core.entities.Plugins.Package> Packages { get; set; }
-        public DbSet<d360.core.entities.Plugins.PackageContent> PackageContents { get; set; }
-                
+                        
         public DbSet<d360.core.entities.Plugins.FusionAttributeType> FusionAttributeTypes { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionAttributeTypeField> FusionAttributeTypeFields { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionIntersectType> FusionIntersectTypes { get; set; }
         public DbSet<d360.core.entities.Plugins.FusionType> FusionTypes { get; set; }
-
-        #endregion
-
-        #region Base overrides
-
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-                        
-            modelBuilder.Entity<d360.core.entities.Company>()
-                .HasMany(x => x.Packages)
-                .WithMany(x => x.Companies)
-                .Map(x =>
-                {
-                    x.ToTable("CompanyPackage", "plugin");
-                    x.MapLeftKey("CompanyID");
-                    x.MapRightKey("PackageID");
-                });
-        }
 
         #endregion
 

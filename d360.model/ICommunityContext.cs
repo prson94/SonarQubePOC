@@ -27,9 +27,7 @@ namespace d360.model
         DbSet<FusionIntersectType> FusionIntersectTypes { get; set; }
         DbSet<core.entities.Plugins.FusionType> FusionTypes { get; set; }
         DbSet<GenericCommand> GenericCommands { get; set; }
-        DbSet<HelpResource> HelpResources { get; set; }
-        DbSet<PackageContent> PackageContents { get; set; }
-        DbSet<Package> Packages { get; set; }
+        DbSet<HelpResource> HelpResources { get; set; }        
         DbSet<Resource> Resources { get; set; }
         DbSet<Setting> Settings { get; set; }
 
