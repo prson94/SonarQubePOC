@@ -10,7 +10,7 @@
                     <div>
                         <input igInput type="text" [(ngModel)]="item.Name" [ngClass]="{'invalid': item.Name?.length > 250}" style="width: 95%" name="name" required />
                         <div *ngIf="item.Name?.length > 250" class="ig-text-required">
-                            Name must be less than 250 characters in length.
+                            Name must be less than 250 characters.
                         </div>
                     </div>
                 </div>
