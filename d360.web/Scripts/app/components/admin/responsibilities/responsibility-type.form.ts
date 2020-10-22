@@ -101,4 +101,19 @@ export class ResponsibilityTypeForm implements OnInit {
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
             });
     }
+
+    private isValid() {
+        let valid = true;
+        if (!this.item.Name || this.item.Name.length<=0 || this.item.Name.length > 250) {
+            valid = false;
+        }
+        if (this.item.Description && this.item.Description.length > 4000) {
+            valid = false;
+        }
+        if (this.selectedAllocations.length < 1) {
+            valid = false;
+        }
+            
+        return valid
+    }
 }

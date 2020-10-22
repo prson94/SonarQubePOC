@@ -752,8 +752,13 @@ namespace d360.web.Controllers.V2
                 {
                     if (type.Name?.Trim().Length > 250)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less than 250 characters in length."));
                     }
+                    if (type.Description?.Trim().Length > 4000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Description must be less than 4000 characters in length."));
+                    }
+
                 }
 
                 var execution = getApiExecution(responsibilityTypes.Count);
