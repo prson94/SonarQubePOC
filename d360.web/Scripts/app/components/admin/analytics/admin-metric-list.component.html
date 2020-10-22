@@ -14,9 +14,10 @@
             </ng-template>
             <ng-template pTemplate="body" let-rowNode let-item="rowData">
                 <tr [ttSelectableRow]="rowNode">
-                    <td class="no-overflow"  [attr.title]="item.Name">
+                    <td class="no-overflow" [attr.title]="item.Name">
                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         {{item.Name}}
+                        <span class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></span>
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
@@ -27,8 +28,14 @@
                     </td>
                     <td>
                         <div class="RowTools">
-                            <p-menu #cardmenu [popup]="true" [model]="menu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                            <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>
+                            <ng-container *ngIf="item.State == 1">
+                                <p-menu #cardmenu [popup]="true" [model]="menu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
+                                <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>
+                            </ng-container>
+                            <ng-container *ngIf="item.State == 3">
+                                <p-menu #disabledcardmenu [popup]="true" [model]="disabledMenu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
+                                <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);disabledcardmenu.toggle($event);" tooltip="Measure Actions"></button>
+                            </ng-container>
                         </div>
                     </td>
                 </tr>

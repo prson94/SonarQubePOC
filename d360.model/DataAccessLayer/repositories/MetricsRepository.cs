@@ -1493,8 +1493,13 @@ from    metrics.Allocation  ma
             return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
-        public List<string> GetMetricStructureFragments(Guid allocationUid)
+        public List<string> GetMetricStructureFragments(Guid allocationUid, List<State> states = null)
         {
+            if(states == null || states.Count == 0)
+            {
+                states.Add(State.Active);
+            }
+            var endDateString = states.Contains(State.Deleted) ? ",V.EffectiveEndDate" : "";
             return Company.Query<string>($@"
                     select	A.Uid,
                     		A.ParentUid,
@@ -1535,7 +1540,9 @@ from    metrics.Allocation  ma
 								order by	C.Position
                     			for		json path
                     		) as ConditionGroups,
-                            VC.Count as [VersionCount]
+                            VC.Count as [VersionCount],
+                            A.[State]
+                            {endDateString}
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid
                             cross apply (
@@ -1543,10 +1550,10 @@ from    metrics.Allocation  ma
                     			from	metrics.AssetVersion
                     			where	AssetUid = A.Uid
                     		) MV
-                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
+                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] IN @states
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
                     order by A.ParentUid, V.Name
-                    for		json path", new { allocationUid }, ApiTimeout).ToList();
+                    for		json path", new { allocationUid, states }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricFieldFragments(Guid assetTypeUid)
