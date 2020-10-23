@@ -2965,11 +2965,6 @@ where   A.[uid] = @assetUid";
             if (asset == null)
                 return null;
 
-            var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
-
-            if (!canRead)
-                return null;
-
             var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
             //Get fieldtypes to display on search result card
             var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID && f.SearchAddToResult).ToList();

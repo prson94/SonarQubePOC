@@ -88,27 +88,21 @@ export class ResourcePasswordComponent extends BaseComponent{
                     this.items = r.items;
                     if (this.items.length > 0) {
                         this.resource = this.items[0];
-                    
 
-                    user.FirstName = this.resource.FirstName;
-                    user.LastName = this.resource.LastName;
-                    user.uid = this.resource.uid;
-                    user.State = this.resource.State;
-                    user.Username = this.resource.Email;
-                    user.IsAdministrator = this.resource.IsAdministrator;
-                    user.Password = this.newPassword;
+                        user.FirstName = this.resource.FirstName;
+                        user.LastName = this.resource.LastName;
+                        user.uid = this.resource.uid;
+                        user.State = this.resource.State;
+                        user.Username = this.resource.Email;
+                        user.IsAdministrator = this.resource.IsAdministrator;
 
-                    user.Fields = new Object();
+                        user.Fields = new Object(); 
 
-                    // handle dynamic fields
-                        for (let key in this.resource) {
-                            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password' && key != 'ResourceID' && key != 'uid' && key != 'LastLoggedInOn') {
-                                user.Fields[key] = this.resource[key];
-                        }
-                    }
+                        user.Fields['NewPassword'] = this.newPassword;
+                        user.Fields['CurrentPassword'] = this.currentPassword;
 
-                    this.isLoading = true;
-                    this.resourcesService.saveResource(user)
+                        this.isLoading = true;
+                        this.resourcesService.saveResource(user, false, true)
                         .subscribe(
                             result => {
                                 this.isLoading = false;

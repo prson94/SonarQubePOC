@@ -86,7 +86,7 @@
     </div>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
-            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
+            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button> 
             <span class="grow"></span>
             <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !validateConditions() || conditionFormMode != FormMode.Default || isSaving" (click)="save()"></button>
         </div>

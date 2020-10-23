@@ -750,10 +750,15 @@ namespace d360.web.Controllers.V2
 
                 foreach (var type in responsibilityTypes)
                 {
-                    if (type.Name.Trim().Length > 250)
+                    if (type.Name?.Trim().Length > 250)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less then 250 characters in length."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Name provided must be less than 250 characters in length."));
                     }
+                    if (type.Description?.Trim().Length > 4000)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Description must be less than 4000 characters in length."));
+                    }
+
                 }
 
                 var execution = getApiExecution(responsibilityTypes.Count);
@@ -933,7 +938,7 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("{assetUid:guid}/{responsibilityUid:guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(void)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
@@ -996,7 +1001,7 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new { })));
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully added"));
 
             }
             catch (Exception ex)
@@ -1022,7 +1027,7 @@ namespace d360.web.Controllers.V2
             Route("{assetUid:guid}/{responsibilityUid:guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(ResponsibilityOverrideDeleteModel), typeof(ResponsibilitiesDeleteExample)),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(void)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
@@ -1084,15 +1089,14 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { })));
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully Deleted"));                
 
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage));                
             }
         }
 

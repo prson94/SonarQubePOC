@@ -928,11 +928,13 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             {
                                 metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
                             }
-                            var existingHashItems = from g in metricAssetVersion.Conditions
-                                                    from c in g.Items
-                                                    from v in c.Values
+                            var existingHashItems = (
+                                                    from g in metricAssetVersion.Conditions
+                                                    from c in (g.Items ?? new List<MetricAssetVersionConditionItem>())
+                                                    from v in (c.Values ?? new List<MetricAssetVersionConditionItemValue>())
                                                     orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
-                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}";
+                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}"
+                                                    ).ToList();
                             string existingConditionHash = string.Join("|", existingHashItems);
                             existingConditionHash = existingConditionHash.GetD3sHashString();
                             if (newConditionHash != existingConditionHash)
@@ -1253,7 +1255,15 @@ values  (S.Uid, S.Value);", new { V = metricAssetVersion.Uid }, transaction: tra
                         {
                             if (!isNew)
                             {
-                                Company.Connection.Execute("delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
+                                Company.Connection.Execute(@"
+update  T
+set     T.ConditionUid = null
+from    metrics.ScoreItem T
+        inner join metrics.AssetVersionCondition G on G.Uid = T.ConditionUid and G.AssetVersionUid = @Uid
+        left join metrics.AssetVersionConditionItem I on I.AssetVersionConditionUid = G.Uid
+where   I.Uid is null;
+
+delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans);
                             }
                         }
                     }
@@ -1483,8 +1493,13 @@ from    metrics.Allocation  ma
             return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
-        public List<string> GetMetricStructureFragments(Guid allocationUid)
+        public List<string> GetMetricStructureFragments(Guid allocationUid, List<State> states = null)
         {
+            if(states == null || states.Count == 0)
+            {
+                states.Add(State.Active);
+            }
+            var endDateString = states.Contains(State.Deleted) ? ",V.EffectiveEndDate" : "";
             return Company.Query<string>($@"
                     select	A.Uid,
                     		A.ParentUid,
@@ -1525,7 +1540,9 @@ from    metrics.Allocation  ma
 								order by	C.Position
                     			for		json path
                     		) as ConditionGroups,
-                            VC.Count as [VersionCount]
+                            VC.Count as [VersionCount],
+                            A.[State]
+                            {endDateString}
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid
                             cross apply (
@@ -1533,10 +1550,10 @@ from    metrics.Allocation  ma
                     			from	metrics.AssetVersion
                     			where	AssetUid = A.Uid
                     		) MV
-                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
+                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] IN @states
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
                     order by A.ParentUid, V.Name
-                    for		json path", new { allocationUid }, ApiTimeout).ToList();
+                    for		json path", new { allocationUid, states }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricFieldFragments(Guid assetTypeUid)

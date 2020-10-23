@@ -52,6 +52,7 @@ import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-
 import { FieldConditionGridModule } from '../../shared/controls/field-condition-grid/field-condition-grid.module';
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 
 @NgModule({
     imports: [
@@ -100,7 +101,8 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
         IgNumberFieldModule,
         FieldConditionGridModule,
         IgMessageBoxModule,
-        PopupMenuModule
+        PopupMenuModule,
+        IgBadgeModule
 
     ],
     declarations: [

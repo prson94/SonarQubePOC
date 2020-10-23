@@ -35,9 +35,6 @@ namespace d360.core.entities
         public virtual DatabaseServer DatabaseServer { get; set; }
 
         [IgnoreDataMember, ForeignKey("CompanyID")]
-        public virtual ICollection<Plugins.Package> Packages { get; set; }
-
-        [IgnoreDataMember, ForeignKey("CompanyID")]
         public virtual ICollection<CompanyDomainSetting> CompanyDomainSettings { get; set; }
 
         [IgnoreDataMember, ForeignKey("CompanyID")]

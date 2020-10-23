@@ -41,6 +41,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
     showConditions: boolean;
     scoreData: any[];
+    showDisabled: boolean = false;
 
     constructor(
         secondaryNavService: SecondaryNavService,

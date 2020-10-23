@@ -1045,7 +1045,17 @@ namespace d360.web.Controllers
 
                         if (!ft.AllowMultipleValues)
                         {
-                            if (f != null) fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                            if (f != null)
+                            {
+                                if (!string.IsNullOrEmpty(f.Value))
+                                {
+                                    fld.Value = decode ? Server.HtmlDecode(f.Value) : f.Value;
+                                }
+                                else
+                                {
+                                    fld.Value = decode ? Server.HtmlDecode(f.FormattedValue) : f.FormattedValue;
+                                }
+                            }
                             if (f == null && !string.IsNullOrEmpty(ft.DefaultValue))
                             {
                                 fld.Value = ft.DefaultValue;

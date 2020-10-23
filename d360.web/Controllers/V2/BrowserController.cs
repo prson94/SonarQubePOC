@@ -63,7 +63,8 @@ namespace d360.web.Controllers.V2
                     nodes = reader.Read<AssetBrowserNode>().ToList(),
                     links = reader.Read<AssetBrowserLink>().ToList(),
                     hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                    reveals = reader.Read<AssetBrowserRevealNode>().ToList()
+                    reveals = reader.Read<AssetBrowserRevealNode>().ToList(),
+                    dataLimitReached = reader.Read<bool>().FirstOrDefault()
                 };
 
                 if (model.reveals.Count == 1) {
@@ -173,7 +174,7 @@ namespace d360.web.Controllers.V2
                     nodes = reader.Read<AssetBrowserNode>().ToList(),
                     links = reader.Read<AssetBrowserLink>().ToList(),
                     hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                    reveals = null
+                    reveals = null,
                 };
 
                 return Request.CreateResponse(HttpStatusCode.OK, model);

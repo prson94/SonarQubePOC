@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { FormHelper, SelectItem } from '../models/form.model';
-import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService } from '../models/responsibility.model';
+import { ResponsibilityEditorModel, ResponsibilityItem, ResponsibilityItemDetail, IResponsibilityService, ResponsibilityItemDetailV2, ResponsibilityOverrideDeleteModel, ResponsibilityOverridePostModel } from '../models/responsibility.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -14,16 +14,16 @@ export class ResponsibilityService extends BaseObservableService implements IRes
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getResponsibilityDetail(assetID: number): Observable<ResponsibilityItemDetail[]> {
-        return this.http.get(`api/${assetID}/ownership`)
+    getResponsibilityDetail(assetUid: string): Observable<ResponsibilityItemDetailV2[]> {
+        return this.http.get(`/api/v2/responsibilities/assignments/${assetUid}`)
             .pipe(
-                map(response => <ResponsibilityItemDetail[]>response),
-                catchError(err=>this.handleError(err))
+                map(response => <ResponsibilityItemDetailV2[]>response),
+                catchError(err => this.handleError(err))
             );
     }
 
-    getResponsibilityItemEditor(assetID: number, responsibilityID: number): Observable<ResponsibilityEditorModel> {
-        return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}`)
+    getResponsibilityItemEditor(assetID: number, responsibilityID: number, assetUid: string, responsibilityUid: string, resourceUid: string): Observable<ResponsibilityEditorModel> {
+        return this.http.get(`form/Responsibility?assetID=${assetID}&overrideID=${responsibilityID}&assetUid=${assetUid}&responsibilityUid=${responsibilityUid}&resourceUid=${resourceUid}`)
 
             .pipe(
                 map(response => <ResponsibilityEditorModel>response),
@@ -31,11 +31,11 @@ export class ResponsibilityService extends BaseObservableService implements IRes
                     FormHelper.mapSelectItems(model.resources);
                     FormHelper.mapSelectItems(model.responsibilityTypes);
 
-                    if (model.responsibility.SecurityAsset)
-                        model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;
+                    if (model.responsibility.SecurityAsset)                        
+                        model.selectedResource = model.responsibility.SecurityAsset + '|' + model.responsibility.SecurityAssetID;                    
 
                     if (model.responsibility.ResponsibilityTypeID)
-                        model.selectedResponsibilityType = model.responsibility.ResponsibilityTypeID.toString();
+                        model.selectedResponsibilityType = model.responsibilityTypes.find(x => x.Selected == true).Value;//model.responsibility.ResponsibilityTypeID.toString();                        
 
                     return model;
                 }),
@@ -43,12 +43,15 @@ export class ResponsibilityService extends BaseObservableService implements IRes
             );
     }
 
-    postResponsibility(responsibility: ResponsibilityItem): Observable<JsonResult> {
-        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
-        return this.http.post('form/responsibility', JSON.stringify(responsibility), { headers })
+    postResponsibility(assetUid: string, responsibilityUid: string, responsibilityOverridePostModel: ResponsibilityOverridePostModel): Observable<JsonResult> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })            
+        };
+
+        return this.http.post(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, JSON.stringify(responsibilityOverridePostModel) , httpOptions)
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -61,4 +64,19 @@ export class ResponsibilityService extends BaseObservableService implements IRes
             );
     }
 
+    deleteResponsibility(assetUid: string, responsibilityUid: string, resourceUid: string): Observable<JsonResult> {
+        var responsibilityOverrideDeleteModel: ResponsibilityOverrideDeleteModel = new ResponsibilityOverrideDeleteModel();
+        responsibilityOverrideDeleteModel.ResourceUid = resourceUid;      
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: [responsibilityOverrideDeleteModel]
+        };
+
+        return this.http.delete(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, httpOptions)
+            .pipe(
+                map(response => <JsonResult>response),
+                catchError(err => this.handleError(err))
+            );
+    }   
 }

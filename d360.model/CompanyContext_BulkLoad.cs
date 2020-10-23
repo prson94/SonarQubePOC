@@ -992,10 +992,14 @@ from	[Load] L
                         if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
                         {
                             var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1);
+                            var itemPath = await GetModelPathForLevel(item, assetType, item.Level);
 
                             Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
                                 cross apply GetAssetKeyHashById(A.ID) S
-                                where a.AssetTypeID = @assetTypeId and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID })).FirstOrDefault();
+								cross apply dbo.GetAssetTextPathById(A.ID, '>') TP
+                                where a.AssetTypeID = @assetTypeId 
+                                and TP.TextPath like @textPath
+                                and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath})).FirstOrDefault();
 
                             if (parentUid.HasValue)
                                 insert.ParentUid = parentUid;
@@ -1118,6 +1122,29 @@ from    LoadItem T
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
 where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
+        }
+
+        private async Task<string> GetModelPathForLevel(LoadItem item, AssetType assetType, int level) 
+        {
+
+            return (await QueryAsync<string>(@"
+            select STRING_AGG( ISNULL(coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],''), ' '), '>') as [Value]
+                from LoadColumn LC
+                inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
+                inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
+                    where LC.LoadID = @id and LC.ColumnIndex in (
+                        select		LC.ColumnIndex 
+                        from		AssetType ATT
+                            inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
+                            inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+                            inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+                        where		ATT.ObjectID = @ObjectID and L.[Level] not like @currLevel)"
+                    , new { 
+                        id = item.LoadID, 
+                        rowIndex = item.RowIndex, 
+                        currLevel = level, 
+                        @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, 
+                        objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
         }
 
         #endregion

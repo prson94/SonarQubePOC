@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, OnInit, OnChanges, EventEmitter } from '@angular/core';
-import { ResponsibilityItem, ResponsibilityItemDetail, ResponsibilityEditorModel } from '../../../models/responsibility.model';
+import { ResponsibilityItem, ResponsibilityItemDetail, ResponsibilityEditorModel, ResponsibilityItemDetailV2, ResponsibilityItemV2, ResponsibilityOverrideDeleteModel, ResponsibilityOverridePostModel } from '../../../models/responsibility.model';
 import { FormMessage, FormHelper } from '../../../models/form.model';
 import { SelectItem } from 'primeng/api';
 import { ResponsibilityService } from '../../../services/responsibility.service';
@@ -11,6 +11,7 @@ import { StringHelpers } from '../../../static/string-helpers';
 import { ResourcesService } from '../../../services/resources.service';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { isNumber } from 'util';
 
 @Component({
     selector: 'd3s-responsibility-item-form',
@@ -18,8 +19,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
     providers: [ResponsibilityService,ResourcesService],
 })
 
-export class ResponsibilityItemForm extends BaseComponent implements OnInit {
-    @Input() item: ResponsibilityItemDetail;
+export class ResponsibilityItemForm extends BaseComponent implements OnInit {    
+    @Input() item: ResponsibilityItemDetailV2;
+    @Input() assetUid: string;
+    @Input() assetID: number;
     @Output() onSaveComplete = new EventEmitter();
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
@@ -27,9 +30,9 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private model: ResponsibilityEditorModel;
     field: EditorField;
     private resourceGrid: boolean = false;
-    private message: FormMessage = new FormMessage();
-    private itemToSave = new ResponsibilityItem();
-    private checkD: ResponsibilityItemDetail[] = [];
+    private message: FormMessage = new FormMessage();  
+    private itemToSave = new ResponsibilityItemV2();
+    private checkD: ResponsibilityItemDetailV2[] = [];
     private showVisible: boolean = false;
     private resources: SelectItem[] = [];
     private IsResponsibilityDisabled: boolean = false;
@@ -40,17 +43,17 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.itemToSave = new ResponsibilityItem();
-        this.itemToSave.AssetID = this.item.AssetID;
-        this.itemToSave.ID = this.item.OverrideID;
-        this.itemToSave.ResponsibilityTypeID = this.item.ResponsibilityTypeID;
-        this.itemToSave.SecurityAsset = this.item.SecurityAsset;
-        this.itemToSave.SecurityAssetID = this.item.SecurityAssetID;
-        this.itemToSave.Context = this.item.Context;
+       
+
+        this.itemToSave = new ResponsibilityItemV2();
+        this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
+        this.itemToSave.AssetUid = this.assetUid;
+        this.itemToSave.Description = this.item.Description;
+        this.itemToSave.ResourceUid = this.item.GroupResourceUid ?? this.item.ResourceUid;
 
         this.setResouceAssigned();
 
-        if (this.item == null || (this.itemToSave.ID < 0 && !this.itemToSave.AssetID)) {
+        if (this.item == null || (!this.item.ResponsibilityUid && !this.assetID)) {
             throw new Error("responsibility-item-editor [item] requires either a ResponsibilityID or a AssetID");
         }
         this.load();
@@ -65,7 +68,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         this.isLoading = true;
 
-        this.responsibilityService.getResponsibilityItemEditor(this.itemToSave.AssetID, this.itemToSave.ID)
+        this.responsibilityService.getResponsibilityItemEditor(this.assetID, null, this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, this.itemToSave.ResourceUid)
             .subscribe(data => {
                 this.model = data;
                 this.onLoadComplete.emit({ item: this.item });
@@ -77,19 +80,17 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     private setResouceAssigned() {
-        switch (this.item.SecurityAsset) {
-            case "G":
-                this.resouceAssigned = `Group: ${this.item.SecurityAssetName}`;
+        switch (this.item.ResourceType) {
+            case "Group":
+            case "Organization":
+            case "Organisation":
+                this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Group}`;
                 break;
-            case "R":
-                this.resouceAssigned = `User: ${this.item.SecurityAssetName}`;
-                break;
-            case "O":
-                this.resouceAssigned = `Organization: ${this.item.SecurityAssetName}`;
+            case "User":
+                this.resouceAssigned = `${this.item.ResourceType}: ${this.item.Resource}`;
                 break;
             default:
                 this.resouceAssigned = "";
-
         }
     }
 
@@ -122,12 +123,29 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     private save(): void {
+        var selectedResourceUid = "";
         try {
 
-            this.itemToSave.SecurityAsset = this.getAssetType(this.model.selectedResource.split('|')[0]);
-            this.itemToSave.SecurityAssetID = parseInt(this.model.selectedResource.split('|')[1]);
-            this.itemToSave.ResponsibilityTypeID = parseInt(this.model.selectedResponsibilityType);
-            this.itemToSave.Context = this.model.responsibility.Context;
+            this.itemToSave.ResponsibilityUid = this.model.selectedResponsibilityType;
+
+            var selectedResourceType = "R";
+            var selectedResourceID = this.model.selectedResource.split('|')[1];
+            
+            switch (this.model.selectedResource.split('|')[0]) {
+                case "Group":
+                case "G":
+                    selectedResourceType = "G";
+                    break;
+                case "Organization":
+                case "Organisation":
+                case "O":
+                    selectedResourceType = "O";
+                    break;
+            }            
+
+            selectedResourceUid = this.model.resources.find(x => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
+            this.itemToSave.ResourceUid = selectedResourceUid;
+            this.itemToSave.Description = this.model.responsibility.Context
         }
         catch (exception) {
             this.message.Error("An error occurred while parsing the select item values.");
@@ -137,46 +155,59 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         this.isLoading = true;
 
-        this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetID)
+        this.responsibilityService.getResponsibilityDetail(this.itemToSave.AssetUid)
             .subscribe(data => {
                 this.checkD = data;
-                if (this.itemToSave.ID && this.itemToSave.ID > 0) {
-                    this.responsibilityService.putResponsibility(this.itemToSave)
-                        .subscribe(data => {
-                            this.isLoading = false;
-                            this.showMessageForResult(this.messagesService, data);
-                            this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-                        });
-                }
-                else {
+
+                //Delete existing record before creating new only when description changed
+                if (
+                    (this.item.ResponsibilityUid && this.item.ResponsibilityUid == this.itemToSave.ResponsibilityUid)
+                    &&
+                    (this.item.ResourceUid && this.item.ResourceUid == this.itemToSave.ResourceUid)
+                ) {
+                    if ((this.item.Description && this.item.Description != this.itemToSave.Description)) {
+                        this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid)
+                            .subscribe(() => {
+                                this.postRequest();
+                            });
+                    } else {
+                        this.cancel();
+                    }
+                } else {
+
                     for (var i = 0; i < this.checkD.length; i++) {
-                        if (this.checkD[i].SecurityAsset == this.itemToSave.SecurityAsset &&
-                            this.checkD[i].SecurityAssetID == this.itemToSave.SecurityAssetID &&
-                            this.checkD[i].ResponsibilityTypeID == this.itemToSave.ResponsibilityTypeID) {
+                        if (this.checkD[i].ResourceUid == this.itemToSave.ResourceUid &&
+                            this.checkD[i].ResponsibilityUid == this.itemToSave.ResponsibilityUid) {
 
-                            this.itemToSave.ID = this.checkD[i].OverrideID;
-
-                            var securityAssetDisplayNameForError = "user";
-                            switch (this.itemToSave.SecurityAsset) {
-                                case "G":
-                                    securityAssetDisplayNameForError = "group";
-                                    break;
-                                case "O":
-                                    securityAssetDisplayNameForError = "organization";
-                                    break;
-                            }
-                            this.message.Error("There is already a responsibility assigned for this role and " + securityAssetDisplayNameForError + ".");
+                            this.message.Error("There is already a responsibility assigned for this role and " + this.checkD[i].ResourceType + ".");
                             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
                             return;
                         }
+                                             
                     }
-                    this.responsibilityService.postResponsibility(this.itemToSave)
-                        .subscribe(data => {
-                            this.isLoading = false;
-                            this.showMessageForResult(this.messagesService, data);
-                            this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
-                        });
+
+                    if ((this.item.ResponsibilityUid && this.item.ResponsibilityUid != this.itemToSave.ResponsibilityUid)
+                        ||
+                        (this.item.ResourceUid && this.item.ResourceUid != this.itemToSave.ResourceUid)) {
+                        this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid).subscribe(() => { this.postRequest(); });
+                    } else {
+                        this.postRequest();
+                    }  
                 }
+            });
+    }
+
+    private postRequest() {
+        var responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
+        responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
+        responsibilityOverridePostModel.Description = this.itemToSave.Description;
+        
+        this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
+            .subscribe(data => {                
+                this.isLoading = false;
+                data.message = this.item.ResponsibilityUid ? "Responsibility successfully Updated" : "Responsibility successfully Created";
+                this.showMessageForResult(this.messagesService, data);
+                this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
             });
     }
 
@@ -187,6 +218,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private showResourceGrid() {
 
         let resTypeId;
+        let resTypeUid;
         let securityAsset;
         let securityAssetId;
         let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
@@ -195,7 +227,13 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
             resTypeId = 0
         }
         else {
-            resTypeId = this.model.selectedResponsibilityType;
+            if (isNumber(this.model.selectedResponsibilityType))
+                resTypeId = this.model.selectedResponsibilityType;
+            else {
+                resTypeUid = this.model.selectedResponsibilityType;
+                resTypeId = 0;
+            }
+            
         }
 
         if (StringHelpers.isNullOrEmpty(selectedResource)) {
@@ -208,7 +246,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         }
 
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.item.AssetID}&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}`;
+        this.field.TypeaheadUri = `form/Responsibility/Resources?assetID=${this.assetID}&resTypeId=${resTypeId}&secAssetType=${securityAsset}&secAssetTypeid=${securityAssetId}&resTypeUid=${resTypeUid}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = false;
         this.field.Value = [];
@@ -220,7 +258,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
         if (this.field.Value != null && this.field.Value.length > 0) {
             let x = this.field.Value[0];
-            this.resouceAssigned = x.split('|')[2];
+            this.resouceAssigned = x.split('|')[2];            
             this.resourceGrid = false;
             this.model.selectedResource = x;
         }

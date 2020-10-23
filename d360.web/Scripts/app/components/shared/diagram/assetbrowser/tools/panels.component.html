@@ -8,7 +8,7 @@
     <button *ngIf="diagramType != 3"  type="button" title="Information Panel" aria-label="Information Panel" (click)="execute_Information()" [class]="'icon mr8' + (informationSelected ? ' selected' : '') + (enableInformation ? '' : ' disabled')" [disabled]="!enableInformation"><i class="fa fa-info-circle"></i></button>
     <button *ngIf="diagramType != 3"  type="button" title="Add Lineage Panel" aria-label="Add Lineage Panel" (click)="execute_Add()" [class]="'icon mr8' + (addSelected ? ' selected' : '') + (enableAdd ? '' : ' disabled')" [disabled]="!enableAdd"><i class="fa fa-plus"></i></button>
     <button *ngIf="diagramType != 3"  type="button" title="Refresh Diagram" aria-label="Refresh Diagram" class="dark icon mr8" (click)="execute(7)"><i class="fa fa-refresh"></i></button>
-    <button *ngIf="diagramType != 3"  type="button" title="Download as PNG" aria-label="Download as PNG" (click)="execute(3)" class="dark icon"><i class="fa fa-download"></i></button>
+    <button *ngIf="diagramType != 3"  type="button" title="Download as PNG" aria-label="Download as PNG" (click)="execute(3)" [class]="'icon mr8' + (enableDownload ? '' : ' disabled')" [disabled]="!enableDownload"><i class="fa fa-download"></i></button>
     <div *ngIf="diagramType != 3"  class="button-spacer"></div>
     <button type="button" [title]="isFullScreen ? 'Shrink View':'Expand View'" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" class="dark icon mr8" (click)="execute(6)">
         <i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i>

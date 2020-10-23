@@ -959,19 +959,7 @@ namespace d360.model
                     throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
 
                 request.RequestUri = new Uri(uri);
-                
-                if (requestSettings?.Headers?.Any() == true)
-                {
-                    requestSettings.Headers.ForEach(h =>
-                    {
-                        if (request.Headers.Contains(h.Key))
-                        {
-                            request.Headers.Remove(h.Key);
-                        }
 
-                        request.Headers.TryAddWithoutValidation(h.Key, h.Value);
-                    });
-                }
 
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
@@ -979,6 +967,33 @@ namespace d360.model
                     var contentArray = Encoding.UTF8.GetBytes(body);
                     request.Content = new ByteArrayContent(contentArray);
                 }
+
+
+                if (requestSettings?.Headers?.Any() == true)
+                {
+                    List<string> contentHeaderKeys = new List<string>() { "content-type", "content-md5", "content-length", "content-encoding" };
+                    requestSettings.Headers.ForEach(h =>
+                    {
+                        if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
+                        {
+                            if (request.Content.Headers.Contains(h.Key))
+                            {
+                                request.Content.Headers.Remove(h.Key);
+                            }
+                            request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                        }
+                        else
+                        {
+                            if (request.Headers.Contains(h.Key))
+                            {
+                                request.Headers.Remove(h.Key);
+                            }
+                            request.Headers.TryAddWithoutValidation(h.Key, h.Value);
+                        }
+                    });
+                }
+
+
 
                 var response = await client.SendAsync(request);
 

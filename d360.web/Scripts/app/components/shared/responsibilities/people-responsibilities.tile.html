@@ -13,29 +13,29 @@
 
 
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [metaKeySelection]="true" [globalFilterFields]="['ResponsibilityTypeName','ResourceName','SecurityAssetName','Context','OverrideID']" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (sortFunction)="columnSort($event)">
+            <p-table #dt [value]="responsibilities" selectionMode="single" (onRowSelect)="selectedRow = $event.data" [metaKeySelection]="true" [globalFilterFields]="['Responsibility','Resource','Group','Description','OverrideID']" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (sortFunction)="columnSort($event)">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 200px" [pSortableColumn]="'ResponsibilityTypeName'">
+                        <th style="width: 200px" [pSortableColumn]="'Responsibility'">
                             Responsibility
-                            <d3s-sortIcon [field]="'ResponsibilityTypeName'"></d3s-sortIcon>
+                            <d3s-sortIcon [field]="'Responsibility'"></d3s-sortIcon>
                         </th>
                         <th style="min-width: 200px" [pSortableColumn]="'Resource'">
                             Resource
                             <d3s-sortIcon [field]="'Resource'"></d3s-sortIcon>
                         </th>
-                        <th style="width: 200px" [pSortableColumn]="'SecurityAssetName'">
+                        <th style="width: 200px" [pSortableColumn]="'Group'">
                             Via Group
-                            <d3s-sortIcon [field]="'SecurityAssetName'"></d3s-sortIcon>
+                            <d3s-sortIcon [field]="'Group'"></d3s-sortIcon>
                         </th>
                         <th style="min-width: 300px">Context</th>
                         <th style="width: 40px"></th>
                         <th style="width: 40px"></th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
-                        <th><d3s-column-filter [field]="'ResponsibilityTypeName'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'ResourceName'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th><d3s-column-filter [field]="'SecurityAssetName'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'Responsibility'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'Resource'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'Group'" [datatype]="'text'"></d3s-column-filter></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -44,25 +44,25 @@
                 <ng-template pTemplate="body" let-item>
                     <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
                         <td>
-                            <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
+                            <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityUid">{{item.Responsibility}}</d3s-preview-tooltip>
                         </td>
                         <td>
-                            <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
+                            <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.Resource}}</d3s-preview-tooltip>
                         </td>
                         <td>
-                            <div *ngIf="item.SecurityAsset != 'R'">{{item.SecurityAssetName}}</div>
+                            <div *ngIf="item.Group">{{item.Group}}</div>
                         </td>
                         <td>
-                            <div *ngIf="item.Context" [innerHtml]="item.Context"></div>
+                            <div *ngIf="item.Description" [innerHtml]="item.Description"></div>
                         </td>
                         <td>
-                            <div [hidden]="true">{{item.OverrideID}}</div>
-                            <div *ngIf="item.OverrideID && hasModifyResponsibilitiesPermissions()" class="RowTools">
+                            <div [hidden]="true">{{item.ResponsibilityUid}}</div>
+                            <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasModifyResponsibilitiesPermissions()" class="RowTools">
                                 <a (click)="selectedRow = item; edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>
-                            <div *ngIf="item.OverrideID && hasDeleteResponsibilitiesPermissions()" class="RowTools">
+                            <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasDeleteResponsibilitiesPermissions()" class="RowTools">
                                 <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>
@@ -74,18 +74,18 @@
             </p-table>
         </div>
         <div *ngIf="isEditing">
-            <d3s-responsibility-item-form [item]="selectedRow" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
-        </div>
+            <d3s-responsibility-item-form [item]="selectedRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
+        </div> 
         <div *ngIf="isDeleting" style="padding:15px;">
-            <d3s-delete-form [uri]="'/form/DeleteResponsibilityByID?id=' + selectedRow.OverrideID"
-                         [method]="'delete'"
-                         [prompt]="'Are you sure you want to delete the ' + selectedRow.ResponsibilityTypeName + ' ' + selectedRow.ResourceName + '?'"
-                         (onDeleteSuccess)="confirmDeleteRow(selectedRow.OverrideID)"
-                         (onCancel)="isDeleting=false;">
+            <d3s-delete-form [callback]="deleteCallback"
+                             method="callback"
+                             [itemUid]="selectedRow.ResponsibilityUid"
+                             [prompt]="deleteMessage()"
+                             (onCancel)="isDeleting=false;">
             </d3s-delete-form>
         </div>
         <div *ngIf="isAdding">
-            <d3s-responsibility-item-form [item]="addingRow" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>
+            <d3s-responsibility-item-form [item]="addingRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isAdding=false;" (onCancel)="isAdding=false;"></d3s-responsibility-item-form>
         </div>
     </div>
 </div>

@@ -12,7 +12,21 @@ import { OperatorModel } from '../../../models/operator.model';
 @Component({
     selector: 'd3s-admin-metric-list',
     templateUrl: './admin-metric-list.component.html',
-    providers: [MetricsService, AllocationService]
+    providers: [MetricsService, AllocationService],
+    styles: [
+        `
+        .ig-badge.default {
+            border: 1px solid rgba(0,0,0,0.2); 
+        }
+        p-checkbox{
+            margin-right: 32px; 
+        }
+        .badge-container{
+            margin-left: 16px;
+        }
+        `
+    ],
+    encapsulation: ViewEncapsulation.None
 })
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
@@ -22,6 +36,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     @Input() scoreType: ScoreTypeAllocation;
     @Input() scoreData: any;
     @Input() operators: OperatorModel[];
+    @Input() showDisabled: boolean = false;
 
     private metrics: MetricAssetViewModel[] = [];
     private metricTree: TreeNode[] = [];
@@ -74,12 +89,21 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        let requiresLoad = false;
         if (changes['allocationUid'] && this.allocationUid) {
-            this.formMode = FormMode.Default;
-            this.load();
+            requiresLoad = true;
         }
         if (changes['scoreData'] && this.scoreData) {
             this.scoreData = [...this.scoreData];
+        }
+        console.log(changes['showDisabled']);
+        if (changes['showDisabled'] != null || changes['showDisabled'] != undefined) {
+            requiresLoad = true;
+        }
+
+        if (requiresLoad) {
+            this.formMode = FormMode.Default;
+            this.load();
         }
     }
 
@@ -88,7 +112,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.metrics = [];
         this.metricTree = [];
         if (this.allocationUid) {
-            this.metricsService.getMetricsByAllocation(this.allocationUid)
+            console.log(this.showDisabled);
+            this.metricsService.getMetricsByAllocation(this.allocationUid, this.showDisabled)
                 .subscribe(r => {
 
                     this.metrics = r;
@@ -166,11 +191,18 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.selectionChange.emit(this.selection);
         this.updateSelectionMenuLabel();
     }
+
     updateSelectionMenuLabel() {
         if (this.menuOptions && this.menuOptions.length > 0) {
             let versionMenuItem = this.menuOptions.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+            }
+        }
+        if (this.disabledMenu && this.disabledMenu.length > 0) {
+            let versionMenuItem = this.disabledMenu.find(x => x.label.indexOf("Version History") != -1);
+            if (versionMenuItem) {
+                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
     }
@@ -208,6 +240,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
     }
+
     getAsPrecentage(val: number) {
         if (val == 0)
             return '0%';

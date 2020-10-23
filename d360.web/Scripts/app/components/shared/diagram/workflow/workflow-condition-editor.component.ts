@@ -85,18 +85,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 });
             });
 
-            if (this.formFields.length > 0) {
-                this.formFields.forEach(f => {
-                    this.fieldList.push({
-                        value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
-                        label: 'Form :: ' + f['@label']
-                    });
-                });
-            }
-
-            if (this.contextualFields.length > 0) {
-                this.fieldList = this.fieldList.concat(this.contextualFields);
-            }
+            this.loadFormFields();
+            this.loadHttpFields();
+            this.loadContextualFields();
 
         }
     }
@@ -105,8 +96,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         this.isLoading = true;
         this.loadObjectFields()
             .pipe(
-            map(() => this.loadContextualFields()),
-            map(() => {
+                map(() => this.loadContextualFields()),
+                map(() => {
                     this.fieldList = [];
 
                     this.fields.forEach(f => {
@@ -116,33 +107,12 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                         });
                     });
 
-                    if (this.formFields.length > 0) {
-                        this.formFields.forEach(f => {
-                            if (f['@type'] == 'relationshipType')
-                                return;
-                            this.fieldList.push({
-                                value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
-                                label: 'Form :: ' + f['@label']
-                            });
-                        });
-                }
-
-                if (this.httpFields.length > 0) {
-                    this.httpFields.forEach(f => {
-                        this.fieldList.push({
-                            value: 'HTTPRequest|' + f['@stepId'] + '|' + f['@id'],
-                            label: 'HTTPRequest :: ' + f['@label']
-                        });
-                    });
-                }
-
-                    if (this.contextualFields.length > 0) {
-                        this.fieldList = this.fieldList.concat(this.contextualFields);
-                    }
+                    this.loadFormFields();
+                    this.loadHttpFields();
+                    this.loadContextualFields();
 
                 })
             ).subscribe();
-       
     }
 
     save() {
@@ -254,9 +224,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     }
                 }
             }
-
-            //console.log(this.selectedType, this.selectedField, input, this.diagram);
-            //this.diagram.model.nodeDataArray.filter(n => n.key == f['@stepId'])[0].fields.form.field.filter(f => f['@id'] == 'list1')[0]['@referenceFieldId']
 
             delete this.condition['@FieldTypeID'];
             delete this.condition['@label'];

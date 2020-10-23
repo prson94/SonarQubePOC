@@ -10,6 +10,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
 })
 export class AssetBrowserZoomComponent implements OnChanges {
     @Input() scale: number;
+    @Input() enabled: boolean = true;
     @Output() change: EventEmitter<number> = new EventEmitter();
 
     zoomText: string = '100%';

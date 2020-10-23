@@ -17,6 +17,7 @@
                     <td class="no-overflow" [attr.title]="item.Name">
                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         {{item.Name}}
+                        <span class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></span>
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
@@ -37,12 +38,12 @@
         <d3s-admin-metric-editor [assetTypeUid]="assetType.Uid" [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [operators]="operators" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing">
-        <d3s-admin-metric-editor [assetTypeUid]="assetType.Uid" [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [operators]="operators" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event)" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
+        <d3s-admin-metric-editor *ngIf="formMode == FormMode.Editing" [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [operators]="operators" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event)" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
             <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                                [MeasureUid]="selection?.Uid"
+                                [MeasureUid]="selection?.Uid" 
                                 [operators]="operators"
                                 [AssetTypeDisplayValue]="assetType.Name"
                                 [MeasureDisplayValue]="selection?.Name"

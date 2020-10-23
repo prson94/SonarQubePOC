@@ -88,6 +88,9 @@ namespace d360.core.entities
         public Guid ResourceUid { get; set; }
 
         [DataMember]
+        public Guid? GroupResourceUid { get; set; }
+
+        [DataMember]
         public string Description { get; set; }
 
         [DataMember]
@@ -95,6 +98,12 @@ namespace d360.core.entities
 
         [DataMember]
         public string AssignedBy { get; set; }
+
+        [DataMember]
+        public string ResourceType { get; set; }
+
+        [DataMember]
+        public bool IsVisible { get; set; }
     }
 
 

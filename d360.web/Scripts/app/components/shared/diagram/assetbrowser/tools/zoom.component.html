@@ -1,5 +1,5 @@
 ﻿<div class="asset-browser-button-group zoom-controls">
-    <button type="button" title="Zoom out" aria-label="Zoom out" class="icon" (click)="out($event)"><i class="fa fa-minus-circle"></i></button>
+    <button type="button" title="Zoom out" aria-label="Zoom out" class="icon" (click)="out($event)" [disabled]="!enabled"><i class="fa fa-minus-circle"></i></button>
     <span class="diagram-zoom">{{zoomText}}</span>
-    <button type="button" title="Zoom in" aria-label="Zoom in" class="icon" (click)="in($event)"><i class="fa fa-plus-circle"></i></button>
+    <button type="button" title="Zoom in" aria-label="Zoom in" class="icon" (click)="in($event)" [disabled]="!enabled"><i class="fa fa-plus-circle"></i></button>
 </div>

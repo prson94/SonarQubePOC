@@ -51,26 +51,39 @@ namespace d360.model.DataAccessLayer
         {
             var res = new AssetResponsibilitiesApiModel();
 
-            var assetId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault().ID;
+            var asset = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
 
             var sql = $@"
                 select 
                       R.ResponsibilityTypeName as Responsibility, 
                       RT.uid as ResponsibilityUid,
                       R.ResourceName as Resource,
-                      R.ResourceUid as ResourceUid,
+                      R.SecurityAssetUid as ResourceUid,
+                      CASE R.SecurityAsset
+						WHEN 'G' THEN R.SecurityAssetUid
+						WHEN 'O' THEN R.SecurityAssetUid
+						ELSE Null
+						END as GroupResourceUid,
                       R.Context as 'Description',
                       G.Name as 'Group',
                       CASE
                         WHEN R.RuleID = 0 THEN 'User'
 	                    ELSE 'Rule'
-	                    END AS AssignedBy
+	                    END AS AssignedBy,
+                      IsVisible,	  
+                      CASE R.SecurityAsset
+	                    WHEN 'R' THEN 'User'
+	                    WHEN 'O' THEN 'Organization'
+	                    WHEN 'G' THEN 'Group'
+	                    ELSE ''
+	                    END as ResourceType
                       from [dbo].[ResponsibilityDetail] R
                       inner join [dbo].[ResponsibilityType] RT on RT.ID = R.[ResponsibilityTypeID]
                       left outer join [dbo].[Group] G on G.ID = R.SecurityAssetID and R.SecurityAsset = 'G'
-                where R.AssetID = @id";
+                      left outer join [dbo].[Organization] O on O.ID = R.SecurityAssetID and R.SecurityAsset = 'O'
+                where R.AssetID = @id or (R.AssetID = 0 and R.AssetTypeId = @typeId)";
 
-            return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = assetId }));
+            return (await Company.Database.Connection.QueryAsync<OwnershipApiModel>(sql, new { id = asset.ID, typeId = asset.AssetTypeID }));
         }
 
         public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)
@@ -677,17 +690,22 @@ where 1=1
                     A.ObjectId as SecurityAssetId, 
                     case A.Object 
 	                    when 'Group' then 'G'
+                        when 'Organization' then 'O'
                         when 'Resource' then 'R'
 	                    else NULL
                     end as SecurityAsset,
                     case 
-                       when RTO.Id is not null then 1
+                       when RTOG.Id is not null then 1
+                       when RTOO.Id is not null then 1
+                       when RTOR.Id is not null then 1
                        else 0
                     end as 'Exists'
                     from asset A
                     inner join ResponsibilityType RT on rt.uid = @responsibilityUid
                     inner join Asset MainAsset on MainAsset.uid = @assetUid
-                    left join ResponsibilityTypeRelationOverrideItem RTO ON RTO.ResponsibilityTypeId = RT.Id and RTO.AssetId = mainasset.id and RTO.securityassetid = a.objectid
+                    left join ResponsibilityTypeRelationOverrideItem RTOG ON RTOG.ResponsibilityTypeId = RT.Id and RTOG.AssetId = mainasset.id and RTOG.securityassetid = a.objectid and A.object = 'Group' and RTOG.SecurityAsset ='G'
+                    left join ResponsibilityTypeRelationOverrideItem RTOO ON RTOO.ResponsibilityTypeId = RT.Id and RTOO.AssetId = mainasset.id and RTOO.securityassetid = a.objectid and A.object = 'Organization' and RTOO.SecurityAsset ='O'
+                    left join ResponsibilityTypeRelationOverrideItem RTOR ON RTOR.ResponsibilityTypeId = RT.Id and RTOR.AssetId = mainasset.id and RTOR.securityassetid = a.objectid and A.object = 'Resource' and RTOR.SecurityAsset ='R'
                     where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
         }
 
@@ -702,9 +720,9 @@ where 1=1
             if (resources.Count == 0)
                 throw new ArgumentNullException("Resources cannot be empty.");
 
-            List<ResponsibilityTypeRelationOverrideItem> items = new List<ResponsibilityTypeRelationOverrideItem>();
+            List<ResponsibilityTypeRelationOverrideItem> items = new List<ResponsibilityTypeRelationOverrideItem>();            
 
-            resources.Where(x => x.SecurityAsset == "R" || x.SecurityAsset == "G").ToList()
+            resources.Where(x => x.SecurityAsset == "R" || x.SecurityAsset == "G" || x.SecurityAsset == "O").ToList()
                 .ForEach(x =>
             {
                 items.Add(new ResponsibilityTypeRelationOverrideItem()
@@ -733,7 +751,7 @@ where 1=1
             if (resources.Count == 0)
                 throw new ArgumentNullException("Resources cannot be empty.");
 
-            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
+            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R" || x.SecurityAsset == "O").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
 
             var overrides = Company.ResponsibilityTypeRelationOverrideItems
                 .Where(x => x.ResponsibilityTypeID == responsibilityType.ID
