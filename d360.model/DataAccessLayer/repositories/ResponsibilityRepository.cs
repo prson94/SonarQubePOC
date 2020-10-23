@@ -8,9 +8,7 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -627,7 +625,7 @@ where 1=1
                         #region get asset measures that are impacted
 
                         var today = DateTime.UtcNow.Date;
-                        var measureResults = Company.Query<ResponsibilityRuleProcessedResult>(@"
+                        var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
     select  A.Uid as AssetUid, 
             M.Uid as MetricAssetUid,
             V.Uid as MetricAssetVersionUid
@@ -759,7 +757,7 @@ where 1=1
         private void sendAssetMeasureQueueForOverrides(ResponsibilityType responsibilityType, Asset asset)
         {
             var today = DateTime.UtcNow.Date;
-            var measureResults = Company.Query<ResponsibilityRuleProcessedResult>(@"
+            var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
     select  A.Uid as AssetUid, 
             M.Uid as MetricAssetUid,
             V.Uid as MetricAssetVersionUid
@@ -970,7 +968,7 @@ where   Success is null", transaction: trans);
                     var queryResults = await Company.Connection.QueryMultipleAsync(@"select * from #results; select * from #measureResults", transaction: trans);
 
                     returnResults = queryResults.Read<ResponsibilityRuleDeleteResponse>().ToList();
-                    var measureResults = queryResults.Read<ResponsibilityRuleProcessedResult>();
+                    var measureResults = queryResults.Read<ResponsibilityAssetMeasureProcessedResult>();
                     var today = DateTime.UtcNow.Date;
                     var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
                         .Select(m => new AssetMeasureModel

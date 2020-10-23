@@ -5,7 +5,6 @@ using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.queue;
 using Dapper;
-using DocumentFormat.OpenXml.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -15,16 +14,6 @@ using System.Threading.Tasks;
 
 namespace d360.model
 {
-    /// <summary>
-    /// The returned object after a responsibility rule runs and an asset is (un)assigned an owner. Used internally by the responsibility rules engine. DO NOT use anywhere else.
-    /// </summary>
-    internal class ResponsibilityRuleProcessedResult
-    {
-        public Guid AssetUid { get; set; }
-        public Guid MetricAssetUid { get; set; }
-        public Guid MetricAssetVersionUid { get; set; }
-    }
-
     partial class CompanyContext: BaseContext
     {
         #region DbSets
@@ -321,7 +310,7 @@ order by RT.Name", new { id }).AsQueryable();
         /// <param name="ruleID">Optionall pass a specific rule by its ID.</param>
         public async Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200)
         {
-            var results = new List<ResponsibilityRuleProcessedResult>();
+            var results = new List<ResponsibilityAssetMeasureProcessedResult>();
 
             if (Connection.State != System.Data.ConnectionState.Open)
                 Connection.Open();
@@ -331,48 +320,36 @@ order by RT.Name", new { id }).AsQueryable();
             var rulesRequiringRun = new List<int>();
 
             var ruleExceptionMessages = "";
-            using (var transaction = Connection.BeginTransaction()) 
+
+            foreach (var rule in rules)
             {
                 try
                 {
-                    foreach (var rule in rules)
+                    if (await ShouldRuleRun(rule.ID))
                     {
-                        try
-                        {
-                            if (await ShouldRuleRun(rule.ID, transaction))
-                            {
-                                rulesRequiringRun.Add(rule.ID);
-                                rule.SetDefinitionFromRaw();
+                        rulesRequiringRun.Add(rule.ID);
+                        rule.SetDefinitionFromRaw();
 
-                                if (rule.ApplyToType)
-                                {
-                                    await ProcessRuleForAssetType(rule, results, transaction);
-                                }
-                                else
-                                {
-                                    await ProcessRuleForAsset(rule, results, transaction);
-                                }
+                        if (rule.ApplyToType)
+                        {
+                            await ProcessRuleForAssetType(rule, results);
+                        }
+                        else
+                        {
+                            await ProcessRuleForAsset(rule, results);
+                        }
                                 
-                                await MarkResponsibilityRuleAsRan(rule.ID, transaction);
-                            }
-                        }
-                        catch (ApplicationException ex)
-                        {
-                            ruleExceptionMessages += ex.Message;
-                        }
-                        catch
-                        {
-                            throw;
-                        }
+                        await MarkResponsibilityRuleAsRan(rule.ID);
                     }
-
-                    transaction.Commit();
                 }
-                catch (Exception ex)
+                catch (ApplicationException ex)
                 {
-                    transaction.Rollback();
-                    throw ex;
-                }          
+                    ruleExceptionMessages += ex.Message;
+                }
+                catch
+                {
+                    throw;
+                }
             }
 
             // Send measure results to score engine.
@@ -408,105 +385,123 @@ order by RT.Name", new { id }).AsQueryable();
         /// <param name="cnn"></param>
         /// <param name="ruleId"></param>
         /// <returns></returns>
-        private async Task MarkResponsibilityRuleAsRan(int ruleId, SqlTransaction transaction = null)
+        private async Task MarkResponsibilityRuleAsRan(int ruleId)
         {
-            await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction);
+            await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId });
         }
 
-        private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityRuleProcessedResult> results, SqlTransaction transaction = null)
+        private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results)
         {
             string sqlToExecute = "";
 
-            try
+            using (var transaction = Connection.BeginTransaction())
             {
-                var thenSql = GetThenResultsSql(rule, false, transaction, false);
-                var whenSql = GetWhenResultsSql(rule, transaction, false);
+                try
+                {
+                    var thenSql = GetThenResultsSql(rule, false, transaction, false);
+                    var whenSql = GetWhenResultsSql(rule, transaction, false);
 
-                thenSql = string.Format(thenSql, "");
+                    thenSql = string.Format(thenSql, "");
 
-                //create impacted assets temporary table.
-                await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)", transaction: transaction);
+                    //create impacted assets temporary table.
+                    await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetID bigint)", transaction: transaction);
 
-                //merge into the asset table 
-                await Connection.ExecuteAsync($@"
-                                merge [dbo].[ResponsibilityRuleResultAsset] as T
-			                            using	(
-					                                {whenSql}
-					                            ) as S
-			                            on		@ruleId = T.RuleID and S.AssetID = T.AssetID
-			                            when	matched then
-					                            update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
-			                            when	not matched by target then
-					                            insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
-                                        when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-                                                delete
-                                        output  $action as ActionType, 
-                                                iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
-                                                iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
-                                        into #changes;", new { ruleId = rule.ID }, transaction: transaction);
+                    //merge into the asset table 
+                    await Connection.ExecuteAsync($@"
+                            merge [dbo].[ResponsibilityRuleResultAsset] as T
+			                        using	(
+					                            {whenSql}
+					                        ) as S
+			                        on		@ruleId = T.RuleID and S.AssetID = T.AssetID
+			                        when	matched then
+					                        update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                        when	not matched by target then
+					                        insert (RuleID, AssetID, UpdatedOn, UpdatedBy ) values (@ruleId,S.AssetID,getutcdate(),0)
+                                    when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
+                                            delete
+                                    output  $action as ActionType, 
+                                            iif($action = 'DELETE', deleted.RuleID, inserted.RuleID), 
+                                            iif($action = 'DELETE', deleted.AssetID, inserted.AssetID)
+                                    into #changes;", new { ruleId = rule.ID }, transaction: transaction);
 
-                //merge into the resource table
-                await Connection.ExecuteAsync($@"
-                                merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
-			                            using	(
-					                                {thenSql}
-					                            ) as S
-			                            on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
-			                            when	matched then
-					                            update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
-			                            when	not matched by target then
-					                            insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
-                                        when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
-                                                delete;
-                            ", new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
+                    //merge into the resource table
+                    await Connection.ExecuteAsync($@"
+                            merge [dbo].[ResponsibilityRuleResultSecurityAsset] as T
+			                        using	(
+					                            {thenSql}
+					                        ) as S
+			                        on		S.RuleID = T.RuleID and S.SecurityAsset = T.SecurityAsset and S.SecurityAssetID = T.SecurityAssetID
+			                        when	matched then
+					                        update set T.UpdatedOn = getutcdate(), T.UpdatedBy = 0
+			                        when	not matched by target then
+					                        insert (RuleID, SecurityAsset, SecurityAssetID ,UpdatedOn, UpdatedBy ) values (S.RuleID,S.SecurityAsset,S.SecurityAssetID,getutcdate(),0)
+                                    when NOT MATCHED BY SOURCE and T.RuleID = @ruleId THEN
+                                            delete;
+                        ", new { ruleId = rule.ID, appliesToType = rule.ApplyToType }, transaction: transaction);
 
-                var ruleResults = Connection.Query<ResponsibilityRuleProcessedResult>(@"
+                    var ruleResults = await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
 select  A.Uid as AssetUid, 
-        M.Uid as MetricAssetUid,
-        V.Uid as MetricAssetVersionUid
+    M.Uid as MetricAssetUid,
+    V.Uid as MetricAssetVersionUid
 from    #changes C 
-        inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
-        inner join AssetType T on T.ID = A.AssetTypeID
-        inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
-        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-        inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-        inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-        and ( 
-            (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-            (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-            ) 
-        and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-        and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-		and V.Definition <> '{}'",
-                    new { today = DateTime.UtcNow.Date }, transaction: transaction
-                );
+    inner join Asset A on A.ID = C.AssetID and C.ActionType in ('DELETE', 'INSERT') 
+    inner join AssetType T on T.ID = A.AssetTypeID
+    inner join ResponsibilityTypeRelationRule R on R.ID = C.RuleID 
+    inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+    inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+    inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+    inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+    and ( 
+        (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+        (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+        ) 
+    and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+    and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
+	and V.Definition <> '{}'",
+                        new { today = DateTime.UtcNow.Date }, transaction: transaction
+                    );
 
-                results.AddRange(ruleResults);
+                    results.AddRange(ruleResults);
 
-                //drop impacted assets temporary table.
-                await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+                    //drop impacted assets temporary table.
+                    await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+                }
             }
         }
 
-        private async Task ProcessRuleForAssetType(ResponsibilityTypeRelationRule rule, List<ResponsibilityRuleProcessedResult> results, SqlTransaction transaction = null)
+        private async Task ProcessRuleForAssetType(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results)
         {
             string sqlToExecute = "";
 
-            try
+            using (var transaction = Connection.BeginTransaction())
             {
-                var thenSql = GetThenResultsSql(rule, false, transaction, false);
-                thenSql = string.Format(thenSql, "");
+                try
+                {
+                    var thenSql = GetThenResultsSql(rule, false, transaction, false);
+                    thenSql = string.Format(thenSql, "");
 
-                //create impacted assets temporary table.
-                await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)", transaction: transaction);
+                    //create impacted assets temporary table.
+                    await Connection.ExecuteAsync("create table #changes (ActionType varchar(50), RuleID int, AssetTypeID int)", transaction: transaction);
 
-                //merge into the asset table 
-                await Connection.ExecuteAsync(@"
+                    //merge into the asset table 
+                    await Connection.ExecuteAsync(@"
                             merge   [dbo].[ResponsibilityRuleResultAsset] as T
 			                using	(
 					                select	T.ID as AssetTypeID,		
@@ -528,8 +523,8 @@ from    #changes C
                                     iif($action = 'DELETE', deleted.AssetTypeID, inserted.AssetTypeID)
                             into #changes;", new { ruleId = rule.ID }, transaction: transaction);
 
-                //merge into the resource table
-                await Connection.ExecuteAsync($@"
+                    //merge into the resource table
+                    await Connection.ExecuteAsync($@"
                             merge   [dbo].[ResponsibilityRuleResultSecurityAsset] as T
 			                using	(
 					                {thenSql}
@@ -543,7 +538,7 @@ from    #changes C
                                     delete;
                 ", new { ruleId = rule.ID }, transaction: transaction);
 
-                var ruleResults = Connection.Query<ResponsibilityRuleProcessedResult>(@"
+                    var ruleResults = await Connection.QueryAsync<ResponsibilityAssetMeasureProcessedResult>(@"
 select  A.Uid as AssetUid, 
         M.Uid as MetricAssetUid,
         V.Uid as MetricAssetVersionUid
@@ -561,18 +556,32 @@ from    #changes C
                 ) 
             and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
             and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-		    and V.Definition <> '{}'", 
-                    new { today = DateTime.UtcNow.Date }, transaction: transaction
-                );
+		    and V.Definition <> '{}'",
+                        new { today = DateTime.UtcNow.Date }, transaction: transaction
+                    );
 
-                results.AddRange(ruleResults);
+                    results.AddRange(ruleResults);
 
-                //drop impacted assets temporary table.
-                await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+                    //drop impacted assets temporary table.
+                    await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        if (transaction != null)
+                        {
+                            transaction.Rollback();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
+                }
             }
         }
 
@@ -582,9 +591,9 @@ from    #changes C
         /// <param name="cnn">DB connection</param>
         /// <param name="ruleId">RUle ID to look at</param>
         /// <returns></returns>
-        private async Task<bool> ShouldRuleRun(int ruleId, SqlTransaction transaction = null)
+        private async Task<bool> ShouldRuleRun(int ruleId)
         {
-            return await Connection.QueryFirstAsync<bool>("exec ResponsibilityRuleShouldRun @id", new { id = ruleId }, transaction: transaction);
+            return await Connection.QueryFirstAsync<bool>("exec ResponsibilityRuleShouldRun @id", new { id = ruleId });
         }
 
         /// <summary>
@@ -744,57 +753,6 @@ from    #changes C
         }
 
         #endregion
-
-        public async Task RemoveRelationRuleResultsByRule(int ruleID)
-        {
-            var results = Connection.Query<ResponsibilityRuleProcessedResult>(@"
-select  A.AssetUid, 
-        M.Uid as MetricAssetUid,
-        V.Uid as MetricAssetVersionUid
-from    (
-        select  A.Uid as AssetUid, T.Uid as AssetTypeUid
-        from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
-                inner join ResponsibilityRuleResultAsset RA on RA.RuleID = @ruleID and RA.AssetID = A.ID and RA.AssetTypeID = 0
-        union 
-        select  A.Uid as AssetUid, T.Uid as AssetTypeUid
-        from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
-                inner join ResponsibilityRuleResultAsset RA on RA.RuleID = @ruleID and RA.AssetTypeID = T.ID and RA.AssetTypeID <> 0
-        ) A
-        inner join ResponsibilityTypeRelationRule R on R.ID = @ruleID
-        inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join metrics.Allocation Al on Al.AssetTypeUid = A.AssetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
-        inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
-        inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
-            and ( 
-                (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
-                (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
-                ) 
-            and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
-            and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
-		    and V.Definition <> '{}'", new { ruleID, today = DateTime.UtcNow.Date }).ToList();
-
-            await (Connection.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
-            await (Connection.ExecuteAsync("delete [dbo].[ResponsibilityRuleResultAsset] where RuleID = @givenRuleID", new { givenRuleID = ruleID }, commandTimeout: 7200));
-
-            // Send measure results to score engine.
-            var today = DateTime.UtcNow.Date;
-            var structuredMeasures = results.GroupBy(m => new { m.AssetUid })
-                .Select(m => new AssetMeasureModel
-                {
-                    AssetUid = m.Key.AssetUid,
-                    EffectiveDate = today,
-                    Measures = m.Select(o => new AssetMeasureChildModel
-                    {
-                        MetricAssetUid = o.MetricAssetUid,
-                        MetricAssetVersionUid = o.MetricAssetVersionUid
-                    }).Distinct().ToList()
-                }).ToList();
-
-            if (structuredMeasures.Count > 0)
-            {
-                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
-            }
-        }
 
         public void ClearInvalidRelationRuleResults()
         {

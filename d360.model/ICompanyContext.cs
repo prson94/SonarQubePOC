@@ -277,7 +277,6 @@ namespace d360.model
         void RebuildAssetGraphRequest();
         void RebuildIndexRequest();
         List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true);
-        Task RemoveRelationRuleResultsByRule(int ruleID);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);

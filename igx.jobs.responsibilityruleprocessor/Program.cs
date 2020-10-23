@@ -40,7 +40,7 @@ namespace igx.jobs.responsibilityruleprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 1).ToList();
+                companies = companies.Where(i => i.CompanyID == 2).ToList();
 #endif
 
                 foreach (var c in companies)
