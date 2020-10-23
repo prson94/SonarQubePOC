@@ -802,7 +802,7 @@ new
                 SELECT  
                     JSON_VALUE(nda.value, '$.key') AS [AssetUid]
                 FROM OPENJSON(@diagram, '$.nodeDataArray') as nda)
-                select at.uid as AssetTypeUid, at.Name as AssetTypeName, string_agg(cast(a.uid as nvarchar(36)),',') as assets from links
+                select at.uid as AssetTypeUid, at.Name as AssetTypeName, string_agg(cast(a.uid as nvarchar(max)),',') as assets from links
                 inner join Asset A on a.uid = links.AssetUid
                 inner join AssetType at on at.id = a.AssetTypeID
                 group by at.uid, at.name", new { assetUid = asset.uid }, ApiTimeout);
