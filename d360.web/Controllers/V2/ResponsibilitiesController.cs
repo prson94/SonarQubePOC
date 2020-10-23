@@ -1256,7 +1256,6 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
-
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
 
@@ -1265,7 +1264,7 @@ namespace d360.web.Controllers.V2
                 if (responsibility == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
 
-                var results = ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
+                var results = await ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)

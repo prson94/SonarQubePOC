@@ -508,7 +508,8 @@ from	metrics.Asset A
                                                         "select cast(iif(count(1) > 0, 1, 0) as bit) " +
                                                         "from ResponsibilityDetail R " +
                                                         "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                        "inner join Asset A on A.ID = R.AssetID and A.Uid = @AssetUid", 
+                                                        "where exists(select 1 from Asset where ID = R.AssetID and Uid = @AssetUid) " +
+                                                        "or exists(select 1 from Asset where AssetTypeID = R.AssetTypeID and R.AssetID = 0 and Uid = @AssetUid)", 
                                                         new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }
                                                         ).Single();
                                                 }
