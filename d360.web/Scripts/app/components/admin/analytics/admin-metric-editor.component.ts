@@ -124,7 +124,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
                 var tempFields: FieldTypeAPIModelFieldCondition[] = [];
                 res.forEach(f => {
-                    if (FieldTypeHelper.isFieldForOperator(f.Type)) {
+                    if (FieldTypeHelper.isFieldForOperator(f.Type) && (f.Type.DateTime == null || f.Type.DateTime == undefined)) {
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
@@ -140,7 +140,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
                             var options = this.metricEditorFieldTypes.find(x => x.ApiName === f.Name);
                             f.Values = [];
-                            if (options) {
+                            if (options && options.Values) {
                                 options.Values.forEach(val => {
                                     f.Values.push({ value: val.Value.toString(), label: val.Text });
                                 })

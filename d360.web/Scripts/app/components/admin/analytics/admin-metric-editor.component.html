@@ -71,7 +71,7 @@
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup">
+            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
                     <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
                     <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>

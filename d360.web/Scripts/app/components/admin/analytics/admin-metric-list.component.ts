@@ -40,7 +40,19 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    private menuOption = [
+    menuClicked($event) {
+        switch ($event.value) {
+            case 'Edit': this.edit();
+                break;
+            case 'Disable': this.delete();
+                break;
+        }
+
+        if ($event.value.toString().indexOf('Version History') != -1)
+            this.showHistory(true);
+    }
+
+    private menuOptions = [
         {
             "title": "Edit"
         },
@@ -52,16 +64,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         }
     ];
 
-    menuClicked($event) {
-        switch ($event.value) {
-            case 'Edit': this.edit();
-                break;
-            case 'Disable': this.delete();
-                break;
-            case 'Version History': this.showHistory(true);
-                break;
-        }
-    }
 
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
@@ -105,7 +107,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     } else {
                         this.selectionChange.emit(null);
                     }
-
                     this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
@@ -119,6 +120,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                     else if (n.children && n.children.length > 0) {
                                         found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase())
                                     }
+
 
                                 });
                                 if (found)
@@ -165,8 +167,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.updateSelectionMenuLabel();
     }
     updateSelectionMenuLabel() {
-        if (this.menuOption && this.menuOption.length > 0) {
-            let versionMenuItem = this.menuOption.find(x => x.title.indexOf("Version History") != -1);
+        if (this.menuOptions && this.menuOptions.length > 0) {
+            let versionMenuItem = this.menuOptions.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
                 versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }

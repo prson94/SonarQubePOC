@@ -24,8 +24,8 @@
                         <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </td>
                     <td>
-                        <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
-                        <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOption" #menu [tabIndex]="1"></ig-popup-menu>
+                        <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                        <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
 
                     </td>
                 </tr>

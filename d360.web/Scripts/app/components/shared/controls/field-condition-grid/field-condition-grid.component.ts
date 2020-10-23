@@ -55,6 +55,8 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
         this.formGroup.valueChanges.subscribe(obs => {
             setTimeout(() => {
+                if (!this.conditions) return;
+
                 this.conditions.forEach(cond => {
                     if (this.disabledValuesOperators.some(x => x === +cond.operator))
                         cond.disabled = true;
