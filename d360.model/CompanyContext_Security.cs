@@ -5,6 +5,7 @@ using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.queue;
 using Dapper;
+using DocumentFormat.OpenXml.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -351,6 +352,8 @@ order by RT.Name", new { id }).AsQueryable();
                                 {
                                     await ProcessRuleForAsset(rule, results, transaction);
                                 }
+                                
+                                await MarkResponsibilityRuleAsRan(rule.ID, transaction);
                             }
                         }
                         catch (ApplicationException ex)
