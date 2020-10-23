@@ -294,9 +294,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             var conditions = this.conditions.filter(x => x.field);
 
             if (this.matchType == 'Any') {
-                this.model.ConditionGroups[0].MatchType = MetricMatchType.Any;
+                this.matchType = 'Any';
             }
-            else this.model.ConditionGroups[0].MatchType = MetricMatchType.All;
+            else this.matchType = 'All';
 
             var arr = this.model.ConditionGroups[0].ConditionItems;
             while (arr.length > 0) {

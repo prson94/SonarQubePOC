@@ -1,7 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
-import { TreeNode, MenuItem } from 'primeng/api';
+import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
@@ -78,7 +78,11 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             "title": "Version History"
         }
     ];
-
+    private disabledMenu = [
+        {
+            "title": "Version History"
+        }
+    ];
 
     constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
@@ -96,7 +100,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         if (changes['scoreData'] && this.scoreData) {
             this.scoreData = [...this.scoreData];
         }
-        console.log(changes['showDisabled']);
         if (changes['showDisabled'] != null || changes['showDisabled'] != undefined) {
             requiresLoad = true;
         }
@@ -112,10 +115,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.metrics = [];
         this.metricTree = [];
         if (this.allocationUid) {
-            console.log(this.showDisabled);
             this.metricsService.getMetricsByAllocation(this.allocationUid, this.showDisabled)
                 .subscribe(r => {
-
                     this.metrics = r;
                     if (this.metrics) {
                         this.metrics.filter(g => g.ParentUid == null).forEach(g => {
@@ -200,9 +201,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             }
         }
         if (this.disabledMenu && this.disabledMenu.length > 0) {
-            let versionMenuItem = this.disabledMenu.find(x => x.label.indexOf("Version History") != -1);
+            let versionMenuItem = this.disabledMenu.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
-                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
     }
