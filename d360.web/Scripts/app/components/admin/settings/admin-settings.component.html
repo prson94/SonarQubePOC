@@ -74,12 +74,6 @@
                     <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}}
                 </li>
             </ul>
-            <!--
-            <div class="directions">
-                Select to enable the 'Match exact phrase' setting by default. When enabled, exact matches are prioritized in search results. This setting can be modified after an initial search from the Search Results page.
-            </div>
-            <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" /> Enable 'Match exact phrase' by default
-            -->
         </div>
         <div class="tile tile-detail">
             <header>Default Route</header>
@@ -106,6 +100,16 @@
                     <span *ngIf="isDisabled(rs)">In progress. </span>
                     Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
                 </div>
+            </div>
+        </div>
+        <div class="tile tile-detail rebuild-panel">
+            <header>Security</header>
+            <div class="FieldName">Cross-origin resource sharing (CORS)</div>
+            <div class="directions">
+                Specify a comma separated list of allowed origins
+            </div>
+            <div>
+                <input type="text" [(ngModel)]="companySettings.CrossOriginResourceSharing" style="width: 95%" /> <br />
             </div>
         </div>
 

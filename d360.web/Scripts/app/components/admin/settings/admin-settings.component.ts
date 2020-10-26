@@ -1,11 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute, NavigationStart } from '@angular/router';
+import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
-import { SiteNav } from '../../../models/site-menu.model';
+import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SelectItem } from 'primeng/api';
@@ -61,11 +58,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         private companySettingsService: CompanySettingsService,
         secondaryNavService: SecondaryNavService,
         titleService: Title,
-        private siteMenuService: SiteMenuService,        
-        private stateService: StateService,
         private messagesService: MessagesObservableService,
-        private router: Router,
-        private route: ActivatedRoute
     ) {
 
         super(headerBreadcrumbService, titleService, secondaryNavService);        
