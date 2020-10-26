@@ -585,7 +585,7 @@ order by case Object
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetWhenResults(rule).OrderBy(i => i.Name);
+            var results = Company.GetWhenResults(rule).OrderBy(i => i.Name);
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -595,7 +595,7 @@ order by case Object
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.Database.Connection.GetThenResults(rule, this.HideData3SixtyUsers());
+            var results = Company.GetThenResults(rule, this.HideData3SixtyUsers());
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -839,13 +839,23 @@ order by	case
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                var model = Company.GetById<ResponsibilityTypeRelationRule>(id);
+                var model = Company.GetById<ResponsibilityTypeRelationRule>(id, i => i.ResponsibilityType);
                 if (model == null) throw new NotFoundException("responsibility type rule");
+                
+                var results = await ResponsibilityRepository.DeleteResponsibilityRules(model.ResponsibilityType.UID, new List<Guid>() { model.UID.Value });
+                if (results == null)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", "Your request is invalid. Please check your request and try again.");
+                }
 
-                Company.Delete(model);
-                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).RemoveRelationRuleResultsByRule(id));
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                if (results[0].Success)
+                {
+                    return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
+                }
+                else
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", results[0].Message);
+                }
             }
             catch (BaseException ex)
             {
@@ -946,7 +956,7 @@ order by	case
                 // Re-process this rule.
                 if (definitionIsDifferent)
                 {
-                    await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(existing.ID));
+                    await Company.ProcessResponsibilityRelationRules(existing.ID);
                 }
 
 
@@ -981,7 +991,7 @@ order by	case
                 Company.Add(model);
 
                 // Process this rule.
-                await ((Company.Database.Connection as System.Data.SqlClient.SqlConnection).ProcessResponsibilityRelationRules(model.ID));
+                await Company.ProcessResponsibilityRelationRules(model.ID);
 
                 return jsonSuccess("Item successfully created and processed.", model.ID.ToString(), "add", HttpStatusCode.Created);
             }

@@ -1,12 +1,14 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.queue;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -480,7 +482,6 @@ where 1=1
             {
                 result.Message = "Invalid Uid";
                 return result;
-
             }
 
             var resType = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == result.Uid);
@@ -488,7 +489,6 @@ where 1=1
             {
                 result.Message = $"Responsibility type with uid {result.Uid} not found";
                 return result;
-
             }
 
             IQueryable<ResponsibilityTypeRelation> relations = Company.ResponsibilityTypeRelations.Where(x => x.ResponsibilityTypeID == resType.ID);
@@ -497,7 +497,6 @@ where 1=1
             {
                 result.Message = $"Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules";
                 return result;
-
             }
 
             var deleteSQL = @"  delete RRRSA from ResponsibilityRuleResultSecurityAsset RRRSA
@@ -614,17 +613,62 @@ where 1=1
                 var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
 
                 //check is there responsibility rules for this responsibility type
-                var rules = await GetResponsibilityRules(responsibility.UID);
-                if (rules.Any(x => x.AssetTypeUid == assetType.uid))
+                var ruleUids = Company.Filter<ResponsibilityTypeRelationRule>(i => i.ResponsibilityTypeID == responsibility.ID && i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).Select(i => i.UID.Value).ToList();
+                if (ruleUids.Any())
                 {
                     //if it has rules and cascade id false the error this response
                     if (cascade)
                     {
                         //delete rules
-                        var ruleUids = rules.Select(x => x.uid).ToList();
-                        await Company.QueryAsync<int>("DELETE FROM [dbo].[ResponsibilityTypeRelationRule] WHERE Uid in @ruleUids", new { ruleUids });
-                        Company.ResponsibilityTypeRelations.Remove(rtr);
-                        Company.SaveChanges();
+                        await DeleteResponsibilityRules(responsibility.UID, ruleUids);
+
+                        #region get asset measures that are impacted
+
+                        var today = DateTime.UtcNow.Date;
+                        var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
+    select  A.Uid as AssetUid, 
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    ResponsibilityTypeRelationOverrideItem O 
+            inner join Asset A on A.ID = O.AssetID and O.ResponsibilityTypeID = @ResponsibilityTypeID
+            inner join AssetType T on T.ID = A.AssetTypeID and T.ID = @ID
+            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
+		        and V.Definition <> '{}'", new { assetType.ID, ResponsibilityTypeUid = responsibility.UID, ResponsibilityTypeID = responsibility.ID, today });
+
+                        var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+                            .Select(m => new AssetMeasureModel
+                            {
+                                AssetUid = m.Key.AssetUid,
+                                EffectiveDate = today,
+                                Measures = m.Select(o => new AssetMeasureChildModel
+                                {
+                                    MetricAssetUid = o.MetricAssetUid,
+                                    MetricAssetVersionUid = o.MetricAssetVersionUid
+                                }).Distinct().ToList()
+                            }).ToList();
+
+                        if (structuredMeasures.Count > 0)
+                        {
+                            Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        }
+
+                        #endregion
+
+                        Company.Execute(
+                            "delete T from ResponsibilityTypeRelationOverrideItem T inner join Asset A on A.AssetTypeID = @AssetTypeID and A.ID = T.AssetID and T.ResponsibilityTypeID = @ResponsibilityTypeID",
+                            new { AssetTypeID = assetType.ID, ResponsibilityTypeID = responsibility.ID }
+                        );
+
+                        Company.Delete(rtr);
+                        
                         return new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = assetType.uid,
@@ -669,6 +713,7 @@ where 1=1
         {
             return Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);
         }
+
         public bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid)
         {
             return Company.Query<bool>(@"select 
@@ -709,6 +754,44 @@ where 1=1
                     where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }, ApiTimeout).ToList();
         }
 
+        private void sendAssetMeasureQueueForOverrides(ResponsibilityType responsibilityType, Asset asset)
+        {
+            var today = DateTime.UtcNow.Date;
+            var measureResults = Company.Query<ResponsibilityAssetMeasureProcessedResult>(@"
+    select  A.Uid as AssetUid, 
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    Asset A 
+            inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @ID
+            inner join metrics.Allocation Al on Al.AssetTypeUid = T.Uid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = @ResponsibilityTypeUid
+		        and V.Definition <> '{}'", new { asset.ID, ResponsibilityTypeUid = responsibilityType.UID, today });
+
+            var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+                .Select(m => new AssetMeasureModel
+                {
+                    AssetUid = m.Key.AssetUid,
+                    EffectiveDate = today,
+                    Measures = m.Select(o => new AssetMeasureChildModel
+                    {
+                        MetricAssetUid = o.MetricAssetUid,
+                        MetricAssetVersionUid = o.MetricAssetVersionUid
+                    }).Distinct().ToList()
+                }).ToList();
+
+            if (structuredMeasures.Count > 0)
+            {
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+            }
+        }
+
         public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
         {
             if (responsibilityType == null)
@@ -739,7 +822,10 @@ where 1=1
 
             Company.ResponsibilityTypeRelationOverrideItems.AddRange(items);
             Company.SaveChanges();
+
+            sendAssetMeasureQueueForOverrides(responsibilityType, asset);
         }
+        
         public void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
         {
             if (responsibilityType == null)
@@ -760,6 +846,8 @@ where 1=1
 
             Company.ResponsibilityTypeRelationOverrideItems.RemoveRange(overrides);
             Company.SaveChanges();
+
+            sendAssetMeasureQueueForOverrides(responsibilityType, asset);
         }
 
         public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
@@ -787,48 +875,127 @@ where 1=1
             return results;
         }
 
-        public List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion)
+        public async Task<List<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion)
         {
-            return Company.Query<ResponsibilityRuleDeleteResponse>($@"
-                drop table if exists #deleteResults
-                create table #deleteResults
-                (
-                    Uid uniqueidentifier, 
-	                Message nvarchar(max),
-	                Success bit
-                )
-                insert into #deleteResults (Uid)
-                select cast(value as uniqueidentifier) 
-                from
-                string_split(@rulesUids,',')
+            if (Company.Connection.State != ConnectionState.Open)
+                Company.Connection.Open();
 
-                update #deleteResults
-                set Message = 'Responsibility rule does not exist.',
-                Success = 0 
-                from #deleteResults dr
-                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
-                where rtrr.id is null
+            List<ResponsibilityRuleDeleteResponse> returnResults = null;
 
-                update #deleteResults
-                set Message = 'Responsibility rule not valid for Responsibility Type.',
-                Success = 0 
-                from #deleteResults dr
-                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
-                left join responsibilitytype rt on rt.uid = @responsibilityTypeUid
-                where rtrr.responsibilitytypeid <> rt.id
+            using (var trans = Company.Connection.BeginTransaction("DeleteResponsibilityRules")) 
+            {
+                try
+                {
+                    // Setup and initial validation.
+                    await Company.Connection.ExecuteAsync(@"
+create table #results
+(
+    Uid uniqueidentifier, 
+    Message nvarchar(max),
+    Success bit
+);
 
-                delete from 
-                ResponsibilityTypeRelationRule
-                where uid in (select uid from #deleteResults where Success is null)
+create table #measureResults
+(
+    AssetUid uniqueidentifier, 
+    MetricAssetUid uniqueidentifier, 
+    MetricAssetVersionUid uniqueidentifier 
+);", transaction: trans);
 
-                update #deleteResults
-                set Message = 'Responsibility rule successfully deleted.',
-                Success = 1
-                where Success is null
+                    // Setup and initial validation.
+                    await Company.Connection.ExecuteAsync(@"
+insert into #results (Uid)
+    select cast(value as uniqueidentifier) from string_split(@rulesUids,',');
 
-                select * from #deleteResults
-                ", new { responsibilityTypeUid, rulesUids = string.Join(",", rulesForDeletion.Select(x => x.ToString())) }).ToList();
+update  #results
+set     Message = 'Responsibility rule does not exist.',
+        Success = 0 
+from    #results dr
+        left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+where   rtrr.id is null;
+
+update  #results
+set     Message = 'Responsibility rule not valid for Responsibility Type.',
+        Success = 0 
+from    #results dr
+        left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+        left join responsibilitytype rt on rt.uid = @responsibilityTypeUid
+where   rtrr.responsibilitytypeid <> rt.id;", 
+                        new { responsibilityTypeUid, rulesUids = string.Join(",", rulesForDeletion.Select(x => x.ToString())) },
+                        transaction: trans
+                    );
+
+                    // Now load the asset/measure combinations that will be impacted by these deletions.
+                    await Company.Connection.ExecuteAsync(@"
+insert into #measureResults
+    select  A.AssetUid, 
+            M.Uid as MetricAssetUid,
+            V.Uid as MetricAssetVersionUid
+    from    #results Ru
+            inner join ResponsibilityTypeRelationRule R on R.Uid = Ru.Uid and Ru.Success is null
+            cross apply (
+                        select  A.Uid as AssetUid, T.Uid as AssetTypeUid
+                        from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
+                                inner join ResponsibilityRuleResultAsset RA on RA.RuleID = R.ID and RA.AssetID = A.ID and RA.AssetTypeID = 0
+                        union 
+                        select  A.Uid as AssetUid, T.Uid as AssetTypeUid
+                        from    Asset A inner join AssetType T on T.ID = A.AssetTypeID 
+                                inner join ResponsibilityRuleResultAsset RA on RA.RuleID = R.ID and RA.AssetTypeID = T.ID and RA.AssetTypeID <> 0
+                        ) A 
+            inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
+            inner join metrics.Allocation Al on Al.AssetTypeUid = A.AssetTypeUid and Al.ScoreType = 1 and Al.IsExternallyCalculated = 0 
+            inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.State = 1 and M.IsGroup = 0
+            inner join metrics.AssetVersion V on V.AssetUid = M.Uid 
+                and ( 
+                    (@today between V.EffectiveDate and V.EffectiveEndDate and V.EffectiveEndDate is not null) or 
+                    (@today >= V.EffectiveDate and V.EffectiveEndDate is null) 
+                    ) 
+                and JSON_VALUE(V.Definition, '$.Governance.Check') = 'Owner'
+                and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
+		        and V.Definition <> '{}'", new { today = DateTime.UtcNow.Date }, transaction: trans);
+
+                    // Perform deletes on impacted tables and save results to temporary table.
+                    await Company.Connection.ExecuteAsync(@"
+delete T from ResponsibilityRuleResultSecurityAsset T inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID inner join #results D on D.Uid = R.Uid and D.Success is null;
+delete T from ResponsibilityRuleResultAsset T inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID inner join #results D on D.Uid = R.Uid and D.Success is null;
+delete T from ResponsibilityTypeRelationRule T inner join #results D on D.Uid = T.Uid and D.Success is null
+
+update  #results
+set     Message = 'Responsibility rule successfully deleted.',
+        Success = 1
+where   Success is null", transaction: trans);
+
+                    var queryResults = await Company.Connection.QueryMultipleAsync(@"select * from #results; select * from #measureResults", transaction: trans);
+
+                    returnResults = queryResults.Read<ResponsibilityRuleDeleteResponse>().ToList();
+                    var measureResults = queryResults.Read<ResponsibilityAssetMeasureProcessedResult>();
+                    var today = DateTime.UtcNow.Date;
+                    var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+                        .Select(m => new AssetMeasureModel
+                            {
+                                AssetUid = m.Key.AssetUid,
+                                EffectiveDate = today,
+                                Measures = m.Select(o => new AssetMeasureChildModel
+                                {
+                                    MetricAssetUid = o.MetricAssetUid,
+                                    MetricAssetVersionUid = o.MetricAssetVersionUid
+                                }).Distinct().ToList()
+                            }).ToList();
+
+                    if (structuredMeasures.Count > 0)
+                    {
+                        Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                    }
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                }   
+            }
+            
+            return returnResults;
         }
-
     }
 }

@@ -30,7 +30,7 @@ namespace d360.model.DataAccessLayer
         void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources);
 
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
-        List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion);
+        Task<List<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion);
 
     }
 }
