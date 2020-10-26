@@ -23,6 +23,7 @@ using System.Xml.Linq;
 using System.Text;
 using d360.core.resources;
 using Newtonsoft.Json;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {    
@@ -32,11 +33,13 @@ namespace d360.web.Controllers
         #region DI
 
         IStorageProvider Storage;
+        IResponsibilityRepository ResponsibilityRepository;
 
-        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage)
+        public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
             : base(community, company)
         {            
             Storage = storage;
+            ResponsibilityRepository = responsibilityRepository;
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif

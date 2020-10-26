@@ -75,6 +75,9 @@ namespace d360.core.entities
 
         public Guid? UID { get; set; }
 
+        [ForeignKey("ResponsibilityTypeID")]
+        public virtual ResponsibilityType ResponsibilityType { get; set; }
+
     }
 
     public class ResponsibilityRuleDefinition

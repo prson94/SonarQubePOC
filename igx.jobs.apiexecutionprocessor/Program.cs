@@ -191,21 +191,6 @@ namespace igx.jobs.apiexecutionprocessor
                     }
 
 
-                    bool fieldJsonPropertyLoadLimitToTopLevel = true;
-                    try
-                    {
-                        fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, Info.CompanyID, new Dictionary<string, string>() {
-                            { "ExecutionID", Info.ExecutionID.ToString() },
-                            { "StorageFolder", Info.StorageFolder },
-                            { "RequestFileName", Info.RequestFileName },
-                            { "ResponseFileName", Info.ResponseFileName }
-                        });
-                    }
-
                     bool executeJob = true;
 
 
@@ -232,7 +217,7 @@ namespace igx.jobs.apiexecutionprocessor
                                     List<AssetInsert> postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
 
                                     log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                    var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
+                                    var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false : true));
                                     dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                                     dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
                                     log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
@@ -258,7 +243,7 @@ namespace igx.jobs.apiexecutionprocessor
                                     var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
 
                                     log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                    var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false:true));
+                                    var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false, useTempTableForFields: (dbExecutionItem.Method == "BULK" ? false:true));
                                     dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                                     dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                                     log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");

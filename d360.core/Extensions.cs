@@ -17,29 +17,29 @@ namespace d360.core
 {
     public static class JsonExtensions
     {
-        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this string o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this string o)
         {
             var token = JToken.Parse(o);
-            return token.ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+            return token.ParseJsonIntoJsonPropertiesCollection();
         }
 
-        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JToken o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JToken o)
         {
             List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
 
             if (o is JArray)
             {
-                properties = (o as JArray).ParseJsonIntoJsonPropertiesCollection(fieldJsonPropertyLoadLimitToTopLevel);
+                properties = (o as JArray).ParseJsonIntoJsonPropertiesCollection();
             }
             else if (o is JObject)
             {
-                properties = (o as JObject).ParseJsonIntoJsonPropertiesCollection(0, null, fieldJsonPropertyLoadLimitToTopLevel);
+                properties = (o as JObject).ParseJsonIntoJsonPropertiesCollection(0);
             }
 
             return properties;
         }
 
-        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JArray o, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JArray o)
         {
             List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
 
@@ -47,7 +47,7 @@ namespace d360.core
             foreach (JToken c in o)
             {
                 properties.AddRange(
-                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel)
+                    (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos)
                     );
                 pos++;
             }
@@ -55,55 +55,45 @@ namespace d360.core
             return properties;
         }
 
-        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JObject o, int position = 0, string parentName = null, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        private static List<FieldJsonProperty> ParseJsonIntoJsonPropertiesCollection(this JObject o, int position = 0)
         {
             List<FieldJsonProperty> properties = new List<FieldJsonProperty>();
 
-            // Try to resolve based on Parent property on object.
-            if (o.Parent != null)
+            foreach (JProperty p in o.Properties())
             {
-                parentName = o.Parent.Path;
-            }
-
-            if (!fieldJsonPropertyLoadLimitToTopLevel || (fieldJsonPropertyLoadLimitToTopLevel && string.IsNullOrEmpty(parentName)))
-            {
-                foreach (JProperty p in o.Properties())
+                if (p.Value is JArray)
                 {
-                    if (p.Value is JArray)
-                    {
-                        properties.Add(new FieldJsonProperty { IsArray = true, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
+                    properties.Add(new FieldJsonProperty { IsArray = true, Name = p.Name, Path = p.Path, Position = position });
 
-                        int pos = 0;
-                        foreach (JToken c in p.Value)
-                        {
-                            properties.AddRange(
-                                (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos, p.Name, fieldJsonPropertyLoadLimitToTopLevel)
-                                );
-                            pos++;
-                        }
-                    }
-                    else if (p.Value is JObject)
+                    int pos = 0;
+                    foreach (JToken c in p.Value)
                     {
-                        properties.Add(new FieldJsonProperty { IsArray = false, Name = p.Name, Parent = parentName, Path = p.Path, Position = position });
                         properties.AddRange(
-                            (p.Value as JObject).ParseJsonIntoJsonPropertiesCollection(position, p.Name, fieldJsonPropertyLoadLimitToTopLevel)
+                            (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos)
                             );
-                    }
-                    else
-                    {
-                        properties.Add(new FieldJsonProperty
-                        {
-                            IsArray = false,
-                            Name = (p as JProperty).Name,
-                            Parent = parentName,
-                            Path = p.Path,
-                            Position = position,
-                            Value = (p as JProperty).Value.ToString()
-                        });
+                        pos++;
                     }
                 }
+                else if (p.Value is JObject)
+                {
+                    properties.Add(new FieldJsonProperty { IsArray = false, Name = p.Name, Path = p.Path, Position = position });
+                    properties.AddRange(
+                        (p.Value as JObject).ParseJsonIntoJsonPropertiesCollection(position)
+                        );
+                }
+                else
+                {
+                    properties.Add(new FieldJsonProperty
+                    {
+                        IsArray = false,
+                        Name = p.Name,                        
+                        Path = p.Path,
+                        Position = position,
+                        Value = p.Value.ToString()
+                    });
+                }
             }
-
+        
             return properties;
         }
     }

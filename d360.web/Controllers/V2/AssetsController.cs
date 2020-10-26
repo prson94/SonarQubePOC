@@ -842,8 +842,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForFieldValues = true)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
-            var errorMessage = "";
-
+            
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -866,23 +865,14 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
-                bool fieldJsonPropertyLoadLimitToTopLevel = true;
-                try
-                {
-                    fieldJsonPropertyLoadLimitToTopLevel = Community.GetCompanySettingByKey<bool>("FieldJsonPropertyLoadLimitToTopLevel");
-                }
-                catch
-                {
-                }
-
-                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
+                var results = AssetRepository.PostAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
 
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
                     { "AssetTypeUid", assetTypeUid.ToString() },
@@ -925,8 +915,6 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForFieldValues = true)
         {
             var prefix = "Assets.PutAssetsAsync => ";
-            var errorMessage = "";
-
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -945,22 +933,13 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PutAssets { AssetTypeUid = assetTypeUid });
 
-                bool fieldJsonPropertyLoadLimitToTopLevel = true;
-                try
-                {
-                    fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
-                }
-                catch
-                {
-                }
-
-                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
+                var results = AssetRepository.PutAssets(assets, assetType, execution, triggersWorkflow, lookupFieldsPassedByValue, useTempTablesForFieldValues);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
                     { "AssetTypeUid", assetTypeUid.ToString() },
