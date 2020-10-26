@@ -47,6 +47,7 @@ import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
 import { SwitchModule } from '../../shared/controls/switch/switch';
 import { AdminMetricHistoryComponent } from './admin-metric-history.component'
+import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 
 @NgModule({
     imports: [
@@ -89,6 +90,7 @@ import { AdminMetricHistoryComponent } from './admin-metric-history.component'
         SiteModalModule,
         InfoTooltipModule,
         SwitchModule,
+        IgBadgeModule
 
     ],
     declarations: [

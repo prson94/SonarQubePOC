@@ -268,7 +268,12 @@ namespace d360.web.Controllers.V2
                     from dbo.[IntersectType] IT
                     CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 
-            
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'ResponsibilityType' as Object, ID as ObjectId, Name as DisplayValue from ResponsibilityType where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+
+            if (result == null)
+                result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+
             return result;
         }
 

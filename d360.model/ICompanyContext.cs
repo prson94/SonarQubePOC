@@ -173,6 +173,7 @@ namespace d360.model
         List<ExternalScoreResultsApiResultsModel> BulkExternalResultsImport(List<ExternalScoreResultsApiPostModel> model, ApiExecution execution, ScoreType scoreType);
         List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool useAllocation = false);
         Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true);
+        void ClearInvalidRelationRuleResults();
         void CompleteItemStepAssignments(long itemStepID);
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
         Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
@@ -237,8 +238,10 @@ namespace d360.model
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
+        IEnumerable<ObjectResult> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
@@ -251,7 +254,7 @@ namespace d360.model
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
-        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTablesForField = false);
+        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true, bool useTempTablesForField = false);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
@@ -263,6 +266,7 @@ namespace d360.model
         bool ObjectHasParent(SystemObjects type, int id);
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
+        Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<dynamic>> QueryAsync(string sql, object param = null, int timeout = 90);

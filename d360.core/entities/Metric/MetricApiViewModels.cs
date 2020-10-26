@@ -56,6 +56,11 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 22)]
         public bool HasResults { get; set; } = false;
+        [DataMember, JsonProperty(Order = 23)]
+        public State State { get; set; }
+
+        [DataMember, JsonProperty(Order = 24)]
+        public DateTime EffectiveEndDate { get; set; }
 
         [IgnoreDataMember]
         public string CurrentConditionHash 

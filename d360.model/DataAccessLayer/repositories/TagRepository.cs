@@ -74,8 +74,13 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             int pageNum = 0;
 
             bool disablePaging = false;
-
+            string searchPhrase = "";
+            string orderByField = "Value";
+            string direction = "ASC";
+            List<string> validOrderFields = new List<string>{ "uid", "value", "usecount", "createdon", "createdbyuid", "updatedon", "updatedbyuid" };
+            bool includeTotal = true;
             var dbArgs = new DynamicParameters();
+
             var sql = @"select t.uid,
 	                        t.Value,
                             Tags.count as UseCount,
@@ -99,6 +104,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             dbArgs.Add("@state", State.Active);
             queryFilters.Add($"t.[state] = @state");
 
+            #region QueryParams
 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
             {
@@ -145,13 +151,62 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "getall").Value, out disablePaging);
             }
 
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_tag"))
+            {
+                searchPhrase = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_tag").Value.Trim();
+                if (!string.IsNullOrEmpty(searchPhrase))
+                {
+                    dbArgs.Add("@searchPhrase", $"%{searchPhrase}%");
+                    queryFilters.Add($"t.[Value] like @searchPhrase");
+                }
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_order"))
+            {
+                var orderByFieldVal = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value.Trim().ToLower();
+                if (validOrderFields.Contains(orderByFieldVal))
+                {
+                    orderByField = orderByFieldVal;
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid value [{orderByFieldVal}] passed in the request", "_order");
+                }
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_direction"))
+            {
+                var directionValue = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_direction").Value.Trim();
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                if (!allowedDirections.Contains(directionValue.Trim().ToLower()))
+                {
+                    throw new ArgumentException($"Invalid value [{directionValue}] passed in the request.", "_direction");
+                }
+                else
+                {
+                    direction = allowedDirections.Contains(directionValue.Trim().ToLower()) ? directionValue : "asc";
+                }
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_includetotal"))
+            {
+                var totalValue = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value.Trim();
+               
+                if (!bool.TryParse(totalValue, out includeTotal))
+                {
+                    throw new ArgumentException($"Invalid value [{totalValue}] passed in the request.", "_includetotal");
+                }
+            }
+
             if (queryFilters.Count > 0)
             {
                 sql += " where " + string.Join(" and ", queryFilters);
                 countSql += " where " + string.Join(" and ", queryFilters);
             }
+            #endregion
 
-            sql += " order by [ID] ASC"; // admin screen will most likely order results however it sees fit
+
+            sql += $" order by [{orderByField}] {direction}";
 
             if (pageSize < 1) pageSize = 1;
             if (pageNum < 1) pageNum = 1;
@@ -161,12 +216,13 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
             results.pageNum = pageNum;
             results.pageSize = pageSize;
-            results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
 
-            if (results.total > 0)
-            {
-                results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
-            }
+            if (includeTotal)
+                results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
+            else
+                results.total = null;
+
+            results.items = (await companyContext.QueryAsync<TagApiModel>(sql, dbArgs, ApiTimeout));
 
             return results;
         }

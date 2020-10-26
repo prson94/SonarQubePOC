@@ -40,16 +40,14 @@ namespace igx.jobs.responsibilityruleprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 166).ToList();
+                companies = companies.Where(i => i.CompanyID == 2).ToList();
 #endif
 
                 foreach (var c in companies)
                 {
                     try
                     {
-                        var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-
-                        company.Open();
+                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, "", true);
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 

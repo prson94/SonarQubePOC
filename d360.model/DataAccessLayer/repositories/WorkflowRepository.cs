@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using d360.core.entities;
@@ -147,7 +146,7 @@ namespace d360.model.DataAccessLayer
 				{whereClause}
 				order by t.Name asc";
 
-            var workflowTypes = await this.CompanyContext.QueryAsync<WorkflowTypeApiViewModel>(sql, dbArgs, ApiTimeout);
+            var workflowTypes = await CompanyContext.QueryAsync<WorkflowTypeApiViewModel>(sql, dbArgs, ApiTimeout);
             return workflowTypes;
         }
 
@@ -158,7 +157,7 @@ namespace d360.model.DataAccessLayer
             List<string> pagingSql = new List<string>();
             WorkflowVersionsApiViewModel model = new WorkflowVersionsApiViewModel();
 
-            this.gettWorkflowVersionsQueryParamsSql(model, dbArgs, whereClause, pagingSql, queryParams);
+            gettWorkflowVersionsQueryParamsSql(model, dbArgs, whereClause, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereClause.Any())
@@ -362,22 +361,23 @@ namespace d360.model.DataAccessLayer
 	            left outer join reporting.Global_Resource R1 on R1.ResourceID = itemstep.CompletedBy
 	            {whereClause}"; 
 
-            var workflowVersionSteps = await this.CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs, ApiTimeout);
+            var workflowVersionSteps = await CompanyContext.QueryAsync<WorkflowVersionStepsApiViewModel>(sql, dbArgs, ApiTimeout);
 
             workflowVersionSteps.ToList().ForEach(x => {
-                x.Settings = new { settings = this.XmlToDynamic(x.SettingsXml), fields = this.XmlToDynamic(x.FieldsXml) };
+                x.Settings = new { settings = XmlToDynamic(x.SettingsXml), fields = XmlToDynamic(x.FieldsXml) };
             });
+
             return workflowVersionSteps;
         }
 
         public core.entities.Workflow.Type GetWorkflowTypeByUID(Guid workflowTypUid)
         {
-            return this.CompanyContext.Filter<core.entities.Workflow.Type>(i => i.UID == workflowTypUid).SingleOrDefault();
+            return CompanyContext.Filter<core.entities.Workflow.Type>(i => i.UID == workflowTypUid).SingleOrDefault();
         }
 
         public WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid)
         {
-            return this.CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
+            return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
         }
 
         public async Task<IEnumerable<WorkflowInstanceApiViewModel>> GetWorkflowInstances(Guid workflowUid)
@@ -393,8 +393,8 @@ namespace d360.model.DataAccessLayer
                                 vs.ActivityType,
                                 vs.Settings as SettingsXml,
                                 vs.Fields as FieldsXml,
-                                itemstep.Settings as Response1,
-                                itemstep.Fields as Response2,
+                                itemstep.Settings as ItemSettings,
+                                itemstep.Fields as ItemFields,
                                 item.StartedOn,
                                 item.CompletedOn,
                                 R.uid as StartedByUid,
@@ -410,23 +410,24 @@ namespace d360.model.DataAccessLayer
                                 left outer join reporting.Global_Resource R1 on R1.ResourceID = item.CompletedBy
                                  where item.uid=@uid";
 
-            var workflowInstances = await this.CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);
+            var workflowInstances = await CompanyContext.QueryAsync<WorkflowInstanceApiViewModel>(sql, dbArgs, ApiTimeout);
 
             workflowInstances.ToList().ForEach(x => {
 
-                x.Settings = new { settings = this.XmlToDynamic(x.SettingsXml) , fields = this.XmlToDynamic(x.FieldsXml) };
+                x.Settings = new { settings = XmlToDynamic(x.SettingsXml) , fields = XmlToDynamic(x.FieldsXml) };
+
+                x.Responses = PopulateFieldResourceUids(XmlToDynamic(x.ItemFields, false));
+                x.Assignments = GetWorkflowAssignments(XmlToDynamic(x.ItemSettings));
+
                 if (x.ActivityType == WorkflowActivityType.FieldChange)
                 {
-                    x.Responses = this.GetWorkFlowStepFieldChanges(this.XmlToDynamic(x.SettingsXml), x.ID);
-                }else
-                {
-                    x.Responses = this.XmlToDynamic(x.Response2, false);
+                    x.Responses = GetWorkFlowStepFieldChanges(x.Responses, x.ID);
                 }
 
-                x.Assignments = this.GetWorkflowAssignments(this.XmlToDynamic(x.Response1));
-
-
+                
             });
+
+
             return workflowInstances;
         }
 
@@ -434,19 +435,19 @@ namespace d360.model.DataAccessLayer
         private IEnumerable<WorkflowAssignmentApiViewModel> GetWorkflowAssignments(dynamic settings)
         {
             IEnumerable<WorkflowAssignmentApiViewModel> assignment = new List<WorkflowAssignmentApiViewModel>();
-            IList<string> resourceEmails = this.GetEmails(settings);
+            IList<string> resourceEmails = GetEmails(settings);
             if (resourceEmails.Count != 0)
-                assignment =   this.GeWorkflowAssignmentApiViewModels(resourceEmails);
+                assignment =   GetWorkflowAssignmentApiViewModels(resourceEmails);
             
             return assignment;
 
         }
 
-        private IEnumerable<WorkflowAssignmentApiViewModel> GeWorkflowAssignmentApiViewModels(IList<string> emails)
+        private IEnumerable<WorkflowAssignmentApiViewModel> GetWorkflowAssignmentApiViewModels(IList<string> emails)
         {
 
             var sql = $@"select UID as AssigneeUid from reporting.Global_Resource  where email  IN ('{string.Join("','", emails)}')";
-            var assignments =   this.CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
+            var assignments = CompanyContext.Query<WorkflowAssignmentApiViewModel>(sql, timeout: ApiTimeout).ToList();
             return assignments;
 
         }
@@ -477,6 +478,94 @@ namespace d360.model.DataAccessLayer
             }
             return resourceEmails;
         }
+
+        private dynamic PopulateFieldResourceUids(dynamic fields)
+        {
+            var resources = new Dictionary<int, Guid?>();
+
+            if (fields?.fields != null)
+            {
+                var forms = fields?.fields?.form;
+                var reassignments = fields?.fields?.Reassigned;
+
+                if (forms != null)
+                {
+                    forms = forms.GetType() == typeof(JArray) ? forms : new JArray(forms);
+
+                    for (int i = 0; i < forms.Count; i++)
+                    {
+                        if (int.TryParse(forms[i]["@ResourceID"]?.ToString(), out int id) && !resources.ContainsKey(id))
+                            resources.Add(id, null);
+                    }
+                }
+
+                if (reassignments != null)
+                {
+                    reassignments = reassignments.GetType() == typeof(JArray) ? reassignments : new JArray(reassignments);
+
+                    for (int i = 0; i < reassignments.Count; i++)
+                    {
+                        int id;
+                        if (int.TryParse(reassignments[i]["@toResourceId"]?.ToString(), out id) && !resources.ContainsKey(id))
+                            resources.Add(id, null);
+                        if (int.TryParse(reassignments[i]["@fromResourceId"]?.ToString(), out id) && !resources.ContainsKey(id))
+                            resources.Add(id, null);
+                        if (int.TryParse(reassignments[i]["@byResourceId"]?.ToString(), out id) && !resources.ContainsKey(id))
+                            resources.Add(id, null);
+                    }
+                }
+
+                if (resources.Any())
+                {
+                    var guids = CompanyContext.Query<dynamic>($@"select [ResourceID], [uid] from reporting.Global_Resource where ResourceID in ({string.Join(",", resources.Keys.ToList())})").ToList();
+
+                    if (guids.Any())
+                    {
+                        guids.ForEach(g =>
+                        {
+                            resources[g.ResourceID] = g.uid;
+                        });
+                    }
+
+                    if (forms != null)
+                    {
+                        for (int i = 0; i < forms.Count; i++)
+                        {
+                            if (int.TryParse(forms[i]["@ResourceID"].ToString(), out int id))
+                            {
+                                forms[i]["@ResourceUid"] = resources[id];
+                            }
+
+                        }
+
+                        fields.fields.form = forms;
+                    }
+
+                    if (reassignments != null)
+                    {
+                        for (int i = 0; i < reassignments.Count; i++)
+                        {
+                            int id;
+                            if (int.TryParse(reassignments[i]["@toResourceId"]?.ToString(), out id))
+                                reassignments[i]["@toResourceUid"] = resources[id];
+                            if (int.TryParse(reassignments[i]["@fromResourceId"]?.ToString(), out id))
+                                reassignments[i]["@fromResourceUid"] = resources[id];
+                            if (int.TryParse(reassignments[i]["@byResourceId"]?.ToString(), out id))
+                                reassignments[i]["@byResourceUid"] = resources[id];
+
+                        }
+
+                        fields.fields.Reassigned = reassignments;
+                    }
+
+
+                }
+
+            }
+
+            return fields;
+        }
+
         private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(dynamic setting,int itemId)
         {
             List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
@@ -498,7 +587,7 @@ namespace d360.model.DataAccessLayer
                     fieldChange.UseCurrentDate = field["@UseCurrentDate"] != null ? field["@UseCurrentDate"] : false;
                     fieldChange.AppendValue = field["@AppendValue"] != null ? field["@AppendValue"] : "";
                     fieldChange.ClearValue = field["@ClearValue"] != null ? field["@ClearValue"] : "";
-                    FieldType fieldType = this.CompanyContext.GetById<FieldType>(fieldTypeId);
+                    FieldType fieldType = CompanyContext.GetById<FieldType>(fieldTypeId);
                     fieldChange.FieldName = fieldType?.FriendlyName;
                     fieldChange.Type = fieldType?.Type;
                     string formFieldId = field["@FormFieldId"] != null ? field["@FormFieldId"] : null;
@@ -509,7 +598,7 @@ namespace d360.model.DataAccessLayer
                     {
 
                         var stepSql = @"select fields from workflow.itemstep where  stepid=@stepid and itemid=@itemid";
-                        dynamic stepFields = this.CompanyContext.Query<string>(stepSql, new { stepid = stepId, itemid = itemId }).FirstOrDefault();
+                        dynamic stepFields = CompanyContext.Query<string>(stepSql, new { stepid = stepId, itemid = itemId }).FirstOrDefault();
                         stepFields = XmlToDynamic(stepFields, false);
 
 
@@ -588,10 +677,10 @@ namespace d360.model.DataAccessLayer
 
         public WorkflowItem GetWorkflowItemByUID(Guid workflowItemUid)
         {
-            return this.CompanyContext.Filter<WorkflowItem>(i => i.UID == workflowItemUid).SingleOrDefault();
+            return CompanyContext.Filter<WorkflowItem>(i => i.UID == workflowItemUid).SingleOrDefault();
         }
 
-        private void gettWorkflowsQueryParamsSql(WorkflowsApiViewModel model, DynamicParameters dbArgs, List<string> whereClause, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+        private void getWorkflowsQueryParamsSql(WorkflowsApiViewModel model, DynamicParameters dbArgs, List<string> whereClause, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
 
             if (queryParams != null)
@@ -722,7 +811,7 @@ namespace d360.model.DataAccessLayer
             WorkflowsApiViewModel model = new WorkflowsApiViewModel();
 
 
-            this.gettWorkflowsQueryParamsSql(model, dbArgs, whereClause, pagingSql, queryParams);
+            getWorkflowsQueryParamsSql(model, dbArgs, whereClause, pagingSql, queryParams);
 
             var whereSql = "";
             if (whereClause.Any())
