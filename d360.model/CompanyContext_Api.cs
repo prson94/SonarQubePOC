@@ -935,8 +935,8 @@ where	ExecutionID = @executionID
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600,  Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
-        {
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
@@ -3227,6 +3227,14 @@ where   ExecutionID = @ExecutionID
             var metrics = new Dictionary<string, double>();
             var step = 0;
             bool hasDuplicateUids = false;
+            bool enableJsonAttributes = false;
+
+            try
+            {
+                enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
+            }
+            catch { } 
+
             FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -4177,7 +4185,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     }
 
                                     // only populate json properties IF there are 1 json fields on the asset type, AND values have been specified for JSON fields IE if they didnt provide any optional json fields disregard.
-                                    if (jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
+                                    // Only save all properties to the database if we json attributes enabled
+                                    if (enableJsonAttributes && jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
                                         MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
