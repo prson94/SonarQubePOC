@@ -504,8 +504,10 @@ from	metrics.Asset A
                                             case MetricGovernanceCheckType.Owner:
                                                 if (gDefinition.Owner != null)
                                                 {
+                                                    string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
+                                                    string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
                                                     scoreItem.Value = company.Query<bool>(
-                                                        "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                        $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
                                                         "from ResponsibilityDetail R " +
                                                         "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
                                                         "inner join Asset A on A.ID = R.AssetID and A.Uid = @AssetUid", 
