@@ -338,8 +338,6 @@ order by RT.Name", new { id }).AsQueryable();
                         {
                             await ProcessRuleForAsset(rule, results);
                         }
-                                
-                        await MarkResponsibilityRuleAsRan(rule.ID);
                     }
                 }
                 catch (ApplicationException ex)
@@ -385,9 +383,9 @@ order by RT.Name", new { id }).AsQueryable();
         /// <param name="cnn"></param>
         /// <param name="ruleId"></param>
         /// <returns></returns>
-        private async Task MarkResponsibilityRuleAsRan(int ruleId)
+        private async Task MarkResponsibilityRuleAsRan(int ruleId, SqlTransaction transaction)
         {
-            await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId });
+            await Connection.ExecuteAsync("update ResponsibilityTypeRelationRule set LastRunOn = @date where ID = @id", new { date = DateTime.UtcNow, id = ruleId }, transaction: transaction);
         }
 
         private async Task ProcessRuleForAsset(ResponsibilityTypeRelationRule rule, List<ResponsibilityAssetMeasureProcessedResult> results)
@@ -465,6 +463,8 @@ from    #changes C
 
                     //drop impacted assets temporary table.
                     await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+
+                    await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
                     transaction.Commit();
                 }
@@ -564,6 +564,8 @@ from    #changes C
 
                     //drop impacted assets temporary table.
                     await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+
+                    await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
                     transaction.Commit();
                 }
