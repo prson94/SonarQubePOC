@@ -1531,6 +1531,8 @@ namespace d360.model
         {
             List<string> emailedUsers = new List<string>();
             List<core.entities.GlobalReportingResource> users = new List<core.entities.GlobalReportingResource>();
+            var typeId = item?.Step?.Version?.TypeID ?? 0;
+            var typeName = item?.Step?.Version?.Type?.Name ?? "";
             //based on the step settings get the users
 
             var companySettings = Community.GetCompanySettings();
@@ -1562,7 +1564,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility || settings.RecipientType == EmailTaskRecipientType.None)
             {
-                users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID).ToList();
+                users = GetWorkflowUsersBasedOnResponsibility(typeId, item.Step.ID, item.ItemID).ToList();
             }
             else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
@@ -1618,7 +1620,7 @@ namespace d360.model
                 cnn.Close();
             }
 
-            url += $"https://{prefix}.data3sixty.com/workflow/form/{item.Step.Version.TypeID}/{itemStepID}/{itemId}";
+            url += $"https://{prefix}.data3sixty.com/workflow/form/{typeId}/{itemStepID}/{itemId}";
 
             var initiatedBy = "(unknown)";
 
@@ -1650,9 +1652,9 @@ namespace d360.model
                 if (!string.IsNullOrEmpty(settings.SubjectTemplate))
                     emailSubject = await (ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false));
                 else
-                    emailSubject = $"Data3Sixty - Workflow [{item.Step.Version.Type.Name}] - Form";
+                    emailSubject = $"Data3Sixty - Workflow [{typeName}] - Form";
 
-                var emailBody = $"<p>The Data3Sixty workflow <b>{item.Step.Version.Type.Name}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
+                var emailBody = $"<p>The Data3Sixty workflow <b>{typeName}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
                 var customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
 
