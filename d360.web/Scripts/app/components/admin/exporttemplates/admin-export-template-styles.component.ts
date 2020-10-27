@@ -136,6 +136,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
 
     public deleteTemplateStyle(id: number) {
         this.exportTemplateService.deleteExportTemplateStyle(id).subscribe(result => {
+            this.messagesService.showInfoMessage('Success', 'Style deleted successfully');
             this.showDelete = false;
             this.load();
         });
