@@ -32,9 +32,7 @@ namespace d360.web.Handlers
                             host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
                         }
 
-                        var companyId = request.Headers.FirstOrDefault(h => h.Key == "CompanyID").Value;
                         HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-
 
                         using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                         {
