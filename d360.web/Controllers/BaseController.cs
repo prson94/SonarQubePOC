@@ -445,6 +445,22 @@ namespace d360.web.Controllers
             return new JsonNetResult { Data = data, Formatting = Formatting.None };
         }
 
+        /// <summary>
+        /// Used to override default JSON return type for MVC controllers overrides maxJsonLength which doesnt get picked up from web.config for mvc endpoints
+        /// do not remove or JSON responses will be limited to default (102400 bytes)
+        /// </summary>        
+        protected override JsonResult Json(object data, string contentType, System.Text.Encoding contentEncoding, JsonRequestBehavior behavior)
+        {
+            return new JsonResult()
+            {
+                Data = data,
+                ContentType = contentType,
+                ContentEncoding = contentEncoding,
+                JsonRequestBehavior = behavior,
+                MaxJsonLength = Int32.MaxValue
+            };
+        }
+
         #endregion
 
         internal string GetNoReadSqlStatement(string identifier = null)
