@@ -109,8 +109,11 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
         var params = this.currentFilters;
         params['_pageSize'] = 10000;
         params['_pageNum'] = 1;
-
-        this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params, true);
+        let fileName: string = this.field.FieldName;
+        if (this.data['name']) {
+            fileName = this.data['name'];
+        }
+        this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params, true, fileName);
     }
 
     loadData(event) {
