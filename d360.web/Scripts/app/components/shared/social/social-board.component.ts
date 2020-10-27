@@ -56,13 +56,13 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         }
         else {
             if (this.limitToType == SocialCommentType.Social)
-                this.socialMessage = `My Comment's ${this.daysMessage()}`;
+                this.socialMessage = `My comments ${this.daysMessage()}`;
             else if (this.limitToType == SocialCommentType.Issue)
-                this.socialMessage = `My Issue's ${this.daysMessage()}`;
+                this.socialMessage = `My issues ${this.daysMessage()}`;
             else if (this.limitToType == SocialCommentType.Task)
-                this.socialMessage = `My Task's ${this.daysMessage()}`;
+                this.socialMessage = `My tasks ${this.daysMessage()}`;
             else
-                this.socialMessage = 'My Comments';
+                this.socialMessage = 'My comments';
         }
                 
         this.loadComments();
