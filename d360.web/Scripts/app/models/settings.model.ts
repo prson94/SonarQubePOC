@@ -45,7 +45,7 @@ export class CompanySettings {
     LineageVersion: number;
     FusionEnabled: boolean = true;
     MaxExcelExportRows: number;
-    CrossOriginResourceSharing: string;
+    AllowedOrigins: string;
 }
 
 export class IpRestriction {

@@ -132,7 +132,7 @@ namespace d360.web.Models
         public int LineageVersion { get; set; } = 1;
         public bool FusionEnabled { get; set; } = true;
         public int MaxExcelExportRows { get; set; }
-        public string CrossOriginResourceSharing { get; set; }
+        public string AllowedOrigins { get; set; }
 
     }
     
