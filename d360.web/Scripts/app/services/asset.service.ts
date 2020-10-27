@@ -157,7 +157,7 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    getAssetsComplexFieldValue(assetUid: string, fieldName: string, params: any = null, isExport: boolean = false): Observable<LookupGrid> | null {
+    getAssetsComplexFieldValue(assetUid: string, fieldName: string, params: any = null, isExport: boolean = false, fileName: string = ''): Observable<LookupGrid> | null {
         var url = `/api/v2/assets/${assetUid}/fields/${fieldName}?forUi=true`;
 
         if (params) {
@@ -178,7 +178,6 @@ export class AssetService extends BaseObservableService {
                 );
         }
         else {
-            var fileName = fieldName;
             this.
                 http
                 .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
