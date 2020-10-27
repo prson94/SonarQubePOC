@@ -935,8 +935,8 @@ where	ExecutionID = @executionID
 
         }
 
-        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
-
+        private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
+        { 
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
