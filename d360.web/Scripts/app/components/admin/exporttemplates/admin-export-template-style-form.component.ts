@@ -113,9 +113,9 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         if (changes["mode"].currentValue == 'Edit' && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
-        this.model.SelectionType = this.exportViewType != ExportViewType.Pivot ? "Header" : this.model.Column == -1 ? "Row" : "Column";  
+        this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";          
 
-        if (this.exportViewType == ExportViewType.Pivot)
+        if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])        
             this.selections = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
         else
             this.selections = [{ label: "Header", value: "Header" }];

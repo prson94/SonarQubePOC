@@ -100,20 +100,22 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     }
 
     isPivot(): boolean {
-        return this.exportViewType == ExportViewType.Pivot;
+        return (this.exportViewType && this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot]);        
     }
     ngOnInit(): void {
         this.load();
     }
 
-    canAdd(): boolean {
-        if (this.exportViewType == ExportViewType.Pivot)
-            return true;
-        else if ((this.exportViewType == ExportViewType.Grouped || this.exportViewType == ExportViewType.None)
+    canAdd(): boolean {           
+        var retval = false;
+        if (this.exportViewType) {
+            if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
+                retval = true;
+            else if ((this.exportViewType.toString() == ExportViewType[ExportViewType.Grouped] || this.exportViewType.toString() == ExportViewType[ExportViewType.None])
                 && (this.styleRules == null || this.styleRules.length == 0))
-            return true;
-        else
-            return false;
+                retval = true;
+        }
+        return retval
     }
     private getRowStyles(item:ExportTemplateStyle): any {
         let styles = {
