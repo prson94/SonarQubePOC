@@ -941,7 +941,7 @@ where	ExecutionID = @executionID
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
                     select  F.ID, 
-                            F.Value 
+                            F.FormattedValue 
                     from    Field F 
                             inner join {ApiExecutionFieldTable} E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
                             inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
@@ -958,7 +958,7 @@ where	ExecutionID = @executionID
 
             foreach (var f in fields)
             {
-                string value = f.Value;
+                string value = f.FormattedValue;
                 if (!string.IsNullOrEmpty(value))
                 {                    
                     List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection();
