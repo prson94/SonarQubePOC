@@ -21,7 +21,7 @@ export class OperatorDataTypeModel {
     ID: number;
     Name: string;
 }
-export class OperatorModel{
+export class OperatorModel {
     ID: Operator;
     Name: string;
     Description: string;

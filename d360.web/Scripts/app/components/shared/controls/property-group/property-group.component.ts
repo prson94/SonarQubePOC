@@ -1,5 +1,5 @@
 ﻿
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -10,7 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
     styleUrls: ['./property-group.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PropertyGroupComponent implements OnInit, AfterViewInit {
+export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() igformGroup: FormGroup;
     @Input() title: string = "Property Group";
 
@@ -18,13 +18,24 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     requiredCount: number = 0;
     expanded: boolean = true;
 
-    private requiredPos: number = 0; 
-    private invalidPos: number = 0; 
+    private requiredPos: number = 0;
+    private invalidPos: number = 0;
 
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
     constructor(private ref: ChangeDetectorRef) {
 
     }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes && this.igformGroup && changes.igformGroup.currentValue != changes.igformGroup.previousValue) {
+            this.igformGroup.valueChanges.subscribe(x => {
+                this.requiredCount = this.getRequiredCount();
+                this.invalidCount = this.getInvalidCount();
+                this.ref.markForCheck();
+            });
+        }
+    }
+
     ngAfterViewInit(): void {
         this.requiredCount = this.getRequiredCount();
         this.invalidCount = this.getInvalidCount();
@@ -32,11 +43,13 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
-        this.igformGroup.valueChanges.subscribe(x => {
-            this.requiredCount = this.getRequiredCount();
-            this.invalidCount = this.getInvalidCount();
-            this.ref.markForCheck();
-        });
+        if (this.igformGroup) {
+            this.igformGroup.valueChanges.subscribe(x => {
+                this.requiredCount = this.getRequiredCount();
+                this.invalidCount = this.getInvalidCount();
+                this.ref.markForCheck();
+            });
+        }
     }
 
     getRequiredCount(): number {
@@ -45,7 +58,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
                 let elem = this.getFormControlDomElement(x);
-                if (control && control.errors && control.errors["required"] == true && elem) {
+                if (control && control.errors && control.errors["required"] == true) {
                     reqCount++;
                 }
             });
@@ -59,7 +72,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
                 let elem = this.getFormControlDomElement(x);
-                if (control && control.errors && elem) {
+                if (control && control.errors) {
                     invCount += Object.keys(control.errors).filter(x => x != "required").length > 0 ? 1 : 0;
                 }
             });
@@ -110,7 +123,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                 let elem = <HTMLElement>this.getFormControlDomElement(x);
                 if (elem) {
                     idx++;
-                    if ((idx > this.requiredPos)) {                      
+                    if ((idx > this.requiredPos)) {
                         this.requiredPos++;
                         if (this.requiredPos >= fcCount) {
                             this.requiredPos = 0;
@@ -123,9 +136,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         });
     }
 
-    getFormControlDomElement(controlName:string) {
+    getFormControlDomElement(controlName: string) {
         if (this.inputContainer) {
-            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ? 
+            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ?
                 this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
         }
     }
@@ -152,7 +165,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                     }
 
                 }
-                
+
             }
         });
         return count;
@@ -165,7 +178,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         switch (event.which) {
             case 32:
                 event.target.click();
-                return false;           
+                return false;
         }
     }
 }

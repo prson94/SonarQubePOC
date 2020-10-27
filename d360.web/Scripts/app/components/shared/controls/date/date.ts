@@ -11,7 +11,8 @@
     forwardRef,
 
     ViewChild,
-    AfterViewInit
+    AfterViewInit,
+    HostListener
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarModule, Calendar } from 'primeng/calendar';
@@ -81,6 +82,20 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
             if (this.isOverlayVisible !== this.calendar.overlayVisible) {
                 if (this.calendar.overlayVisible && this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
                     this.calendar.overlay.classList.add(this.getStyleClass);
+
+                    if (this.calendar.appendTo == 'body') {
+                        var self = this;
+                        this.calendar.overlay.onkeydown = (e: KeyboardEvent) => {
+                            if (e.keyCode == 27) {
+                                event.stopPropagation();
+                                event.preventDefault();
+                                setTimeout(() => { self.focus(event); });
+                            }
+                            if (e.keyCode == 13) {
+                                setTimeout(() => { self.focus(event); });
+                            }
+                        }
+                    }
                 }
                 this.isOverlayVisible = this.calendar.overlayVisible;
             }
@@ -122,6 +137,16 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
 
     public focus(evt) {
         this.calendar.inputfieldViewChild.nativeElement.focus();
+    }
+
+    @HostListener('keydown', ['$event']) onKeyDown(e: KeyboardEvent) {
+        if (this.calendar.appendTo == 'body') {
+            if (e.keyCode == 9 && this.calendar.overlay) {
+                var firstEl = (this.calendar.overlay as HTMLElement).getElementsByClassName('ui-datepicker-next')[0] as HTMLElement;
+                var secondLe = (this.calendar.overlay as HTMLElement).getElementsByClassName('ui-datepicker-prev')[0] as HTMLElement;
+                setTimeout(() => { firstEl.click(); secondLe.click(); });
+            }
+        }
     }
 }
 

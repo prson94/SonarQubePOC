@@ -1,6 +1,6 @@
-﻿import { NgModule,  ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges} from '@angular/core';
+﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, ValidationErrors, AbstractControl } from '@angular/forms';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
 
 
 export const NUMBER_INPUT_ACCESSOR: any = {
@@ -16,7 +16,7 @@ export const NUMBER_INPUT_ACCESSOR: any = {
     styleUrls: ['number-picker.component.less'],
     encapsulation: ViewEncapsulation.None,
 })
-export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
+export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
 
     @Input() placeholder: string;
     @Input() step: number;
@@ -37,13 +37,24 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
     @ViewChild('iginput', { static: false }) el: ElementRef;
 
     constructor(private ref: ChangeDetectorRef) { }
-   
+
 
     writeValue(obj: any): void {
-        this.value = obj;
+        if (obj) {
+            if (this.max != undefined && obj > this.max) {
+                this.value = this.max;
+            }
+            else if (this.min != undefined && obj < this.min) {
+                this.value = this.min;
+            }
+            else {
+                this.value = obj;
+            }
+        }
+
         this.onModelChange(this.value);
         this.onModelTouched();
-        this.ref.markForCheck();    
+        this.ref.markForCheck();
     }
 
     registerOnChange(fn: any): void {
@@ -78,18 +89,18 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit{
     getStyleClass(): string {
         return 'ig-number-field ' + this.styleClass;
     }
-    
+
     onInputKeyDown(event) {
         switch (event.which) {
             case 13:
                 this.onModelTouched();
-            break;
+                break;
         }
     }
 }
 
 @NgModule({
-    imports: [CommonModule],
+    imports: [CommonModule, FormsModule],
     exports: [IgNumberFieldcomponent],
     declarations: [IgNumberFieldcomponent]
 })

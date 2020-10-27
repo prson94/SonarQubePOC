@@ -1,7 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation  } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
-import { TreeNode, MenuItem } from 'primeng/api';
+import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
@@ -55,21 +55,32 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
-    private menu: MenuItem[] = [
-        { label: 'Edit', command: (event) => { this.edit() } },
+    menuClicked($event) {
+        switch ($event.value) {
+            case 'Edit': this.edit();
+                break;
+            case 'Disable': this.delete();
+                break;
+        }
+
+        if ($event.value.toString().indexOf('Version History') != -1)
+            this.showHistory(true);
+    }
+
+    private menuOptions = [
         {
-            label: 'Disable',
-            command: (event) => { this.delete(); }
-        }, {
-            label: 'Version History',
-            command: (event) => { this.showHistory(true); }
+            "title": "Edit"
+        },
+        {
+            "title": "Disable"
+        },
+        {
+            "title": "Version History"
         }
     ];
-
-    private disabledMenu: MenuItem[] = [
+    private disabledMenu = [
         {
-            label: 'Version History',
-            command: (event) => { this.showHistory(true); }
+            "title": "Version History"
         }
     ];
 
@@ -87,9 +98,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             requiresLoad = true;
         }
         if (changes['scoreData'] && this.scoreData) {
-            this.scoreData = [ ...this.scoreData ];
+            this.scoreData = [...this.scoreData];
         }
-        console.log(changes['showDisabled']);
         if (changes['showDisabled'] != null || changes['showDisabled'] != undefined) {
             requiresLoad = true;
         }
@@ -105,10 +115,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.metrics = [];
         this.metricTree = [];
         if (this.allocationUid) {
-            console.log(this.showDisabled);
             this.metricsService.getMetricsByAllocation(this.allocationUid, this.showDisabled)
                 .subscribe(r => {
-
                     this.metrics = r;
                     if (this.metrics) {
                         this.metrics.filter(g => g.ParentUid == null).forEach(g => {
@@ -125,7 +133,6 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     } else {
                         this.selectionChange.emit(null);
                     }
-
                     this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                         this.isLoading = false;
                         this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
@@ -140,8 +147,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                         found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase())
                                     }
 
+
                                 });
-                                if (found) 
+                                if (found)
                                     node = found;
 
                             }
@@ -186,16 +194,16 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     updateSelectionMenuLabel() {
-        if (this.menu && this.menu.length > 0) {
-            let versionMenuItem = this.menu.find(x => x.label.indexOf("Version History") != -1);
+        if (this.menuOptions && this.menuOptions.length > 0) {
+            let versionMenuItem = this.menuOptions.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
-                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
         if (this.disabledMenu && this.disabledMenu.length > 0) {
-            let versionMenuItem = this.disabledMenu.find(x => x.label.indexOf("Version History") != -1);
+            let versionMenuItem = this.disabledMenu.find(x => x.title.indexOf("Version History") != -1);
             if (versionMenuItem) {
-                versionMenuItem.label = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
+                versionMenuItem.title = 'Version History (' + (this.selection ? this.selection.VersionCount : 0) + ')';
             }
         }
     }
@@ -204,7 +212,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         if (this.selection)
             this.previousSelection = { ...this.selection };
         if (this.selectedNode)
-        this.previousSelectedNode = { ...this.selectedNode };
+            this.previousSelectedNode = { ...this.selectedNode };
         if (!asChild) {
             this.selection = null;
             this.selectedNode = null;
@@ -221,7 +229,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     public delete() {
         this.formMode = FormMode.Deleting;
-    }    
+    }
     public close() {
         this.formMode = FormMode.Default;
         if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)

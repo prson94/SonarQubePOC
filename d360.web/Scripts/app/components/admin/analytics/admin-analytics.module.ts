@@ -1,6 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { CoreModule } from '../../shared/core.module';
@@ -11,13 +11,12 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
-import {AdminAnalyticsComponent} from './admin-analytics.component';
-import {AdminMetricAssetTypeListComponent} from './admin-metric-asset-type-list.component';
-import {AdminMetricConditionListComponent} from './admin-metric-condition-list.component';
-import {AdminMetricConditionEditorComponent} from './admin-metric-condition-editor.component';
-import {AdminAnalyticsRoutingModule} from './admin-analytics.routes';
-import {AdminMetricEditorComponent} from './admin-metric-editor.component';
-import {AdminMetricListComponent} from './admin-metric-list.component';
+import { AdminAnalyticsComponent } from './admin-analytics.component';
+import { AdminMetricAssetTypeListComponent } from './admin-metric-asset-type-list.component';
+import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
+import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
+import { AdminMetricEditorComponent } from './admin-metric-editor.component';
+import { AdminMetricListComponent } from './admin-metric-list.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -47,6 +46,12 @@ import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
 import { SwitchModule } from '../../shared/controls/switch/switch';
 import { AdminMetricHistoryComponent } from './admin-metric-history.component'
+import { IgDateModule } from '../../shared/controls/date/date';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
+import { FieldConditionGridModule } from '../../shared/controls/field-condition-grid/field-condition-grid.module';
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 
 @NgModule({
@@ -54,6 +59,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         CommonModule,
         FormsModule,
         HttpClientModule,
+        ReactiveFormsModule,
 
         AdminAnalyticsRoutingModule,
 
@@ -75,7 +81,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         AutoCompleteModule,
         SliderModule,
         MenuModule,
-
+        TooltipModule,
         //d3s        
         CoreModule,
         PipesModule,
@@ -90,6 +96,12 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         SiteModalModule,
         InfoTooltipModule,
         SwitchModule,
+        IgDateModule,
+        PropertyGroupModule,
+        IgNumberFieldModule,
+        FieldConditionGridModule,
+        IgMessageBoxModule,
+        PopupMenuModule,
         IgBadgeModule
 
     ],
@@ -97,7 +109,6 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         AdminAnalyticsComponent,
         AdminMetricAssetTypeListComponent,
         AdminMetricConditionListComponent,
-        AdminMetricConditionEditorComponent,
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,

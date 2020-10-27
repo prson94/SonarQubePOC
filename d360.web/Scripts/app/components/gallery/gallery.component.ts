@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "auto-complete";
+    activeControl: string = "field-condition-grid";
     controls = [
         { label: 'Switch Input', key: 'switch', type: 'Form' },
         { label: 'Button Directive', key: 'button', type: 'Form' },

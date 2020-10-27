@@ -22,37 +22,35 @@
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                     <td>
-                        <div class="RowTools" *ngIf="item.IsGroup">
-                            <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
-                        </div>
+                        <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </td>
                     <td>
-                        <div class="RowTools">
-                            <ng-container *ngIf="item.State == 1">
-                                <p-menu #cardmenu [popup]="true" [model]="menu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                                <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>
-                            </ng-container>
-                            <ng-container *ngIf="item.State == 3">
-                                <p-menu #disabledcardmenu [popup]="true" [model]="disabledMenu" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                                <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);disabledcardmenu.toggle($event);" tooltip="Measure Actions"></button>
-                            </ng-container>
-                        </div>
+
+                        <ng-container *ngIf="item.State == 1">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
+
+                        <ng-container *ngIf="item.State == 3">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);disabledMenuRef.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenu" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
                     </td>
                 </tr>
             </ng-template>
         </p-treeTable>
         <div *ngIf="metricTree.length == 0" class="no-measure-message">No measures defined</div>
     </div>
-    <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding">
-        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [operators]="operators" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
+    <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;">
+        <d3s-admin-metric-editor [assetTypeUid]="assetType.Uid" [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [operators]="operators" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
-    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing">
+    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;">
         <d3s-admin-metric-editor *ngIf="formMode == FormMode.Editing" [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [operators]="operators" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event)" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
             <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                                [MeasureUid]="selection?.Uid" 
+                                [MeasureUid]="selection?.Uid"
                                 [operators]="operators"
                                 [AssetTypeDisplayValue]="assetType.Name"
                                 [MeasureDisplayValue]="selection?.Name"
