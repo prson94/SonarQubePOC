@@ -7,7 +7,7 @@
                 <div inputs>
                     <div class="row">
                         <label for="name" class="ig-label">Name</label>
-                        <input igInput tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                        <input igInput igAutoFocus tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
                     </div>
                     <div class="row">
                         <label for="description" class="ig-label">Description</label>
@@ -23,7 +23,7 @@
                         <div class="flex-col">
                             <div class="row">
                                 <label for="effectiveDate" class="ig-label">Effective Date</label>
-                                <ig-date tabindex="3"
+                                <ig-date [tabindex]="3"
                                          [(ngModel)]="displayEffectiveDate"
                                          [required]="true"
                                          [appendTo]="'body'"
@@ -36,7 +36,7 @@
                                 <label for="weight" class="ig-label">
                                     Weight(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
                                 </label>
-                                <ig-number-input tabindex="4"
+                                <ig-number-input [tabindex]="4"
                                                  [required]="true"
                                                  [min]="1"
                                                  [max]="100"
@@ -86,7 +86,7 @@
     </div>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
-            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button> 
+            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
             <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !validateConditions() || conditionFormMode != FormMode.Default || isSaving" (click)="save()"></button>
         </div>

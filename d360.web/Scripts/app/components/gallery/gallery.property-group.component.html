@@ -113,6 +113,7 @@
                             <label for="myFormColor" class="ig-label">Property2</label>
                             <p-dropdown #dd igDropdown
                                         required
+                                        tabindex="1"
                                         igSize="small"
                                         name="selectValue"
                                         placeholder="Value Required"
@@ -122,7 +123,15 @@
                                         [options]="cars"></p-dropdown>
                         </div>
                         <div class="row">
-                            <label for="myFormPetName" class="ig-label">Property3</label>
+                            <label for="effectiveDate" class="ig-label">Property3</label>
+                            <ig-date tabindex="1"
+                                     [required]="true"
+                                     [appendTo]="'body'"
+                                     formControlName="effectiveDate">
+                            </ig-date>
+                        </div>
+                        <div class="row">
+                            <label for="myFormPetName" class="ig-label">Property4</label>
                             <input tabindex="1" igInput type="text" [ngClass]="{'invalid': multiTestForm.get('myFormPetName')?.errors?.notNiceWord}" formControlName="myFormPetName" required />
                             <div *ngIf="multiTestForm.get('myFormPetName').invalid && (multiTestForm.get('myFormPetName').dirty || multiTestForm.get('myFormPetName').touched)">
                                 <div *ngIf="multiTestForm.get('myFormPetName').errors.notNiceWord" class="ig-text-required">

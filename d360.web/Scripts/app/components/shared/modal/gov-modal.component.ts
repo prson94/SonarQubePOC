@@ -51,10 +51,12 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     }
 
 
-    checkKey(event) {
+    checkKey(event: KeyboardEvent) {
         if (event.keyCode) {
-            if (event.keyCode == 27)
-                this.closePopUp();
+            if (event.keyCode == 27) {
+                if (!event.defaultPrevented)
+                    this.closePopUp();
+            }
         }
     }
 
@@ -73,8 +75,8 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     }
 
     showPopUp() {
-        this.display = true;        
-        if (this.modalDiv) {            
+        this.display = true;
+        if (this.modalDiv) {
             this.modalDiv.nativeElement.className = "modal-overlay";
             this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
             this.modalDiv.nativeElement.focus();
@@ -97,6 +99,6 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     confirm() {
         this.onConfirm.emit('confirm');
         this.closePopUp();
-    }   
+    }
 }
 
