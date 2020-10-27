@@ -54,7 +54,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void UpsertMetrics()
         {
-            var model = new MetricAssetViewModel();
+            var model = new MetricAssetEditModel();
             model.Name = "test model";
             model.Weight = 1;
             model.IsGroup = false;
@@ -93,7 +93,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_UpsertMetrics_NoName()
         {
-            var model = new MetricAssetViewModel();
+            var model = new MetricAssetEditModel();
             model.Name = "";
             model.AllocationUid = Guid.NewGuid();
             model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
@@ -130,7 +130,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_UpsertMetrics_BadWeight()
         {
-            var model = new MetricAssetViewModel();
+            var model = new MetricAssetEditModel();
             model.Name = "good name";
             model.Weight = 0;
             model.AllocationUid = Guid.NewGuid();
@@ -168,7 +168,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_UpsertMetrics_BadGrouping()
         {
-            var model = new MetricAssetViewModel();
+            var model = new MetricAssetEditModel();
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = true;
@@ -196,7 +196,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_UpsertMetrics_BadCondition()
         {
-            var model = new MetricAssetViewModel();
+            var model = new MetricAssetEditModel();
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = false;
