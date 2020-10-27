@@ -113,9 +113,9 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         if (changes["mode"].currentValue == 'Edit' && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
-        this.model.SelectionType = this.exportViewType != ExportViewType.Pivot ? "Header" : this.model.Column == -1 ? "Row" : "Column";  
+        this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";          
 
-        if (this.exportViewType == ExportViewType.Pivot)
+        if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])        
             this.selections = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
         else
             this.selections = [{ label: "Header", value: "Header" }];
@@ -132,7 +132,11 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     }
     save() {
         this.exportTemplateService.saveExportTemplateStyle(this.model).subscribe(result => {
-            this.messagesService.showInfoMessage('Success', 'Style added successfully');
+            if (this.model.ID) {
+                this.messagesService.showInfoMessage('Success', 'Style updated successfully');
+            } else {
+                this.messagesService.showInfoMessage('Success', 'Style added successfully');
+            }            
             //default
             this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: null, Row: null, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };
             this.onSuccess.emit(null);
