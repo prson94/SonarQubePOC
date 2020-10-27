@@ -10,8 +10,9 @@ using System.Threading.Tasks;
 
 namespace d360.core.entities.Metric
 {
+
     [DataContract]
-    public class MetricAssetViewModel
+    public class MetricBaseApiModel
     {
         [DataMember, JsonProperty(Order = 1)]
         public Guid Uid { get; set; }
@@ -50,22 +51,32 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 20)]
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+    }
 
+
+    [DataContract]
+    public class MetricAssetViewModel : MetricBaseApiModel
+    {
         [DataMember, JsonProperty(Order = 21)]
         public int VersionCount { get; set; }
 
         [DataMember, JsonProperty(Order = 22)]
         public bool HasResults { get; set; } = false;
+
         [DataMember, JsonProperty(Order = 23)]
         public State State { get; set; }
 
         [DataMember, JsonProperty(Order = 24)]
-        public DateTime EffectiveEndDate { get; set; }
+        public DateTime? EffectiveEndDate { get; set; }
+    }
 
+    [DataContract]
+    public class MetricAssetEditModel : MetricBaseApiModel
+    {
         [IgnoreDataMember]
-        public string CurrentConditionHash 
-        { 
-            get 
+        public string CurrentConditionHash
+        {
+            get
             {
                 var hashItems = from g in ConditionGroups
                                 from c in g.ConditionItems
@@ -299,7 +310,7 @@ namespace d360.core.entities.Metric
     #endregion
 
     [DataContract]
-    public class MetricAssetViewDetailModel : MetricAssetViewModel
+    public class MetricAssetViewDetailModel : MetricBaseApiModel
     {
         [DataMember, JsonProperty(Order = 98)]
         public Guid AssetTypeUid { get; set; }

@@ -36,7 +36,7 @@ namespace d360.web.Controllers.V2
     {
         public object GetExamples()
         {
-            return new MetricAssetViewModel
+            return new MetricAssetEditModel
             {
                 AllocationUid = Guid.Empty,
                 Definition = new MetricAssetDefinitionViewModel
@@ -228,14 +228,14 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerRequestExample(typeof(MetricAssetViewModel), typeof(UpsertAsset_Example)),
+            SwaggerRequestExample(typeof(MetricAssetEditModel), typeof(UpsertAsset_Example)),
             SwaggerResponse(HttpStatusCode.Created, "A message indicating the status of the ADD request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the UPDATE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not autheorized to make this change.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate what was incorrect about your request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that either your metric or parent metric was not found.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult UpsertAsset(MetricAssetViewModel model)
+        public IHttpActionResult UpsertAsset(MetricAssetEditModel model)
         {
             #region Validation
 

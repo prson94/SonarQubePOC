@@ -165,7 +165,7 @@ namespace d360.model.DataAccessLayer
             return Company.Filter<MetricAsset>(i => i.Uid == uid && i.State == State.Active).SingleOrDefault();
         }
 
-        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetViewModel model)
+        public WorkHttpStatus AddOrUpdateMetrics(MetricAssetEditModel model)
         {
             MetricAsset metricAsset = null;
             MetricAssetVersion metricAssetVersion = null;

@@ -548,7 +548,7 @@ namespace igx.UnitTests
         public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();
-            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetViewModel>()))
+            mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetEditModel>()))
                 .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
 
             mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))

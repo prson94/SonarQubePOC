@@ -15,7 +15,7 @@ namespace d360.model.validators
     public static class FieldApiModelValidator
     {
 
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null, bool isJsonAttributeFieldTypeEnabled = true)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
 
@@ -76,6 +76,11 @@ namespace d360.model.validators
                     {
                         actionIsReplaceAndKeySelected = true;
                     }
+                }
+
+                if(!isJsonAttributeFieldTypeEnabled && field.Type.JsonElement != null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75.");
                 }
 
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
