@@ -3722,7 +3722,7 @@ where   ExecutionID = @ExecutionID
                         Connection.Execute($@"
 update	T
 set		T.Success = 0,
-		T.[Message] = coalesce(T.[Message] + '; ', '') + 'Asset with matching key is already referenced previously. Nodes must be unique within a load.'
+		T.[Message] = coalesce(T.[Message] + '; ', '') + 'This asset is specified more than once based on the key fields defined on the asset type. Each asset must be unique within a given request.'
 from	api.ExecutionAsset T
 		inner join	(
 					select	min(ItemNumber) as ItemNumber,
