@@ -416,7 +416,7 @@ namespace d360.core.enums
                     result = (valueToCompare ?? "").EndsWith(values[0]);
                     break;
                 case Operator.Equals:
-                    result = (valueToCompare.ToLower() == values[0].ToLower());
+                    result = (valueToCompare ?? "").ToLower() == values[0].ToLower();
                     break;
                 case Operator.GreaterThan:
                 case Operator.GreaterThanOrEquals:

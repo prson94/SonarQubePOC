@@ -274,6 +274,8 @@ namespace d360.core.entities.Metric
     {
         [DataMember] 
         public Guid ResponsibilityTypeUid { get; set; }
+        [DataMember]
+        public Operator Operator { get; set; } = Operator.Populated;
     }
 
     #endregion
