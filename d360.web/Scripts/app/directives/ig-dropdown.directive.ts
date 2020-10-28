@@ -1,4 +1,4 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, Input, ChangeDetectorRef, AfterContentInit } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 import { Dropdown } from 'primeng/dropdown';
@@ -6,7 +6,7 @@ import { Dropdown } from 'primeng/dropdown';
 @Directive({
     selector: '[igDropdown]'
 })
-export class DropdownDirective implements AfterViewInit {
+export class DropdownDirective implements AfterContentInit {
 
 
     public _size: string;
@@ -20,7 +20,7 @@ export class DropdownDirective implements AfterViewInit {
         this.disabled = isDisabled;
     }
 
-    ngAfterViewInit() {
+    ngAfterContentInit(): void {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");

@@ -9,7 +9,12 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
 @Component({
     selector: 'd3s-admin-allocation-editor',
     templateUrl: 'admin-allocation-editor.component.html',
-    providers: [AllocationService]
+    providers: [AllocationService],
+    styles: [`
+        .separator{
+            padding:0px 4px;
+        }
+    `],
 })
 
 export class AdminAllocationEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
@@ -32,7 +37,6 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService, private elementRef: ElementRef) {
         super();
         this.selection = new ScoreTypeAllocation();
-        this.selection.scoreType = ScoreType.Governance;
         this.selection.isExternallyCalculated = false;
         this.selection.lowerThreshold = 50;
         this.selection.upperThreshold = 90;
@@ -44,7 +48,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.initialData();
     }
 
-    ngOnChanges(change: SimpleChanges) {
+    ngOnChanges(change: SimpleChanges) {       
         this.populateAssetTypesDDL();
         this.updateRanges();
     }
@@ -57,39 +61,49 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     }
 
     scoreTypeChange($event) {
-        this.populateAssetTypesDDL();
+        if (this.selection.scoreType) {
+            this.populateAssetTypesDDL();
 
-        if (this.selection.scoreType.toString() == 'DataQuality')
-            this.selection.isExternallyCalculated = true;
+            if (this.selection.scoreType.toString() == 'DataQuality')
+                this.selection.isExternallyCalculated = true;
 
-        if (!this.selection.uid && this.selection.scoreType.toString() == 'Governance') {
-            this.selection.isExternallyCalculated = false;
+            if (!this.selection.uid && this.selection.scoreType.toString() == 'Governance') {
+                this.selection.isExternallyCalculated = false;
+
+            }
 
         }
-
     }
 
     isExtCalcDisabled(): boolean {
-        return this.selection.scoreType.toString() == 'DataQuality';
+        if (this.selection.scoreType)
+            return this.selection.scoreType.toString() == 'DataQuality';
+        return false;
     }
 
     private populateAssetTypesDDL() {
+        if (this.selection.scoreType) {
+            this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
+                .subscribe(data => {
+                    this.ddlAssetTypes = [];
+                    data.forEach(item => {
+                        this.ddlAssetTypes.push({
+                            value: item.assetTypeUid,
+                            class: this.getClassFriendlyName(item.assetTypeClass),
+                            name: item.assetTypePath,
+                            label: '<span>' + this.getClassFriendlyName(item.assetTypeClass) + '</span> <span class="fa fa-angle-right separator"></span> <span> ' + item.assetTypePath + '</span>'
+                        });
+                    })
 
-        this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
-            .subscribe(data => {
-                this.ddlAssetTypes = [];
-                data.forEach(item => {
-                    this.ddlAssetTypes.push({ value: item.assetTypeUid, class: this.getClassFriendlyName(item.assetTypeClass), name: item.assetTypePath, label: this.getClassFriendlyName(item.assetTypeClass) + ' | ' + item.assetTypePath });
-                })
+                    if (this.selection.uid) {
+                        this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
+                    }
+                    this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
 
-                if (this.selection.uid) {
-                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' | ' + this.selection.assetTypePath });
-                }
-                this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
+                    this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
 
-                this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
-
-            });
+                });
+        }
     }
 
 
@@ -127,7 +141,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.savingInProgress = true;
         this.allocationService.save(item)
             .subscribe(res => {
-
+                let openItem = false;
                 this.savingInProgress = false;
                 if (!res || (res.type && res.type == "error"))
                     return;
@@ -135,13 +149,14 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 let msg: string = '';
                 if (this.selection.uid == undefined) {
                     msg = `Your score has been added`;
+                    openItem = true;
                 }
                 else {
                     msg = `Your score has been updated`;
                 }
                 this.selection = new ScoreTypeAllocation();
                 this.messagesService.showInfoMessage('Success', msg);
-                this.onSave.emit(res);
+                this.onSave.emit({ item: res,  openItem: openItem});
             });
     }
 
@@ -236,7 +251,6 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 tooltip[0].innerHTML = this.rangeValues[index] + '%';
             }
         });
-
     }
 
     reverseElipsis(str: string, length: number) {
