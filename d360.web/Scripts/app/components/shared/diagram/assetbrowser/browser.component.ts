@@ -39,13 +39,14 @@ import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.
 import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
+import { ProcessService } from '../../../../services/process.service';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [BrowserService, PermissionsService, PredicatesService],
+    providers: [BrowserService, PermissionsService, PredicatesService, ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
@@ -165,7 +166,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         protected messagesService: MessagesObservableService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private processService: ProcessService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -2033,6 +2035,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         assetUidRedirect = obj.part.data.assetUid;
                         if (assetUidRedirect == this.assetUid)
                             return;
+
+                        if (obj.part.data.class && obj.part.data.class.toString() == 'DiagramAsset') {
+
+                            this.processService.getProcessUrlByDiagramAssetUid(obj.part.data.assetUid).subscribe(res => {
+                                this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+                                    this.router.navigateByUrl(res);
+                                });
+                            })
+                            return;
+                        }
 
                         this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
                             this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', assetUidRedirect]);

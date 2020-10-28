@@ -61,7 +61,9 @@ export class BrowserService extends BaseObservableService {
             n.nonHiddenTemplate = templateName;
 
             //#endregion
-
+            if (n.class.toString() === 'Diagram') {
+                n.class = AssetTypeClass.DiagramAsset;
+            }
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
@@ -87,8 +89,8 @@ export class BrowserService extends BaseObservableService {
                         let ix = response.links.findIndex(l => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
                         if (ix > -1) {
                             r.expanded = true;
-                            response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix; 
-                        } 
+                            response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix;
+                        }
                     });
                 }
             } catch (e) {
@@ -122,7 +124,7 @@ export class BrowserService extends BaseObservableService {
             relations: []
         });
 
-        let rootLink: AssetBrowserTranslationLink =  {
+        let rootLink: AssetBrowserTranslationLink = {
             from: hierarchyKey,
             to: rootKey,
             text: "",
@@ -227,7 +229,7 @@ export class BrowserService extends BaseObservableService {
 
     public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/hop`;
-         
+
         return this.http.post(url, {
             ancestry: ancestry,
             hierarchyKey: hierarchyKey,
@@ -293,7 +295,7 @@ export class BrowserService extends BaseObservableService {
     */
     public getDetailByAsset(
         uid: string
-        
+
     ): Observable<AssetBrowserDiagramAsset> {
         const url = `api/v2/browser/diagramasset/${uid}`;
 
@@ -329,11 +331,11 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public saveUserFilter(model: StoredAssetBrowserFilterModel):Observable<StoredAssetBrowserFilterModel> {
+    public saveUserFilter(model: StoredAssetBrowserFilterModel): Observable<StoredAssetBrowserFilterModel> {
         const url = `api/v2/browser/filters`;
 
         if (model.uid != undefined)
-            return this.http.put(url+'/'+model.uid, model).pipe(
+            return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
                 catchError(err => this.handleError(err))
             );

@@ -68,6 +68,17 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
+    public getProcessUrlByDiagramAssetUid(uid: string): Observable<any> {
+        var headers = new HttpHeaders();
+        headers.append('Content-Type', 'application/json');
+        return this
+            .http
+            .get(`/api/v2/process/urlByDiagramAsset/${uid}`, { headers: headers })
+            .pipe(
+                map(response => <any>response)
+            );
+    }
+
     public downloadProcessExcel(assetUid: string, imageData: string): Observable<any> {
         return this.
             http

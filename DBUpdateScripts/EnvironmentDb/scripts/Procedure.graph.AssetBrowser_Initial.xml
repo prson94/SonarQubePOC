@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v10">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v11">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,12 +28,12 @@ begin
 	if @ancestry = 3
 	begin	-- This is impact
 		insert into @functionalTypesToInclude (ID) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13)
-		insert into @offLimitImpactFunctionalTypes (ID) values (15),(16),(17)
+		insert into @offLimitImpactFunctionalTypes (ID) values (15)
 	end
 	else
 	begin	-- This is lineage
 		insert into @functionalTypesToInclude (ID) values (1),(12),(13)
-		insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13),(15),(16),(17)
+		insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13),(15)
 	end
 
 	drop table if exists #ids;
@@ -1339,6 +1339,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
+							and E.ID not in (select IntersectID from #hops where Hop <> 1)
 					union all
 					select	distinct
 							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
@@ -1354,6 +1355,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
+							and E.ID not in (select IntersectID from #hops where Hop <> -1)
 					) O
 			group by [Predicate], ID, Uid, Direction
 			for json path
