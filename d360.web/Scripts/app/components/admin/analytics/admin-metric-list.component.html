@@ -17,7 +17,7 @@
                     <td class="no-overflow" [attr.title]="item.Name">
                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                         {{item.Name}}
-                        <span class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></span>
+                        <div class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></div>
                     </td>
                     <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>

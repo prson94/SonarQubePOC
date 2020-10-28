@@ -16,13 +16,16 @@ import { OperatorModel } from '../../../models/operator.model';
     styles: [
         `
         .ig-badge.default {
-            border: 1px solid rgba(0,0,0,0.2); 
+            margin-top: 1px; 
         }
         p-checkbox{
             margin-right: 32px; 
         }
         .badge-container{
             margin-left: 16px;
+            max-height: 24px;
+            display: inline-flex;
+            margin-top: 1px;
         }
         `
     ],
