@@ -14,8 +14,8 @@
         <div class="row">
             <div class="col l6 m6 s12">
                 <div id='NameTip' class="FieldNameRequired">Name</div>
-                <input required name="name" pInputText type="text" [(ngModel)]="model.Name" style="width: 98%; display: block;" #Name="ngModel" />
-                <div [hidden]="Name.valid || Name.pristine">Friendly name is required</div>
+                <input required name="Name" pInputText maxlength="250" type="text" [(ngModel)]="model.Name" style="width: 98%; display: block;" #Name="ngModel" />
+                <div [hidden]="Name.valid || Name.pristine" class="validation-text">Friendly name is required</div>
             </div>
             <div class="col l6 m6 s12">
                 <div id='TypeTip' class="FieldNameRequired">Selected Type</div>
