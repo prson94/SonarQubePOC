@@ -397,7 +397,7 @@ order by RT.Name", new { id }).AsQueryable();
                 try
                 {
                     var thenSql = GetThenResultsSql(rule, false, transaction, false);
-                    var whenSql = GetWhenResultsSql(rule, transaction, false);
+                    var whenSql = await GetWhenResultsSql(rule, transaction, false);
 
                     thenSql = string.Format(thenSql, "");
 
@@ -615,7 +615,7 @@ from    #changes C
         }
 
 
-        private string GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true)
+        private async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true)
         {
             string whenSql = "";
 
@@ -631,23 +631,23 @@ from    #changes C
 
             if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
             {
-                rule.StructuredDefinition.When.ForEach(w =>
+                foreach (var w in rule.StructuredDefinition.When)
                 {
                     if (w.CheckType == "F")
                     {
                         if (w.FieldTypeID > 0)
                         {
-                            var whenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction).SingleOrDefault();
+                            var whenFieldType = await (Connection.QueryFirstAsync<dynamic>("select ID,AllowMultipleValues,Type from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction));
                             whenSql += $" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
                             if (whenFieldType != null)
                             {
                                 whenSql += (whenFieldType.AllowMultipleValues) ?
-                                    $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
-                                    $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                    $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" : // multiselect list
+                                    $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";  // all field types plus single select list
                             }
-                            else
+                            else // invalid field type ID so the when is always not going to return anything
                             {
-                                whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
+                                whenSql += $"where 1 =0 ";
                             }
                         }
                         fCount++;
@@ -662,7 +662,7 @@ from    #changes C
         ) ";
                         rCount++;
                     }
-                });
+                }
             }
 
             return whenSql;
@@ -762,10 +762,10 @@ from    #changes C
             Connection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
         }
 
-        public IEnumerable<ObjectResult> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
+        public async Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
         {
-            string sql = GetWhenResultsSql(rule, trans);
-            return Connection.Query<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
+            string sql = await GetWhenResultsSql(rule, trans);
+            return await Connection.QueryAsync<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
         }
 
         public IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null)

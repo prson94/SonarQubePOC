@@ -241,7 +241,7 @@ namespace d360.model
         IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
-        IEnumerable<ObjectResult> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
+        Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
