@@ -329,7 +329,11 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             item.IsBool = false;
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {
-                selectedFieldType.values.unshift({ label: 'Choose...', value: null });
+                let excluded = selectedFieldType.values.findIndex(a => a.label == 'Choose...');
+                if (excluded < 0)
+                {
+                    selectedFieldType.values.unshift({ label: 'Choose...', value: null });
+                }
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
             }
