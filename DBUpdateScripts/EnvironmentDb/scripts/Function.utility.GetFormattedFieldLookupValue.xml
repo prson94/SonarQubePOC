@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Function.utility.GetFormattedFieldLookupValue-v2">
-   <comment>GOV-12225</comment>
+  <changeSet author="kmcnamee" id="Function.utility.GetFormattedFieldLookupValue-v3">
+   <comment>GOV-12666</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -89,7 +89,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -134,7 +134,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -179,7 +179,7 @@ BEGIN
 										V.AllowMultipleValues
 								from	( 
 										SELECT	IT.Name,
-												[IF].Value,
+												COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 												[IT].LookupObjectType,
 												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 												[IT].LookupDisplayFormat,
@@ -222,7 +222,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -266,7 +266,7 @@ BEGIN
 											V.AllowMultipleValues
 									from	(
 											SELECT	IT.Name,
-													[IF].Value,
+													COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 													[IT].LookupObjectType,
 													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 													[IT].LookupDisplayFormat,
@@ -311,7 +311,7 @@ BEGIN
 										V.AllowMultipleValues
 								from	(
 										SELECT	IT.Name,
-												[IF].Value,
+												COALESCE([IF].Value,[IF].FormattedValue) AS [Value],
 												[IT].LookupObjectType,
 												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
 												[IT].LookupDisplayFormat,
@@ -427,17 +427,30 @@ BEGIN
 			begin
 				declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
 				declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250), AllowMultipleValues bit)
+				declare @fromPos int;
+				declare @EndPos int;
+				declare @ToPos int;
 
 				set @formattedValue = @DisplayFormat
 		
 						while patindex('%{%',@formattedValue) > 0
 						 begin
-							declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+							set @FromPos = patindex('%{%',@formattedValue);
+							set @EndPos = PATINDEX('%}%', @formattedValue);
+							if @EndPos = 0
+								set @EndPos = len(@formattedValue);
+
+							set @ToPos = @EndPos;
+
+							if @FromPos < @EndPos
+								set @ToPos = @EndPos - @FromPos + 1;
+
+							declare @txt nvarchar(100) = SUBSTRING(@formattedValue, @FromPos, @ToPos)
 							insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
 							set @formattedValue = replace(@formattedValue, @txt, '')
 						end
-						
-						
+
+
 						if @LookupObjectType = 'Artifact'
 								begin
 									insert into @fieldValues
