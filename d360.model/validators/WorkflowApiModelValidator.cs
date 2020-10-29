@@ -501,5 +501,20 @@ namespace d360.model.validators
             }
             return isValid;
         }
+
+        public bool IsValidDirectionForWorkflowGetModel(IEnumerable<KeyValuePair<string,string>> queryParams)
+        {
+            string[] allowedValues = new string[] { "asc", "desc" };
+            var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+            if (directionFilter.Key == null)
+                return true;
+
+            if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                return false;
+
+            return true;
+        }
+
     }
 }
