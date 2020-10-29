@@ -633,13 +633,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         [
             HttpDelete,
             Route("users"),
+            SwaggerRequestExample(typeof(DeleteUserModel), typeof(DeleteUserExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteUsers(List<string> users)
+        public async Task<IHttpActionResult> DeleteUsers(List<DeleteUserModel> users)
         {
             var prefix = "Membership.DeleteUsers => ";
 
@@ -653,17 +654,10 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 foreach (var u in users)
                 {
-                    if (Guid.TryParse(u, out Guid res))
+                    resources.Add(new UserApiDeleteModel()
                     {
-                        resources.Add(new UserApiDeleteModel()
-                        {
-                            Uid = res
-                        });
-                    }
-                    else
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The value [{u}] is not a valid uid."));
-                    }
+                        Uid = u.Uid
+                    });
                 }
 
                 var execution = getApiExecution(users.Count);
