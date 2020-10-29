@@ -240,6 +240,9 @@ WHEN NOT MATCHED THEN
             //if there are none we are done
             if (fusionAttributes.Count == 0) return;
 
+            //load all the star tags from the community
+            var eagleStarTagMap = LoadEagleStarTagsFromCommunity();
+
             //need to find tag for given column
             foreach (var item in fusionAttributes)
             {
@@ -247,6 +250,9 @@ WHEN NOT MATCHED THEN
                 var fieldName = (string)item.name;
                 var fusionAttributeId = (int)item.id;
                 var tag = string.Empty;
+
+                //if found add to the fields 
+                if (!eagleStarTagMap.TryGetValue(fieldName, out tag)) continue;
 
                 //add an entry to field table for this fusion attribute for the star tag field type
                 company.Execute(@"                            
@@ -256,6 +262,16 @@ WHEN NOT MATCHED THEN
             }       
             
         }
+
+        private Dictionary<string,string> LoadEagleStarTagsFromCommunity()
+        {
+            Dictionary<string, string> hash = new Dictionary<string, string>();
+
+            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
+
+            return hash;
+        }
+
 
         [TestMethod]
         public void CreateKey()
