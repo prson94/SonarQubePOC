@@ -228,10 +228,12 @@ namespace d360.web.Controllers
                                             if (ft.LookupObjectType == "ReferenceItem")
                                             {
                                                 var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
-                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, val);
-                                                var otherAssetsHaveColor = Company.Assets.Any(x => x.AssetTypeID == detail.AssetTypeID && x.Color != null);
-                                                var colorData = Company.Query<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (detail != null ? detail.AssetID : 0) }).FirstOrDefault();
-                                                if (colorData != null || otherAssetsHaveColor)
+                                                var lookupAssetTypeID = (det != null ? det.AssetTypeID : 0);
+                                                
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (det != null ? det.AssetID : 0) }).FirstOrDefault();
+                                                
+                                                // if we have color data on the current asset otherwise we have to check if other assets in the same type have a color
+                                                if (colorData != null || (Company.Assets.Any(x => x.AssetTypeID == lookupAssetTypeID && x.Color != null)) )
                                                 {
                                                     JObject obj = null;
                                                     if (colorData != null)
