@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
+using System.Runtime.Caching;
 
 namespace d360.web.Handlers
 {
@@ -18,10 +18,19 @@ namespace d360.web.Handlers
         {
             bool isCorsRequest = request.Headers.Contains("Origin");
             bool isPreflightRequest = request.Method == HttpMethod.Options;
+            const string Key = "AllowOrigins";
+            const int ExpirationMinutes = 10;
+
             List<string> origins = new List<string>();
             if (isCorsRequest)
             {
                 var origin = request.Headers.GetValues("Origin").First();
+                ObjectCache cache = MemoryCache.Default;
+                var items = new Dictionary<string, List<string>>();           
+
+                if (cache.Contains(Key))
+                    items = (Dictionary<string, List<string>>)cache.Get(Key);
+
                 if (isPreflightRequest)
                 {
                     return Task.Factory.StartNew(() =>
@@ -34,21 +43,30 @@ namespace d360.web.Handlers
 
                         HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
 
-                        using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                        if (items.ContainsKey(host))
                         {
-                            cnn.Open();
-                            var value = cnn.Query<string>(@"select coalesce(CS.Value, S.DefaultValue) from Setting S 
+                            origins = items[host];
+                        }
+                        else
+                        {
+                            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+                            {
+                                cnn.Open();
+                                var value = cnn.Query<string>(@"select coalesce(CS.Value, S.DefaultValue) from Setting S 
                                 inner join CompanyDomainSetting DS on DS.UrlPrefix = @prefix
                                 left join CompanySetting CS on CS.SettingID = S.ID and CS.CompanyID = DS.CompanyID 
                                 where S.ID = 76", new { prefix = host }).FirstOrDefault();
 
-                            if (!string.IsNullOrEmpty(value))
-                            {
-                                origins = value.Split(',').ToList();
+                                if (!string.IsNullOrEmpty(value))
+                                {
+                                    origins = value.Split(',').ToList();
+                                    items.Add(host, origins);
+                                    cache.Set(Key, items, DateTime.UtcNow.AddMinutes(ExpirationMinutes));
+                                }
                             }
+
                         }
                         
-
 
                         if (!origins.Any(v => v == origin))
                         {
