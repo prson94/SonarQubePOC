@@ -126,5 +126,14 @@ namespace d360.core.entities.Process
     {
         public Guid keyUid { get; set; }
         public int IntersectId { get; set; }
+        public string Location { get; set; }
+        public int SubjectCardinality { get; set; }
+        public int ObjectCardinality { get; set; }
+    }
+
+    public class ProcessDiagramCopyMapper
+    {
+        public Guid oldUid { get; set; }
+        public Guid keyUid { get; set; }
     }
 }

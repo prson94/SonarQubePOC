@@ -205,7 +205,10 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public List<ValidationError> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId, List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel)
+        public List<ValidationError> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model,
+            List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId,
+            bool isDiagramReplace, List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel,
+            List<ProcessDiagramCopyMapper> pdCopyMapper)
         {
             var validationRes = new List<ValidationError>();
 
@@ -473,8 +476,20 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
 
 ", new { executionId = execution.ExecutionID, resourceId = Company.CurrentResourceID }, transaction: trans);
 
-                    var relJson = JsonConvert.SerializeObject(copyRelationshipModel);
+                    if (isDiagramReplace)
+                    {
+                        //Copy relationship from source asset to target asset
+                        if (copyRelationshipModel.Count > 0)
+                        {
+                            CopyRelationships(execution, copyRelationshipModel, conn, trans);
+                        }
 
+                        if (pdCopyMapper.Count > 0)
+                        {
+                            CopyTags(execution, pdCopyMapper, conn, trans);
+                        }
+
+                    }
                     var reader = conn.ExecuteReader($"select executionitemuid, uid from {assetsTable} where executionid = @ExecutionID and action <> 'Delete'", new { execution.ExecutionID }, transaction: trans);
                     int updatedItemsCount = 0;
                     while (reader.Read())
@@ -572,6 +587,108 @@ new
 
 
             return validationRes;
+        }
+
+        private void CopyRelationships(ApiExecution execution, List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel, SqlConnection conn, SqlTransaction trans)
+        {
+            var relJson = JsonConvert.SerializeObject(copyRelationshipModel);
+            conn.Execute($@"
+                            drop table if exists #relationshipMap
+                            create table #relationshipMap(
+	                            keyUid uniqueidentifier,
+	                            intersectid int,
+	                            [location] nvarchar(100)
+                            )
+
+                            drop table if exists #intersectMap
+                            create table #intersectMap(
+	                            intersectFromId int,
+	                            intersectToId int
+                            )
+
+                            insert into #relationshipMap
+                            select * from OPENJSON(@json)
+                            with (	keyUid uniqueidentifier '$.keyUid',
+		                            intersectId int '$.IntersectId',
+		                            location nvarchar(100) '$.Location')
+
+
+                            merge [Intersect] IT
+                            using(
+	                            select I.IntersectTypeId,
+			                            A.Object as Subject, 
+			                            A.ObjectID as SubjectID,
+			                            I.Object,
+			                            I.ObjectID,
+			                            I.Id as OldIntersectId
+	                            from #relationshipMap
+		                            inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = #relationshipMap.keyuid
+		                            inner join Asset A on a.uid = eda.uid
+		                            inner join [Intersect] I on I.ID = #relationshipMap.intersectid
+		                            where eda.executionid = @executionid and eda.Action <> 'Delete' and #relationshipMap.Location = 'Subject'
+	                            union
+	                            select I.IntersectTypeId,
+			                            A.Object, 
+			                            A.ObjectID,
+			                            I.Object as Subject,
+			                            I.ObjectID as SubjectID,
+			                            I.Id as OldIntersectId
+	                            from #relationshipMap
+		                            inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = #relationshipMap.keyuid
+		                            inner join Asset A on a.uid = eda.uid
+		                            inner join [Intersect] I on I.ID = #relationshipMap.intersectid
+		                            where eda.executionid = @executionid and eda.Action <> 'Delete' and #relationshipMap.Location = 'Object'
+                            ) src on (1=0)
+                            WHEN NOT MATCHED THEN INSERT (IntersectTypeId,Subject,SubjectID,Object,ObjectID,State,CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,Owner,Deleted,Visible,uid)
+                            VALUES (	src.IntersectTypeId,
+			                            src.Subject, 
+			                            src.SubjectID,
+			                            src.Object,
+			                            src.ObjectID,
+			                            '1',
+			                            @resourceid,
+			                            getutcdate(),
+			                            @resourceid,
+			                            getutcdate(),
+			                            'BULK_API',
+			                            0,
+			                            1,
+			                            newid())
+                            output src.OldIntersectId, Inserted.Id
+                            into #intersectMap;
+
+                            
+                            insert into Field (ObjectType,ObjectID,FieldTypeID,Value,FormattedValue,UpdatedBy,UpdatedOn)
+                            select 'Intersect', IM.intersectToId, F.FieldTypeId, F.Value, F.FormattedValue, @resourceId,getutcdate() 
+                            from #intersectMap IM
+	                            inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = IM.intersectFromId
+
+                            ", new { execution.ExecutionID, resourceId = Company.CurrentResourceID, json = relJson }, transaction: trans);
+        }
+        private void CopyTags(ApiExecution execution, List<ProcessDiagramCopyMapper> copyMappers, SqlConnection conn, SqlTransaction trans)
+        {
+            var assetMap = JsonConvert.SerializeObject(copyMappers);
+            conn.Execute($@"
+                drop table if exists #assetsMap
+                create table #assetsMap(
+	                oldUid uniqueidentifier,
+                    keyUid uniqueidentifier
+                )
+
+                 insert into #assetsMap
+                select * from OPENJSON(@assetMap)
+                with (	oldUid uniqueidentifier '$.oldUid',
+                        keyUid uniqueidentifier '$.keyUid')
+
+                insert into AssetTag (uid, AssetID,TagId,CreatedOn, CreatedBy)
+                select newid(),NewAsset.Id, ATAG.TagId, getutcdate(), @resourceId 
+                from #assetsMap
+	                inner join api.ExecutionDiagramAsset eda on eda.executionitemuid = #assetsMap.keyuid
+	                inner join Asset A on a.uid = #assetsMap.oldUid
+	                inner join Asset NewAsset on NewAsset.uid = eda.uid
+	                inner join AssetTag ATAG on ATAG.AssetId = A.Id
+	                where eda.executionid = @executionid and eda.Action <> 'Delete'
+                            ", new { execution.ExecutionID, resourceId = Company.CurrentResourceID, assetMap }, transaction: trans);
         }
 
         public IEnumerable<ProcessDiagramBadge> GetDiagramAssetBadges(Guid assetUid)

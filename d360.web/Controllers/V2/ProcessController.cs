@@ -177,7 +177,10 @@ namespace d360.web.Controllers.V2
                 Asset targetAsset;
                 Asset sourceAsset = null;
                 List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel = null;
+                List<ProcessDiagramCopyRelationshipModel> rejectedRelationsipsCopy = null;
+                List<ProcessDiagramCopyMapper> pdCopyMapper = null;
 
+                bool isDiagramReplace = false;
 
                 bool validateFields = true;
                 if (sourceAssetUid.HasValue)
@@ -200,6 +203,7 @@ namespace d360.web.Controllers.V2
 
                 if (sourceAssetUid.HasValue)
                 {
+                    isDiagramReplace = true;
                     sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
                     if (sourceAsset == null)
                     {
@@ -229,22 +233,27 @@ namespace d360.web.Controllers.V2
 	                                                            where pxd.diagramassetuid = @assetuid
 
 
-                                                            select ass.assetUid as keyUid, I.Id as IntersectId from #assets ass
-	                                                            inner join Asset a on a.uid = ass.assetuid
-	                                                            inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
-                                                            union
-                                                            select ass.assetUid as keyUid, I.Id as IntersectId from #assets ass
-	                                                            inner join Asset a on a.uid = ass.assetuid
-	                                                            inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
-
+                                                            select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+                                                                 inner join Asset a on a.uid = ass.assetuid
+                                                                 inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
+	                                                             inner join [IntersectType] it on i.IntersectTypeID = it.ID
+                                                             union
+                                                             select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+                                                                 inner join Asset a on a.uid = ass.assetuid
+                                                                 inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
+	                                                             inner join [IntersectType] it on i.IntersectTypeID = it.ID
                                                             ", new { assetUid = sourceAsset.uid }).ToList();
 
+                    rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
+                    copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
+
+                    pdCopyMapper = new List<ProcessDiagramCopyMapper>();
                     //Invalidate all previous keys
                     foreach (var node in model.nodeDataArray)
                     {
                         var newKey = Guid.NewGuid();
                         var currentKey = node.AssetUid;
-
+                        pdCopyMapper.Add(new ProcessDiagramCopyMapper() { oldUid = node.AssetUid, keyUid = newKey });
                         foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
                         {
                             rel.keyUid = newKey;
@@ -404,7 +413,10 @@ namespace d360.web.Controllers.V2
                     execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
                 }
 
-                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model, toAdd, toUpdate, toDelete, targetAsset.ID, copyRelationshipModel);
+                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
+                    toAdd, toUpdate, toDelete,
+                    targetAsset.ID, isDiagramReplace,
+                    copyRelationshipModel, pdCopyMapper);
 
                 if (validationRes.Count > 0)
                 {
@@ -412,7 +424,7 @@ namespace d360.web.Controllers.V2
                 }
 
 
-                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count };
+                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, warnings = rejectedRelationsipsCopy != null ? rejectedRelationsipsCopy : null };
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 
             }
