@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_ImpactHop-v1">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -162,28 +162,6 @@ begin
 		from	#hierarchies H;
 	end
 
-	-- Get count-related data for unique set of Asset IDs, then join to this #count table at the end.
-	drop table if exists #counts;
-	create table #counts (ID bigint, AssetTypeID int, ActionCount int, DisplayValue nvarchar(500));
-	create clustered index cix_TempCounts on #counts (ID)
-
-	insert into #counts (ID, AssetTypeID)
-		select ID, AssetTypeID from #hierarchies where ID is not null group by ID, AssetTypeID;
-
-	update	H
-	set		H.ActionCount = (
-							select	count(1) as ActionCount
-							from	Issue I
-									inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-							where	I.CompletedOn is null
-									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
-									and A.ID = H.ID
-							group by A.Uid
-							),
-			H.DisplayValue = DV.DisplayValue
-	from	#counts H
-			left join AssetDisplayValue DV on DV.AssetID = H.ID;
-
 	update	H
 	set		HasAssetReadAccess = 0
 	from	#hierarchies H
@@ -212,7 +190,8 @@ begin
 						CAST(0x0 AS UNIQUEIDENTIFIER)
 			from		#hierarchies O
 						left join #hierarchies C on C.ParentID = O.ID
-			where		C.ID is null and O.ParentID is null
+						left join AssetType AT on AT.Id = O.AssetTypeId
+			where		C.ID is null and O.ParentID is null and AT.Class <> 15
 			group by	O.AssetTypeID
 
 		-- Update parent key for single-level assets with key for asset type records added above.
@@ -221,7 +200,62 @@ begin
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
+
+		-- Handle Process Diagram Types
+		if exists (select top 1 * from #hierarchies H left join AssetType AT on AT.Id = H.AssetTypeId where AT.Class = 15)
+		begin
+			drop table if exists #processDiagramMap
+			create table #processDiagramMap
+				(   huid uniqueidentifier,
+					assetUid uniqueidentifier,
+					assetTypeUid uniqueidentifier,
+					assetTypeId int,
+					parent_hash nvarchar(100))
+
+			insert into #processDiagramMap
+			select distinct h.uid as huid, pxd.diagramassetuid as assetuid, pxd.diagramassettypeuid as assettypeuid, at.id as assettypeid, utility.GetHash(@salt + '|' + cast(pxd.diagramassetuid as nvarchar(36))) as parent_hash from #hierarchies h
+			inner join processexpandeddata pxd on pxd.fromuid = h.uid
+			inner join assettype at on at.uid = pxd.diagramassettypeuid
+			union 
+			select distinct h.uid as huid, pxd.diagramassetuid as assetuid, pxd.diagramassettypeuid as assettypeuid, at.id as assettypeid, utility.GetHash(@salt + '|' + cast(pxd.diagramassetuid as nvarchar(36))) as parent_hash from #hierarchies h
+			inner join processexpandeddata pxd on pxd.touid = h.uid
+			inner join assettype at on at.uid = pxd.diagramassettypeuid
+
+
+			insert into #hierarchies (uid, AssetTypeID, [Key], ID)
+			select pxd.assetuid as assetuid, pxd.assettypeid, pxd.parent_hash, a.id
+			 from #processDiagramMap pxd 
+			 inner join #hierarchies h on h.uid = pxd.huid
+			 inner join asset a on a.uid = pxd.assetuid
+
+			update #hierarchies 
+			set parentkey = pxd.parent_hash
+			from #processDiagramMap pxd
+			where #hierarchies.uid = pxd.huid
+		end
 	end
+
+	-- Get count-related data for unique set of Asset IDs, then join to this #count table at the end.
+	drop table if exists #counts;
+	create table #counts (ID bigint, AssetTypeID int, ActionCount int, DisplayValue nvarchar(500));
+	create clustered index cix_TempCounts on #counts (ID)
+
+	insert into #counts (ID, AssetTypeID)
+		select ID, AssetTypeID from #hierarchies where ID is not null group by ID, AssetTypeID;
+
+	update	H
+	set		H.ActionCount = (
+							select	count(1) as ActionCount
+							from	Issue I
+									inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+							where	I.CompletedOn is null
+									and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+									and A.ID = H.ID
+							group by A.Uid
+							),
+			H.DisplayValue = DV.DisplayValue
+	from	#counts H
+			left join AssetDisplayValue DV on DV.AssetID = H.ID;
 
 	update	T
 	set		T.UseAsTransformation = S.UseAsTransformation,
@@ -361,7 +395,7 @@ begin
 							graph.AssetNode T,
 							#hierarchies Hr
 					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (15,16,17)
+							and E.PredicateType not in (15)
 							and E.ID not in (select ID from @preloadedIntersects)
 							and E.ID not in (select IntersectID from #hops)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
@@ -378,7 +412,7 @@ begin
 							graph.AssetNode T,
 							#hierarchies Hr
 					where	MATCH(S-(E)->T)
-							and E.PredicateType not in (15,16,17)
+							and E.PredicateType not in (15)
 							and E.ID not in (select ID from @preloadedIntersects)
 							and E.ID not in (select IntersectID from #hops)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
