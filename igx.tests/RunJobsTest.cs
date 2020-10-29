@@ -240,9 +240,6 @@ WHEN NOT MATCHED THEN
             //if there are none we are done
             if (fusionAttributes.Count == 0) return;
 
-            //load all the star tags from the community
-            var eagleStarTagMap = LoadEagleStarTagsFromCommunity();
-
             //need to find tag for given column
             foreach (var item in fusionAttributes)
             {
@@ -251,9 +248,6 @@ WHEN NOT MATCHED THEN
                 var fusionAttributeId = (int)item.id;
                 var tag = string.Empty;
 
-                //if found add to the fields 
-                if (!eagleStarTagMap.TryGetValue(fieldName, out tag)) continue;
-
                 //add an entry to field table for this fusion attribute for the star tag field type
                 company.Execute(@"                            
 			                      INSERT INTO [Field] ([ObjectType], [ObjectID], [FieldTypeID], [Value]) values ('FusionAttribute', @id, @fieldId, @val)
@@ -261,30 +255,6 @@ WHEN NOT MATCHED THEN
                     new { type = "FusionAttributeType", id = fusionAttributeId, val = tag, fieldId = starTagFieldTypeID });
             }       
             
-        }
-
-        private Dictionary<string,string> LoadEagleStarTagsFromCommunity()
-        {
-            Dictionary<string, string> hash = new Dictionary<string, string>();
-
-            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
-
-            var mapping = community.Query<dynamic>(@"
-                    select 
-	                    flv.[key],
-	                    flv.[value]
-                    FROM 
-	                    [plugin].[FusionLookupType] flt
-	                    inner join [plugin].[fusionlookupvalue] flv on(flt.id = flv.fusionlookuptypeid)
-                    where
-	                    flt.name = 'EagleStarTags'
-                 ").ToList();
-
-            foreach (var item in mapping)
-            {
-                hash.Add(item.key, item.value);
-            }
-            return hash;
         }
 
         [TestMethod]
