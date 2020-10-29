@@ -115,4 +115,16 @@ namespace d360.core.entities.Process
         public Guid AssetUid { get; set; }
         public int RelationshipCount { get; set; }
     }
+
+    public class ProcessDiagramReplaceModel
+    {
+        public Guid assetFrom { get; set; }
+        public Guid assetTo { get; set; }
+    }
+
+    public class ProcessDiagramCopyRelationshipModel
+    {
+        public Guid keyUid { get; set; }
+        public int IntersectId { get; set; }
+    }
 }

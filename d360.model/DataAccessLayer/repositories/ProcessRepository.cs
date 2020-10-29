@@ -153,7 +153,7 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            
+
 
             var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
                 select apd.Diagram  as json from asset a 
@@ -205,7 +205,7 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public List<ValidationError> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId)
+        public List<ValidationError> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId, List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel)
         {
             var validationRes = new List<ValidationError>();
 
@@ -473,7 +473,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
 
 ", new { executionId = execution.ExecutionID, resourceId = Company.CurrentResourceID }, transaction: trans);
 
-
+                    var relJson = JsonConvert.SerializeObject(copyRelationshipModel);
 
                     var reader = conn.ExecuteReader($"select executionitemuid, uid from {assetsTable} where executionid = @ExecutionID and action <> 'Delete'", new { execution.ExecutionID }, transaction: trans);
                     int updatedItemsCount = 0;
@@ -686,7 +686,7 @@ new
                 par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetTypeGroup.Select(x => x.AssetUid).Distinct().Select(x => x.ToString()))));
                 par.Add(new KeyValuePair<string, string>("includeParent", "true"));
                 var assets = await AssetRepository.GetAssets(assetType, par, true);
-                
+
                 var hierarchy = Company.IntersectTypes
                 .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 

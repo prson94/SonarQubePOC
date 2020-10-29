@@ -256,7 +256,7 @@ namespace d360.model.DataAccessLayer
             bool hasAssetPathField = false;
             string hierarchyParentUidCol = "";
             string hierarchyParentUidSelect = "";
-                        
+
             if (assetType == null)
                 throw new Exception("Invalid assetType specified");
 
@@ -282,7 +282,7 @@ namespace d360.model.DataAccessLayer
                     fieldTypes = fieldTypes.Where(x => x.IsListable == true).ToList();
                 }
             }
-                        
+
             var includeFieldsList = new List<string>();
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includefields"))
             {
@@ -739,7 +739,7 @@ namespace d360.model.DataAccessLayer
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
-            {                
+            {
                 var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
                 if (!string.IsNullOrEmpty(simpleFilter))
                 {
@@ -848,7 +848,7 @@ namespace d360.model.DataAccessLayer
                 {populatePremissionAssetTableSQL}
                 select  count(*)
                 from    Asset A 
-                {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "" )} 
+                {(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -907,7 +907,7 @@ namespace d360.model.DataAccessLayer
 
             if (includeTotal)
             {
-                model.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);                
+                model.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
             }
             else
             {
@@ -971,7 +971,7 @@ namespace d360.model.DataAccessLayer
             }
 
             model.items = results;
-            
+
             return model;
         }
 
@@ -1049,7 +1049,7 @@ namespace d360.model.DataAccessLayer
         {
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var results = await GetAssets(assetType, queryParams);
-            
+
             var fields = new List<FieldType>();
 
             bool includeAssetUrl = true;
@@ -2703,7 +2703,7 @@ where	O.RowNum = 1";
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow }, ApiTimeout);
         }
 
-        
+
         public async Task<AssetsCountModel> GetAssetsCounts()
         {
             var results = new AssetsCountModel();
@@ -2723,7 +2723,7 @@ where	O.RowNum = 1";
                 AssetTypeClass.TechnicalAsset,
                 AssetTypeClass.User
             };
-                        
+
             //total asset count
             results.totalNumberOfAssets = await CompanyContext.QueryFirstOrDefaultAsync<int>("select count(1) from asset a inner join assettype att on a.assetTypeId = att.id where att.class in @includedClassTypes", new { includedClassTypes = includedAssetClasses });
 
@@ -2858,7 +2858,7 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model)
+        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true)
         {
             List<ValidationError> errors = new List<ValidationError>();
             foreach (var item in model)
@@ -2869,29 +2869,31 @@ where	O.RowNum = 1";
                     errors.Add(new ValidationError() { Error = "Asset Type not found.", AssetTypeUid = item.AssetTypeUid });
                 }
 
-                foreach (var asset in item.Assets)
+                if (validateFields)
                 {
-                    bool success = true;
-                    string error = "";
-                    var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
-                    CompanyContext.ValidateFields(assetType.Object,
-                        assetType.ObjectID,
-                        true,
-                        fieldTypes,
-                        fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
-                        asset.Fields,
-                        Guid.Empty, 0,
-                        null,
-                        out success,
-                        out error,
-                        true,
-                        true
-                        );
-                    if (!success)
-                        errors.Add(new ValidationError() { AssetName = asset.Fields["Name"], Error = error.Trim().Trim('.'), AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
+                    foreach (var asset in item.Assets)
+                    {
+                        bool success = true;
+                        string error = "";
+                        var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+                        CompanyContext.ValidateFields(assetType.Object,
+                            assetType.ObjectID,
+                            true,
+                            fieldTypes,
+                            fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                            asset.Fields,
+                            Guid.Empty, 0,
+                            null,
+                            out success,
+                            out error,
+                            true,
+                            true
+                            );
+                        if (!success)
+                            errors.Add(new ValidationError() { AssetName = asset.Fields["Name"], Error = error.Trim().Trim('.'), AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
 
+                    }
                 }
-
             }
             return errors;
         }
@@ -2981,7 +2983,7 @@ where   A.[uid] = @assetUid";
 
             var sql = $@"
 select  
-        {string.Join(","+Environment.NewLine, fieldColumns)}
+        {string.Join("," + Environment.NewLine, fieldColumns)}
 from    Asset A
         inner join AssetType T on T.ID = A.AssetTypeID
         outer apply (
@@ -3010,14 +3012,15 @@ where   A.[uid] = @assetUid";
                     return result;
                 });
 
-            return fieldTypes.Select(f => new IndexFieldDisplay(){
-               Name = f.Name,
-               Type = f.Type,
-               Label = f.FriendlyName,
-               Prefix = f.SearchPrefix,
-               Suffix = f.SearchSuffix,
-               Value = data[f.Name]?.ToString() ?? "",
-               Empty = (data[f.Name] is null && f.ShowIfEmpty)
+            return fieldTypes.Select(f => new IndexFieldDisplay()
+            {
+                Name = f.Name,
+                Type = f.Type,
+                Label = f.FriendlyName,
+                Prefix = f.SearchPrefix,
+                Suffix = f.SearchSuffix,
+                Value = data[f.Name]?.ToString() ?? "",
+                Empty = (data[f.Name] is null && f.ShowIfEmpty)
             }).Where(f => !string.IsNullOrEmpty(f.Value) || f.Empty).ToList();
         }
 
@@ -3108,20 +3111,20 @@ where   A.[uid] = @assetUid";
         {
             List<AssetTypeExportTemplate> templateList = new List<AssetTypeExportTemplate>();
 
-            string whereSQL = "";                      
+            string whereSQL = "";
 
             if (exportTemplateUID != null && exportTemplateUID != Guid.Empty)
             {
                 whereSQL = $"where ATET.uid = '{exportTemplateUID}'";
-                                
+
             }
             if (assetTypeUid != null && assetTypeUid != Guid.Empty)
             {
                 whereSQL = $"where AT.Uid = '{assetTypeUid}'";
-            }            
-           
-            if((!string.IsNullOrWhiteSpace(whereSQL)) || (string.IsNullOrWhiteSpace(whereSQL) && CompanyContext.CurrentResourceIsAdmin))
-            {             
+            }
+
+            if ((!string.IsNullOrWhiteSpace(whereSQL)) || (string.IsNullOrWhiteSpace(whereSQL) && CompanyContext.CurrentResourceIsAdmin))
+            {
                 string exportTemplateSQL = $@"select 
                                                 ATET.ID, 
                                                 ATET.uid, 
@@ -3154,7 +3157,7 @@ where   A.[uid] = @assetUid";
                     template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
                 }
             }
-            
+
             return templateList;
         }
     }

@@ -14,6 +14,8 @@ using d360.web.Models;
 using System.Web.Http.Description;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Process;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers.V2
 {
@@ -155,6 +157,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="assetUid">The asset uid</param>
         /// <param name="model"></param>
+        /// <param name="sourceAssetUid">If uid passed, current assets process diagram will be replaced with all its fields, relationships and tags</param>
         /// <returns></returns>
         [
             HttpPut,
@@ -165,14 +168,104 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            ApiExplorerSettings(IgnoreApi = false)
         ]
-        public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model)
+        public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
         {
-
             try
             {
-                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                Asset targetAsset;
+                Asset sourceAsset = null;
+                List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel = null;
+
+
+                bool validateFields = true;
+                if (sourceAssetUid.HasValue)
+                {
+                    validateFields = false;
+                }
+
+                bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
+                if (!sourceAssetUid.HasValue && isModelEmpty)
+                {
+                    throw new Exception("Model cannot be empty.");
+                }
+
+                if (sourceAssetUid.HasValue && !isModelEmpty)
+                {
+                    throw new Exception("When using copy/replace option with sourceAssetUid model must be empty.");
+                }
+
+                targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+                if (sourceAssetUid.HasValue)
+                {
+                    sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
+                    if (sourceAsset == null)
+                    {
+                        throw new Exception("sourceAssetUid is invalid or asset does not exist.");
+                    }
+
+                    if (sourceAsset.ID == targetAsset.ID)
+                    {
+                        throw new Exception("Source and target asset cannot be same.");
+                    }
+                    if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
+                    {
+                        throw new Exception("Source and target asset types must be same.");
+                    }
+
+                    model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
+
+                    copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
+                                                            drop table if exists #assets
+                                                            create table #assets(assetUid uniqueidentifier)
+
+                                                            insert into #assets
+	                                                            select fromuid as assetuid from processexpandeddata pxd
+	                                                            where pxd.diagramassetuid = @assetuid
+	                                                            union
+	                                                            select touid as assetuid from processexpandeddata pxd
+	                                                            where pxd.diagramassetuid = @assetuid
+
+
+                                                            select ass.assetUid as keyUid, I.Id as IntersectId from #assets ass
+	                                                            inner join Asset a on a.uid = ass.assetuid
+	                                                            inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
+                                                            union
+                                                            select ass.assetUid as keyUid, I.Id as IntersectId from #assets ass
+	                                                            inner join Asset a on a.uid = ass.assetuid
+	                                                            inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
+
+                                                            ", new { assetUid = sourceAsset.uid }).ToList();
+
+                    //Invalidate all previous keys
+                    foreach (var node in model.nodeDataArray)
+                    {
+                        var newKey = Guid.NewGuid();
+                        var currentKey = node.AssetUid;
+
+                        foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
+                        {
+                            rel.keyUid = newKey;
+                        }
+
+                        foreach (var link in model.linkDataArray)
+                        {
+                            if (link.from == currentKey)
+                                link.from = newKey;
+
+                            if (link.to == currentKey)
+                                link.to = newKey;
+                        }
+
+                        node["key"] = newKey.ToString();
+                    }
+
+                }
+
+
+
 
                 if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.ModifyAsset))
                 {
@@ -297,7 +390,7 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels);
+                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields);
                 if (validationRes.Count > 0)
                 {
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
@@ -306,7 +399,12 @@ namespace d360.web.Controllers.V2
                 var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
                 var execution = getApiExecution(totalCount);
 
-                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model, toAdd, toUpdate, toDelete, targetAsset.ID);
+                if (sourceAsset != null)
+                {
+                    execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
+                }
+
+                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model, toAdd, toUpdate, toDelete, targetAsset.ID, copyRelationshipModel);
 
                 if (validationRes.Count > 0)
                 {
