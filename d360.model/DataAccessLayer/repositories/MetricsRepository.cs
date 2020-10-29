@@ -61,6 +61,17 @@ namespace d360.model.DataAccessLayer
             }
 
             Company.SaveChanges();
+
+            // Send queue event to scoring engine.
+            Company.SendScoreEventWithPayload(
+                Guid.NewGuid(),
+                ScoreQueueChangeType.MeasureRemoved,
+                new MeasureRemovedModel { 
+                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value, 
+                    MetricAssetUid = currentAssetVersion.AssetUid, 
+                    MetricAssetVersionUid = currentAssetVersion.Uid 
+                }
+             );
         }
 
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)

@@ -36,6 +36,13 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveDate { get; set; }
     }
 
+    public class MeasureRemovedModel
+    {
+        public Guid MetricAssetUid { get; set; }
+        public Guid MetricAssetVersionUid { get; set; }
+        public DateTime EffectiveEndDate { get; set; }
+    }
+
 
     public class MetricScoreApiModel
     {
