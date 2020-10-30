@@ -786,6 +786,7 @@ namespace d360.web.Controllers
             model.HomePageTitleColor = (settings.Any(i => i.SettingID == 44) ? settings.Single(i => i.SettingID == 44).Value : "#fff");
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
+            model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
 
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -1047,6 +1048,24 @@ namespace d360.web.Controllers
                 }
 
                 #endregion
+
+                #endregion
+
+                #region Security
+
+                if (string.IsNullOrWhiteSpace(formModel.AllowedOrigins))
+                {
+                    updateCompanySetting(settings, 76, null);
+                }
+                else
+                {
+                    var origins = formModel.AllowedOrigins
+                        .Split(',')
+                        .Select(o => o.Trim())
+                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
+                        .ToList();
+                    updateCompanySetting(settings, 76, string.Join(",", origins));
+                }
 
                 #endregion
 
