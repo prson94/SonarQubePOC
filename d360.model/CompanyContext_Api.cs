@@ -1224,7 +1224,7 @@ where T.ExecutionId = @executionid;
             }
         }
 
-        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
+        public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
@@ -6869,7 +6869,7 @@ insert into #Keys WITH(TABLOCK)
             left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
             left join (
                 select		A.ID,
-                            STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+                            STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
                 from		Asset A 
                             inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
                             left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -6911,7 +6911,7 @@ insert into #Keys WITH(TABLOCK)
             {
                 var activeKeySql = $@"
 select		A.ID,
-			utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+			utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -6922,7 +6922,7 @@ group by    A.ID;";
                 {
                     activeKeySql = $@"
 select		A.ID,
-			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 from		Asset A 
 			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID

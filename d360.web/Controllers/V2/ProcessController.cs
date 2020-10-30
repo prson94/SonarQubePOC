@@ -509,5 +509,32 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
+
+        /// <summary>
+        /// Retrieves an direct link for process diagram
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("urlByDiagramAsset/{assetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Url of diagram asset", typeof(string)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramUrl(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+
+            Guid baseAssetUid = Company.Query<Guid>(@"select top 1 diagramassetuid from processexpandeddata where fromuid = @assetUid or touid = @assetUid", new { assetUid }).FirstOrDefault();
+            string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url)));
+
+        }
     }
 }

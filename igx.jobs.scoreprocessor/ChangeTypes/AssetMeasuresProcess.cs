@@ -6,6 +6,7 @@ using d360.core.exceptions;
 using d360.core.queue;
 using d360.model;
 using Dapper;
+using igx.jobs.scoreprocessor.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -308,6 +309,58 @@ from	metrics.Asset A
 
                     trans.Commit();
                 }
+                
+                // Store the Governance check values and whetehr they are valid, so we do not have to check individual measure validity more than once.
+                var assetVersionCheckObjectTypes = new AssetVersionCheckObjectTypes();
+
+                Action<MetricAssetDefinitionGovernanceViewModel, Guid, bool?> assetVersionCheckObjectTypeAction = (MetricAssetDefinitionGovernanceViewModel governance, Guid metricAssetVersionUid, bool? overrideBoolValue) => {
+                    if (assetVersionCheckObjectTypes.OkToAddToList(metricAssetVersionUid))
+                    {
+                        var check = MetricGovernanceCheckType.External;
+
+                        var assetVersionCheckObjectType = new AssetVersionCheckObjectType
+                        {
+                            AssetVersionUid = metricAssetVersionUid,
+                            Valid = true
+                        };
+
+                        if (governance != null)
+                        {
+                            check = governance.Check;
+                        }
+
+                        if (overrideBoolValue.HasValue)
+                        {
+                            assetVersionCheckObjectType.Valid = overrideBoolValue.Value;
+                        }
+                        else 
+                        {
+                            var tbl = "";
+                            switch (check)
+                            {
+                                case MetricGovernanceCheckType.Owner:
+                                    tbl = "[ResponsibilityType]";
+                                    assetVersionCheckObjectType.TypeUid = governance.Owner.ResponsibilityTypeUid;
+                                    break;
+                                case MetricGovernanceCheckType.Predicate:
+                                    tbl = "[Predicate]";
+                                    assetVersionCheckObjectType.TypeUid = governance.Predicate.PredicateUid;
+                                    break;
+                                case MetricGovernanceCheckType.Relation:
+                                    tbl = "IntersectType";
+                                    assetVersionCheckObjectType.TypeUid = governance.Relation.IntersectTypeUid;
+                                    break;
+                            }
+                            if (!string.IsNullOrEmpty(tbl))
+                            {
+                                var exists = company.Query<bool>($"select cast(iif(count(1) > 0, 1, 0) as bit) from {tbl} where Uid = @TypeUid", new { assetVersionCheckObjectType.TypeUid }).Single();
+                                assetVersionCheckObjectType.Valid = exists;
+                            }
+                        }
+                    
+                        assetVersionCheckObjectTypes.Add(assetVersionCheckObjectType);                    
+                    }
+                };
 
                 var scoreResults = new List<Score>();
                 var scoreItemResults = new List<ScoreItem>();
@@ -332,7 +385,7 @@ from	metrics.Asset A
                     var providedMeasureResults = models.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.AssetUid == assetEffectiveDate.AssetUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var assetFields = company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
-                    
+
                     providedMeasureResults.ForEach(async n =>
                     {
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
@@ -342,303 +395,328 @@ from	metrics.Asset A
 
                             if (conditionValidator.ConditionMet) // Then we should be creating this score result (a conditon was met, or does not need to be met except to override weight)
                             {
-                                var scoreItem = new ScoreItem
+                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
                                 {
-                                    RawMeasureWeight = conditionValidator.SelectedWeight, // this is the measure/condition weight, which will need to be re-adjusted at the end.
-                                    MetricAssetUid = measure.MetricAssetUid,
-                                    AssetVersionUid = measure.MetricAssetVersionUid,
-                                    RunDate = DateTime.UtcNow,
-                                    UpdatedOn = DateTime.UtcNow,
-                                    ConditionUid = conditionValidator.SelectedConditionUid
-                                };
+                                    var scoreItem = new ScoreItem
+                                    {
+                                        RawMeasureWeight = conditionValidator.SelectedWeight, // this is the measure/condition weight, which will need to be re-adjusted at the end.
+                                        MetricAssetUid = measure.MetricAssetUid,
+                                        AssetVersionUid = measure.MetricAssetVersionUid,
+                                        RunDate = DateTime.UtcNow,
+                                        UpdatedOn = DateTime.UtcNow,
+                                        ConditionUid = conditionValidator.SelectedConditionUid
+                                    };
 
-                                var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
-                                
-                                // Now perform analysis based on measure type and check type.
-                                switch (measure.ScoreType)
-                                {
-                                    case ScoreType.DataQuality:
-                                        #region
-                                        var dqDefinition = definition.DataQuality;
-                                        // Do something with rollups here.
-                                        if (measure.RollupPath == null)
-                                        {
-                                            scoreItem.Value = false;
-                                            scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path is invalid. An asset type or relationship type may have been removed." });
-                                        }
-                                        else
-                                        {
-                                            var columnSql = "select ROW_NUMBER() over (partition by RE2.$from_id, RE1.$from_id order by R.UpdatedOn desc) as RowNumber, R.Uid, R.PassFraction ";
-                                            var tableSql = "from ";
-                                            var whereSql = "";
-                                            var matchQuery = "";
-                                            if (measure.RollupPath.SegmentLinks == null)
+                                    var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
+
+                                    // Now perform analysis based on measure type and check type.
+                                    switch (measure.ScoreType)
+                                    {
+                                        case ScoreType.DataQuality:
+                                            #region
+                                            var dqDefinition = definition.DataQuality;
+                                            // Do something with rollups here.
+                                            if (measure.RollupPath == null)
                                             {
                                                 scoreItem.Value = false;
-                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path Segments do not exist. An asset type or relationship type may have been removed." });
+                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path is invalid. An asset type or relationship type may have been removed." });
                                             }
-                                            else 
+                                            else
                                             {
-                                                int whereAssetTypePosition = 0;
-                                                measure.RollupPath.SegmentLinks.ForEach(s =>
+                                                var columnSql = "select ROW_NUMBER() over (partition by RE2.$from_id, RE1.$from_id order by R.UpdatedOn desc) as RowNumber, R.Uid, R.PassFraction ";
+                                                var tableSql = "from ";
+                                                var whereSql = "";
+                                                var matchQuery = "";
+                                                if (measure.RollupPath.SegmentLinks == null)
                                                 {
-                                                    var tIntersect = $"E{s.IntersectTypeID}_{s.StartPosition}_{s.EndPosition}";
-                                                    var tStart = $"N{s.StartAssetTypeID}_{s.StartPosition}";
-                                                    var tEnd = $"N{s.EndAssetTypeID}_{s.EndPosition}";
-                                                    if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
-                                                    {
-                                                        matchQuery += $"<-({tIntersect})-{tEnd} AND  {tStart}-(RE2)->R<-(RE1)-{tEnd}";
-                                                        tableSql += $"graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
-                                                        whereSql += $" and {tEnd}.AssetTypeID = {s.EndAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tIntersect}.PredicateType = {(int)s.PredicateType} ";
-                                                    }
-                                                    else 
-                                                    {
-                                                        matchQuery = matchQuery.Replace($"{tStart}", "") +
-                                                                     $"{tStart}-({tIntersect})->{tEnd}";
-
-                                                        tableSql = tableSql.Replace($"graph.AssetNode {tStart}, ", "") +
-                                                                   $"graph.AssetNode {tStart}, graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, ";
-
-                                                        whereSql = whereSql.Replace($"and {tStart}.AssetTypeID = {s.StartAssetTypeID}", "") +
-                                                                   $"and {tStart}.AssetTypeID = {s.StartAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tEnd}.AssetTypeID = {s.EndAssetTypeID}";
-                                                    }
-                                                    
-                                                    if (assetEffectiveDate.AssetTypeId == s.StartAssetTypeID && whereAssetTypePosition == 0)
-                                                    {
-                                                        whereAssetTypePosition = s.StartPosition;
-                                                    }
-                                                    else if (assetEffectiveDate.AssetTypeId == s.EndAssetTypeID && whereAssetTypePosition == 0)
-                                                    {
-                                                        whereAssetTypePosition = s.EndPosition;
-                                                    }
-                                                });
-                                                whereSql += $"and N{assetEffectiveDate.AssetTypeId}_{whereAssetTypePosition}.Uid = @AssetUid";
-                                                if (measure.EffectiveEndDate.HasValue)
-                                                {
-                                                    whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                    scoreItem.Value = false;
+                                                    scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path Segments do not exist. An asset type or relationship type may have been removed." });
                                                 }
-
-                                                var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
-                                                try
+                                                else
                                                 {
-                                                    var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
-
-                                                    if (rollupPathResults.Count > 0)
+                                                    int whereAssetTypePosition = 0;
+                                                    measure.RollupPath.SegmentLinks.ForEach(s =>
                                                     {
-                                                        float resultOperationValue = 0;
-                                                        switch (dqDefinition.ResultOperation)
+                                                        var tIntersect = $"E{s.IntersectTypeID}_{s.StartPosition}_{s.EndPosition}";
+                                                        var tStart = $"N{s.StartAssetTypeID}_{s.StartPosition}";
+                                                        var tEnd = $"N{s.EndAssetTypeID}_{s.EndPosition}";
+                                                        if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
                                                         {
-                                                            case MetricRuleResultOperation.Average:
-                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
-                                                                break;
-                                                            case MetricRuleResultOperation.Maximum:
-                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
-                                                                break;
-                                                            case MetricRuleResultOperation.Minimum:
-                                                                resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
-                                                                break;
-                                                        }
-
-                                                        if (measure.IsThresholdBased)
-                                                        {
-                                                            scoreItem.Value = (measure.Threshold <= resultOperationValue);
+                                                            matchQuery += $"<-({tIntersect})-{tEnd} AND  {tStart}-(RE2)->R<-(RE1)-{tEnd}";
+                                                            tableSql += $"graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
+                                                            whereSql += $" and {tEnd}.AssetTypeID = {s.EndAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tIntersect}.PredicateType = {(int)s.PredicateType} ";
                                                         }
                                                         else
                                                         {
-                                                            // This will be used when adjusting max and actual weights.
-                                                            scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                            matchQuery = matchQuery.Replace($"{tStart}", "") +
+                                                                         $"{tStart}-({tIntersect})->{tEnd}";
+
+                                                            tableSql = tableSql.Replace($"graph.AssetNode {tStart}, ", "") +
+                                                                       $"graph.AssetNode {tStart}, graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, ";
+
+                                                            whereSql = whereSql.Replace($"and {tStart}.AssetTypeID = {s.StartAssetTypeID}", "") +
+                                                                       $"and {tStart}.AssetTypeID = {s.StartAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tEnd}.AssetTypeID = {s.EndAssetTypeID}";
+                                                        }
+
+                                                        if (assetEffectiveDate.AssetTypeId == s.StartAssetTypeID && whereAssetTypePosition == 0)
+                                                        {
+                                                            whereAssetTypePosition = s.StartPosition;
+                                                        }
+                                                        else if (assetEffectiveDate.AssetTypeId == s.EndAssetTypeID && whereAssetTypePosition == 0)
+                                                        {
+                                                            whereAssetTypePosition = s.EndPosition;
+                                                        }
+                                                    });
+                                                    whereSql += $"and N{assetEffectiveDate.AssetTypeId}_{whereAssetTypePosition}.Uid = @AssetUid";
+                                                    if (measure.EffectiveEndDate.HasValue)
+                                                    {
+                                                        whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                    }
+
+                                                    var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
+                                                    try
+                                                    {
+                                                        var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
+
+                                                        if (rollupPathResults.Count > 0)
+                                                        {
+                                                            float resultOperationValue = 0;
+                                                            switch (dqDefinition.ResultOperation)
+                                                            {
+                                                                case MetricRuleResultOperation.Average:
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
+                                                                    break;
+                                                                case MetricRuleResultOperation.Maximum:
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
+                                                                    break;
+                                                                case MetricRuleResultOperation.Minimum:
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
+                                                                    break;
+                                                            }
+
+                                                            if (measure.IsThresholdBased)
+                                                            {
+                                                                scoreItem.Value = (measure.Threshold <= resultOperationValue);
+                                                            }
+                                                            else
+                                                            {
+                                                                // This will be used when adjusting max and actual weights.
+                                                                scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            scoreItem.Value = true;
+                                                        }
+
+                                                        scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        scoreItem.Value = false;
+                                                        scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
+                                                    }
+                                                }
+
+                                            }
+
+                                            break;
+                                        #endregion
+                                        case ScoreType.Governance:
+                                            #region
+                                            var gDefinition = definition.Governance;
+                                            switch (gDefinition.Check)
+                                            {
+                                                case MetricGovernanceCheckType.External:
+                                                    scoreItem.Value = n.Result;
+                                                    break;
+                                                case MetricGovernanceCheckType.Field:
+                                                    if (gDefinition.Field != null)
+                                                    {
+                                                        var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.Name == gDefinition.Field.FieldTypeName);
+                                                        var assetFieldType = fieldTypes.FirstOrDefault(i => i.Name == gDefinition.Field.FieldTypeName);
+
+                                                        // Check the measure validity.
+                                                        assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, (assetFieldType != null));
+
+                                                        string value = (assetFieldForFieldCheck != null) ? assetFieldForFieldCheck.Value : null;
+                                                        string dataType = (assetFieldType != null) ? assetFieldType.Type : "Text";
+                                                        bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
+                                                        if (assetFieldType != null && assetFieldForFieldCheck != null)
+                                                        {
+                                                            if (assetFieldType.Type == DataType.Lookup.ToString())
+                                                            {
+                                                                int objectID;
+                                                                if (int.TryParse(assetFieldForFieldCheck.Value, out objectID))
+                                                                {
+                                                                    var lookupObject = assetFieldType.LookupObjectType + "Type";
+                                                                    var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
+                                                                    if (assetDetail != null)
+                                                                    {
+                                                                        value = assetDetail.uid.ToString();
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        scoreItem.Value = gDefinition.Field.Operator.TestTwoValues(dataType, allowMultipleValues, gDefinition.Field.Values, value);
+                                                    }
+                                                    break;
+                                                case MetricGovernanceCheckType.Owner:
+                                                    if (gDefinition.Owner != null)
+                                                    {
+                                                        // Check the measure validity.
+                                                        assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
+
+                                                        string trueValue = (gDefinition.Owner.Operator == Operator.Populated) ? "1" : "0";
+                                                        string falseValue = (gDefinition.Owner.Operator == Operator.Populated) ? "0" : "1";
+                                                        scoreItem.Value = company.Query<bool>(
+                                                            $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
+                                                            "from ResponsibilityDetail R " +
+                                                            "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
+                                                            "where exists(select 1 from Asset where ID = R.AssetID and Uid = @AssetUid) " +
+                                                            "or exists(select 1 from Asset where AssetTypeID = R.AssetTypeID and R.AssetID = 0 and Uid = @AssetUid)",
+                                                            new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }
+                                                            ).Single();
+                                                    }
+                                                    else
+                                                    {
+                                                        scoreItem.Value = false;
+                                                    }
+                                                    break;
+                                                case MetricGovernanceCheckType.Predicate:
+                                                    if (gDefinition.Predicate != null)
+                                                    {
+                                                        // Check the measure validity.
+                                                        assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
+
+                                                        var predicateExistenceSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                            "from IntersectDetail I " +
+                                                            "inner join [Predicate] P on P.ID = I.PredicateID " +
+                                                            "and P.Uid = @PredicateUid " +
+                                                            "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)";
+
+                                                        switch (gDefinition.Predicate.Operator)
+                                                        {
+                                                            case Operator.Populated:
+                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                                break;
+                                                            case Operator.NotPopulated:
+                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                                break;
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        scoreItem.Value = true;
+                                                        scoreItem.Value = false;
                                                     }
-
-                                                    scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    scoreItem.Value = false;
-                                                    scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = ex.GetFullExceptionData(false) });
-                                                }
-                                            }
-
-                                        }
-
-                                        break;
-                                        #endregion
-                                    case ScoreType.Governance:
-                                        var gDefinition = definition.Governance;
-                                        switch (gDefinition.Check)
-                                        {
-                                            case MetricGovernanceCheckType.External:
-                                                scoreItem.Value = n.Result;
-                                                break;
-                                            case MetricGovernanceCheckType.Field:
-                                                if (gDefinition.Field != null)
-                                                {
-                                                    var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.Name == gDefinition.Field.FieldTypeName);
-                                                    var assetFieldType = fieldTypes.FirstOrDefault(i => i.Name == gDefinition.Field.FieldTypeName);
-                                                    string value = (assetFieldForFieldCheck != null) ? assetFieldForFieldCheck.Value : null;
-                                                    string dataType = (assetFieldType != null) ? assetFieldType.Type : "Text";
-                                                    bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
-                                                    if (assetFieldType != null && assetFieldForFieldCheck != null)
+                                                    break;
+                                                case MetricGovernanceCheckType.Relation:
+                                                    if (gDefinition.Relation != null)
                                                     {
-                                                        if (assetFieldType.Type == DataType.Lookup.ToString())
+                                                        // Check the measure validity.
+                                                        assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
+
+                                                        var relationBaseSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
+                                                            "from IntersectDetail I inner join IntersectType T on T.ID = I.IntersectTypeID and T.Uid = @IntersectTypeUid ";
+                                                        switch (gDefinition.Relation.Operator)
                                                         {
-                                                            int objectID;
-                                                            if (int.TryParse(assetFieldForFieldCheck.Value, out objectID))
-                                                            {
-                                                                var lookupObject = assetFieldType.LookupObjectType + "Type";
-                                                                var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
-                                                                if (assetDetail != null)
-                                                                {
-                                                                    value = assetDetail.uid.ToString();
-                                                                }
-                                                            }
+                                                            case Operator.Equals:
+                                                                scoreItem.Value = company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                    ).Single();
+                                                                break;
+                                                            case Operator.In:
+                                                                scoreItem.Value = company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
+                                                                    new
+                                                                    {
+                                                                        gDefinition.Relation.IntersectTypeUid,
+                                                                        n.AssetUid,
+                                                                        Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
+                                                                    }
+                                                                    ).Single();
+                                                                break;
+                                                            case Operator.NotEquals:
+                                                                scoreItem.Value = !company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                    ).Single();
+                                                                break;
+                                                            case Operator.NotIn:
+                                                                scoreItem.Value = !company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
+                                                                    new
+                                                                    {
+                                                                        gDefinition.Relation.IntersectTypeUid,
+                                                                        n.AssetUid,
+                                                                        Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
+                                                                    }
+                                                                    ).Single();
+                                                                break;
+                                                            case Operator.NotPopulated:
+                                                                scoreItem.Value = !company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                    ).Single();
+                                                                break;
+                                                            case Operator.Populated:
+                                                                scoreItem.Value = company.Query<bool>(
+                                                                    string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                    ).Single();
+                                                                break;
                                                         }
                                                     }
-                                                    scoreItem.Value = gDefinition.Field.Operator.TestTwoValues(dataType, allowMultipleValues, gDefinition.Field.Values, value);
-                                                }
-                                                break;
-                                            case MetricGovernanceCheckType.Owner:
-                                                if (gDefinition.Owner != null)
-                                                {
-                                                    scoreItem.Value = company.Query<bool>(
-                                                        "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                        "from ResponsibilityDetail R " +
-                                                        "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                        "where exists(select 1 from Asset where ID = R.AssetID and Uid = @AssetUid) " +
-                                                        "or exists(select 1 from Asset where AssetTypeID = R.AssetTypeID and R.AssetID = 0 and Uid = @AssetUid)", 
-                                                        new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }
-                                                        ).Single();
-                                                }
-                                                else
-                                                {
-                                                    scoreItem.Value = false;
-                                                }
-                                                break;
-                                            case MetricGovernanceCheckType.Predicate:
-                                                if (gDefinition.Predicate != null)
-                                                {
-                                                    var predicateExistenceSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                        "from IntersectDetail I " +
-                                                        "inner join [Predicate] P on P.ID = I.PredicateID " +
-                                                        "and P.Uid = @PredicateUid " +
-                                                        "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)";
-                                                    
-                                                    switch (gDefinition.Predicate.Operator)
+                                                    else
                                                     {
-                                                        case Operator.Populated:
-                                                            scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
-                                                            break;
-                                                        case Operator.NotPopulated:
-                                                            scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
-                                                            break;
+                                                        scoreItem.Value = false;
                                                     }
-                                                }
-                                                else
-                                                {
+                                                    break;
+                                                default:
                                                     scoreItem.Value = false;
-                                                }
-                                                break;
-                                            case MetricGovernanceCheckType.Relation:
-                                                if (gDefinition.Relation != null)
-                                                {
-                                                    var relationBaseSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                        "from IntersectDetail I inner join IntersectType T on T.ID = I.IntersectTypeID and T.Uid = @IntersectTypeUid ";
-                                                    switch (gDefinition.Relation.Operator)
-                                                    {
-                                                        case Operator.Equals:
-                                                            scoreItem.Value = company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"), 
-                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
-                                                                ).Single();
-                                                            break;
-                                                        case Operator.In:
-                                                            scoreItem.Value = company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
-                                                                new
-                                                                {
-                                                                    gDefinition.Relation.IntersectTypeUid,
-                                                                    n.AssetUid,
-                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
-                                                                }
-                                                                ).Single();
-                                                            break;
-                                                        case Operator.NotEquals:
-                                                            scoreItem.Value = !company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
-                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
-                                                                ).Single();
-                                                            break;
-                                                        case Operator.NotIn:
-                                                            scoreItem.Value = !company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"), 
-                                                                new { 
-                                                                    gDefinition.Relation.IntersectTypeUid, 
-                                                                    n.AssetUid,
-                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }) }
-                                                                ).Single();
-                                                            break;
-                                                        case Operator.NotPopulated:
-                                                            scoreItem.Value = !company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
-                                                                ).Single();
-                                                            break;
-                                                        case Operator.Populated:
-                                                            scoreItem.Value = company.Query<bool>(
-                                                                string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
-                                                                ).Single();
-                                                            break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    scoreItem.Value = false;
-                                                }
-                                                break;
-                                            default:
-                                                scoreItem.Value = false;
-                                                break;
-                                        }
-                                        break;
-                                }
-
-                                // Check to see if we have an existing scoreItem for this recalculated measure result.
-                                var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
-                                Guid scoreItemUid = Guid.NewGuid();
-                                if (previousScoreItem != null)
-                                {
-                                    if (previousScoreItem.Value == scoreItem.Value)
-                                    {
-                                        // Since value is the same, just link the existing score item to score.
-                                        scoreItemUid = previousScoreItem.ScoreItemUid;
-                                    }
-                                    else 
-                                    {
-                                        if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date)
-                                        {
-                                            // The value for an existing effective date is the now different.
-                                            if (previousScoreItem.UsedInOtherScores)
-                                            {
-                                                // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
-                                                assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
+                                                    break;
                                             }
-                                            else 
+                                            break;
+                                            #endregion
+                                    }
+
+                                    if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
+                                    { 
+                                        // Check to see if we have an existing scoreItem for this recalculated measure result.
+                                        var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
+                                        Guid scoreItemUid = Guid.NewGuid();
+                                        if (previousScoreItem != null)
+                                        {
+                                            if (previousScoreItem.Value == scoreItem.Value)
                                             {
-                                                // Not used in any other score, so we are OK to update the value on this score item.
+                                                // Since value is the same, just link the existing score item to score.
                                                 scoreItemUid = previousScoreItem.ScoreItemUid;
                                             }
+                                            else
+                                            {
+                                                if (previousScoreItem.EffectiveDate.Date == assetEffectiveDate.EffectiveDate.Date)
+                                                {
+                                                    // The value for an existing effective date is the now different.
+                                                    if (previousScoreItem.UsedInOtherScores)
+                                                    {
+                                                        // The score item is used in an earlier score, so we need to create a new score item, AND detach this score from the now old score item.
+                                                        assetScoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid });
+                                                    }
+                                                    else
+                                                    {
+                                                        // Not used in any other score, so we are OK to update the value on this score item.
+                                                        scoreItemUid = previousScoreItem.ScoreItemUid;
+                                                    }
+                                                }
+                                            }
                                         }
+                                        scoreItem.Uid = scoreItemUid;
+
+                                        assetScoreItems.Add(scoreItem);
+                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });                                    
                                     }
                                 }
-                                scoreItem.Uid = scoreItemUid;
-
-                                assetScoreItems.Add(scoreItem);
-                                assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
                             }
                         }
                     });
@@ -651,36 +729,57 @@ from	metrics.Asset A
                             // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
                             if (!assetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid))
                             {
-                                // We need to add a previous result for the missing measure, or create a new one as a failure.
-                                var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
-                                if (conditionValidator.ConditionMet)
+                                if (assetVersionCheckObjectTypes.OkToAddToList(aM.MetricAssetVersionUid))
                                 {
-                                    // Look up to see if there is an existing score item for this measure, and use that value.
-                                    var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
-                                    var scoreItemUid = Guid.NewGuid();
-                                    bool scoreItemValue = false;
-                                    if (previousScoreItem != null) 
+                                    // Check the measure validity.
+                                    if (aM.ScoreType == ScoreType.Governance)
                                     {
-                                        if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                        var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(aM.Definition ?? "{}");
+                                        bool? overrideValue = null;
+                                        if (definition.Governance != null)
                                         {
-                                            scoreItemUid = previousScoreItem.ScoreItemUid;
+                                            if (definition.Governance.Check == MetricGovernanceCheckType.Field)
+                                            {
+                                                overrideValue = fieldTypes.Any(f => f.Name == definition.Governance.Field.FieldTypeName);
+                                            }
                                         }
-                                        scoreItemValue = previousScoreItem.Value;
+                                        assetVersionCheckObjectTypeAction(definition.Governance, aM.MetricAssetVersionUid, overrideValue);
                                     }
+                                }
 
-                                    var scoreItem = new ScoreItem
+                                if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(aM.MetricAssetVersionUid))
+                                { 
+                                    // We need to add a previous result for the missing measure, or create a new one as a failure.
+                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
+                                    if (conditionValidator.ConditionMet)
                                     {
-                                        MetricAssetUid = aM.MetricAssetUid,
-                                        RawMeasureWeight = conditionValidator.SelectedWeight,
-                                        RunDate = DateTime.UtcNow,
-                                        AssetVersionUid = aM.MetricAssetVersionUid,
-                                        ConditionUid = conditionValidator.SelectedConditionUid,
-                                        UpdatedOn = DateTime.UtcNow,
-                                        Value = scoreItemValue,
-                                        Uid = scoreItemUid
-                                    };
-                                    assetScoreItems.Add(scoreItem);
-                                    assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                        // Look up to see if there is an existing score item for this measure, and use that value.
+                                        var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
+                                        var scoreItemUid = Guid.NewGuid();
+                                        bool scoreItemValue = false;
+                                        if (previousScoreItem != null) 
+                                        {
+                                            if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                            {
+                                                scoreItemUid = previousScoreItem.ScoreItemUid;
+                                            }
+                                            scoreItemValue = previousScoreItem.Value;
+                                        }
+
+                                        var scoreItem = new ScoreItem
+                                        {
+                                            MetricAssetUid = aM.MetricAssetUid,
+                                            RawMeasureWeight = conditionValidator.SelectedWeight,
+                                            RunDate = DateTime.UtcNow,
+                                            AssetVersionUid = aM.MetricAssetVersionUid,
+                                            ConditionUid = conditionValidator.SelectedConditionUid,
+                                            UpdatedOn = DateTime.UtcNow,
+                                            Value = scoreItemValue,
+                                            Uid = scoreItemUid
+                                        };
+                                        assetScoreItems.Add(scoreItem);
+                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                    }                                
                                 }
                             }
                         });
@@ -805,6 +904,9 @@ from	metrics.Asset A
                             deleteScoreItemLinks.Columns.Add("ScoreUid", typeof(Guid));
                             deleteScoreItemLinks.Columns.Add("ScoreItemUid", typeof(Guid));
 
+                            var deleteScoreItemVersionLinks = new DataTable();
+                            deleteScoreItemVersionLinks.Columns.Add("AssetVersionUid", typeof(Guid));
+
                             scoresToAdd.ForEach(s =>
                             {
                                 var scoreRow = scores.NewRow();
@@ -852,6 +954,16 @@ from	metrics.Asset A
                                 deleteScoreItemLinks.Rows.Add(scoreRow);
                             });
 
+                            assetVersionCheckObjectTypes.ForEach(s =>
+                            {
+                                if (!s.Valid)
+                                {
+                                    var row = deleteScoreItemVersionLinks.NewRow();
+                                    row["AssetVersionUid"] = s.AssetVersionUid;
+                                    deleteScoreItemVersionLinks.Rows.Add(row);
+                                }
+                            });
+
                             await company.ExecuteAsync(
                                @"create table #Scores (
                                     Uid uniqueidentifier not null,
@@ -885,6 +997,9 @@ from	metrics.Asset A
                                 create table #ScoreItemLinksToDelete (
                                     ScoreUid uniqueidentifier NOT NULL,
 	                                ScoreItemUid uniqueidentifier NOT NULL
+                                );
+                                create table #ScoreItemVersionLinksToDelete (
+                                    AssetVersionUid uniqueidentifier NOT NULL
                                 );", transaction: trans);
 
                             using (var bulkCopy = CreateBulkCopy(company, trans, "#Scores"))
@@ -932,6 +1047,16 @@ from	metrics.Asset A
                                     bulkCopy.ColumnMappings.Add("ScoreItemUid", "ScoreItemUid");
 
                                     await bulkCopy.WriteToServerAsync(deleteScoreItemLinks);
+                                }
+                            }
+
+                            if (assetVersionCheckObjectTypes.Count > 0)
+                            {
+                                using (var bulkCopy = CreateBulkCopy(company, trans, "#ScoreItemVersionLinksToDelete"))
+                                {
+                                    bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
+
+                                    await bulkCopy.WriteToServerAsync(deleteScoreItemVersionLinks);
                                 }
                             }
 
@@ -1008,6 +1133,17 @@ inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;", transaction: tran
                                     "delete T " +
                                     "from metrics.ScoreItemLink T " +
                                     "inner join #ScoreItemLinksToDelete S on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid);", transaction: trans);
+                            }
+
+                            if (deleteScoreItemVersionLinks.Rows.Count > 0)
+                            {
+                                // Delete now invalid score Item Links.
+                                await company.ExecuteAsync(
+                                    "delete T " +
+                                    "from metrics.ScoreItemLink T " +
+                                    "inner join #Scores S on S.Uid = T.ScoreUid " +
+                                    "inner join metrics.ScoreItem I on I.Uid = T.ScoreItemUid " +
+                                    "inner join #ScoreItemVersionLinksToDelete D on D.AssetVersionUid = I.AssetVersionUid;", transaction: trans);
                             }
 
                             // Clean out potentially old references to the same asset versions on a single score.

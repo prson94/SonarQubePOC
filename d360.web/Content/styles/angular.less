@@ -7103,6 +7103,10 @@ table {
     flex-direction: column;
     padding: 8px;
 
+    .flex-row {
+        display: flex;
+    }
+
     .measure-heading {
         display: inline-flex;
         flex-direction: row;
@@ -7114,8 +7118,24 @@ table {
             font-weight: bold;
         }
 
+        &.measure-list {
+            width: 100px;
+            position: absolute;
+        }
+
         .actions {
             margin-left: auto;
+        }
+    }
+
+    .measure-actions {
+        position: sticky;
+        padding-top: 8px;
+        padding-right: 8px;
+        top: 8px;
+
+        .action-box {
+            float: right;
         }
     }
 
@@ -7124,6 +7144,8 @@ table {
         margin-left: -.75rem;
 
         .measure-details-panel {
+            position: sticky;
+            top: 64px;
             padding: 16px;
             border: @ig-field-border;
             border-radius: 4px;

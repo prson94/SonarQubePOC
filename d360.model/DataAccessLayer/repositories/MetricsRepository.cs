@@ -210,6 +210,20 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (model.Definition != null)
+            {
+                var definitionJsonToCheck = "";
+                try
+                {
+                    definitionJsonToCheck = model.Definition.AsJson();
+                }
+                catch {}
+                if (definitionJsonToCheck.Length > 4000)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Definition must not exceed 4000 characters.");
+                }
+                definitionJsonToCheck = null;
+            }
 
             if (model.Allocation.IsExternallyCalculated)
             {
@@ -472,7 +486,15 @@ from	metrics.RollupPath P
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, checkObjectCorrespondsToCheckErrorMessage);
                         }
-                        if (gov.Field != null)
+                        
+                        if (gov.External != null)
+                        {
+                            if (!string.IsNullOrEmpty(gov.External.Instructions) && gov.External.Instructions.Length > 500)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Instructions for External check cannot be longer than 500 characters.");
+                            }
+                        }
+                        else if (gov.Field != null)
                         {
                             var governanceCheckFieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == targetAssetType.ID && x.Name == gov.Field.FieldTypeName);
                             if (governanceCheckFieldType == null)

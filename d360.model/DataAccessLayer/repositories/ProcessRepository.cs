@@ -218,6 +218,8 @@ namespace d360.model.DataAccessLayer
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
 
+            List<Guid> addedAssets = new List<Guid>();
+
             Company.Add(execution);
             Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -520,6 +522,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
                                 throw new Exception("Added item missing from database results!");
                             }
                             addedItem.UpdateAssetUid(updatedAssetUid);
+                            addedAssets.Add(updatedAssetUid);
 
                             foreach (var item in model.linkDataArray)
                             {
@@ -599,6 +602,34 @@ new
                 }
             }
 
+            if (addedAssets.Count > 0 || toDelete.Count > 0)
+            {
+
+                List<DatabaseBulkAssetResult> graphResults = new List<DatabaseBulkAssetResult>();
+
+                addedAssets.ForEach(uid => graphResults.Add(new DatabaseBulkAssetResult()
+                {
+                    Success = true,
+                    uid = uid,
+                    Object = "Diagram"
+                }));
+
+                toDelete.ForEach(delAsset => graphResults.Add(new DatabaseBulkAssetResult()
+                {
+                    Success = true,
+                    uid = delAsset.AssetUid,
+                    Object = "Diagram"
+                }));
+
+                try
+                {
+                    Company.SendAssetGraphEvents(graphResults);
+                }
+                catch
+                {
+
+                }
+            }
 
             return validationRes;
         }

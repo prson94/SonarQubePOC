@@ -45,6 +45,7 @@ export class CompanySettings {
     LineageVersion: number;
     FusionEnabled: boolean = true;
     MaxExcelExportRows: number;
+    AllowedOrigins: string;
 }
 
 export class IpRestriction {
@@ -63,8 +64,6 @@ export class CompanyImage {
         var fileReader = new FileReader();
         if (this.file) {
             fileReader.onloadend = (e: any) => {
-                var contents = e.target.result,
-                    error = e.target.error;
                 this.isLoading = false;
                 this.dataUrl = e.target.result;
             }
