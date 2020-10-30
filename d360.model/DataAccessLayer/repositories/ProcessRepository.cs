@@ -614,6 +614,29 @@ new
                     Object = "Diagram"
                 }));
 
+                if (isDiagramReplace && addedAssets.Count > 0)
+                {
+                    var intersectUids = Company.Query<Guid>(@"
+                            select i.uid from [Intersect] I 
+                                inner join Asset A on A.Object = I.Object and A.ObjectId = I.ObjectId
+                            where A.uid in @assets
+                            union
+                            select i.uid from [Intersect] I 
+                                inner join Asset A on A.Object = I.Subject and A.ObjectId = I.SubjectId
+                            where A.uid in @assets
+                    ", new { assets = addedAssets }).ToList();
+
+                    intersectUids.ForEach(iuid =>
+                    {
+                        graphResults.Add(new DatabaseBulkAssetResult()
+                        {
+                            Success = true,
+                            uid = iuid,
+                            Object = "Intersect"
+                        });
+                    });
+                }
+
                 toDelete.ForEach(delAsset => graphResults.Add(new DatabaseBulkAssetResult()
                 {
                     Success = true,
