@@ -68,4 +68,5 @@
   <include file="scripts/GOV-11988.xml"/>  <!-- Default value set 1 for Resource table and resourcetypeid column-->
   <include file="scripts/GOV-12603.xml"/>  <!-- Add JSON Attribute enable disable setting -->
   <include file="scripts/GOV-11888.xml"/>  <!-- Add CORS allowed origins company setting -->
+  <include file="scripts/GOV-12607.xml"/>  <!-- Rename fusion and event tables in plugin-->
 </databaseChangeLog>
