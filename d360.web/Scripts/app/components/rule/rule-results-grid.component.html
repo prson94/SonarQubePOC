@@ -120,9 +120,9 @@
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate' : 'UTC'}}</span>
             </td>
             <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount | number}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount | number}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount | number}}</span></td>
             <td style="text-align:center;">
                 <span *ngIf="item.Passed!=undefined && item.Passed!=null">
                     <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
