@@ -241,7 +241,7 @@ WHEN NOT MATCHED THEN
             if (fusionAttributes.Count == 0) return;
 
             //load all the star tags from the community
-            var eagleStarTagMap = LoadEagleStarTagsFromCommunity();
+            Dictionary<string, string> eagleStarTagMap = new Dictionary<string, string>();
 
             //need to find tag for given column
             foreach (var item in fusionAttributes)
@@ -262,16 +262,6 @@ WHEN NOT MATCHED THEN
             }       
             
         }
-
-        private Dictionary<string,string> LoadEagleStarTagsFromCommunity()
-        {
-            Dictionary<string, string> hash = new Dictionary<string, string>();
-
-            var community = new CommunityContext(new DummyCachingProvider(), new AzureQueueSource(), new UriSecurityContextProvider());
-
-            return hash;
-        }
-
 
         [TestMethod]
         public void CreateKey()
