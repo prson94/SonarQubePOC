@@ -623,6 +623,7 @@ order by case Object
         {
             var tempFieldDataTypes = new List<string>();
             limitedFieldTypes.ForEach(o => { tempFieldDataTypes.Add($"'{o}'"); });
+            tempFieldDataTypes.Add($"'{DataType.Relationship.ToString()}'");
             var ftTypeRemoveString = string.Join(",", tempFieldDataTypes);
 
             var fieldTypes = Company.Query<string>($@"
