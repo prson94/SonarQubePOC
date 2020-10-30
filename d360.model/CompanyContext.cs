@@ -115,8 +115,6 @@ namespace d360.model
 
         public DbSet<FieldJsonProperty> FieldJsonProperties { get; set; }
 
-        public DbSet<FieldValue> FieldValues { get; set; }
-
         public DbSet<FieldLookupValue> FieldLookupValues { get; set; }                          /* VIEW */
 
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
@@ -282,13 +280,6 @@ namespace d360.model
                         if (items.Any(i => i.FieldTypeID == item.FieldTypeID && string.IsNullOrEmpty(i.Value)))
                         {
                             Set<Field>().Remove(item);
-
-                            if (item.FieldType != null && item.FieldType.AllowMultipleValues)
-                            {
-                                var sql = @"delete from [dbo].[fieldvalue] where objectID = @objectID and objectType = @objectType and fieldtypeid = @fieldTypeID";
-
-                                Execute(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
-                            }
                         }
                     });
                 }
@@ -297,37 +288,6 @@ namespace d360.model
                 }
 
                 SaveChanges();
-
-                items.ForEach(item =>
-                {
-                    if (item.FieldType != null && item.FieldType.AllowMultipleValues)
-                    {
-                        var sql = @" MERGE dbo.[FieldValue] AS T
-                                    USING(
-                                            SELECT
-                                                f.fieldtypeid as fieldtypeid,
-                                                f.objectid as objectid,
-                                                f.objecttype as objecttype,
-                                                V.value as id
-                                            FROM field f
-                                                CROSS APPLY STRING_SPLIT(f.[Value], ',') as V
-                                            where
-                                                objectid = @objectID and fieldtypeid = @fieldTypeID and objecttype = @objectType
-                                        ) as S
-                                    ON T.fieldtypeid = S.fieldtypeid
-                                            and T.objectid = S.objectid
-                                            and T.objecttype = S.objecttype
-                                            and T.[value] = S.id
-                                    WHEN NOT MATCHED BY TARGET THEN
-                                            INSERT(FieldTypeID, ObjectID, ObjectType, [Value])
-                                            VALUES(S.FieldTypeID, S.ObjectID, S.ObjectType, S.ID)
-                                    WHEN NOT MATCHED BY SOURCE AND T.FieldTypeID = @fieldTypeID and T.ObjectID = @objectID and T.ObjectType = @objectType
-                                        THEN DELETE;";
-                        Query<int>(sql, new { objectID = oID, objectType = oType, fieldTypeID = item.FieldTypeID });
-
-
-                    }
-                });
             }
         }
 
