@@ -1224,7 +1224,7 @@ where T.ExecutionId = @executionid;
             }
         }
 
-        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
+        public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
