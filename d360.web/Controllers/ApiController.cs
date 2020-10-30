@@ -798,14 +798,10 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             return new GridField { name = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", type = getGridFieldTypeForColumn(item), apiName = item.Name };
         }
 
-        void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, List<GridColumnGroup> groups, decimal dynamicFieldWidth, bool serverPaged = false)
+        void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
-            {
-                if (!string.IsNullOrEmpty(i.Category))
-                {
-                    groups.Add(new GridColumnGroup { align = "center", name = i.Category.Replace(" ", ""), text = i.Category });
-                }
+            {                
                 columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
 
                 fields.Add(getGridFieldForColumn(i));
@@ -864,8 +860,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var columns = new List<GridColumn>();
             var fields = new List<GridField>();
-            var filterColumns = new List<GridFilterColumn>();
-            var groups = new List<GridColumnGroup>();
+            var filterColumns = new List<GridFilterColumn>();            
             var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
             int remainingWidth = 0;
@@ -891,7 +886,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     }
 
                     var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
                     if (hasParentType && showParent)
                     {
@@ -974,11 +969,10 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         );
                     }
 
-
                     remainingWidth = 80;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
@@ -990,19 +984,16 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "Url", type = "string" });
                     fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
                     break;
-                #endregion
+                #endregion                
+                case SystemObjects.TaxonomyType:
                 case SystemObjects.PolicyType:
                     #region
-
-                    remainingWidth = 45;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "ParentID", type = "number" });
-                    fields.Add(new GridField { name = "PolicyTypeID", type = "number" });
+                    fields.Add(new GridField { name = $"{type}ID", type = "number" });
                     break;
                 #endregion                                
                 case SystemObjects.ReferenceItemType:
@@ -1024,7 +1015,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         loopCount++;
                     }
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -1032,34 +1023,11 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "Color", type = "Color" });
                     fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
                     break;
-                #endregion
-                case SystemObjects.Rule:
-                    #region
-
-                    remainingWidth = 55;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    columns.Add(new GridColumn { text = "Date", datafield = "Date", columntype = GridColumn.COLUMN_TYPE_DATE, filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "MM/dd/yyyy HH:mm:ss" });
-
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
-
-                    columns.Add(new GridColumn { text = "Criticality", datafield = "Criticality", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.SourceID_Name, datafield = "SourceID" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "Status", columntype = GridColumn.COLUMN_TYPE_DROPDOWN, filtertype = GridColumn.FILTER_TYPE_LIST, filteritems = new List<string>() { "Assigned", "Open", "Closed" } });
-
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Date", type = "date" });
-                    fields.Add(new GridField { name = "Criticality", type = "string" });
-                    fields.Add(new GridField { name = "SourceID", type = "string" });
-                    fields.Add(new GridField { name = "Rule", type = "string" });
-                    fields.Add(new GridField { name = "Status", type = "string" });
-                    break;
-                #endregion
+                #endregion               
                 case SystemObjects.RuleType:
                     #region
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
+                    
+                    parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
@@ -1158,59 +1126,10 @@ where   h.ID <> @t order by h.[Level] desc;
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "AssetID", type = "number" });
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "DataProfileID", type = "number" });
+                    fields.Add(new GridField { name = "ID", type = "number" });                    
                     fields.Add(new GridField { name = "Name", type = "string" });
-                    if (Request.GetQueryString("target") == "DataProfile")
-                    {
-                        filterColumns.Add(new GridFilterColumn { text = "Row Count", datafield = "RowCounts", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Uniqueness", datafield = "Uniqueness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Unique Count", datafield = "UniqueCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Completeness", datafield = "Completeness", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Null Count", datafield = "NullCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Blank Count", datafield = "BlankCount", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Data Type", datafield = "DataType", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                        filterColumns.Add(new GridFilterColumn { text = "Minimum Value", datafield = "MinimumValue", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                        filterColumns.Add(new GridFilterColumn { text = "Maximum Value", datafield = "MaximumValue", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
-                        filterColumns.Add(new GridFilterColumn { text = "Precision", datafield = "Precision", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Scale", datafield = "Scale", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Average", datafield = "Average", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Median", datafield = "Median", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-                        filterColumns.Add(new GridFilterColumn { text = "Standard Deviation", datafield = "StandardDeviation", filtertype = GridColumn.FILTER_TYPE_NUMBER, columntype = GridColumn.COLUMN_TYPE_NUMBER });
-
-                        fields.Add(new GridField { name = "RowCount", type = "number", apiName = "RowCounts" });
-                        fields.Add(new GridField { name = "Uniqueness", type = "number", apiName = "Uniqueness" });
-                        fields.Add(new GridField { name = "UniqueCount", type = "number", apiName = "UniqueCount" });
-                        fields.Add(new GridField { name = "Completeness", type = "number", apiName = "Completeness" });
-                        fields.Add(new GridField { name = "NullCount", type = "number", apiName = "NullCount" });
-                        fields.Add(new GridField { name = "BlankCount", type = "number", apiName = "BlankCount" });
-                        fields.Add(new GridField { name = "DataType", type = "string", apiName = "DataType" });
-                        fields.Add(new GridField { name = "MinimumValue", type = "string", apiName = "MinimumValue" });
-                        fields.Add(new GridField { name = "MaximumValue", type = "string", apiName = "MaximumValue" });
-                        fields.Add(new GridField { name = "Precision", type = "number", apiName = "Precision" });
-                        fields.Add(new GridField { name = "Scale", type = "number", apiName = "Scale" });
-                        fields.Add(new GridField { name = "Average", type = "number", apiName = "Average" });
-                        fields.Add(new GridField { name = "Median", type = "number", apiName = "Median" });
-                        fields.Add(new GridField { name = "StandardDeviation", type = "number", apiName = "StandardDeviation" });
-
-
-                        columns.Add(new GridColumn { text = "Row Count", datafield = "RowCounts", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Uniqueness", datafield = "Uniqueness", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Unique Count", datafield = "UniqueCount", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Completeness", datafield = "Completeness", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Null Count", datafield = "NullCount", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Blank Count", datafield = "BlankCount", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Data Type", datafield = "DataType", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Minimum Value", datafield = "MinimumValue", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Maximum Value", datafield = "MaximumValue", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Precision", datafield = "Precision", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Scale", datafield = "Scale", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Average", datafield = "Average", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Median", datafield = "Median", filteritems = new List<string>() });
-                        columns.Add(new GridColumn { text = "Standard Deviation", datafield = "StandardDeviation", filteritems = new List<string>() });
-                    }
-
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
+                    
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
                     items.ForEach(i =>
                     {
@@ -1234,7 +1153,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     filterColumns.Add(new GridFilterColumn { text = "ID", datafield = "ID", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     fields.Add(new GridField { name = "ID", type = "number" });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
                     items.ForEach(i =>
                     {
@@ -1257,7 +1176,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Enabled_Name, columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, datafield = "Enabled" });
                     columns.Add(new GridColumn { text = "Owners", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.COLUMN_TYPE_STRING, datafield = "Owners" });
 
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
@@ -1274,7 +1193,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
                     columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
                     columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
+                    parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
                     columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
                     columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
                     columns.Add(new GridColumn
@@ -1297,25 +1216,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
                     fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
                     break;
-                #endregion
-                case SystemObjects.TaxonomyType:
-                    #region TaxonomyType
-                    {
-                        var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
-
-                        foreach (var field in taxonomyFields)
-                        {
-                            columns.Add(getGridColumnForColumn(field, 0, false, useNameAsDataField: false));
-                            fields.Add(getGridFieldForColumn(field, useNameAsDataField: false));
-                        }
-
-                        fields.Add(new GridField { name = "AssetID", type = "number" });
-                        fields.Add(new GridField { name = "ID", type = "number" });
-                        fields.Add(new GridField { name = "ParentID", type = "number" });
-                        fields.Add(new GridField { name = "TaxonomyTypeID", type = "number" });
-                    }
-                    break;
-                    #endregion
+                #endregion                
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -1327,7 +1228,6 @@ where   h.ID <> @t order by h.[Level] desc;
                 Fields = fields,
                 Columns = columns,
                 FilterColumns = filterColumns,
-                ColumnGroups = groups,
                 TopLevelFilterColumns = topLevelFilterFields,
                 IsReadOnly = isReadOnly,
                 ScoreAllocations = scoreAllocations
@@ -1546,18 +1446,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 )
             );
         }
-
-
-
-        [Route("fusion/promotion/QueryAttributes"), HttpGet]
-        public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
-        {
-            var results = Company.Query<dynamic>(@"select f.id, f.[name], f.friendlyName from fieldtype f
-                join fusion.[rule] r on r.id = @ruleID and f.[object] = r.[objecttype] and f.objectid = r.objectid", new { ruleID });
-            return Request.CreateResponse(HttpStatusCode.OK, results);
-
-        }
-                
+ 
         #endregion
 
         #region Groups
@@ -1810,46 +1699,6 @@ order by    rnk, [Name]";
         #endregion
 
         #region Complex Lookup Fields
-
-        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
-        {
-            var valueString = value?.ToString() ?? "";
-            switch (dataType.ToUpper())
-            {
-                case "DECIMAL":
-                    double dVal = 0;
-                    if (double.TryParse(valueString, out dVal))
-                        document.SetCellValue(rowIndex, colIndex, dVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "NUMBER":
-                    int intVal = 0;
-                    if (int.TryParse(valueString, out intVal))
-                        document.SetCellValue(rowIndex, colIndex, intVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "DATE":
-                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
-                    {
-                        document.SetCellValue(rowIndex, colIndex, dateVal);
-
-                        SLStyle style = document.CreateStyle();
-                        style.FormatCode = "m/d/yyyy";
-                        document.SetCellStyle(rowIndex, colIndex, style);
-                    }
-                    break;
-                default:
-                    var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(value + "");
-                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-                    if (txt.StartsWith("="))
-                        txt = "'" + txt;
-                    document.SetCellValue(rowIndex, colIndex, txt);
-                    break;
-            }
-        }
 
         private List<DetailReadOnlyRowModel> RenderComplexLookupField(string type, int id, int fieldTypeID)
         {
@@ -5535,27 +5384,6 @@ where	Type = 'ReferenceItemType'
         #endregion
 
         #region Issue Types
-
-        [Route("issuetypes")]
-        public IQueryable<core.entities.IssueType> GetIssueTypes(string @object = null, int? objectID = null)
-        {
-            var sql = @"select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
-                cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = I.ID) C
-                where C.Allocations = 0
-                {0}";
-            if (@object != null && objectID != null)
-                sql = string.Format(sql, @"union all
-                    select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
-                    inner join IssueTypeRelation R on R.IssueTypeID = I.ID
-                    inner join AssetType T on T.ID = R.AssetTypeID
-                    inner join Asset A on A.AssetTypeID = T.ID
-                    where A.Object = @object and A.ObjectID = @objectID
-                    order by name asc");
-            else
-                sql = string.Format(sql, "order by name asc");
-
-            return Company.Query<IssueType>(sql, new { @object, objectID }).AsQueryable();
-        }
 
         [Route("issue/{issueID:int}")]
         public HttpResponseMessage GetIssue(int issueID)
