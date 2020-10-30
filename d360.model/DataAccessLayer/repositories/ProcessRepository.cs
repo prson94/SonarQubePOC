@@ -153,7 +153,7 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            
+
 
             var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
                 select apd.Diagram  as json from asset a 
@@ -214,6 +214,8 @@ namespace d360.model.DataAccessLayer
 
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
+
+            List<Guid> addedAssets = new List<Guid>();
 
             Company.Add(execution);
             Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -491,6 +493,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
                                 throw new Exception("Added item missing from database results!");
                             }
                             addedItem.UpdateAssetUid(updatedAssetUid);
+                            addedAssets.Add(updatedAssetUid);
 
                             foreach (var item in model.linkDataArray)
                             {
@@ -570,6 +573,34 @@ new
                 }
             }
 
+            if (addedAssets.Count > 0 || toDelete.Count > 0)
+            {
+
+                List<DatabaseBulkAssetResult> graphResults = new List<DatabaseBulkAssetResult>();
+
+                addedAssets.ForEach(uid => graphResults.Add(new DatabaseBulkAssetResult()
+                {
+                    Success = true,
+                    uid = uid,
+                    Object = "Diagram"
+                }));
+
+                toDelete.ForEach(delAsset => graphResults.Add(new DatabaseBulkAssetResult()
+                {
+                    Success = true,
+                    uid = delAsset.AssetUid,
+                    Object = "Diagram"
+                }));
+
+                try
+                {
+                    Company.SendAssetGraphEvents(graphResults);
+                }
+                catch
+                {
+
+                }
+            }
 
             return validationRes;
         }
@@ -686,7 +717,7 @@ new
                 par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetTypeGroup.Select(x => x.AssetUid).Distinct().Select(x => x.ToString()))));
                 par.Add(new KeyValuePair<string, string>("includeParent", "true"));
                 var assets = await AssetRepository.GetAssets(assetType, par, true);
-                
+
                 var hierarchy = Company.IntersectTypes
                 .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
