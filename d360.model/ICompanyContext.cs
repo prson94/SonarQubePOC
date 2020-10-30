@@ -56,7 +56,6 @@ namespace d360.model
         DbSet<Field> Fields { get; set; }
         DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
         DbSet<FieldType> FieldTypes { get; set; }
-        DbSet<FieldValue> FieldValues { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
         DbSet<FollowDetail> FollowDetails { get; set; }
         DbSet<Follow> Follows { get; set; }
