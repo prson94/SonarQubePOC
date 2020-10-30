@@ -71,14 +71,14 @@
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="testConditionForm" [title]="'Pass Test'" *ngIf="testConditionForm && !metricForm.value.isGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
                         <label for="check" class="ig-label">Test Type</label>
                         <p-dropdown igDropdown
                                     igSize="small"
                                     [disabled]="disabled"
-                                    [options]="testTypes"
+                                    [options]="checkTypeOptions | enumToSelectitem"
                                     (onChange)="testTypeChange($event)"
                                     [(ngModel)]="model.Definition.Governance.Check"
                                     appendTo="body"
@@ -86,7 +86,8 @@
                                     [showClear]="false"
                                     formControlName="check"
                                     placeholder="Value required"
-                                    tabindex="6">
+                                    tabindex="6"
+                                    name="check">
                             <ng-template let-item pTemplate="selectedItem">
                                 <span>{{item.label}}</span>
                             </ng-template>
@@ -94,18 +95,40 @@
                     </div>
                     <div [ngSwitch]="model.Definition.Governance.Check">
                         <div *ngSwitchCase="0">
-                            External
+                            <div class="row row-margin">
+                                <label for="updateFrequency" class="ig-label">Update Frequency</label>
+                                <p-dropdown igDropdown
+                                            igSize="small"
+                                            [disabled]="disabled"
+                                            [options]="updateFrequencyOptions | enumToSelectitem"
+                                            [(ngModel)]="model.Definition.Governance.External.UpdateFrequency"
+                                            appendTo="body"
+                                            [required]="true"
+                                            [showClear]="false"
+                                            formControlName="updateFrequency"
+                                            placeholder="Value required"
+                                            tabindex="6"
+                                            name="UpdateFrequency">
+                                    <ng-template let-item pTemplate="selectedItem">
+                                        <span>{{item.label}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="row row-margin">
+                                <label for="instructionString" class="ig-label">Instruction String</label>
+                                <input igInput tabindex="7" igSize="medium" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
+                            </div>
                         </div>
-                        <div *ngSwitchCase="1">
-                            <field-condition-grid [formGroup]="testConditionForm" *ngIf="fields.length > 0" [conditions]="testFieldConditions" [fields]="fields"></field-condition-grid>
+                        <div class="row row-margin" *ngSwitchCase="1">
+                            <field-condition-grid [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditions]="testFieldConditions" (onChange)="updateFormValidity()" [fields]="fields"></field-condition-grid>
                         </div>
-                        <div *ngSwitchCase="2">
+                        <div class="row row-margin" *ngSwitchCase="2">
                             Owner
                         </div>
-                        <div *ngSwitchCase="3">
+                        <div class="row row-margin" *ngSwitchCase="3">
                             Predicate
                         </div>
-                        <div *ngSwitchCase="4">
+                        <div class="row row-margin" *ngSwitchCase="4">
                             Relationship
                         </div>
                         <ng-template ngSwitchDefault>
@@ -121,10 +144,10 @@
                     </div>
                 </div>
             </ig-property-group>
-            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
                     <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
-                    <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
+                    <field-condition-grid [formGroup]="metricForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields" (onChange)="updateFormValidity()"></field-condition-grid>
                     <div class="row" *ngIf="showMatchPicker">
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
@@ -132,13 +155,13 @@
                 </div>
             </ig-property-group>
         </form>
-
     </div>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
             <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !validateConditions() || conditionFormMode != FormMode.Default || isSaving" (click)="save()"></button>
+            <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || isSaving" (click)="save()"></button>
+            <button igButton class="ig-button-primary" type="button" label="test" (click)="print()"></button>
         </div>
     </div>
 </div>

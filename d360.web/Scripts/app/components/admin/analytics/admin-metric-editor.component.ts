@@ -1,17 +1,19 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel } from '../../../models/operator.model';
-import { FormGroup, FormBuilder, } from '@angular/forms';
+import { FormGroup, FormBuilder, FormControl, } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
+import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
+import { debounce } from 'lodash';
 
 
 @Component({
@@ -61,6 +63,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
     currentEffectiveDate: Date;
+    checkTypeOptions = MetricGovernanceCheckType;
+    updateFrequencyOptions = MetricUpdateFrequency;
 
     showMatchPicker: boolean = false;
 
@@ -78,14 +82,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
 
     metricForm: FormGroup = null;
-    conditionForm: FormGroup = null;
-    testConditionForm: FormGroup = null;
 
     @ViewChild('conditionGrid', { static: false }) conditionGrid: FieldConditionGrid;
-
+    @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
     private fields: any[] = [];
 
-    testTypes: any[] = [];
 
     constructor(private metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
@@ -118,22 +119,16 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             effectiveDate: null,
             weight: null,
             isGroup: null,
-            matchType: null
+            matchType: null,
+            check: null
         });
-        this.conditionForm = this.fb.group({});
-
-        this.testConditionForm = this.fb.group({});
-
-        this.testTypes = [
-            { label: "Field", value: 1 },
-            { label: "External", value: 0 },
-            { label: "Owner", value: 2 },
-            { label: "Predicate", value: 3 },
-            { label: "Relation", value: 4 }
-        ];
 
         this.load();
         this.loadFieldData();
+    }
+
+    updateFormValidity() {
+        debounce(() => { this.groups.forEach(x => { x.refreshBadgeCounts(); }); },200);
     }
 
     loadFieldData() {
@@ -293,13 +288,62 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.showMatchPicker = true;
         else
             this.showMatchPicker = false;
-
-        return this.conditionForm.valid;
+        return true;
     }
 
+    print() {
+        console.log(this.metricForm);
+    } 
+
     testTypeChange(event) {
-        console.log(event);
-        //switch to show the correct type of chenge type.
+        this.resetGovernanceDefinition();
+        switch (this.model.Definition.Governance.Check) {
+            case 0:
+                this.metricForm.addControl("instructionString", new FormControl(''));
+                this.metricForm.addControl("updateFrequency", new FormControl(''));
+                this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
+                this.cdRef.markForCheck();
+                break;
+            case 1:
+                //handle field
+                this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
+                this.updateFormValidity();
+                break;
+            case 2:
+                //handle owner 
+                break;
+            case 3:
+                //handle predicate 
+                break;
+            case 4:
+                //handle relation
+                break;
+            default:
+                break;
+        }
+    }
+
+    resetGovernanceDefinition() {
+        //clear all checks.
+        this.model.Definition.Governance.Field = null;
+        this.model.Definition.Governance.Owner = null;
+        this.model.Definition.Governance.External = null;
+        this.model.Definition.Governance.Predicate = null;
+        this.model.Definition.Governance.Relation = null;
+        this.cdRef.markForCheck();
+
+        //remove the form controls after a small delay 
+        this.metricForm.removeControl("updateFrequency");
+        this.metricForm.removeControl("instructionString");
+
+        Object.keys(this.metricForm.controls).forEach(x => {
+            if (x.indexOf('option_') !== -1 || x.indexOf('condition_') !== -1 || x.indexOf('value_1_') !== -1 || x.indexOf('value_2_') !== -1)
+                this.metricForm.removeControl(x);
+        });
+
+        //clear conditions
+        this.testFieldConditions = [];
+
     }
 
     save() {
@@ -318,12 +362,22 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.model.EffectiveDate = condate;
         }
 
-
-        this.model.Definition = new MetricAssetDefinitionViewModel();
         if (!this.isExternallyCalculated) {
-            this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
-            this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
-            this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+            switch (this.model.Definition.Governance.Check) {
+                case 0:
+                    this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+                    break;
+                case 1:
+                    if (this.testFieldConditions && this.testFieldConditions.length == 1) {
+                        let condition = this.testFieldConditions[0];
+                        this.model.Definition.Governance.Field.FieldTypeName = condition.field;
+                        this.model.Definition.Governance.Field.Operator = condition.operator;
+                        this.model.Definition.Governance.Field.Values = condition.value;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
             var conditions = this.conditions.filter(x => x.field);
 

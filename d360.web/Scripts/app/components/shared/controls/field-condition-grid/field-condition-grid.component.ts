@@ -16,6 +16,8 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     @Input() formGroup: FormGroup;
     @Input() fields: FieldTypeAPIModelFieldCondition[] = [];
     @Input() conditions: FieldCondition[] = [];
+    @Input() singleSelectMode: boolean = false;
+    @Input() required: boolean = false;
 
     @Output() onChange = new EventEmitter();
 
@@ -120,18 +122,28 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         }
     }
 
-
     tryAddNewCondition() {
         var lastCondition = this.conditions[this.conditions.length - 1];
         var availableFields = this.getAvailableFields(null);
-        if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
-            if (availableFields.length > 0) {
+        if (this.singleSelectMode) {
+            if (this.conditions.length == 0) {
                 var hash = this.randstr('id');
                 this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
                 this.formGroup.addControl('option_' + hash, new FormControl(''));
                 this.formGroup.addControl('condition_' + hash, new FormControl(''));
                 this.formGroup.addControl('value_1_' + hash, new FormControl(''));
                 this.formGroup.addControl('value_2_' + hash, new FormControl(''));
+            }
+        } else {
+            if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
+                if (availableFields.length > 0) {
+                    var hash = this.randstr('id');
+                    this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
+                    this.formGroup.addControl('option_' + hash, new FormControl(''));
+                    this.formGroup.addControl('condition_' + hash, new FormControl(''));
+                    this.formGroup.addControl('value_1_' + hash, new FormControl(''));
+                    this.formGroup.addControl('value_2_' + hash, new FormControl(''));
+                }
             }
         }
 
