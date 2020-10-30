@@ -1,12 +1,12 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges, HostListener, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
-import { FormMode, SelectItem } from "../../../models/form.model";
+import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel } from '../../../models/operator.model';
-import { FormGroup, FormBuilder, NgForm } from '@angular/forms';
+import { FormGroup, FormBuilder, } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
@@ -18,6 +18,11 @@ import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/f
     selector: 'd3s-admin-metric-editor',
     templateUrl: './admin-metric-editor.component.html',
     providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    styles: [`
+    .row-margin{
+        margin: 8px 0px;
+    }
+    `]
 
 })
 
@@ -37,6 +42,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Output() onSave = new EventEmitter();
 
     conditions: FieldCondition[] = [];
+
+    testFieldConditions: FieldCondition[] = [];
 
     private displayWeight: number;
     private displayEffectiveDate: Date;
@@ -72,9 +79,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     metricForm: FormGroup = null;
     conditionForm: FormGroup = null;
+    testConditionForm: FormGroup = null;
+
     @ViewChild('conditionGrid', { static: false }) conditionGrid: FieldConditionGrid;
 
     private fields: any[] = [];
+
+    testTypes: any[] = [];
 
     constructor(private metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
@@ -109,8 +120,17 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             isGroup: null,
             matchType: null
         });
-
         this.conditionForm = this.fb.group({});
+
+        this.testConditionForm = this.fb.group({});
+
+        this.testTypes = [
+            { label: "Field", value: 1 },
+            { label: "External", value: 0 },
+            { label: "Owner", value: 2 },
+            { label: "Predicate", value: 3 },
+            { label: "Relation", value: 4 }
+        ];
 
         this.load();
         this.loadFieldData();
@@ -233,6 +253,15 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             }
         }
 
+        if (!this.model.Definition) {
+            this.model.Definition = new MetricAssetDefinitionViewModel();
+            if (!this.isExternallyCalculated) {
+                this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+                this.model.Definition.Governance.Check = null;
+            }
+        }
+
+
         this.getMaxScoreDate();
         this.onResize(null);
     }
@@ -266,6 +295,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.showMatchPicker = false;
 
         return this.conditionForm.valid;
+    }
+
+    testTypeChange(event) {
+        console.log(event);
+        //switch to show the correct type of chenge type.
     }
 
     save() {
@@ -380,5 +414,4 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.maxHeight = window.innerHeight - 240;
         this.cdRef.markForCheck();
     }
-
 };

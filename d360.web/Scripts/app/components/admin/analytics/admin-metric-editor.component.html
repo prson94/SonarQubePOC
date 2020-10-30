@@ -71,7 +71,57 @@
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="testConditionForm" [title]="'Pass Test'" *ngIf="testConditionForm && !metricForm.value.isGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
+                <div inputs>
+                    <div class="row">
+                        <label for="check" class="ig-label">Test Type</label>
+                        <p-dropdown igDropdown
+                                    igSize="small"
+                                    [disabled]="disabled"
+                                    [options]="testTypes"
+                                    (onChange)="testTypeChange($event)"
+                                    [(ngModel)]="model.Definition.Governance.Check"
+                                    appendTo="body"
+                                    [required]="true"
+                                    [showClear]="false"
+                                    formControlName="check"
+                                    placeholder="Value required"
+                                    tabindex="6">
+                            <ng-template let-item pTemplate="selectedItem">
+                                <span>{{item.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div [ngSwitch]="model.Definition.Governance.Check">
+                        <div *ngSwitchCase="0">
+                            External
+                        </div>
+                        <div *ngSwitchCase="1">
+                            <field-condition-grid [formGroup]="testConditionForm" *ngIf="fields.length > 0" [conditions]="testFieldConditions" [fields]="fields"></field-condition-grid>
+                        </div>
+                        <div *ngSwitchCase="2">
+                            Owner
+                        </div>
+                        <div *ngSwitchCase="3">
+                            Predicate
+                        </div>
+                        <div *ngSwitchCase="4">
+                            Relationship
+                        </div>
+                        <ng-template ngSwitchDefault>
+                            <div class="row row-margin">
+                                <ig-message-box>
+                                    <span>
+                                        Choose the type of test to perfom on assets (eg. a field, relationship or ownership test),
+                                        to be prompted for more information on how to test for a pass or fail.
+                                    </span>
+                                </ig-message-box>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </ig-property-group>
+            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
                     <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
                     <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
