@@ -347,6 +347,20 @@ namespace d360.model.DataAccessLayer
                     //delete assets
 
                     conn.Execute($@"
+delete F
+from Field F
+    inner join api.executiondiagramasset S on S.Action = 'Delete'
+    inner join asset a on s.uid = a.uid
+    inner join [Intersect] I on i.object = a.object and i.objectid = a.objectid
+    where s.executionid = @ExecutionID and f.objecttype = 'Intersect' and f.objectid = I.Id
+
+delete F
+from Field F
+    inner join api.executiondiagramasset S on S.Action = 'Delete'
+    inner join asset a on s.uid = a.uid
+    inner join [Intersect] I on i.subject = a.object and i.subjectid = a.objectid
+    where s.executionid = @ExecutionID and f.objecttype = 'Intersect' and f.objectid = I.Id
+
  delete	T
     from	[Intersect] T
             inner join api.executiondiagramasset S on S.Action = 'Delete'
