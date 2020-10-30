@@ -1076,7 +1076,7 @@ from	metrics.Asset A
                             // Merge scores.
                             await company.ExecuteAsync(
                                 "merge metrics.Score as T " +
-                                "using #Scores as S " +
+                                "using (select Si.* from #Scores Si inner join metrics.Allocation A on A.Uid = Si.AllocationUid) as S " +
                                 "on ((S.AllocationUid = T.AllocationUid and T.AssetUid = S.AssetUid and T.EffectiveDate = S.EffectiveDate) OR (T.Uid = S.Uid)) " +
                                 "when matched then " +
                                 "update set " +
@@ -1101,7 +1101,20 @@ inner join #ScoreUidSynchronization S on S.GivenUid = T.ScoreUid;
 update T 
 set T.Uid = S.ActualUid 
 from #Scores T 
-inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;", transaction: trans);
+inner join #ScoreUidSynchronization S on S.GivenUid = T.Uid;
+
+delete  I 
+from    #ScoreItems I
+        inner join #ScoreItemLinks L on L.ScoreItemUid = I.Uid
+        inner join #Scores S on S.Uid = L.ScoreUid
+        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
+where   N.ActualUid is null;
+
+delete  L 
+from    #ScoreItemLinks L
+        inner join #Scores S on S.Uid = L.ScoreUid
+        left join #ScoreUidSynchronization N on N.GivenUid = S.Uid
+where   N.ActualUid is null;", transaction: trans);
 
                             // Merge score items.
                             await company.ExecuteAsync(
