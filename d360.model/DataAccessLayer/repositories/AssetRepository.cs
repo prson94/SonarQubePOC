@@ -2695,7 +2695,7 @@ from	(
 				AL.LowerThreshold, 
 				AL.UpperThreshold 
 		from    metrics.Score S
-				inner join Asset A on A.Uid = S.AssetUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null 
+				inner join Asset A on A.Uid = S.AssetUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date --and S.EndDate is null 
 				inner join metrics.Allocation AL on AL.Uid = S.AllocationUid
 		) O
 where	O.RowNum = 1";

@@ -43,7 +43,6 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveEndDate { get; set; }
     }
 
-
     public class MetricScoreApiModel
     {
         public int pageSize { get; set; } = 250;

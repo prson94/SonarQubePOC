@@ -738,7 +738,25 @@ where   E.ExecutionID = @ExecutionID
             Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(item));
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
-        
+
+        public void SaveScoreProcessingResults<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null)
+        {
+            if (!startedOn.HasValue)
+            {
+                startedOn = DateTime.UtcNow;
+            }
+
+            var info = new ScoreQueueInfo
+            {
+                CompanyID = CurrentCompanyID,
+                ChangeType = changeType,
+                ExecutionUid = executionUid,
+                StartedOn = startedOn.Value,
+                Location = ScoreQueueExecutionDataLocation.File
+            };
+            Storage.CreateFile(info.StorageFolder, $"{info.StorageFilePrefix}_{resultFileSuffix}.json", JsonConvert.SerializeObject(item));
+        }
+
         #endregion
     }
 
