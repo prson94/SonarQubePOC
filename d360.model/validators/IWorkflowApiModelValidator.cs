@@ -29,5 +29,7 @@ namespace d360.model.validators
         bool IsValidAction(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidRelationship(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidOrderByFieldForGetWorkflowModel(IEnumerable<KeyValuePair<string, string>> queryParams);
+        bool IsValidDirectionForWorkflowGetModel(IEnumerable<KeyValuePair<string, string>> queryParams);
+        
     }
 }

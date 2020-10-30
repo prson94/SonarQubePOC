@@ -692,6 +692,13 @@ namespace d360.model.DataAccessLayer
                 var pageSize = model.pageSize != 0 ? model.pageSize : -1;
 
                 var defaultFilterIncuded = false;
+                var direction = "asc";
+
+                var directionParam = queryParams.FirstOrDefault(q => q.Key.ToLower() == "_direction");
+                if (directionParam.Key != null)
+                {
+                    direction = directionParam.Value;
+                }
 
                 queryParams.ToList().ForEach(x => {
 
@@ -762,13 +769,13 @@ namespace d360.model.DataAccessLayer
                             }
                             break;
                         case "_order":
-                            switch (x.Value)
+                            switch (x.Value.ToLower())
                             {
                                 case "startedon":
-                                    orderBySql = "order by item.StartedOn asc";
+                                    orderBySql = $"order by item.StartedOn {direction}";
                                     break;
                                 case "completedon":
-                                    orderBySql = "order by item.CompletedOn asc";
+                                    orderBySql = $"order by item.CompletedOn {direction}";
                                     break;
                             }
                             break;
@@ -783,7 +790,7 @@ namespace d360.model.DataAccessLayer
 
                 if (string.IsNullOrEmpty(orderBySql))
                 {
-                    orderBySql = "order by item.StartedOn asc";
+                    orderBySql = $"order by item.StartedOn {direction}";
                 }
 
                 pagingSql.Add(orderBySql);

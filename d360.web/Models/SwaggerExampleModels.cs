@@ -327,6 +327,18 @@ namespace d360.web.Models
         }
     }
 
+    public class DeleteUserExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new DeleteUserModel
+                {
+                    Uid = Guid.Empty
+                };
+        }
+    }
+
     #endregion
 
     #region Responsibilities examples
