@@ -115,6 +115,33 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add an attribute group using the form below..
+        /// </summary>
+        public static string Add_AttributeType_Directions {
+            get {
+                return ResourceManager.GetString("Add_AttributeType_Directions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Attribute Group.
+        /// </summary>
+        public static string Add_AttributeType_Title {
+            get {
+                return ResourceManager.GetString("Add_AttributeType_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add Attribute Category.
+        /// </summary>
+        public static string Add_AttributeTypeCategory_Title {
+            get {
+                return ResourceManager.GetString("Add_AttributeTypeCategory_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field type successfully added..
         /// </summary>
         public static string Add_FieldType_Confirmation {
@@ -373,7 +400,16 @@ namespace Resources {
             get {
                 return ResourceManager.GetString("ArtifactType", resourceCulture);
             }
-        }               
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A category can group different types of attributes together into more meaningful sets of of similar information..
+        /// </summary>
+        public static string AttributeTypeCategory_Directions {
+            get {
+                return ResourceManager.GetString("AttributeTypeCategory_Directions", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Workflow successfully de-allocated..
