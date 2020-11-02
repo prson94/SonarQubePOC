@@ -139,6 +139,7 @@ export class SearchAssetDetail {
 export class AssetScore {
     AssetUid: string;
     EffectiveDate: string;
+    EndDate: string;
     Value: number;
     ScoreType: string;
     RunDate: string;
