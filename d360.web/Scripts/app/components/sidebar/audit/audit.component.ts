@@ -60,7 +60,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                     let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
                     //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
-                    if (this.objectType == 'PolicyType' || this.objectType == 'TaxonomyType')
+                    if (['PolicyType', 'TaxonomyType', 'Report', 'ResponsibilityType'].indexOf(this.objectType) > -1)
                         reloadNav = false;
 
                     let objectID = this.objectType == 'Tag' ? params['uid'] : this.objectID;
