@@ -1,8 +1,6 @@
-﻿import { Component, NgZone, Input, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
-    WorkflowObjectType,
-    WorkflowChangeType,
     LinkModel,
     WorkflowActivityType,
     TransitionType,

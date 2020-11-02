@@ -33,6 +33,11 @@ import {
     WorkflowChangeType,
     FormResponseType,
     WorkflowActivityType,
+    NodeSettings,
+    NodeFields,
+    HTTPRequestSettings,
+    RelationshipUpdateSettings,
+    FieldUpdateSettings,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
@@ -812,7 +817,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (n.activityType == WorkflowActivityType.FieldChange) {
 
-                if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = {};
+                if (n.settings.FieldUpdate == null) n.settings.FieldUpdate = new FieldUpdateSettings();
                 if (n.settings.FieldUpdate.Field == null) n.settings.FieldUpdate.Field = [];
                 //handle obj vs array due to XML parsing
 
@@ -832,17 +837,15 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
             if (n.activityType == WorkflowActivityType.HTTPRequest) {
                 if (n.settings.HTTPRequest == null)
-                    n.settings.HTTPRequest = {};
-                if (n.settings.HTTPRequest.Headers == null) {
-                    n.settings.HTTPRequest.Headers = [];
-                } else if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
+                    n.settings.HTTPRequest = new HTTPRequestSettings();
+                if (n.settings.HTTPRequest.Headers != null && n.settings.HTTPRequest.Headers.length == null) {
                     n.settings.HTTPRequest.Headers = [n.settings.HTTPRequest.Headers];
                 }
             }
 
             if (n.activityType == WorkflowActivityType.RelationshipUpdate) {
                 if (n.settings.RelationshipUpdate == null)
-                    n.settings.RelationshipUpdate = {};
+                    n.settings.RelationshipUpdate = new RelationshipUpdateSettings();
                 if (n.settings.RelationshipUpdate.Relationship == null)
                     n.settings.RelationshipUpdate.Relationship = {};
             }
@@ -930,8 +933,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             }
 
             //clean up empty settings
-            if (settings.hasOwnProperty('settings') == true && settings.settings == null) {
-                settings = {};
+            if ((settings as any).hasOwnProperty('settings') == true && (settings as any).settings == null) {
+                delete (settings as any).settings;
             }
 
 
@@ -1764,8 +1767,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             m.diagramObjectType = DiagramObjectType.Node;
             m.activityType = a.ID;
             m.runCount = 0;
-            m.settings = {};
-            m.fields = {};
+            m.settings = new NodeSettings();
+            m.fields = new NodeFields();;
             m.valid = true;
 
             paletteModel.push(m);

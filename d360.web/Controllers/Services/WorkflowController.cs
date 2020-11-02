@@ -2113,9 +2113,9 @@ order by wi.StartedOn desc";
             {
                 string IssueObjectType = string.Empty;
                 int IssueObjectId = -1;
-                if (model.Event != null && model.Event.Condition != null)
+                if (!string.IsNullOrEmpty(model?.Event?.Condition))
                 {
-                    string asXML = string.Empty;
+                    string asXML;
                     if (model.Event.Condition.TrimStart().First() == '{')
                         asXML = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
                     else
@@ -2346,11 +2346,11 @@ order by wi.StartedOn desc";
                                     order by StartedOn desc
                            ";
 
-                var w = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
+                var workflow = Company.WorkflowTypes.Where(x => x.ID == typeId).FirstOrDefault();
 
-                var res = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid = version, sid = stepId });
+                var items = Company.Query<dynamic>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId, verid = version, sid = stepId });
 
-                return Request.CreateResponse(new { items = res, workflow = w });
+                return Request.CreateResponse(new { items, workflow });
             }
             catch (Exception ex)
             {
@@ -2398,9 +2398,9 @@ order by wi.StartedOn desc";
 
 
 
-                var res = Company.Query<WorkflowAssignmentSummary>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId = typeId, verid = version, sid = stepId }).FirstOrDefault<WorkflowAssignmentSummary>();
+                var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = (resourceId > 0 ? resourceId : Company.CurrentResourceID), typeId, verid = version, sid = stepId }).FirstOrDefault<WorkflowAssignmentSummary>();
 
-                return Request.CreateResponse(new { item = res });
+                return Request.CreateResponse(new { item });
             }
             catch (Exception ex)
             {
@@ -2700,7 +2700,7 @@ order by wi.StartedOn desc";
                         }
 
                         result.Assignee = string.Join(", ", users.Select(u => u.FullName));
-                        result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
+                        result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? bool.FalseString : bool.TrueString;
                     }
                     else if (result.MessageRecipientType == EmailTaskRecipientType.SpecificUser.ToString() || result.MessageRecipientType == EmailTaskRecipientType.Initiator.ToString())
                     {
@@ -2724,7 +2724,7 @@ order by wi.StartedOn desc";
                                 formattedUserList.Add(u);
 
                             if (user != null && user.ResourceID == Company.CurrentResourceID)
-                                result.IsAssignedLoginUser = Boolean.TrueString;
+                                result.IsAssignedLoginUser = bool.TrueString;
                         }
                         result.Assignee = string.Join(", ", formattedUserList);
                     }
@@ -2744,7 +2744,6 @@ order by wi.StartedOn desc";
                 JObject jo = sfields.Children<JObject>()
                         .FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
-                //var sfield = sfields[0];
                 string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
                 if (changedTypes != null)
                 {
@@ -2770,10 +2769,11 @@ order by wi.StartedOn desc";
             }
 
         }
+
         private WorkflowStepRelationshipChange GetWorkFlowStepRelationshipChanges(dynamic settings, int itemId, string objectName)
         {
             WorkflowStepRelationshipChange relChange = null;
-            if (settings != null && settings.RelationshipUpdate != null && settings.RelationshipUpdate.Relationship != null)
+            if (settings?.RelationshipUpdate?.Relationship != null)
             {
 
                 dynamic relations = new JArray(settings.RelationshipUpdate.Relationship);
@@ -2854,8 +2854,6 @@ order by wi.StartedOn desc";
 
             if (responsiblities.Count != 0 && asset != null)
             {
-
-
                 sql = $@"WITH CTE(FullName,ResourceID,ResponsibilityTypeName,Email) 
                         as 
                          (Select distinct  R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,rd.ResponsibilityTypeName,R.Email
@@ -2870,15 +2868,14 @@ order by wi.StartedOn desc";
 	                        STRING_AGG(cte.ResponsibilityTypeName, ', ') WITHIN GROUP (ORDER BY cte.ResponsibilityTypeName asc) as Responsibility
                         from cte
                         group by cte.FullName,cte.ResourceID,cte.Email";
-
             }
             else
             {
                 sql = $@"Select R.FirstName + ' ' + R.LastName as FullName, r.ResourceID,R.Email
 						From reporting.Global_Resource R  
 						where state=1 and email in ('{string.Join("','", emails)}')";
-
             }
+
             return Company.Query<EmailedResourceResponsibility>(sql).ToList();
         }
         private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
@@ -3161,7 +3158,7 @@ order by wi.StartedOn desc";
                 if (detail.Condition != null && detail.Condition.Condition != null)
                 {
                     detail.Condition = detail.Condition.Condition;
-                    if (detail.Condition.GetType().Name != "JArray")
+                    if (detail.Condition.GetType() != typeof(JArray))
                         detail.Condition = new JArray(detail.Condition);
                     for (int i = 0; i < detail.Condition.Count; i++)
                     {
@@ -3247,7 +3244,7 @@ order by wi.StartedOn desc";
                             List<dynamic> responsibilitiesList = new List<dynamic>();
 
 
-                            if (detail.Settings.ResponsibilityTypeID.GetType().Name != "JArray")
+                            if (detail.Settings.ResponsibilityTypeID.GetType() != typeof(JArray))
                             {
                                 detail.Settings.ResponsibilityTypeID = new JArray(detail.Settings.ResponsibilityTypeID);
                             }
@@ -3277,14 +3274,14 @@ order by wi.StartedOn desc";
                             detail.Fields.form["@description"] = await Company.ProcessMessageTokens(detail.Fields.form["@description"].Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
                     }
 
-                    if (detail.ItemSettings.emails != null)
+                    if (detail?.ItemSettings?.emails != null)
                     {
                         var emails = detail.ItemSettings.emails;
 
                         if (emails.email != null)
                         {
                             detail.ItemSettings.hasEmails = true;
-                            if (emails.email.GetType().Name != "JArray")
+                            if (emails.email.GetType() != typeof(JArray))
                             {
                                 emails.email = new JArray(emails.email);
                             }
@@ -3344,7 +3341,7 @@ order by wi.StartedOn desc";
 
                     if (detail.ItemFields.form != null)
                     {
-                        if (detail.ItemFields.form.GetType().Name != "JArray")
+                        if (detail.ItemFields.form.GetType() != typeof(JArray))
                         {
                             detail.ItemFields.form = new JArray(detail.ItemFields.form);
                         }
@@ -3356,7 +3353,7 @@ order by wi.StartedOn desc";
 
                     if (detail.ItemFields.Reassigned != null)
                     {
-                        if (detail.ItemFields.Reassigned.GetType().Name != "JArray")
+                        if (detail.ItemFields.Reassigned.GetType() != typeof(JArray))
                         {
                             detail.ItemFields.Reassigned = new JArray(detail.ItemFields.Reassigned);
                         }
@@ -3406,7 +3403,7 @@ order by wi.StartedOn desc";
                                 if (emails.email != null)
                                 {
                                     detail.ItemSettings.hasEmails = true;
-                                    if (emails.email.GetType().Name != "JArray")
+                                    if (emails.email.GetType() != typeof(JArray))
                                     {
                                         emails.email = new JArray(emails.email);
                                     }
@@ -3524,7 +3521,7 @@ order by wi.StartedOn desc";
 
                         if (form.field != null)
                         {
-                            if (form.field.GetType().Name != "JArray")
+                            if (form.field.GetType() != typeof(JArray))
                             {
                                 form.field = new JArray(form.field);
                             }

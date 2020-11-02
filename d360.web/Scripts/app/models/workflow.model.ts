@@ -234,7 +234,6 @@ export class NodeModel {
     key: string;
     name: string;
     pos: string;
-    //template: string = 'task';
     category: string = 'task';
 
     diagramObjectType: DiagramObjectType = DiagramObjectType.Node;
@@ -250,13 +249,60 @@ export class NodeModel {
     activityName: string;
     runCount: number;
 
-    settings: any = {};
-    fields: any = {};
+    settings: NodeSettings = new NodeSettings();
+    fields: NodeFields = new NodeFields();
 
     hasMultipleInputs: boolean = false;
     valid: boolean = false;
     errors: string[] = [];
 }
+
+export class NodeSettings {
+    Status: any;
+    State: any;
+    ProcedureID: any;
+    FieldUpdate: FieldUpdateSettings;
+    RelationshipUpdate: RelationshipUpdateSettings;
+    HTTPRequest: HTTPRequestSettings;
+
+    FormResponseType: any;
+    MessageRecipientType: any;
+    MessageToUser: any;
+    ResponsibilityTypeID: any;
+    MessageToGroup: any;
+    SendFormEmail: any;
+    MessageBodyTemplate: any;
+    MessageSubjectTemplate: any;
+    ResponsibilitySide: any;
+
+    IncludePreviousFormResponses: any;
+    WaitForAllTransitions: any;
+}
+
+export class FieldUpdateSettings {
+    Field: any[] = [];
+}
+
+export class RelationshipUpdateSettings {
+    Relationship: any;
+}
+
+export class HTTPRequestSettings {
+    Timeout: number = 90;
+    Method: string;
+    Url: string;
+    Body: string;
+    Headers: any[] = [];
+}
+
+export class NodeFields {
+    form: FormField = new FormField();
+}
+
+export class FormField {
+    field: any[] = [];
+}
+
 
 
 export class ActivityTypeInfo {
@@ -567,8 +613,8 @@ export class WorkflowStepDetail {
     Fields: any;
     ItemSettingsXml: string;
     ItemFieldsXml: string;
-    ItemSettings: any;
-    ItemFields: any;
+    ItemSettings: WorkflowStepItemSettings;
+    ItemFields: WorkflowStepItemFields;
     Name: string;
     ObjectType: string;
     ObjectTypeID: number;
@@ -585,7 +631,7 @@ export class WorkflowStepDetail {
     Version: number;
     IsPublishedVersion: boolean;
     IssueDetails: WorkflowStepIssueDetail;
-    AssignedUsers: any[] = [];
+    AssignedUsers: WorkflowStepAssignedUser[] = [];
     StepID: number;
     TypeID: number;
     IsAssignedLoginUser: boolean;
@@ -596,6 +642,21 @@ export class WorkflowStepDetail {
     StateChange: State;
 }
 
+export class WorkflowStepItemFields {
+    form: any;
+    Reassigned: any;
+}
+
+export class WorkflowStepItemSettings {
+    emails: any;
+    hasPendingForms: boolean;
+}
+
+export class WorkflowStepAssignedUser {
+    ResourceID: number;
+    FirstName: string;
+    LastName: string;
+}
 
 export class WorkflowStepReassignment {
 

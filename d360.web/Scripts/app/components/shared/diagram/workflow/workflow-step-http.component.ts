@@ -1,4 +1,4 @@
-﻿import { Component, Output, EventEmitter, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+﻿import { Component, Output, EventEmitter, Input } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import * as _ from 'lodash';
 import { NodeModel } from '../../../../models/workflow.model';
