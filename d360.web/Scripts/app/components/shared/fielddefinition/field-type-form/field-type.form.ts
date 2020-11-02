@@ -512,7 +512,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .pipe(map(
                 d => {
                     this.fieldsFromRelation = d;
-                    this.model.FieldType.Type[this.currentType].IntersectTypeUid = value.toLocaleLowerCase();
                     if (fieldTypename != null) {
                         this.model.FieldType.Type[this.currentType].FieldTypeName = fieldTypename;
                     } else if (this.fieldsFromRelation.length > 0) {
