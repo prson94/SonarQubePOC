@@ -785,7 +785,7 @@
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_CardinalReferenceRelationships"
-                                [ngModel]="model.cardinalRelationship"
+                                [ngModel]="model.FieldType.Type[this.currentType].IntersectTypeUid"
                                 (ngModelChange)="model.cardinalRelationship=$event;cardinalReferenceItemListFromRelationshipSelected($event);"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
