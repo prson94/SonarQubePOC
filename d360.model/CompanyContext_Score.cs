@@ -14,6 +14,7 @@ using System.Data.Entity;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -735,10 +736,28 @@ where   E.ExecutionID = @ExecutionID
                 StartedOn = startedOn.Value,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(item));
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
-        
+
+        public async Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null)
+        {
+            if (!startedOn.HasValue)
+            {
+                startedOn = DateTime.UtcNow;
+            }
+
+            var info = new ScoreQueueInfo
+            {
+                CompanyID = CurrentCompanyID,
+                ChangeType = changeType,
+                ExecutionUid = executionUid,
+                StartedOn = startedOn.Value,
+                Location = ScoreQueueExecutionDataLocation.File
+            };
+            await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, $"{info.StorageFilePrefix}_{resultFileSuffix}.json", item);
+        }
+
         #endregion
     }
 

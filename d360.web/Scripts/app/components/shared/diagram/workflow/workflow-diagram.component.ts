@@ -937,7 +937,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 delete (settings as any).settings;
             }
 
-
             n.Key = m.key;
             n.ActivityType = m.activityType;
             n.Name = m.name;
