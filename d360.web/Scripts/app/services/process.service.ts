@@ -68,6 +68,18 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
+    public replaceProcessDiagram(targetUid: string, sourceUid: any): Observable<any> {
+        var headers = new HttpHeaders();
+        headers.append('Content-Type', 'application/json');
+        var model = {};
+        return this
+            .http
+            .put(`/api/v2/process/${targetUid}?sourceAssetUid=${sourceUid}`, model, { headers: headers })
+            .pipe(
+                map(response => <any>response)
+            );
+    }
+
     public getProcessUrlByDiagramAssetUid(uid: string): Observable<any> {
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
@@ -76,6 +88,28 @@ export class ProcessService extends BaseObservableService {
             .get(`/api/v2/process/urlByDiagramAsset/${uid}`, { headers: headers })
             .pipe(
                 map(response => <any>response)
+            );
+    }
+
+    public getImportOptions(uid: string): Observable<any> {
+        var headers = new HttpHeaders();
+        headers.append('Content-Type', 'application/json');
+        return this
+            .http
+            .get(`/api/v2/process/${uid}/importOptions`, { headers: headers })
+            .pipe(
+                map(response => <any>response)
+            );
+    }
+
+    public getIgnoredRelationshipsForCopy(targetUid: string): Observable<any[]> {
+        var headers = new HttpHeaders();
+        headers.append('Content-Type', 'application/json');
+        return this
+            .http
+            .get(`/api/v2/process/ignoredCopyRelationships/${targetUid}`, { headers: headers })
+            .pipe(
+                map(response => <any[]>response)
             );
     }
 

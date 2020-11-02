@@ -168,7 +168,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = false)
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
         {
@@ -535,6 +535,91 @@ namespace d360.web.Controllers.V2
             string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url)));
 
+        }
+
+        /// <summary>
+        /// Returns a list of available copy options for current diagram
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/importOptions"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetCopyOption(Guid assetUid)
+        {
+
+            var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+            var results = await Company.QueryAsync<dynamic>($@"
+                    select a.uid,
+	                    graph.GetPath(an.Segments, ' > ', ' / ') as assetPath,
+	                    P.Path as typePath
+	                    from asset a
+	                        inner join AssetProcessDiagram apd on a.ID = apd.AssetID
+	                        inner join graph.assetnode an on an.uid = a.uid
+	                        inner join AssetType at on at.id = @assettypeid
+	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P
+                        where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
+                        order by graph.GetPath(an.Segments, ' > ', ' / ')
+                    ", new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+        }
+
+        /// <summary>
+        /// Returns a list of relationships that cannot be copied due to a cardinality
+        /// </summary>
+        /// <param name="targetAssetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("ignoredCopyRelationships/{targetAssetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetIgnoredRelationships(Guid targetAssetUid)
+        {
+            var results = await Company.QueryAsync<dynamic>($@";with assets as (
+                    select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
+                    union
+                    select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
+                    select 
+                        assets.uid,
+	                    utility.GetAssetDisplayValue(a.id) as 'FlowObject',
+	                    utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+                     from assets
+	                    inner join asset a on a.uid = assets.duid
+	                    inner join [intersect] i on i.subject = a.object and i.subjectid = a.objectid
+	                    inner join intersecttype it on i.intersecttypeid = it.id
+	                    inner join asset a2 on a2.Object = i.Object and a2.ObjectID = i.ObjectID
+                    where it.objectcardinality = 1 or it.SubjectCardinality = 1
+                    union
+                    select 
+	                    assets.uid,
+	                    utility.GetAssetDisplayValue(a.id) as 'FlowObject',
+	                    utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+                     from assets
+	                    inner join asset a on a.uid = assets.duid
+	                    inner join [intersect] i on i.object = a.object and i.objectid = a.objectid
+	                    inner join intersecttype it on i.intersecttypeid = it.id
+	                    inner join asset a2 on a2.Object = i.subject and a2.ObjectID = i.subjectid
+                    where it.objectcardinality = 1 or it.SubjectCardinality = 1
+                    ", new { targetAssetUid });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
     }
 }

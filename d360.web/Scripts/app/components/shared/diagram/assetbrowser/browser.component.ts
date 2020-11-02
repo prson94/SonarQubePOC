@@ -100,6 +100,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     diagramTypes: DiagramTypesModel = null;
 
+    popupMenuItems = [
+        {
+            title: 'Export to excel',
+            callback: () => this.processDiagramRef.doControlledAction('export')
+        },
+        {
+            title: 'Replace diagram',
+            callback: () => this.processDiagramRef.doControlledAction('open-diagram-replace')
+        }
+    ]
+
     //#region Constants
 
     private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
