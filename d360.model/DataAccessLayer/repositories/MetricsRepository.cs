@@ -1522,7 +1522,7 @@ order by	R.[Name]";
 select  distinct 
         ma.scoretype 
 from    metrics.Allocation  ma
-		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 --and ms.EndDate is null";
+		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1";
             return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 

@@ -49,7 +49,7 @@ from	metrics.Score T
 select ScoreUid from #Scores;", new { measureChangedModel.MetricAssetVersionUid });
                 
                 // Log the scores end-dates.
-                Db.SaveScoreProcessingResults(Info.ExecutionUid, Info.ChangeType, "EndDateScores", endedScores, Info.StartedOn);
+                await Db.SaveScoreProcessingResultsAsync(Info.ExecutionUid, Info.ChangeType, "EndDateScores", endedScores, Info.StartedOn);
 
                 var itemsToRescoreQuery = await Db.QueryAsync<MeasureRemovedScoreRequeueDataItem>(@"
 select	distinct
