@@ -267,8 +267,9 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.resourcesService.saveResource(user, true, false)
             .subscribe(
-                result => {                    
-                    this.showMessageForApiResult(this.messagesService, result, `User successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
+                result => {
+                    result.Message = null;
+                    this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
                     if (result.Success) {
                         this.showEditor = false;
                         this.getData();
