@@ -82,9 +82,11 @@ export class ResourcesService extends BaseObservableService {
     }
 
     public deleteResource(uid: string): Observable<JsonResult> {
+        var model = [];
+        model.push({ Uid: uid });
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
-            body: [ uid]
+            body: model
         };
 
         return this
