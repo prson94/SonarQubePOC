@@ -64,10 +64,13 @@ namespace d360.core.entities.Metric
         public bool HasResults { get; set; } = false;
 
         [DataMember, JsonProperty(Order = 23)]
-        public State State { get; set; }
+        public State State { get; set; }  
 
         [DataMember, JsonProperty(Order = 24)]
         public DateTime? EffectiveEndDate { get; set; }
+
+        [DataMember]
+        public string DefinitionJson { get; set; }
     }
 
     [DataContract]

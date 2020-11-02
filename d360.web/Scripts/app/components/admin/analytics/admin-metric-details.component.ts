@@ -12,7 +12,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -37,11 +37,13 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     showEdit: boolean = false;
     operators: OperatorModel[];
 
+    CheckType = MetricGovernanceCheckType;
 
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
     showConditions: boolean;
     scoreData: any[];
     showDisabled: boolean = false;
+    showPassTest: boolean = false;
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -186,6 +188,13 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             return false;
         }
     }
+    private hasPassTest(item: MetricAssetViewModel) {
+        if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     add() {
         if (this.metricList) {
@@ -218,11 +227,15 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     selectionChanged(event) {
         this.selectedMetric = event;
-        if (this.hasConditions(this.selectedMetric)) {
+
+        if (this.hasConditions(this.selectedMetric)) 
             this.showConditions = true;
-        }
-        else {
+        else 
             this.showConditions = false;
-        }
+        
+        if (this.hasPassTest(this.selectedMetric)) 
+            this.showPassTest = true
+        else
+            this.showPassTest = false;
     }
 }

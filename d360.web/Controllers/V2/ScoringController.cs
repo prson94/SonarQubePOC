@@ -447,7 +447,10 @@ namespace d360.web.Controllers.V2
                 {
                     m.ConditionGroups.RemoveAll(g => g.ConditionItems == null || g.ConditionItems.Count == 0);
                 });
-
+                models.ForEach(m =>
+                {
+                    m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(m.DefinitionJson ?? "{}"); 
+                });
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)

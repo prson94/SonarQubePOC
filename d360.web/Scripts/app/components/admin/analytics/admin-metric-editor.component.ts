@@ -1,4 +1,4 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -13,13 +13,13 @@ import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
-import { debounce } from 'lodash';
 
 
 @Component({
     selector: 'd3s-admin-metric-editor',
     templateUrl: './admin-metric-editor.component.html',
     providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
     .row-margin{
         margin: 8px 0px;
@@ -110,6 +110,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (changes['scoreData'] && (changes['scoreData'].currentValue != changes['scoreData'].previousValue)) {
             this.getMaxScoreDate();
         }
+        this.cdRef.markForCheck();
     }
 
     ngOnInit() {
@@ -127,8 +128,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.loadFieldData();
     }
 
-    updateFormValidity() {
-        debounce(() => { this.groups.forEach(x => { x.refreshBadgeCounts(); }); },200);
+    updateFormValidity(event) {
+        if (this.groups && this.groups.length > 0) {
+            this.groups.forEach(x => { x.refreshBadgeCounts(); });
+        }
+        this.cdRef.markForCheck();
     }
 
     loadFieldData() {
@@ -302,12 +306,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.metricForm.addControl("instructionString", new FormControl(''));
                 this.metricForm.addControl("updateFrequency", new FormControl(''));
                 this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
-                this.cdRef.markForCheck();
                 break;
             case 1:
                 //handle field
                 this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
-                this.updateFormValidity();
+                this.updateFormValidity(null);
                 break;
             case 2:
                 //handle owner 
@@ -321,6 +324,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             default:
                 break;
         }
+        this.cdRef.markForCheck();
     }
 
     resetGovernanceDefinition() {
@@ -332,14 +336,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.model.Definition.Governance.Relation = null;
         this.cdRef.markForCheck();
 
-        //remove the form controls after a small delay 
+        //remove the form controls 
         this.metricForm.removeControl("updateFrequency");
         this.metricForm.removeControl("instructionString");
-
-        Object.keys(this.metricForm.controls).forEach(x => {
-            if (x.indexOf('option_') !== -1 || x.indexOf('condition_') !== -1 || x.indexOf('value_1_') !== -1 || x.indexOf('value_2_') !== -1)
-                this.metricForm.removeControl(x);
-        });
 
         //clear conditions
         this.testFieldConditions = [];
@@ -372,7 +371,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         let condition = this.testFieldConditions[0];
                         this.model.Definition.Governance.Field.FieldTypeName = condition.field;
                         this.model.Definition.Governance.Field.Operator = condition.operator;
-                        this.model.Definition.Governance.Field.Values = condition.value;
+                        this.model.Definition.Governance.Field.Values = [condition.value];
                     }
                     break;
                 default:

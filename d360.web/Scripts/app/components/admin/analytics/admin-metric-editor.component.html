@@ -120,7 +120,7 @@
                             </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="1">
-                            <field-condition-grid [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditions]="testFieldConditions" (onChange)="updateFormValidity()" [fields]="fields"></field-condition-grid>
+                            <field-condition-grid [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="2">
                             Owner
@@ -146,8 +146,7 @@
             </ig-property-group>
             <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
-                    <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
-                    <field-condition-grid [formGroup]="metricForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields" (onChange)="updateFormValidity()"></field-condition-grid>
+                    <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
                     <div class="row" *ngIf="showMatchPicker">
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>

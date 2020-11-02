@@ -1563,7 +1563,8 @@ from    metrics.Allocation  ma
                     			for		json path
                     		) as ConditionGroups,
                             VC.Count as [VersionCount],
-                            A.[State]
+                            A.[State],
+                            V.Definition as [DefinitionJson]
                             {endDateString}
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid

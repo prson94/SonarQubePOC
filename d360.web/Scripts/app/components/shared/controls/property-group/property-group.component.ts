@@ -3,7 +3,7 @@ import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy,
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
-import { debounce } from 'rxjs/operators';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'ig-property-group',
@@ -22,6 +22,12 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
+    delayedRefresh = _.debounce(() => {
+        this.requiredCount = this.getRequiredCount();
+        this.invalidCount = this.getInvalidCount();
+        this.ref.markForCheck();
+    }, 200);
+
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
     constructor(private ref: ChangeDetectorRef) {
 
@@ -29,24 +35,20 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         this.igformGroup.valueChanges.subscribe(x => {
-            this.refreshBadgeCounts()
+            this.delayedRefresh();
         });
     }
 
     ngOnInit(): void {
         if (this.igformGroup) {
             this.igformGroup.valueChanges.subscribe(x => {
-                this.requiredCount = this.getRequiredCount();
-                this.invalidCount = this.getInvalidCount();
-                this.ref.markForCheck();
+                this.delayedRefresh();
             });
         }
     }
 
     public refreshBadgeCounts() {
-        this.requiredCount = this.getRequiredCount();
-        this.invalidCount = this.getInvalidCount();
-        this.ref.markForCheck();
+        this.delayedRefresh();
     }
 
     getRequiredCount(): number {

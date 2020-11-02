@@ -3,7 +3,6 @@ import { NgForm, FormGroup, FormBuilder, FormControl } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
-import { settings } from 'cluster';
 
 @Component({
     selector: 'field-condition-grid',
@@ -18,6 +17,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     @Input() conditions: FieldCondition[] = [];
     @Input() singleSelectMode: boolean = false;
     @Input() required: boolean = false;
+    @Input() conditionPrefix: string = '';
 
     @Output() onChange = new EventEmitter();
 
@@ -31,6 +31,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.clearUnusedFormControls();
         this.conditions = null;
     }
 
@@ -45,10 +46,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                 if (!cond.hash) {
                     cond.hash = this.randstr('id');
                 }
-                this.formGroup.addControl('option_' + cond.hash, new FormControl(''));
-                this.formGroup.addControl('condition_' + cond.hash, new FormControl(''));
-                this.formGroup.addControl('value_1_' + cond.hash, new FormControl(''));
-                this.formGroup.addControl('value_2_' + cond.hash, new FormControl(''));
+                this.createFormControl(cond.hash);
             });
             this.cdRef.markForCheck();
             this.visible = true;
@@ -88,6 +86,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.cdRef.markForCheck();
     }
 
+
     ngOnChanges(changes: SimpleChanges) {
         if (changes && changes.fields && changes.fields.currentValue != changes.fields.previousValue) {
             this.fieldsSelect = [];
@@ -120,6 +119,10 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.conditions.length == 0) {
             this.tryAddNewCondition();
         }
+
+        window.setTimeout(() => {
+            this.removeFormControl(null,item.hash);
+        }, 100);
     }
 
     tryAddNewCondition() {
@@ -128,28 +131,68 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.singleSelectMode) {
             if (this.conditions.length == 0) {
                 var hash = this.randstr('id');
+                this.createFormControl(hash);
                 this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
-                this.formGroup.addControl('option_' + hash, new FormControl(''));
-                this.formGroup.addControl('condition_' + hash, new FormControl(''));
-                this.formGroup.addControl('value_1_' + hash, new FormControl(''));
-                this.formGroup.addControl('value_2_' + hash, new FormControl(''));
             }
         } else {
             if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
                 if (availableFields.length > 0) {
                     var hash = this.randstr('id');
+                    this.createFormControl(hash);
                     this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
-                    this.formGroup.addControl('option_' + hash, new FormControl(''));
-                    this.formGroup.addControl('condition_' + hash, new FormControl(''));
-                    this.formGroup.addControl('value_1_' + hash, new FormControl(''));
-                    this.formGroup.addControl('value_2_' + hash, new FormControl(''));
                 }
             }
         }
 
+        window.setTimeout(() => { this.clearUnusedFormControls(); }, 100);
         this.onChange.emit({ event: 'Value changed', value: this.conditions });
 
     }
+
+    clearUnusedFormControls() {
+        Object.keys(this.formGroup.controls).forEach(control => {
+            if (control.startsWith(this.conditionPrefix)) {
+                if (control.indexOf(this.conditionPrefix + 'option_') !== -1
+                    || control.indexOf(this.conditionPrefix + 'condition_') !== -1
+                    || control.indexOf(this.conditionPrefix + 'value_1_') !== -1 ||
+                    control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
+                    let shouldDelete = true;
+                    this.conditions.forEach(x => {
+                        if (control.indexOf(x.hash) !== -1) {
+                            shouldDelete = false;
+                        }
+                    });
+                    if (shouldDelete) {
+                        this.removeFormControl(control);
+                    }
+                }
+            }
+        });
+        this.cdRef.markForCheck(); 
+    }
+
+    private createFormControl(hash: string) {
+        this.formGroup.addControl(this.conditionPrefix + 'option_' + hash, new FormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash, new FormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash, new FormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash, new FormControl(''));
+    }
+
+    private removeFormControl(name: string, hash?: string) {
+        if (name) {
+            this.formGroup.removeControl(name);
+            this.formGroup.removeControl(name);
+            this.formGroup.removeControl(name);
+            this.formGroup.removeControl(name);
+        }
+        if (hash) {
+            this.formGroup.removeControl(this.conditionPrefix + 'option_' + hash);
+            this.formGroup.removeControl(this.conditionPrefix + 'condition_' + hash);
+            this.formGroup.removeControl(this.conditionPrefix + 'value_1_' + hash);
+            this.formGroup.removeControl(this.conditionPrefix + 'value_2_' + hash);
+        }
+    }
+
     onFieldChange($event, condition: FieldCondition) {
         condition.operator = null;
         condition.value = '';
