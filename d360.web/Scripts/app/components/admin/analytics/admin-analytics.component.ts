@@ -27,8 +27,8 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Scoring";
-        this.tabTitle = 'Scoring';
+        this.areaName = "Scoring Definitions";
+        this.tabTitle = 'Scoring Definitions';
         this.setCommonItems();
         this.setCommonSecondaryNavTabs(false);
 

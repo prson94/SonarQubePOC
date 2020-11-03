@@ -26,7 +26,8 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     public theDeleteCallback: Function;
 
     showEdit = false;
-    editTitle = 'Add Score';
+    editTitle = 'Create Scoring Definition';
+    submitLabel = 'Create';
 
     @ViewChild('dt', { static: false }) dt: Table;
 
@@ -44,10 +45,15 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.theDeleteCallback = this.deleteAllocation.bind(this);
     }
 
-    load(selectedItem: any = null) {
+    load(event: any = null) {
+        if (event && event.openItem) {
+            this.openMeasures(null, event.item);
+            return;
+        }
 
-        if (selectedItem)
-            this.selection = selectedItem;
+        if (event) {
+            this.selection = event.item ? event.item : event;
+        }
 
         this.isLoading = true;
         this.allocationService.getAllocations()
@@ -107,9 +113,9 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     }
 
     add() {
-        this.editTitle = 'Add Score';
+        this.editTitle = 'Create Scoring Definition';
         this.selection = new ScoreTypeAllocation();
-        this.selection.scoreType = ScoreType.Governance;
+        this.selection.scoreType = null;
         this.selection.isExternallyCalculated = false;
         this.selection.lowerThreshold = 50;
         this.selection.upperThreshold = 90;
@@ -122,7 +128,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     }
 
     doEdit(item: ScoreTypeAllocationFormatted) {
-        this.editTitle = 'Edit Score';
+        this.editTitle = 'Edit Scoring Definition';
         this.showEdit = true;
         this.selection = this.getAllocationByUid(item.uid);
     }
@@ -154,13 +160,15 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         return '';
     }
 
-    private openMeasures(event: ScoreTypeAllocationFormatted) {
-        const alloc = this.getAllocationByUid(event.uid);
+    private openMeasures(event: ScoreTypeAllocationFormatted, allocation: ScoreTypeAllocation = null) {
+        let alloc = allocation;
+        if (!alloc)
+            alloc = this.getAllocationByUid(event.uid)
         const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
         this.router.navigateByUrl(url);
     }
 
     get deletePopupTitle(): string {
-        return (this.selection.hasField || this.selection.hasMeasure) ? 'Cannot Delete Scoring Definition' : null;
+        return (this.selection.hasField || this.selection.hasMeasure) ? 'Cannot Delete Scoring Definition' : 'Delete Scoring Definition';
     }
 };
