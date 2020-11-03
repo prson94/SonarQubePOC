@@ -1,21 +1,7 @@
-﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../../../shared/base.component';
-import {
-    WorkflowEventRegistration,
-    WorkflowObjectType,
-    WorkflowChangeType,
-    ChangeTypeInfo,
-    EventCondition,
-    WorkflowListItem,
-    WorkflowDiagramModel,
-    WorkflowDiagramNode,
-    NodeModel,
-    WorkflowActivityType,
-    WorkflowTaskProcedure,
-    EmailTaskRecipientType
-} from '../../../../models/workflow.model';
-import { FieldType } from '../../../../models/fields.model';
+import { WorkflowActivityType } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 
 @Component({

@@ -1,15 +1,12 @@
-﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowService } from '../../services/workflow.service';
-import { WorkflowItemStep, WorkflowActivityType, StepType, WorkflowDiagramNode, NodeModel, ActivityTypeInfo, DiagramObjectType, WorkflowStepDetail, WorkflowChangeType, WorkflowStepReassignment } from '../../models/workflow.model';
+import { WorkflowActivityType, StepType, WorkflowStepDetail, WorkflowChangeType, WorkflowStepReassignment } from '../../models/workflow.model';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { Observable,of } from 'rxjs';
-import { Responsibility } from '../../models/lineage.model';
 import { ResponsibilityType } from '../../models/responsibility-type.model';
 
 @Component({
@@ -89,6 +86,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
                     }),
                     map(() => {
                         if (typeof this.step.Condition != 'undefined' && typeof this.step.Condition.length != 'undefined') {
+
                             this.showAllAnyCondition = this.step.Condition.filter(x => x['@FieldTypeID']).length > 1;
                             this.isSatisfyAll = this.step.Condition.every(x => x['@Connector'] == 'AND');
                         }

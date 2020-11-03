@@ -1,10 +1,8 @@
-﻿import { Component, OnInit, OnChanges, Input, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression } from '../../models/grid-definition.model';
 

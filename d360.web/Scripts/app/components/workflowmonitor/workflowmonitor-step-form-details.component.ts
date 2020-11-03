@@ -5,8 +5,6 @@ import * as _ from 'lodash';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-declare var CurrentResourceID;
-
 @Component({
     selector: 'd3s-workflow-monitor-step-form-details',
     template: `

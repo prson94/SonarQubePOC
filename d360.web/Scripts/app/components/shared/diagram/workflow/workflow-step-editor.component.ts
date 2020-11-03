@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ViewChild, AfterViewChecked } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
 import {
     WorkflowChangeType,
@@ -7,6 +7,10 @@ import {
     WorkflowTaskProcedure,
     EmailTaskRecipientType,
     StepType,
+    NodeSettings,
+    RelationshipUpdateSettings,
+    HTTPRequestSettings,
+    FieldUpdateSettings,
 } from '../../../../models/workflow.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
@@ -141,7 +145,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
     ngOnChanges() {
         if (this.step.settings == null)
-            this.step.settings = {};
+            this.step.settings = new NodeSettings();
         this.originalStep = _.cloneDeep(this.step);
 
 
@@ -154,11 +158,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 });
         } else if (this.step.activityType == WorkflowActivityType.FieldChange) {
             if (this.step.settings.FieldUpdate == null) {
-                this.step.settings.FieldUpdate = {};
+                this.step.settings.FieldUpdate = new FieldUpdateSettings();
             }
                
             if (this.step.settings.FieldUpdate.Field == null) {
-                this.step.settings.FieldUpdate.Field = {};
+                this.step.settings.FieldUpdate.Field = [];
             }
 
             this.filterFormFields();
@@ -166,7 +170,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         }
         else if (this.step.activityType == WorkflowActivityType.HTTPRequest) {
             if (this.step.settings.HTTPRequest == null) {
-                this.step.settings.HTTPRequest = {};
+                this.step.settings.HTTPRequest = new HTTPRequestSettings();
             }
             if (this.step.settings.HTTPRequest.Timeout == null) {
                 this.step.settings.HTTPRequest.Timeout = 90;
@@ -181,7 +185,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         }
         else if (this.step.activityType == WorkflowActivityType.RelationshipUpdate) {
             if (this.step.settings.RelationshipUpdate == null)
-                this.step.settings.RelationshipUpdate = {};
+                this.step.settings.RelationshipUpdate = new RelationshipUpdateSettings();
             if (this.step.settings.RelationshipUpdate.Relationship == null)
                 this.step.settings.RelationshipUpdate.Relationship = {};
 
