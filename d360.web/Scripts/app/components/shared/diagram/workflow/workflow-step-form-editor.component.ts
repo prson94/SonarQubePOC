@@ -159,7 +159,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         //deal with xml-json nonsense
         if (this.step.fields == null || this.step.fields.form == null) {
             this.step.fields = new NodeFields();
-            //this.step.fields.form.field
             this.step.fields.form.field = [];
         }
         if (this.step.fields.form.field == null) {
