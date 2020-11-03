@@ -399,7 +399,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (!this.isExternallyCalculated) {
             switch (this.model.Definition.Governance.Check) {
                 case 0:
-                    this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+                    if (!this.model.Definition.Governance.External.UpdateFrequency)
+                        this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
                     break;
                 case 1:
                     if (this.testFieldConditions && this.testFieldConditions.length == 1) {
