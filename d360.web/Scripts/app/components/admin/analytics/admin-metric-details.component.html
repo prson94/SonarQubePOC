@@ -107,31 +107,35 @@
                     <div class="details-header">Pass Test</div>
                     <div class="details-condition">
                         <div [ngSwitch]="selectedMetric.Definition.Governance.Check">
-                            <div *ngSwitchCase="CheckType.External">
-                                show external
-                            </div>
-                            <div class="row row-margin" *ngSwitchCase="CheckType.Field">
+                            <div *ngSwitchCase="'External'">
                                 <div class="condition-content">
                                     <div class="condition-items">
-                                        field
+                                        <div>External: {{formattedCheck}}</div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row row-margin" *ngSwitchCase="CheckType.Owner">
+                            <div class="row row-margin" *ngSwitchCase="'Field'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        <div>Field: {{formattedCheck}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row row-margin" *ngSwitchCase="'Owner'">
                                 <div class="condition-content">
                                     <div class="condition-items">
                                         Owner
                                     </div>
                                 </div>
                             </div>
-                            <div class="row row-margin" *ngSwitchCase="CheckType.Predicate">
+                            <div class="row row-margin" *ngSwitchCase="'Predicate'">
                                 <div class="condition-content">
                                     <div class="condition-items">
                                         Prediate
                                     </div>
                                 </div>
                             </div>
-                            <div class="row row-margin" *ngSwitchCase="CheckType.Relation">
+                            <div class="row row-margin" *ngSwitchCase="'Relation'">
                                 <div class="condition-content">
                                     <div class="condition-items">
                                         Relationship
@@ -147,6 +151,7 @@
                             </ng-template>
                         </div>
                     </div>
+                </div>
                 <div class="measure-details-item">
                     <div class="details-header">UID</div>
                     <div class="details-content">{{selectedMetric?.Uid}}</div>

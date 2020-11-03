@@ -120,7 +120,8 @@
                             </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="1">
-                            <field-condition-grid [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
+                            <label class="ig-label">Test Condition</label>
+                            <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="2">
                             Owner
@@ -160,7 +161,6 @@
             <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
             <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || isSaving" (click)="save()"></button>
-            <button igButton class="ig-button-primary" type="button" label="test" (click)="print()"></button>
         </div>
     </div>
 </div>

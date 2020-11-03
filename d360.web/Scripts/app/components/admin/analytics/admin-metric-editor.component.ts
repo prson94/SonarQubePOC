@@ -99,11 +99,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue)) {
+        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
             this.load();
         }
-        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue)) {
+        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
             this.isLoading = true;
             this.load();
         }
@@ -195,7 +195,20 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
             }
-            this.isLoading = false;
+
+            if (!this.model.Definition) {
+                this.model.Definition = new MetricAssetDefinitionViewModel();
+                if (!this.isExternallyCalculated) {
+                    this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+                    this.model.Definition.Governance.Check = null;
+                    this.isLoading = false;
+                }
+            } else {
+                this.model.Definition.Governance.Check = MetricGovernanceCheckType[this.model.Definition.Governance.Check + ""];
+                this.loadTestConditions();
+            }
+
+            
         } else {
             this.model = new MetricAssetViewModel();
             this.model.Weight = null;
@@ -207,6 +220,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             }
             this.model.EffectiveDate = new Date();
             this.model.AllocationUid = this.allocationUid;
+            if (!this.model.Definition) {
+                this.model.Definition = new MetricAssetDefinitionViewModel();
+                if (!this.isExternallyCalculated) {
+                    this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+                    this.model.Definition.Governance.Check = null;
+                }
+            }
             this.isLoading = false;
         }
         if (this.model.Weight) {
@@ -252,17 +272,36 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             }
         }
 
-        if (!this.model.Definition) {
-            this.model.Definition = new MetricAssetDefinitionViewModel();
-            if (!this.isExternallyCalculated) {
-                this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
-                this.model.Definition.Governance.Check = null;
-            }
-        }
-
-
         this.getMaxScoreDate();
         this.onResize(null);
+    }
+
+    loadTestConditions() {
+        switch (this.model.Definition.Governance.Check) {
+            case 0:
+                this.metricForm.addControl("instructionString", new FormControl(''));
+                this.metricForm.addControl("updateFrequency", new FormControl(''));
+                break;
+            case 1:
+                let condition = new FieldCondition();
+                condition.field = this.model.Definition.Governance.Field.FieldTypeName;
+                condition.operator = this.model.Definition.Governance.Field.Operator;
+                condition.value = this.model.Definition.Governance.Field.Values[0];
+                this.testFieldConditions.push(condition); 
+                break;
+            case 2:
+                //handle owner 
+                break;
+            case 3:
+                //handle predicate 
+                break;
+            case 4:
+                //handle relation
+                break;
+            default:
+                break;
+        }
+        this.isLoading = false;
     }
 
     private getMaxScoreDate() {
@@ -295,12 +334,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         return true;
     }
 
-    print() {
-        console.log(this.metricForm);
-    } 
-
     testTypeChange(event) {
         this.resetGovernanceDefinition();
+        console.log(event);
         switch (this.model.Definition.Governance.Check) {
             case 0:
                 this.metricForm.addControl("instructionString", new FormControl(''));
@@ -308,7 +344,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.model.Definition.Governance.External = new MetricAssetDefinitionGovernanceExternalViewModel();
                 break;
             case 1:
-                //handle field
                 this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
                 this.updateFormValidity(null);
                 break;

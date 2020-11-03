@@ -27,7 +27,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     showEdit = false;
     editTitle = 'Add Score';
-
+    
     @ViewChild('dt', { static: false }) dt: Table;
 
     constructor(private allocationService: AllocationService,

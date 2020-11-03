@@ -12,7 +12,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -36,6 +36,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
     operators: OperatorModel[];
+    formattedCheck: string = "";
 
     CheckType = MetricGovernanceCheckType;
 
@@ -190,6 +191,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     }
     private hasPassTest(item: MetricAssetViewModel) {
         if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {
+            this.formatDefinition();
             return true;
         } else {
             return false;
@@ -237,5 +239,48 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.showPassTest = true
         else
             this.showPassTest = false;
+
+        this.formatDefinition();
+    }
+
+    private formatDefinition() {
+        if (this.showPassTest) {
+            let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
+            switch (<any>gov.Check) {
+                case 'External':
+                    let instructions = (gov.External.Instructions) ? (' | Instruciton set: ' + gov.External.Instructions) : '';
+                    this.formattedCheck = "Updated: " + gov.External.UpdateFrequency + instructions;
+                    break;
+                case 'Field':
+                    let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
+                        ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
+                    let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
+                        ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
+                    let formattedValue = gov.Field.Values.join(", ");
+                 
+                    if (fieldType && fieldType.Type == "Lookup") {
+                        let fieldValue = +gov.Field.Values[0] ?? -1;
+                    
+                        let lookupValues = fieldType.Values;
+                        formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
+                            ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+                    }
+                    this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
+
+                    break;
+                case 'Owner':
+                    break;
+                case this.CheckType.Predicate:
+                    break;
+                case 'Relation':
+                    break;
+                default:
+                    this.formattedCheck = "";
+                    break;
+
+            }
+        } else {
+            this.formattedCheck = "";
+        }
     }
 }
