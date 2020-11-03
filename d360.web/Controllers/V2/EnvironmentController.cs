@@ -265,6 +265,7 @@ namespace d360.web.Controllers.V2
                 if (!model.HasExactlyOneValue)
                     return ReturnApiError(HttpStatusCode.BadRequest, "Exactly one value must be provided based on the setting's data type");
 
+
                 var companySetting = Community
                     .CompanySettings
                     .FirstOrDefault(c => c.CompanyID == Company.CurrentCompanyID && c.SettingID == model.SettingID);
@@ -353,6 +354,17 @@ namespace d360.web.Controllers.V2
                         break;
                 }
 
+
+
+                //sanitize allowed CORS origins
+                if (setting.ID == 76 && !string.IsNullOrEmpty(value))
+                {
+                    value = string.Join(",", value
+                        .Split(',')
+                        .Select(o => o.Trim())
+                        .Where(o => !string.IsNullOrWhiteSpace(o) && o != "*")
+                        .ToList());
+                }
 
                 if (clearSetting && companySetting != null)
                 {

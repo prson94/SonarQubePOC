@@ -1,8 +1,7 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import {
-    ResponsibilityType,
+import {    
     ResponsibilityTypeRelation,
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
@@ -10,15 +9,14 @@ import {
     ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
-    IResponsibilityTypeService,
+    ResponsibilityTypeRelationRuleDefinitionThenTestRow,    
     ResponsibilityTypeRelationRuleFormDataFieldType
 } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { BaseComponent } from '../../shared/base.component';
-
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+
 
 @Component({
     selector: 'd3s-responsibility-rule-form',
@@ -55,17 +53,15 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     public isThenTestLoading: boolean = false;
     public isWhenTestLoading: boolean = false;
+        
+    model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
+    disableTestWhen: boolean = false;
+    disableTestThen: boolean = false;
 
-    private relations: ResponsibilityTypeRelation[] = [];
-    private relation: ResponsibilityTypeRelation = new ResponsibilityTypeRelation();
-    private model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
-    private disableTestWhen: boolean = false;
-    private disableTestThen: boolean = false;
-
-    private actionName: string = "Add";
+    actionName: string = "Add";
 
     private objectTypes: SelectItem[] = [];
-    private whenCheckTypes: SelectItem[] = [
+    whenCheckTypes: SelectItem[] = [
         { label: "Field", value: "F" },
         { label: "Relationship", value: "R" }
     ];
@@ -76,10 +72,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     ];
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: SelectItem[] = [];
-    private WhenTestRows: ResponsibilityTypeRelationRuleDefinitionWhenTestRow[] = [];
-    private ThenTestRows: ResponsibilityTypeRelationRuleDefinitionThenTestRow[] = [];
+    WhenTestRows: ResponsibilityTypeRelationRuleDefinitionWhenTestRow[] = [];
+    ThenTestRows: ResponsibilityTypeRelationRuleDefinitionThenTestRow[] = [];
 
-    private thenObjectTypes: SelectItem[] = [
+    thenObjectTypes: SelectItem[] = [
         { label: "Choose...", value: null },
         { label: "Group", value: "GroupType" },
         { label: "Organization", value: "OrganizationType" },
@@ -87,7 +83,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     ];
     private thenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
 
-    private errorMessage: string = "";
+    errorMessage: string = "";
 
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();        
@@ -167,7 +163,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         }
     }
 
-    private loadObjectType(value: string): Promise<void> {
+    loadObjectType(value: string): Promise<void> {
         let promises = [];
         if (value == null)
             return Promise.resolve();
@@ -190,16 +186,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     // Clear When Filter array when "Applies To Entire Type" selected
 
-    private clearWhen(): void {
-
+    clearWhen(): void {
         if (this.model.StructuredDefinition.When) {
             this.model.StructuredDefinition.When.splice(0, this.model.StructuredDefinition.When.length);
         }
-
     }
 
 
-    private addWhen(): void {
+    addWhen(): void {
         let whenItem: ResponsibilityTypeRelationRuleDefinitionWhenItem = new ResponsibilityTypeRelationRuleDefinitionWhenItem();
         whenItem.CheckType = "F";
         whenItem.IsBool = false;
@@ -222,8 +216,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 else if (selectedFieldType.type == 'Boolean') {
                     item.IsBool = true;
                     item.ValueOptions = this.whenBoolTypes;
-                    item.IsLookup = selectedFieldType.isLookup;
-                    //console.log("value: " + item.Value);
+                    item.IsLookup = selectedFieldType.isLookup;                    
                 }
                 else {
                     item.ValueOptions = [];
@@ -249,7 +242,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return null;
     }
 
-    private parseRelationshipWhenValue(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+    parseRelationshipWhenValue(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
         if (item.Value) {
             item.TargetObject = item.Value.split('|')[0];
             item.TargetObjectID = parseInt(item.Value.split('|')[1]);
@@ -257,18 +250,27 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return null;
     }
 
-    private removeWhenCondition(i: number): void {
+    removeWhenCondition(i: number): void {
         this.model.StructuredDefinition.When.splice(i, 1);
     }
 
-    private testWhen(): Promise<void> {
+    testWhen(): Promise<void> {
 
         this.isWhenTestLoading = true;
 
         let promises = [];
         this.disableTestWhen = true;
 
-        this.responsibilityTypeService.testWhen(this.model)
+        const whenTest = _.cloneDeep(this.model);
+
+        //remove valueoptions from any when criteria
+        if (whenTest.StructuredDefinition.When) {
+            whenTest.StructuredDefinition.When.forEach(wft => {
+                wft.ValueOptions = [];
+            });
+        }
+
+        this.responsibilityTypeService.testWhen(whenTest)
             .subscribe(d => {
                 this.WhenTestRows = d;
                 this.disableTestWhen = false;
@@ -278,12 +280,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return Promise.all(promises).then(() => { });
     }
 
-    private addThenCondition(): void {
+    addThenCondition(): void {
         let thenItem: ResponsibilityTypeRelationRuleDefinitionThenItem = new ResponsibilityTypeRelationRuleDefinitionThenItem();
         this.model.StructuredDefinition.Then.Conditions.push(thenItem);
     }
 
-    private loadThenFilterOptions(value: string): Promise<void> {
+    loadThenFilterOptions(value: string): Promise<void> {
         let promises = [];
 
         if (value == null)
@@ -301,18 +303,27 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return Promise.all(promises).then(() => { });
     }
 
-    private removeThenCondition(i: number): void {
+    removeThenCondition(i: number): void {
         this.model.StructuredDefinition.Then.Conditions.splice(i, 1);
     }
 
-    private testThen(): Promise<void> {
+    testThen(): Promise<void> {
 
         this.isThenTestLoading = true;
 
         let promises = [];
         this.disableTestThen = true;
 
-        this.responsibilityTypeService.testThen(this.model)
+        const thenTest = _.cloneDeep(this.model);
+
+        //remove valueoptions from any when criteria
+        if (thenTest.StructuredDefinition.When) {
+            thenTest.StructuredDefinition.When.forEach(wft => {
+                wft.ValueOptions = [];
+            });
+        }
+
+        this.responsibilityTypeService.testThen(thenTest)
             .subscribe(d => {
                 this.ThenTestRows = d;
                 this.disableTestThen = false;
@@ -368,12 +379,20 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     //#region form actions
 
-    private cancel(): void {
+    cancel(): void {
         this.onCancel.emit(null);
     }
 
-    private onSubmit(): any {
+    onSubmit(): any {
         this.isLoading = true;
+
+        //remove valueoptions from any when criteria
+        if (this.model.StructuredDefinition.When) {
+            this.model.StructuredDefinition.When.forEach(wft => {
+                wft.ValueOptions = [];
+            });
+        }
+
         if (this.model.ID > 0) {
             this.responsibilityTypeService.putRule(this.model)
                 .subscribe(r => {
@@ -393,17 +412,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     }
                 });
         }
-    }
-
-    private validate(): boolean {
-        let valid = true;
-        this.errorMessage = '';
-
-        if (!this.model.Name) {
-            valid = false;
-        }
-
-        return valid;
     }
 
     //#endregion

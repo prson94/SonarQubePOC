@@ -5,7 +5,7 @@
                 <div class="FieldName">
                     <span>Score Type&nbsp;</span>
                 </div>
-                <p-dropdown [disabled]="disabled" [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" [style]="{'width':'70%'}">
+                <p-dropdown igDropdown igSize="medium" [disabled]="disabled" [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" appendTo="body" [required]="true" [showClear]="false">
                     <ng-template let-item pTemplate="selectedItem">
                         <span>{{item.label}}</span>
                     </ng-template>
@@ -18,13 +18,14 @@
                 <div class="FieldName">
                     <span>Asset Type&nbsp;</span>
                 </div>
-                <p-dropdown [disabled]="disabled" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" [style]="{'width':'70%'}" filter="true">
+                <p-dropdown igDropdown igSize="full" [disabled]="!selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false">
                     <ng-template let-item pTemplate="selectedItem">
-                        <span>{{item.label}}</span>
+                        <span [innerHtml]="item.label"></span>
                     </ng-template>
                     <ng-template let-item pTemplate="item">
                         <span *ngIf="item.class">
-                            <span class="option-class">{{item.class}}</span>&nbsp;|&nbsp;
+                            <span class="option-class">{{item.class}}</span>
+                            <span class="fa fa-angle-right separator"></span>
                             <span class="option-name">{{reverseElipsis(item.name,60)}}</span>
                         </span>
                         <span *ngIf="!item.class">
@@ -95,7 +96,7 @@
         <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
         <span class="grow"></span>
         <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid">
-            {{savingInProgress ? '' : 'Save'}}
+            {{savingInProgress ? '' : selection.uid ? 'Save' : 'Create'}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>

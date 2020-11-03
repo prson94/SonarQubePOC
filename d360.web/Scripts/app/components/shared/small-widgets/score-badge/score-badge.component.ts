@@ -19,6 +19,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     @Input() upperThreshold: number = 90; //90%
 
     @Input() igBadgeStyle: boolean = false;
+    @Input() precision: number = 0;
 
     _type: string;
 
@@ -47,7 +48,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     }
 
     getBadgeText(): string {
-        return this.getType() + ' ' + this.scoreDislpayPipe.transform(this.score.Value);
+        return this.getType() + ' ' + this.scoreDislpayPipe.transform(this.score.Value, this.precision);
     }
 
     getValuePct() {

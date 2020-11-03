@@ -1224,7 +1224,7 @@ where T.ExecutionId = @executionid;
             }
         }
 
-        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
+        public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
@@ -8104,8 +8104,21 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
+            List<string> invalidFieldTypes = new List<string> {
+                DataType.Path.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.FieldFromRelationship.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.RefListRelationship.ToString(),
+                DataType.JsonElement.ToString(),
+                DataType.Tag.ToString(),
+                DataType.JSON.ToString(),
+                DataType.Score.ToString(),
+                DataType.Relationship.ToString()
+            };
 
-            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+        var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var uidDupes = import.Where(x => x.Uid.HasValue).GroupBy(x => x.Uid).Where(x => x.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
@@ -8481,7 +8494,8 @@ select  d.itemnumber,
 		a.object as TargetObject,
 		isnull(a.objectid,0) as TargetObjectId,
 		cast('' as nvarchar(max)) as ErrorMessage,
-		ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber
+		ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber,
+        ft2.type as FieldType
 	into #parsedData
 	from #tempData d
 		left join assettype at on d.assigneetypeuid = at.uid
@@ -8516,6 +8530,17 @@ where pd.fieldtypeid is not null and ft.type = 'Lookup'
 update #parsedData
 set ErrorMessage = 'Invalid Field name.'
 where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+update #parsedData
+set ErrorMessage = 'Invalid Field Type.'
+where 
+    isnull(fieldtypeid,0) != 0 
+    AND 
+    fieldtypename <> '' 
+    AND 
+    AssigneeUid is null
+    AND
+    FieldType in @invalidFieldTypes
 
 update #parsedData
 set ErrorMessage = 'Invalid Lookup value.'
@@ -8654,7 +8679,7 @@ WHEN MATCHED
 
 
                     ";
-                    Connection.Execute(jsonParseSql, new { execution.ExecutionID }, commandTimeout: timeout);
+                    Connection.Execute(jsonParseSql, new { execution.ExecutionID, invalidFieldTypes }, commandTimeout: timeout);
 
                     #endregion
 

@@ -53,7 +53,7 @@
             </ng-container>
         </div>
         <span (click)="OpenScoring()" #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
-            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
+            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score" [precision]="1">
             </d3s-score-badge>
         </span>
     </div>

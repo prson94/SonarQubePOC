@@ -176,7 +176,6 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 var sel = this.selected[0];
                 var part = this.diagram.findPartForKey(sel.key);
                 if (part) {
-                    this.diagram.select(part);
                     this.diagram.centerRect(part.actualBounds);
                 }
             }

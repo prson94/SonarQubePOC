@@ -1,4 +1,4 @@
-﻿import { Input, Component,  OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -39,7 +39,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     private getAssetSub: Subscription;
 
 
-    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true};
+    private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true, _listColorsAsJSON: true };
 
 
     add() {
@@ -161,5 +161,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     public saveReferenceItem(event) {
         this.showEditor = false;
     }
-
+    private canExportRecords() {
+        return this.totalRecords <= this.maxExportRows;
+    }
 }

@@ -580,12 +580,12 @@ order by case Object
         #region JSON Feeds
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_WhenTest"), NonNullableParameters]
-        public JsonNetResult ResponsibilityTypeRelationRule_WhenTest(ResponsibilityTypeRelationRule rule)
+        public async Task<JsonNetResult> ResponsibilityTypeRelationRule_WhenTest(ResponsibilityTypeRelationRule rule)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
 
-            var results = Company.GetWhenResults(rule).OrderBy(i => i.Name);
+            var results = (await Company.GetWhenResults(rule)).OrderBy(i => i.Name);
             return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -623,6 +623,7 @@ order by case Object
         {
             var tempFieldDataTypes = new List<string>();
             limitedFieldTypes.ForEach(o => { tempFieldDataTypes.Add($"'{o}'"); });
+            tempFieldDataTypes.Add($"'{DataType.Relationship.ToString()}'");
             var ftTypeRemoveString = string.Join(",", tempFieldDataTypes);
 
             var fieldTypes = Company.Query<string>($@"
