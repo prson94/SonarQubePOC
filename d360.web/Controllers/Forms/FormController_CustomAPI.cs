@@ -16,6 +16,9 @@ namespace d360.web.Controllers
 {
     public partial class FormController : BaseController
     {
+        private List<AssetTypeClass> allowedVersionClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.Reference };
+
+
         #region Custom API Service
 
         public JsonResult CustomAPIService_AddFields()
@@ -395,6 +398,8 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MajorVersion", Name = "Major Version", FieldDescription = "", FieldType = DataType.Number.ToString() });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "MinorVersion", Name = "Minor Version", FieldDescription = "", FieldType = DataType.Number.ToString() });
+
+
             list.Add(new EditableField
             {
                 Row = 3,
@@ -404,11 +409,12 @@ namespace d360.web.Controllers
                 Name = "Asset Type",
                 FieldDescription = "",
                 FieldType = DataType.Lookup.ToString(),
-                Items = Company.AssetTypes.ToList()
+                Items = Company.AssetTypes.Where(x => allowedVersionClasses.Contains(x.Class))
+                    .ToList()
                     .Select(i => new SelectListItem
                     {
                         Value = i.ID.ToString(),
-                        Text = $"{i.Object} - {i.Name}"
+                        Text = $"{i.Class.GetDisplayName()} :: {i.Name}"
                     }).OrderBy(x => x.Text).ToList()
                 .ToList()
             });
@@ -444,11 +450,12 @@ namespace d360.web.Controllers
                 Name = "Asset Type",
                 FieldDescription = "",
                 FieldType = DataType.Lookup.ToString(),
-                Items = Company.AssetTypes.ToList()
+                Items = Company.AssetTypes.Where(x => allowedVersionClasses.Contains(x.Class))
+                    .ToList()
                     .Select(i => new SelectListItem
                     {
                         Value = i.ID.ToString(),
-                        Text = $"{i.Object} - {i.Name}",
+                        Text = $"{i.Class.GetDisplayName()} :: {i.Name}",
                         Selected = i.ID == ent.AssetTypeID
                     }).OrderBy(x => x.Text).ToList()
             });
