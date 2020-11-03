@@ -124,4 +124,8 @@ namespace d360.core.entities.Membership
     {
         public Guid Uid { get; set; }
     }
+    public class DeleteUserModel
+    {
+        public Guid Uid { get; set; }
+    }
 }

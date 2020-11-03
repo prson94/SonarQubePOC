@@ -1,4 +1,4 @@
-﻿<div class="d3s-score-badge">
+﻿<div class="d3s-score-badge" *ngIf="!score.EndDate">
     <div class="score-tooltip">
         <span class="item">
             <span class="item-name"><strong class="gov-bold">{{getType()}}</strong></span> {{score.Value | scoreDisplay:1}}

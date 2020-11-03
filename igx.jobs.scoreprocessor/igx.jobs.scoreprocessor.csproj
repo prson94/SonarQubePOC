@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>igx.jobs.scoreprocessor</RootNamespace>
     <AssemblyName>igx.jobs.scoreprocessor</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <SccProjectName>SAK</SccProjectName>
@@ -19,6 +19,7 @@
     <SccProvider>SAK</SccProvider>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -211,6 +212,7 @@
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
     <Compile Include="ChangeTypes\ProcessBase.cs" />
     <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
+    <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
     <Compile Include="Models\AssetVersionCheckObjectType.cs" />
     <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />

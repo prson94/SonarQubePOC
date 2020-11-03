@@ -344,11 +344,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         var years = Math.floor(months / 12);
         let type = this.selectedScoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
         let latestScore = score;
+        let hasEndDate: boolean = false;
 
         if (this.searchDetails) {
             let searchDetailRelevantScores = this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] });
             if (searchDetailRelevantScores.length > 0) {
                 latestScore = searchDetailRelevantScores[0].Value;
+                hasEndDate = searchDetailRelevantScores[0].EndDate != null;
             }
             searchDetailRelevantScores = null;
         }
@@ -359,17 +361,22 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
         let scorePercentage = this.getAsPrecentage(latestScore);
 
+        let verb: string = hasEndDate ? 'was' : 'has been';
         if (days == 0 || days == 1) {
             this.calculatedScoreText = "Your " + type + " Score changed to  <strong> " + scorePercentage + " </strong> today</strong>";
         }
         else if (days > 0 && days <= 90) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + days + " days</strong>";
+            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + days + " days</strong>";
         }
         else if (days > 90 && days <= 780) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + months + " months</strong>";
+            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + months + " months</strong>";
         }
         else if (days > 780) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + years + " years</strong>";
+            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + years + " years</strong>";
+        }
+
+        if (hasEndDate) {
+            this.calculatedScoreText += " <span class='inactive'>(latest score is no longer active)</span>"; 
         }
     }
     getAsPrecentage(val: number) {

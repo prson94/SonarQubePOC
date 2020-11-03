@@ -524,17 +524,6 @@ export class FusionService extends BaseObservableService {
         return this[methodName](this.http, 'fusionqueryattribute', query);
     }
 
-    getPromotionQueryAttributes(ruleID: number): Observable<any> {
-        const url = `api/fusion/promotion/QueryAttributes?ruleID=${ruleID}`;
-        return this
-            .http
-            .get(url)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     postRunMarkitLineage(id: number) {
         const url = `form/ScheduleMarkitLineage`;
 

@@ -3519,7 +3519,7 @@ button.tab-scroller {
             width: 70%;
         }
 
-        p-dropdown {
+        p-dropdown:not(.ig-dropdown) {
             .ui-dropdown {
                 width: 400px;
                 min-height: 34px;
@@ -6190,6 +6190,14 @@ a.mid-blue {
             display: inline-flex;
             width: 35%;
             flex-direction: column;
+
+            .heading {
+                .heading-text {
+                    .inactive {
+                        color: @ig-coral;
+                    }
+                }
+            }
 
             .score-chart {
                 align-self: flex-end;

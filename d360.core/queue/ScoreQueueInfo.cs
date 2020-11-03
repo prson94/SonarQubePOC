@@ -40,7 +40,10 @@ namespace d360.core.queue
         public string StorageFolder { get { return $"scoring"; } }
 
         [JsonIgnore]
-        public string StorageFile { get { return $"{CompanyID}/{StartedOnDateString}_{ExecutionUid}_{ChangeType}.json"; } }
+        public string StorageFile { get { return $"{StorageFilePrefix}.json"; } }
+
+        [JsonIgnore]
+        public string StorageFilePrefix { get { return $"{CompanyID}/{StartedOnDateString}_{ExecutionUid}_{ChangeType}"; } }
     }
 
     public class ExternalMeasureResultsCreatedModel

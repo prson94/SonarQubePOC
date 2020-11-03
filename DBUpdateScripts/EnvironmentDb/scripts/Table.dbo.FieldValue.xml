@@ -42,4 +42,35 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.FieldValue-v2">
+    <comment>GOV-12593</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF EXISTS (select * 
+				   from sys.foreign_keys where name = 'FK_FieldValue_FieldType' 
+				   and object_name(parent_object_id) = 'FieldValue' and schema_name(schema_id) = 'dbo'
+				   )
+		BEGIN	
+			ALTER TABLE [dbo].[FieldValue] DROP CONSTRAINT [FK_FieldValue_FieldType]
+		END
+
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue')
+		BEGIN
+			exec sp_rename '[dbo].[FieldValue]', 'FieldValue_bak'
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue_bak')
+		BEGIN
+			exec sp_rename '[dbo].[FieldValue_bak]', 'FieldValue'
+		END
+		]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>

@@ -61,6 +61,17 @@ namespace d360.model.DataAccessLayer
             }
 
             Company.SaveChanges();
+
+            // Send queue event to scoring engine.
+            Company.SendScoreEventWithPayload(
+                Guid.NewGuid(),
+                ScoreQueueChangeType.MeasureRemoved,
+                new MeasureRemovedModel { 
+                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value, 
+                    MetricAssetUid = currentAssetVersion.AssetUid, 
+                    MetricAssetVersionUid = currentAssetVersion.Uid 
+                }
+             );
         }
 
         public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
@@ -1511,7 +1522,7 @@ order by	R.[Name]";
 select  distinct 
         ma.scoretype 
 from    metrics.Allocation  ma
-		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 and ms.EndDate is null";
+		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1";
             return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
