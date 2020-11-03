@@ -109,8 +109,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
 
     private initialData() {
-        this.ddlScoreTypes.push({ value: 'Governance', label: 'Governance' });
-        this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality' });
+        this.ddlScoreTypes.push({ value: 'Governance', label: 'Governance Score' });
+        this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality Score' });
     }
 
     getClassFriendlyName(atc: AssetTypeClass): string {
