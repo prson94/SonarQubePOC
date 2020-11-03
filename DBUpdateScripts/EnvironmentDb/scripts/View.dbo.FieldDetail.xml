@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="View.dbo.FieldDetail-v2">
+  <changeSet author="kmcnamee" id="View.dbo.FieldDetail-v2.1">
     <comment>GOV-12516</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -22,7 +22,7 @@
 				A.Object, 
 				A.ObjectID, 
 				T.Type, 
-				COALESCE (F.Value, T.DefaultValue) AS Value, 
+				COALESCE (F.Value, F.FormattedValue, T.DefaultValue) AS Value, 
 				CASE 
 					WHEN T.AllowAllValue = 1 AND F.[Value] = '0' THEN CAST(T.AllowAllLabel AS nvarchar(MAX)) 
 					WHEN F.FormattedValue IS NOT NULL THEN F.FormattedValue 
