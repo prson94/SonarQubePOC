@@ -281,6 +281,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             case 0:
                 this.metricForm.addControl("instructionString", new FormControl(''));
                 this.metricForm.addControl("updateFrequency", new FormControl(''));
+                if (this.model.Definition.Governance.External.UpdateFrequency) {
+                    this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency[this.model.Definition.Governance.External.UpdateFrequency + ""];
+                }
                 break;
             case 1:
                 let condition = new FieldCondition();
