@@ -337,8 +337,6 @@ namespace igx.jobs.apiexecutionprocessor
                             #endregion
                             case ApiExecutionAction.DeleteAssetTypes:
                                 #region
-                                var deleteAssetTypesFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssetTypes>(dbExecutionItem.Fields);
-
                                 var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"DELETE Asset Types (DB Start): Total raw assets: {deleteAssetTypes.Count}.");
