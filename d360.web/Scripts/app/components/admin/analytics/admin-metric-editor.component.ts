@@ -98,6 +98,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (changes['scoreData'] && (changes['scoreData'].currentValue != changes['scoreData'].previousValue)) {
             this.getMaxScoreDate();
         }
+        if (changes['assetTypeUid'] && (changes['assetTypeUid'].currentValue != changes['assetTypeUid'].previousValue)) {
+            this.isLoading = true;
+            this.load();
+        }
     }
 
     ngOnInit() {
@@ -118,6 +122,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     loadFieldData() {
         this.isLoadingFields = true;
+
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
 
