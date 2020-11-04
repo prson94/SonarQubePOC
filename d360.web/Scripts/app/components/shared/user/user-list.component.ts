@@ -267,9 +267,9 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.resourcesService.saveResource(user, true, false)
             .subscribe(
-                result => {                    
-                    this.showMessageForApiResult(this.messagesService, result, `User successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
+                result => {
                     if (result.Success) {
+                        result.Message = null;
                         this.showEditor = false;
                         this.getData();
                     }
@@ -277,6 +277,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                         this.isLoading = false;
                         this.changeDetectorRef.markForCheck();
                     }
+                    this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
                 }
             )        
     }
