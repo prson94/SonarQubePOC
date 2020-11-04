@@ -5369,6 +5369,21 @@ SELECT (
 
         #region Reference
 
+        [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
+        public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
+        {
+            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
+            return Request.CreateResponse(HttpStatusCode.OK, models);
+        }
+
+        [HttpGet, Route("referenceItems/field/{fieldId:int}/items.json")]
+        public Task<HttpResponseMessage> GetReferenceItemsByFieldId(int fieldId)
+        {
+            var field = Company.GetById<FieldType>(fieldId);
+            return GetReferenceItems((int)field.LookupObjectID);
+
+        }
+
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
         {
