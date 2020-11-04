@@ -69,7 +69,7 @@ namespace d360.core.entities.Metric
         [DataMember, JsonProperty(Order = 24)]
         public DateTime? EffectiveEndDate { get; set; }
 
-        [DataMember]
+        [IgnoreDataMember]
         public string DefinitionJson { get; set; }
     }
 

@@ -12,6 +12,7 @@ using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -436,9 +437,15 @@ namespace d360.web.Controllers.V2
                 List<State> states = new List<State>() { State.Active };
                 if (includeDisabled)
                     states.Add(State.Deleted);
+
                 List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
 
-                models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
+                var JSONString = string.Join("", fragments);
+                JSONString = string.IsNullOrEmpty(JSONString) ? "[]" : JSONString;
+                JObject objects = JObject.Parse($"{{ 'items': {JSONString} }}");
+                JArray items = (JArray)objects["items"];
+                models = items.ToObject<List<MetricAssetViewModel>>();
+               
                 if (models == null)
                     models = new List<MetricAssetViewModel>();
 
@@ -449,7 +456,14 @@ namespace d360.web.Controllers.V2
                 });
                 models.ForEach(m =>
                 {
-                    m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(m.DefinitionJson ?? "{}"); 
+                    var rawData = items.FirstOrDefault(x => string.Equals(m.Uid.ToString(), x["Uid"].ToString(), StringComparison.OrdinalIgnoreCase));   
+                    if (rawData.HasValues)
+                    {
+                        var definitionString = rawData.Value<string>("DefinitionJson") ?? "{}";
+                        m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(definitionString);
+
+                    }
+                    m.DefinitionJson = null;
                 });
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }

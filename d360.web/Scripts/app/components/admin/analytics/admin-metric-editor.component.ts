@@ -143,7 +143,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.fieldsService.getFieldsV2(this.assetTypeUid, null, null).subscribe(res => {
                 var tempFields: FieldTypeAPIModelFieldCondition[] = [];
                 res.forEach(f => {
-                    if (FieldTypeHelper.isFieldForOperator(f.Type) && (f.Type.DateTime == null || f.Type.DateTime == undefined)) {
+                    if (FieldTypeHelper.isFieldForOperator(f.Type)) {
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
@@ -174,7 +174,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     });
 
                 });
-
                 this.fields = tempFields.filter(x => x.Operators.length > 0);
                 this.isLoadingFields = false;
                 this.cdRef.markForCheck();
@@ -339,7 +338,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     testTypeChange(event) {
         this.resetGovernanceDefinition();
-        console.log(event);
         switch (this.model.Definition.Governance.Check) {
             case 0:
                 this.metricForm.addControl("instructionString", new FormControl(''));
@@ -402,8 +400,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (!this.isExternallyCalculated) {
             switch (this.model.Definition.Governance.Check) {
                 case 0:
-                    if (!this.model.Definition.Governance.External.UpdateFrequency)
-                        this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
+                    this.model.Definition.Governance.External.UpdateFrequency = MetricUpdateFrequency.None;
                     break;
                 case 1:
                     if (this.testFieldConditions && this.testFieldConditions.length == 1) {
