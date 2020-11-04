@@ -1450,7 +1450,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
             let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            this.browserService.getLineageHop(data.hierarchyKey, direction, assets, preloadedIntersects)
+            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, assets, preloadedIntersects)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
                     if (response.hierarchy && response.hierarchy.length > 0) {
