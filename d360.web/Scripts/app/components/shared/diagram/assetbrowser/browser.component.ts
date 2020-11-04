@@ -658,7 +658,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
             let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
-
+ 
             if (rootNodeData.template == "MoreData") {
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
             }
@@ -706,6 +706,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(rootNodeData, 'template', rootNodeData.nonHiddenTemplate);
                 this.diagram.model.setDataProperty(rootNodeData, 'visible', true);
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 1);
+
+                let propertyName = (direction == AssetBrowserApiHopDirection.Backward) ? "upstreamHidden" : "downstreamHidden";
+                this.diagram.model.setDataProperty(rootNodeData, propertyName, null);
 
                 let hierarchyNodes = rootNode.findSubGraphParts();
                 hierarchyNodes.each(c => {
@@ -2278,6 +2281,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 click: (e, obj) => this.context_UnhideDirection(e, obj),
                 cursor: 'pointer'
             },
+            new go.Binding("opacity", "opacity"),
             this.g(
                 go.Panel,
                 "Horizontal",
