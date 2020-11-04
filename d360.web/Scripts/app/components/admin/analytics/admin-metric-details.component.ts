@@ -31,7 +31,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private assetTypeUid: string;
     private allocationUid: string;
     formattedScoreCalc: string;
-    scoreUid: string;
     MatchType: MetricMatchType = MetricMatchType.All;
     private metricListFieldTypes: MetricFieldTypeViewModel[] = [];
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
