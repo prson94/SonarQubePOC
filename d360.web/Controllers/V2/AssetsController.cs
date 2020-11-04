@@ -842,7 +842,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true, bool lookupFieldsPassedByValue = false, bool useTempTablesForFieldValues = true)
         {
             var prefix = "Assets.PostBulkAssetsAsync => ";
-            
+
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -1909,7 +1909,9 @@ namespace d360.web.Controllers.V2
 
                 if (assetTypes == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
-                var execution = getApiExecution(assetTypes.Count, new ApiExecutionFields_DeleteAssetTypes { });
+
+                List<ApiExecutionFields_DeleteAssetTypes> typesForDelete = assetTypes.Select(x => new ApiExecutionFields_DeleteAssetTypes() { AssetTypeUid = x.Uid }).ToList();
+                var execution = getApiExecution(assetTypes.Count, typesForDelete);
 
                 ApiExecutionInfo executionInfo = await AssetRepository.DeleteBulkAssetTypes(assetTypes, execution);
 
