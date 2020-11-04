@@ -77,7 +77,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             string searchPhrase = "";
             string orderByField = "Value";
             string direction = "ASC";
-            List<string> validOrderFields = new List<string>{ "uid", "value", "usecount", "createdon", "createdbyuid", "updatedon", "updatedbyuid" };
+            List<string> validOrderFields = new List<string> { "uid", "value", "usecount", "createdon", "createdbyuid", "updatedon", "updatedbyuid" };
             bool includeTotal = true;
             var dbArgs = new DynamicParameters();
 
@@ -115,6 +115,12 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 {
                     dbArgs.Add("@uid", uid);
                     queryFilters.Add($"t.[UID] = @uid");
+                }
+
+                if (uid == null || uid == Guid.Empty)
+                {
+
+                    throw new ArgumentException($"Invalid value [{tagUidString}] passed in the request", "uid");
                 }
             }
 
@@ -191,7 +197,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_includetotal"))
             {
                 var totalValue = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value.Trim();
-               
+
                 if (!bool.TryParse(totalValue, out includeTotal))
                 {
                     throw new ArgumentException($"Invalid value [{totalValue}] passed in the request.", "_includetotal");
