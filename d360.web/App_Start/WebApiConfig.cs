@@ -36,7 +36,7 @@ namespace d360.web
             // Web API routes
             var constraintResolver = new DefaultInlineConstraintResolver() { ConstraintMap = { ["apiVersion"] = typeof(ApiVersionRouteConstraint) } };
             config.MapHttpAttributeRoutes(constraintResolver);
-
+            
             #region API Versioning
 
             config.AddApiVersioning(o => {
@@ -126,7 +126,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
             config.MessageHandlers.Add(new HeadHandler());
             config.MessageHandlers.Add(new ErrorMessageHandler());
             config.MessageHandlers.Add(new MethodOverrideHandler());
-            config.MessageHandlers.Add(new CorsHandler());
+
             config.EnsureInitialized();
         }
     }

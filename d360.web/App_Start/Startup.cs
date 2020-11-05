@@ -17,7 +17,7 @@ namespace d360.web
             #region Mvc
 
             MvcHandler.DisableMvcResponseHeader = true; // Security (by obscurity) disable ASP MVC Version header i.e. X-AspNetMvc-Version:5.2
-
+            
             GlobalFilters.Filters.Add(new AiHandleErrorAttribute());
             GlobalFilters.Filters.Add(new NoCacheAttribute());
             if (!System.Web.HttpContext.Current.IsDebuggingEnabled)
@@ -54,12 +54,13 @@ namespace d360.web
 
 
             #endregion
-
+            
             app.Use<IpRestrictionMiddleware>();
             app.Use<CompanyIDCheckMiddleware>();
             app.Use<UserIDCheckMiddleware>();
             app.Use<ContractValidationMiddleware>();
             app.Use<CachingHeaderMiddleware>();
+            app.Use<CorsMiddleware>();
         }
     }
 }

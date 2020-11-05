@@ -354,6 +354,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\ContractValidationMiddleware.cs" />
@@ -443,7 +444,6 @@
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
-    <Compile Include="Handlers\CorsHandler.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
