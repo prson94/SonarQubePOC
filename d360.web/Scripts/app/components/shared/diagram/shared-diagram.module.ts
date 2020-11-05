@@ -83,6 +83,7 @@ import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-di
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 
 
 @NgModule({
@@ -131,7 +132,8 @@ import { TooltipModule } from 'primeng/tooltip';
         //JSON Viewer module
         NgxJsonViewModule,
         AssetSearchModule,
-        TagViewModule
+        TagViewModule,
+        PopupMenuModule
     ],
     declarations: [
         AssetBrowserAddPanelComponent,

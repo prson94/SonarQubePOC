@@ -10,8 +10,10 @@
             <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
             <button pTooltip="View and edit related assets for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="igx-related-asset-icon" class="top-spacer-4" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!isExportEnabled()" (click)="doControlledAction('export')"></button>
-
+            <div class="menu-wrapper">
+                <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                <ig-popup-menu [items]="popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>
+            </div>
         </div>
         <div class="controls-right">
             <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')" tooltip="Diagram View"></button>
@@ -189,11 +191,14 @@
         <div class="row">
             <div class="loader">
                 <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                <span class="text" *ngIf="isSaving && !isExporting">
+                <span class="text" *ngIf="isSaving && !isExporting && !isImporting">
                     Saving changes
                 </span>
                 <span class="text" *ngIf="isExporting">
                     Exporting diagram
+                </span>
+                <span class="text" *ngIf="isImporting">
+                    Importing diagram
                 </span>
             </div>
         </div>
@@ -213,6 +218,119 @@
         <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
         <div class="grow"></div>
         <button igButton class="ig-button-primary" label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
+
+    </div>
+</d3s-modal>
+
+<d3s-modal [title]="'Import Diagram'" additionalClasses="large-dialog" (onClose)="isImportVisible=false" [isVisible]="isImportVisible">
+    <div class="content">
+        <div class="row" *ngIf="importAssets.length > 0">
+            Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from
+        </div>
+        <div class="row">
+            <div class="search-wrapper">
+                <input igInput [(ngModel)]="searchValue" type="text" autocomplete="off" placeholder="Search assets" name="search-filter" maxlength="250" (input)="importTable.filterGlobal($event.target.value, 'contains')" />
+                <i class="fa fa-search"></i>
+            </div>
+        </div>
+        <d3s-loading [isLoading]="!areImportAssetsLoaded"></d3s-loading>
+        <div class="row">
+            <ng-container *ngIf="areImportAssetsLoaded">
+                <p-table #importTable
+                         selectionMode="single"
+                         dataKey="uid"
+                         [value]="importAssets"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="5"
+                         [(selection)]="selectedImportFromAsset"
+                         [globalFilterFields]="['assetPath']"
+                         (onRowSelect)="onImportAssetSelection($event)"
+                         class="ig-table"
+                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'assetPath'" style="width: 60%">
+                                Asset
+                                <d3s-sortIcon [field]="'assetPath'"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                {{item.assetPath}}
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="importTable.first" [rows]="importTable.rows" [totalRecords]="importAssets.length"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+
+            </ng-container>
+
+            <ng-container *ngIf="isReplace">
+                <p>
+                    Please note that replacing the current diagram cannot be undone. Check the option below to confirm that you wish to continue.
+                </p>
+                <p-checkbox igCheckbox [binary]="true" [(ngModel)]="confirmation" label="Replace the current diagram"></p-checkbox>
+            </ng-container>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="isImportVisible=false;"></button>
+        <div class="grow"></div>
+        <button igButton [loading]="loadingRelationships" class="ig-button-primary" label="{{isReplace ? 'Replace' : 'Import'}}" [disabled]="!selectedImportFromAsset || (isReplace && !confirmation) || loadingRelationships" tabindex="1001" (click)="confirmation=false;isImportVisible=false;importDiagram();"></button>
+
+    </div>
+</d3s-modal>
+
+<d3s-modal [title]="'Diagram Import: Cannot copy relationships'" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
+    <div class="content">
+        <div class="row">
+            The following relationships in the source diagram cannot be copied, due to cardinality (eg.one-to-one, many-to-one) restrictions on relationship types:<br /><br />
+        </div>
+
+        <div class="row">
+            <p-table #importRejectedRelationshipsTable
+                     [value]="importRejectedRelationships"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rows]="5"
+                     class="ig-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [pSortableColumn]="'FlowObject'" style="width: 60%">
+                            Flow Object
+                            <d3s-sortIcon [field]="'FlowObject'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'RelatedAsset'" style="width: 60%">
+                            Related Asset
+                            <d3s-sortIcon [field]="'RelatedAsset'"></d3s-sortIcon>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            {{item.FlowObject}}
+                        </td>
+                        <td>
+                            {{item.RelatedAsset}}
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="importRejectedRelationshipsTable.first" [rows]="importRejectedRelationshipsTable.rows" [totalRecords]="importRejectedRelationships.length"></d3s-grid-paging-info>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+    <div class="action-bar">
+        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="isImportVisible=false;showRelationshipsConfirmation=false;"></button>
+        <div class="grow"></div>
+        <button igButton class="ig-button-primary" label="Continue" tabindex="1001" (click)="showRelationshipsConfirmation=false;isImportVisible=false;hasPassedRelationshipCheck=true;importDiagram();"></button>
 
     </div>
 </d3s-modal>

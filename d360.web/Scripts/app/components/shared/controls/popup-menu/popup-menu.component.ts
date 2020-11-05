@@ -346,6 +346,10 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     select(item: PopupMenuItem, $event) {
+        if (item.callback) {
+            item.callback();
+        }
+
         if ($event.stopPropagation)
             $event.stopPropagation();
 
@@ -561,6 +565,7 @@ export class PopupMenuItem {
     keys: number[] = [];
     keysMac: number[] = [];
     badge: PopupMenuItemBadge;
+    callback: Function;
 
     isSeparator?: boolean;
     isActive?: boolean = false;

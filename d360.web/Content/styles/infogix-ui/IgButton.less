@@ -20,7 +20,7 @@
     border-radius: @ig-field-border-radius;
     height: @ig-field-height;
     padding: 0 16px;
-/*    font-family: 'Source Sans Pro', sans-serif;
+    /*    font-family: 'Source Sans Pro', sans-serif;
     font-size: 14px;
     font-weight: 400; */
     cursor: pointer;
@@ -51,6 +51,10 @@
 
         &:focus, &.ig-state-focus {
             background: @ig-midblue;
+        }
+
+        &:disabled {
+            color: white;
         }
     }
 

@@ -14,6 +14,8 @@ using d360.web.Models;
 using System.Web.Http.Description;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Process;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers.V2
 {
@@ -155,6 +157,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="assetUid">The asset uid</param>
         /// <param name="model"></param>
+        /// <param name="sourceAssetUid">If uid passed, current assets process diagram will be replaced with all its fields, relationships and tags</param>
         /// <returns></returns>
         [
             HttpPut,
@@ -167,12 +170,111 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model)
+        public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model, Guid? sourceAssetUid = null)
         {
-
             try
             {
-                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                Asset targetAsset;
+                Asset sourceAsset = null;
+                List<ProcessDiagramCopyRelationshipModel> copyRelationshipModel = null;
+                List<ProcessDiagramCopyRelationshipModel> rejectedRelationsipsCopy = null;
+                List<ProcessDiagramCopyMapper> pdCopyMapper = null;
+
+                bool isDiagramReplace = false;
+
+                bool validateFields = true;
+                if (sourceAssetUid.HasValue)
+                {
+                    validateFields = false;
+                }
+
+                bool isModelEmpty = model.linkDataArray == null && model.linkFromPortIdProperty == null && model.linkToPortIdProperty == null && model.nodeDataArray == null;
+                if (!sourceAssetUid.HasValue && isModelEmpty)
+                {
+                    throw new Exception("Model cannot be empty.");
+                }
+
+                if (sourceAssetUid.HasValue && !isModelEmpty)
+                {
+                    throw new Exception("When using copy/replace option with sourceAssetUid model must be empty.");
+                }
+
+                targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+                if (sourceAssetUid.HasValue)
+                {
+                    isDiagramReplace = true;
+                    sourceAsset = Company.Assets.FirstOrDefault(x => x.uid == sourceAssetUid);
+                    if (sourceAsset == null)
+                    {
+                        throw new Exception("sourceAssetUid is invalid or asset does not exist.");
+                    }
+
+                    if (sourceAsset.ID == targetAsset.ID)
+                    {
+                        throw new Exception("Source and target asset cannot be same.");
+                    }
+                    if (sourceAsset.AssetTypeID != targetAsset.AssetTypeID)
+                    {
+                        throw new Exception("Source and target asset types must be same.");
+                    }
+
+                    model = ProcessRepository.GetAssetsProcessDiagram(sourceAssetUid.Value);
+
+                    copyRelationshipModel = Company.Query<ProcessDiagramCopyRelationshipModel>(@"
+                                                            drop table if exists #assets
+                                                            create table #assets(assetUid uniqueidentifier)
+
+                                                            insert into #assets
+	                                                            select fromuid as assetuid from processexpandeddata pxd
+	                                                            where pxd.diagramassetuid = @assetuid
+	                                                            union
+	                                                            select touid as assetuid from processexpandeddata pxd
+	                                                            where pxd.diagramassetuid = @assetuid
+
+
+                                                            select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+                                                                 inner join Asset a on a.uid = ass.assetuid
+                                                                 inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
+	                                                             inner join [IntersectType] it on i.IntersectTypeID = it.ID
+                                                             union
+                                                             select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
+                                                                 inner join Asset a on a.uid = ass.assetuid
+                                                                 inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
+	                                                             inner join [IntersectType] it on i.IntersectTypeID = it.ID
+                                                            ", new { assetUid = sourceAsset.uid }).ToList();
+
+                    rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
+                    copyRelationshipModel = copyRelationshipModel.Where(x => x.ObjectCardinality == 2 && x.SubjectCardinality == 2).ToList();
+
+                    pdCopyMapper = new List<ProcessDiagramCopyMapper>();
+                    //Invalidate all previous keys
+                    foreach (var node in model.nodeDataArray)
+                    {
+                        var newKey = Guid.NewGuid();
+                        var currentKey = node.AssetUid;
+                        pdCopyMapper.Add(new ProcessDiagramCopyMapper() { oldUid = node.AssetUid, keyUid = newKey });
+                        foreach (var rel in copyRelationshipModel.Where(x => x.keyUid == currentKey))
+                        {
+                            rel.keyUid = newKey;
+                        }
+
+                        foreach (var link in model.linkDataArray)
+                        {
+                            if (link.from == currentKey)
+                                link.from = newKey;
+
+                            if (link.to == currentKey)
+                                link.to = newKey;
+                        }
+
+                        node["key"] = newKey.ToString();
+                    }
+
+                }
+
+
+
 
                 if (!Company.HasAssetPermission(targetAsset.ID, core.enums.Permission.ModifyAsset))
                 {
@@ -297,7 +399,7 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels);
+                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields);
                 if (validationRes.Count > 0)
                 {
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
@@ -306,7 +408,15 @@ namespace d360.web.Controllers.V2
                 var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
                 var execution = getApiExecution(totalCount);
 
-                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model, toAdd, toUpdate, toDelete, targetAsset.ID);
+                if (sourceAsset != null)
+                {
+                    execution.Fields = JsonConvert.SerializeObject(new { SourceAssetUid = sourceAsset.uid });
+                }
+
+                validationRes = ProcessRepository.UpdateProcessDiagram(execution, model,
+                    toAdd, toUpdate, toDelete,
+                    targetAsset.ID, isDiagramReplace,
+                    copyRelationshipModel, pdCopyMapper);
 
                 if (validationRes.Count > 0)
                 {
@@ -314,7 +424,7 @@ namespace d360.web.Controllers.V2
                 }
 
 
-                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count };
+                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, warnings = rejectedRelationsipsCopy != null ? rejectedRelationsipsCopy : null };
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 
             }
@@ -425,6 +535,91 @@ namespace d360.web.Controllers.V2
             string url = $"sidebar/visualization/browser/{baseAssetUid.ToString()}/Process/{assetUid}";
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, url)));
 
+        }
+
+        /// <summary>
+        /// Returns a list of available copy options for current diagram
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/importOptions"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetCopyOption(Guid assetUid)
+        {
+
+            var asset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+
+            var results = await Company.QueryAsync<dynamic>($@"
+                    select a.uid,
+	                    graph.GetPath(an.Segments, ' > ', ' / ') as assetPath,
+	                    P.Path as typePath
+	                    from asset a
+	                        inner join AssetProcessDiagram apd on a.ID = apd.AssetID
+	                        inner join graph.assetnode an on an.uid = a.uid
+	                        inner join AssetType at on at.id = @assettypeid
+	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P
+                        where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
+                        order by graph.GetPath(an.Segments, ' > ', ' / ')
+                    ", new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+        }
+
+        /// <summary>
+        /// Returns a list of relationships that cannot be copied due to a cardinality
+        /// </summary>
+        /// <param name="targetAssetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("ignoredCopyRelationships/{targetAssetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetIgnoredRelationships(Guid targetAssetUid)
+        {
+            var results = await Company.QueryAsync<dynamic>($@";with assets as (
+                    select diagramassetuid as uid, FromUid as duid from processexpandeddata where diagramassetuid = @targetassetuid
+                    union
+                    select diagramassetuid as uid, ToUid as duid from processexpandeddata where diagramassetuid = @targetassetuid)
+                    select 
+                        assets.uid,
+	                    utility.GetAssetDisplayValue(a.id) as 'FlowObject',
+	                    utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+                     from assets
+	                    inner join asset a on a.uid = assets.duid
+	                    inner join [intersect] i on i.subject = a.object and i.subjectid = a.objectid
+	                    inner join intersecttype it on i.intersecttypeid = it.id
+	                    inner join asset a2 on a2.Object = i.Object and a2.ObjectID = i.ObjectID
+                    where it.objectcardinality = 1 or it.SubjectCardinality = 1
+                    union
+                    select 
+	                    assets.uid,
+	                    utility.GetAssetDisplayValue(a.id) as 'FlowObject',
+	                    utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
+                     from assets
+	                    inner join asset a on a.uid = assets.duid
+	                    inner join [intersect] i on i.object = a.object and i.objectid = a.objectid
+	                    inner join intersecttype it on i.intersecttypeid = it.id
+	                    inner join asset a2 on a2.Object = i.subject and a2.ObjectID = i.subjectid
+                    where it.objectcardinality = 1 or it.SubjectCardinality = 1
+                    ", new { targetAssetUid });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
     }
 }

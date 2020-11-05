@@ -74,6 +74,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     promptDeleteOpened: boolean = false;
     isRelatedAssetsVisible: boolean = false;
 
+    importAssets: any[] = [];
+    importRejectedRelationships: any[] = [];
+    isImportVisible: boolean = false;
+    isReplace: boolean = false;
+    areImportAssetsLoaded: boolean = false;
+    selectedImportFromAsset: any;
+    isImporting: boolean = false;
+    hasNoImportAssets = true;
+    hasPassedRelationshipCheck = false;
+    loadingRelationships = false;
+    showRelationshipsConfirmation = false;
+    filters: any = { globalSearch: '' };
+
+
     private newInstancesMap: any[] = [];
 
     public isInfoPanelOpened: boolean = false;
@@ -87,8 +101,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     scale = 1;
 
-    @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
 
+    @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
+    @ViewChild('importTable', { static: false }) importTable: any;
+
+    public popupMenuItems = [
+        {
+            title: 'Export to excel',
+            callback: () => this.doControlledAction('export')
+        },
+        {
+            title: 'Replace diagram',
+            callback: () => this.doControlledAction('open-diagram-replace'),
+            disabled: true
+        }
+    ]
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -127,6 +154,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
+        this.loadAssetsForImport();
 
         this.processService.getProcessDiagramColors(this.assetUid)
             .subscribe(colors => {
@@ -640,6 +668,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.loadedEditors = [];
                 this.isDiagramLoaded = true;
                 this.isSaving = false;
+
+                this.isImporting = false;
+                this.isReplace = false;
+                this.selectedImportFromAsset = null;
+
                 this.saveState.emit(this.isCurrentStateSaved());
                 this.processDiagramBase64 = this.myDiagram.makeImageData({
                     scale: 1,
@@ -1007,6 +1040,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                     this.showDiscardChanges = false;
                     break;
+                case 'open-diagram-replace':
+                    this.isSavingChangesModalOpened = false;
+                    this.isImportVisible = true;
+                    this.isReplace = true;
+                    this.cdRef.detectChanges();
+                    break;
             }
 
             return;
@@ -1025,6 +1064,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
                     this.downloadProcessDiagram();
+                    break;
+                case 'open-diagram-import':
+                    this.isImportVisible = true;
+                    this.cdRef.detectChanges();
+                    break;
+                case 'open-diagram-replace':
+                    this.isImportVisible = true;
+                    this.isReplace = true;
+                    this.cdRef.detectChanges();
                     break;
             }
         }
@@ -1070,5 +1118,54 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private zoom_Change(_scale: number) {
         this.myDiagram.scale = _scale;
         this.scale = _scale;
+    }
+
+
+    private loadAssetsForImport() {
+        if (!this.areImportAssetsLoaded) {
+            this.processService.getImportOptions(this.assetUid).subscribe(res => {
+                this.importAssets = res;
+                this.areImportAssetsLoaded = true;
+                if (this.importAssets && this.importAssets.length > 0) {
+                    delete this.popupMenuItems[1]['tooltip'];
+                    delete this.popupMenuItems[1]['disabled'];
+                }
+                else {
+                    this.popupMenuItems[1]['tooltip'] = `There are currently no other assets of this type to import a diagram from.`;
+                }
+                this.cdRef.detectChanges();
+            })
+        }
+    }
+
+    private importDiagram() {
+        if (!this.hasPassedRelationshipCheck) {
+            this.showRelationshipsConfirmation = true;
+            this.cdRef.markForCheck();
+            return true;
+        }
+
+        this.isImporting = true;
+        this.isSaving = true;
+
+        this.processService.replaceProcessDiagram(this.assetUid, this.selectedImportFromAsset['uid'])
+            .subscribe(res => {
+                this.load(true);
+            })
+    }
+
+    onImportAssetSelection($event) {
+        var assetUid = $event.data.uid;
+        this.hasPassedRelationshipCheck = false;
+        this.loadingRelationships = true;
+        this.processService.getIgnoredRelationshipsForCopy(assetUid)
+            .subscribe(res => {
+                if (res && res.length == 0) {
+                    this.hasPassedRelationshipCheck = true;
+                }
+                this.loadingRelationships = false;
+                this.importRejectedRelationships = res;
+                this.cdRef.markForCheck();
+            });
     }
 }
