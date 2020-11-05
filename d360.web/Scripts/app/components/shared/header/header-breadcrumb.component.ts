@@ -126,8 +126,6 @@ export class HeaderBreadcrumbComponent {
         var logoWidth = logo.offsetWidth;
         var breadcrumbWidth = element.offsetWidth;
 
-        var combinedWidth = controlsWidth + logoWidth + breadcrumbWidth;
-
         this.maxSpaceForCrumbs = windowWidth - (controlsWidth + logoWidth);
         this.maxWidthOfSmallPanel = windowWidth - logoWidth;
 
@@ -148,7 +146,7 @@ export class HeaderBreadcrumbComponent {
 
     onResize(event) {
         clearTimeout(this.resizeTimer);
-        this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth), 150);
+        this.resizeTimer = window.setTimeout(() => this.resizeControlsToFit(event.target.innerWidth), 50);
     }
 
     estimateMaxLength(maxSpaceForCrumbs: number): number {
