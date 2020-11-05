@@ -40,7 +40,7 @@
                     <span class="FieldDisplayContent" [innerHtml]="field.Value"></span>
                 </ng-container>
                 <ng-container *ngSwitchCase="'Tag'">
-                    <d3s-tag-view *ngIf="GetJSON(field.Values) != 'Error'" [data]="GetJSON(field.Values)" [assetUID]="selectedDiagramAsset?.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>
+                    <d3s-tag-view *ngIf="GetJSON(field.Values) != 'Error'" [data]="GetJSON(field.Values)" [assetUID]="asset?.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>
                 </ng-container>
                 <ng-container *ngSwitchCase="'Color'">
                     <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
