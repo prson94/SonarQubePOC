@@ -1036,4 +1036,44 @@ from    metrics.Score T
 ]]>
     </sql>
 	</changeSet>
+	
+	<changeSet author="TDuric" id="Data.Corrections.GOV-12749">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+
+drop table if exists #delAssets
+create table #delAssets(
+	uid uniqueidentifier,
+	ObjectID int
+)
+
+drop table if exists #delRel
+create table #delRel(
+	uid uniqueidentifier,
+	ID int
+)
+
+insert into #delAssets
+select a.uid,a.ObjectID from asset a 
+	left join processexpandeddata pxd on pxd.fromuid = a.uid or pxd.touid = a.uid
+where a.Object = 'Task' and pxd.DiagramAssetUid is null
+
+insert into #delRel
+select i.uid,I.Id from #delAssets
+	inner join Asset A on A.uid = #delAssets.uid
+	inner join [Intersect] I on I.Object = A.Object and I.ObjectId = A.ObjectId
+union 
+select i.uid,I.Id from #delAssets
+	inner join Asset A on A.uid = #delAssets.uid
+	inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectId
+
+delete from Field where ObjectType = 'Intersect' and ObjectID in (select ID from #delRel)
+
+delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
+delete from asset where uid in (select uid from #delAssets)
+
+delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
+]]>
+    </sql>
+	</changeSet>
 </databaseChangeLog>
