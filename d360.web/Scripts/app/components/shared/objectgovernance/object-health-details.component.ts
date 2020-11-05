@@ -169,7 +169,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 threshold: null
                             },
                             series: {
-                                cursor: 'pointer',
+                                cursor: 'pointer',                                
+                                step: 'right',                                
                                 point: {
                                     events: {
                                         click: e => {
@@ -199,7 +200,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             borderWidth: 2
                         },
                         series: [{
-                            type: 'line',
+                         //   type: 'area',
                             name: 'Governance Score',
                             marker: {
                                 enabled: false,
