@@ -1,13 +1,10 @@
 ﻿import { Component, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { WorkflowItemStep, WorkflowActivityType, StepType } from '../../models/workflow.model';
 import { WorkflowHelpers } from '../../static/workflow-helpers';
 import { Router } from '@angular/router';
 import { StateService } from '../../services/state.service';
-
-declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-workflow-monitor-step-grid',
@@ -113,7 +110,7 @@ export class WorkflowMonitorStepGridComponent extends BaseComponent implements O
         this.ref.markForCheck();
     }
 
-    doSelect(item:WorkflowItemStep) {
+    doSelect(item: WorkflowItemStep) {
        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${item.TypeID}/${item.ID}/${item.ItemID}`);
     }
 

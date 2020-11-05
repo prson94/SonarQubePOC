@@ -505,7 +505,7 @@ from	{targetTable} T
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
             string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 
-            Connection.Execute($@"
+            var sql = $@"
                     update	T
                     set		T.Success = 0,
 		                    T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
@@ -513,7 +513,7 @@ from	{targetTable} T
 		                    inner join	(
 					                    select		A.ExecutionID,
                                                     A.ItemNumber,
-								                    STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
+								                    STRING_AGG(FT.Name+'='+left(F.FieldValue,250), ', ') as Names
 					                    from		{targetTable} A
                                                     inner join FieldType FT on FT.Object = @obj
 								                        and FT.ObjectID = @objID
@@ -544,7 +544,9 @@ from	{targetTable} T
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
 					                    group by	A.ExecutionID, A.ItemNumber
 					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-                    ", new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
+                    ";
+
+            Connection.Execute(sql, new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
 
         }
 
@@ -746,8 +748,7 @@ where	ExecutionID = @executionID
 
             string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = try_cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
-
-            var events = Connection.Query<DatabaseBulkRelationshipResult>($@"
+            var sql = $@"
 
 	            drop table if exists #Relationships;
 	            create table #Relationships
@@ -791,7 +792,7 @@ where	ExecutionID = @executionID
                                     and A.ObjectID is not null 
                                     and F.FieldTypeID is not null
 						            and A.Success is null
-                                cross apply string_split(F.FieldValue, ',') V                                    
+                                cross apply string_split(left(F.FieldValue,4000), ',') V                                    
                                 inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                                 inner join IntersectType IT on IT.ID = FT.LookupObjectId
                                 inner join (
@@ -924,7 +925,9 @@ where	ExecutionID = @executionID
                         select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
                         union all
                         select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships
-",
+";
+
+            var events = Connection.Query<DatabaseBulkRelationshipResult>(sql,
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
 

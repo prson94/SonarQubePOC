@@ -9,6 +9,8 @@ import {
     WorkflowFormFieldType,
     FormResponseType,
     EmailTaskRecipientType,
+    NodeSettings,
+    NodeFields,
 } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -156,8 +158,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     initFields() {
         //deal with xml-json nonsense
         if (this.step.fields == null || this.step.fields.form == null) {
-            this.step.fields = {};
-            this.step.fields.form = {};
+            this.step.fields = new NodeFields();
             this.step.fields.form.field = [];
         }
         if (this.step.fields.form.field == null) {
@@ -171,7 +172,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         if (this.step.settings == null) {
-            this.step.settings = {};
+            this.step.settings = new NodeSettings();
         }
 
         //parse bool fields

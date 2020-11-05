@@ -1,7 +1,5 @@
-﻿import { Component, NgZone, OnInit, Output, EventEmitter, Input, OnChanges, AfterViewChecked, ElementRef, ViewChild, SimpleChange, SimpleChanges, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input, AfterViewChecked, ViewChild, SimpleChanges, OnDestroy } from '@angular/core';
 import * as _ from 'lodash';
-
-import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 import { NodeModel } from '../../../../models/workflow.model';
