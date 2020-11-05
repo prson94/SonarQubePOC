@@ -153,7 +153,7 @@ export class HeaderActionsComponent {
 
     private calculateControlWidth() {
         this.controlWidth = this.actionsUIElem.nativeElement.parentElement.offsetWidth;
-        this.controlWidth += 10; //small buffer zone to avoid wrapping
+        this.controlWidth += 100; //small buffer zone + paddings to avoid wrapping
         this.controlWidthChange.emit(this.controlWidth);
     }
     onResize(event) {
