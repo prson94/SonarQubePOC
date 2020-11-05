@@ -553,7 +553,7 @@ from	metrics.Asset A
                                                                     var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
                                                                     if (assetDetail != null)
                                                                     {
-                                                                        value = assetDetail.ObjectID.ToString();
+                                                                        value = assetDetail.uid.ToString();
                                                                     }
                                                                 }
                                                             }
