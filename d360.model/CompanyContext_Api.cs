@@ -43,7 +43,7 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
-        
+
         public string ApiExecutionFieldTable { get; set; } = "api.executionfield"; // table to use to load field values from
 
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
@@ -89,6 +89,14 @@ namespace d360.model
         #endregion
 
         #region Utility Methods
+
+        private bool TypeHasProcessRelationshipTypes(AssetType at)
+        {
+            return Database.Connection.QuerySingle<bool>(@"select CASE WHEN count(*) = 0 THEN 0 ELSE 1 END from assettype at
+	                            inner join IntersectType it on it.SubjectUid = at.uid or it.objectuid = at.uid
+	                            inner join [Predicate] P on p.id = it.predicateid
+                            where at.uid = @uid and p.[type] = 15", new { at.uid });
+        }
 
         private PredicateType? DeterminePredicateType(string obj)
         {
@@ -699,7 +707,7 @@ where	ExecutionID = @executionID
 
             // Insert can blast in field values since all the assets are new.  Update needs to update the existing values and clear any existing
             if (isInsert)
-            {                
+            {
                 Connection.Execute(
                     $@"
                         INSERT INTO 
@@ -708,8 +716,8 @@ where	ExecutionID = @executionID
                     "
                     , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
             }
-            else 
-            { 
+            else
+            {
                 Connection.Execute($@"
                     DELETE Field
                     FROM Field F
@@ -739,7 +747,7 @@ where	ExecutionID = @executionID
                     values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
                                 new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
             }
-            
+
             return res;
         }
 
@@ -939,7 +947,7 @@ where	ExecutionID = @executionID
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, Dictionary<string, double> metrics = null, int step = 0, bool isInsert = false)
-        { 
+        {
             var sw = Stopwatch.StartNew();
             var jsonFieldTypeIDs = string.Join(",", jsonFieldTypes.Select(i => i.ID));
             var fields = Connection.Query<dynamic>($@"
@@ -963,13 +971,13 @@ where	ExecutionID = @executionID
             {
                 string value = f.FormattedValue;
                 if (!string.IsNullOrEmpty(value))
-                {                    
+                {
                     List<FieldJsonProperty> assetFieldProperties = value.ParseJsonIntoJsonPropertiesCollection();
                     assetFieldProperties.ForEach(i =>
                     {
                         i.FieldID = f.ID;
                     });
-                    collectionFieldProperties.AddRange(assetFieldProperties);                    
+                    collectionFieldProperties.AddRange(assetFieldProperties);
                 }
 
             }
@@ -980,7 +988,7 @@ where	ExecutionID = @executionID
 
 
             //delete old json field values if this is not a POST
-            if(!isInsert)
+            if (!isInsert)
             {
                 Connection.Execute($@"
                     delete from FieldJsonProperty where fieldid in(
@@ -1009,7 +1017,7 @@ where	ExecutionID = @executionID
             table.Columns.Add("Value", typeof(string));
             table.Columns.Add("CreatedBy", typeof(int));
             table.Columns.Add("UpdatedBy", typeof(int));
-            
+
 
             foreach (var f in collectionFieldProperties)
             {
@@ -1023,7 +1031,7 @@ where	ExecutionID = @executionID
                 row["IsArray"] = f.IsArray;
                 row["Value"] = f.Value;
                 row["CreatedBy"] = CurrentResourceID;
-                row["UpdatedBy"] = CurrentResourceID;                
+                row["UpdatedBy"] = CurrentResourceID;
 
                 table.Rows.Add(row);
             }
@@ -1043,7 +1051,7 @@ where	ExecutionID = @executionID
                 bulkCopy.ColumnMappings.Add("IsArray", "IsArray");
                 bulkCopy.ColumnMappings.Add("Value", "Value");
                 bulkCopy.ColumnMappings.Add("CreatedBy", "CreatedBy");
-                bulkCopy.ColumnMappings.Add("UpdatedBy", "UpdatedBy");                
+                bulkCopy.ColumnMappings.Add("UpdatedBy", "UpdatedBy");
 
                 bulkCopy.WriteToServer(table);
             }
@@ -1697,6 +1705,9 @@ from	IntersectType I
             var graphResults = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
             bool generalChecksCompleted = false;
+
+            bool canHaveProcess = TypeHasProcessRelationshipTypes(at);
+
             CurrentExecutionLocationModel currentLocation = null;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -2087,8 +2098,8 @@ from	IntersectType I
 			        and S.[Cascade] = 0", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
-            AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-            sw.Restart();
+                                            AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
 
                                             // Workflows
@@ -2142,8 +2153,8 @@ from	IntersectType I
 			where	{querySuffix}  and AssetId is not null
 			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-            AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-            sw.Restart();
+                                            AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
 
                                             #endregion
 
@@ -2195,8 +2206,8 @@ from	IntersectType I
                 and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-        AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-        sw.Restart();
+                                                AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                                sw.Restart();
 
                                             }
 
@@ -2280,6 +2291,55 @@ from	IntersectType I
                                             AddMeasurement(metrics, $"remove from Asset Cross-references>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
 
+                                            #endregion
+
+                                            #region Process diagram
+                                            if (canHaveProcess)
+                                            {
+                                                Connection.Execute(
+                                               $@"
+                            drop table if exists #delAssets
+                            create table #delAssets(
+	                            uid uniqueidentifier,
+	                            ObjectID int
+                            )
+
+                            drop table if exists #delRel
+                            create table #delRel(
+	                            uid uniqueidentifier,
+	                            ID int
+                            )
+
+                            insert into #delAssets
+                            select fromuid, a.ObjectID from ProcessExpandedData pxd
+	                            inner join asset a on a.uid = pxd.diagramassetuid
+                            where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
+                            union 
+                            select touid, a.ObjectID from ProcessExpandedData pxd
+	                            inner join asset a on a.uid = pxd.diagramassetuid
+                            where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
+
+
+                            insert into #delRel
+                            select i.uid,I.Id from #delAssets
+	                            inner join Asset A on A.uid = #delAssets.uid
+	                            inner join [Intersect] I on I.Object = A.Object and I.ObjectId = A.ObjectId
+                            union 
+                            select i.uid,I.Id from #delAssets
+	                            inner join Asset A on A.uid = #delAssets.uid
+	                            inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectId
+
+                            delete from Field where ObjectType = 'Intersect' and ObjectID in (select ID from #delRel)
+
+                            delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
+                            delete from asset where uid in (select uid from #delAssets)
+
+                            delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
+",
+                                               new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                                sw.Restart();
+                                            }
                                             #endregion
 
                                             #region Asset table
@@ -2413,7 +2473,7 @@ from	IntersectType I
                                             Connection.Execute(
                                                 $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
- 
+
                                             AddMeasurement(metrics, $"Update status flag >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
 
@@ -3236,7 +3296,7 @@ where   ExecutionID = @ExecutionID
             {
                 enableJsonAttributes = Community.GetCompanySettingByKey<bool>("EnableJsonAttribute");
             }
-            catch { } 
+            catch { }
 
             FieldValidationFieldProperties fieldLoadProperties = new FieldValidationFieldProperties(); // properties of fields in the data load.  Returned from validate fields so we are efficient and dont keep going through the fields.
 
@@ -4198,7 +4258,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     // Must execute BEFORE the Success flag is updated below.
                                     sw.Restart();
-                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout,isInsert);
+                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout, isInsert);
                                     AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                     //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
@@ -4352,8 +4412,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                            }
                                            ).ToList();
                             SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
-                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);                    
-                        }                    
+                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+                        }
                     }
                 }
             }
@@ -5038,7 +5098,7 @@ end",
 
 
                     #region Send score recalculation notifications.
-                    
+
                     sw.Restart();
                     var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
 select	distinct
@@ -6607,9 +6667,10 @@ where   ER.ExecutionID = @ExecutionID
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            if(model.Name == null)
+                            if (model.Name == null)
                                 row["Name"] = "";
-                            else {
+                            else
+                            {
                                 row["Name"] = model.Name.Trim();
                             }
                             row["Description"] = model.Description;
@@ -8121,7 +8182,7 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
                 DataType.Relationship.ToString()
             };
 
-        var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var uidDupes = import.Where(x => x.Uid.HasValue).GroupBy(x => x.Uid).Where(x => x.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
