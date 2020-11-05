@@ -42,6 +42,6 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
             Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data), XMsg.InvalidJSON);
 
-        }
+        }5
     }
 }

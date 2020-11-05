@@ -439,11 +439,8 @@ namespace d360.web.Controllers.V2
                     states.Add(State.Deleted);
 
                 List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
-
-                var JSONString = string.Join("", fragments);
-                JSONString = string.IsNullOrEmpty(JSONString) ? "[]" : JSONString;
-                JObject objects = JObject.Parse($"{{ 'items': {JSONString} }}");
-                JArray items = (JArray)objects["items"];
+                var jsonString = string.Join("", fragments);
+                JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
                 models = items.ToObject<List<MetricAssetViewModel>>();
                
                 if (models == null)
