@@ -1,4 +1,4 @@
-﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
 
@@ -97,6 +97,11 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
                 break;
         }
     }
+    @HostListener('click')
+    clickInside($event) {
+        this.el.nativeElement.focus();
+    }
+
 }
 
 @NgModule({

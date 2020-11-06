@@ -6,7 +6,7 @@ import { FormMode, SelectItem } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel } from '../../../models/operator.model';
-import { FormGroup, FormBuilder, NgForm } from '@angular/forms';
+import { FormGroup, FormBuilder, NgForm, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
@@ -106,7 +106,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     ngOnInit() {
         this.metricForm = this.fb.group({
-            name: null,
+            name: ['', [Validators.required, this.isEmptyString()]],
             description: null,
             effectiveDate: null,
             weight: null,
@@ -209,7 +209,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) {
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
-            dummyConditionGroup.MatchType = "All"; 
+            dummyConditionGroup.MatchType = "All";
             this.model.ConditionGroups.push(dummyConditionGroup);
         }
 
@@ -386,4 +386,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.cdRef.markForCheck();
     }
 
+
+    isEmptyString(): ValidatorFn {
+        type NewType = AbstractControl;
+
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null)
+                return {};
+            if ((control.value as string).trim() == '' && (control.value as string) != '')
+                return {
+                    empty: { value: control.value }
+                };
+            return null;
+        };
+    }
 };

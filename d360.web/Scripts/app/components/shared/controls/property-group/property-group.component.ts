@@ -128,6 +128,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
                         if (this.requiredPos >= fcCount) {
                             this.requiredPos = 0;
                         }
+                        if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
+                            elem.querySelector('input').click();
+                        }
                         elem.focus();
                         found = true;
                     }
@@ -138,8 +141,12 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
 
     getFormControlDomElement(controlName: string) {
         if (this.inputContainer) {
-            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ?
-                this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
+            var controlDomElement: HTMLElement = null;
+            var element = this.inputContainer.nativeElement;
+            if (element.querySelectorAll("[formControlName=" + controlName + "]").length > 0) {
+                controlDomElement = element.querySelectorAll("[formControlName=" + controlName + "]")[0];
+            }
+            return controlDomElement;
         }
     }
 
@@ -149,7 +156,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
             let control = <FormControl>this.igformGroup.get(x);
             if (control) {
                 if (type == "required") {
-                    if (control && control.errors && control.errors["required"] == true) {
+                    if (control.errors && control.errors["required"] == true) {
                         let elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
                             count++;
@@ -157,6 +164,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
                     }
                 }
                 if (type == "errors") {
+                    debugger;
                     if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
                         let elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
