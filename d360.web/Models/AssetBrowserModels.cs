@@ -188,6 +188,7 @@ namespace d360.web.Models
 
     public abstract class AssetBrowserHopModelRelationBase : AssetBrowserHopModelBase
     {
+        public AssetBrowserAncestry ancestry { get; set; }
         public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
         public List<long> preloadedIntersects { get; set; }
         public AssetBrowserApiHopDirection direction { get; set; }
@@ -199,7 +200,6 @@ namespace d360.web.Models
 
     public class AssetBrowserImpactHopModel : AssetBrowserHopModelRelationBase
     {
-        public AssetBrowserAncestry ancestry { get; set; }
         public Guid predicateUid { get; set; }
     }
 

@@ -246,10 +246,10 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getLineageHop(hierarchyKey: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/hop`;
 
-        return this.http.post(url, { hierarchyKey: hierarchyKey, assets: assets, preloadedIntersects: preloadedIntersects, direction: direction }).pipe(
+        return this.http.post(url, { ancestry: ancestry, hierarchyKey: hierarchyKey, assets: assets, preloadedIntersects: preloadedIntersects, direction: direction }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
                 return response;
