@@ -16,6 +16,7 @@ import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionI
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { FormHelpers } from '../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
@@ -264,6 +265,18 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         let lookupValues = fieldType.Values;
                         formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                             ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+                    }
+                    if (fieldType.Type == "Date" || fieldType.Type == "Date") {
+                        let dateValues = [];
+                        gov.Field.Values.forEach(x => {
+                            let date = new Date(x);
+                            dateValues.push(date.toLocaleDateString());
+                        });
+                        formattedValue = dateValues.join(" and ");
+                    }
+
+                    if (formattedoperator == "is between") {
+                        
                     }
                     this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
 

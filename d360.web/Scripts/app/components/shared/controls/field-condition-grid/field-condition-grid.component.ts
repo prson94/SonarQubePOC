@@ -214,6 +214,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         else {
             condition.disabled = false;
         }
+        console.log(condition.operator);
         condition.value = '';
         setTimeout(() => {
             this.cdRef.markForCheck();

@@ -63,13 +63,12 @@
                 </div>
             </div>
 
-            <div class="row condition-row" *ngIf="condition.operator === 9">
+            <div class="row condition-row" *ngIf="condition.operator === 9 || condition.operator === 'Between'">
                 <div class="condition-option empty"></div>
                 <div class="condition-option" *ngIf="condition.field">
                     <input igInput value="and" igSize="small" disabled="disabled" />
                 </div>
                 <div class="condition-option" *ngIf="condition.operator">
-
                     <ng-container [ngSwitch]="getTypeForCondition(condition)">
                         <ng-container *ngSwitchCase="'Number'">
                             <ig-number-input placeholder="{{condition.disabled ? '' : 'Value required'}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-number-input>

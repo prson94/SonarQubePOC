@@ -5,7 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { OperatorModel } from '../../../models/operator.model';
+import { OperatorModel, Operator } from '../../../models/operator.model';
 import { FormGroup, FormBuilder, FormControl, } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
@@ -292,12 +292,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 condition.field = this.model.Definition.Governance.Field.FieldTypeName;
                 condition.operator = this.model.Definition.Governance.Field.Operator;
                 condition.value = this.model.Definition.Governance.Field.Values[0];
+                condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
                 let field = this.metricEditorFieldTypes.filter(x => x.ApiName == condition.field)[0]
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);
                     condition.value = date;
+
+                    if (condition.value2) {
+                        let date = new Date(condition.value2);
+                        condition.value2 = date;
+                    }
                 }
                 this.testFieldConditions.push(condition);
                 this.cdRef.markForCheck();
@@ -418,7 +424,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         let condition = this.testFieldConditions[0];
                         this.model.Definition.Governance.Field.FieldTypeName = condition.field;
                         this.model.Definition.Governance.Field.Operator = condition.operator;
-                        this.model.Definition.Governance.Field.Values = [condition.value];
+                        let val2 = null
+                        if (condition.operator == Operator.Between || <any>condition.operator == "Between")
+                            val2 = condition.value2
+                        this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });
                     }
                     break;
                 default:
