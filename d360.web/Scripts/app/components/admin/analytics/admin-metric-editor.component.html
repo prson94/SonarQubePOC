@@ -1,7 +1,7 @@
 ﻿
 <div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="measure-form" [style.maxHeight.px]="maxHeight">
+    <div *ngIf="!isLoading" class="measure-form" [style.maxHeight.px]="maxHeight">
         <form [formGroup]="metricForm" *ngIf="model">
             <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
                 <div inputs>

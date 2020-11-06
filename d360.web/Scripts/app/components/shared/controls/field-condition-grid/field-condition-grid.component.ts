@@ -46,7 +46,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                 if (!cond.hash) {
                     cond.hash = this.randstr('id');
                 }
-                this.createFormControl(cond.hash);
+                this.createFormControl(cond);
             });
             this.cdRef.markForCheck();
             this.visible = true;
@@ -131,15 +131,17 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.singleSelectMode) {
             if (this.conditions.length == 0) {
                 var hash = this.randstr('id');
-                this.createFormControl(hash);
-                this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
+                let cond = { field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                this.createFormControl(cond);
+                this.conditions.push(cond);
             }
         } else {
             if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
                 if (availableFields.length > 0) {
                     var hash = this.randstr('id');
-                    this.createFormControl(hash);
-                    this.conditions.push({ field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash });
+                    let cond = { field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                    this.createFormControl(cond);
+                    this.conditions.push(cond);
                 }
             }
         }
@@ -171,11 +173,17 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.cdRef.markForCheck(); 
     }
 
-    private createFormControl(hash: string) {
-        this.formGroup.addControl(this.conditionPrefix + 'option_' + hash, new FormControl(''));
-        this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash, new FormControl(''));
-        this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash, new FormControl(''));
-        this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash, new FormControl(''));
+    private createFormControl(hash: FieldCondition) {
+        let type = this.getTypeForCondition(hash);
+        this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new FormControl(''));
+        this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new FormControl(''));
+        if (type == "date" || type == "date") {
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value)));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2)));
+        } else {
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(''));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(''));
+        }
     }
 
     private removeFormControl(name: string, hash?: string) {

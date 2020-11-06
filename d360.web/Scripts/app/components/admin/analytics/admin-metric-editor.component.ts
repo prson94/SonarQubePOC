@@ -9,7 +9,7 @@ import { OperatorModel } from '../../../models/operator.model';
 import { FormGroup, FormBuilder, FormControl, } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
+import { FieldTypeHelper, FieldType } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
@@ -141,7 +141,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     loadFieldData() {
         this.isLoadingFields = true;
-
         this.settingsService.getOperators().subscribe(operators => {
             this.operators = operators;
 
@@ -181,6 +180,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 });
                 this.fields = tempFields.filter(x => x.Operators.length > 0);
                 this.isLoadingFields = false;
+                if (this.uid) {
+                    if (!this.model.Definition) {
+                        this.model.Definition = new MetricAssetDefinitionViewModel();
+                        if (!this.isExternallyCalculated) {
+                            this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
+                            this.model.Definition.Governance.Check = null;
+                            this.isLoading = false;
+                        }
+                    } else {
+                        this.model.Definition.Governance.Check = MetricGovernanceCheckType[this.model.Definition.Governance.Check + ""];
+                        this.loadTestConditions();
+                    }
+                }
                 this.cdRef.markForCheck();
             });
         })
@@ -198,21 +210,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
-            }
-
-            if (!this.model.Definition) {
-                this.model.Definition = new MetricAssetDefinitionViewModel();
-                if (!this.isExternallyCalculated) {
-                    this.model.Definition.Governance = new MetricAssetDefinitionGovernanceViewModel();
-                    this.model.Definition.Governance.Check = null;
-                    this.isLoading = false;
-                }
-            } else {
-                this.model.Definition.Governance.Check = MetricGovernanceCheckType[this.model.Definition.Governance.Check + ""];
-                this.loadTestConditions();
-            }
-
-            
+            }            
         } else {
             this.model = new MetricAssetViewModel();
             this.model.Weight = null;
@@ -294,7 +292,15 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 condition.field = this.model.Definition.Governance.Field.FieldTypeName;
                 condition.operator = this.model.Definition.Governance.Field.Operator;
                 condition.value = this.model.Definition.Governance.Field.Values[0];
-                this.testFieldConditions.push(condition); 
+
+                let field = this.metricEditorFieldTypes.filter(x => x.ApiName == condition.field)[0]
+
+                if (field && (field.Type == "Date" || field.Type == "DateTime")) {
+                    let date = new Date(condition.value);
+                    condition.value = date;
+                }
+                this.testFieldConditions.push(condition);
+                this.cdRef.markForCheck();
                 break;
             case 2:
                 //handle owner 
@@ -449,7 +455,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         let d = new Date(c.value);
                         let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
                         condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-                        fieldCondition.Values[0] = condate.toISOString();
+                        fieldCondition.Values[0] = condate.toUTCString();
                         break;
                     case 'Lookup':
                         fieldCondition.Values[0] = c.value;

@@ -25,6 +25,12 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 4)]
         public MetricAssetDefinitionViewModel Definition { get; set; }
+        
+        /// <summary>
+        /// Used to help parse the json from the database.
+        /// </summary>
+        [IgnoreDataMember]
+        public string DefinitionJson { get; set; }
 
         [DataMember, JsonProperty(Order = 6)]
         public bool IsGroup { get; set; }
@@ -68,9 +74,6 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 24)]
         public DateTime? EffectiveEndDate { get; set; }
-
-        [IgnoreDataMember]
-        public string DefinitionJson { get; set; }
     }
 
     [DataContract]
@@ -323,12 +326,6 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 100)]
         public List<MetricAssetVersionViewModel> Versions { get; set; }
-
-        /// <summary>
-        /// Used to help parse the json from the database.
-        /// </summary>
-        [IgnoreDataMember]
-        public string DefinitionJson { get; set; }
 
         [IgnoreDataMember]
         public IEnumerable<MetricAssetVersionRollupPath> RollupPaths { get; set; }
