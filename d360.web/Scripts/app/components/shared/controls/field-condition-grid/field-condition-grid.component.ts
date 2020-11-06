@@ -4,6 +4,7 @@ import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
 import { settings } from 'cluster';
+import { Condition } from '../../../../models/metrics.model';
 
 @Component({
     selector: 'field-condition-grid',
@@ -118,6 +119,14 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.conditions.length == 0) {
             this.tryAddNewCondition();
         }
+        var key = item.hash;
+
+        delete this.formGroup.controls['condition_' + key];
+        delete this.formGroup.controls['option_' + key];
+        delete this.formGroup.controls['value_1_' + key];
+        delete this.formGroup.controls['value_2_' + key];
+
+        console.log(this.formGroup.controls);
     }
 
 
@@ -202,5 +211,9 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     private randstr(prefix) {
         return Math.random().toString(36).replace('0.', prefix || '');
+    }
+
+    private getUniqueId(prefix: string, item: Condition): string {
+        return prefix + item['hash'];
     }
 }

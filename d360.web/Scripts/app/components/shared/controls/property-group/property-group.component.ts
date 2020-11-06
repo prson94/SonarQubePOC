@@ -85,6 +85,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
         let found = false;
         if (!this.expanded)
             this.expanded = true;
+
         let fcCount = this.getFormControlCount("errors");
         let idx = 0;
         Object.keys(this.igformGroup.controls).forEach(x => {
@@ -100,6 +101,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
                             this.invalidPos++;
                             if (this.invalidPos >= fcCount) {
                                 this.invalidPos = 0;
+                            }
+                            if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
+                                elem.querySelector('input').click();
                             }
                             elem.focus();
                             found = true;
@@ -131,6 +135,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
                         if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
                             elem.querySelector('input').click();
                         }
+                        else if (elem.tagName === 'P-DROPDOWN') {
+                            (elem.querySelectorAll('.ui-dropdown-trigger')[0] as HTMLElement).click();
+                        }
                         elem.focus();
                         found = true;
                     }
@@ -141,12 +148,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
 
     getFormControlDomElement(controlName: string) {
         if (this.inputContainer) {
-            var controlDomElement: HTMLElement = null;
-            var element = this.inputContainer.nativeElement;
-            if (element.querySelectorAll("[formControlName=" + controlName + "]").length > 0) {
-                controlDomElement = element.querySelectorAll("[formControlName=" + controlName + "]")[0];
-            }
-            return controlDomElement;
+            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ?
+                this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
         }
     }
 
@@ -164,14 +167,14 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
                     }
                 }
                 if (type == "errors") {
-                    debugger;
-                    if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
-                        let elem = <HTMLElement>this.getFormControlDomElement(x);
-                        if (elem) {
-                            count++;
+                    if (control.errors) {
+                        if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
+                            let elem = <HTMLElement>this.getFormControlDomElement(x);
+                            if (elem) {
+                                count++;
+                            }
                         }
                     }
-
                 }
 
             }

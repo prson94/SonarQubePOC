@@ -1,4 +1,4 @@
-﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+﻿import { NgModule, ElementRef, ChangeDetectorRef, forwardRef, Component, ViewEncapsulation, Input, ViewChild, OnInit, EventEmitter, Output, OnChanges, SimpleChanges, HostListener, DoCheck } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, ValidationErrors, AbstractControl, FormsModule } from '@angular/forms';
 
@@ -31,13 +31,13 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     @Input() ariaRequired: boolean;
     @Input() ariaInvalid: boolean;
 
+    private hasValue: boolean = false;
     value: number;
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
     @ViewChild('iginput', { static: false }) el: ElementRef;
 
     constructor(private ref: ChangeDetectorRef) { }
-
 
     writeValue(obj: any): void {
         if (obj) {
@@ -50,8 +50,11 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
             else {
                 this.value = obj;
             }
+            this.hasValue = true;
         }
-
+        else {
+            this.hasValue = false;
+        }
         this.onModelChange(this.value);
         this.onModelTouched();
         this.ref.markForCheck();

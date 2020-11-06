@@ -109,7 +109,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             name: ['', [Validators.required, this.isEmptyString()]],
             description: null,
             effectiveDate: null,
-            weight: null,
+            weight: ['', [this.isValidWeight()]],
             isGroup: null,
             matchType: null
         });
@@ -396,6 +396,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             if ((control.value as string).trim() == '' && (control.value as string) != '')
                 return {
                     empty: { value: control.value }
+                };
+            return null;
+        };
+    }
+
+    isValidWeight(): ValidatorFn {
+        type NewType = AbstractControl;
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null || control.value == undefined)
+                return {};
+            if ((control.value as number) < 1 || (control.value as number) > 100)
+                return {
+                    outOfRange: { value: control.value }
                 };
             return null;
         };
