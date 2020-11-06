@@ -2841,7 +2841,7 @@ where	O.RowNum = 1";
             try
             {
                 var deletes = new AssetTypeDeletes();
-                results = CompanyContext.RemoveAssetTypes(execution, assetTypes, 28800); //dbExecutionTimeout = 8 hours
+                results = CompanyContext.RemoveAssetTypes(execution, assetTypes, ApiTimeout, 0); // single endpoint should not retry otherwise timeout will cause 10x attempts to delete.
                 // Close execution record.
                 execution.Processed = results.Count;
                 execution.Error = results.Count(i => !i.Success);
