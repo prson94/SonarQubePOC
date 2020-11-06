@@ -9,6 +9,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchService } from '../../services/search.service';
 import { SettingsHelper } from '../../models/settings.model';
+import { SearchSession } from './search-session';
 
 declare var CompanySettings;
 @Injectable()
@@ -71,10 +72,8 @@ export class SearchStateService extends BaseObservableService {
         this.reset(keepFilters);
         this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
 
-        let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
-        let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
-        if (sess != null && sess.findIndex(q => q.Term == term && new Date(q.Querytime).getTime() > limit) >= 0) {
-            let state = sess.find(q => q.Term == term);
+        let state = SearchSession.getState(term);
+        if (state !== undefined) {
             this._query.Term = state.Term;
             this._query.From = state.From;
             this._query.Size = state.Size;
@@ -85,13 +84,6 @@ export class SearchStateService extends BaseObservableService {
     }
 
     private saveState() {
-        let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
-        if (sess == null) {
-            sess = [];
-        } else {
-            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
-            sess = sess.filter(q => q.Term != this._query.Term && new Date(q.Querytime).getTime() > limit);
-        }
         let state = new SearchState({
             Term: this._query.Term,
             From: this._query.From,
@@ -102,8 +94,7 @@ export class SearchStateService extends BaseObservableService {
             Querytime: new Date()
         });
         this._checkTreeKeys = (state.CheckTreeKeys == null) ? state.SearchTypes.map(k => new SearchCheckTreeVal(k, "category")) : state.CheckTreeKeys;
-        sess.push(state);
-        sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));
+        SearchSession.putState(state);
     }
 
     /**
