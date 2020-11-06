@@ -153,8 +153,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 }
                 else {
                     msg = `Your score has been updated`;
-                }
-                this.selection = new ScoreTypeAllocation();
+                }               
                 this.messagesService.showInfoMessage('Success', msg);
                 this.onSave.emit({ item: res,  openItem: openItem});
             });
