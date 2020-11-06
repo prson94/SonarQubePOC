@@ -235,8 +235,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.showConditions = true;
         else 
             this.showConditions = false;
-        
-        if (this.hasPassTest(this.selectedMetric)) 
+
+        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup) 
             this.showPassTest = true
         else
             this.showPassTest = false;
@@ -245,7 +245,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     }
 
     private formatDefinition() {
-        if (this.showPassTest) {
+        if (this.showPassTest && !this.selectedMetric.IsGroup) {
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
             switch (<any>gov.Check) {
                 case 'External':
@@ -275,9 +275,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         formattedValue = dateValues.join(" and ");
                     }
 
-                    if (formattedoperator == "is between") {
-                        
-                    }
                     this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
 
                     break;

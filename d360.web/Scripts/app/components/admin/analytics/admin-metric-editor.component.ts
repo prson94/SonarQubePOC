@@ -99,21 +99,24 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        let requiredLoad = false;
         if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue && !changes['uid'].firstChange)) {
             this.isLoading = true;
-            this.load();
+            requiredLoad = true;
         }
         if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue && !changes['parentUid'].firstChange)) {
             this.isLoading = true;
-            this.load();
+            requiredLoad = true;
         }
         if (changes['scoreData'] && (changes['scoreData'].currentValue != changes['scoreData'].previousValue)) {
             this.getMaxScoreDate();
         }
         if (changes['assetTypeUid'] && (changes['assetTypeUid'].currentValue != changes['assetTypeUid'].previousValue)) {
             this.isLoading = true;
-            this.load();
+            requiredLoad = true;
         }
+        if (requiredLoad)
+            this.load();
         this.cdRef.markForCheck();
     }
 
@@ -180,7 +183,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 });
                 this.fields = tempFields.filter(x => x.Operators.length > 0);
                 this.isLoadingFields = false;
-                if (this.uid) {
+                if (this.uid && !this.isExternallyCalculated && !this.model.IsGroup) {
                     if (!this.model.Definition) {
                         this.model.Definition = new MetricAssetDefinitionViewModel();
                         if (!this.isExternallyCalculated) {
@@ -192,6 +195,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         this.model.Definition.Governance.Check = MetricGovernanceCheckType[this.model.Definition.Governance.Check + ""];
                         this.loadTestConditions();
                     }
+                } else {
+                    this.isLoading = false;
                 }
                 this.cdRef.markForCheck();
             });
@@ -210,7 +215,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
                 this.displayEffectiveDate = date;
-            }            
+            }
+            this.onGroupchange(this.model.IsGroup);
         } else {
             this.model = new MetricAssetViewModel();
             this.model.Weight = null;
@@ -396,6 +402,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         //clear conditions
         this.testFieldConditions = [];
 
+    }
+
+    onGroupchange(event: boolean) {
+        if (this.metricForm) {
+            if (this.model.IsGroup) {
+                this.metricForm.removeControl("check");
+                this.conditions = [];
+            } else {
+                this.metricForm.addControl("check", new FormControl(''));
+            }
+        }
+        this.cdRef.markForCheck();
     }
 
     save() {

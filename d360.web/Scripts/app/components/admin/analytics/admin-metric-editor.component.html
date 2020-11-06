@@ -66,12 +66,13 @@
                             <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
                             <ig-switch tabindex="5"
                                        formControlName="isGroup"
-                                       [(ngModel)]="model.IsGroup"></ig-switch>
+                                       [(ngModel)]="model.IsGroup"
+                                       (onChange)="onGroupchange($event)"></ig-switch>
                         </ng-container>
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
                         <label for="check" class="ig-label">Test Type</label>

@@ -23,8 +23,9 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
     fieldsSelect: SelectItem[] = [];
     visible: boolean = false;
-
-    private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated];
+    operatorRequiredValue: boolean = false;
+    Operators = Operator;
+    private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated, Operator.IsFalse, Operator.IsTrue];
 
     constructor(public cdRef: ChangeDetectorRef, private fb: FormBuilder) {
         this.formGroup = fb.group({});
@@ -152,24 +153,26 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     clearUnusedFormControls() {
-        Object.keys(this.formGroup.controls).forEach(control => {
-            if (control.startsWith(this.conditionPrefix)) {
-                if (control.indexOf(this.conditionPrefix + 'option_') !== -1
-                    || control.indexOf(this.conditionPrefix + 'condition_') !== -1
-                    || control.indexOf(this.conditionPrefix + 'value_1_') !== -1 ||
-                    control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
-                    let shouldDelete = true;
-                    this.conditions.forEach(x => {
-                        if (control.indexOf(x.hash) !== -1) {
-                            shouldDelete = false;
+        if (this.conditions) {
+            Object.keys(this.formGroup.controls).forEach(control => {
+                if (control.startsWith(this.conditionPrefix)) {
+                    if (control.indexOf(this.conditionPrefix + 'option_') !== -1
+                        || control.indexOf(this.conditionPrefix + 'condition_') !== -1
+                        || control.indexOf(this.conditionPrefix + 'value_1_') !== -1 ||
+                        control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
+                        let shouldDelete = true;
+                        this.conditions.forEach(x => {
+                            if (control.indexOf(x.hash) !== -1) {
+                                shouldDelete = false;
+                            }
+                        });
+                        if (shouldDelete) {
+                            this.removeFormControl(control);
                         }
-                    });
-                    if (shouldDelete) {
-                        this.removeFormControl(control);
                     }
                 }
-            }
-        });
+            });
+        }
         this.cdRef.markForCheck(); 
     }
 
@@ -208,13 +211,20 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     onConditionChange(event, condition: FieldCondition) {
-        if (this.disabledValuesOperators.some(x => x === +event.value)) {
+        if (this.disabledValuesOperators.some(x => (this.Operators[x] === event.value || this.Operators[x] === event.value))) {
             condition.disabled = true;
         }
         else {
             condition.disabled = false;
         }
-        console.log(condition.operator);
+        let formControl1 = this.formGroup.get(this.conditionPrefix + 'value_1_' + condition.hash);
+        if (formControl1) {
+            condition.disabled ? formControl1.disable() : formControl1.enable();
+        }
+        let formControl2 = this.formGroup.get(this.conditionPrefix + 'value_2_' + condition.hash);
+        if (formControl2) {
+            condition.disabled ? formControl2.disable() : formControl2.enable();
+        }
         condition.value = '';
         setTimeout(() => {
             this.cdRef.markForCheck();

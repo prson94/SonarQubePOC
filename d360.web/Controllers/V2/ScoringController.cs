@@ -411,7 +411,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
-            SwaggerParameter("_includeDisabled","Parameter to include disabled measures or not.", DataType = "Boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeDisabled", "Parameter to include disabled measures or not.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
         public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
