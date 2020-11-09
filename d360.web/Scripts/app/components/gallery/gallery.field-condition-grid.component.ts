@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener } from '@angular/core';
+﻿import { Component, OnInit, ChangeDetectionStrategy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { FieldsObservableService } from '../../services/fieldsObservable.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { OperatorModel } from '../../models/operator.model';
@@ -34,11 +34,13 @@ export class GalleryFieldConditionGridComponent implements OnInit {
     assetTypeUid: string = '';
     fields: FieldTypeAPIModelFieldCondition[] = null;
     operators: OperatorModel[] = [];
+    blank: any[] = [];
     formGroup: FormGroup;
     constructor(
         private fieldsService: FieldsObservableService,
         private settingsService: CompanySettingsService,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private ref: ChangeDetectorRef
     ) {
         this.formGroup = fb.group({});
     }
@@ -95,6 +97,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
                 });
 
                 this.fields = tempFields;
+                this.ref.markForCheck();
             });
         })
 

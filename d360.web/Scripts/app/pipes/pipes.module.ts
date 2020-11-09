@@ -16,6 +16,7 @@ import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
 import { SimpleSearch } from './simple-search-pipe';
 import { AssetpathSeparatorPipe  } from './assetpath-separator.pipe';
 import { GenericFilter } from './generic-filter.pipe';
+import { EnumToSelectitemPipe } from './enum-to-selectitem.pipe';
 
 @NgModule({
     imports: [CommonModule],
@@ -34,7 +35,8 @@ import { GenericFilter } from './generic-filter.pipe';
         SelectItemTextToLabelPipe,
         SimpleSearch,
         AssetpathSeparatorPipe,
-        GenericFilter
+        GenericFilter,
+        EnumToSelectitemPipe
     ],
     exports: [
         ArrayToSelectItemPipe,
@@ -51,7 +53,8 @@ import { GenericFilter } from './generic-filter.pipe';
         SelectItemTextToLabelPipe,
         SimpleSearch,
         AssetpathSeparatorPipe,
-        GenericFilter
+        GenericFilter,
+        EnumToSelectitemPipe
     ]
 })
 export class PipesModule { }
