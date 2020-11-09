@@ -277,7 +277,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                         this.isLoading = false;
                         this.changeDetectorRef.markForCheck();
                     }
-                    this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'Updated' : 'Added'}`);
+                    this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'updated' : 'added'}`);
                 }
             )        
     }
