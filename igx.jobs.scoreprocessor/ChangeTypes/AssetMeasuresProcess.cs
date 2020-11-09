@@ -525,6 +525,14 @@ from	metrics.Asset A
                                         case ScoreType.Governance:
                                             #region
                                             var gDefinition = definition.Governance;
+                                            if (gDefinition == null)
+                                            {
+                                                gDefinition = new MetricAssetDefinitionGovernanceViewModel
+                                                {
+                                                    Check = MetricGovernanceCheckType.External,
+                                                    External = new MetricAssetDefinitionGovernanceExternalViewModel { UpdateFrequency = MetricUpdateFrequency.None }
+                                                };
+                                            }
                                             switch (gDefinition.Check)
                                             {
                                                 case MetricGovernanceCheckType.External:

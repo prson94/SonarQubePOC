@@ -823,7 +823,19 @@ order by r.Name";
                 var model = Company.GetById<IntersectType>(id);
                 if (model == null) throw new NotFoundException("relationship type");
 
+                var impactedMeasureVersions = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Relation, id);
+
                 Company.Delete(SystemObjects.IntersectType, id);
+
+                if (impactedMeasureVersions.Count > 0)
+                {
+                    Company.SendScoreEventWithPayload(
+                        Guid.NewGuid(),
+                        ScoreQueueChangeType.CheckTypeDependencyRemoved,
+                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
+                        createApiExecution: true
+                    );
+                }
 
                 Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 

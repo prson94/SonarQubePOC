@@ -3148,6 +3148,7 @@ where   ExecutionID = @ExecutionID
 
                     this.ValidateDeleteRelationshipTypes(execution, timeout);
 
+
                     //Delete lookup fields
                     //First get the field type id
                     List<long> lookupFieldIdList = Connection.Query<long>($@"
@@ -3183,6 +3184,13 @@ where   ExecutionID = @ExecutionID
                                     where T.ID in @fieldtypeIdList",
                                     new { fieldtypeIdList = lookupFieldIdList.ToArray() }, commandTimeout: timeout);
 
+                    var impactedMeasureVersions = new List<Guid>();
+                    var intersectTypeIds = Query<int>("select ID from IntersectType where Uid in @Uids", new { Uids = import.Select(imp => imp.Uid) }).ToList();
+                    intersectTypeIds.ForEach(it =>
+                    {
+                        var impacted = GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Relation, it);
+                        impactedMeasureVersions.AddRange(impacted);
+                    });
 
                     Connection.Execute(@"
                             
@@ -3250,7 +3258,17 @@ where   ExecutionID = @ExecutionID
 
                     results = Query<RelationshipTypeResult>(
                                         $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionDeletedRelationshipType where ExecutionID = @ExecutionID",
-                                        new { ExecutionID = execution.ExecutionID }).ToList();
+                                        new { execution.ExecutionID }).ToList();
+
+                    if (impactedMeasureVersions.Count > 0)
+                    {
+                        SendScoreEventWithPayload(
+                            Guid.NewGuid(),
+                            ScoreQueueChangeType.CheckTypeDependencyRemoved,
+                            new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
+                            createApiExecution: true
+                        );
+                    }
                 }
                 finally
                 {

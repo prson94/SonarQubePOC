@@ -52,4 +52,34 @@ DROP TABLE IF EXISTS [metrics].[RollupPathLink]
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.RollupPathLink-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathLink_IntersectType')
+BEGIN
+	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+
+	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE
+
+	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRollupPathLink_IntersectType')
+BEGIN
+	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+
+	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE SET NULL
+
+	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

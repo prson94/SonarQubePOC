@@ -207,6 +207,7 @@
     <Compile Include="ChangeTypes\ExternalScoresCreatedProcess.cs" />
     <Compile Include="ChangeTypes\IScoreProcess.cs" />
     <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
+    <Compile Include="ChangeTypes\CheckTypeDependencyRemovedProcess.cs" />
     <Compile Include="ChangeTypes\MeasureRemovedProcess.cs" />
     <Compile Include="ChangeTypes\RollupPathChangedProcess.cs" />
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />

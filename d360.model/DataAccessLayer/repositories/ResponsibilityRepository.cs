@@ -499,6 +499,8 @@ where 1=1
                 return result;
             }
 
+            var impactedMeasureVersions = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Owner, resType.ID);
+
             var deleteSQL = @"  delete RRRSA from ResponsibilityRuleResultSecurityAsset RRRSA
 	                                    inner join ResponsibilityTypeRelationRule RTRR ON RRRSA.RuleID = RTRR.ID
 	                                    inner join ResponsibilityType RT on RT.ID = RTRR.ResponsibilityTypeID
@@ -522,6 +524,16 @@ where 1=1
 
             Company.Query<int>(deleteSQL, new { ResponsibilityTypeUid = model.Uid }).ToList();
             result.Success = true;
+
+            if (impactedMeasureVersions.Count > 0)
+            {
+                Company.SendScoreEventWithPayload(
+                    Guid.NewGuid(),
+                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
+                    createApiExecution: true
+                );
+            }
 
             return result;
         }
