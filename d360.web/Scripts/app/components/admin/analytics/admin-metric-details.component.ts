@@ -258,24 +258,27 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
                         ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
                     let formattedValue = gov.Field.Values.join(", ");
-                 
-                    if (fieldType && fieldType.Type == "Lookup") {
-                        let fieldValue = +gov.Field.Values[0] ?? -1;
-                    
-                        let lookupValues = fieldType.Values;
-                        formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
-                            ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
-                    }
-                    if (fieldType.Type == "Date" || fieldType.Type == "Date") {
-                        let dateValues = [];
-                        gov.Field.Values.forEach(x => {
-                            let date = new Date(x);
-                            dateValues.push(date.toLocaleDateString());
-                        });
-                        formattedValue = dateValues.join(" and ");
+                    if (fieldType) {
+                        if (fieldType.Type == "Lookup") {
+                            let fieldValue = +gov.Field.Values[0] ?? -1;
+
+                            let lookupValues = fieldType.Values;
+                            formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
+                                ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+                        }
+                        if (fieldType.Type == "Date" || fieldType.Type == "Date") {
+                            let dateValues = [];
+                            gov.Field.Values.forEach(x => {
+                                let date = new Date(x);
+                                dateValues.push(date.toLocaleDateString());
+                            });
+                            formattedValue = dateValues.join(" and ");
+                        }
+                        this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
+                    } else {
+                        this.formattedCheck = "field not found";
                     }
 
-                    this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
 
                     break;
                 case 'Owner':

@@ -264,8 +264,10 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         var allowedFields = this.fieldsSelect.filter(x => !this.conditions.some(c => c.field === x.value));
         if (item && item.field) {
             var field = this.fields.filter(x => x.Name == item.field)[0];
-            allowedFields.push({ value: field.Name, label: field.FriendlyName });
-            allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);
+            if (field) {
+                allowedFields.push({ value: field.Name, label: field.FriendlyName });
+                allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);
+            }
         }
         return allowedFields;
     }
