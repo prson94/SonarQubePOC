@@ -193,6 +193,7 @@
                                                             [objectId]="model.Event.ObjectID"
                                                             [objectType]="model.Event.Object"
                                                             [transition]="selectedData"
+                                                            [workflowChangeType]="model.Event.ChangeType"
                                                             (transitionChange)="changeTransition($event)">
                             </d3s-workflow-transition-editor>
                         </div>

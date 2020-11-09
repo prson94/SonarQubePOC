@@ -156,7 +156,16 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadContextualFields() {
-        this.contextualFields = this.workflowFieldsService.getContextualFieldsForType(this.changeType, this.objectType);
+        this.contextualFields = this.workflowFieldsService.getContextualFieldsForType(+this.changeType, this.objectType);
+        if (this.contextualFields.length > 0) {
+            this.contextualFields.forEach(f => {
+                this.fieldList.push({
+                    value: f.value,
+                    label: f.label,
+                    type: f.type
+                });
+            });
+        }
     }
 
     selectField(e: any) {

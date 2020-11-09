@@ -53,7 +53,21 @@
                 </div>
                 <div>
                     <p-dropdown [options]="issueObjectTypes"
-                                [(ngModel)]="this.model.Event.IssueObject"
+                                [(ngModel)]="model.Event.IssueObject"
+                                [style]="{'width': '95%'}"
+                                filterPlaceholder="Choose a value"
+                                [filter]="true">
+                    </p-dropdown>
+                </div>
+            </div>
+            <div *ngIf="objectSelected && model.Event.ChangeType == WorkflowChangeType.ScoreUpdate">
+                <div class="FieldName">
+                    Score Type
+                </div>
+                <div>
+                    <p-dropdown [options]="scoreTypes"
+                                [ngModel]="model.Event.ScoreType"
+                                (ngModelChange)="model.Event.ScoreType = $event; validate();"
                                 [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
                                 [filter]="true">
@@ -73,7 +87,7 @@
             </div>
         </div>
         <div class="col s12 m8">
-            <div *ngIf="selectedObjectType != null && selectedObjectType != ''">
+            <div *ngIf="objectSelected">
                 <div class="FieldName">
                     Conditions
                 </div>

@@ -132,11 +132,16 @@ export class WorkflowFieldsService {
 
     getContextualFieldsForType(changeType: WorkflowChangeType, objectType: string) {
         let fields = [];
-        switch (+changeType) {
+        switch (changeType) {
             case WorkflowChangeType.ScoreUpdate:
                 fields.push({
-                    value: 'Contextual|score',
-                    label: 'Score',
+                    value: 'Contextual|score|1',
+                    label: 'Governance Score (System Field)',
+                    type: 'number'
+                });
+                fields.push({
+                    value: 'Contextual|score|2',
+                    label: 'Data Quality Score (System Field)',
                     type: 'number'
                 });
                 break;

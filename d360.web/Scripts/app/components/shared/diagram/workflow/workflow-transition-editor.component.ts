@@ -4,6 +4,7 @@ import {
     LinkModel,
     TransitionType,
     TransitionTypeInfo,
+    WorkflowChangeType,
 } from '../../../../models/workflow.model';
 import { FormMode } from '../../../../models/form.model';
 import { WorkflowService } from '../../../../services/workflow.service';
@@ -23,6 +24,7 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     @Input() objectType: string;
     @Input() transition: LinkModel;
     @Input() diagram: go.Diagram;
+    @Input() workflowChangeType: WorkflowChangeType;
     @Output() transitionChange = new EventEmitter();
 
     private originalTransition: LinkModel;
