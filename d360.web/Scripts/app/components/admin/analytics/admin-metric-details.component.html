@@ -164,6 +164,6 @@
         </div>
     </div>
 </div>
-<d3s-modal *ngIf="data" title="Edit Score" additionalClasses="medium-dialog" [isVisible]="showEdit">
+<d3s-modal *ngIf="data" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
     <d3s-admin-allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="showEdit=false;"></d3s-admin-allocation-editor>
 </d3s-modal>
