@@ -1,10 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges, ElementRef, ViewChild, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-allocation-editor',
@@ -28,13 +29,19 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     ddlScoreTypes: any[] = [];
     ddlAssetTypes: any[] = [];
+    saveLabel: string = "Save";
+    closeLabel: string = "Cancel";
+    isEdit: boolean = false;
+    modelChanged: boolean = false;
+
+    originalSelection: ScoreTypeAllocation = null;
 
     public scoringHelpPage: string = CurrentEnvironmentSettings.HelpBaseUri + 'Default.htm#d-admin/scoring.htm?Highlight=scoring';
 
     rangeValues: number[] = [];
     @ViewChild('slider', { static: true }) slider: ElementRef;
 
-    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService, private elementRef: ElementRef) {
+    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService, private elementRef: ElementRef, private cdRef: ChangeDetectorRef) {
         super();
         this.selection = new ScoreTypeAllocation();
         this.selection.isExternallyCalculated = false;
@@ -46,18 +53,31 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     ngOnInit() {
         this.initialData();
-    }
+    }    
 
     ngOnChanges(change: SimpleChanges) {       
         this.populateAssetTypesDDL();
         this.updateRanges();
-    }
 
+        if (this.selection.uid) {
+            this.closeLabel = "Close";
+            this.saveLabel = "Save Changes";
+            this.isEdit = true;
+            this.originalSelection = _.cloneDeep(this.selection);
+        } else {
+            this.isEdit = false;
+            this.closeLabel = "Cancel";
+            this.saveLabel = "Save";
+        }
+    }
+   
     updateRanges() {
         this.rangeValues[0] = this.selection.lowerThreshold;
         this.rangeValues[1] = this.selection.upperThreshold;
 
         this.rangeValues = JSON.parse(JSON.stringify(this.rangeValues));
+
+        this.hasModelChanged();        
     }
 
     scoreTypeChange($event) {
@@ -69,9 +89,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
             if (!this.selection.uid && this.selection.scoreType.toString() == 'Governance') {
                 this.selection.isExternallyCalculated = false;
-
             }
-
+            this.hasModelChanged();
         }
     }
 
@@ -113,6 +132,22 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality Score' });
     }
 
+    private hasModelChanged() {  
+        if (this.originalSelection) {
+            this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
+            if (this.isEdit) {
+                if (this.modelChanged) {
+                    this.closeLabel = "Discard Changes"
+                } else {
+                    this.closeLabel = "Close"
+                }
+            }
+            this.cdRef.detectChanges();
+        }
+       
+        return this.modelChanged;
+    }
+
     getClassFriendlyName(atc: AssetTypeClass): string {
         switch (atc.toString()) {
             case 'BusinessAsset':
@@ -124,8 +159,13 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         }
     }
 
-    cancel() {
-        this.onCancel.emit();
+    cancel() {        
+        //Set selection back to original
+        if (this.isEdit) {
+            this.selection = _.cloneDeep(this.originalSelection);
+            this.updateRanges();
+        }
+        this.onCancel.emit();        
     }
 
     save() {
@@ -164,6 +204,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         if (this.selection.lowerThreshold == 100)
             this.selection.lowerThreshold = 99;
         this.selection.upperThreshold = e.values[1];
+
+        this.hasModelChanged();
     }
 
     private thresholdCheckLower: any;
@@ -220,7 +262,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         }, 500);
 
     }
-
+    
     ngAfterViewChecked() {
 
         //Dynamically load good, average and score css styles from computed style object so branding is possible

@@ -12,6 +12,7 @@ using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -410,7 +411,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
-            SwaggerParameter("_includeDisabled","Parameter to include disabled measures or not.", DataType = "Boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeDisabled", "Parameter to include disabled measures or not.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
         public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
@@ -436,9 +437,12 @@ namespace d360.web.Controllers.V2
                 List<State> states = new List<State>() { State.Active };
                 if (includeDisabled)
                     states.Add(State.Deleted);
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
 
-                models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
+                var jsonString = string.Join("", fragments);
+                JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
+                models = items.ToObject<List<MetricAssetViewModel>>();
+               
                 if (models == null)
                     models = new List<MetricAssetViewModel>();
 
@@ -447,7 +451,17 @@ namespace d360.web.Controllers.V2
                 {
                     m.ConditionGroups.RemoveAll(g => g.ConditionItems == null || g.ConditionItems.Count == 0);
                 });
+                models.ForEach(m =>
+                {
+                    var rawData = items.FirstOrDefault(x => string.Equals(m.Uid.ToString(), x["Uid"].ToString(), StringComparison.OrdinalIgnoreCase));   
+                    if (rawData.HasValues)
+                    {
+                        var definitionString = rawData.Value<string>("DefinitionJson") ?? "{}";
+                        m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(definitionString);
 
+                    }
+                    m.DefinitionJson = null;
+                });
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)

@@ -3,6 +3,7 @@ import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy,
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'ig-property-group',
@@ -10,7 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
     styleUrls: ['./property-group.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges {
+export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() igformGroup: FormGroup;
     @Input() title: string = "Property Group";
 
@@ -21,35 +22,33 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
+    delayedRefresh = _.debounce(() => {
+        this.requiredCount = this.getRequiredCount();
+        this.invalidCount = this.getInvalidCount();
+        this.ref.markForCheck();
+    }, 200);
+
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
     constructor(private ref: ChangeDetectorRef) {
 
     }
 
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes && this.igformGroup && changes.igformGroup.currentValue != changes.igformGroup.previousValue) {
-            this.igformGroup.valueChanges.subscribe(x => {
-                this.requiredCount = this.getRequiredCount();
-                this.invalidCount = this.getInvalidCount();
-                this.ref.markForCheck();
-            });
-        }
-    }
-
     ngAfterViewInit(): void {
-        this.requiredCount = this.getRequiredCount();
-        this.invalidCount = this.getInvalidCount();
-        this.ref.markForCheck();
+        this.igformGroup.valueChanges.subscribe(x => {
+            this.delayedRefresh();
+        });
     }
 
     ngOnInit(): void {
         if (this.igformGroup) {
             this.igformGroup.valueChanges.subscribe(x => {
-                this.requiredCount = this.getRequiredCount();
-                this.invalidCount = this.getInvalidCount();
-                this.ref.markForCheck();
+                this.delayedRefresh();
             });
         }
+    }
+
+    public refreshBadgeCounts() {
+        this.delayedRefresh();
     }
 
     getRequiredCount(): number {
@@ -58,7 +57,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
                 let elem = this.getFormControlDomElement(x);
-                if (control && control.errors && control.errors["required"] == true) {
+                if (elem && control && control.errors && control.errors["required"] == true) {
                     reqCount++;
                 }
             });
@@ -72,7 +71,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
             Object.keys(this.igformGroup.controls).forEach(x => {
                 let control = <FormControl>this.igformGroup.get(x);
                 let elem = this.getFormControlDomElement(x);
-                if (control && control.errors) {
+                if (elem && control && control.errors) {
                     invCount += Object.keys(control.errors).filter(x => x != "required").length > 0 ? 1 : 0;
                 }
             });
@@ -138,8 +137,8 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit, OnChanges 
 
     getFormControlDomElement(controlName: string) {
         if (this.inputContainer) {
-            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]").length > 0 ?
-                this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "]")[0] : null;
+            return this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]").length > 0 ?
+                this.inputContainer.nativeElement.querySelectorAll("[formControlName=" + controlName + "], [name=" + controlName + "], [id=" + controlName + "]")[0] : null;
         }
     }
 

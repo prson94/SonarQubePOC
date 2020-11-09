@@ -1756,6 +1756,7 @@
     <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\assetpath-separator.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\enum-to-selectitem.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\generic-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />

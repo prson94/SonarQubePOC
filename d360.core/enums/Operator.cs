@@ -34,7 +34,8 @@ namespace d360.core.enums
         ]
         NotEquals,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("contains"),
             EnumMember(Value = "Contains"),
             Description(""), 
@@ -45,7 +46,8 @@ namespace d360.core.enums
         ]
         Contains,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("does not contain"),
             EnumMember(Value = "NotContains"),
             Description(""), 
@@ -56,7 +58,8 @@ namespace d360.core.enums
         ]
         NotContains,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("starts with"),
             EnumMember(Value = "StartsWith"),
             Description(""), 
@@ -67,7 +70,8 @@ namespace d360.core.enums
         ]
         StartsWith,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("ends with"),
             EnumMember(Value = "EndsWith"),
             Description(""), 
@@ -98,7 +102,8 @@ namespace d360.core.enums
         ]
         After,
         [
-            NotYetUsed, 
+            //uncomment before the release
+            //NotYetUsed, 
             Name("is between"),
             EnumMember(Value = "Between"),
             Description(""), 
@@ -113,8 +118,8 @@ namespace d360.core.enums
             EnumMember(Value = "Populated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
-            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), //comment out before release also 
             OperatorFieldTypeRequirements(false)
         ]
         Populated,
@@ -123,8 +128,8 @@ namespace d360.core.enums
             EnumMember(Value = "NotPopulated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //MetricGovernanceCheckType.Field, 
-            OperatorAllowedDataTypes(),//(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //remove field MetricGovernanceCheckType.Field before release  
+            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text),//comment out again before release 
             OperatorFieldTypeRequirements(false)
         ]
         NotPopulated,
@@ -169,7 +174,8 @@ namespace d360.core.enums
         ]
         GreaterThanOrEquals,
         [
-            NotYetUsed, 
+            //uncomment before the release
+            //NotYetUsed, 
             Name("in"),
             EnumMember(Value = "In"),
             Description(""), 
@@ -180,7 +186,8 @@ namespace d360.core.enums
             ]
         In,
         [
-            NotYetUsed, 
+            //uncomment before the release
+            //NotYetUsed, 
             Name("not in"),
             EnumMember(Value = "NotIn"),
             Description(""), 
@@ -191,7 +198,8 @@ namespace d360.core.enums
         ]
         NotIn,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("is true"),
             EnumMember(Value = "IsTrue"),
             Description(""),
@@ -202,7 +210,8 @@ namespace d360.core.enums
         ]
         IsTrue,
         [
-            NotYetUsed,
+            //uncomment before the release
+            //NotYetUsed,
             Name("is false"),
             EnumMember(Value = "IsFalse"),
             Description(""),
