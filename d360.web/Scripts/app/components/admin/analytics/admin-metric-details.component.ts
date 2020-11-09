@@ -14,14 +14,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
 import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
-import { OperatorModel } from '../../../models/operator.model';
+import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FormHelpers } from '../../../static/form-helpers';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
     templateUrl: 'admin-metric-details.component.html',
-    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService]
+    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService]
 })
 
 export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -46,6 +47,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     scoreData: any[];
     showDisabled: boolean = false;
     showPassTest: boolean = false;
+    responsibilityTypes: any[] = [];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -56,6 +58,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
         private settingsService: CompanySettingsService,
+        private responsibilityService: ResponsibilityTypeService, 
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
@@ -79,6 +82,11 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
             this.settingsService.getOperators().subscribe(o => {
                 this.operators = o;
+            });
+            this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
+                if (data && data.length) {
+                    this.responsibilityTypes = data;
+                }
             });
         });
     }
@@ -282,6 +290,17 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
                     break;
                 case 'Owner':
+                    let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
+                        ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
+                    let operatorString = "is assigned";
+                    if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
+                        operatorString = "is not assigned";
+                    }
+                    if (responsibilitytype) {
+                        this.formattedCheck = responsibilitytype.Name + " " + operatorString;
+                    } else {
+                        this.formattedCheck = "responsibility type not found";
+                    }
                     break;
                 case this.CheckType.Predicate:
                     break;

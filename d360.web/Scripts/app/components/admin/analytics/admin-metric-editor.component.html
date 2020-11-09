@@ -136,7 +136,49 @@
                             <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="2">
-                            Owner
+                            <div class="row row-label">
+                                <label class="ig-label">Test Condition</label>
+                            </div>
+                            <div class="row row-margin owner-conditions">
+                                <div class="condition-med">
+                                    <p-dropdown igDropdown
+                                                igSize="medium"
+                                                [disabled]="disabled"
+                                                [options]="responsibilityTypes"
+                                                [(ngModel)]="model.Definition.Governance.Owner.ResponsibilityTypeUid"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="ResponsibilityTypeUid"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="ResponsibilityTypeUid">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+
+                                </div>
+                                <div class="condition">
+                                    <p-dropdown *ngIf="model.Definition.Governance.Owner.ResponsibilityTypeUid"
+                                                igDropdown
+                                                igSize="small"
+                                                [disabled]="disabled"
+                                                [options]="responsibilityOperators"
+                                                [(ngModel)]="model.Definition.Governance.Owner.Operator"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="ResponsibilityTypeOperator"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="ResponsibilityTypeOperator">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                            </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="3">
                             Predicate
