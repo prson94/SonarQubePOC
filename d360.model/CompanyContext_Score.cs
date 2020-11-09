@@ -794,7 +794,7 @@ from	metrics.AssetVersion V
 		inner join metrics.Asset A on A.Uid = V.AssetUid
 		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 		inner join AssetType T on T.Uid = Al.AssetTypeUid
-		inner join ResponsibilityTypeRelation RA on RA.ObjectType = T.Object and RA.ObjectID = A.ObjectID
+		inner join ResponsibilityTypeRelation RA on RA.ObjectType = T.Object and RA.ObjectID = T.ObjectID
         inner join ResponsibilityType RT on RT.Uid = JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') and RT.ID = RA.ResponsibilityTypeID and RT.ID = @typeId";
                     break;
                 case MetricGovernanceCheckType.Predicate:
