@@ -41,7 +41,7 @@ namespace d360.web.Controllers
             if (ignoreObjects.Count > 0)
                 ignoreObjectTypeSQL = $" AND T.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";           
 
-            var availableTypes = Company.Query<SelectListItem>($@"select T.ID as [Value], {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name]) as [Text]
+            var availableTypes = Company.Query<SelectListItem>($@"select convert(nvarchar(36), T.Uid) as [Value], {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name]) as [Text]
                 from AssetType T
                 cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
                 where not exists (select 1 from IssueTypeRelation where AssetTypeID = T.ID and IssueTypeID = @issueTypeId)
@@ -49,7 +49,7 @@ namespace d360.web.Controllers
                 AND T.Class != {(int) AssetTypeClass.Diagram}
                 order by 2", new { issueTypeId }).ToList();
 
-            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "AssetTypeID", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = availableTypes, Required = true });
+            list.Add(new EditableField { Row = 1, Column = 1, FieldName = "AssetTypeUid", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = availableTypes, Required = true });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -64,6 +64,7 @@ namespace d360.web.Controllers
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Required = true, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250),  Value = a.Name });
             list.Add(new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
@@ -97,188 +98,7 @@ namespace d360.web.Controllers
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
-        }        
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueTypeRelation")]
-        public JsonResult AddIssueTypeRelation(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
-
-                var model = new IssueTypeRelation
-                {
-                    IssueTypeID = parseIntField(form, "IssueTypeID"),
-                    AssetTypeID = parseIntField(form, "AssetTypeID")
-                };
-
-                Company.Add(model);
-
-                return jsonSuccess("Issue Type allocation successfully added.", model.AssetTypeID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, ValidateInput(false), Route("DeleteIssueTypeRelation"), NonNullableParameters]
-        public JsonResult DeleteIssueTypeRelation(int issueTypeID, int assetTypeID)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (issueTypeID < 1 || assetTypeID < 1) throw new InvalidDataException("IssueTypeRelation");
-
-                var relation = Company.IssueTypeRelations.Where(i => i.IssueTypeID == issueTypeID && i.AssetTypeID == assetTypeID).FirstOrDefault();
-                Company.Delete(relation);
-
-                return jsonSuccess("Issue Type allocation successfully deleted.", assetTypeID.ToString(), "delete", HttpStatusCode.OK);
-
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddIssueType")]
-        public JsonResult AddIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("IssueType");
-
-                var model = new IssueType
-                {
-                    Name = parseTextField(form, "Name"),
-                    Description = parseTextField(form, "Description"),
-                    IsSystem = false,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(model);
-
-                if (model.ID > 0)
-                {
-                    Company.Add(new FieldType
-                    {
-                        ObjectID = model.ID,
-                        Object = SystemObjects.IssueType.ToString(),
-                        IsListable = true,
-                        IsRequired = true,
-                        IsEditable = true,
-                        FriendlyName = "Description",
-                        Name = "ProblemDesc",
-                        SortOrder = 1,
-                        Type = DataType.Html.ToString()
-                    });
-                }
-
-                return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditIssueType")]
-        public JsonResult EditIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("issuetype");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<IssueType>(id);
-
-                if (model == null) throw new NotFoundException("issuetype");
-
-                model.Name = form["Name"];
-                model.Description = form["Description"];
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.SaveOrUpdate(model);
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
-        [HttpDelete, Route("DeleteIssueType")]
-        public JsonResult DeleteIssueType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException("issue type");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<IssueType>(id);
-                if (model == null) throw new NotFoundException("issue type");
-
-                var typeRelations = Company.IssueTypeRelations.Where(i => i.IssueTypeID == id).ToList();
-                Company.IssueTypeRelations.RemoveRange(typeRelations);
-
-                var customFields = Company.FieldTypes.Where(x => x.Object == SystemObjects.IssueType.ToString() && x.ObjectID == id);
-                Company.FieldTypes.RemoveRange(customFields);
-                Company.Delete<IssueType>(i => i.ID == id);
-
-                Company.SetStateDeleteWorkFlowType(SystemObjects.IssueType, id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+        }         
 
         #endregion
     }
