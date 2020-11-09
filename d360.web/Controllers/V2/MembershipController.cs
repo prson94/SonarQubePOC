@@ -653,6 +653,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
 
+                if (users == null || users.Count() == 0)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", $"No users provided in request."));
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
