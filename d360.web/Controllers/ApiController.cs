@@ -50,7 +50,7 @@ namespace d360.web.Controllers
         #endregion
 
         #region Field Data
-        
+
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -229,11 +229,11 @@ namespace d360.web.Controllers
                                             {
                                                 var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
                                                 var lookupAssetTypeID = (det != null ? det.AssetTypeID : 0);
-                                                
+
                                                 var colorData = Company.Query<string>($@"SELECT colorJSON FROM Asset A cross apply dbo.GetAssetColorJsonByColor(A.Color) WHERE A.ID = @ID ", new { ID = (det != null ? det.AssetID : 0) }).FirstOrDefault();
-                                                
+
                                                 // if we have color data on the current asset otherwise we have to check if other assets in the same type have a color
-                                                if (colorData != null || (Company.Assets.Any(x => x.AssetTypeID == lookupAssetTypeID && x.Color != null)) )
+                                                if (colorData != null || (Company.Assets.Any(x => x.AssetTypeID == lookupAssetTypeID && x.Color != null)))
                                                 {
                                                     JObject obj = null;
                                                     if (colorData != null)
@@ -803,7 +803,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
         void parseDynamicColumnsAndFields(List<FieldType> items, List<GridColumn> columns, List<GridField> fields, decimal dynamicFieldWidth, bool serverPaged = false)
         {
             items.ForEach(i =>
-            {                
+            {
                 columns.Add(getGridColumnForColumn(i, dynamicFieldWidth, serverPaged, false));
 
                 fields.Add(getGridFieldForColumn(i));
@@ -862,7 +862,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var columns = new List<GridColumn>();
             var fields = new List<GridField>();
-            var filterColumns = new List<GridFilterColumn>();            
+            var filterColumns = new List<GridFilterColumn>();
             var topLevelFilterFields = new List<GridFilterColumn>();
             decimal dynamicFieldWidth = 0;
             int remainingWidth = 0;
@@ -1028,7 +1028,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 #endregion               
                 case SystemObjects.RuleType:
                     #region
-                    
+
                     parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
@@ -1128,9 +1128,9 @@ where   h.ID <> @t order by h.[Level] desc;
                     filterColumns.Add(new GridFilterColumn { text = detail.Name, datafield = "Name", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
                     columns.Add(new GridColumn { text = detail.Name, datafield = "Name", filteritems = new List<string>() });
                     fields.Add(new GridField { name = "AssetID", type = "number" });
-                    fields.Add(new GridField { name = "ID", type = "number" });                    
+                    fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
-                    
+
                     parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
                     items.ForEach(i =>
@@ -1218,7 +1218,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
                     fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
                     break;
-                #endregion                
+                    #endregion
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, new
@@ -1448,7 +1448,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 )
             );
         }
- 
+
         #endregion
 
         #region Groups
@@ -2011,12 +2011,74 @@ order by    rnk, [Name]";
         [Route("relationships/field/{fieldTypeID:int}"), HttpGet]
         public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
         {
-            var result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
+            var selected = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, true);
+
+            List<System.Web.Mvc.SelectListItem> selection = new List<System.Web.Mvc.SelectListItem>();
+
+            if (selected.ContainsKey("Selection"))
+            {
+                List<dynamic> items = (List<dynamic>)selected["Selection"];
+                int preselectedCount = items.Count;
+                bool includeSelected = offset > preselectedCount && preselectedCount <= (offset + rows);
+                if (includeSelected)
+                {
+                    items.ForEach(d =>
+                    {
+                        selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
+                    });
+                }
+
+
+                var maxRecord = offset + rows;
+                var origRows = rows;
+                if (preselectedCount > 0)
+                {
+
+                    var reqestedPage = (offset + rows) / rows;
+                    var emptyPages = preselectedCount / rows;
+
+                    if (reqestedPage < emptyPages)
+                    {
+                        rows = offset = 0;
+                    }
+                    else
+                    {
+                        var targetPage = reqestedPage - emptyPages;
+                        var toTopOfPage = preselectedCount == rows ? 0 : preselectedCount % rows;
+
+                        if (targetPage == 1)
+                        {
+                            offset = 0;
+                            rows = rows - toTopOfPage;
+                        }
+                        else
+                        {
+                            offset = (targetPage - 1) * rows - toTopOfPage;
+                        }
+                    }
+                }
+
+
+            }
+            Dictionary<string, object> result = null;
+            if ((offset + rows) > 0)
+            {
+                result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
+                if (result.ContainsKey("Items"))
+                {
+                    List<dynamic> items = (List<dynamic>)result["Items"];
+                    items.ForEach(d =>
+                    {
+                        selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = false });
+                    });
+                }
+            }
+
             return Request.CreateResponse(HttpStatusCode.OK, new
             {
-                items = ((List<dynamic>)result["Items"]).Select(s => new System.Web.Mvc.SelectListItem { Text = s.Text, Value = s.Value.ToString(), Selected = s.Selected == 1 ? true : false }).ToList(),
-                count = (int)result["Count"],
-                hasCardinalityOne = (bool)result["HasCardinalityOne"]
+                items = selection,
+                count = (int)selected["Count"],
+                hasCardinalityOne = (bool)selected["HasCardinalityOne"]
             });
         }
 

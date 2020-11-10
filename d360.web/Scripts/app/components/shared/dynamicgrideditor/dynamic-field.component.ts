@@ -278,7 +278,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                 //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
                 let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
-                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0) {
+                if (((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)) {
                     if (hasCardinalityOne) {
                         var selectedCount = this.relationItems ? this.relationItems.length : 0;
                         this.field.RecordCount = selectedCount + res.results["count"];
