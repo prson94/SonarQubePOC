@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -12,7 +13,8 @@ namespace d360.core.queue
         MeasureChanged,
         MeasureRemoved,
         RollupPathChanged,
-        WorkflowCheck
+        WorkflowCheck,
+        CheckTypeDependencyRemoved
     }
 
     public enum ScoreQueueExecutionDataLocation
@@ -44,6 +46,11 @@ namespace d360.core.queue
 
         [JsonIgnore]
         public string StorageFilePrefix { get { return $"{CompanyID}/{StartedOnDateString}_{ExecutionUid}_{ChangeType}"; } }
+    }
+
+    public class CheckTypeDependencyRemovedModel
+    {
+        public List<Guid> VersionUids { get; set; }
     }
 
     public class ExternalMeasureResultsCreatedModel

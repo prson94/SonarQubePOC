@@ -102,7 +102,6 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
 
         if (this._loading) {
             DomHandler.addClass(this.el.nativeElement, "ig-state-loading");
-            this.el.nativeElement.setAttribute("disabled", "true");
 
             let spinnerElement = document.createElement("span");
             spinnerElement.setAttribute("aria-hidden", "true");
@@ -110,7 +109,6 @@ export class ButtonDirective implements AfterViewInit, OnDestroy {
             this.el.nativeElement.appendChild(spinnerElement);
         } else {
             DomHandler.removeClass(this.el.nativeElement, "ig-state-loading");
-            this.el.nativeElement.removeAttribute("disabled");
         }
     }
 

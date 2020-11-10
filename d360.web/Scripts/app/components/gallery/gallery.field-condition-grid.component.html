@@ -65,7 +65,7 @@
             <button igButton label="Load Data" (click)="loadData()"></button>
         </p>
 
-        <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields"></field-condition-grid>
+        <field-condition-grid *ngIf="fields && fields.length > 0" [fields]="fields" [conditions]="blank"></field-condition-grid>
 
 
         <hr />

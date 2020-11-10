@@ -1,7 +1,7 @@
 ﻿
 <div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="measure-form" [style.maxHeight.px]="maxHeight">
+    <div *ngIf="!isLoading" class="measure-form" [style.maxHeight.px]="maxHeight">
         <form [formGroup]="metricForm" *ngIf="model">
             <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
                 <div inputs>
@@ -77,15 +77,89 @@
                             <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
                             <ig-switch tabindex="5"
                                        formControlName="isGroup"
-                                       [(ngModel)]="model.IsGroup"></ig-switch>
+                                       [(ngModel)]="model.IsGroup"
+                                       (onChange)="onGroupchange($event)"></ig-switch>
                         </ng-container>
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="conditionForm" [title]="'Asset Condition'" *ngIf="metricForm && !metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
                 <div inputs>
-                    <d3s-loading [isLoading]="isLoadingFields"></d3s-loading>
-                    <field-condition-grid [formGroup]="conditionForm" *ngIf="fields.length > 0" [conditions]="conditions" [fields]="fields"></field-condition-grid>
+                    <div class="row">
+                        <label for="check" class="ig-label">Test Type</label>
+                        <p-dropdown igDropdown
+                                    igSize="small"
+                                    [disabled]="disabled"
+                                    [options]="checkTypeOptions | enumToSelectitem"
+                                    (onChange)="testTypeChange($event)"
+                                    [(ngModel)]="model.Definition.Governance.Check"
+                                    appendTo="body"
+                                    [required]="true"
+                                    [showClear]="false"
+                                    formControlName="check"
+                                    placeholder="Value required"
+                                    tabindex="6"
+                                    name="check">
+                            <ng-template let-item pTemplate="selectedItem">
+                                <span>{{item.label}}</span>
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
+                    <div [ngSwitch]="model.Definition.Governance.Check">
+                        <div *ngSwitchCase="0">
+                            <div *ngIf="false" class="row row-margin">
+                                <label for="updateFrequency" class="ig-label">Update Frequency</label>
+                                <p-dropdown igDropdown
+                                            igSize="small"
+                                            [disabled]="disabled"
+                                            [options]="updateFrequencyOptions | enumToSelectitem"
+                                            [(ngModel)]="model.Definition.Governance.External.UpdateFrequency"
+                                            appendTo="body"
+                                            [required]="true"
+                                            [showClear]="false"
+                                            formControlName="updateFrequency"
+                                            placeholder="Value required"
+                                            tabindex="6"
+                                            name="UpdateFrequency">
+                                    <ng-template let-item pTemplate="selectedItem">
+                                        <span>{{item.label}}</span>
+                                    </ng-template>
+                                </p-dropdown>
+                            </div>
+                            <div class="row row-margin">
+                                <label for="instructionString" class="ig-label">Instruction String</label>
+                                <input igInput tabindex="7" igSize="medium" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
+                            </div>
+                        </div>
+                        <div class="row row-margin" *ngSwitchCase="1">
+                            <label class="ig-label">Test Condition</label>
+                            <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
+                        </div>
+                        <div class="row row-margin" *ngSwitchCase="2">
+                            Owner
+                        </div>
+                        <div class="row row-margin" *ngSwitchCase="3">
+                            Predicate
+                        </div>
+                        <div class="row row-margin" *ngSwitchCase="4">
+                            Relationship
+                        </div>
+                        <ng-template ngSwitchDefault>
+                            <div class="row row-margin">
+                                <ig-message-box>
+                                    <span>
+                                        Choose the type of test to perfom on assets (eg. a field, relationship or ownership test),
+                                        to be prompted for more information on how to test for a pass or fail.
+                                    </span>
+                                </ig-message-box>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </ig-property-group>
+            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
+                <div inputs>
+                    <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
                     <div class="row" *ngIf="showMatchPicker">
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
@@ -93,13 +167,12 @@
                 </div>
             </ig-property-group>
         </form>
-
     </div>
     <div class="row" *ngIf="!isLoading">
         <div class="action-bar" style="padding-top: 15px">
             <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || !validateConditions() || conditionFormMode != FormMode.Default || isSaving" (click)="save()"></button>
+            <button igButton [loading]="isSaving" class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.valid || isSaving" (click)="save()"></button>
         </div>
     </div>
 </div>

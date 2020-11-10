@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
@@ -1666,8 +1667,8 @@ from	IntersectType I
             var fieldsRemoved = false;
             bool shouldRefreshPath = false;
             int? assetTypeID = null;
-            currentFieldTypes.ForEach(c =>
-            {
+            var impactedMeasureVersions = new List<Guid>();
+            currentFieldTypes.ForEach(c => {
                 assetTypeID = c.AssetTypeID;
                 if (fieldNamesToDelete.Contains(c.Name))
                 {
@@ -1675,6 +1676,8 @@ from	IntersectType I
                     {
                         shouldRefreshPath = true;
                     }
+                    var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
+                    impactedMeasureVersions.AddRange(impacted);
                     Company.FieldTypes.Remove(c);
                     fieldsRemoved = true;
                 }
@@ -1695,6 +1698,16 @@ from	IntersectType I
                         Company.SendGraphAssetTypeEvent(assetType.uid);
                     }
                 }
+            }
+
+            if (impactedMeasureVersions.Count > 0)
+            {
+                Company.SendScoreEventWithPayload(
+                    Guid.NewGuid(),
+                    ScoreQueueChangeType.CheckTypeDependencyRemoved,
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
+                    createApiExecution: true
+                );
             }
         }
 

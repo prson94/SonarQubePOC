@@ -721,11 +721,26 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null)
+        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null, bool createApiExecution = false)
         {
             if (!startedOn.HasValue)
             {
                 startedOn = DateTime.UtcNow;
+            }
+
+            if (createApiExecution)
+            {
+                var apiExecution = new ApiExecution
+                {
+                    ExecutionID = executionUid,
+                    StartedOn = startedOn.Value,
+                    ResourceID = CurrentResourceID,
+                    Method = "SCORE",
+                    State = State.Unknown,
+                    Route = "ScoreEngine", 
+                    Total = 0
+                };
+                Add(apiExecution);
             }
 
             var info = new ScoreQueueInfo
@@ -756,6 +771,60 @@ where   E.ExecutionID = @ExecutionID
                 Location = ScoreQueueExecutionDataLocation.File
             };
             await Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, $"{info.StorageFilePrefix}_{resultFileSuffix}.json", item);
+        }
+
+        public List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId)
+        {
+            var sql = "";
+            switch (check)
+            {
+                case MetricGovernanceCheckType.Field:
+                    sql = @"
+select	V.Uid
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
+		inner join AssetType T on T.Uid = Al.AssetTypeUid
+		inner join FieldType FT on FT.Name = JSON_VALUE(V.Definition, '$.Governance.Field.FieldTypeName') and FT.AssetTypeID = T.ID and FT.ID = @typeId";
+                    break;
+                case MetricGovernanceCheckType.Owner:
+                    sql = @"
+select	V.Uid
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
+		inner join AssetType T on T.Uid = Al.AssetTypeUid
+		inner join ResponsibilityTypeRelation RA on RA.ObjectType = T.Object and RA.ObjectID = T.ObjectID
+        inner join ResponsibilityType RT on RT.Uid = JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') and RT.ID = RA.ResponsibilityTypeID and RT.ID = @typeId";
+                    break;
+                case MetricGovernanceCheckType.Predicate:
+                    sql = @"
+select	V.Uid
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
+		inner join AssetType T on T.Uid = Al.AssetTypeUid
+		inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = A.ObjectID) or (IA.Object = T.Object and IA.ObjectID = A.ObjectID) ) 
+        inner join [Predicate] P on P.Uid = JSON_VALUE(V.Definition, '$.Governance.Predicate.PredicateUid') and P.ID = IA.PredicateID and P.ID = @typeId";
+                    break;
+                case MetricGovernanceCheckType.Relation:
+                    sql = @"
+select	V.Uid
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
+		inner join AssetType T on T.Uid = Al.AssetTypeUid
+		inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = T.ObjectID) or (IA.Object = T.Object and IA.ObjectID = T.ObjectID) ) 
+            and IA.Uid = JSON_VALUE(V.Definition, '$.Governance.Relation.IntersectTypeUid') and IA.ID = @typeId";
+                    break;
+            }
+            List<Guid> list = null;
+            if (!string.IsNullOrEmpty(sql))
+            {
+                list = Query<Guid>(sql, new { typeId }).ToList();
+            }
+            
+            return list;
         }
 
         #endregion

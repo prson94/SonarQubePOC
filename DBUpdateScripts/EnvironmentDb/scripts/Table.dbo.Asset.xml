@@ -257,4 +257,100 @@ AS
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.Asset-Asset_AfterUpdate-v2">
+    <comment>GOV-12221</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+   ON  [dbo].[Asset] 
+   AFTER UPDATE
+AS 
+	Declare @InsCount int = 0,
+	        @DelCount int = 0;
+
+	SET NOCOUNT ON;
+	
+	
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
+				I.ID
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute');
+
+	select @InsCount = count(1) from inserted I where I.object = 'ReferenceItem';
+	select @DelCount = count(1) from deleted d where d.object = 'ReferenceItem';
+
+	if (@InsCount > 0 and @DelCount>0)
+	begin
+			drop table if exists #insertedAssets;
+			create table #insertedAssets (ObjectType varchar(250), ObjectID int,AssetObjectID bigint);
+			create clustered index IX_TempInsertedFields ON #insertedAssets (ObjectType, ObjectID);
+			
+			drop table if exists #TempFormattedValue;
+			create table #TempFormattedValue (FieldTypeID Int, [Value] nvarchar(250),FormattedValue nvarchar(Max));
+			create clustered index IX_TempFormattedValue ON #TempFormattedValue (FieldTypeID, [Value]);
+			
+			
+			insert into #insertedAssets(ObjectType,ObjectID,AssetObjectID)
+				select distinct
+				replace(ATT.[Object],'Type',''),
+				ATT.ObjectID,
+				I.ObjectID
+				from inserted i
+				inner join AssetType ATT on ATT.ID = i.AssetTypeID
+				where i.object = 'ReferenceItem'
+				and exists (select 1 from deleted d where d.id = i.id
+							  and i.Code <> d.Code);
+			
+			if exists(
+				select 1 from Field TF
+						inner join FieldType FT on FT.ID = TF.FieldTypeID
+						inner join	#insertedAssets SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID and SF.AssetObjectID = try_cast(TF.[value] as bigint) 
+						where SF.ObjectType = 'ReferenceItem')
+			begin
+			
+				insert into #TempFormattedValue
+				(FieldTypeID,[Value],FormattedValue)
+				select FT.ID,
+					   cast(SF.AssetObjectID as nvarchar(250)),
+					   utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, SF.AssetObjectID, FT.AllowMultipleValues)
+				from #insertedAssets SF 
+				inner join FieldType FT
+				on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID;
+			
+				UPDATE	TF
+				SET		TF.FormattedValue = TFV.FormattedValue
+				from	Field TF
+				inner join #TempFormattedValue TFV
+				on TF.FieldTypeID = TFV.FieldTypeID and TFV.[Value] = TF.[Value];
+			end
+	end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+CREATE OR ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+   ON  [dbo].[Asset] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON
+	
+	
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
+				I.ID
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute')
+
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
