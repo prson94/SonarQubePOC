@@ -6,12 +6,13 @@ using System.Text;
 using System.Xml.Linq;
 using System.Data.Entity;
 using d360.core.enums.Workflow;
+using d360.core.enums;
 
 namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(ICompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
+        public static bool Evaluate(ICompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1, int? scoreType = null)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -22,7 +23,7 @@ namespace d360.model.workflow
             bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND); 
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(expression, context, @object, objectId, itemId, issueObject, issueObjectId, changedFields, satisfyAll);
+            return EvaluateObject(expression, context, @object, objectId, itemId, issueObject, issueObjectId, changedFields, satisfyAll, scoreType);
         }
 
         public static string ToPlainText(ICompanyContext context, string criteria)
@@ -50,7 +51,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, ICompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, ICompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true, int? scoreType = null)
         {
 
             //If there are no conditions object is eligible for workflow
@@ -67,7 +68,7 @@ namespace d360.model.workflow
 
             foreach (var item in expression)
             {
-                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields);
+                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields, scoreType);
                 if (satisfyAll && item.IsCriteriaChecked == false) return false;
                 if (!satisfyAll && item.IsCriteriaChecked == true) return true;
             }
@@ -75,7 +76,7 @@ namespace d360.model.workflow
             return satisfyAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
         }
 
-        private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, int? scoreType = null)
         {
             // If evaluated field is not part of changed fields return false
             // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
@@ -121,6 +122,33 @@ namespace d360.model.workflow
             else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
             {
                 if (!item.IsValueMatch(issueObjectTypeId.ToString())) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower() == "scoretype")
+            {
+                if (!item.IsValueMatch(scoreType?.ToString() ?? "")) return false;
+            }
+            else if ((item.ContextualFieldID ?? "").ToLower().StartsWith("score|"))
+            {
+                var typeString = item.ContextualFieldID.Split('|')[1];
+                if (Enum.TryParse(typeString, out ScoreType stype))
+                {
+                    long? assetId = context.GetObjectDetail(@object, objectId)?.AssetID;
+                    if (assetId.HasValue)
+                    {
+                        int? score = context.GetAssetScore((int)assetId, stype);
+                        if (!item.IsValueMatch(score.ToString())) return false;
+                    }
+                    else
+                    {
+                        Console.WriteLine("DEBUG - CANNOT FIND ASSET FOR SCORE CONDITION");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("DEBUG - CANNOT FIND SCORE TYPE FOR SCORE CONDITION.");
+                    return false;
+                }
             }
             else if (item.VersionStepId > 0)
             {

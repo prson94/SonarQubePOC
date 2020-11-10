@@ -86,7 +86,7 @@ namespace d360.model
                 issueObjectId = issueDetail.ObjectTypeID;
             }
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, objectInfo.ChangedFieldIds, issueObjectType, issueObjectId))
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, objectInfo.ChangedFieldIds, issueObjectType, issueObjectId, (int?)objectInfo.ScoreType))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
@@ -2014,7 +2014,7 @@ namespace d360.model
             return defaultWorkflowUserGroup;
         }
 
-        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
+        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
@@ -2048,14 +2048,14 @@ namespace d360.model
             return users;
         }
 
-        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnFollowers(int typeID, int stepID, long itemID)
+        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnFollowers(int typeID, int stepID, long itemID)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWFFollowers] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
             return users;
         }
 
-        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId)
+        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId)
         {
             // a default workflow group has been defined for when there are no memebers in the resonponsibilities
             return Query<core.entities.GlobalReportingResource>(@"select distinct	R.ResourceID, 
@@ -2346,6 +2346,55 @@ namespace d360.model
                     score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
 
                 result = result.Replace("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
+            }
+
+            if (result.Contains("[DQ_SCORE_PREV]"))
+            {
+                ObjectDetail item = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(obj.ToString(), objectID);
+                }
+                int? score = null;
+
+                if (item != null && item.AssetID.HasValue)
+                    score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+                result = result.Replace("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString()}%" : "(No prior score)");
+            }
+
+
+            if (result.Contains("[GOV_SCORE_PREV]"))
+            {
+                ObjectDetail item = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(obj.ToString(), objectID);
+                }
+                int? score = null;
+
+                if (item != null && item.AssetID.HasValue)
+                    score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
+                result = result.Replace("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString()}%" : "(No prior score)");
             }
 
             if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))

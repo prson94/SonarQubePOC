@@ -207,7 +207,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     }))))
             .pipe(concatMap(() => of(
                 //apply names to contextual fields
-
                 this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
                     let cx = this.workflowFieldsService
                         .getContextualFieldsForType()
