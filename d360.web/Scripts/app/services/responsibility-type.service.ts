@@ -34,8 +34,11 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getAdminResponsibilityTypes(): Observable<ResponsibilityType[]> {
-        return this.http.get('api/v2/responsibilities/types')
+    getAdminResponsibilityTypes(uid?: string): Observable<ResponsibilityType[]> {
+        let uidstring = "";
+        if (uid)
+            uidstring = `/${uid}`
+        return this.http.get(`api/v2/responsibilities/types${uidstring}`)
             .pipe(
                 map(response => <ResponsibilityType[]>response),
                 catchError(err => this.handleError(err))

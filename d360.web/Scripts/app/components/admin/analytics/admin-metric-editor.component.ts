@@ -1,6 +1,6 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
@@ -13,16 +13,37 @@ import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 
 @Component({
     selector: 'd3s-admin-metric-editor',
     templateUrl: './admin-metric-editor.component.html',
-    providers: [MetricsService, CompanySettingsService, FieldsObservableService],
+    providers: [MetricsService, CompanySettingsService, FieldsObservableService, ResponsibilityTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
     .row-margin{
         margin: 8px 0px;
+    }
+    .row-label{
+        margin: 0px 0px -8px 0px;
+    }
+    .owner-conditions{
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        margin-bottom: 8px;
+    }   
+    .condition{
+        margin-left: 8px;
+        flex-shrink: 0;
+        flex-grow: 0;
+        width: 100%;
+        max-width: 150px;
+    }
+    .condition-med{
+        max-width: 308px;
+        flex-grow: 1;
     }
     `]
 
@@ -66,6 +87,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     checkTypeOptions = MetricGovernanceCheckType;
     updateFrequencyOptions = MetricUpdateFrequency;
 
+    responsibilityTypes: any[] = [];
+    responsibilityOperators: any[] =[];
     showMatchPicker: boolean = false;
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -92,6 +115,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         protected messagesService: MessagesObservableService,
         private settingsService: CompanySettingsService,
         private fieldsService: FieldsObservableService,
+        private responsibilityService: ResponsibilityTypeService, 
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef
     ) {
@@ -199,6 +223,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     this.isLoading = false;
                 }
                 this.cdRef.markForCheck();
+            });
+
+            this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
+                if (data && data.length) {
+                    this.responsibilityTypes = data.map(x => {
+                        return { label: x.Name, value: x.uid };
+                    });
+                    this.responsibilityOperators = [{ label: "is assigned", value: Operator.Populated }, { label: "is not assigned", value: Operator.NotPopulated }];
+                    if (this.model.Definition.Governance && this.model.Definition.Governance.Owner) {
+                        this.model.Definition.Governance.Owner.Operator = Operator[this.model.Definition.Governance.Owner.Operator + ""];
+                    }
+                }
             });
         })
     }
@@ -315,7 +351,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.cdRef.markForCheck();
                 break;
             case 2:
-                //handle owner 
+                this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeOperator", new FormControl(''));
+                if (!this.model.Definition.Governance.Owner.Operator) {
+                    this.model.Definition.Governance.Owner.Operator = Operator.Populated;
+                }
                 break;
             case 3:
                 //handle predicate 
@@ -372,7 +412,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.updateFormValidity(null);
                 break;
             case 2:
-                //handle owner 
+                this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
+                this.metricForm.addControl("ResponsibilityTypeOperator", new FormControl(''));
+                this.model.Definition.Governance.Owner = new MetricAssetDefinitionGovernanceOwnerViewModel();
+                this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 break;
             case 3:
                 //handle predicate 
@@ -398,7 +441,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         //remove the form controls 
         this.metricForm.removeControl("updateFrequency");
         this.metricForm.removeControl("instructionString");
-
+        this.metricForm.removeControl("ResponsibilityTypeUid");
+        this.metricForm.removeControl("ResponsibilityTypeOperator");
+        
         //clear conditions
         this.testFieldConditions = [];
 
