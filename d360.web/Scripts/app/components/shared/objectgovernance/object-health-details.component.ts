@@ -169,7 +169,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 threshold: null
                             },
                             series: {
-                                cursor: 'pointer',
+                                cursor: 'pointer',                                
+                                step: 'right',                                
                                 point: {
                                     events: {
                                         click: e => {
