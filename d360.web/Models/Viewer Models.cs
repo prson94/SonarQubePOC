@@ -163,13 +163,6 @@ namespace d360.web.Models
 
     public class FieldLoader
     {
-        public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, Dictionary<string,string> fields, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)
-        {
-            var FieldsCollection = fields.Aggregate(new NameValueCollection(), (a, b) => { a.Add(b.Key, b.Value); return a; });
-
-            return GetFormDynamicFieldValues(type, id, fieldTypes, new FormCollection(FieldsCollection), Server, ignoreFieldIfNull);
-        }
-
         public List<Field> GetFormDynamicFieldValues(SystemObjects type, int id, ICollection<FieldType> fieldTypes, FormCollection form, HttpServerUtilityBase Server = null, bool ignoreFieldIfNull = true)
         {
             var fields = new List<Field>();
