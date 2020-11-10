@@ -3,6 +3,7 @@
 
 .ig-tooltip {
     z-index: 100000 !important;
+    max-width: 400px;
 
     .ui-tooltip-arrow {
         display: none;
@@ -10,13 +11,9 @@
 
     .ui-tooltip-text {
         background-color: white;
-        color: black;
+        color: @ig-black;
         padding: 8px;
         border-radius: 4px;
         box-shadow: @ig-box-shadow;
-    }
-
-    &.ig-tooltip-medium {
-        min-width: 490px;
     }
 }

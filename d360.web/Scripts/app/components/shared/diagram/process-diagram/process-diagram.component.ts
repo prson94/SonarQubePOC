@@ -107,11 +107,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     public popupMenuItems = [
         {
-            title: 'Export to excel',
+            title: 'Export to Excel',
             callback: () => this.doControlledAction('export')
         },
         {
-            title: 'Replace diagram',
+            title: 'Replace Diagram',
             callback: () => this.doControlledAction('open-diagram-replace'),
             disabled: true
         }
@@ -154,7 +154,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
-        this.loadAssetsForImport();
 
         this.processService.getProcessDiagramColors(this.assetUid)
             .subscribe(colors => {
@@ -690,6 +689,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.handleFocusKey();
 
                 this.cdRef.detectChanges();
+                this.loadAssetsForImport();
+
             });
     }
 
@@ -1124,14 +1125,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private loadAssetsForImport() {
         if (!this.areImportAssetsLoaded) {
             this.processService.getImportOptions(this.assetUid).subscribe(res => {
-                this.importAssets = res;
+                this.importAssets = res;          
                 this.areImportAssetsLoaded = true;
                 if (this.importAssets && this.importAssets.length > 0) {
                     delete this.popupMenuItems[1]['tooltip'];
                     delete this.popupMenuItems[1]['disabled'];
                 }
                 else {
-                    this.popupMenuItems[1]['tooltip'] = `There are currently no other assets of this type to import a diagram from.`;
+                    this.popupMenuItems[1]['tooltip'] = `There are currently no other assets of type ${this.assetDetail?.TypeName} to import a diagram from.`;
                 }
                 this.cdRef.detectChanges();
             })
