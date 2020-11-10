@@ -6,10 +6,10 @@ import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { OperatorModel, Operator } from '../../../models/operator.model';
-import { FormGroup, FormBuilder, FormControl, } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
-import { FieldTypeHelper, FieldType } from '../../../models/fieldtype-api.model';
+import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models/field-condition-grid.models';
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
@@ -122,10 +122,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     ngOnInit() {
         this.metricForm = this.fb.group({
-            name: null,
+            name: ['', [Validators.required, this.isEmptyString()]],
             description: null,
             effectiveDate: null,
-            weight: null,
+            weight: ['', [this.isValidWeight()]],
             isGroup: null,
             matchType: null,
             check: null
@@ -251,7 +251,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) {
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
-            dummyConditionGroup.MatchType = "All"; 
+            dummyConditionGroup.MatchType = "All";
             this.model.ConditionGroups.push(dummyConditionGroup);
         }
 
@@ -540,5 +540,33 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     private onResize(event) {
         this.maxHeight = window.innerHeight - 240;
         this.cdRef.markForCheck();
+    }
+
+
+    isEmptyString(): ValidatorFn {
+        type NewType = AbstractControl;
+
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null)
+                return {};
+            if ((control.value as string).trim() == '' && (control.value as string) != '')
+                return {
+                    empty: { value: control.value }
+                };
+            return null;
+        };
+    }
+
+    isValidWeight(): ValidatorFn {
+        type NewType = AbstractControl;
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null || control.value == undefined)
+                return {};
+            if ((control.value as number) < 1 || (control.value as number) > 100)
+                return {
+                    outOfRange: { value: control.value }
+                };
+            return null;
+        };
     }
 };

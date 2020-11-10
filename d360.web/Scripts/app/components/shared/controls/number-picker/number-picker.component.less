@@ -61,23 +61,18 @@ ig-number-input {
         }
     }
 
-    &.ng-dirty.ng-invalid,
-    &.ng-touched.ng-invalid {
-        .ig-number-field {
-            background: @ig-red-t5;
-            border-color: none;
-
-            &:required:invalid {
-                background: @ig-lightblue-t4;
-                border-color: @ig-field-border-color;
-            }
-        }
-    }
-
     &.ng-invalid[required], .ng-invalid.required {
         .ig-number-field {
             background: @ig-lightblue-t4;
             border-color: @ig-field-border-color;
+        }
+    }
+
+    &.ng-dirty.ng-invalid,
+    &.ng-touched.ng-invalid {
+        .ig-number-field.value-set {
+            background: @ig-red-t5;
+            border-color: none;
         }
     }
 }
