@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject} from 'rxjs';
-import { WorkflowChangeType, NodeModel } from '../models/workflow.model';
+import { WorkflowChangeType, NodeModel, EmailTaskRecipientType } from '../models/workflow.model';
 
 
 @Injectable()
@@ -16,6 +16,77 @@ export class WorkflowFieldsService {
     private formFields: any[] = [];
     private usedFields: any[] = [];
 
+    private conditionOperators = [
+        { value: '=', label: '=' },
+        { value: '!=', label: '!=' },
+        { value: '>', label: '>' },
+        { value: '<', label: '<' },
+        { value: '>=', label: '>=' },
+        { value: '<=', label: '<=' },
+        { value: 'C', label: 'value changed' },
+        { value: 'P', label: 'is populated' },
+        { value: 'NP', label: 'is not populated' },
+    ];
+
+    private scoreTypes: any[] = [];
+    private recipientTypes: EmailTaskRecipientType[] = [];
+    private contextualFields: any[] = [];
+
+    private objectType: string;
+    private objectId: number;
+    private changeType: WorkflowChangeType;
+
+
+    setWorkflow(objectType: string, objectId: number, changeType: WorkflowChangeType) {
+        this.objectType = objectType;
+        this.objectId = objectId;
+        this.changeType = changeType;
+
+        this.contextualFields = [];
+        this.scoreTypes = [];
+
+        if (this.changeType == WorkflowChangeType.ScoreUpdate) {
+
+            let ix = this.conditionOperators.findIndex(c => c.value == 'C');
+            if (ix > -1) {
+                this.conditionOperators.splice(ix, 1);
+            }
+        }
+
+        if (this.objectType == 'ShoppingCartType') {
+            this.contextualFields.push({
+                value: 'Contextual|RequestedOn',
+                label: 'Requested On',
+                type: 'date'
+            });
+        }
+
+    }
+
+    getConditionOperators() {
+        return this.conditionOperators;
+    }
+
+    getRecipientTypes() {
+        return this.recipientTypes;
+    }
+
+    getScoreTypes() {
+        return this.scoreTypes;
+    }
+
+    setAvailableScoreTypes(scoreTypes: any[]) {
+        this.scoreTypes = scoreTypes;
+        if (this.changeType == WorkflowChangeType.ScoreUpdate) {
+            this.scoreTypes.forEach(s => {
+                this.contextualFields.push({
+                    value: 'Contextual|Score|' + s.value,
+                    label: s.label + ' (System Field)',
+                    type: 'number'
+                });
+            });
+        }
+    }
 
     pushUsedField(fieldId: string, stepId: string, transitionId: string, transitionName: string) {
         this.usedFields.push({ fieldId: fieldId, stepId: stepId, transitionId: transitionId, transitionName: transitionName });
@@ -130,34 +201,8 @@ export class WorkflowFieldsService {
         }
     }
 
-    getContextualFieldsForType(changeType: WorkflowChangeType, objectType: string) {
-        let fields = [];
-        switch (changeType) {
-            case WorkflowChangeType.ScoreUpdate:
-                fields.push({
-                    value: 'Contextual|score|1',
-                    label: 'Governance Score (System Field)',
-                    type: 'number'
-                });
-                fields.push({
-                    value: 'Contextual|score|2',
-                    label: 'Data Quality Score (System Field)',
-                    type: 'number'
-                });
-                break;
-        }
+    getContextualFieldsForType() {
+        return this.contextualFields;
 
-        switch (objectType) {
-            case 'ShoppingCartType':
-                fields.push({
-                    value: 'Contextual|RequestedOn',
-                    label: 'Requested On',
-                    type: 'date'
-                });
-                break;
-
-        }
-
-        return fields;
     }
 }

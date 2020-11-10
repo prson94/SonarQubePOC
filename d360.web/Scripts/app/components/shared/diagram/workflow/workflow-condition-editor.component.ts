@@ -37,17 +37,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     private selectedIssueObject = null;
     private suggestions = [];
 
-    private operators = [
-        { value: '=', label: '=' },
-        { value: '!=', label: '!=' },
-        { value: '>', label: '>' },
-        { value: '<', label: '<' },
-        { value: '>=', label: '>=' },
-        { value: '<=', label: '<=' },
-        { value: 'C', label: 'value changed' },
-        { value: 'P', label: 'is populated' },
-        { value: 'NP', label: 'is not populated' },
-    ];
+    private operators = [];
+    private allowedOperators = [];
+
 
     private bool = [
         { value: 'true', label: 'True' },
@@ -56,6 +48,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
     constructor(private workflowService: WorkflowService, private workflowFieldsService: WorkflowFieldsService) {
         super();
+        this.allowedOperators = this.workflowFieldsService.getConditionOperators();
+        this.operators = this.allowedOperators;
     }
 
     ngOnInit() {
@@ -156,7 +150,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadContextualFields() {
-        this.contextualFields = this.workflowFieldsService.getContextualFieldsForType(+this.changeType, this.objectType);
+        this.contextualFields = this.workflowFieldsService.getContextualFieldsForType();
         if (this.contextualFields.length > 0) {
             this.contextualFields.forEach(f => {
                 this.fieldList.push({
@@ -248,6 +242,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@FieldName'] = 'Form :: ' + input['@label']
 
         } else if (this.selectedField.split('|')[0] == 'Contextual') {
+            let fieldId = this.selectedField.split('|')[1];
             let special = this.contextualFields.find(s => s.value == this.selectedField);
             this.selectedType = special.type.toLowerCase();
 
@@ -260,9 +255,13 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@Operator'];
             delete this.condition['@Value'];
 
-            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
+            if (fieldId.toLowerCase() == 'score') {
+                this.condition['@ContextualFieldID'] = fieldId + '|' + this.selectedField.split('|')[2];
+            } else {
+                this.condition['@ContextualFieldID'] = fieldId;
+            }
 
-            this.condition['@ContextualFieldID'] = this.selectedField.split('|')[1];
+            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
             this.condition['@FieldName'] = special.label;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
 
@@ -292,18 +291,16 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     setOperators(type: string = '', fieldType: string = '') {
+        let ops = [];
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
             case 'list':            
             case 'text':
-                this.operators = [
-                    { value: '=', label: '=' },
-                    { value: '!=', label: '!=' },
-                ];
+                ops.push('=');
+                ops.push('!=');
                 break;
             case 'html':
-                this.operators = [ ];
                 break;
             case 'decimal':
             case 'number':
@@ -311,23 +308,29 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'date':
             case 'datetime':
             default:
-                this.operators = [
-                    { value: '=', label: '=' },
-                    { value: '!=', label: '!=' },
-                    { value: '>', label: '>' },
-                    { value: '<', label: '<' },
-                    { value: '>=', label: '>=' },
-                    { value: '<=', label: '<=' },
-                ];
+                ops.push('=');
+                ops.push('!=');
+                ops.push('>');
+                ops.push('<');
+                ops.push('>=');
+                ops.push('<=');
                 break;
         }
 
         //only supporting fields at the moment
         if (fieldType == 'FieldType') {
-            this.operators.push({ value: 'C', label: 'value changed' });
-            this.operators.push({ value: 'P', label: 'is populated' });
-            this.operators.push({ value: 'NP', label: 'is not populated' });
+            ops.push('C');
+            ops.push('P');
+            ops.push('NP');
         }
+
+        this.operators = [];
+        ops.forEach(o => {
+            let ix = this.allowedOperators.findIndex(a => a.value == o);
+            if (ix > -1) {
+                this.operators.push(this.allowedOperators[ix]);
+            }
+        })
     }
 
     getValueType(type: string): string {

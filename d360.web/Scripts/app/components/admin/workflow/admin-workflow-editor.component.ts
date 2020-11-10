@@ -143,6 +143,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         this.objectID = this.model.Event.ObjectID;
                         this.objectType = this.model.Event.Object;
 
+                        this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
                         if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                             let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
@@ -166,16 +167,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                 c.forEach(f => f['@FieldName'] = t.FriendlyName);
                         });
                     }))))
-            .pipe(concatMap(() => of(
-                //apply names to contextual fields
-                this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
-                    let cx = this.workflowFieldsService
-                        .getContextualFieldsForType(this.model.Event.ChangeType, this.model.Event.Object)
-                        .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
-                    if (cx != null)
-                        c['@FieldName'] = cx.label;
-                })
-            )))
+
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
@@ -201,6 +193,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             this.workflowService.getScoreTypes(this.objectID, this.objectType)
                                 .subscribe(res => {
                                     this.scoreTypes = res;
+                                    this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
                                     let scoreIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'ScoreType');
 
                                     if (scoreIndex > -1) {
@@ -212,6 +205,17 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         }
 
                     }))))
+            .pipe(concatMap(() => of(
+                //apply names to contextual fields
+
+                this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
+                    let cx = this.workflowFieldsService
+                        .getContextualFieldsForType()
+                        .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
+                    if (cx != null)
+                        c['@FieldName'] = cx.label;
+                })
+            )))
             .pipe(concatMap(() => of(() => {
                 this.loadResponsibilities();
             })))
@@ -402,7 +406,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             if (c['@ContextualFieldID'] != null && this.excludedContextualFields.indexOf(c['@ContextualFieldID']) != -1)
                 return;
 
-            if (c['@FieldName'] == null) {
+            if (c['@FieldName'] == null && c['@ContextualFieldID'] == null) {
                 this.errorMessage = "One or more conditions is not valid.";
                 this.isValid = false;
                 return;

@@ -110,10 +110,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                         if ((this.ChangeType == WorkflowChangeType.Add) && !(this.objectType == 'IssueType'))
                             return;
 
-                        if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType'))
-                        {
-                            if (this.issueObject != null && this.issueObject != '')
-                            {
+                        if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType')) {
+                            if (this.issueObject != null && this.issueObject != '') {
                                 let objArr = this.issueObject.split("|", 1);
                                 let Issobj = "";
                                 if (objArr.length <= 0)
@@ -124,7 +122,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                                 if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
                                     return;
                             }
-                         }
+                        }
+                    }
+                    else if (e.ID == EmailTaskRecipientType.Initiator) {
+                        if (this.ChangeType == WorkflowChangeType.ScoreUpdate)
+                            return;
                     }
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],

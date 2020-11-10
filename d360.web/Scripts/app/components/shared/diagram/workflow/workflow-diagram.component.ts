@@ -502,10 +502,21 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 concatMap(() => of(this.initializePalette())),
                 concatMap(() => of(this.initializeFormFields())),
                 concatMap(() => of(this.getObjectName())),
+                concatMap(() => of(this.setWorkflowFields())),
             concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
             ).subscribe();
     }
 
+    private setWorkflowFields() {
+        this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
+
+        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
+            this.workflowService.getScoreTypes(this.model.Event.ObjectID, this.model.Event.Object)
+                .subscribe(res => {
+                    this.workflowFieldsService.setAvailableScoreTypes(res);
+                });
+        }
+    }
 
     //#endregion
 

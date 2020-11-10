@@ -11,6 +11,7 @@ import {
     EmailTaskRecipientType,
     NodeSettings,
     NodeFields,
+    WorkflowChangeType,
 } from '../../../../models/workflow.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -31,6 +32,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() issueObject: string;
     @Input() httpFields: any[] = [];
+    @Input() workflowChangeType: WorkflowChangeType;
     @Output() stepChange = new EventEmitter();
     @ViewChild('ed', { static: false }) ed: Editor;
     @ViewChild('fed', { static: false }) fed: Editor;
@@ -106,11 +108,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                         GroupList
                     ]
                 ) => {
-                    /* EmailTaskRecipientList */
                     EmailTaskRecipientList.forEach(e => {
                         if (e.ID < 1)
                             return;
                         else if (e.ID == EmailTaskRecipientType.Followers)
+                            return;
+                        else if (e.ID == EmailTaskRecipientType.Initiator && this.workflowChangeType == WorkflowChangeType.ScoreUpdate)
                             return;
                         this.destination.push({
                             value: EmailTaskRecipientType[e.ID],
