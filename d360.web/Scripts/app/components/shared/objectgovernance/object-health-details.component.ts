@@ -200,7 +200,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             borderWidth: 2
                         },
                         series: [{
-                         //   type: 'area',
+                            type: 'line',
                             name: 'Governance Score',
                             marker: {
                                 enabled: false,
