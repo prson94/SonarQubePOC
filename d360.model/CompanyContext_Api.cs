@@ -1459,6 +1459,11 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Lookup":
+                                    if(fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} does not allow selection of multiple values");
+                                    }
                                     break;
                                 case "Number":
                                     if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
