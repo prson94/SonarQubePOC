@@ -653,6 +653,7 @@ for json path";
         /// Deletes a workflow action type
         /// </summary>
         /// <param name="actionTypeUid">Uid of the action type to be deleted</param>
+        /// <param name="model">Request body containing cascade flag</param>
         [
             Route("type/{actionTypeUid:Guid}"),
             HttpDelete,
@@ -1061,7 +1062,7 @@ for json path";
                 string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
                 var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddAllocationsSuccessful));
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful));
             }
             catch (Exception ex)
             {

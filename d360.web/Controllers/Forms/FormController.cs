@@ -259,6 +259,9 @@ namespace d360.web.Controllers
                 case "EXPORTTEMPLATE":
                     objectId = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.Uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
+                case "ISSUETYPE":
+                    objectId = Company.IssueTypes.FirstOrDefault(x => x.uid == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
                 default:
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
                     {
@@ -383,9 +386,15 @@ namespace d360.web.Controllers
                     if (issueType != null)
                         return DynamicEditorAddFields(SystemObjects.Issue.ToString(), issueType.ID, null, null);
                     else
+                        throw new Exception("No Issue Type found for given Guid");                              
+                } else if (objectType == SystemObjects.IssueTypeRelation.ToString())
+                {
+                    var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);                    
+                    if (issueType != null)
+                        return DynamicEditorAddFields(SystemObjects.IssueTypeRelation.ToString(), issueType.ID, null, null);
+                    else
                         throw new Exception("No Issue Type found for given Guid");
-                }
-                else
+                }else 
                 {
                     var asset = Company.AssetTypes.FirstOrDefault(x => x.uid == guid);
                     if (asset != null)
@@ -544,8 +553,6 @@ namespace d360.web.Controllers
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
                     return EditIntersectType(form);
-                case "ISSUETYPE":
-                    return EditIssueType(form);
                 case "MAP":
                     return EditMap(form);                
                 case "NAMESPACE":
@@ -602,9 +609,7 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     IntersectType intersectType = Company.GetById<IntersectType>(objectID);
                     form.Add("IntersectTypeUid", intersectType.uid.ToString());
-                    return DeleteIntersectType(form);
-                case "ISSUETYPE":
-                    return DeleteIssueType(form);
+                    return DeleteIntersectType(form);                
                 case "LINEAGEMAPPING":
                     return DeleteLineageMapping(form);
                 case "NAMESPACE":
@@ -667,10 +672,6 @@ namespace d360.web.Controllers
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
                     return AddIntersectType(form);
-                case "ISSUETYPE":
-                    return AddIssueType(form);
-                case "ISSUETYPERELATION":
-                    return AddIssueTypeRelation(form);
                case "MAP":
                     return AddMap(form);                
                 case "NAMESPACE":

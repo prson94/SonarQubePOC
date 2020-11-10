@@ -4,6 +4,7 @@ import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-issue-type-allocation',
@@ -17,29 +18,29 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <div [ngSwitch]="formMode">
                             <div *ngSwitchCase="FormMode.Default" class="col s12">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName','TypeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
+                                <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName','Path']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 150px" [pSortableColumn]="'ClassName'">
                                                 Class
                                                 <d3s-sortIcon [field]="'ClassName'"></d3s-sortIcon>
                                             </th>
-                                            <th [pSortableColumn]="'TypeName'">
+                                            <th [pSortableColumn]="'Path'">
                                                 Object Name
-                                                <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
+                                                <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                             </th>
                                             <th style="width: 40px"></th>
                                         </tr>
                                         <tr [hidden]="showSimpleFilter">
                                             <th><d3s-column-filter [field]="'ClassName'" [datatype]="'text'"></d3s-column-filter></th>
-                                            <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'Path'" [datatype]="'text'"></d3s-column-filter></th>
                                             <th></th>
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item>
                                         <tr [pSelectableRow]="item">
                                             <td>{{item.ClassName}}</td>
-                                            <td>{{item.TypeName}}</td>
+                                            <td>{{item.Path}}</td>
                                             <td>
                                                 <div class="RowTools">
                                                     <a style="cursor:pointer;" (click)="selection = item; formMode = FormMode.Deleting"><i class="fa fa-trash-o"></i></a>
@@ -54,8 +55,9 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             </div>
                             <div *ngSwitchCase="FormMode.Adding" class="col s12">
                                 <d3s-dynamic-editor 
-                                    objectType="IssueTypeRelation" 
-                                    [objectID]="issueTypeId" 
+                                    objectType="IssueTypeRelation"                                     
+                                    [objectTypeUid] = "issueTypeUid"
+                                    [useTypeUidForDefinition]="true"
                                     title="Issue Type Allocation"  
                                     (saveClick)="save($event)" 
                                     (closeClick)="formMode = FormMode.Default">
@@ -77,7 +79,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class AdminIssueTypeAllocationComponent extends BaseComponent implements OnChanges {
-    @Input() issueTypeId: number;
+    @Input() issueTypeUid: string;
+    assetTypeClass = AssetTypeClass;
     formMode = FormMode.Default;
     FormMode = FormMode;
     allocations = [];
@@ -90,28 +93,28 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['issueTypeId'].currentValue != changes['issueTypeId'].previousValue || changes['issueTypeId'].isFirstChange) {
+        if (changes['issueTypeUid'].currentValue != changes['issueTypeUid'].previousValue || changes['issueTypeUid'].isFirstChange) {
             this.formMode = FormMode.Default;
             this.load();
         }
     }
 
     load() {
-        if (this.issueTypeId == null) {
+        if (this.issueTypeUid == null) {
             this.allocations = [];
             return;
         }
         this.isLoading = true;
-        this.workflowService.getIssueTypeAllocations(this.issueTypeId)
+        this.workflowService.getIssueTypeAllocations(this.issueTypeUid)
             .subscribe(r => {
-                this.allocations = r.Allocations;
+                this.allocations = r;
                 this.isLoading = false;
             });
     }
 
     save(e: any) {
         this.isLoading = true;
-        this.workflowService.postIssueTypeAllocation(e.item)
+        this.workflowService.postIssueTypeAllocation(this.issueTypeUid, e.item)
             .subscribe(r => {
                 this.formMode = FormMode.Default;
                 this.isLoading = false;
@@ -126,7 +129,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
 
     delete() {
         this.isLoading = true;
-        this.workflowService.deleteIssueTypeAllocation(this.issueTypeId, this.selection.AssetTypeID)
+        this.workflowService.deleteIssueTypeAllocation(this.issueTypeUid, this.selection.AssetTypeUid)
             .subscribe(r => {
                 this.isLoading = false;
                 this.formMode = FormMode.Default;
