@@ -267,6 +267,18 @@ namespace d360.model.validators
                     }
                 }
 
+                if (field?.Type?.Boolean != null)
+                {
+                    if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsListable == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsListable parameter value must be false for boolean type field defined for action type!");
+                    }
+                    if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!");
+                    }
+                }
+
                 #region Type Min/Max
 
                 if (field?.Type?.Text != null)
@@ -313,18 +325,6 @@ namespace d360.model.validators
                     if (!FieldLengthValue(field.Type.Decimal.Validation, out string validationErrorMsg, field.Type.Decimal.DefaultValue))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
-                    }
-                }
-
-                if (field?.Type?.Boolean != null)
-                {
-                    if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsListable == true)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsListable parameter value must be false for boolean type field defined for action type!");
-                    }
-                    if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!");
                     }
                 }
 
