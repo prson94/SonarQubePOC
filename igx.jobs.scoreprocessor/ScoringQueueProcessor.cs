@@ -46,6 +46,9 @@ namespace igx.jobs.scoreprocessor
                     case ScoreQueueChangeType.AssetMeasures:
                         process = new AssetMeasuresProcess();
                         break;
+                    case ScoreQueueChangeType.CheckTypeDependencyRemoved:
+                        process = new CheckTypeDependencyRemovedProcess();
+                        break;
                     case ScoreQueueChangeType.ExternalMeasureResultsCreated:
                         process = new ExternalMeasureResultsCreatedProcess();
                         break;

@@ -525,6 +525,14 @@ from	metrics.Asset A
                                         case ScoreType.Governance:
                                             #region
                                             var gDefinition = definition.Governance;
+                                            if (gDefinition == null)
+                                            {
+                                                gDefinition = new MetricAssetDefinitionGovernanceViewModel
+                                                {
+                                                    Check = MetricGovernanceCheckType.External,
+                                                    External = new MetricAssetDefinitionGovernanceExternalViewModel { UpdateFrequency = MetricUpdateFrequency.None }
+                                                };
+                                            }
                                             switch (gDefinition.Check)
                                             {
                                                 case MetricGovernanceCheckType.External:
@@ -553,7 +561,7 @@ from	metrics.Asset A
                                                                     var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
                                                                     if (assetDetail != null)
                                                                     {
-                                                                        value = assetDetail.uid.ToString();
+                                                                        value = assetDetail.ObjectID.ToString();
                                                                     }
                                                                 }
                                                             }

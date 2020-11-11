@@ -20,6 +20,7 @@ using d360.core;
 using System.Data;
 using Resources;
 using d360.core.enums;
+using System.Web;
 
 namespace d360.web.Controllers.V2
 {
@@ -72,10 +73,10 @@ namespace d360.web.Controllers.V2
             };
             List<string> queries = new List<string>();
             List<string> fieldJoins = new List<string>() {
-                "inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID",
+                "inner join [dbo].[IssueType] IT on IT.ID = I.IssueTypeID",
                 "left join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID",
-                "left join[reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
-                "left join[reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
+                "left join [reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
+                "left join [reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
             };
 
             DynamicParameters dbArgs = new DynamicParameters();
@@ -653,6 +654,7 @@ for json path";
         /// Deletes a workflow action type
         /// </summary>
         /// <param name="actionTypeUid">Uid of the action type to be deleted</param>
+        /// <param name="model">Request body containing cascade flag</param>
         [
             Route("type/{actionTypeUid:Guid}"),
             HttpDelete,
@@ -948,7 +950,7 @@ for json path";
         private WorkHttpStatus PopulateRequest(List<ActionUpsertRequest> models, ref List<IssueInsertAPIModel> issues, IssueType issueType, bool lookupFieldsPassedByValue = false)
         {
             foreach (var model in models)
-            {                           
+            {
                 var validationStatus = ValidateRequest(issueType, model, out Asset asset, out AssetType assetType, lookupFieldsPassedByValue);
 
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
@@ -973,19 +975,77 @@ for json path";
                     issue.ObjectType = asset.AssetType.Object;
                     issue.ObjectTypeID = asset.AssetType.ObjectID;
                 }
-                else if(assetType != null){
+                else if (assetType != null)
+                {
                     issue.Object = assetType.Object;
                     issue.ObjectID = assetType.ObjectID;
                     issue.ObjectType = assetType.Object;
                     issue.ObjectTypeID = assetType.ObjectID;
-                }                
+                }
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Issue, issue.ID, Company.GetFieldTypesByObject(SystemObjects.IssueType, issueType.ID).ToList(), model.Fields, null);
+                var fields = PopulateActionFields(issueType.ID,issue.ID, model.Fields);
 
                 issues.Add(new IssueInsertAPIModel { Issue = issue, fields = fields, Comment = model.Fields.ContainsKey("ProblemDesc") ? model.Fields["ProblemDesc"] : null });
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        private List<Field> PopulateActionFields(int issueTypeId, int issueId, Dictionary<string, string> fields)
+        {
+            var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.IssueType, issueTypeId).ToList();
+
+            var fieldList = new List<Field>();
+
+            foreach (var ft in fieldTypes)
+            {
+                if (ft.Type != DataType.ComplexRelationLookup.ToString())
+                {
+                    string value = "";
+
+                    if (fields.ContainsKey(ft.Name))
+                    {
+                        switch (ft.Type)
+                        {
+                            case "Boolean":
+                                value = fields[ft.Name];
+                                value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
+                                break;
+                            case "Html":
+                                value = HttpUtility.HtmlDecode(fields[ft.Name]);
+                                break;
+                            case "Date":
+                                var stringDate = fields[ft.Name];
+                                DateTime dateVal = DateTime.MinValue;
+                                //throw out any time piece sent in
+                                if (DateTime.TryParse(stringDate, out dateVal))
+                                {
+                                    value = dateVal.ToShortDateString();
+                                }
+                                break;
+                            case "DateTime":
+                                var stringDateTime = fields[ft.Name];
+                                DateTime dateTimeVal = DateTime.MinValue;
+                                if (DateTime.TryParse(stringDateTime, out dateTimeVal))
+                                {
+                                    value = dateTimeVal.ToString("s");
+                                }
+                                break;
+                            case "Relationship":
+                                break;
+                            default:
+                                value = fields[ft.Name];
+                                break;
+                        }
+
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            fieldList.Add(new Field { FieldTypeID = ft.ID, ObjectID = issueId, ObjectType = SystemObjects.Issue.ToString(), Value = value });
+                        }
+                    }
+                }                
+            }
+            return fieldList;
         }
 
         private bool IsWriteActionDescriptionEnabled()
@@ -1061,7 +1121,7 @@ for json path";
                 string allocationsSQL = "INSERT INTO IssueTypeRelation (AssetTypeID, IssueTypeID) VALUES (@AssetTypeID, @IssueTypeID)";
                 var res = await Company.Database.Connection.ExecuteAsync(allocationsSQL, allocations);
 
-                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ActionApiMessages.AddAllocationsSuccessful));
+                return await Task.FromResult(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, allocations?.Count == 1 ? ActionApiMessages.AddSingleAllocationSuccessful : ActionApiMessages.AddAllocationsSuccessful));
             }
             catch (Exception ex)
             {

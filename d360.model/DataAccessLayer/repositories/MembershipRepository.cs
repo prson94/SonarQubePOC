@@ -164,7 +164,7 @@ namespace d360.model.DataAccessLayer
                 return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) deleted successfully");
+            return new WorkHttpStatus(HttpStatusCode.OK, "Success", "User(s) successfully deleted");
         }
         public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users, bool lookupFieldsPassedByValue = false, bool isInsert = false, bool IsChangePasswordReqeust = false)
         {

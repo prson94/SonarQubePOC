@@ -198,11 +198,12 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_LineageHop @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin";
+                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
                     {
+                        ancestry = (int)hopModel.ancestry,
                         hopModel.hierarchyKey,
                         assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
                         preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),

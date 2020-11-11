@@ -2643,7 +2643,22 @@ namespace d360.model
             }
             if (result.Contains("[ASSET_PATH]"))
             {
-                var item = GetObjectDetail(obj.ToString(), objectID);
+
+                ObjectDetail item = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(obj.ToString(), objectID);
+                }
 
                 var path = item?.UID == null ? null : Query<string>(@"select graph.GetPath(AN.Segments, ' > ', ' / ') from graph.assetNode AN where AN.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 

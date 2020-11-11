@@ -731,3 +731,11 @@ export class ActionEditorModel {
     AssetTypeUid: string;
     Fields: any;
 }
+
+export class AllocationAPIModel {
+    AssetTypeUid: string;
+    Name: string;
+    Class: number;
+    Path: string;
+    ClassName: string;
+}

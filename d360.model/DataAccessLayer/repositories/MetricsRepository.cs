@@ -17,6 +17,8 @@ using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 using d360.core.exceptions;
 using System.Runtime.CompilerServices;
+using Microsoft.SqlServer.Server;
+using System.Configuration;
 
 namespace d360.model.DataAccessLayer
 {
@@ -264,8 +266,10 @@ namespace d360.model.DataAccessLayer
 
             Func<List<string>, string, string, int?, bool> checkValidValuesByDataType = delegate(List<string> values, string dataType, string lookupObject, int? lookupObjectID) {
                 var validForType = true;
-                values.ForEach(v =>
+                for (int ix = 0; ix < values.Count; ix++)
                 {
+                    string v = values[ix];
+
                     switch (dataType)
                     {
                         case "Date":
@@ -273,7 +277,7 @@ namespace d360.model.DataAccessLayer
                             DateTime tempDate;
                             if (DateTime.TryParse(v, out tempDate))
                             {
-                                v = tempDate.ToUniversalTime().ToShortDateString();
+                                values[ix] = tempDate.ToUniversalTime().ToString("yyyy-MM-ddT00:00:00.0000Z");
                             }
                             else
                             {
@@ -317,7 +321,7 @@ namespace d360.model.DataAccessLayer
                             }
                             break;
                     }
-                });
+                }
 
                 return validForType;
             };
@@ -1574,7 +1578,8 @@ from    metrics.Allocation  ma
                     			for		json path
                     		) as ConditionGroups,
                             VC.Count as [VersionCount],
-                            A.[State]
+                            A.[State],
+                            V.Definition as [DefinitionJson]
                             {endDateString}
                     from	metrics.Asset A
                     		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid

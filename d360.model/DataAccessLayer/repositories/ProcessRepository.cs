@@ -605,9 +605,10 @@ new
             if (addedAssets.Count > 0 || toDelete.Count > 0)
             {
 
-                List<DatabaseBulkAssetResult> graphResults = new List<DatabaseBulkAssetResult>();
+                List<DatabaseBulkAssetResult> assetResults = new List<DatabaseBulkAssetResult>();
+                List<DatabaseBulkAssetResult> intersectResults = new List<DatabaseBulkAssetResult>();
 
-                addedAssets.ForEach(uid => graphResults.Add(new DatabaseBulkAssetResult()
+                addedAssets.ForEach(uid => assetResults.Add(new DatabaseBulkAssetResult()
                 {
                     Success = true,
                     uid = uid,
@@ -628,7 +629,7 @@ new
 
                     intersectUids.ForEach(iuid =>
                     {
-                        graphResults.Add(new DatabaseBulkAssetResult()
+                        intersectResults.Add(new DatabaseBulkAssetResult()
                         {
                             Success = true,
                             uid = iuid,
@@ -637,7 +638,7 @@ new
                     });
                 }
 
-                toDelete.ForEach(delAsset => graphResults.Add(new DatabaseBulkAssetResult()
+                toDelete.ForEach(delAsset => assetResults.Add(new DatabaseBulkAssetResult()
                 {
                     Success = true,
                     uid = delAsset.AssetUid,
@@ -646,7 +647,8 @@ new
 
                 try
                 {
-                    Company.SendAssetGraphEvents(graphResults);
+                    Company.SendAssetGraphEvents(assetResults);
+                    Company.SendAssetGraphEvents(intersectResults, null, true);
                 }
                 catch
                 {

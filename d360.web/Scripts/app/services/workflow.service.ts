@@ -28,6 +28,7 @@ import {
     BulkWorkflowReassignModel,
     WorkflowTypeItem,
     ActionEditorModel,
+    AllocationAPIModel,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -39,6 +40,7 @@ import { DynamicGridResultsInData } from '../models/grid-definition.model';
 import { Observable,of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
+import { AssetTypeClass } from '../models/asset.model';
 
 @Injectable()
 export class WorkflowService extends BaseObservableService {
@@ -135,15 +137,36 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    deleteWorkflowIssueType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'ISSUETYPE', id);
+    deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
+
+        var model = { cascade: false };
+
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: model
+        };
+
+        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}`, httpHeaders)
+            .pipe(
+                map(response => <ApiResult & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    saveIssueType(issueType: WorkflowIssueType): Observable<JsonResult> {
-        if (issueType.ID == undefined || !issueType.ID) {
-            return this.postDynamic(this.http, 'issuetype', issueType);
+    saveIssueType(issueType: WorkflowIssueType): Observable<ApiResult & ErrorResponse> {
+        var model = { Uid: issueType.Uid, Name: issueType.Name, Description: issueType.Description };
+        if (issueType.Uid == undefined || !issueType.Uid) {            
+            return this.http.post(`/api/v2/actions/type/`, model)
+                .pipe(
+                    map(response => <ApiResult & ErrorResponse>response),
+                    catchError(err => this.handleError(err))
+                );  
         }
-        return this.putDynamic(this.http, 'issuetype', issueType);
+        return this.http.put(`/api/v2/actions/type/`, model)
+            .pipe(
+                map(response => <ApiResult & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );  
     }
 
     getIssueDetails(issueId: number): Observable<IssueInfo> {
@@ -569,37 +592,35 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getIssueTypeAllocations(issueTypeId: number) : Observable<any>{
-        return this.http.get(`api/issuetype/${issueTypeId}/allocations`)
+    getIssueTypeAllocations(actionTypeUid: string): Observable<AllocationAPIModel[]>{        
+        return this.http.get(`api/v2/actions/allocations/${actionTypeUid}`)
             .pipe(
-                map(response => response),
+                map(response => {
+                    let r = <AllocationAPIModel[]>response;                    
+                    r.forEach(x => x.ClassName = AssetTypeClass[x.Class])
+                    return r;
+                }),
                 catchError(err => this.handleError(err))
             );
     }
 
-    postIssueTypeAllocation(item: any): Observable<JsonResult> {
-        let values: any = {};
-
-        //takes the form and convert any array values to , separated string values
-        for (var p in item) {
-            if (item.hasOwnProperty(p)) {
-                if (Array.isArray(item[p])) {
-                    values[p] = item[p].join();
-                }
-                else {
-                    values[p] = item[p];
-                }
-            }
-        }
-        return this.postDynamic(this.http, 'IssueTypeRelation', values);
+    postIssueTypeAllocation(actionTypeUid: string, item: any): Observable<JsonResult> {
+        let assetTypeUids: any = [];
+        assetTypeUids.push(item.AssetTypeUid);        
+        return this.http.post(`/api/v2/actions/allocations/${actionTypeUid}`, assetTypeUids)
+            .pipe(
+                map(response => <ApiResult & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );  
     }
 
-    deleteIssueTypeAllocation(issueTypeId: number, assetTypeId: number):Observable<any> {
-        return this.http.delete(`form/DeleteIssueTypeRelation?issueTypeID=${issueTypeId}&assetTypeID=${assetTypeId}`)
+    deleteIssueTypeAllocation(actionTypeUid: string, assetTypeUid: string): Observable<JsonResult> {
+        
+        return this.http.delete(`/api/v2/actions/allocations/${actionTypeUid}/${assetTypeUid}`)
             .pipe(
-                map(response => response),
+                map(response => <ErrorResponse>response),
                 catchError(err => this.handleError(err))
-            );
+        );
     }
 
     clearLastExecutionDate(id: number, uid: string):Observable<any> {

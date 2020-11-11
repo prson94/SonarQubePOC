@@ -12,15 +12,17 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
-import { OperatorModel } from '../../../models/operator.model';
+import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { FormHelpers } from '../../../static/form-helpers';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
     templateUrl: 'admin-metric-details.component.html',
-    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService]
+    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService]
 })
 
 export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -36,12 +38,16 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
     operators: OperatorModel[];
+    formattedCheck: string = "";
 
+    CheckType = MetricGovernanceCheckType;
 
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
     showConditions: boolean;
     scoreData: any[];
     showDisabled: boolean = false;
+    showPassTest: boolean = false;
+    responsibilityTypes: any[] = [];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -52,6 +58,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
         private settingsService: CompanySettingsService,
+        private responsibilityService: ResponsibilityTypeService, 
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
@@ -75,6 +82,11 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
             this.settingsService.getOperators().subscribe(o => {
                 this.operators = o;
+            });
+            this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
+                if (data && data.length) {
+                    this.responsibilityTypes = data;
+                }
             });
         });
     }
@@ -186,6 +198,14 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             return false;
         }
     }
+    private hasPassTest(item: MetricAssetViewModel) {
+        if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {
+            this.formatDefinition();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     add() {
         if (this.metricList) {
@@ -218,11 +238,81 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     selectionChanged(event) {
         this.selectedMetric = event;
-        if (this.hasConditions(this.selectedMetric)) {
+
+        if (this.hasConditions(this.selectedMetric)) 
             this.showConditions = true;
-        }
-        else {
+        else 
             this.showConditions = false;
+
+        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup) 
+            this.showPassTest = true
+        else
+            this.showPassTest = false;
+
+        this.formatDefinition();
+    }
+
+    private formatDefinition() {
+        if (this.showPassTest && !this.selectedMetric.IsGroup) {
+            let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
+            switch (<any>gov.Check) {
+                case 'External':
+                    let instructions = (gov.External.Instructions) ? (' | Instruciton set: ' + gov.External.Instructions) : '';
+                    this.formattedCheck = "Updated: " + gov.External.UpdateFrequency + instructions;
+                    break;
+                case 'Field':
+                    let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
+                        ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
+                    let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
+                        ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
+                    let formattedValue = gov.Field.Values.join(", ");
+                    if (fieldType) {
+                        if (fieldType.Type == "Lookup") {
+                            let fieldValue = +gov.Field.Values[0] ?? -1;
+
+                            let lookupValues = fieldType.Values;
+                            formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
+                                ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+                        }
+                        if (fieldType.Type == "Date" || fieldType.Type == "Date") {
+                            let dateValues = [];
+                            gov.Field.Values.forEach(x => {
+                                let date = new Date(x);
+                                dateValues.push(date.toLocaleDateString());
+                            });
+                            formattedValue = dateValues.join(" and ");
+                        }
+                        this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
+                    } else {
+                        this.formattedCheck = "field not found";
+                    }
+
+
+                    break;
+                case 'Owner':
+                    let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
+                        ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
+                    let operatorString = "is assigned";
+                    if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
+                        operatorString = "is not assigned";
+                    }
+                    if (responsibilitytype) {
+                        this.formattedCheck = responsibilitytype.Name + " " + operatorString;
+                    } else {
+                        this.formattedCheck = "responsibility type not found";
+                    }
+                    break;
+                case this.CheckType.Predicate:
+                    break;
+                case 'Relation':
+                    break;
+                default:
+                    this.formattedCheck = "";
+                    break;
+
+            }
+        } else {
+            this.formattedCheck = "";
         }
     }
 }

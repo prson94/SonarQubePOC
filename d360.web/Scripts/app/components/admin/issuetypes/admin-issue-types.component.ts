@@ -67,10 +67,18 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                     </ng-template>
                                 </p-table>  
                             </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Action Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()" [objectTypeUid]="selected?.Uid"></d3s-dynamic-editor>     
+                            <d3s-dynamic-editor *ngIf="showEditor" 
+                                        [objectID]="selected?.ID"
+                                        [objectType]="'IssueType'"                                         
+                                        [title]="'Action Type'" 
+                                        [selection]="selected" 
+                                        (saveClick)="saveIssueType($event)" 
+                                        (closeClick)="closeEditor()"                                         
+                                        [objectTypeUid]="selected?.Uid">
+                            </d3s-dynamic-editor>     
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
+                                [itemUid]="selected?.Uid"
                                 [method]="'callback'"
                                 [prompt]="'Are you sure you want to delete the action type [' + [selected?.Name] + ']?'"                                         
                                 (onCancel)="showDelete=false;"
@@ -93,7 +101,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail"> 
-                                    <d3s-admin-issue-type-allocation [issueTypeId]="selected?.ID"></d3s-admin-issue-type-allocation>
+                                    <d3s-admin-issue-type-allocation [issueTypeUid]="selected?.Uid"></d3s-admin-issue-type-allocation>
                                 </div>
                             </div>
                         </div>
@@ -126,13 +134,13 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.clearSidebar();
     }   
 
-    private deleteIssueType(id: number) {
+    private deleteIssueType(uid: string) {
         this.isLoading = true;
-        this.workflowService.deleteWorkflowIssueType(id)
+        this.workflowService.deleteWorkflowIssueType(uid)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.issueTypes = this.issueTypes.filter(x => x.ID != id);
+                this.showMessageForApiResponse(this.messagesService, result);
+                if (result.Success) {
+                    this.issueTypes = this.issueTypes.filter(x => x.Uid != uid);
                 }
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.isLoading = false;
@@ -183,8 +191,8 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.workflowService.saveIssueType(event.item)
             .subscribe(result => {
                 this.isLoading = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
+                this.showMessageForApiResponse(this.messagesService, result);
+                if (result.Success) {
                     this.load();                    
                 }
                 this.showEditor = false;

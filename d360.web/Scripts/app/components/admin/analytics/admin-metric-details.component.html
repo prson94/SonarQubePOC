@@ -107,6 +107,55 @@
                         </div>
                     </div>
                 </div>
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest" class="measure-details-item">
+                    <div class="details-header">Pass Test</div>
+                    <div class="details-condition">
+                        <div [ngSwitch]="selectedMetric.Definition.Governance.Check">
+                            <div *ngSwitchCase="'External'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        <div>External: {{formattedCheck}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row row-margin" *ngSwitchCase="'Field'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        <div>Field: {{formattedCheck}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row row-margin" *ngSwitchCase="'Owner'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        Owner: {{formattedCheck}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row row-margin" *ngSwitchCase="'Predicate'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        Prediate
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row row-margin" *ngSwitchCase="'Relation'">
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        Relationship
+                                    </div>
+                                </div>
+                            </div>
+                            <ng-template ngSwitchDefault>
+                                <div class="condition-content">
+                                    <div class="condition-items">
+                                        default
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
                 <div class="measure-details-item">
                     <div class="details-header">UID</div>
                     <div class="details-content">{{selectedMetric?.Uid}}</div>
@@ -115,6 +164,6 @@
         </div>
     </div>
 </div>
-<d3s-modal *ngIf="data" title="Edit Score" additionalClasses="medium-dialog" [isVisible]="showEdit">
+<d3s-modal *ngIf="data" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
     <d3s-admin-allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="showEdit=false;"></d3s-admin-allocation-editor>
 </d3s-modal>

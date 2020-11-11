@@ -26,7 +26,7 @@ import { BaseComponent } from '../base.component';
 
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetEditorModel } from '../../../models/asset.model';
+import { AssetEditorModel, AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
@@ -174,7 +174,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         let id = (this.selection ? this.selection[this.rowID] : null);
 
         if (this.selection) {
-            if (this.objectType == 'IntersectType' || this.objectType == 'Predicate')
+            if (this.objectType == 'IntersectType' || this.objectType == 'Predicate' || this.objectType == 'IssueType')
                 id = this.selection.Uid;
 
             if (this.selection.uid)

@@ -15,7 +15,9 @@
     LessThan = 14,
     GreaterThanOrEquals = 15,
     In = 16,
-    NotIn = 17
+    NotIn = 17,
+    IsTrue = 18,
+    IsFalse = 19
 }
 export class OperatorDataTypeModel {
     ID: number;

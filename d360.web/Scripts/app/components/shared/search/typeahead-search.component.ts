@@ -3,6 +3,7 @@ import { TypeaheadSearchService } from '../../../services/typeahead-search.servi
 import { SearchResult } from '../../../models/search-result.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { SearchSession } from '../../search/search-session';
 import { SubscriptionLike as ISubscription, Subject } from 'rxjs';
 
 declare var CompanySettings;
@@ -110,6 +111,9 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     private navigateQuery(q: string) {
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
         let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${options ? options.join(',') : ''}`
+        if (!this.keepFilter) {
+            SearchSession.removeState(q);
+        }
         this.router.navigateByUrl(url);
     }
 

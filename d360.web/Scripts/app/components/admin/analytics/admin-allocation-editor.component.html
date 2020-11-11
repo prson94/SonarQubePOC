@@ -18,7 +18,7 @@
                 <div class="FieldName">
                     <span>Asset Type&nbsp;</span>
                 </div>
-                <p-dropdown igDropdown igSize="full" [disabled]="!selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false">
+                <p-dropdown igDropdown igSize="full" [disabled]="!selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false" (onChange)="hasModelChanged()">
                     <ng-template let-item pTemplate="selectedItem">
                         <span [innerHtml]="item.label"></span>
                     </ng-template>
@@ -40,8 +40,8 @@
                 <span>&nbsp;</span>
             </div>
             <div class="col s12 no-padding">
-                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled"></p-radioButton>
+                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()" (onClick)="hasModelChanged()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>
             </div>
             <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
                 Externally calculated scores require the score itself and measure results be passed in from an external provider. Measures for externally calculated scores are intended to provide context and information about the external score.
@@ -93,10 +93,10 @@
     </div>
     <br />
     <div class="action-bar">
-        <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
+        <button class="button" (click)="cancel()" [disabled]="savingInProgress">{{closeLabel}}</button>
         <span class="grow"></span>
-        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid">
-            {{savingInProgress ? '' : selection.uid ? 'Save' : 'Create'}}
+        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="(isEdit && !modelChanged) || savingInProgress || !selection.assetTypeUid">
+            {{savingInProgress ? '' : saveLabel}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>
