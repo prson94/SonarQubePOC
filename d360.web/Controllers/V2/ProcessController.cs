@@ -144,7 +144,7 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-            var assetDetail = Company.Query<dynamic>(@"select * from assetdetail ad where ad.uid = @assetUid", new { assetUid }).FirstOrDefault();
+            var assetDetail = Company.GetAssetDetail(asset.ID);
 
             var result = new { model, assetDetail };
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
