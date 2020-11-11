@@ -19,7 +19,7 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field, MetricGovernanceCheckType.Relation),
-            OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
+            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Lookup, DataType.Number, DataType.Text), 
             OperatorFieldTypeRequirements(false)
         ]
         Equals = 1,
@@ -87,7 +87,7 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime), 
+            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/), 
             OperatorFieldTypeRequirements(false)
         ]
         Before,
@@ -97,19 +97,18 @@ namespace d360.core.enums
             Description(""), 
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime), 
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/), 
             OperatorFieldTypeRequirements(false)
         ]
         After,
         [
-            //uncomment before the release
-            //NotYetUsed, 
+            NotYetUsed, 
             Name("is between"),
             EnumMember(Value = "Between"),
             Description(""), 
             OperatorValueCountRange(2, 2),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.Decimal, DataType.Number), 
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.Decimal, DataType.Number*/), 
             OperatorFieldTypeRequirements(false)
         ]
         Between,
@@ -174,8 +173,7 @@ namespace d360.core.enums
         ]
         GreaterThanOrEquals,
         [
-            //uncomment before the release
-            //NotYetUsed, 
+            NotYetUsed, 
             Name("in"),
             EnumMember(Value = "In"),
             Description(""), 
@@ -186,8 +184,7 @@ namespace d360.core.enums
             ]
         In,
         [
-            //uncomment before the release
-            //NotYetUsed, 
+            NotYetUsed, 
             Name("not in"),
             EnumMember(Value = "NotIn"),
             Description(""), 
@@ -222,22 +219,24 @@ namespace d360.core.enums
         ]
         IsFalse,
         [
+            NotYetUsed,
             Name("is on or before"),
             EnumMember(Value = "OnOrBefore"),
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
             OperatorFieldTypeRequirements(false)
         ]
         OnOrBefore,
         [
+            NotYetUsed,
             Name("is on or after"),
             EnumMember(Value = "OnOrAfter"),
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date, DataType.DateTime),
+            OperatorAllowedDataTypes(DataType.Date/*, DataType.DateTime*/),
             OperatorFieldTypeRequirements(false)
         ]
         OnOrAfter
