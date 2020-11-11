@@ -16,13 +16,14 @@ import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionI
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { FormHelpers } from '../../../static/form-helpers';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { clear } from 'console';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
     templateUrl: 'admin-metric-details.component.html',
-    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService]
+    providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
 })
 
 export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
@@ -48,6 +49,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     showDisabled: boolean = false;
     showPassTest: boolean = false;
     responsibilityTypes: any[] = [];
+    relationshipTypes: any[] = [];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -58,7 +60,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         private allocationService: AllocationService,
         private assetTypeService: AssetTypeService,
         private settingsService: CompanySettingsService,
-        private responsibilityService: ResponsibilityTypeService, 
+        private responsibilityService: ResponsibilityTypeService,
+        private relationshipService: RelationshipsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
@@ -86,6 +89,11 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
                     this.responsibilityTypes = data;
+                }
+            });
+            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
+                if (data && data.length) {
+                    this.relationshipTypes = data;
                 }
             });
         });
@@ -257,8 +265,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
             switch (<any>gov.Check) {
                 case 'External':
-                    let instructions = (gov.External.Instructions) ? (' | Instruciton set: ' + gov.External.Instructions) : '';
-                    this.formattedCheck = "Updated: " + gov.External.UpdateFrequency + instructions;
+                    this.formattedCheck = (gov.External.Instructions) ? (' Instruciton set: ' + gov.External.Instructions) : '';
                     break;
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
@@ -291,7 +298,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     break;
                 case 'Owner':
                     let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
-                        ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
+                        ? this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() })[0] : null;
                     let operatorString = "is assigned";
                     if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
                         operatorString = "is not assigned";
@@ -302,9 +309,42 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         this.formattedCheck = "responsibility type not found";
                     }
                     break;
-                case this.CheckType.Predicate:
+                case 'Predicate':
+                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length == 1
+                        ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
+                    let operatorStringForPredicate = "exists";
+                    if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
+                        operatorStringForPredicate = "does not exist";
+                    }
+                    this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate; 
+
                     break;
                 case 'Relation':
+                    let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
+                        ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
+                    let operatorStringForRelation = "is used";
+                    if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
+                        operatorStringForRelation = "is not used";
+                    }
+
+                    let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                    let isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                    let labelName = "";
+                    let assetName = "";
+                    let label = "";
+                    if (isSubject) {
+                        labelName = relationshipType.Predicate.Name;
+                        assetName = relationshipType.Subject.Name
+                    } else if (isObject) {
+                        labelName = relationshipType.Predicate.Inverse;
+                        assetName = relationshipType.Object.Name;
+                    }
+                    label = labelName + " " + assetName;
+                    if (relationshipType) {
+                        this.formattedCheck = label + " " + operatorStringForRelation;
+                    } else {
+                        this.formattedCheck = "responsibility type not found";
+                    }
                     break;
                 default:
                     this.formattedCheck = "";

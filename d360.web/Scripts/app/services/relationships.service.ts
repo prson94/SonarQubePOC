@@ -24,6 +24,15 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
+        return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
+            .pipe(
+                map(response => <RelationshipType[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+
     getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/${id}/${type}`)
             .pipe(
