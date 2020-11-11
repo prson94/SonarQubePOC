@@ -128,7 +128,7 @@ namespace d360.core.enums
             EnumMember(Value = "NotPopulated"),
             Description(""), 
             OperatorValueCountRange(0, 0),
-            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation), //remove field MetricGovernanceCheckType.Field before release  
+            OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Owner, MetricGovernanceCheckType.Predicate, MetricGovernanceCheckType.Relation, MetricGovernanceCheckType.Field), //remove field MetricGovernanceCheckType.Field before release  
             OperatorAllowedDataTypes(DataType.Boolean, DataType.Date, DataType.DateTime, DataType.Decimal, DataType.Html, DataType.JSON, DataType.JsonElement, DataType.Lookup, DataType.Number, DataType.Text),//comment out again before release 
             OperatorFieldTypeRequirements(false)
         ]

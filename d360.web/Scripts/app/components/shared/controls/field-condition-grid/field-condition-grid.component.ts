@@ -61,25 +61,20 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                 if (!this.conditions) return;
 
                 this.conditions.forEach(cond => {
-                    if (this.disabledValuesOperators.some(x => x === +cond.operator))
+                    if (this.disabledValuesOperators.some(x => (x === +cond.operator || Operator[x] == <any>cond.operator))) {
                         cond.disabled = true;
+                    }
                     else
                         cond.disabled = false;
 
-                    cond.isValid = false;
-
-                    if (cond.disabled === true) {
-                        if (cond.field && +cond.operator > 0) {
-                            cond.isValid = true;
-                        }
+                    let formControl1 = this.formGroup.get(this.conditionPrefix + 'value_1_' + cond.hash);
+                    if (formControl1) {
+                        cond.disabled ? formControl1.disable({ emitEvent: false }) : formControl1.enable({ emitEvent: false });
                     }
-                    else {
-                        if (cond.field && +cond.operator > 0 && cond.value) {
-                            cond.isValid = true;
-                        }
+                    let formControl2 = this.formGroup.get(this.conditionPrefix + 'value_2_' + cond.hash);
+                    if (formControl2) {
+                        cond.disabled ? formControl2.disable({ emitEvent: false }) : formControl2.enable({ emitEvent: false });
                     }
-                    if (!cond.field)
-                        cond.isValid = true;
 
                 });
                 this.tryAddNewCondition();

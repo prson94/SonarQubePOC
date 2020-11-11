@@ -8,6 +8,7 @@ import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 import { OperatorModel } from '../../../models/operator.model';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-admin-metric-list',
@@ -91,8 +92,13 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         super();
     }
 
-    ngOnInit() {
+    delayedReload = _.debounce(() => {
+        this.formMode = FormMode.Default;
         this.load();
+    }, 200);
+
+    ngOnInit() {
+        this.delayedReload();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -108,8 +114,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         }
 
         if (requiresLoad) {
-            this.formMode = FormMode.Default;
-            this.load();
+            this.delayedReload();
         }
     }
 
