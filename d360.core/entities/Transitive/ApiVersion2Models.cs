@@ -208,6 +208,15 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    public class AssetTypeDeleteObject
+    {
+        public Guid uid { get; set; }
+        public int ObjectId { get; set; }
+        public string Object { get; set; }
+        public int AssetTypeId { get; set; }
+        public int IntersectTypeId { get; set; }
+    }
+
     [DataContract]
     public class AssetTypeSingleDelete
     {
