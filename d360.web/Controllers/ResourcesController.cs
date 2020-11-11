@@ -557,7 +557,17 @@ outer apply(
              where FieldTypeID = F.fieldTypeID and fi.AssetID = F.AssetID and FT.Type = 'Lookup'
 			for json path)
 		)Color(value)
-where   F.[Object]= @o and F.ObjectID = @oid and F.[Name] != 'Description' and F.[Type] not in ('JsonElement', 'Score')
+where   F.[Object]= @o and F.ObjectID = @oid and F.[Name] != 'Description' and F.[Type] not in ('JsonElement', 'Score', 'Path')
+union
+select  FT.ColumnOrder,
+        COALESCE([Path].value,' ') as Value,
+	    F.FriendlyName as Name,
+		F.[Type]
+from    FieldDetail  F
+inner join fieldType FT on FT.ID = F.FieldTypeID
+outer apply (
+	select graph.GetPathByAssetId(F.AssetID, ' <i class=""fa fa-angle-right""></i> ', ' / ') value)[Path](value)
+where   F.[Object]= @o and F.ObjectID = @oid and F.[Type] ='Path'
 union
 select	RT.ColumnOrder,
 		p.[Value],
