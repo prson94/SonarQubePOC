@@ -7,7 +7,12 @@
                 <div inputs>
                     <div class="row">
                         <label for="name" class="ig-label">Name</label>
-                        <input igInput igAutoFocus tabindex="1" igSize="medium" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                        <input igInput tabindex="1" igSize="medium" [ngClass]="{'invalid': metricForm.get('name')?.errors?.empty}" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
+                        <div *ngIf="metricForm.get('name').invalid && (metricForm.get('name').dirty || metricForm.get('name').touched)">
+                            <div *ngIf="metricForm.get('name').errors.empty" class="ig-text-required">
+                                Please enter a valid name
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <label for="description" class="ig-label">Description</label>
@@ -43,6 +48,12 @@
                                                  [step]="1"
                                                  formControlName="weight"
                                                  [(ngModel)]="displayWeight"></ig-number-input>
+
+                                <div *ngIf="metricForm.get('weight').invalid && (metricForm.get('weight').dirty || metricForm.get('weight').touched)">
+                                    <div *ngIf="metricForm.get('weight').errors?.outOfRange" class="ig-text-required">
+                                        Please enter a value between 1 and 100
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="flex-col effective-date-msg">
@@ -125,7 +136,49 @@
                             <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="2">
-                            Owner
+                            <div class="row row-label">
+                                <label class="ig-label">Test Condition</label>
+                            </div>
+                            <div class="row row-margin owner-conditions">
+                                <div class="condition-med">
+                                    <p-dropdown igDropdown
+                                                igSize="medium"
+                                                [disabled]="disabled"
+                                                [options]="responsibilityTypes"
+                                                [(ngModel)]="model.Definition.Governance.Owner.ResponsibilityTypeUid"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="ResponsibilityTypeUid"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="ResponsibilityTypeUid">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+
+                                </div>
+                                <div class="condition">
+                                    <p-dropdown *ngIf="model.Definition.Governance.Owner.ResponsibilityTypeUid"
+                                                igDropdown
+                                                igSize="small"
+                                                [disabled]="disabled"
+                                                [options]="responsibilityOperators"
+                                                [(ngModel)]="model.Definition.Governance.Owner.Operator"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="ResponsibilityTypeOperator"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="ResponsibilityTypeOperator">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                            </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="3">
                             Predicate

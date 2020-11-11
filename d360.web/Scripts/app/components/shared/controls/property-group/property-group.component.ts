@@ -84,6 +84,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         let found = false;
         if (!this.expanded)
             this.expanded = true;
+
         let fcCount = this.getFormControlCount("errors");
         let idx = 0;
         Object.keys(this.igformGroup.controls).forEach(x => {
@@ -99,6 +100,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                             this.invalidPos++;
                             if (this.invalidPos >= fcCount) {
                                 this.invalidPos = 0;
+                            }
+                            if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
+                                elem.querySelector('input').click();
                             }
                             elem.focus();
                             found = true;
@@ -127,6 +131,12 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                         if (this.requiredPos >= fcCount) {
                             this.requiredPos = 0;
                         }
+                        if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
+                            elem.querySelector('input').click();
+                        }
+                        else if (elem.tagName === 'P-DROPDOWN') {
+                            (elem.querySelectorAll('.ui-dropdown-trigger')[0] as HTMLElement).click();
+                        }
                         elem.focus();
                         found = true;
                     }
@@ -148,7 +158,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
             let control = <FormControl>this.igformGroup.get(x);
             if (control) {
                 if (type == "required") {
-                    if (control && control.errors && control.errors["required"] == true) {
+                    if (control.errors && control.errors["required"] == true) {
                         let elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
                             count++;
@@ -156,13 +166,14 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                     }
                 }
                 if (type == "errors") {
-                    if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
-                        let elem = <HTMLElement>this.getFormControlDomElement(x);
-                        if (elem) {
-                            count++;
+                    if (control.errors) {
+                        if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
+                            let elem = <HTMLElement>this.getFormControlDomElement(x);
+                            if (elem) {
+                                count++;
+                            }
                         }
                     }
-
                 }
 
             }

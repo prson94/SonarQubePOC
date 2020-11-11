@@ -146,7 +146,11 @@ namespace d360.core
         [Description("Task"), AllowSurvey(false), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship)]
         Task,
         [Description("Connector Label"), AllowSurvey(false), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.ComplexRelationLookup | DataType.RefListRelationship | DataType.FieldFromRelationship | DataType.OwnershipLookup | DataType.Relationship)]
-        ConnectorLabel
+        ConnectorLabel,
+        [Description("Issue Type Relation"), EnableAudit(true), IsType(true),
+        ExcludeDataType(DataType.FieldFromRelationship |
+        DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag | DataType.Score)]
+        IssueTypeRelation
     }
 
     public class SystemObjectInfo

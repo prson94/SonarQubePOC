@@ -120,6 +120,9 @@
   <data name="AddAllocationsSuccessful" xml:space="preserve">
     <value>Allocations added successfully</value>
   </data>
+  <data name="AddSingleAllocationSuccessful" xml:space="preserve">
+    <value>Allocation added successfully</value>
+  </data>
   <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
     <value>You are not allowed to add actions on this asset.</value>
   </data>

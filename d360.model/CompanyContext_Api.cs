@@ -1459,6 +1459,11 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Lookup":
+                                    if(fieldType.AllowMultipleValues == false && fieldValue.Split(',').Length > 1)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} does not allow selection of multiple values");
+                                    }
                                     break;
                                 case "Number":
                                     if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
@@ -2567,7 +2572,7 @@ from	IntersectType I
             return results;
         }
 
-        public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200)
+        public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10)
         {
             var results = new List<DatabaseBulkAssetTypeResult>();
             var dt = DateTime.UtcNow;
@@ -2778,7 +2783,7 @@ from	IntersectType I
                             bool runCompleted = false;
                             int retryCount = 0;
 
-                            while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                            while (!runCompleted && retryCount <= maxRetryCount)
                             {
                                 try
                                 {
@@ -2796,7 +2801,7 @@ from	IntersectType I
                                 {
                                     retryCount++;
 
-                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    if (retryCount > maxRetryCount)
                                     {
                                         LogLoopExecutionError(execution.ExecutionID, itemNumber, itemNumber, "api.ExecutionDeletedAssetType", ex.GetFullExceptionData(false), timeout);
                                     }

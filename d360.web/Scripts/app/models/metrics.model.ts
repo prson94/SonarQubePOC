@@ -106,6 +106,7 @@ export class MetricAssetDefinitionGovernanceRelationViewModel {
 }
 export class MetricAssetDefinitionGovernanceOwnerViewModel {
     ResponsibilityTypeUid: string;
+    Operator: Operator;
 }
 
 export class MetricFieldTypeViewModel {

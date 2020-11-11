@@ -21,7 +21,7 @@
     <header>Examples</header>
     <div class="gallery-section">
         <h4>Basic with reactive form (3 required fields with validation. <b>Type No, Bug or Defect for invalid state</b>) </h4>
-        <div class="gallery-form-container">
+        <div class="gallery-form-container" style="width:100%;">
             <form *ngIf="testForm != null" [formGroup]="testForm" (ngSubmit)="submitTemplateForm(myForm)">
                 <ig-property-group [igformGroup]="testForm" [title]="'PropertyGroup1'">
                     <div inputs>
@@ -63,7 +63,7 @@
     </div>
     <div class="gallery-section">
         <h4>Basic with template driven form (1 required, 1 optional)</h4>
-        <div class="gallery-form-container">
+        <div class="gallery-form-container" style="width:100%;">
             <form #myForm="ngForm" (ngSubmit)="submitTemplateForm(myForm)">
                 <div class="row">
                     <b>Template driven forms</b>
@@ -96,7 +96,7 @@
     </div>
     <div class="gallery-section">
         <h4>2 sections with reactive form (5 required fields with validation. <b>Type No, Bug or Defect for invalid state</b>) </h4>
-        <div class="gallery-form-container">
+        <div class="gallery-form-container" style="width:100%;">
             <form *ngIf="multiTestForm != null" [formGroup]="multiTestForm" (ngSubmit)="submitTemplateForm(myForm)">
                 <ig-property-group [igformGroup]="multiTestForm" [title]="'top 3 items'">
                     <div inputs>
