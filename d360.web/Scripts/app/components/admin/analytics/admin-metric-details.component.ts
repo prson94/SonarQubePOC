@@ -18,8 +18,6 @@ import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { FormHelpers } from '../../../static/form-helpers';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
