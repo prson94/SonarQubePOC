@@ -225,7 +225,7 @@
 <d3s-modal [title]="'Import Diagram'" additionalClasses="large-dialog" (onClose)="isImportVisible=false" [isVisible]="isImportVisible">
     <div class="content">
         <div class="row" *ngIf="importAssets.length > 0">
-            Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from
+            Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from:
         </div>
         <div class="row">
             <div class="search-wrapper">
@@ -286,10 +286,10 @@
     </div>
 </d3s-modal>
 
-<d3s-modal [title]="'Diagram Import: Cannot copy relationships'" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
+<d3s-modal [title]="'Diagram Import: Cannot Copy Relationships'" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
     <div class="content">
         <div class="row">
-            The following relationships in the source diagram cannot be copied, due to cardinality (eg.one-to-one, many-to-one) restrictions on relationship types:<br /><br />
+            The following relationships in the source diagram cannot be copied, due to cardinality (eg. one-to-one, many-to-one) restrictions on relationship types:<br /><br />
         </div>
 
         <div class="row">

@@ -82,22 +82,23 @@
             max-height: 36px;
             padding: 0px 16px;
 
-            &.hover {
+            &.hover:not(.disabled) {
                 background-color: @ig-orange-t4;
                 cursor: pointer;
             }
 
-            &.active, &:active {
+            &.active:not(.disabled), &:active:not(.disabled) {
                 background-color: @ig-orange-t3;
             }
 
             &.disabled {
                 color: black;
-                pointer-events: none;
                 opacity: 0.33;
+                cursor: default;
+                outline: none;
             }
 
-            &:focus {
+            &:focus:not(.disabled) {
                 box-shadow: 0 0 0 2px @ig-midblue-t3;
                 outline: none;
             }
