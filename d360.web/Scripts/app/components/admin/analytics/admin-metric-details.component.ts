@@ -18,7 +18,8 @@ import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { clear } from 'console';
+import { FormHelpers } from '../../../static/form-helpers';
+import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
@@ -298,7 +299,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     break;
                 case 'Owner':
                     let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
-                        ? this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() })[0] : null;
+                        ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
                     let operatorString = "is assigned";
                     if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
                         operatorString = "is not assigned";

@@ -70,6 +70,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allocation added successfully.
+        /// </summary>
+        internal static string AddSingleAllocationSuccessful {
+            get {
+                return ResourceManager.GetString("AddSingleAllocationSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You are not allowed to add actions on this asset..
         /// </summary>
         internal static string AssetAddActionPermissionsDenied {
