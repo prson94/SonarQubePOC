@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Bhoward" id="Procedure.dbo.SecondaryNavSettings-v3">
+  <changeSet author="kmcnamee" id="Procedure.dbo.SecondaryNavSettings-v4">
+    <comment>GOV-12825</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -143,7 +144,7 @@ begin
 		if exists(select a.uid from Asset A 
 					inner join AssetType T on T.ID = A.AssetTypeID
 					inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
-					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1
 					where A.uid = @assetUid
 		)
 		begin
@@ -347,7 +348,7 @@ begin
 	cross apply (select top 1 * from @navItems for json path,WITHOUT_ARRAY_WRAPPER)Settings(Items)
 	for json path,WITHOUT_ARRAY_WRAPPER
 end
-		]]>
+]]>
 	</rollback>
   </changeSet>
 

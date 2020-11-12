@@ -349,7 +349,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followersSidebar);
             }
 
-            if (hasMonitor || isCommonAsset) {
+            if (hasMonitor) {
                 this.monitorSidebar = new SecondaryNavItem(
                     'Workflow',
                     'monitor',
@@ -791,6 +791,8 @@ export class BaseComponent {
             }
         }
 
+        console.log(data);
+
         if (objectType)
             data.ObjectType = objectType;
 
@@ -825,13 +827,13 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-
+            
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
-
+            
             var areaName = r.DisplayValue;
             var mainTabTitle = r.MainTabTitle;
             if (r.PreloadData) {
@@ -885,6 +887,7 @@ export class BaseComponent {
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
+            
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
