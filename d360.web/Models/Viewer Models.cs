@@ -652,6 +652,8 @@ namespace d360.web.Models
 
         [DataMember]
         public string Displayobject { get; set; }
+        [DataMember]
+        public Guid AssetUid { get; set; }
     }
 
     public class PowerBIReportViewModel

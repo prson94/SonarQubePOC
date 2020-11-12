@@ -269,6 +269,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     private selectItem() {
         this.selectedObjectType = this.term.Object;
         this.selectedObjectId = this.term.ObjectID;
+        this.selectedAssetUid = this.term.AssetUid;
         this.loadIssueTypes();
     }
 

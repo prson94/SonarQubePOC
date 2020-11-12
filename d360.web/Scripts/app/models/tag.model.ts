@@ -7,6 +7,7 @@
     TextPath: string;
     Url: string
     Displayobject: string;
+    AssetUid: string;
 }
 
 export class TagType {
