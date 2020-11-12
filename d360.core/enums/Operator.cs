@@ -418,13 +418,13 @@ namespace d360.core.enums
                     }
                     break;
                 case Operator.Contains:
-                    result = (valueToCompare ?? "").Contains(values[0]);
+                    result = (valueToCompare ?? "").ToLower().Contains((values[0] ?? "").ToLower());
                     break;
                 case Operator.EndsWith:
-                    result = (valueToCompare ?? "").EndsWith(values[0]);
+                    result = (valueToCompare ?? "").EndsWith(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
                 case Operator.Equals:
-                    result = (valueToCompare ?? "").ToLower() == values[0].ToLower();
+                    result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
                 case Operator.GreaterThan:
                 case Operator.GreaterThanOrEquals:
@@ -504,10 +504,10 @@ namespace d360.core.enums
                     }
                     break;
                 case Operator.NotContains:
-                    result = !(valueToCompare ?? "").Contains(values[0]);
+                    result = !(valueToCompare ?? "").ToLower().Contains((values[0] ?? "").ToLower());
                     break;
                 case Operator.NotEquals:
-                    result = !(valueToCompare ?? "").Equals(values[0]);
+                    result = !(valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
                 case Operator.NotIn:
                     var fieldValuesNotIn = (valueToCompare ?? "").Split(',');
@@ -520,7 +520,7 @@ namespace d360.core.enums
                     result = (valueToCompare != null);
                     break;
                 case Operator.StartsWith:
-                    result = (valueToCompare ?? "").StartsWith(values[0]);
+                    result = (valueToCompare ?? "").StartsWith(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
             }
 
