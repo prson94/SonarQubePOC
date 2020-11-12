@@ -1,6 +1,6 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
@@ -14,13 +14,14 @@ import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../models
 import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/field-condition-grid.component';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
+import { RelationshipsService } from '../../../services/relationships.service';
 import * as _ from 'lodash';
 
 
 @Component({
     selector: 'd3s-admin-metric-editor',
     templateUrl: './admin-metric-editor.component.html',
-    providers: [MetricsService, CompanySettingsService, FieldsObservableService, ResponsibilityTypeService],
+    providers: [MetricsService, CompanySettingsService, FieldsObservableService, ResponsibilityTypeService, RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
     .row-margin{
@@ -29,7 +30,7 @@ import * as _ from 'lodash';
     .row-label{
         margin: 0px 0px -8px 0px;
     }
-    .owner-conditions{
+    .conditions-row{
         display: flex;
         flex-direction: row;
         width: 100%;
@@ -89,8 +90,14 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     updateFrequencyOptions = MetricUpdateFrequency;
 
     responsibilityTypes: any[] = [];
-    responsibilityOperators: any[] =[];
+    responsibilityOperators: any[] = [];
     showMatchPicker: boolean = false;
+
+    relationshipTypes: any[] = [];
+    relationshipOperators: any[] = [];
+
+    predicateTypes: any[] = [];
+    predicateOperators: any[] = [];
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
         + 'Only those assets matching the conditions will be scored using these measures. '
@@ -107,7 +114,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     metricForm: FormGroup = null;
 
-    @ViewChild('conditionGrid', { static: false }) conditionGrid: FieldConditionGrid;
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
     private fields: any[] = [];
 
@@ -119,7 +125,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         protected messagesService: MessagesObservableService,
         private settingsService: CompanySettingsService,
         private fieldsService: FieldsObservableService,
-        private responsibilityService: ResponsibilityTypeService, 
+        private responsibilityService: ResponsibilityTypeService,
+        private relationshipService: RelationshipsService,
         private fb: FormBuilder,
         private cdRef: ChangeDetectorRef
     ) {
@@ -145,7 +152,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
         if (requiredLoad)
             this.delayedReload();
-            
+
         this.cdRef.markForCheck();
     }
 
@@ -239,6 +246,51 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     if (this.model.Definition.Governance && this.model.Definition.Governance.Owner) {
                         this.model.Definition.Governance.Owner.Operator = Operator[this.model.Definition.Governance.Owner.Operator + ""];
                     }
+                }
+            });
+            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
+                if (data && data.length) {
+                    this.relationshipTypes = data.map(x => {
+                        let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let isObject = (x.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let label = "";
+                        let assetLabel = "";
+                        if (isSubject) {
+                            label = x.Predicate.Name;
+                            assetLabel = x.Object.Name
+                        } else if (isObject) {
+                            label = x.Predicate.Inverse;
+                            assetLabel = x.Subject.Name
+                        }
+                        label = label + " " + assetLabel;
+                        return { label: label, value: x.Uid };
+                    });
+                    this.predicateTypes = data.map((x, idx, self) => {
+                        let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let hasInverse = self.findIndex((check) => {
+                            if (isSubject) {
+                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
+                            } else {
+                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
+                            }
+                        }) != -1;
+                        let label = '';
+                        if (isSubject) {
+                            label = x.Predicate.Name + (hasInverse ? ('/' + x.Predicate.Inverse) : '');
+                        } else {
+                            label = x.Predicate.Inverse + (hasInverse ? ('/' + x.Predicate.Name) : '');
+                        }
+                        return { label: label, value: x.Predicate.Uid };
+                    });
+                    this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
+                }
+                this.relationshipOperators = [{ label: "is used", value: Operator.Populated }, { label: "is not used", value: Operator.NotPopulated }];
+                this.predicateOperators = [{ label: "exists", value: Operator.Populated }, { label: "does not exist", value: Operator.NotPopulated }];
+                if (this.model.Definition.Governance && this.model.Definition.Governance.Relation) {
+                    this.model.Definition.Governance.Relation.Operator = Operator[this.model.Definition.Governance.Relation.Operator + ""];
+                }
+                if (this.model.Definition.Governance && this.model.Definition.Governance.Predicate) {
+                    this.model.Definition.Governance.Predicate.Operator = Operator[this.model.Definition.Governance.Predicate.Operator + ""];
                 }
             });
         })
@@ -363,10 +415,18 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
                 break;
             case 3:
-                //handle predicate 
+                this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
+                this.metricForm.addControl("PredicateTypeOperator", new FormControl(''));
+                if (!this.model.Definition.Governance.Predicate.Operator) {
+                    this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
+                }
                 break;
             case 4:
-                //handle relation
+                this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
+                this.metricForm.addControl("RelationshipTypeOperator", new FormControl(''));
+                if (!this.model.Definition.Governance.Relation.Operator) {
+                    this.model.Definition.Governance.Relation.Operator = Operator.Populated;
+                }
                 break;
             default:
                 break;
@@ -414,7 +474,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 break;
             case 1:
                 this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
-                this.updateFormValidity(null);
                 break;
             case 2:
                 this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
@@ -423,10 +482,16 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 break;
             case 3:
-                //handle predicate 
+                this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
+                this.metricForm.addControl("PredicateTypeOperator", new FormControl(''));
+                this.model.Definition.Governance.Predicate = new MetricAssetDefinitionGovernancePredicateViewModel();
+                this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
                 break;
             case 4:
-                //handle relation
+                this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
+                this.metricForm.addControl("RelationshipTypeOperator", new FormControl(''));
+                this.model.Definition.Governance.Relation = new MetricAssetDefinitionGovernanceRelationViewModel();
+                this.model.Definition.Governance.Relation.Operator = Operator.Populated;
                 break;
             default:
                 break;
@@ -443,12 +508,16 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.model.Definition.Governance.Relation = null;
         this.cdRef.markForCheck();
 
-        //remove the form controls 
+        //remove the form controls for External
         this.metricForm.removeControl("updateFrequency");
         this.metricForm.removeControl("instructionString");
+        //remove the form controls for Owner
         this.metricForm.removeControl("ResponsibilityTypeUid");
         this.metricForm.removeControl("ResponsibilityTypeOperator");
-        
+        //remove the form controls for Relation
+        this.metricForm.removeControl("IntersectTypeUid");
+        this.metricForm.removeControl("RelationshipTypeOperator");
+
         //clear conditions
         this.testFieldConditions = [];
 

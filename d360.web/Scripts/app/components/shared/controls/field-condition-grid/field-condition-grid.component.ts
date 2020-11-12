@@ -34,6 +34,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.resetFormControls();
         this.clearUnusedFormControls();
         this.conditions = null;
     }
@@ -171,6 +172,22 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             });
         }
         this.cdRef.markForCheck(); 
+    }
+
+    resetFormControls() {
+        if (this.conditions) {
+            Object.keys(this.formGroup.controls).forEach(control => {
+                if (control.startsWith(this.conditionPrefix)) {
+                    if (control.indexOf(this.conditionPrefix + 'option_') !== -1
+                        || control.indexOf(this.conditionPrefix + 'condition_') !== -1
+                        || control.indexOf(this.conditionPrefix + 'value_1_') !== -1 ||
+                        control.indexOf(this.conditionPrefix + 'value_2_') !== -1) {
+                        this.removeFormControl(control);
+                    }
+                }
+            });
+        }
+        this.cdRef.markForCheck();
     }
 
     private createFormControl(hash: FieldCondition) {

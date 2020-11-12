@@ -128,7 +128,7 @@
                             </div>
                             <div class="row row-margin">
                                 <label for="instructionString" class="ig-label">Instruction String</label>
-                                <input igInput tabindex="7" igSize="medium" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
+                                <input igInput tabindex="7" igSize="full" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
                             </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="1">
@@ -139,7 +139,7 @@
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin owner-conditions">
+                            <div class="row row-margin conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -181,10 +181,92 @@
                             </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="3">
-                            Predicate
+                            <div class="row row-label">
+                                <label class="ig-label">Test Condition</label>
+                            </div>
+                            <div class="row row-margin conditions-row">
+                                <div class="condition-med">
+                                    <p-dropdown igDropdown
+                                                igSize="medium"
+                                                [disabled]="disabled"
+                                                [options]="predicateTypes"
+                                                [(ngModel)]="model.Definition.Governance.Predicate.PredicateUid"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="PredicateTypeUid"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="PredicateTypeUid">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div class="condition">
+                                    <p-dropdown *ngIf="model.Definition.Governance.Predicate.PredicateUid"
+                                                igDropdown
+                                                igSize="small"
+                                                [disabled]="disabled"
+                                                [options]="relationshipOperators"
+                                                [(ngModel)]="model.Definition.Governance.Predicate.Operator"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="PredicateTypeOperator"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="PredicateTypeOperator">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                            </div>
                         </div>
                         <div class="row row-margin" *ngSwitchCase="4">
-                            Relationship
+                            <div class="row row-label">
+                                <label class="ig-label">Test Condition</label>
+                            </div>
+                            <div class="row row-margin conditions-row">
+                                <div class="condition-med">
+                                    <p-dropdown igDropdown
+                                                igSize="medium"
+                                                [disabled]="disabled"
+                                                [options]="relationshipTypes"
+                                                [(ngModel)]="model.Definition.Governance.Relation.IntersectTypeUid"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="IntersectTypeUid"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="IntersectTypeUid">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                                <div class="condition">
+                                    <p-dropdown *ngIf="model.Definition.Governance.Relation.IntersectTypeUid"
+                                                igDropdown
+                                                igSize="small"
+                                                [disabled]="disabled"
+                                                [options]="relationshipOperators"
+                                                [(ngModel)]="model.Definition.Governance.Relation.Operator"
+                                                appendTo="body"
+                                                [required]="true"
+                                                [showClear]="false"
+                                                formControlName="RelationshipTypeOperator"
+                                                placeholder="Value required"
+                                                tabindex="7"
+                                                [attr.name]="RelationshipTypeOperator">
+                                        <ng-template let-item pTemplate="selectedItem">
+                                            <span>{{item.label}}</span>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </div>
+                            </div>                            
                         </div>
                         <ng-template ngSwitchDefault>
                             <div class="row row-margin">
