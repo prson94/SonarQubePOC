@@ -312,6 +312,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
+    getScoreTypes(objectID: number, objectType: string) {
+        return this.http.get(`services/workflow/scoretypes/${objectID}/${objectType}`)
+            .pipe(
+                map(response => <any[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getWorkflowItems(versionId: number) : Observable<any[]> {
         return this.http.get(`services/workflow/items/${versionId}`)
             .pipe(

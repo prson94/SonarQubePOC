@@ -91,6 +91,7 @@
         <div class="row" *ngSwitchCase="WorkflowActivityType.Form">
             <d3s-workflow-step-form-editor [objectType]="objectType"
                                            [objectId]="objectId"
+                                           [workflowChangeType]="ChangeType"
                                            [step]="step"
                                            [diagram]="diagram"
                                            [httpFields]="httpFields" 

@@ -72,12 +72,18 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
     filteredConditions: any[] = [];
 
+    excludedContextualFields = [
+        'IssueObject',
+        'IssueObjectID',
+        'ScoreType'
+    ];
+
     ngOnInit() {
         this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || (c['@ContextualFieldID'] != 'IssueObject' && c['@ContextualFieldID'] != 'IssueObjectID'));
+        this.filteredConditions = this.conditions.filter(c => c['@ContextualFieldID'] == null || this.excludedContextualFields.indexOf(c['@ContextualFieldID']) == -1);
     }
 
     isAllAnyVisible() {

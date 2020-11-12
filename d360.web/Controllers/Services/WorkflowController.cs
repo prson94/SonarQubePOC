@@ -1159,7 +1159,7 @@ order by wi.StartedOn desc";
         [Route("changetypes"), HttpGet]
         public List<ChangeTypeInfo> GetChangeTypes()
         {
-            return ChangeType.Add.GetList().Where(x => x.ID != ChangeType.ScoreUpdate).ToList();
+            return ChangeType.Add.GetList();
         }
 
         [Route("transitiontypes"), HttpGet]
@@ -1356,14 +1356,50 @@ order by wi.StartedOn desc";
         public HttpResponseMessage GetObjectTypes(ChangeType changeType)
         {
             var types = Company.Query<dynamic>(QueryConstants.WorkflowObjectTypes).ToList();
-            if (changeType == ChangeType.Loaded)
-                types = types.Where(t => t.type == "Fusion").OrderBy(t => t.name).ToList();
-            else if (changeType == ChangeType.Schedule)
-                types = types.Where(t => t.type == "ArtifactType" || t.type == "TaxonomyType" || t.type == "IssueType").OrderBy(t => t.name).ToList();
-            else
-                types = types.Where(t => t.type != "Fusion").OrderBy(t => t.name).ToList();
+
+            switch (changeType)
+            {
+                case ChangeType.Loaded:
+                    types = types.Where(t => t.type == "Fusion")
+                        .OrderBy(t => t.name)
+                        .ToList();
+                    break;
+                case ChangeType.Schedule:
+                    types = types.Where(t => t.type == "ArtifactType" 
+                    || t.type == "TaxonomyType" 
+                    || t.type == "IssueType")
+                        .OrderBy(t => t.name)
+                        .ToList();
+                    break;
+                case ChangeType.ScoreUpdate:
+                    types = types.Where(t => t.type == "ArtifactType" 
+                    || t.type == "TaxonomyType" || t.type == "RuleType" 
+                    || t.type == "PolicyType")
+                        .OrderBy(t => t.name)
+                        .ToList();
+                    break;
+                default:
+                    types = types.Where(t => t.type != "Fusion")
+                        .OrderBy(t => t.name)
+                        .ToList();
+                    break;
+            }
+
 
             return Request.CreateResponse(HttpStatusCode.OK, types);
+        }
+
+        [Route("scoretypes/{id:int}/{type}"), HttpGet]
+        public HttpResponseMessage GetScoreTypes(string type, int id)
+        {
+            var results =  Company.Query<ScoreType>(@"select distinct ScoreType 
+                from metrics.allocation A
+                inner join AssetType T on T.[uid] = A.AssetTypeUid
+                where a.[State] = 1 and T.[Object] = @type and T.ObjectID = @id", new { type, id })
+                .Select(s => new { label = s.GetDisplayName(), value = (int)s })
+                .ToList();
+
+            return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
         [Route("type/{id:int}/{uid:Guid}"), HttpGet]

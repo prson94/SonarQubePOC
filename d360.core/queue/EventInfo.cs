@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace d360.core.queue
         public List<int> ChangedFieldIds { get; set; } = new List<int>();
 
         public int AssetTypeID { get; set; }
+        public ScoreType? ScoreType { get; set; } = null;
     }
 
     public class EventInfo: IServiceBusMessageType

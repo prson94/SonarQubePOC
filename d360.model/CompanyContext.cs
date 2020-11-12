@@ -3053,6 +3053,25 @@ order by    S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
+        public int? GetPreviousAssetScore(long assetId, ScoreType type)
+        {
+            string sql = $@"
+select      top 1
+            cast(S.Value * 100 as int) as 'Score'                            
+from        Asset A                            
+            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
+            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = @type and (Al.OverrideName is null or Al.OverrideName = '')
+            cross apply (
+                select top 1 EffectiveDate from Asset AP
+                inner join metrics.Score SA on SA.AssetUid = AP.[uid] and SA.EffectiveDate <= getutcdate()
+                inner join metrics.Allocation ALP on ALP.Uid = SA.AllocationUid and ALP.ScoreType = @type and (ALP.OverrideName is null or ALP.OverrideName = '')
+                where AP.ID = @assetId
+            ) P
+where       A.ID = @assetId and S.EffectiveDate < P.EffectiveDate
+order by    S.EffectiveDate desc";
+            return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
+        }
+
         /// <summary>
         /// Generates the icon text shown on icons that represent the Asset 
         /// </summary>
