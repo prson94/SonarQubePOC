@@ -341,6 +341,16 @@ namespace d360.core.enums
             return list.OrderBy(i => i.Name).ToList();
         }
 
+        internal static DateTime ParseDateString(this string dt)
+        {
+            var value = DateTime.Parse(dt);
+            if (dt.EndsWith("Z"))
+            {
+                value = value.ToUniversalTime();
+            }
+            return value;
+        }
+
         /// <summary>
         /// Use this operator to compare a value to a set of values, applying its proper data type to the comparison.
         /// </summary>
@@ -364,8 +374,8 @@ namespace d360.core.enums
                     {
                         if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
                         {
-                            var conditionValue = DateTime.Parse(values[0]);
-                            var fieldValue = DateTime.Parse(valueToCompare);
+                            var conditionValue = values[0].ParseDateString();
+                            var fieldValue = valueToCompare.ParseDateString();
                             switch (@operator)
                             {
                                 case Operator.After:
@@ -391,9 +401,9 @@ namespace d360.core.enums
                         case "DateTime":
                             if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(values[1], out _) && DateTime.TryParse(valueToCompare, out _))
                             {
-                                var beforeValue = DateTime.Parse(values[0]);
-                                var afterValue = DateTime.Parse(values[1]);
-                                var fieldValue = DateTime.Parse(valueToCompare);
+                                var beforeValue = values[0].ParseDateString();
+                                var afterValue = values[1].ParseDateString();
+                                var fieldValue = valueToCompare.ParseDateString();
                                 result = (fieldValue >= beforeValue && fieldValue <= afterValue);
                             }
                             break;
@@ -418,13 +428,44 @@ namespace d360.core.enums
                     }
                     break;
                 case Operator.Contains:
-                    result = (valueToCompare ?? "").Contains(values[0]);
+                    result = (valueToCompare ?? "").ToLower().Contains((values[0] ?? "").ToLower());
                     break;
                 case Operator.EndsWith:
-                    result = (valueToCompare ?? "").EndsWith(values[0]);
+                    result = (valueToCompare ?? "").EndsWith(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
                 case Operator.Equals:
-                    result = (valueToCompare ?? "").ToLower() == values[0].ToLower();
+                    result = false; // the default in case anything fails below.
+                    switch (dataType)
+                    {
+                        case "Date":
+                        case "DateTime":
+                            if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
+                            {
+                                var value = values[0].ParseDateString();
+                                var fieldValue = valueToCompare.ParseDateString();
+                                result = (fieldValue == value);
+                            }
+                            break;
+                        case "Decimal":
+                            if (decimal.TryParse(values[0], out _) && decimal.TryParse(valueToCompare, out _))
+                            {
+                                var value = decimal.Parse(values[0]);
+                                var fieldValue = decimal.Parse(valueToCompare);
+                                result = (fieldValue == value);
+                            }
+                            break;
+                        case "Number":
+                            if (long.TryParse(values[0], out _) && long.TryParse(valueToCompare, out _))
+                            {
+                                var value = long.Parse(values[0]);
+                                var fieldValue = long.Parse(valueToCompare);
+                                result = (fieldValue == value);
+                            }
+                            break;
+                        default:
+                            result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
+                            break;
+                    }
                     break;
                 case Operator.GreaterThan:
                 case Operator.GreaterThanOrEquals:
@@ -504,10 +545,41 @@ namespace d360.core.enums
                     }
                     break;
                 case Operator.NotContains:
-                    result = !(valueToCompare ?? "").Contains(values[0]);
+                    result = !(valueToCompare ?? "").ToLower().Contains((values[0] ?? "").ToLower());
                     break;
                 case Operator.NotEquals:
-                    result = !(valueToCompare ?? "").Equals(values[0]);
+                    result = false; // the default in case anything fails below.
+                    switch (dataType)
+                    {
+                        case "Date":
+                        case "DateTime":
+                            if (DateTime.TryParse(values[0], out _) && DateTime.TryParse(valueToCompare, out _))
+                            {
+                                var value = values[0].ParseDateString();
+                                var fieldValue = valueToCompare.ParseDateString();
+                                result = (fieldValue != value);
+                            }
+                            break;
+                        case "Decimal":
+                            if (decimal.TryParse(values[0], out _) && decimal.TryParse(valueToCompare, out _))
+                            {
+                                var value = decimal.Parse(values[0]);
+                                var fieldValue = decimal.Parse(valueToCompare);
+                                result = (fieldValue != value);
+                            }
+                            break;
+                        case "Number":
+                            if (long.TryParse(values[0], out _) && long.TryParse(valueToCompare, out _))
+                            {
+                                var value = long.Parse(values[0]);
+                                var fieldValue = long.Parse(valueToCompare);
+                                result = (fieldValue != value);
+                            }
+                            break;
+                        default:
+                            result = !(valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
+                            break;
+                    }
                     break;
                 case Operator.NotIn:
                     var fieldValuesNotIn = (valueToCompare ?? "").Split(',');
@@ -520,7 +592,7 @@ namespace d360.core.enums
                     result = (valueToCompare != null);
                     break;
                 case Operator.StartsWith:
-                    result = (valueToCompare ?? "").StartsWith(values[0]);
+                    result = (valueToCompare ?? "").StartsWith(values[0], StringComparison.OrdinalIgnoreCase);
                     break;
             }
 
