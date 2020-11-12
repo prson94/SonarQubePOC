@@ -214,15 +214,18 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         else {
             condition.disabled = false;
         }
+        condition.value = '';
+        condition.value2 = '';
         let formControl1 = this.formGroup.get(this.conditionPrefix + 'value_1_' + condition.hash);
         if (formControl1) {
             condition.disabled ? formControl1.disable() : formControl1.enable();
+            formControl1.reset();
         }
         let formControl2 = this.formGroup.get(this.conditionPrefix + 'value_2_' + condition.hash);
         if (formControl2) {
             condition.disabled ? formControl2.disable() : formControl2.enable();
+            formControl2.reset();
         }
-        condition.value = '';
         setTimeout(() => {
             this.cdRef.markForCheck();
         })
