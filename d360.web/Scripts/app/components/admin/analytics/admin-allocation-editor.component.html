@@ -18,7 +18,7 @@
                 <div class="FieldName">
                     <span>Asset Type&nbsp;</span>
                 </div>
-                <p-dropdown igDropdown igSize="full" [disabled]="!selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false" (onChange)="hasModelChanged()">
+                <p-dropdown igDropdown igSize="full" [disabled]="disabled || !selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false" (onChange)="hasModelChanged()">
                     <ng-template let-item pTemplate="selectedItem">
                         <span [innerHtml]="item.label"></span>
                     </ng-template>
