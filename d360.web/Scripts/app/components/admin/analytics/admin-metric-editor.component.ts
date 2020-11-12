@@ -15,6 +15,7 @@ import { FieldConditionGrid } from '../../shared/controls/field-condition-grid/f
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../services/relationships.service';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -117,6 +118,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
     private fields: any[] = [];
 
+    delayedReload = _.debounce(() => {
+        this.load();
+    }, 200);
 
     constructor(private metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
@@ -148,7 +152,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             requiredLoad = true;
         }
         if (requiredLoad)
-            this.load();
+            this.delayedReload();
+            
         this.cdRef.markForCheck();
     }
 
@@ -547,6 +552,12 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         let val2 = null
                         if (condition.operator == Operator.Between || <any>condition.operator == "Between")
                             val2 = condition.value2
+
+                        if (condition.operator == Operator.Populated || <any>condition.operator == "Populated"
+                            || condition.operator == Operator.NotPopulated || <any>condition.operator == "NotPopulated ") {
+                                condition.value = null;
+                                val2 = null;
+                        }
                         this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });
                     }
                     break;

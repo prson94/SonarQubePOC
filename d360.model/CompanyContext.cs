@@ -786,7 +786,7 @@ select	ID,
 		State,
 		Object,
 		ObjectID,
-		TypeName as AssetTypeName,
+		TypeName,
 		Type,
 	    TypeID,
         uid

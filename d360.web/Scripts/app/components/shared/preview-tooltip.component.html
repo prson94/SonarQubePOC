@@ -45,8 +45,8 @@
         <div *ngFor="let field of data?.FieldValues" [ngStyle]="{ display: field.Type == 'Color' ? 'inline-flex' : 'block' }">
             <ng-container *ngIf="field.Value">
                 <b>{{ field.Name }}</b><span style="padding-right:4px;">:</span>
-                <span *ngIf="field.Type == 'Html' || field.Type == 'Link'" [innerHtml]="field.Value"></span>
-                <d3s-color-display  *ngIf="field.Type == 'Color'" [colorsJSON]="field.Value"></d3s-color-display>
+                <span *ngIf="field.Type == 'Html' || field.Type == 'Link' || field.Type == 'Path'" [innerHtml]="field.Value"></span>
+                <d3s-color-display *ngIf="field.Type == 'Color'" [colorsJSON]="field.Value"></d3s-color-display>
                 <ng-container *ngIf="field.Type == 'JSON'">
                     <span (click)="$event.stopPropagation()">
                         <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
@@ -57,7 +57,7 @@
                         <span>{{i != 0 ? ',' : ''}}<a style="margin:0px;" href="tag/{{tag.uid}}">{{tag.Value}}</a></span>
                     </ng-container>
                 </ng-container>
-                <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag' && field.Type != 'Color'" [innerText]="field.Value"></span>
+                <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag' && field.Type != 'Color' && field.Type != 'Path'" [innerText]="field.Value"></span>
             </ng-container>
         </div>
     </div>

@@ -346,6 +346,9 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     select(item: PopupMenuItem, $event) {
+        if (item.disabled)
+            return;
+
         if (item.callback) {
             item.callback();
         }

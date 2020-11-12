@@ -2489,7 +2489,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     Error = x.Error,
                     ErrorMessage = x.ErrorMessage,
                     ExecutionID = x.ExecutionID,
-                    Fields = JObject.Parse(f),
+                    Fields = JsonConvert.DeserializeObject<dynamic>(f),
                     Method = x.Method,
                     Processed = x.Processed,
                     ProcessingStartedOn = x.ProcessingStartedOn,

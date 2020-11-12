@@ -1,14 +1,13 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
+import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
+import * as Highcharts from 'highcharts';
 
-declare var require: any;
-const Highcharts = require('highcharts/highstock.src');
 
 @Component({
     selector: 'd3s-community-component',
@@ -118,9 +117,6 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                                 enabled: true,
                                 formatter: function () {
                                     return '<b>' + this.point.name+'</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
-                                },
-                                style: {
-                                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                                 }
                             }
                         }
