@@ -109,7 +109,7 @@ namespace igx.jobs.bulkloadprocessor
                         var loadItems = new List<LoadItem>();
                         var loadItemColumns = new List<LoadItemColumn>();
                         var loadColumns = company.GetLoadColumns(load.Action, load.Object, load.ObjectID, true);
-
+                        
                         while (rowIndex <= stats.EndRowIndex)
                         {
                             // Empty row validation.
@@ -126,7 +126,7 @@ namespace igx.jobs.bulkloadprocessor
                             {
                                 var loadItem = new LoadItem { LoadID = load.ID, RowIndex = rowIndex };
                                 loadItems.Add(loadItem);
-
+                                
                                 foreach (var c in load.LoadColumns.OrderBy(i => i.ColumnIndex))
                                 {
                                     var format = xls.GetCellStyle(rowIndex, c.ColumnIndex).FormatCode;
@@ -135,7 +135,7 @@ namespace igx.jobs.bulkloadprocessor
                                     if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
                                         format.Contains("[$-F400]") || format.Contains("[$-409]"))
                                         isDate = true;
-
+                                    
                                     var loadValue = string.Empty;
 
                                     if (isDate)
@@ -145,13 +145,6 @@ namespace igx.jobs.bulkloadprocessor
                                     else
                                     {
                                         loadValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
-
-                                        Regex tagRegex = new Regex(@"<[^>]+>");
-                                        if (tagRegex.IsMatch(loadValue))
-                                        {
-                                            var sanitizer = new HtmlSanitizer();
-                                            loadValue = sanitizer.Sanitize(loadValue);
-                                        }
                                     }
 
                                     loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = null });
