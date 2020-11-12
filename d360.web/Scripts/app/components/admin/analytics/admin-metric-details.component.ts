@@ -264,7 +264,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
             switch (<any>gov.Check) {
                 case 'External':
-                    this.formattedCheck = (gov.External.Instructions) ? (' Instruciton string: ' + gov.External.Instructions) : '';
+                    this.formattedCheck = (gov.External.Instructions) ? (' Instruction string: ' + gov.External.Instructions) : '';
                     break;
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
