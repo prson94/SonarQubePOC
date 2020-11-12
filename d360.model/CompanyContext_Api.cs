@@ -1,4 +1,5 @@
-﻿using d360.core;
+﻿using Borland.Vcl;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Membership;
 using d360.core.entities.Metric;
@@ -48,7 +49,7 @@ namespace d360.model
 
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
-        public int SqlBulkAssetDeleteSize { get; set; } = 1000; // number of assets removed per transaction on type deletion
+        public int SqlBulkAssetDeleteSize { get; set; } = 10000; // number of assets removed per transaction on type deletion
         public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
 
         #region DbSets
@@ -2802,61 +2803,119 @@ from	IntersectType I
                                     }
                                 }
 
-                                var assetTypes = Connection.Query<AssetTypeDeleteObject>(@"select uid, ObjectId, Object,AssetTypeId from api.ExecutionDeletedAssetType where executionid = @executionUid", new { executionUid = execution.ExecutionID }).ToList();
+                                var assetTypes = Connection.Query<AssetTypeDeleteObject>(
+                                    @"select uid, 
+                                        ObjectId, 
+                                        Object,
+                                        AssetTypeId,
+                                        isnull(HierarchyLevel,0) as Level,
+                                        ItemNumber 
+                                        from api.ExecutionDeletedAssetType 
+                                        where executionid = @executionUid", new { executionUid = execution.ExecutionID }).ToList();
 
-                                //Delete small volume data for all asset type in bulk
-                                using (var trans = Connection.BeginTransaction())
+                                //Delete hierarchy by hierarchy and start from highest level (children)
+                                var hierarchies = assetTypes.GroupBy(x => x.ItemNumber).ToList();
+                                int success = 0;
+                                int failed = 0;
+
+                                foreach (var hierarchy in hierarchies)
                                 {
-                                    try
-                                    {
-                                        RemoveSmallVolumeAssetTypeData(execution, timeout, itemNumber, trans);
+                                    var typesToDelete = hierarchy.OrderByDescending(x => x.Level).ToList();
+                                    bool hasError = false;
 
-                                        trans.Commit();
-                                    }
-                                    catch (Exception ex)
+                                    foreach (var at in typesToDelete)
                                     {
-                                        trans.Rollback();
+                                        //If error occured stop deleting this hierarchy
+                                        if (hasError)
+                                            continue;
+
+                                        int totalAssetCount = Connection.Query<int>("select count(*) from asset where assettypeid = @id", new { id = at.AssetTypeId }).FirstOrDefault();
+                                        var transactionCount = totalAssetCount / SqlBulkAssetDeleteSize;
+
+                                        for (int i = 0; i <= transactionCount; i++)
+                                        {
+                                            using (var trans = Connection.BeginTransaction())
+                                            {
+
+                                                try
+                                                {
+                                                    RemoveAssetsRange(execution, timeout, itemNumber, at, trans);
+
+                                                    trans.Commit();
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    if (trans != null)
+                                                    {
+                                                        trans.Rollback();
+                                                    }
+
+                                                    Connection.Query(@"update api.executiondeletedassettype
+                                                        set Message = isnull(Message,'') + @msg
+                                                        where executionid = @executionuid and uid = @assetTypeUid",
+                                                        new
+                                                        {
+                                                            executionuid = execution.ExecutionID,
+                                                            assetTypeUid = at.uid,
+                                                            msg = $@"Error occurred while deleting assets : ({ex.Message})"
+                                                        });
+
+                                                    hasError = true;
+                                                    i = transactionCount + 1;
+                                                }
+
+                                            }
+                                        }
+
+                                        if (!hasError)
+                                        {
+                                            using (var trans = Connection.BeginTransaction())
+                                            {
+                                                try
+                                                {
+                                                    RemoveAssetTypeData(execution, timeout, itemNumber, at, trans);
+
+                                                    trans.Commit();
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    if (trans != null)
+                                                    {
+                                                        trans.Rollback();
+                                                    }
+                                                    hasError = true;
+                                                    Connection.Query(@"update api.executiondeletedassettype
+                                                        set Message = isnull(Message,'') + @msg
+                                                        where executionid = @executionuid and uid = @assetTypeUid",
+                                                        new
+                                                        {
+                                                            executionuid = execution.ExecutionID,
+                                                            assetTypeUid = at.uid,
+                                                            msg = $@"Error occurred while deleting asset type : ({ex.Message})"
+                                                        }
+                                                    );
+                                                }
+                                            }
+                                        }
                                     }
+
+                                    if (hasError)
+                                        failed++;
+                                    else
+                                        success++;
+
                                 }
 
-                                foreach (var at in assetTypes)
-                                {
-                                    int totalAssetCount = Connection.Query<int>("select count(*) from asset where assettypeid = @id", new { id = at.AssetTypeId }).FirstOrDefault();
-                                    var transactionCount = totalAssetCount / SqlBulkAssetDeleteSize;
-                                    for (int i = 0; i <= transactionCount; i++)
-                                    {
-                                        using (var trans = Connection.BeginTransaction())
-                                        {
-
-                                            try
-                                            {
-                                                RemoveAssetsRange(execution, timeout, itemNumber, at, trans);
-
-                                                trans.Commit();
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                trans.Rollback();
-                                            }
-
-                                        }
-                                    }
-
-                                    using (var trans = Connection.BeginTransaction())
-                                    {
-                                        try
-                                        {
-                                            RemoveAssetTypeData(execution, timeout, itemNumber, at, trans);
-
-                                            trans.Commit();
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            trans.Rollback();
-                                        }
-                                    }
-                                }
-
+                                Connection.Query(@"update api.execution
+                                                        set Processed = @success,
+                                                        Error = @failed
+                                                        where executionid = @executionuid",
+                                                        new
+                                                        {
+                                                            success,
+                                                            failed,
+                                                            executionUid = execution.ExecutionID
+                                                        });
 
                                 results = Connection.Query<DatabaseBulkAssetTypeResult>(@"select	*
                                     	                            from	api.ExecutionDeletedAssetType
@@ -2894,6 +2953,51 @@ from	IntersectType I
 
                                                 insert into #deleteAssets
                                                 select top (@deleteCount) id from asset where assettypeid = @assettypeid
+
+                                                delete	T
+                                    			from	ResponsibilityTypeRelationOverrideItem T
+                                    					inner join Asset A on A.ID = T.AssetID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and A.ID in (select id from #deleteAssets);
+
+                                                delete	T
+                                    			from	AssetCrossReference T
+                                    					inner join Asset A on A.Uid = T.Uid
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where A.ID in (select id from #deleteAssets);
+
+                                                delete	T
+                                    			from	CommentRelation T
+                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where O.ID in (select id from #deleteAssets);
+                                    			delete	T
+                                    			from	CommentVote T
+                                    					inner join Comment C on C.ID = T.CommentID
+                                    					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where O.ID in (select id from #deleteAssets);
+                                    			delete	T
+                                    			from	Comment T
+                                    					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where O.ID in (select id from #deleteAssets);
+                                    			delete	T
+                                    			from	Favorite T
+                                    					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where O.ID in (select id from #deleteAssets);
+                                    			delete	T
+                                    			from	Follow T
+                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                                        where O.ID in (select id from #deleteAssets);
+                                                
+
+                                    			delete	T
+                                    			from	Nym T
+                                    					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
+                                    			        where O.ID in (select id from #deleteAssets);
 
                                     			delete	T
                                     			from	reporting.Global_Audit T
@@ -2981,7 +3085,7 @@ from	IntersectType I
 
                                     			delete	T
                                     			from	Asset T
-                                    					where @AssetTypeId = T.AssetTypeID;
+                                    					where T.Id in (select id from #deleteAssets);;
 
                                     ", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
@@ -2989,7 +3093,137 @@ from	IntersectType I
         private void RemoveAssetTypeData(ApiExecution execution, int timeout, int itemNumber, AssetTypeDeleteObject at, SqlTransaction trans)
         {
             Connection.Execute(@"
+                                                drop table if exists #w;
+                                    			create table #w (ID int);
+                                    			insert into #w
+                                    				select	distinct 
+                                    						wi.ID 
+                                    				from	workflow.[Type] wt
+                                    						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+                                    						inner join workflow.[Version] wv on wt.id = wv.typeId
+                                    						inner join workflow.Item wi on 	wv.id = wi.VersionID
+                                    						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			insert into #w
+                                    				select	wi.id 
+                                    				from	workflow.Item wi
+                                    						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+                                    						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
+                                    						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete  T
+                                    			from	[workflow].[ItemStepTransition] T
+                                    					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+                                    					inner join #w S on S.ID = wis.ItemID;
+                                    			delete  workflow.itemstep 
+                                    			where	ItemID in (Select ID from #w);
+                                    			delete	T
+                                    			from	[workflow].[ItemAssignment] T
+                                    					inner join #w S on S.ID = T.ItemID;
 
+                                    			delete  [workflow].[Item] 
+                                    			where	ID in (Select ID from #w);
+                                    			truncate table #w;
+                                    			insert into #w
+                                    				select	distinct 
+                                    						wt.ID 
+                                    				from	workflow.[Type] wt
+                                    						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+                                    						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete  T
+                                    			from	[workflow].[VersionStepTransition] T
+                                    					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
+                                    					inner join [workflow].[Version] v on v.ID = wis.VersionID
+                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    					inner join #w S on S.ID = wt.ID;
+                                    			delete  wis
+                                    			from	workflow.Versionstep wis
+                                    					inner join [workflow].[Version] v on v.ID = wis.VersionID
+                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    					inner join #w S on S.ID = wt.ID;
+
+                                     			update	wt
+                                    			set		PublishedVersionID = null
+                                    			from	workflow.type wt
+                                    					inner join #w S on S.ID = wt.ID;
+                                    			delete  v
+                                    			from	[workflow].[Version] v
+                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    					inner join #w S on S.ID = wt.ID;
+                                    			delete  wt
+                                    			from	[workflow].[Type] wt
+                                    					inner join #w S on S.ID = wt.ID;
+
+                                    			delete	T
+                                    			from	ResponsibilityRuleResultAsset T
+                                    					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete	T
+                                    			from	ResponsibilityRuleResultSecurityAsset T
+                                    					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete	T
+                                    			from	ResponsibilityTypeRelationRule T
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete	T
+                                    			from	ResponsibilityTypeRelation T
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                                delete	T
+                                    			from	api.EntityFieldTypeMultiSelectField T
+                                    					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
+                                    					inner join api.Entity E on E.ID = F.EntityID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
+                                    			delete	T
+                                    			from	api.EntityFieldType T
+                                    					inner join api.Entity E on E.ID = T.EntityID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
+                                    			delete	T
+                                    			from	api.EntityUri T
+                                    					inner join api.Entity E on E.ID = T.EntityID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
+                                    			delete	T
+                                    			from	api.Entity T
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
+
+
+                                  			
+                                    			delete	T
+                                    			from	[Load] T
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+
+                                                delete	T
+                                    			from	[metrics].[Allocation] T
+                                    					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                    			delete	T
+                                    			from	SiteNavPermission T
+                                    					inner join SiteNav O on O.ID = T.SiteNavID
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			delete	O
+                                    			from	SiteNav O
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                                delete	T
+                                    			from	NymRelation T
+                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                    			delete  T
+                                    			from    AssetTypeExportTemplateStyle T
+                                    					inner join AssetTypeExportTemplate E on E.ID = T.AssetTypeExportTemplateID
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                    			delete  E
+                                    			from    AssetTypeExportTemplate E 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                    			delete  E
+                                    			from    AssetTypeLevel E 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                    			delete  E
+                                    			from    AssetTypeStyle E 
+                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    			
                                     			delete	T
                                     			from	[IntersectType] T
                                                         where T.Subject = @Object and T.SubjectID = @ObjectId;
@@ -3083,184 +3317,7 @@ from	IntersectType I
                                     					Success = 1
                                     			where	ExecutionID = @executionUid 
                                     					and Uid = @assetTypeUid
-                                    					and FromHierarchy = 0
                                     ", new { assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
-        }
-
-        private void RemoveSmallVolumeAssetTypeData(ApiExecution execution, int timeout, int itemNumber, SqlTransaction trans)
-        {
-            Connection.Execute(@"
-                                          	delete	T
-                                    			from	api.EntityFieldTypeMultiSelectField T
-                                    					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
-                                    					inner join api.Entity E on E.ID = F.EntityID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	api.EntityFieldType T
-                                    					inner join api.Entity E on E.ID = T.EntityID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	api.EntityUri T
-                                    					inner join api.Entity E on E.ID = T.EntityID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	api.Entity T
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid;
-
-
-                                    			drop table if exists #w;
-                                    			create table #w (ID int);
-                                    			insert into #w
-                                    				select	distinct 
-                                    						wi.ID 
-                                    				from	workflow.[Type] wt
-                                    						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
-                                    						inner join workflow.[Version] wv on wt.id = wv.typeId
-                                    						inner join workflow.Item wi on 	wv.id = wi.VersionID
-                                    						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid;
-                                    			insert into #w
-                                    				select	wi.id 
-                                    				from	workflow.Item wi
-                                    						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-                                    						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
-                                    						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete  T
-                                    			from	[workflow].[ItemStepTransition] T
-                                    					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
-                                    					inner join #w S on S.ID = wis.ItemID;
-                                    			delete  workflow.itemstep 
-                                    			where	ItemID in (Select ID from #w);
-                                    			delete	T
-                                    			from	[workflow].[ItemAssignment] T
-                                    					inner join #w S on S.ID = T.ItemID;
-
-                                    			delete  [workflow].[Item] 
-                                    			where	ID in (Select ID from #w);
-                                    			truncate table #w;
-                                    			insert into #w
-                                    				select	distinct 
-                                    						wt.ID 
-                                    				from	workflow.[Type] wt
-                                    						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
-                                    						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete  T
-                                    			from	[workflow].[VersionStepTransition] T
-                                    					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
-                                    					inner join [workflow].[Version] v on v.ID = wis.VersionID
-                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    					inner join #w S on S.ID = wt.ID;
-                                    			delete  wis
-                                    			from	workflow.Versionstep wis
-                                    					inner join [workflow].[Version] v on v.ID = wis.VersionID
-                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    					inner join #w S on S.ID = wt.ID;
-
-                                     			update	wt
-                                    			set		PublishedVersionID = null
-                                    			from	workflow.type wt
-                                    					inner join #w S on S.ID = wt.ID;
-                                    			delete  v
-                                    			from	[workflow].[Version] v
-                                    					inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    					inner join #w S on S.ID = wt.ID;
-                                    			delete  wt
-                                    			from	[workflow].[Type] wt
-                                    					inner join #w S on S.ID = wt.ID;
-
-                                    			delete	T
-                                    			from	ResponsibilityRuleResultAsset T
-                                    					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	ResponsibilityRuleResultSecurityAsset T
-                                    					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	ResponsibilityTypeRelationRule T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	ResponsibilityTypeRelation T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	ResponsibilityTypeRelationOverrideItem T
-                                    					inner join Asset A on A.ID = T.AssetID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
-
-                                    			delete	T
-                                    			from	[Load] T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid;
-
-                                    			delete	T
-                                    			from	AssetCrossReference T
-                                    					inner join Asset A on A.Uid = T.Uid
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
-
-                                                delete	T
-                                    			from	CommentRelation T
-                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	CommentVote T
-                                    					inner join Comment C on C.ID = T.CommentID
-                                    					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	Comment T
-                                    					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	Favorite T
-                                    					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	Follow T
-                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                                
-                                                delete	T
-                                    			from	[metrics].[Allocation] T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid;
-
-                                    			delete	T
-                                    			from	SiteNavPermission T
-                                    					inner join SiteNav O on O.ID = T.SiteNavID
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid;
-                                    			delete	O
-                                    			from	SiteNav O
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid;
-
-                                    			delete	T
-                                    			from	Nym T
-                                    					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid;
-                                    			delete	T
-                                    			from	NymRelation T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid;
-
-                                    			delete  T
-                                    			from    AssetTypeExportTemplateStyle T
-                                    					inner join AssetTypeExportTemplate E on E.ID = T.AssetTypeExportTemplateID
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-
-                                    			delete  E
-                                    			from    AssetTypeExportTemplate E 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-
-                                    			delete  E
-                                    			from    AssetTypeLevel E 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid;
-
-                                    			delete  E
-                                    			from    AssetTypeStyle E 
-                                    					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid;
-                                    			
-
-", new
-            {
-                executionUid = execution.ExecutionID,
-                itemNumber,
-                resource = CurrentResourceID
-            }, transaction: trans, commandTimeout: timeout);
         }
 
         private void BuildDeletionTree(ApiExecution execution, int timeout, int itemNumber, SqlTransaction trans)
@@ -3275,7 +3332,7 @@ from	IntersectType I
 						D.IntersectTypeID,
 						0 as [Level]
 				from	api.ExecutionDeletedAssetType D
-						inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID and D.ItemNumber = @itemNumber
+						inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID
 				where	D.AssetTypeID is not null
 				union all
 				select	P.ExecutionID,
@@ -3292,7 +3349,7 @@ from	IntersectType I
 						inner join [Predicate] PR on PR.ID = I.PredicateID and PR.[Type] in (3,4)
 				where   P.[Level] <= 15
 			)
-			insert into api.ExecutionDeletedAssetType ([ExecutionID],[ItemNumber],[Uid],[AssetTypeID],Object,ObjectID,[IntersectTypeID],[FromHierarchy])
+			insert into api.ExecutionDeletedAssetType ([ExecutionID],[ItemNumber],[Uid],[AssetTypeID],Object,ObjectID,[IntersectTypeID],[FromHierarchy],[HierarchyLevel])
 				select  distinct 
 						ExecutionID, 
 						ItemNumber, 
@@ -3301,7 +3358,8 @@ from	IntersectType I
 						Object,
 						ObjectID,
 						IntersectTypeID, 
-						1 
+						1,
+                        [Level]
 				from    h 
 				where   IntersectTypeID is not null 
 						and [Level] > 0 
@@ -3314,7 +3372,7 @@ from	IntersectType I
 						A.ObjectID, 
 						A.ID
 				from	Asset A
-						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid;
 		", new
             {
                 executionUid = execution.ExecutionID,

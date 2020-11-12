@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.ExecutionDeletedAssetType-v1">
+  <changeSet author="TDuric" id="Table.api.ExecutionDeletedAssetType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,6 +28,16 @@ BEGIN
 		[Success] [bit] NULL,
 		CONSTRAINT [PK_ApiExecutionDeletedAssetType] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
 	)
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionDeletedAssetType]') 
+         AND name = 'HierarchyLevel'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionDeletedAssetType] ADD [HierarchyLevel] int
 END
 		]]>
     </sql>
