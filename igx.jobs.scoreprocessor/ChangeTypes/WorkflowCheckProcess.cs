@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
+using d360.core.enums;
 using d360.core.queue;
 using Dapper;
 using System;
@@ -49,6 +50,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             if (Db.Connection.State != ConnectionState.Open)
                 Db.Connection.Open();
 
+            MetricAllocation allocation = null;
+            if (scores.Count > 0)
+            {
+                var allocationUid = scores[0].AllocationUid;
+                allocation = Db.MetricAllocations.SingleOrDefault(al => al.Uid == allocationUid);
+            }
+
             using (var trans = Db.Connection.BeginTransaction())
             {
                 await Db.Connection.ExecuteAsync(@"create table #Tbl (
@@ -89,7 +97,7 @@ from    #Tbl T
             {
                 groups.ForEach(g =>
                 {
-                    Db.SendWorkflowEvents(g.Type, g.TypeID, g.Assets);
+                    Db.SendWorkflowEvents(g.Type, g.TypeID, g.Assets, scoreType: (allocation != null) ? allocation.ScoreType : ScoreType.Governance);
                 });
             }
         }
