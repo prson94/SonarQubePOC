@@ -90,7 +90,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     updateFrequencyOptions = MetricUpdateFrequency;
 
     responsibilityTypes: any[] = [];
-    responsibilityOperators: any[] =[];
+    responsibilityOperators: any[] = [];
     showMatchPicker: boolean = false;
 
     relationshipTypes: any[] = [];
@@ -114,7 +114,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     metricForm: FormGroup = null;
 
-    @ViewChild('conditionGrid', { static: false }) conditionGrid: FieldConditionGrid;
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
     private fields: any[] = [];
 
@@ -153,7 +152,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         }
         if (requiredLoad)
             this.delayedReload();
-            
+
         this.cdRef.markForCheck();
     }
 
@@ -258,10 +257,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         let assetLabel = "";
                         if (isSubject) {
                             label = x.Predicate.Name;
-                            assetLabel = x.Object.Name 
+                            assetLabel = x.Object.Name
                         } else if (isObject) {
                             label = x.Predicate.Inverse;
-                            assetLabel = x.Subject.Name 
+                            assetLabel = x.Subject.Name
                         }
                         label = label + " " + assetLabel;
                         return { label: label, value: x.Uid };
@@ -281,7 +280,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         } else {
                             label = x.Predicate.Inverse + (hasInverse ? ('/' + x.Predicate.Name) : '');
                         }
-                        return { label: label, value: x.Predicate.Uid }; 
+                        return { label: label, value: x.Predicate.Uid };
                     });
                     this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
                 }
@@ -475,7 +474,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 break;
             case 1:
                 this.model.Definition.Governance.Field = new MetricAssetDefinitionGovernanceFieldViewModel();
-                this.updateFormValidity(null);
                 break;
             case 2:
                 this.metricForm.addControl("ResponsibilityTypeUid", new FormControl(''));
@@ -519,7 +517,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         //remove the form controls for Relation
         this.metricForm.removeControl("IntersectTypeUid");
         this.metricForm.removeControl("RelationshipTypeOperator");
-        
+
         //clear conditions
         this.testFieldConditions = [];
 
