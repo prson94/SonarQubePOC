@@ -57,6 +57,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
         }
         else {
             this.hasValue = false;
+            this.value = null;
         }
 
         this.onModelChange(this.value);
