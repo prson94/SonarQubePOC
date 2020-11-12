@@ -254,22 +254,36 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     this.relationshipTypes = data.map(x => {
                         let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let isObject = (x.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
-                        let labelName = "";
-                        let assetName = "";
                         let label = "";
+                        let assetLabel = "";
                         if (isSubject) {
-                            labelName = x.Predicate.Name;
-                            assetName = x.Subject.Name
+                            label = x.Predicate.Name;
+                            assetLabel = x.Object.Name 
                         } else if (isObject) {
-                            labelName = x.Predicate.Inverse;
-                            assetName = x.Object.Name;
+                            label = x.Predicate.Inverse;
+                            assetLabel = x.Subject.Name 
                         }
-                        label = labelName + " " + assetName;
+                        label = label + " " + assetLabel;
                         return { label: label, value: x.Uid };
                     });
-                    this.predicateTypes = data.map(x => {
-                        return { label: x.Predicate.Name + "/" + x.Predicate.Inverse, value: x.Predicate.Uid };
+                    this.predicateTypes = data.map((x, idx, self) => {
+                        let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let hasInverse = self.findIndex((check) => {
+                            if (isSubject) {
+                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
+                            } else {
+                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
+                            }
+                        }) != -1;
+                        let label = '';
+                        if (isSubject) {
+                            label = x.Predicate.Name + (hasInverse ? ('/' + x.Predicate.Inverse) : '');
+                        } else {
+                            label = x.Predicate.Inverse + (hasInverse ? ('/' + x.Predicate.Name) : '');
+                        }
+                        return { label: label, value: x.Predicate.Uid }; 
                     });
+                    this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
                 }
                 this.relationshipOperators = [{ label: "is used", value: Operator.Populated }, { label: "is not used", value: Operator.NotPopulated }];
                 this.predicateOperators = [{ label: "exists", value: Operator.Populated }, { label: "does not exist", value: Operator.NotPopulated }];
