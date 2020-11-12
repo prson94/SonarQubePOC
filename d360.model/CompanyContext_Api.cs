@@ -1173,7 +1173,7 @@ where T.ExecutionId = @executionid;
                         ", new { executionID }, commandTimeout: timeout);
         }
 
-        public void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
+        public void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null)
         {
             try
             {
@@ -1211,7 +1211,8 @@ where T.ExecutionId = @executionid;
                                 ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectType),
                                 ObjectID = result.ObjectID,
                                 ObjectTypeID = objectTypeID,
-                                ChangedFieldIds = changedFieldsIDS
+                                ChangedFieldIds = changedFieldsIDS, 
+                                ScoreType = scoreType
                             }
                         });
 
