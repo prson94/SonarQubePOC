@@ -176,6 +176,56 @@ end
 	</rollback>
   </changeSet>
   
+<changeSet author="Puneet Gupta" id="Table.dbo.Asset-v6">
+<comment>GOV-12821</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+declare @count int=0;
+
+select @count = count(1)
+from 
+(
+	select top 1 uid
+	from dbo.asset
+	group by uid
+	having count(1)>1
+) a
+
+if (exists (select * from sys.indexes where name = 'IX_Asset_uid' and is_unique = 0) and @count = 0)
+begin
+	if exists (select * from sys.indexes si where name = 'IX_Asset_uid' and object_name(object_id) = 'Asset' 
+	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
+	begin
+		drop INDEX [IX_Asset_uid] ON [dbo].[Asset];
+	end
+	if not exists (select * from sys.indexes where name = 'IX_Asset_uid')
+		begin
+			CREATE UNIQUE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ([uid] asc)
+		end
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from sys.indexes where name = 'IX_Asset_uid' and is_unique = 1)
+begin
+	if exists (select * from sys.indexes si where name = 'IX_Asset_uid' and object_name(object_id) = 'Asset' 
+	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
+	begin
+		drop INDEX [IX_Asset_uid] ON [dbo].[Asset]
+	end
+	if not exists (select * from sys.indexes where name = 'IX_Asset_uid')
+		begin
+			CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ([uid] asc)
+		end
+end
+]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
