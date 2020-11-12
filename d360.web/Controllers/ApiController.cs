@@ -2605,7 +2605,8 @@ from    (
 										c.BackColor as IconBackColor,
 										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
 										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
-										else	c.[Object] end [Displayobject]
+										else	c.[Object] end [Displayobject],
+                                        Uid as AssetUid
 										from [dbo].AssetWithType c   
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID
@@ -2617,7 +2618,9 @@ from    (
             dbParams.Add("contains", $"%{phrase}%");
             dbParams.Add("exclude", objectsToExclude);
 
-            return Company.Query<TagSuggestionModel>(sql, dbParams);
+            var tags = Company.Query<TagSuggestionModel>(sql, dbParams);
+
+            return tags;
         }
 
         #endregion
