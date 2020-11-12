@@ -50,11 +50,15 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
             else {
                 this.value = obj;
             }
+        }
+
+        if (obj != undefined && obj != null) {
             this.hasValue = true;
         }
         else {
             this.hasValue = false;
         }
+
         this.onModelChange(this.value);
         this.onModelTouched();
         this.ref.markForCheck();
