@@ -107,7 +107,7 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest" class="measure-details-item">
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest && formattedCheck" class="measure-details-item">
                     <div class="details-header">Pass Test</div>
                     <div class="details-condition">
                         <div [ngSwitch]="selectedMetric.Definition.Governance.Check">
