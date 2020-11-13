@@ -953,14 +953,6 @@ namespace d360.model
                         throw new Exception($"ERROR - INVALID METHOD PASSED TO HTTP REQUEST.");
                 }
 
-                var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
-
-                if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
-                    throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
-
-                request.RequestUri = new Uri(uri);
-
-
                 if (!string.IsNullOrEmpty(requestSettings.Body))
                 {
                     var body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item);
@@ -968,34 +960,48 @@ namespace d360.model
                     request.Content = new ByteArrayContent(contentArray);
                 }
 
-
-                if (requestSettings?.Headers?.Any() == true)
+                HttpResponseMessage response = null;
+                try
                 {
-                    List<string> contentHeaderKeys = new List<string>() { "content-type", "content-md5", "content-length", "content-encoding" };
-                    requestSettings.Headers.ForEach(h =>
+                    if (requestSettings?.Headers?.Any() == true)
                     {
-                        if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
+                        List<string> contentHeaderKeys = new List<string>() { "content-type", "content-md5", "content-length", "content-encoding" };
+                        requestSettings.Headers.ForEach(h =>
                         {
-                            if (request.Content.Headers.Contains(h.Key))
+                            if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
                             {
-                                request.Content.Headers.Remove(h.Key);
+                                if (request.Content.Headers.Contains(h.Key))
+                                {
+                                    request.Content.Headers.Remove(h.Key);
+                                }
+                                request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
                             }
-                            request.Content.Headers.TryAddWithoutValidation(h.Key, h.Value);
-                        }
-                        else
-                        {
-                            if (request.Headers.Contains(h.Key))
+                            else
                             {
-                                request.Headers.Remove(h.Key);
+                                if (request.Headers.Contains(h.Key))
+                                {
+                                    request.Headers.Remove(h.Key);
+                                }
+                                request.Headers.TryAddWithoutValidation(h.Key, h.Value);
                             }
-                            request.Headers.TryAddWithoutValidation(h.Key, h.Value);
-                        }
-                    });
+                        });
+                    }
+
+                    var uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item);
+
+                    if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
+                        throw new Exception($"ERROR - INVALID HTTP REQUEST URL SPECIFIED.");
+
+                    request.RequestUri = new Uri(uri);
+                    requestSettings.FormattedUrl = new Uri(uri);
+                    client.Timeout = new TimeSpan(0, 0, requestSettings.Timeout);
+
+                    response = await client.SendAsync(request);
                 }
-
-
-
-                var response = await client.SendAsync(request);
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]\n" + ex.GetFullExceptionData());
+                }
 
                 await SaveHttpResponseResultsAsync(item, requestSettings, response);
             }
@@ -2097,12 +2103,21 @@ namespace d360.model
 
         private async Task SaveHttpResponseResultsAsync(WorkflowItemStep item, WorkflowHttpRequestSettingsModel settings, HttpResponseMessage response)
         {
-            if (!string.IsNullOrEmpty(item.Fields) && response != null)
+            if (!string.IsNullOrEmpty(item.Fields))
             {
                 var root = XElement.Parse(item.Fields);
                 var xResponse = new XElement("HTTPResponse");
-                xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
-                xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
+
+                if (response == null)
+                {
+                    xResponse.Add(new XElement("StatusCode", 0));
+                    xResponse.Add(new XElement("Body", ""));
+                }
+                else
+                {
+                    xResponse.Add(new XElement("StatusCode", (int)response.StatusCode));
+                    xResponse.Add(new XElement("Body", await response.Content.ReadAsStringAsync()));
+                }
 
                 root.Add(xResponse);
                 item.Fields = root.ToString();
@@ -2113,7 +2128,7 @@ namespace d360.model
                 var root = XElement.Parse(item.Settings);
 
                 var xRequest = new XElement("HTTPRequest");
-                xRequest.Add(new XElement("Url", response.RequestMessage.RequestUri.ToString()));
+                xRequest.Add(new XElement("Url", settings.FormattedUrl?.ToString() ?? ""));
                 xRequest.Add(new XElement("Method", settings.Method.ToUpper()));
                 xRequest.Add(new XElement("Timeout", settings.Timeout.ToString()));
                 if (settings?.Headers?.Any() == true)
