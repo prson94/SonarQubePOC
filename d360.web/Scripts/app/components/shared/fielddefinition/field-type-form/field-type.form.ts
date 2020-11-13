@@ -1028,7 +1028,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (this.objectType === 'IntersectType') {
                         dissallowedFields.push('source');
                     }
-
+                    if (this.objectType === 'ResourceType') {
+                        dissallowedFields.push('firstname', 'lastname', 'email', 'status', 'state', 'resourceid', 'resourceuri', 'datelastloggedin', 'lastloggedinon', 'isadministrator');
+                    }
                     if (dissallowedFields.some(x => x == this.model.FieldType.Name.toLowerCase().trim())) {
                         return true;
                     }

@@ -43,7 +43,7 @@ namespace d360.model.validators
 
                 #region Name Validation
 
-                if (!IsFieldNameAllowed(field.Name.Trim(), relationshipTypeIdentifierInfoModel != null))
+                if (!IsFieldNameAllowed(field.Name.Trim(), relationshipTypeIdentifierInfoModel != null, assetTypeIdentifierInfoModel))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Name cannot be [{field.Name.Trim().ToUpper()}].");
                 }
@@ -52,7 +52,7 @@ namespace d360.model.validators
 
                 #region FriendlyName Validation                
 
-                if (!IsFieldNameAllowed(field.FriendlyName.Trim()))
+                if (!IsFieldNameAllowed(field.FriendlyName.Trim(), assetTypeIdentifierInfoModel: assetTypeIdentifierInfoModel))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot be [{field.FriendlyName.Trim().ToUpper()}].");
                 }
@@ -571,12 +571,20 @@ namespace d360.model.validators
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false)
+        private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false, TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null )
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
             if (isRelationshipType)
                 disallowedFieldNames.Add("source");
+
+            if(assetTypeIdentifierInfoModel != null)
+            {
+                if(assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
+                {
+                    disallowedFieldNames.AddRange(new List<string> { "firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator" });
+                }
+            }
 
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
