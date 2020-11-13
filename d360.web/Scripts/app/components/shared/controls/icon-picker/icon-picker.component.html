@@ -20,7 +20,8 @@
         <ng-template let-item pTemplate="selectedItem">
             <div class="iconfield-item-selected">
                 <span class="iconfield-swatch">
-                    <i [class]="'fa ' + item.value"></i>
+                    <img [src]="item.path" *ngIf="item.img">
+                    <i [class]="'fa ' + item.value" *ngIf="!item.img"></i>
                 </span>
                 <span class="iconfield-item-label">
                     {{item.label}}
@@ -30,7 +31,8 @@
         <ng-template let-item pTemplate="item">
             <div class="iconfield-item">
                 <span class="iconfield-swatch">
-                    <i [class]="'fa ' + item.value"></i>
+                    <img [src]="item.path" *ngIf="item.img">
+                    <i [class]="'fa ' + item.value" *ngIf="!item.img"></i>
                 </span>
                 <span class="iconfield-item-label">
                     {{item.label}}

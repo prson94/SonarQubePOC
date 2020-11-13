@@ -818,6 +818,7 @@
     <Content Include="Content\styles\infogix-ui\IgDropdown.less" />
     <Content Include="Content\styles\infogix-ui\IgRadioButton.less" />
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.less" />
+    <Content Include="Content\json\governanceIcons.json" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />

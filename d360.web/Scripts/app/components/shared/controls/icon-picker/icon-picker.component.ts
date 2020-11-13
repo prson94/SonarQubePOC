@@ -49,19 +49,27 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
         this.isRequired = this.required !== undefined;
 
         this.iconService.getIconProperties().subscribe(result => {
-            result.forEach(i => {
-                let index = this.categories.findIndex(x => x.label == i.categories[0]);
+            console.log(result);
+            this.iconService.getIconImages().subscribe(images => {
+                images.forEach(img => {
+                    result.push(img);
+                })
 
-                if (index == -1) {
-                    this.categories.push({
-                        label: i.categories[0],
-                        value: i.categories[0],
-                        items: [{ label: i.name, value: 'fa-' + i.id }]
-                    });
-                } else {
-                    this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id });
-                }
-            });
+                result.forEach(i => {
+                    let index = this.categories.findIndex(x => x.label == i.categories[0]);
+
+                    if (index == -1) {
+                        this.categories.push({
+                            label: i.categories[0],
+                            value: i.categories[0],
+                            items: [{ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img }]
+                        });
+                    } else {
+                        this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img });
+                    }
+                });
+            })
+            
 
             this.categories.forEach(c => c.items.sort((a, b) => this.sortByName(a, b)));
             this.categories.sort((a, b) => this.sortByName(a, b));

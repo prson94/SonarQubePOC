@@ -43,6 +43,21 @@ export class IconService extends BaseObservableService   {
         }
     }
 
+    public getIconImages(): Observable<IconProperties[]> {
+        this.observable = this.http.get('/content/json/governanceIcons.json', {
+            observe: 'response'
+        }).pipe(
+            map((res: any) => {
+                this.observable = null;
+                this.data = res.body;
+                return this.data;
+            }),
+            catchError(err => this.handleError(err))
+        );
+
+        return this.observable;
+    }
+
     public removeIconPrefix(s: string): string {
         if (s == null || s.length == 0)
             return s;

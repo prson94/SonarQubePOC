@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Data Catalog",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/bdd_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Processes",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/bpc_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Standards",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/dsr_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Glossary",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/glo_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Objectives",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/goc_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Rules",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/grc_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Metrics",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/mmc_circle.png",
+    "categories": [ "Governance" ]
+  },
+  {
+    "name": "Reports",
+    "img": "true",
+    "path": "/Content/images/Governance Icons/report_circle.png",
+    "categories": [ "Governance" ]
+  }
+]
