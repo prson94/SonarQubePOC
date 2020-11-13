@@ -782,7 +782,7 @@ where   E.ExecutionID = @ExecutionID
                     sql = @"
 select	V.Uid
 from	metrics.AssetVersion V
-		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null and V.Definition <> 'null'
 		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 		inner join AssetType T on T.Uid = Al.AssetTypeUid
 		inner join FieldType FT on FT.Name = JSON_VALUE(V.Definition, '$.Governance.Field.FieldTypeName') and FT.AssetTypeID = T.ID and FT.ID = @typeId";
@@ -791,7 +791,7 @@ from	metrics.AssetVersion V
                     sql = @"
 select	V.Uid
 from	metrics.AssetVersion V
-		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null and V.Definition <> 'null'
 		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 		inner join AssetType T on T.Uid = Al.AssetTypeUid
 		inner join ResponsibilityTypeRelation RA on RA.ObjectType = T.Object and RA.ObjectID = T.ObjectID
@@ -801,7 +801,7 @@ from	metrics.AssetVersion V
                     sql = @"
 select	V.Uid
 from	metrics.AssetVersion V
-		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null and V.Definition <> 'null'
 		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 		inner join AssetType T on T.Uid = Al.AssetTypeUid
 		inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = A.ObjectID) or (IA.Object = T.Object and IA.ObjectID = A.ObjectID) ) 
@@ -811,7 +811,7 @@ from	metrics.AssetVersion V
                     sql = @"
 select	V.Uid
 from	metrics.AssetVersion V
-		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Asset A on A.Uid = V.AssetUid and V.Definition is not null and V.Definition <> 'null'
 		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
 		inner join AssetType T on T.Uid = Al.AssetTypeUid
 		inner join IntersectType IA on ( (IA.Subject = T.Object and IA.SubjectID = T.ObjectID) or (IA.Object = T.Object and IA.ObjectID = T.ObjectID) ) 
