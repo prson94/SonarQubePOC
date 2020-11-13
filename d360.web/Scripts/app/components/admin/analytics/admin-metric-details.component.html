@@ -107,7 +107,7 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest" class="measure-details-item">
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest && formattedCheck" class="measure-details-item">
                     <div class="details-header">Pass Test</div>
                     <div class="details-condition">
                         <div [ngSwitch]="selectedMetric.Definition.Governance.Check">
@@ -129,7 +129,7 @@
                             <div class="row row-margin" *ngSwitchCase="'Owner'">
                                 <div class="condition-content">
                                     <div class="condition-items">
-                                        Owner: {{formattedCheck}}
+                                        Ownership: {{formattedCheck}}
                                     </div>
                                 </div>
                             </div>

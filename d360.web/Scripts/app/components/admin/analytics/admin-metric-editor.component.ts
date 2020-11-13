@@ -86,7 +86,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     maxHeight: number = window.innerHeight - 160;
     maxScoreEffectiveDate: Date;
     currentEffectiveDate: Date;
-    checkTypeOptions = MetricGovernanceCheckType;
+    checkTypeOptions = [];
+    metricGovernanceCheckType = MetricGovernanceCheckType;
     updateFrequencyOptions = MetricUpdateFrequency;
 
     responsibilityTypes: any[] = [];
@@ -165,6 +166,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             isGroup: null,
             matchType: null,
             check: null
+        });
+
+        this.checkTypeOptions = Object.keys(this.metricGovernanceCheckType).filter(e => !isNaN(+e)).map(o => {
+            let label = MetricGovernanceCheckType[o];
+            if (+o == MetricGovernanceCheckType.Relation) {
+                label = "Relationship"
+            }
+            if (+o == MetricGovernanceCheckType.Owner) {
+                label = "Ownership"
+            }
+            return {
+                value: +o, label: label
+            }
         });
 
         this.load();
