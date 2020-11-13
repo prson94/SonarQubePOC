@@ -631,15 +631,17 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
-                if (r) {
+                if (r && r.type != 'error') {
                     this.isSaving = false;
                     this.showMessageForResult(this.messagesService, r);
                     this.onSave.emit(this.model.Name);
+                    this.cdRef.markForCheck();
                 }
                 else {
                     this.displayEffectiveDate = prevDate as Date;
                     this.model.ConditionGroups = [...previousConditions];
                     this.isSaving = false;
+                    this.cdRef.markForCheck();
                 }
             });
     }
