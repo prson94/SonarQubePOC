@@ -967,6 +967,15 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the condition type of this metric without also altering its effective date.");
                             }
 
+                            var existingDefinition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(metricAssetVersion.Definition ?? "{}");
+                            var existingDefinitionHash = existingDefinition.GetHashValue();
+                            var newDefinitionHash = model.Definition.GetHashValue();
+                            if (existingDefinitionHash != newDefinitionHash)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the definition of this metric without also altering its effective date.");
+                            }
+
+
                             if (metricAssetVersion.Conditions == null)
                             {
                                 metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
