@@ -5124,38 +5124,50 @@ end",
                     #region Send score recalculation notifications.
 
                     sw.Restart();
-                    var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
-select	distinct
-		SA.Uid as MetricAssetUid,
-		S.Uid as AssetUid,
-		@utc as EffectiveDate,
-		cast(0 as bit) as Result
-from	api.ExecutionRelationship ER
-		inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.Success = 1
-		inner join IntersectType T on T.ID = R.IntersectTypeID 
-        inner join [Predicate] P on P.ID = T.PredicateID 
-		inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
-		inner join AssetType ST on ST.ID = S.AssetTypeID
-		inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
-		inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
-		cross apply (
-			select	Definition
-			from	metrics.AssetVersion 
-			where	AssetUid = SA.Uid
-					and EffectiveDate <= getutcdate()
-					and EffectiveEndDate is null
-                    and (
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
-                    or 
-                    (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
-                    )
-					and Definition <> '{}'
-		) V", new { execution.ExecutionID }).ToList();
+                    var assetTypeHasScoringAllocation = Query<bool>(@"
+select	cast(iif(count(1)>0,1,0) as bit) 
+from	IntersectType T
+		inner join AssetType A on (A.Object = T.Subject and A.ObjectID = T.SubjectID) or (A.Object = T.Object and A.ObjectID = T.ObjectID)
+		inner join metrics.Allocation L on L.AssetTypeUid = A.Uid and L.ScoreType = 1
+where   T.ID = @ID", new { rt.ID }).Single();
 
-                    if (measureAssets.Count > 0)
-                    {
-                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
-                        AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+                    if (assetTypeHasScoringAllocation)
+                    { 
+                        var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
+    select	distinct
+		    SA.Uid as MetricAssetUid,
+		    S.Uid as AssetUid,
+		    @utc as EffectiveDate,
+		    cast(0 as bit) as Result
+    from	api.ExecutionRelationship ER
+		    inner join [Intersect] R on R.ID = ER.IntersectID and ER.ExecutionID = @ExecutionID and ER.Success = 1
+		    inner join IntersectType T on T.ID = R.IntersectTypeID 
+            inner join [Predicate] P on P.ID = T.PredicateID 
+		    inner join Asset S on (S.Object = R.Subject and S.ObjectID = R.SubjectID) or (S.Object = R.Object and S.ObjectID = R.ObjectID)
+		    inner join AssetType ST on ST.ID = S.AssetTypeID
+		    inner join metrics.Allocation SAL on SAL.AssetTypeUid = ST.Uid and SAL.ScoreType = 1
+		    inner join metrics.Asset SA on SA.AllocationUid = SAL.Uid and SA.State = 1 and SA.IsGroup = 0
+		    cross apply (
+			    select	Definition
+			    from	metrics.AssetVersion 
+			    where	AssetUid = SA.Uid
+					    and EffectiveDate <= getutcdate()
+					    and EffectiveEndDate is null
+                        and (
+                        (JSON_VALUE(Definition, '$.Governance.Check') = 'Relation' and JSON_VALUE(Definition, '$.Governance.Relation.IntersectTypeUid') = T.Uid)
+                        or 
+                        (JSON_VALUE(Definition, '$.Governance.Check') = 'Predicate' and JSON_VALUE(Definition, '$.Governance.Predicate.PredicateUid') = P.Uid)                        
+                        )
+                        and Definition is not null 
+                        and Definition <> 'null' 
+					    and Definition <> '{}'
+		    ) V", new { execution.ExecutionID }).ToList();
+
+                        if (measureAssets.Count > 0)
+                        {
+                            SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                            AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
+                        }
                     }
 
                     #endregion
