@@ -194,7 +194,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 tempFields.forEach(f => {
                     f.Operators = [];
                     this.operators.forEach(op => {
-                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                        if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === FieldTypeHelper.getFieldType(f.Type).toLowerCase())) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
@@ -565,10 +565,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         if (condition.operator == Operator.Between || <any>condition.operator == "Between")
                             val2 = condition.value2
 
-                        if (condition.operator == Operator.Populated || <any>condition.operator == "Populated"
-                            || condition.operator == Operator.NotPopulated || <any>condition.operator == "NotPopulated ") {
+                        switch (<any>condition.operator) {
+                            case Operator.Populated:
+                            case Operator.NotPopulated:
+                            case Operator.IsTrue:
+                            case Operator.IsFalse:
+                            case "Populated":
+                            case "NotPopulated":
+                            case "IsTrue":
+                            case "IsFalse":
                                 condition.value = null;
                                 val2 = null;
+                                console.log("works")
+                                break;
                         }
                         this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });
                     }

@@ -68,7 +68,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-        this.areaName = "Scoring";
+        this.areaName = "Scoring Definitions";
     }
 
     ngOnInit() {
@@ -109,7 +109,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private changeAssetType(event) {
         this.isLoading = true;
         this.selectedAssetType = event;
-        this.areaName = 'Scoring';
+        this.areaName = 'Scoring Definitions';
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
