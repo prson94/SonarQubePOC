@@ -1668,16 +1668,24 @@ from	IntersectType I
             bool shouldRefreshPath = false;
             int? assetTypeID = null;
             var impactedMeasureVersions = new List<Guid>();
+            bool? assetTypeHasScoringAllocation = null; 
             currentFieldTypes.ForEach(c => {
                 assetTypeID = c.AssetTypeID;
+                if (!assetTypeHasScoringAllocation.HasValue)
+                {
+                    assetTypeHasScoringAllocation = Company.Query<bool>("select cast(iif(count(1)>0,1,0) as bit) from metrics.Allocation A inner join AssetType T on T.Uid = A.AssetTypeUid and T.ID = @assetTypeID", new { assetTypeID }).Single();
+                }
                 if (fieldNamesToDelete.Contains(c.Name))
                 {
                     if (c.IsPartOfKey)
                     {
                         shouldRefreshPath = true;
                     }
-                    var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
-                    impactedMeasureVersions.AddRange(impacted);
+                    if (assetTypeHasScoringAllocation.Value)
+                    {
+                        var impacted = Company.GetImpactedMeasureVersionsBy(MetricGovernanceCheckType.Field, c.ID);
+                        impactedMeasureVersions.AddRange(impacted);
+                    }
                     Company.FieldTypes.Remove(c);
                     fieldsRemoved = true;
                 }
