@@ -1077,22 +1077,35 @@ delete from graph.AssetNode where uid in (select uid from #delAssets) and Class 
     </sql>
 	</changeSet>
 
-	<changeSet author="Pappas" id="Data.Corrections.GOV-12785">
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12785-v1.2">
     <sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
 update	V 
 set		V.Definition  = '{"DataQuality":null,"Governance":{"Check":"External","Field":null,"Predicate":null,"Relation":null,"Owner":null,"External":{"UpdateFrequency":"None","Instructions":null}}}'
 from	metrics.AssetVersion V
 		inner join metrics.Asset A on A.Uid = V.AssetUid
-		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1
-where	V.Definition = '{}' or V.Definition is null;
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 1 and AL.IsExternallyCalculated = 0 
+where	V.Definition = '{}' or V.Definition is null or V.Definition = 'null';
 
 update	V 
 set		V.Definition  = '{"DataQuality":{},"Governance":null}'
 from	metrics.AssetVersion V
 		inner join metrics.Asset A on A.Uid = V.AssetUid
-		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 2
-where	V.Definition = '{}' or V.Definition is null;
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = 2 and AL.IsExternallyCalculated = 0 
+where	V.Definition = '{}' or V.Definition is null or V.Definition = 'null';
+]]>
+    </sql>
+	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12856">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update	V 
+set		V.Definition  = '{"DataQuality":null,"Governance":null}'
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.Uid = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and AL.IsExternallyCalculated = 1 
+where	V.Definition = '{}' or V.Definition is null or V.Definition = 'null';
 ]]>
     </sql>
 	</changeSet>
