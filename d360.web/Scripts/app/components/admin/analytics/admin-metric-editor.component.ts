@@ -194,7 +194,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 tempFields.forEach(f => {
                     f.Operators = [];
                     this.operators.forEach(op => {
-                        if (op.AllowedDataTypes.some(x => x.Name === FieldTypeHelper.getFieldType(f.Type))) {
+                        if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === FieldTypeHelper.getFieldType(f.Type).toLowerCase())) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
