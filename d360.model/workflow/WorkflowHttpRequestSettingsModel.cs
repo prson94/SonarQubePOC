@@ -26,6 +26,7 @@ namespace d360.model.workflow
         public string Body { get; set; }
         public List<WorkflowHttpRequestHeader> Headers { get; set; }
 
+        public Uri FormattedUrl { get; set; }
 
 
         public static WorkflowHttpRequestSettingsModel ParseXml(XElement xml)
