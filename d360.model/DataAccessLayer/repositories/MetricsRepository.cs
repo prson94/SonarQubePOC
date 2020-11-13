@@ -230,12 +230,18 @@ namespace d360.model.DataAccessLayer
                 {
                     definitionJsonToCheck = model.Definition.AsJson();
                 }
-                catch {}
+                catch {
+                    model.Definition = new MetricAssetDefinitionViewModel();
+                }
                 if (definitionJsonToCheck.Length > 4000)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "Definition must not exceed 4000 characters.");
                 }
                 definitionJsonToCheck = null;
+            }
+            else 
+            {
+                model.Definition = new MetricAssetDefinitionViewModel();
             }
 
             if (model.Allocation.IsExternallyCalculated)
