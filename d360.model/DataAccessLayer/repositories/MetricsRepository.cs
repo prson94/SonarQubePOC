@@ -332,7 +332,7 @@ namespace d360.model.DataAccessLayer
                 return validForType;
             };
 
-            Func< List<string>, OperatorInfo, string, string> checkValidValuesCount = delegate (List<string> values, OperatorInfo op, string checkType) {
+            Func<List<string>, OperatorInfo, string, string> checkValidValuesCount = delegate (List<string> values, OperatorInfo op, string checkType) {
                 string error = null;
                 
                 var valueCount = values != null ? values.Count : 0;
@@ -353,6 +353,26 @@ namespace d360.model.DataAccessLayer
                     }
                 }
                 return error;
+            };
+
+            Func<Operator, MetricGovernanceCheckType, WorkHttpStatus> checkOperatorForGovernanceMeasure = delegate (Operator op, MetricGovernanceCheckType check)
+            {
+                WorkHttpStatus status = null;
+
+                var checkOperatorInfo = op.GetAsInfo();
+                if (checkOperatorInfo == null)
+                {
+                    status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
+                }
+                else 
+                {
+                    if (!checkOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == check))
+                    {
+                        status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
+                    }                
+                }
+
+                return status;
             };
 
             // Definition does not apply IF the measure is a group or it is externally calculated.
@@ -523,23 +543,19 @@ from	metrics.RollupPath P
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The field type name ({gov.Field.FieldTypeName}) used on your Governance Field Check does not exist on this asset type.");
                             }
 
-                            var fieldCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Field.Operator);
-                            if (fieldCheckOperatorInfo == null)
+                            var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Field.Operator, gov.Check);
+                            if (operatorCheckStatus != null)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Field Check does not support the selected operator.");
-                            }
-                            
-                            if (!fieldCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Field Check does not support the selected operator.");
+                                return operatorCheckStatus;
                             }
 
-                            if (!fieldCheckOperatorInfo.AllowedDataTypes.Any(t => t.Name == governanceCheckFieldType.Type))
+                            var operatorInfo = gov.Field.Operator.GetAsInfo();
+                            if (!operatorInfo.AllowedDataTypes.Any(t => t.Name == governanceCheckFieldType.Type))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The field type name ({model.Definition.Governance.Field.FieldTypeName}) used on your Governance Field Check does not support the selected operator.");
                             }
 
-                            var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, fieldCheckOperatorInfo, "Governance Field Check");
+                            var governanceFieldCheckValueCountErrorMessage = checkValidValuesCount(gov.Field.Values, operatorInfo, "Governance Field Check");
                             if (!string.IsNullOrEmpty(governanceFieldCheckValueCountErrorMessage))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, governanceFieldCheckValueCountErrorMessage);
@@ -565,6 +581,12 @@ from	metrics.RollupPath P
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Owner Check does not correspond to a known responsibility type.");
                             }
+
+                            var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Owner.Operator, gov.Check);
+                            if (operatorCheckStatus != null)
+                            {
+                                return operatorCheckStatus;
+                            }
                         }
                         else if (gov.Predicate != null)
                         {
@@ -580,14 +602,10 @@ from	metrics.RollupPath P
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Predicate Check does not correspond to a known predicate.");
                             }
 
-                            var predicateCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Predicate.Operator);
-                            if (predicateCheckOperatorInfo == null)
+                            var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Predicate.Operator, gov.Check);
+                            if (operatorCheckStatus != null)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Predicate Check does not support the selected operator.");
-                            }
-                            if (!predicateCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Predicate Check does not support the selected operator.");
+                                return operatorCheckStatus;
                             }
                         }
                         else if (gov.Relation != null)
@@ -603,17 +621,13 @@ from	metrics.RollupPath P
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Uid Governance Relation Check does not correspond to a known relationship type.");
                             }
 
-                            var relationCheckOperatorInfo = operatorInfos.SingleOrDefault(o => o.ID == gov.Relation.Operator);
-                            if (relationCheckOperatorInfo == null)
+                            var operatorCheckStatus = checkOperatorForGovernanceMeasure(gov.Relation.Operator, gov.Check);
+                            if (operatorCheckStatus != null)
                             {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Relation Check does not support the selected operator.");
+                                return operatorCheckStatus;
                             }
-                            if (!relationCheckOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == gov.Check))
-                            {
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance Relation Check does not support the selected operator.");
-                            }
-
-                            var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, relationCheckOperatorInfo, "Governance Relation Check");
+                            var operatorInfo = gov.Relation.Operator.GetAsInfo();
+                            var relationCheckValueCountErrorMessage = checkValidValuesCount(gov.Relation.Values, operatorInfo, "Governance Relation Check");
                             if (!string.IsNullOrEmpty(relationCheckValueCountErrorMessage))
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, relationCheckValueCountErrorMessage);
