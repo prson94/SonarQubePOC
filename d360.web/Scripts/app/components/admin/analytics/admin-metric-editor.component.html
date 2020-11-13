@@ -90,7 +90,7 @@
                         <p-dropdown igDropdown
                                     igSize="small"
                                     [disabled]="disabled"
-                                    [options]="checkTypeOptions | enumToSelectitem"
+                                    [options]="checkTypeOptions"
                                     (onChange)="testTypeChange($event)"
                                     [(ngModel)]="model.Definition.Governance.Check"
                                     appendTo="body"
