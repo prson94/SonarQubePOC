@@ -133,7 +133,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     }
 
     updateTooltip() {
-        if (this.isFollowing || this.isFollowingParent)
+        if ((this.isFollowing && !this.isFollowingParent) || (this.isFollowingParent && this.objectType.endsWith('Type')))
             this.active = true;
         if (!this.isFollowingParent && this.isFollowing)
             this.tooltipString = 'Stop following';
