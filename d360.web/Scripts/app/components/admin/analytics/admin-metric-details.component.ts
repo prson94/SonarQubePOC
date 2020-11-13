@@ -50,6 +50,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     responsibilityTypes: any[] = [];
     relationshipTypes: any[] = [];
 
+    dateVal1: Date;
+    dateVal2: Date;
+    dateShowType: string;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
@@ -262,6 +266,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private formatDefinition() {
         if (this.showPassTest && !this.selectedMetric.IsGroup) {
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
+            this.dateVal1 = null;
+            this.dateVal2 = null;
+            this.dateShowType = null;
             switch (<any>gov.Check) {
                 case 'External':
                     this.formattedCheck = (gov.External.Instructions) ? (' Instruction string: ' + gov.External.Instructions) : '';
@@ -280,15 +287,13 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                                 ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
                         }
-                        if (fieldType.Type == "Date" || fieldType.Type == "Date") {
-                            let dateValues = [];
-                            gov.Field.Values.forEach(x => {
-                                let date = new Date(x);
-                                dateValues.push(date.toLocaleDateString());
-                            });
-                            formattedValue = dateValues.join(" and ");
+                        if (fieldType.Type == "Date" || fieldType.Type == "DateTime") {
+                            this.dateShowType = fieldType.Type;
+                            this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
+                            this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
+                            
                         }
-                        this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
+                        this.formattedCheck = fieldType.Name + " " + formattedoperator;
                     } else {
                         this.formattedCheck = "field not found";
                     }
