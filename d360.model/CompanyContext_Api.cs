@@ -2576,6 +2576,12 @@ from	IntersectType I
 
         public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes deletes, int timeout = 7200, int maxRetryCount = 10)
         {
+            bool isLog = true;
+            var sw = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "RemoveAssetTypes";
+            var metrics = new Dictionary<string, double>();
+
             var results = new List<DatabaseBulkAssetTypeResult>();
             var dt = DateTime.UtcNow;
             bool generalChecksCompleted = false;
@@ -2763,6 +2769,9 @@ from	IntersectType I
                         #endregion
 
                         generalChecksCompleted = true;
+
+                        AddMeasurement(metrics, "Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
+                        sw.Restart();
                     }
                     catch (Exception generalEx)
                     {
@@ -2774,6 +2783,9 @@ from	IntersectType I
 
                         results = new List<DatabaseBulkAssetTypeResult>();
                         results.AddRange(deletes.Select(i => new DatabaseBulkAssetTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+
+                        AddMeasurement(metrics, "Error occurred > Building data tables and initialization completed", sw.ElapsedMilliseconds, 1);
+                        sw.Restart();
                     }
 
                     if (generalChecksCompleted)
@@ -2781,6 +2793,9 @@ from	IntersectType I
 
                         bool runCompleted = false;
                         int retryCount = 0;
+
+                        AddMeasurement(metrics, "Checks passed (Deletion started)", sw.ElapsedMilliseconds, 1);
+                        sw.Restart();
 
                         while (!runCompleted && retryCount <= maxRetryCount)
                         {
@@ -2796,10 +2811,19 @@ from	IntersectType I
                                         BuildDeletionTree(execution, timeout, itemNumber, trans);
 
                                         trans.Commit();
+
+                                        AddMeasurement(metrics, "Building Deletion Tree", sw.ElapsedMilliseconds, 1);
+                                        sw.Restart();
                                     }
                                     catch (Exception ex)
                                     {
-                                        trans.Rollback();
+                                        if (trans != null)
+                                            trans.Rollback();
+
+                                        AddMeasurement(metrics, "Error occurred > Building Deletion Tree", sw.ElapsedMilliseconds, 1);
+                                        sw.Restart();
+
+                                        throw;
                                     }
                                 }
 
@@ -2825,87 +2849,122 @@ from	IntersectType I
 
                                     foreach (var at in typesToDelete)
                                     {
-                                        //If error occured stop deleting this hierarchy
+                                        //If error occured stop deleting this hierarchy do not continue deleting parent asset types
                                         if (hasError)
                                             continue;
 
                                         int totalAssetCount = Connection.Query<int>("select count(*) from asset where assettypeid = @id", new { id = at.AssetTypeId }).FirstOrDefault();
-                                        var transactionsCount = totalAssetCount / SqlBulkAssetDeleteSize;
 
-                                        for (int i = 0; i <= transactionsCount; i++)
+                                        if (totalAssetCount > 0)
                                         {
-                                            #region RemoveAssetsGraphDataByChunks
-                                            using (var trans = Connection.BeginTransaction())
+                                            var transactionsCount = (totalAssetCount / SqlBulkAssetDeleteSize) + 1;
+
+                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion started ({totalAssetCount} assets) by chunks of size {SqlBulkAssetDeleteSize}", sw.ElapsedMilliseconds, 1);
+                                            sw.Restart();
+
+                                            for (int i = 0; i < transactionsCount; i++)
                                             {
-
-                                                try
+                                                AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion : {(i + 1)}/{transactionsCount}", sw.ElapsedMilliseconds, 1);
+                                                sw.Restart();
+                                                #region RemoveAssetsGraphDataByChunks
+                                                using (var trans = Connection.BeginTransaction())
                                                 {
-                                                    RemoveAssetsGraphDataByChunk(execution, timeout, itemNumber, at, trans);
 
-                                                    trans.Commit();
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    if (trans != null)
+                                                    try
                                                     {
-                                                        trans.Rollback();
-                                                    }
+                                                        RemoveAssetsGraphDataByChunk(execution, timeout, itemNumber, at, trans);
 
-                                                    Connection.Query(@"update api.executiondeletedassettype
+                                                        trans.Commit();
+
+                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Finished", sw.ElapsedMilliseconds, 1);
+                                                        sw.Restart();
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        if (trans != null)
+                                                        {
+                                                            trans.Rollback();
+                                                        }
+
+                                                        Connection.Query(@"update api.executiondeletedassettype
                                                         set Message = isnull(Message,'') + @msg
                                                         where executionid = @executionuid and uid = @assetTypeUid",
-                                                        new
-                                                        {
-                                                            executionuid = execution.ExecutionID,
-                                                            assetTypeUid = at.uid,
-                                                            msg = $@"Error occurred while deleting assets graph data : ({ex.Message})"
-                                                        });
+                                                            new
+                                                            {
+                                                                executionuid = execution.ExecutionID,
+                                                                assetTypeUid = at.uid,
+                                                                msg = $@"Error occurred while deleting assets graph data : ({ex.Message})"
+                                                            });
 
-                                                    hasError = true;
-                                                    i = transactionsCount + 1;
-                                                }
+                                                        hasError = true;
+                                                        i = transactionsCount + 1;
 
-                                            }
-                                            #endregion
+                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Error occurred", sw.ElapsedMilliseconds, 1);
+                                                        sw.Restart();
 
-                                            #region RemoveAssetsDataByChunks
-                                            using (var trans = Connection.BeginTransaction())
-                                            {
-
-                                                try
-                                                {
-                                                    RemoveAssetsDataByChunk(execution, timeout, itemNumber, at, trans);
-
-                                                    trans.Commit();
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    if (trans != null)
-                                                    {
-                                                        trans.Rollback();
+                                                        throw;
                                                     }
 
-                                                    Connection.Query(@"update api.executiondeletedassettype
+                                                }
+                                                #endregion
+
+                                                #region RemoveAssetsDataByChunks
+                                                using (var trans = Connection.BeginTransaction())
+                                                {
+
+                                                    try
+                                                    {
+                                                        RemoveAssetsDataByChunk(execution, timeout, itemNumber, at, trans);
+
+                                                        trans.Commit();
+
+                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Asset data {(i + 1)}/{transactionsCount} > Finished", sw.ElapsedMilliseconds, 1);
+                                                        sw.Restart();
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        if (trans != null)
+                                                        {
+                                                            trans.Rollback();
+                                                        }
+
+                                                        Connection.Query(@"update api.executiondeletedassettype
                                                         set Message = isnull(Message,'') + @msg
                                                         where executionid = @executionuid and uid = @assetTypeUid",
-                                                        new
-                                                        {
-                                                            executionuid = execution.ExecutionID,
-                                                            assetTypeUid = at.uid,
-                                                            msg = $@"Error occurred while deleting assets : ({ex.Message})"
-                                                        });
+                                                            new
+                                                            {
+                                                                executionuid = execution.ExecutionID,
+                                                                assetTypeUid = at.uid,
+                                                                msg = $@"Error occurred while deleting assets : ({ex.Message})"
+                                                            });
 
-                                                    hasError = true;
-                                                    i = transactionsCount + 1;
+                                                        hasError = true;
+                                                        i = transactionsCount + 1;
+
+                                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion > Graph data {(i + 1)}/{transactionsCount} > Error occurred", sw.ElapsedMilliseconds, 1);
+                                                        sw.Restart();
+
+                                                        throw;
+                                                    }
+
                                                 }
-
+                                                #endregion
                                             }
-                                            #endregion
+                                        }
+                                        else
+                                        {
+                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion skipped asset data deletion", sw.ElapsedMilliseconds, 1);
+                                            sw.Restart();
                                         }
 
                                         if (!hasError)
                                         {
                                             #region RemoveAssetTypeData
+
+
+                                            AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data Started", sw.ElapsedMilliseconds, 1);
+                                            sw.Restart();
+
                                             using (var trans = Connection.BeginTransaction())
                                             {
                                                 try
@@ -2913,6 +2972,8 @@ from	IntersectType I
                                                     RemoveAssetTypeData(execution, timeout, itemNumber, at, trans);
 
                                                     trans.Commit();
+                                                    AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data Finished", sw.ElapsedMilliseconds, 1);
+                                                    sw.Restart();
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -2931,16 +2992,26 @@ from	IntersectType I
                                                             msg = $@"Error occurred while deleting asset type : ({ex.Message})"
                                                         }
                                                     );
+
+                                                    AddMeasurement(metrics, $"Asset Type '{at.uid}' > Deleting Asset Type Data > Error Occurred", sw.ElapsedMilliseconds, 1);
+                                                    sw.Restart();
+
+                                                    throw;
                                                 }
                                             }
+
                                             #endregion
                                         }
+
+                                        AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion finished", sw.ElapsedMilliseconds, 1);
+                                        sw.Restart();
                                     }
 
                                     if (hasError)
                                         failed++;
                                     else
                                         success++;
+
 
                                 }
 
@@ -2960,6 +3031,8 @@ from	IntersectType I
                                     	                            where	ExecutionID = @executionUid 
                                     			                            and ItemNumber = @itemNumber
                                     			                            and FromHierarchy = 0;", new { executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, commandTimeout: timeout).ToList();
+
+
                                 runCompleted = true;
                             }
                             catch (Exception ex)
@@ -2978,6 +3051,8 @@ from	IntersectType I
                     }
                 }
             }
+
+            this.AITrackMetric(client, execution, METHOD_NAME, metrics, isLog);
 
             return results;
         }
