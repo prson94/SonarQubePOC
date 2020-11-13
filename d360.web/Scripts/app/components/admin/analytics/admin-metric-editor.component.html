@@ -107,6 +107,7 @@
                     </div>
                     <div [ngSwitch]="model.Definition.Governance.Check">
                         <div *ngSwitchCase="0">
+                            <!--keep updateFrequency disabled until we are ready-->
                             <div *ngIf="false" class="row row-margin">
                                 <label for="updateFrequency" class="ig-label">Update Frequency</label>
                                 <p-dropdown igDropdown

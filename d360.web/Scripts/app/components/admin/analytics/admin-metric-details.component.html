@@ -121,8 +121,9 @@
                             <div class="row row-margin" *ngSwitchCase="'Field'">
                                 <div class="condition-content">
                                     <div class="condition-items">
-                                        <div>Field: {{formattedCheck}}</div>
-                                    </div>
+                                        <div *ngIf="dateShowType == null">Field: {{formattedCheck}}</div>
+                                        <div *ngIf="dateShowType == 'Date'">Field: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> and {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
+                                       </div>
                                 </div>
                             </div>
                             <div class="row row-margin" *ngSwitchCase="'Owner'">
