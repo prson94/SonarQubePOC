@@ -83,6 +83,7 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     }
 
     writeValue(obj: string): void {
+        console.log(obj);
         this.onModelChange(obj);
     }
     registerOnChange(fn: any): void {

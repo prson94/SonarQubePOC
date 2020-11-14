@@ -66,6 +66,7 @@
                         <div class="FieldName">Preview</div>
                         <div *ngIf="iconType == 'icon'" style="padding:10px">
                             <span style="font-size: 15px"><i [class]="'fa ' + selection.Icon"></i></span>
+                            <img style="width: 15px" [src]="selection.Icon">
                         </div>
                         <div *ngIf="iconType == 'image'" style="padding:10px">
                             <img *ngIf="iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 16px; max-height: 16px;" />
