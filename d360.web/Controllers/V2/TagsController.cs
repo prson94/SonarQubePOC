@@ -50,7 +50,11 @@ namespace d360.web.Controllers.V2
         [
             HttpGet, MapToApiVersion("2.0"),
             Route("search"),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("Value", "Name of tag.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Search for tags completed.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while fetching tags.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public IHttpActionResult Search()
         {
@@ -587,7 +591,10 @@ namespace d360.web.Controllers.V2
         /// <param name="tag">The tag to be created.</param>
         [HttpPost,
         Route("exists"),
-        ApiExplorerSettings(IgnoreApi = true)]
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        SwaggerResponse(HttpStatusCode.OK, "Check to see if tag exists complete.", typeof(Tag)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
         public IHttpActionResult DoesTagExist(TagApiModel tag)
         {
             try
