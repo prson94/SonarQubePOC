@@ -208,6 +208,17 @@ namespace d360.core.entities
         public Guid? ExecutionItemUid { get; set; }
     }
 
+    public class AssetTypeDeleteObject
+    {
+        public Guid uid { get; set; }
+        public int ObjectId { get; set; }
+        public string Object { get; set; }
+        public int AssetTypeId { get; set; }
+        public int IntersectTypeId { get; set; }
+        public int Level { get; set; }
+        public int ItemNumber { get; set; }
+    }
+
     [DataContract]
     public class AssetTypeSingleDelete
     {
@@ -799,18 +810,18 @@ namespace d360.core.entities
         public bool ContainsColorField { get; set; }
         public int JsonFieldCount { get; set; }
     }
-    
+
     public class AssetTypeExportTemplateUpsertRequest
     {
         #region Properties
         [DataMember]
         public string Name { get; set; }
-        
+
         [DataMember]
         public string Description { get; set; }
 
         [DataMember]
-        public string UsageNotes { get; set; }        
+        public string UsageNotes { get; set; }
 
         [DataMember]
         public string[] IncludeFieldTypes { get; set; }
@@ -822,11 +833,11 @@ namespace d360.core.entities
         public bool IncludeParent { get; set; }
 
         [DataMember]
-        public ExportView ExportViewType { get; set; }        
+        public ExportView ExportViewType { get; set; }
         #endregion
 
         [DataMember]
-        public Guid AssetTypeUID { get; set; }       
+        public Guid AssetTypeUID { get; set; }
     }
 
     public class ActionUpsertRequest
