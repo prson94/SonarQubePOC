@@ -637,8 +637,7 @@ where	ExecutionID = @executionID
 
             if (sendWorkflowEvents)
             {
-                res = Connection.Query<AssetFieldTypeUpdate>($@"
-                    select  EA.Object, 
+                var changedFieldsSql = $@"select  EA.Object, 
                             EA.ObjectID, 
                             EF.FieldTypeID AS Id 
                     from    {tableName} EA 
@@ -651,8 +650,7 @@ where	ExecutionID = @executionID
                                             and F.ObjectId = EA.ObjectID
                     where   EA.ExecutionID = @executionID 
                             and EA.IsNew <> 1 
-                            {(!isInsert ? "and F.Value <> EF.FieldValue" : "")} 
-                            and @sendWorkflowEvents = 1 
+                            {(!isInsert ? "and F.FormattedValue <> EF.FieldValue" : "")} 
                             and EA.ItemNumber between @beginItemNumber and @endItemNumber
 
                     union all
@@ -667,13 +665,36 @@ where	ExecutionID = @executionID
                                             and EF.FieldTypeID is not null
                     where   EA.ExecutionID = @executionID 
                             and EA.IsNew <> 1 
-                            and @sendWorkflowEvents = 1 
                             and EA.ItemNumber between @beginItemNumber and @endItemNumber
                             {(!isInsert ? "and coalesce(EF.FieldValue, '') <> ''" : "")} 
                             and not exists (select 1 from Field where FieldTypeID = EF.FieldTypeID 
                                 and ObjectType = EA.Object and ObjectID = EA.ObjectID)
-"
-                    , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+                ";
+
+                if (!isInsert)
+                {
+                    changedFieldsSql += $@"
+                    union all
+
+                    select  F.ObjectType as [Object], 
+                            F.ObjectID, 
+                            F.FieldTypeID as Id
+                    from    Field F
+                    	    inner join {tableName} E on E.ExecutionID = @executionID 
+                    	    inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
+                    	    inner join Asset A on A.uid = E.Uid                  
+                    where   E.ExecutionID = @executionID
+                            and EF.ItemNumber between @beginItemNumber and @endItemNumber
+                            and EF.Ignore is null
+                            and EF.FieldTypeID is not null
+                            and F.ObjectID = A.ObjectID
+                            and F.ObjectType = A.Object
+                            and F.FieldTypeID = EF.FieldTypeID
+                            and EF.FieldValue is null 
+                            and EF.LookupValue is null";
+                }
+
+                res = Connection.Query<AssetFieldTypeUpdate>(changedFieldsSql, new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
 
             // if we already have the asset id then insert it
@@ -723,7 +744,7 @@ where	ExecutionID = @executionID
                     FROM Field F
                     	inner join {tableName} E on E.ExecutionID = @executionID 
                     	inner join {ApiExecutionFieldTable} EF on EF.ExecutionId = E.ExecutionId and EF.ItemNumber = E.ItemNumber
-                    	inner join Asset A on A.uid = E.Uid
+                    	inner join Asset A on A.uid = E.Uid                 
                     WHERE E.ExecutionID = @executionID
                      and EF.ItemNumber between @beginItemNumber and @endItemNumber
                      and EF.Ignore is null
@@ -734,6 +755,7 @@ where	ExecutionID = @executionID
                      and EF.FieldValue is null 
                      and EF.LookupValue is null;",
                 new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
 
                 Connection.Execute($@"
                     merge       Field as T
