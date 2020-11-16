@@ -375,6 +375,11 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Filter<core.entities.Workflow.Type>(i => i.UID == workflowTypUid).SingleOrDefault();
         }
 
+        public long GetWorkflowIDByUID(Guid workflowTypUid)
+        {
+            return CompanyContext.Filter<WorkflowItem>(i => i.UID == workflowTypUid).SingleOrDefault().ID;
+        }
+
         public WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid)
         {
             return CompanyContext.Filter<WorkflowVersion>(i => i.UID == workflowVerionUid).SingleOrDefault();
