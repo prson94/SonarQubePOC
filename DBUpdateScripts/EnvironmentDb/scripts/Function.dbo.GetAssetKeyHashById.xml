@@ -28,7 +28,7 @@ CREATE OR ALTER FUNCTION [dbo].[GetAssetKeyHashById](
 		  from (
 				select	B.ID, 
 						B.AssetTypeID, 
-						F.[Value], 
+						COALESCE(F.[Value], F.[FormattedValue]) as Value, 
 						cast(FieldTypeID as nvarchar) + ':' as FieldTypeID
 				from	Asset B
 						inner join Field F on F.ObjectType = B.[Object] and F.ObjectID = B.ObjectID 
