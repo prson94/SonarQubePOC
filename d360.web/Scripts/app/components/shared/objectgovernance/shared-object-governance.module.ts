@@ -8,8 +8,6 @@ import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
 
-import { ChartModule } from 'angular2-highcharts';
-
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
 import { SocialModule } from '../social/social.module';
@@ -19,19 +17,11 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
-import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 import { SimpleCarouselModule } from '../small-widgets/carausel/simple-carousel.module';
 import { TooltipModule } from 'primeng/tooltip';
 
-declare var require: any;
-export function highchartsFactory() {
-    const hc = require('highcharts');
-    const hcm = require('highcharts/highcharts-more'); // used for more category of charts        
-    hcm(hc);        
-    return hc;
-}
 
 @NgModule({
     imports: [
@@ -51,8 +41,7 @@ export function highchartsFactory() {
         TreeTableModule,
         TooltipModule,
 
-        //charts        
-        ChartModule,
+        //charts                
         SimpleCarouselModule
     ],
     declarations: [    
@@ -69,11 +58,8 @@ export function highchartsFactory() {
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
-        { 
-            provide: HighchartsStatic,
-            useFactory: highchartsFactory
-        },
+            multi: true
+        }        
     ]
 })
 export class SharedObjectGovernanceModule { }

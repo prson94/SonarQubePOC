@@ -6,8 +6,6 @@ import { GovernRequestInterceptor } from "../../http-interceptors/govern-request
 import { RouterModule } from '@angular/router';
 
 
-import { ChartModule } from 'angular2-highcharts';
-
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
@@ -61,9 +59,8 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { TreeModule } from 'primeng/tree';
 
 import { CodemirrorModule } from 'ng2-codemirror';
-import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
-
+/*
 declare var require: any;
 
 export function highchartsFactory() {
@@ -74,7 +71,7 @@ export function highchartsFactory() {
         require('highcharts/highcharts-more'),
         require('highcharts/modules/solid-gauge'));
     return highcharts;
-}
+}*/
 
 
 @NgModule({
@@ -103,10 +100,7 @@ export function highchartsFactory() {
 
         //editor
         CodemirrorModule,
-
-        //highcharts        
-        ChartModule,
-
+                
         //d3s        
         CoreModule,
         D3SSharedModule,        
@@ -148,11 +142,8 @@ export function highchartsFactory() {
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
-        {
-            provide: HighchartsStatic,
-            useFactory: highchartsFactory
-        },
+            multi: true
+        }        
     ]
 })
 export class FusionModule { }

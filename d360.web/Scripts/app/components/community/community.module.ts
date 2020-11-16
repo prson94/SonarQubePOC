@@ -6,8 +6,6 @@ import { GovernRequestInterceptor } from "../../http-interceptors/govern-request
 
 import { RouterModule } from '@angular/router';
 
-import { ChartModule } from 'angular2-highcharts';
-
 import { CoreModule } from '../shared/core.module';
 import { D3SSharedModule } from '../shared/shared.module';
 import { PipesModule } from '../../pipes/pipes.module';
@@ -22,15 +20,7 @@ import { ToastModule } from 'primeng/toast';
 import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 
-import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
-declare var require: any;
-export function highchartsFactory() {
-    const highcharts = require('highcharts');
-
-    ChartModule.forRoot(require('highcharts'));
-    return highcharts;
-}
 
 @NgModule({
     imports: [
@@ -41,8 +31,6 @@ export function highchartsFactory() {
 
         CommunityRoutingModule,
 
-        //highcharts        
-        ChartModule,
 
         //prime
         SharedModule,
@@ -63,11 +51,8 @@ export function highchartsFactory() {
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
-        {
-            provide: HighchartsStatic,
-            useFactory: highchartsFactory
-        },
+            multi: true
+        }        
     ]
 })
 export class CommunityModule { }
