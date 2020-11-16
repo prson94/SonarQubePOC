@@ -28,7 +28,8 @@ enum PageMode {
     Assignment,
     EditingInfo,
     EditingPassword,
-    ViewingAPICredentials
+    ViewingAPICredentials,
+    NotFound
 }
 
 @Component({
@@ -88,6 +89,12 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.items = r.items;
                     if (this.items.length > 0) {
                         this.resource = this.items[0];
+                    }
+
+                    if (!this.resource || this.resource.State != 'Active') {
+                        this.isLoading = false;
+                        this.pageMode = PageMode.NotFound;
+                        return;
                     }
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
