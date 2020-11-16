@@ -4,6 +4,7 @@ import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
+import { MessageService } from 'primeng/api';//primeng/api
 
 
 @Component({
@@ -55,7 +56,8 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         private followerService: FollowerService,
         private breadcrumbService: HeaderBreadcrumbService,
         protected headerActionsService: HeaderActionsService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private messageService: MessageService 
     ) { }
 
     ngOnInit() {
@@ -103,9 +105,11 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         );
     }
 
-    toggleFollow() {
-        if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId))
+    toggleFollow() {        
+        if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId)) {
+            this.messageService.add({ severity: 'info', summary: 'Following Parent', detail: 'Following via Parent.\nTo unfollow, please go to type list.' });
             return;
+        }
         if (this.objectType == null || this.objectType == "" || this.objectId < 0) {
             return;
         }
@@ -133,7 +137,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
     }
 
     updateTooltip() {
-        if ((this.isFollowing && !this.isFollowingParent) || (this.isFollowingParent && this.objectType.endsWith('Type')))
+        if (this.isFollowing || this.isFollowingParent)
             this.active = true;
         if (!this.isFollowingParent && this.isFollowing)
             this.tooltipString = 'Stop following';
