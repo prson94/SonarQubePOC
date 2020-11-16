@@ -109,6 +109,83 @@ namespace d360.core.entities.Metric
 
         [DataMember] 
         public MetricAssetDefinitionGovernanceViewModel Governance { get; set; }
+
+        public string GetHashValue()
+        {
+            string hash = "";
+
+            if (DataQuality != null)
+            {
+                hash += "DQ:[";
+                hash += $"FilterMatchType:{DataQuality.FilterMatchType}|";
+                if (DataQuality.Filters != null)
+                {
+                    hash += $"Filters(";
+                    DataQuality.Filters.OrderBy(f => f.AssetTypeID).ThenBy(f => f.FieldTypeName).ToList().ForEach(f =>
+                    {
+                        hash += $"AssetTypeID:{f.AssetTypeID}|FieldTypeID:{f.FieldTypeID}|Operator:{(int)f.Operator}|Values:{string.Join(";", f.Values.OrderBy(v => v))}|";
+                    });
+                    hash += $")|";
+                }
+                hash += $"ResultOperation:{DataQuality.ResultOperation}|";
+                hash += $"ResultPathUid:{DataQuality.ResultPathUid}|";
+                hash += "]";
+            }
+            if (Governance != null)
+            {
+                hash += "GOV:[";
+                hash += $"Check:{Governance.Check}|";
+                switch (Governance.Check)
+                {
+                    case MetricGovernanceCheckType.External:
+                        if (Governance.External != null)
+                        { 
+                            hash += $"Instructions:{Governance.External.Instructions ?? ""}|";
+                        }
+                        break;
+                    case MetricGovernanceCheckType.Field:
+                        if (Governance.Field != null)
+                        {
+                            hash += $"FieldTypeName:{Governance.Field.FieldTypeName}|";
+                            hash += $"Operator:{(int)Governance.Field.Operator}|";
+                            if (Governance.Field.Values != null)
+                            {
+                                hash += $"Values:{string.Join(";", Governance.Field.Values.OrderBy(v => v))}|";
+                            }
+                        }
+                        break;
+                    case MetricGovernanceCheckType.Owner:
+                        if (Governance.Owner != null)
+                        {
+                            hash += $"ResponsibilityTypeUid:{Governance.Owner.ResponsibilityTypeUid}|";
+                            hash += $"Operator:{(int)Governance.Owner.Operator}|";
+                        }
+                        break;
+                    case MetricGovernanceCheckType.Predicate:
+                        if (Governance.Predicate != null)
+                        {
+                            hash += $"PredicateUid:{Governance.Predicate.PredicateUid}|";
+                            hash += $"Operator:{(int)Governance.Predicate.Operator}|";
+                        }
+                        break;
+                    case MetricGovernanceCheckType.Relation:
+                        if (Governance.Relation != null)
+                        {
+                            hash += $"IntersectTypeUid:{Governance.Relation.IntersectTypeUid}|";
+                            hash += $"Operator:{(int)Governance.Relation.Operator}|";
+                            if (Governance.Relation.Values != null)
+                            {
+                                hash += $"Values:{string.Join(";", Governance.Relation.Values.OrderBy(v => v))}|";
+                            }
+                            
+                        }
+                        break;
+                }
+                hash += "]";
+            }
+
+            return hash.GetD3sHashString();
+        }
     }
 
     #region DataQuality Definition Models
