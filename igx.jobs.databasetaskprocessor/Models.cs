@@ -40,14 +40,18 @@ namespace igx.jobs.databasetaskprocessor
     {
         public ObjectIndexCollectionModel()
         {
-            Adds = new ConcurrentBag<IndexObjectModel>(); 
+            Adds = new ConcurrentBag<IndexObjectModel>();
             Deletes = new ConcurrentBag<IndexObjectModel>();
             Updates = new ConcurrentBag<IndexObjectModel>();
+            UpsertByUid = new ConcurrentBag<Guid>();
+            UpsertByObject = new ConcurrentBag<Tuple<string, long>>();
         }
 
         public ConcurrentBag<IndexObjectModel> Adds { get; set; }
         public ConcurrentBag<IndexObjectModel> Deletes { get; set; }
         public ConcurrentBag<IndexObjectModel> Updates { get; set; }
+        public ConcurrentBag<Guid> UpsertByUid { get; set; }
+        public ConcurrentBag<Tuple<string, long>> UpsertByObject { get; set; }
     }
 
     public class QueueTask
