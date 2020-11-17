@@ -13,6 +13,9 @@ const routes: Routes = [
         component: WorkflowComponent,
         children: [
             {
+                path: ':workflowUid', component: WorkflowViewDetailsComponent
+            },
+            {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
             },   
             {

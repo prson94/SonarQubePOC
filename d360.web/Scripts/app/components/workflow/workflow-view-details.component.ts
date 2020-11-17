@@ -100,6 +100,7 @@ import { HeaderActions } from '../../models/header.model';
 export class WorkflowViewDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private workflowId: number;
+    private workflowUid: string;
     private details: any;
     private item: any;
     private workflowTypeId: number;
@@ -126,7 +127,18 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
         this.sub = this.route.params.subscribe(params => {
             this.workflowId = +params['workflowId'];
-            this.load();
+            this.workflowUid = params['workflowUid'];
+            if (this.workflowUid) {
+                this.workflowService.getWorkflowId(this.workflowUid)
+                    .subscribe(res => {
+                        this.workflowId = res;
+                        this.load();
+                    })
+
+            }
+            else {
+                this.load();
+            }
         });
     }
 

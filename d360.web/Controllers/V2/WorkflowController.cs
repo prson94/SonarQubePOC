@@ -382,5 +382,30 @@ namespace d360.web.Controllers.V2
             
         }
 
+        [HttpGet,
+    Route("{uid}/legacyData"),
+    ApiExplorerSettings(IgnoreApi = true),
+     SwaggerResponse(HttpStatusCode.OK, "", typeof(Int32))
+    ]
+        public IHttpActionResult GetWorkflowId(Guid uid)
+        {
+            var prefix = "Workflow.GetWorkflowId => ";
+            var errorMessage = "";
+            try
+            {
+                var result = this.workflowRepository.GetWorkflowIDByUID(uid);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+                return this.errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage);
+            }
+
+        }
+
     }
 }

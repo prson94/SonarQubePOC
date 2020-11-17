@@ -18,6 +18,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<WorkflowVersionStepsApiViewModel>> GetWorkflowVersionSteps(Guid uid);
 
         d360.core.entities.Workflow.Type GetWorkflowTypeByUID(Guid workflowTypUid);
+        long GetWorkflowIDByUID(Guid workflowTypUid);
         WorkflowVersion GetWorkflowVersionByUID(Guid workflowVerionUid);
 
 
