@@ -27,7 +27,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 {
                     maxUpdatedOnForThisVersion = maxScoreItem.UpdatedOn;
                 }
-                if (DateTime.UtcNow.Subtract(maxUpdatedOnForThisVersion).TotalDays > 1)
+                if (DateTime.UtcNow.Subtract(maxUpdatedOnForThisVersion).TotalDays > 0)
                 {
                     var version = Db.Filter<MetricAssetVersion>(v => v.Uid == measureChangedModel.MetricAssetVersionUid, v => v.Asset.Allocation).SingleOrDefault();
 

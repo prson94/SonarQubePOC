@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v12">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v13">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,7 +40,7 @@ begin
 	create table #ids (ID bigint);
 
 	drop table if exists #hops;
-	create table #hops (Direction char(1), IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, SubjectSalt varchar(50), [from] varchar(50), ObjectId bigint, ObjectSalt varchar(50), [to] varchar(50), PredicateID int, Hop int);
+	create table #hops (Direction char(1), IntersectID bigint, IntersectUid uniqueidentifier, SubjectID bigint, SubjectSalt varchar(50), [from] varchar(50), ObjectId bigint, ObjectSalt varchar(50), [to] varchar(50), PredicateID int, SubjectHop int, ObjectHop int);
 	create nonclustered index IX_TempHops_IntersectID on #hops (IntersectID asc);
 
 	if @ancestry = 3
@@ -108,6 +108,13 @@ begin
 		begin
 			insert into #ids (ID)
 				select ID from @directParentAncestryLinks;
+
+			insert into #ids (ID)
+				select	P.S.value('@assetId', 'bigint') as AssetId 
+				from	graph.AssetNode N 
+						cross apply N.segments.nodes('/path/segment') AS P(S)   
+				where	N.Uid = @uid
+						and P.S.value('@assetId', 'bigint') not in (select ID from #ids)
 		end
 	end
 
@@ -131,7 +138,7 @@ begin
 	while @currentHop <= @hopCount
 	begin
 		-- Backward
-		insert into #hops (Direction, IntersectID, IntersectUid, SubjectID, SubjectSalt, [from], ObjectId, ObjectSalt, [to], PredicateID, Hop)
+		insert into #hops (Direction, IntersectID, IntersectUid, SubjectID, SubjectSalt, [from], ObjectId, ObjectSalt, [to], PredicateID, SubjectHop, ObjectHop)
 			select	'B',
 					E.ID,
 					E.Uid,
@@ -150,7 +157,8 @@ begin
 						) + '|A' + cast(T.ID as varchar)
 					),
 					E.PredicateID,
-					-@currentHop
+					-@currentHop,
+					1-@currentHop
 			from	graph.AssetNode S,
 					graph.AssetEdge E,
 					graph.AssetNode T,
@@ -162,10 +170,10 @@ begin
 	
 		truncate table #backwardIds;
 		insert into #backwardIds (ID, Salt)
-			select SubjectID, SubjectSalt from #hops where Hop = -@currentHop
+			select SubjectID, SubjectSalt from #hops where SubjectHop = -@currentHop
 
 		-- Forward
-		insert into #hops (Direction, IntersectID, IntersectUid, SubjectID, SubjectSalt, [from], ObjectId, ObjectSalt, [to], PredicateID, Hop)
+		insert into #hops (Direction, IntersectID, IntersectUid, SubjectID, SubjectSalt, [from], ObjectId, ObjectSalt, [to], PredicateID, SubjectHop, ObjectHop)
 			select	'F',
 					E.ID,
 					E.Uid,
@@ -184,6 +192,7 @@ begin
 					@foreObjectSalt+cast(E.PredicateID as varchar(5)),
 					utility.GetHash(@foreObjectSalt+cast(E.PredicateID as varchar(5)) + '|A' + cast(T.ID as varchar)),
 					E.PredicateID,
+					@currentHop-1,
 					@currentHop
 			from	graph.AssetNode S,
 					graph.AssetEdge E,
@@ -196,7 +205,7 @@ begin
 
 		truncate table #forwardIds;
 		insert into #forwardIds (ID, Salt)
-			select ObjectID, ObjectSalt from #hops where Hop = @currentHop
+			select ObjectID, ObjectSalt from #hops where ObjectHop = @currentHop
 
 		-- Now reset salts to carry on.
 		set @backObjectSalt = @backSubjectSalt
@@ -210,13 +219,13 @@ begin
 	drop table if exists #hopAssets
 	create table #hopAssets (ID bigint, Hop int, Salt varchar(35))
 	insert into #hopAssets
-		select	SubjectID, Hop, SubjectSalt
+		select	SubjectID, SubjectHop, SubjectSalt
 		from	#hops
-		group by SubjectID, Hop, SubjectSalt
+		group by SubjectID, SubjectHop, SubjectSalt
 	insert into #hopAssets
-		select	ObjectID, Hop, ObjectSalt
+		select	ObjectID, ObjectHop, ObjectSalt
 		from	#hops
-		group by ObjectID, Hop, ObjectSalt;
+		group by ObjectID, ObjectHop, ObjectSalt;
 
 	if not exists(select * from #hopAssets)
 	begin
@@ -251,15 +260,11 @@ begin
 					I.ObjectID,
 					P.ID ParentID,
 					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal,
-					0 as [level]
+					I.SubjectID as ParentObjectID
 			from	Asset A
 					inner join #hopAssets L on L.ID = A.ID
 					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-					left join PredicateIntersect ParentI on ParentI.PredicateType in (3,4) and ParentI.Subject = A.Object and ParentI.SubjectID = A.ObjectID
-			where	ParentI.IntersectID is null
 			union all
 			select	h.Salt,
 					h.Hop,
@@ -270,9 +275,7 @@ begin
 					A.ObjectID,
 					I.ParentID,
 					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					h.focal,
-					h.[level]+1 as [level]
+					I.SubjectID as ParentObjectID
 			from	h
 					inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
 					outer apply (
@@ -286,7 +289,7 @@ begin
 		)
 
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal from h
+			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h
 
 		if not exists (select 1 from #hierarchies)
 		begin
@@ -301,9 +304,7 @@ begin
 						A.ObjectID,
 						P.ID as ParentID,
 						P.Object as ParentObject,
-						P.ObjectID as ParentObjectID,
-						case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal,
-						0 as [level]
+						P.ObjectID as ParentObjectID
 				from	Asset A
 						inner join #hopAssets L on L.ID = A.ID
 						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
@@ -318,9 +319,7 @@ begin
 						A.ObjectID,
 						I.ParentID,
 						I.Subject as ParentObject,
-						I.SubjectID as ParentObjectID,
-						hp.focal,
-						hp.[level]-1 as [level]
+						I.SubjectID as ParentObjectID
 				from	hp
 						inner join Asset A on A.ID = hp.ParentID
 						outer apply (
@@ -334,7 +333,7 @@ begin
 			)
 
 			insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-				select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal from hp;
+				select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from hp;
 
 			with h as (
 				select	L.Salt,
@@ -346,9 +345,7 @@ begin
 						A.ObjectID,
 						cast(null as bigint) as ParentID,
 						cast(null as varchar(50)) as ParentObject,
-						cast(null as int) as ParentObjectID,
-						case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal,
-						0 as [level]
+						cast(null as int) as ParentObjectID
 				from	Asset A
 						inner join #hopAssets L on L.ID = A.ID
 				union all
@@ -361,16 +358,14 @@ begin
 						C.ObjectID,
 						h.ID as ParentID,
 						h.Object as ParentObject,
-						h.ObjectID as ParentObjectID,
-						h.focal,
-						h.[level]+1 as [level]
+						h.ObjectID as ParentObjectID
 				from	h
 						inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = h.Object and I.SubjectID = h.ObjectID
 						inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
 			)
 
 			insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-				select	distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal 
+				select	distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 
 				from	h 
 				where	Uid not in (select Uid from #hierarchies)
 		end
@@ -391,7 +386,7 @@ begin
 					P.ID ParentID,
 					utility.GetHash(L.Salt + '|A' + cast(P.ID as varchar)),
 					A.AssetTypeID,
-					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
+					0
 			from	Asset A
 					inner join #hopAssets L on L.ID = A.ID
 					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
@@ -409,7 +404,7 @@ begin
 					P.ID,
 					utility.GetHash(h.Salt + '|A' + cast(h.ParentID as varchar)),
 					P.AssetTypeID,
-					h.focal
+					0
 			from	#hierarchies h
 					inner join Asset C on C.ID = h.ID
 					inner join Asset P on P.ID = h.ParentID
@@ -425,7 +420,7 @@ begin
 					A.AssetTypeID,
 					utility.GetHash(L.Salt + '|A' + cast(A.ID as varchar)),
 					utility.GetHash(L.Salt + '|T' + cast(A.AssetTypeID as varchar)),
-					case when A.Uid = @uid then cast(1 as bit) else cast(0 as bit) end as focal
+					0
 			from	Asset A
 					inner join #hopAssets L on L.ID = A.ID;
 	end
@@ -594,6 +589,12 @@ begin
 				group by t.[key], t.[uid], t.[direction]
 	end
 
+
+	update	T
+	set		T.focal = 1
+	from	#hierarchies T
+			inner join #hierarchies S on S.uid = @uid and S.hierarchyKey = T.hierarchyKey;
+
 	-- Get flat node collection.
 	select		distinct
 				H.hierarchyKey,
@@ -625,7 +626,7 @@ begin
 				'#cccccc' as [back],
 				H.predicateId,
 				P.Uid as predicateUid,
-				iif(@ancestry = 3 and H.Hop < 0, P.Inverse, P.Name) as [text],
+				iif(@ancestry = 3 and H.SubjectHop < 0, P.Inverse, P.Name) as [text],
 				P.[Type] as predicateType,
 				(
 				select	Hi.intersectId as id,
@@ -641,7 +642,7 @@ begin
 				inner join #hierarchies T on T.[key] = H.[to]
 				inner join [Predicate] P on P.ID = H.PredicateID
 	where		iif(H.Direction = 'B' and @ancestry = 3, T.hierarchyKey, S.hierarchyKey) is not null and iif(H.Direction = 'B' and @ancestry = 3, S.hierarchyKey, T.hierarchyKey) is not null
-	group by	H.Direction, S.hierarchyKey, T.hierarchyKey, H.predicateId, P.Uid, iif(@ancestry = 3 and H.Hop < 0, P.Inverse, P.Name), P.Type;
+	group by	H.Direction, S.hierarchyKey, T.hierarchyKey, H.predicateId, P.Uid, iif(@ancestry = 3 and H.SubjectHop < 0, P.Inverse, P.Name), P.Type;
 
 	-- Get hierarchy (or root node) collection.
 	select	H.hierarchyKey,
