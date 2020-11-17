@@ -99,6 +99,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     predicateTypes: any[] = [];
     predicateOperators: any[] = [];
+    restrictedPredicateTypes: any[] = ["Diagram", "DiagramUse", "DiagramReference", "InterTypeHierarchy", "IntraTypeHierarchy"];
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
         + 'Only those assets matching the conditions will be scored using these measures. '
@@ -204,7 +205,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
-
                 tempFields.forEach(f => {
                     f.Operators = [];
                     this.operators.forEach(op => {
@@ -264,7 +264,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             });
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.relationshipTypes = data.map(x => {
+                    this.relationshipTypes = data.filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1).map(x => {
                         let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let isObject = (x.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let label = "";
@@ -279,21 +279,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         label = label + " " + assetLabel;
                         return { label: label, value: x.Uid };
                     });
-                    this.predicateTypes = data.map((x, idx, self) => {
-                        let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
-                        let hasInverse = self.findIndex((check) => {
-                            if (isSubject) {
-                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
-                            } else {
-                                return (check.Subject.Uid.toLowerCase() === x.Object.Uid.toLowerCase() && check.Object.Uid.toLowerCase() === x.Subject.Uid.toLowerCase() && check.Predicate.Uid == x.Predicate.Uid);
-                            }
-                        }) != -1;
-                        let label = '';
-                        if (isSubject) {
-                            label = x.Predicate.Name + (hasInverse ? ('/' + x.Predicate.Inverse) : '');
-                        } else {
-                            label = x.Predicate.Inverse + (hasInverse ? ('/' + x.Predicate.Name) : '');
-                        }
+                    this.predicateTypes = data.filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1).map((x, idx, self) => {
+                        let label = x.Predicate.Name + '/' + x.Predicate.Inverse + ' (' + x.Predicate.Type + ')';
                         return { label: label, value: x.Predicate.Uid };
                     });
                     this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
@@ -410,12 +397,14 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 let field = this.metricEditorFieldTypes.filter(x => x.ApiName == condition.field)[0]
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
-                    let date = new Date(condition.value);
-                    condition.value = date;
+                    let date = new Date(condition.value); 
+                    var utc = this.getUtcDate(date);
+                    condition.value = utc;
 
                     if (condition.value2) {
                         let date = new Date(condition.value2);
-                        condition.value2 = date;
+                        var utc = this.getUtcDate(date);
+                        condition.value2 = utc;
                     }
                 }
                 this.testFieldConditions.push(condition);
@@ -446,6 +435,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 break;
         }
         this.isLoading = false;
+    }
+
+    private getUtcDate(date: Date) {
+        var utc = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+        return new Date(utc);
     }
 
     private getMaxScoreDate() {
@@ -590,7 +584,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                             case "IsFalse":
                                 condition.value = null;
                                 val2 = null;
-                                console.log("works")
                                 break;
                         }
                         this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });

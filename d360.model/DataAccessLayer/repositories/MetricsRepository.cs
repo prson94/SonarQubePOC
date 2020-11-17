@@ -1639,7 +1639,7 @@ from    metrics.Allocation  ma
                             
                             		) as [Values]
                             from	AssetType A
-                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
+                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Json','JsonElement', 'Lookup', 'Number', 'Text')
                             for		json path", new { assetTypeUid }, ApiTimeout).ToList();
         }
 
