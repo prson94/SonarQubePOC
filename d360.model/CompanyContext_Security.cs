@@ -637,10 +637,12 @@ from    #changes C
                     {
                         if (w.FieldTypeID > 0)
                         {
-                            var whenFieldType = await (Connection.QueryFirstAsync<dynamic>("select ID,AllowMultipleValues,Type from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction));
-                            whenSql += $" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+                            var whenFieldType = await (Connection.QueryFirstOrDefaultAsync<dynamic>("select ID,AllowMultipleValues,Type from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction));
+                            
                             if (whenFieldType != null)
                             {
+                                whenSql += $" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+
                                 whenSql += (whenFieldType.AllowMultipleValues) ?
                                     $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" : // multiselect list
                                     $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";  // all field types plus single select list
