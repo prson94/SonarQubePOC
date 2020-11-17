@@ -2019,42 +2019,28 @@ order by    rnk, [Name]";
             {
                 List<dynamic> items = (List<dynamic>)selected["Selection"];
                 int preselectedCount = items.Count;
-                bool includeSelected = offset > preselectedCount && preselectedCount <= (offset + rows);
+                bool includeSelected = offset < preselectedCount;
                 if (includeSelected)
                 {
-                    items.ForEach(d =>
+                    items.OrderBy(x=> x.Text.ToString()).Skip(offset).Take(rows).ToList().ForEach(d =>
                     {
                         selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = true });
                     });
                 }
 
 
-                var maxRecord = offset + rows;
-                var origRows = rows;
                 if (preselectedCount > 0)
                 {
+                    var targetOffset = offset - preselectedCount;
 
-                    var reqestedPage = (offset + rows) / rows;
-                    var emptyPages = preselectedCount / rows;
-
-                    if (reqestedPage < emptyPages)
+                    if (targetOffset < 0)
                     {
-                        rows = offset = 0;
+                        offset = 0;
+                        rows = rows + targetOffset;
                     }
                     else
                     {
-                        var targetPage = reqestedPage - emptyPages;
-                        var toTopOfPage = preselectedCount == rows ? 0 : preselectedCount % rows;
-
-                        if (targetPage == 1)
-                        {
-                            offset = 0;
-                            rows = rows - toTopOfPage;
-                        }
-                        else
-                        {
-                            offset = (targetPage - 1) * rows - toTopOfPage;
-                        }
+                        offset = targetOffset;
                     }
                 }
 
