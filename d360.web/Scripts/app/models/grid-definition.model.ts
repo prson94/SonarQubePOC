@@ -1,6 +1,5 @@
 ﻿import { ObjectRelationship } from './relationship.model';
 import { SelectItem } from 'primeng/api';
-import { FieldType } from './fields.model';
 
 export class GridField {
     name: string;
@@ -28,12 +27,16 @@ export class GridRelationshipFilterExpression {
         let filters: string[] = [];
         let condition: string = this.includeType == 'Any' ? ' or ' : ' and ';
         let relUid: string = this.relationshipType.Uid;
-        this.objectIds.forEach(opt => {
+        if (this.objectIds) {
+            this.objectIds.forEach(opt => {
 
-            filters.push(`${relUid} eq ${opt}`);
-        });
+                filters.push(`${relUid} eq ${opt}`);
+            });
+        }
+        if (filters.length > 0)
+            return `(${filters.join(condition)})`;
 
-        return `(${filters.join(condition)})`;
+        return '';
     }
 }
 
@@ -75,19 +78,23 @@ export class GridFilterExpression {
             cond = 'eq';
         }
 
-        var values = this.value.split(multiValueDelimiter);
-        let expressions: string[] = [];
+        if (this.value) {
+            var values = this.value.split(multiValueDelimiter);
+            let expressions: string[] = [];
 
-        values.forEach(value => {
-            var val = this.wrapValue(f.fieldType, value);
-            expressions.push(`${f.apiName} ${cond} ${val}`);
-        })
+            values.forEach(value => {
+                var val = this.wrapValue(f.fieldType, value);
+                expressions.push(`${f.apiName} ${cond} ${val}`);
+            })
 
-        if (expressions.length > 1) {
-            return `(${expressions.join(' or ')})`;
+            if (expressions.length > 1) {
+                return `(${expressions.join(' or ')})`;
+            }
+
+            return expressions.join(' or ');
         }
 
-        return expressions.join(' or ');
+        return '';
     }
 
     private wrapValue(fieldType, value): string {
