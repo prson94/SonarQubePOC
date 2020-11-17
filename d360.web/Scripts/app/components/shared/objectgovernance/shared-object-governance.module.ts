@@ -22,7 +22,6 @@ import { ObjectHealthDetailsItemComponent } from './object-health-details-item.c
 import { SimpleCarouselModule } from '../small-widgets/carausel/simple-carousel.module';
 import { TooltipModule } from 'primeng/tooltip';
 
-
 @NgModule({
     imports: [
         CommonModule,
