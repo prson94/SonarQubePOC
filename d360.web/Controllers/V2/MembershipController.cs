@@ -90,13 +90,14 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
                 string finalSql = "";
-                string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
+                string joinsSql = " outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A ";
                 string whereSql = "";
                 string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
                     case gr.State 
                      when 1 then 'Active'
                      when 2 then 'InActive'
-                     when 3 then 'Deleted' end as State ";
+                     when 3 then 'Deleted' end as State,
+                     CreatedOn";
                 string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
                 string orderBySQL = $"";
                 long pageSize;
@@ -160,7 +161,7 @@ namespace d360.web.Controllers.V2
                 }
                 foreach (var join in fieldJoins)
                 {
-                    joinsSql += join;
+                    joinsSql += " " + join;
                 }
                 foreach (FieldType customField in fieldTypes)
                 {
@@ -196,27 +197,32 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
                     List<string> simpleFilters = new List<string>();
 
-                    foreach (var field in fieldTypes.Where(x => x.IsListable == true))
-                    {
-                        _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
+                    _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
 
-                        foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    {
+                        if (ft.Type == "Lookup" && ft.AllowAllValue)
                         {
-                            if (ft.Type == "Lookup" && ft.AllowAllValue)
-                            {
-                                simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
-                            }
-                            else
-                            {
-                                simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
-                            }
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
                         }
                     }
-                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+
+                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "CreatedOn" };
 
                     defaultFields.ForEach(f =>
                     {
-                        simpleFilters.Add($"{f} like @simpleFilter");
+                        if (f == "CreatedOn" || f == "LastLoggedInOn")
+                        {
+                            simpleFilters.Add($"cast({f} as datetime2) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"{f} like @simpleFilter");
+                        }
                     });
 
                     simpleFilters.Add(@"(case gr.State 
@@ -244,7 +250,7 @@ namespace d360.web.Controllers.V2
                         whereSql += " and ";
                     }
                 }
-                List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
+                List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State", "CreatedOn" };
                 validCols.AddRange(fieldTypes.Select(x => x.Name));
 
                 if (validCols.All(x => x.ToLower() != _order.ToLower()))
@@ -1164,6 +1170,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
              {
                  fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
              });
+            fieldMap.Add(new Tuple<string, string, string>("Created on", "CreatedOn", "Date"));
             fieldMap.Add(new Tuple<string, string, string>("Last logged in on", "LastLoggedInOn", "Date"));
             fieldMap.Add(new Tuple<string, string, string>("Administrator?", "IsAdministrator", "Boolean"));
             fieldMap.Add(new Tuple<string, string, string>("Status", "State", "Text"));

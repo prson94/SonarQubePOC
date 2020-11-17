@@ -55,6 +55,7 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("Email", "gr.Email", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("IsAdministrator", "gr.IsAdministrator", SqlFieldType.Boolean));
                 allowedDefaultFields.Add(new DefaultFilter("LastLoggedInOn", "gr.LastLoggedInOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("CreatedOn", "gr.CreatedOn", SqlFieldType.DateTime));
                 allowedDefaultFields.Add(new DefaultFilter("State", @"(CASE gr.state 
                     WHEN 1 THEN 'Active'
                     WHEN 2 THEN 'InActive'
