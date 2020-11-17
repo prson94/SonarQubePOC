@@ -581,9 +581,8 @@ from	metrics.Asset A
                                                             $"select cast(iif(count(1) > 0, {trueValue}, {falseValue}) as bit) " +
                                                             "from ResponsibilityDetail R " +
                                                             "inner join ResponsibilityType T on T.ID = R.ResponsibilityTypeID and T.Uid = @ResponsibilityTypeUid " +
-                                                            "where exists(select 1 from Asset where ID = R.AssetID and Uid = @AssetUid) " +
-                                                            "or exists(select 1 from Asset where AssetTypeID = R.AssetTypeID and R.AssetID = 0 and Uid = @AssetUid)",
-                                                            new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }
+                                                            "where exists ( select 1 from Asset where Uid = @AssetUid and ( (ID = R.AssetID and R.AssetID <> 0) or (AssetTypeID = R.AssetTypeID and R.AssetID = 0) ) )",
+                                                            new { gDefinition.Owner.ResponsibilityTypeUid, n.AssetUid }, commandTimeout: 90
                                                             ).Single();
                                                     }
                                                     else
@@ -606,10 +605,10 @@ from	metrics.Asset A
                                                         switch (gDefinition.Predicate.Operator)
                                                         {
                                                             case Operator.Populated:
-                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                                scoreItem.Value = company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }, commandTimeout: 90).Single();
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }).Single();
+                                                                scoreItem.Value = !company.Query<bool>(predicateExistenceSql, new { gDefinition.Predicate.PredicateUid, n.AssetUid }, commandTimeout: 90).Single();
                                                                 break;
                                                         }
                                                     }
@@ -631,7 +630,7 @@ from	metrics.Asset A
                                                             case Operator.Equals:
                                                                 scoreItem.Value = company.Query<bool>(
                                                                     string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                             case Operator.In:
@@ -642,13 +641,13 @@ from	metrics.Asset A
                                                                         gDefinition.Relation.IntersectTypeUid,
                                                                         n.AssetUid,
                                                                         Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
-                                                                    }
+                                                                    }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                             case Operator.NotEquals:
                                                                 scoreItem.Value = !company.Query<bool>(
                                                                     string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                             case Operator.NotIn:
@@ -659,19 +658,19 @@ from	metrics.Asset A
                                                                         gDefinition.Relation.IntersectTypeUid,
                                                                         n.AssetUid,
                                                                         Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
-                                                                    }
+                                                                    }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                             case Operator.NotPopulated:
                                                                 scoreItem.Value = !company.Query<bool>(
                                                                     string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                             case Operator.Populated:
                                                                 scoreItem.Value = company.Query<bool>(
                                                                     string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }
+                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }, commandTimeout: 90
                                                                     ).Single();
                                                                 break;
                                                         }
