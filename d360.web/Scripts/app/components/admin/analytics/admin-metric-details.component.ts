@@ -276,6 +276,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
                         ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
+                    console.log(this.metricListFieldTypes)
                     let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
                         ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
                     let formattedValue = gov.Field.Values.join(", ");
@@ -291,9 +292,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             this.dateShowType = fieldType.Type;
                             this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
                             this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
+                            formattedValue = "";
                             
                         }
-                        this.formattedCheck = fieldType.Name + " " + formattedoperator;
+                        this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
                     } else {
                         this.formattedCheck = "field not found";
                     }
@@ -314,14 +316,16 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     }
                     break;
                 case 'Predicate':
-                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length == 1
+                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
                         ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
                     let operatorStringForPredicate = "exists";
                     if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
                         operatorStringForPredicate = "does not exist";
                     }
-                    this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate; 
-
+                    if (predicate)
+                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate;
+                    else
+                        this.formattedCheck = "";
                     break;
                 case 'Relation':
                     let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
