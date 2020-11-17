@@ -296,7 +296,7 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getWorkflowId(uid: string): Observable<number> {
-        return this.http.get(`api/v2/workflow/id/${uid}/id`)
+        return this.http.get(`api/v2/workflow/${uid}/legacyData`)
             .pipe(
                 map(response => <number>response),
                 catchError(err => this.handleError(err))

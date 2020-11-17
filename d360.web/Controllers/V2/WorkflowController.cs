@@ -383,7 +383,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpGet,
-    Route("id/{uid}/id"),
+    Route("{uid}/legacyData"),
     ApiExplorerSettings(IgnoreApi = true),
      SwaggerResponse(HttpStatusCode.OK, "", typeof(Int32))
     ]
