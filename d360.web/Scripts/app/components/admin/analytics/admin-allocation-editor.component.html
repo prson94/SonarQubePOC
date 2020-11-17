@@ -5,7 +5,16 @@
                 <div class="FieldName">
                     <span>Score Type&nbsp;</span>
                 </div>
-                <p-dropdown igDropdown igSize="medium" [disabled]="disabled" [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" appendTo="body" [required]="true" [showClear]="false">
+                <p-dropdown 
+                            igDropdown 
+                            igSize="medium" 
+                            [disabled]="disabled" 
+                            [options]="ddlScoreTypes" 
+                            (onChange)="scoreTypeChange($event)" 
+                            [(ngModel)]="selection.scoreType" 
+                            appendTo="body" 
+                            [required]="true" 
+                            placeholder="Value required">
                     <ng-template let-item pTemplate="selectedItem">
                         <span>{{item.label}}</span>
                     </ng-template>
@@ -18,7 +27,18 @@
                 <div class="FieldName">
                     <span>Asset Type&nbsp;</span>
                 </div>
-                <p-dropdown igDropdown igSize="full" [disabled]="disabled || !selection.scoreType" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" filter="true" appendTo="body" [required]="true"  [showClear]="false" (onChange)="hasModelChanged()">
+                <p-dropdown 
+                            igDropdown 
+                            igSize="full" 
+                            [disabled]="disabled || !selection.scoreType" 
+                            [options]="ddlAssetTypes" 
+                            [(ngModel)]="selection.assetTypeUid" 
+                            filter="true" 
+                            appendTo="body" 
+                            [required]="true"  
+                            placeholder="Value required"
+                            [showClear]="false" 
+                            (onChange)="hasModelChanged()">
                     <ng-template let-item pTemplate="selectedItem">
                         <span [innerHtml]="item.label"></span>
                     </ng-template>
