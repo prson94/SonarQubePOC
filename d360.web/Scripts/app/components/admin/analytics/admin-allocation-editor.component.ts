@@ -29,7 +29,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     ddlScoreTypes: any[] = [];
     ddlAssetTypes: any[] = [];
-    saveLabel: string = "Save";
+    saveLabel: string = "Create";
     closeLabel: string = "Cancel";
     isEdit: boolean = false;
     modelChanged: boolean = false;
@@ -67,7 +67,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         } else {
             this.isEdit = false;
             this.closeLabel = "Cancel";
-            this.saveLabel = "Save";
+            this.saveLabel = "Create";
         }
     }
    
@@ -118,8 +118,6 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                         this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
                     }
                     this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
-
-                    this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
 
                 });
         }
