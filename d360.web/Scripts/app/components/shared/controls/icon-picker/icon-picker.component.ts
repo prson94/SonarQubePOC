@@ -49,7 +49,6 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
         this.isRequired = this.required !== undefined;
 
         this.iconService.getIconProperties().subscribe(result => {
-            console.log(result);
             this.iconService.getIconImages().subscribe(images => {
                 images.forEach(img => {
                     result.push(img);
@@ -57,15 +56,27 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
 
                 result.forEach(i => {
                     let index = this.categories.findIndex(x => x.label == i.categories[0]);
-
-                    if (index == -1) {
-                        this.categories.push({
-                            label: i.categories[0],
-                            value: i.categories[0],
-                            items: [{ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img }]
-                        });
-                    } else {
-                        this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img });
+                    if (!i.img) {
+                        if (index == -1) {
+                            this.categories.push({
+                                label: i.categories[0],
+                                value: i.categories[0],
+                                items: [{ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img }]
+                            });
+                        } else {
+                            this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img });
+                        }
+                    }
+                    else {
+                        if (index == -1) {
+                            this.categories.push({
+                                label: i.categories[0],
+                                value: i.categories[0],
+                                items: [{ label: i.name, value: i.path, path: i.path, img: i.img }]
+                            });
+                        } else {
+                            this.categories[index].items.push({ label: i.name, value: i.path, path: i.path, img: i.img });
+                        }
                     }
                 });
             })
@@ -83,7 +94,6 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     }
 
     writeValue(obj: string): void {
-        console.log(obj);
         this.onModelChange(obj);
     }
     registerOnChange(fn: any): void {
