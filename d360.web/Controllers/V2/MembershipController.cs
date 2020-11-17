@@ -97,7 +97,7 @@ namespace d360.web.Controllers.V2
                      when 1 then 'Active'
                      when 2 then 'InActive'
                      when 3 then 'Deleted' end as State,
-                     createdon";
+                     CreatedOn";
                 string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
                 string orderBySQL = $"";
                 long pageSize;
