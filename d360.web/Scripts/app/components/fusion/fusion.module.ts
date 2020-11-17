@@ -60,19 +60,6 @@ import { TreeModule } from 'primeng/tree';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 
-/*
-declare var require: any;
-
-export function highchartsFactory() {
-    const highcharts = require('highcharts');
-    const highChartsMore = require('highcharts/highcharts-more');
-    const solidGauge = require('highcharts/modules/solid-gauge');
-    ChartModule.forRoot(require('highcharts'),
-        require('highcharts/highcharts-more'),
-        require('highcharts/modules/solid-gauge'));
-    return highcharts;
-}*/
-
 
 @NgModule({
     imports: [CommonModule,
