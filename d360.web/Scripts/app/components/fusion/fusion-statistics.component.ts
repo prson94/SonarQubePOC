@@ -4,7 +4,13 @@ import { FusionService } from '../../services/fusion.service';
 import { BaseComponent } from '../shared/base.component';
 import { takeUntil } from "rxjs/operators";
 import { Subject } from "rxjs";
+import * as Highcharts from 'highcharts';
 
+let More = require('highcharts/highcharts-more');
+let solidGauge = require('highcharts/modules/solid-gauge');
+
+More(Highcharts);
+solidGauge(Highcharts);
 
 @Component({
     selector: 'd3s-fusion-statistics',
@@ -20,7 +26,7 @@ import { Subject } from "rxjs";
                     <div class="row" (click)="showAgentHistory=true;">
                         <div class="col s12" style="font-weight:bold">Agent % Success</div>
                         <div class="col s12">
-                            <chart [options]="agentPie"></chart>
+                            <div id="agentPie"></div>                            
                         </div>
                     </div>
                 </div>
@@ -28,7 +34,7 @@ import { Subject } from "rxjs";
                     <div class="row" (click)="showFusionHistory=true;">
                         <div class="col s12" style="font-weight:bold">Processing % Success</div>
                         <div class="col s12">
-                            <chart [options]="workerPie"></chart>
+                            <div id="workerPie"></div>                            
                         </div>
                     </div>
                 </div>
@@ -43,14 +49,14 @@ import { Subject } from "rxjs";
         <div class="tile tile-detail" *ngIf="showAgentHistory">
             <div class="row">
                 <d3s-fusion-agent-errors [days]="daysToLookBack"></d3s-fusion-agent-errors>
-                <button pButton type="button" (click)="showAgentHistory=false;" label="Close"
+                <button pButton type="button" (click)="showAgentHistory=false;load();" label="Close"
                         style="width: 150px;"></button>
             </div>
         </div>
         <div class="tile tile-detail" *ngIf="showFusionHistory">
             <div class="row" *ngIf="showFusionHistory">
                 <d3s-fusion-process-errors [days]="daysToLookBack"></d3s-fusion-process-errors>
-                <button pButton type="button" (click)="showFusionHistory=false;" label="Close"
+                <button pButton type="button" (click)="showFusionHistory=false;load();" label="Close"
                         style="width: 150px;"></button>
             </div>
         </div>
@@ -62,9 +68,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
     destroySubject$: Subject<void> = new Subject();
 
     private fusionSummaryStats: FusionSummaryStats;
-    private agentPie: Object;
-    private workerPie: Object;
-
+    
     showAgentHistory: boolean;
     showFusionHistory: boolean;
 
@@ -94,9 +98,9 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                     agentSuccess = +agentSuccess.toFixed(2);
                     workerSuccess = +workerSuccess.toFixed(2);
 
-                    this.agentPie = this.getKpi(agentSuccess, "Agent % Success");
-                    this.workerPie = this.getKpi(workerSuccess, "Processing % Success");
-
+                    Highcharts.chart('agentPie', this.getKpi(agentSuccess, "Agent % Success"));
+                    Highcharts.chart('workerPie', this.getKpi(workerSuccess, "Processing % Success"));
+                    
                     this.isLoading = false;
                 }
             );
@@ -124,7 +128,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
     private getKpi(
         score: number,
         title?: string
-    ) {
+    ) : any{
         
         return {
             chart: {

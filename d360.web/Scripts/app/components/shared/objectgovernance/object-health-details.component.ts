@@ -17,7 +17,7 @@ import { Observable, Subject } from 'rxjs';
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
-    scoreHistory: Object;
+    scoreHistory: Highcharts.Options;
     scoresPoints: ScorePoint[];
     lastScorePoint: Date;
     averageScore: number;
@@ -85,6 +85,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
 
+                    this.loadingHistory = false;
                     this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
@@ -194,7 +195,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 return '<span style="font-weight: bold">' + additionalValue + '<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
                             },
                             headerFormat: '<span>{point.key}</span><br/>',
-                            useHTML: 'true',
+                            useHTML: true,
                             shape: 'square',
                             borderColor: '#c8cfd9',
                             borderWidth: 2
@@ -224,8 +225,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             color: '#FF7155'
                         }]
                     };
-                    this.loadingHistory = false;
 
+                    this.chartInstance = Highcharts.chart('healthChart', this.scoreHistory);
+                    
                     subject.next(true);
                 });
         }
@@ -415,7 +417,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     //scoring carousel, table and graph interactivity
-    private selectPointOnGraph() {
+    private selectPointOnGraph() {        
         if (this.chartInstance) {
             if (this.chartInstance.series) {
                 if (this.chartInstance.series.length > 0) {
@@ -438,6 +440,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.cdRef.markForCheck();
                 }
             }
+            
         }
     }
 
@@ -455,10 +458,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private chartInstance: Highcharts.Chart;
-    getChartInstance(chartInstance) {
-        this.chartInstance = chartInstance;
-    }
-
+    
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {

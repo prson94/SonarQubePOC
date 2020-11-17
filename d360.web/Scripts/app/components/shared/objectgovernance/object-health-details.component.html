@@ -65,13 +65,13 @@
         </ng-template>
         <div class="row">&nbsp;</div>
     </div>
-    <div class="score-chart-container" *ngIf="!loadingHistory; else chartLoading">
+    <div class="score-chart-container">
         <div class="heading">
             <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
         </div>
         <div class="score-chart">
             <div class="chart-header">{{getScoreType()}} Score History</div>
-            <chart (load)="getChartInstance($event.context)" [options]="scoreHistory"></chart>
+            <div id="healthChart"></div>            
             <div #scoreTable class="score-table">
                 <div class="col s12">
                     <div class="row score-tbl-header">

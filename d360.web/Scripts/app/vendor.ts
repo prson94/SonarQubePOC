@@ -40,7 +40,6 @@ import 'primeng/focustrap';
 
 
 import 'lodash';
-import 'angular2-highcharts';
 import 'highcharts/highcharts';
 import 'highcharts/highcharts-more';
 import 'ng-json-view';

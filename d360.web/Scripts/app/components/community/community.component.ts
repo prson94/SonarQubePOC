@@ -25,10 +25,7 @@ import * as Highcharts from 'highcharts';
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     </div>
                     <div [hidden]="isLoading">
-                        <chart [options]="responsibilitiesPie">
-                            <series (click)="onPieClick($event)">
-                            </series>
-                        </chart>
+                        <div id="responsibilitiesPie"></div>                        
                     </div>
                 </div>
             </div>
@@ -80,11 +77,12 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.load();
     }
 
+
     private load() {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
-            subscribe(result => {
-                this.responsibilitiesPie = {
+            subscribe(result => {    
+                let options: any = {
                     chart: {
                         plotBackgroundColor: null,
                         plotBorderWidth: null,
@@ -106,7 +104,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                     },
                     tooltip: {
                         formatter: function () {
-                            return this.point.name +'<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') +  ' Total Assigned Items';
+                            return this.point.name + '<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') + ' Total Assigned Items';
                         }
                     },
                     plotOptions: {
@@ -116,7 +114,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                             dataLabels: {
                                 enabled: true,
                                 formatter: function () {
-                                    return '<b>' + this.point.name+'</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
+                                    return '<b>' + this.point.name + '</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
                                 }
                             }
                         }
@@ -129,8 +127,13 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                             y: x.Count,
                             id: x.ResponsibilityTypeID
                         })),
+                        events: {
+                            click: function (e) { this.onPieClick(e) }.bind(this)
+                        }
                     }]
                 };
+
+                Highcharts.chart('responsibilitiesPie', options);
 
                 this.isLoading = false;
             });
@@ -138,7 +141,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
 
     onPieClick(e) {
         this.selectedResource = null;
-        this.selectedResponsibilityName = e.originalEvent.point.name; //name
-        this.selectedResponsibilityId = e.originalEvent.point.id; // triggers user responsibilities piece to load.    
+        this.selectedResponsibilityName = e.point.name; //name
+        this.selectedResponsibilityId = e.point.id; // triggers user responsibilities piece to load.    
     }
 };
