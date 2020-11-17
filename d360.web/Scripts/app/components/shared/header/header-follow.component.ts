@@ -64,7 +64,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.sub = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
             this.objectType = c.type;
-            this.objectId = c.id;            
+            this.objectId = c.id;
             this.checkActive();
         });
 
@@ -118,8 +118,25 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren).subscribe(
             f => {
-                if (f.type == 'notification') {
+                if (f.type == 'notification') {                                        
                     this.active = !this.active;
+                    let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
+                    let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;
+                    let toastTitle = "Followed";
+                    if (this.active && includeChildren) {                                                
+                            toastTitle = "Following Type";
+                            toastMessage = `You are now following type '${crumbs[crumbs.length - 1].text}'`;                        
+                    } else {
+                        if (includeChildren) {
+                            toastTitle = "Unfollowed Type";
+                            toastMessage = `You have unfollowed type '${crumbs[crumbs.length - 1].text}'`;
+                        } else {
+                            toastMessage = `You have unfollowed '${crumbs[crumbs.length - 1].text}'`;
+                            toastTitle = "Unfollowed";
+                        }
+                    }
+
+                    this.messageService.add({ severity: 'info', summary: toastTitle, detail: toastMessage });
                     this.checkActive();
                 }
 
