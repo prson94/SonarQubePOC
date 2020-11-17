@@ -205,7 +205,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         tempFields.push(f as FieldTypeAPIModelFieldCondition);
                     }
                 });
-                console.log(tempFields);
                 tempFields.forEach(f => {
                     f.Operators = [];
                     this.operators.forEach(op => {
@@ -585,7 +584,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                             case "IsFalse":
                                 condition.value = null;
                                 val2 = null;
-                                console.log("works")
                                 break;
                         }
                         this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });

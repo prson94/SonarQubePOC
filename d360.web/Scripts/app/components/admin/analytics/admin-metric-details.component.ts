@@ -276,7 +276,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
                         ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
-                    console.log(this.metricListFieldTypes)
                     let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
                         ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
                     let formattedValue = gov.Field.Values.join(", ");
