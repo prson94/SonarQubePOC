@@ -81,7 +81,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     areImportAssetsLoaded: boolean = false;
     selectedImportFromAsset: any;
     isImporting: boolean = false;
-    hasNoImportAssets = true;
+    public hasNoImportAssets = true;
     hasPassedRelationshipCheck = false;
     loadingRelationships = false;
     showRelationshipsConfirmation = false;
