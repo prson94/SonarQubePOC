@@ -156,16 +156,26 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     ngOnInit() {
-        this.metricForm = this.fb.group({
-            name: ['', [Validators.required, this.isEmptyString()]],
-            description: null,
-            effectiveDate: null,
-            weight: ['', [this.isValidWeight()]],
-            isGroup: null,
-            matchType: null,
-            check: null
-        });
-
+        if (this.isExternallyCalculated) {
+            this.metricForm = this.fb.group({
+                name: ['', [Validators.required, this.isEmptyString()]],
+                description: null,
+                effectiveDate: null
+            });
+            this.metricForm.updateValueAndValidity();
+        } else {
+            this.metricForm = this.fb.group({
+                name: ['', [Validators.required, this.isEmptyString()]],
+                description: null,
+                effectiveDate: null,
+                weight: ['', [this.isValidWeight()]],
+                isGroup: null,
+                matchType: null,
+                check: null
+            });
+            this.metricForm.updateValueAndValidity();
+        }
+        
         this.checkTypeOptions = [
             { label: "Field", value: MetricGovernanceCheckType.Field },
             { label: "Ownership", value: MetricGovernanceCheckType.Owner },
@@ -408,6 +418,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Owner.Operator) {
                     this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             case 3:
                 this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
@@ -415,6 +426,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Predicate.Operator) {
                     this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             case 4:
                 this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
@@ -422,6 +434,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Relation.Operator) {
                     this.model.Definition.Governance.Relation.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             default:
                 break;
@@ -630,6 +643,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
                 arr.push(fieldCondition);
             })
+        } else {
+            this.model.Definition = null;
         }
 
         if (!this.isExternallyCalculated) {
