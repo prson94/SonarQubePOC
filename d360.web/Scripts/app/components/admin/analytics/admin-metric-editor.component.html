@@ -106,7 +106,7 @@
                         </p-dropdown>
                     </div>
                     <div [ngSwitch]="model.Definition.Governance.Check">
-                        <div *ngSwitchCase="0">
+                        <div class="row" *ngSwitchCase="0">
                             <!--keep updateFrequency disabled until we are ready-->
                             <div *ngIf="false" class="row">
                                 <label for="updateFrequency" class="ig-label">Update Frequency</label>
@@ -127,12 +127,12 @@
                                     </ng-template>
                                 </p-dropdown>
                             </div>
-                            <div class="row ">
+                            <div class="row">
                                 <label for="instructionString" class="ig-label">Instruction String</label>
                                 <input igInput tabindex="7" igSize="full" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
                             </div>
                         </div>
-                        <div class="row" *ngSwitchCase="1">
+                        <div class="row field-row" *ngSwitchCase="1">
                             <label class="ig-label">Test Condition</label>
                             <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
@@ -140,7 +140,7 @@
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row conditions-row">
+                            <div class="row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -185,7 +185,7 @@
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin conditions-row">
+                            <div class="row conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -229,7 +229,7 @@
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin conditions-row">
+                            <div class="row conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"

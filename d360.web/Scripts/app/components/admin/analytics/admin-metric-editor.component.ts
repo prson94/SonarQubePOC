@@ -29,9 +29,6 @@ import * as _ from 'lodash';
     }
     .conditions-row{
         display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 8px;
     }   
     .condition{
         margin-left: 8px;
@@ -43,6 +40,9 @@ import * as _ from 'lodash';
     .condition-med{
         max-width: 308px;
         flex-grow: 1;
+    }
+    .field-row{
+        margin-bottom: 8px;
     }
     `]
 
