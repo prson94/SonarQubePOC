@@ -530,22 +530,35 @@ namespace d360.extensions.search
         }
 
 
-        public void ClearIndex(int companyID, string group)
+        public void ClearIndex(int companyID, string category, string assetType = null)
         {
             CreateIndexIfNotExists(companyID);
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
-            StringResponse deleteResponse;
-            deleteResponse = client.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), PostData.Serializable(new
+            List<QueryContainer> termQueries = new List<QueryContainer>();
+            termQueries.Add(new TermQuery
             {
-                query = new
+                Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                Value = category
+            });
+            if(!string.IsNullOrEmpty(assetType))
+                termQueries.Add(new TermQuery
                 {
-                    term = new
-                    {
-                        d3sGroup = group
-                    }
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetType"),
+                    Value = assetType
+                });
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new BoolQuery
+                {
+                    Must = termQueries
                 }
-            }));
+            };
+
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString);
 
             if (!deleteResponse.Success)
                 throw new ApplicationException(deleteResponse.OriginalException.Message);
@@ -1315,6 +1328,61 @@ namespace d360.extensions.search
 
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
+            {
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                {
+                    Name = h.key,
+                    DisplayName = MapCategoryToFriendlyName(h.key),
+                    ResultCount = h.doc_count,
+                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    {
+                        Name = c.key,
+                        ResultCount = c.doc_count
+                    }).OrderBy(x => x.Name).ToList()
+                }).OrderBy(x => x.DisplayName));
+            }
+
+            result.ElapsedMS = searchResults.took;
+
+            if (searchResults.hits != null)
+                result.Matches = searchResults.hits.total;
+
+            return result;
+        }
+
+        /**
+         * Perform a search that counts total items in index and buckets categories
+         */
+        public IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories)
+        {
+            IndexResults result = new IndexResults();
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new SimpleQueryStringQuery
+                {
+                    Query = "*"
+                },
+                From = 0,
+                Size = 0,
+                Aggregations = new TermsAggregation("all_types")
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Size = 30
+                }
+            };
+
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+
+            if (!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+
+            if (searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
                 categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
                 {
