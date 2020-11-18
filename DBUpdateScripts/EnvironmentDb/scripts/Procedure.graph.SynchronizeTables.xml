@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.graph.SynchronizeTables-v4">
+  <changeSet author="Pappas" id="Procedure.graph.SynchronizeTables-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,6 +15,7 @@ create or alter procedure [graph].[SynchronizeTables]
 	  @populatePaths bit = 0
 AS
 begin
+	set nocount on;
 
 	delete	graph.AssetEdge
     where	ID not in (select ID from [Intersect]);
@@ -26,7 +27,8 @@ begin
 	insert into #DeleteNodes
 		select	N.ID
 		from	graph.AssetNode N
-		where	N.ID not in (select ID from Asset);
+		where	N.ID not in (select ID from Asset)
+				and N.Class in (3,5,10,11,12,13);
 
 	delete	E
 	from	graph.AssetEdge E
@@ -79,7 +81,7 @@ begin
 					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()) as UpdatedOn,
 					T.[Class]
 			from	Asset A
-					inner join AssetType T on T.ID = A.AssetTypeID
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Class not in (3,5,10,11,12,13)
 			) S on (S.ID = T.ID)
 	when	matched and (T.UpdatedOn < S.UpdatedOn OR T.[Class] <> S.[Class]) then 
 	update 
@@ -142,6 +144,7 @@ begin
 			from	AssetType A
 					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 			where	I.ID is null
+					and A.Class not in (3,5,10,11,12,13)
 			union all
 			select	A.Object,
 					A.ObjectID,
@@ -149,7 +152,7 @@ begin
 					P.ID as ParentID,
 					P.[Level]+1 as [Level]
 			from	AssetType A
-					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
+					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3 and A.Class not in (3,5,10,11,12,13)
 					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 		)
 		
@@ -164,7 +167,7 @@ begin
 			declare @id int;
 			select top 1 @id = ID from #assetTypes order by [Level];
 			
-			print @id
+			--print @id
 			
 			exec [graph].[UpdateGraphTableHierarchyBy] null, @id, null
 		
@@ -179,11 +182,8 @@ begin
             select  AssetTypeID,
                     ID
             from    graph.AssetNode
-            where   Class not in (3,5,10,11,12,13) 
-					and (
-						[Path] is null 
-						or Segments is null
-						);
+            where   Class not in (3,5,10,11,12,13)
+					and Segments is null;
 
 		while ((select count(*) from #assets) > 0)
 		begin
@@ -199,9 +199,8 @@ begin
 		-- Catch-all
 		update	graph.AssetNode
 		set		Segments = '<path><segment level="1" assetTypeId="' + cast(AssetTypeID as varchar) + '" assetId="' + cast(ID as varchar) + '">{INVALID}</segment></path>'
-		where   Class not in (3,5,10,11,12,13) 
-				and Segments is null
-				and [Path] is not null;
+		where   Class not in (3,5,10,11,12,13)
+				and Segments is null;
 	end
 
 end
@@ -236,6 +235,7 @@ begin
 	create table #Uids (Uid uniqueidentifier)
 	create clustered index CIX_TempUids on #Uids (Uid)
 
+	-- Get all Result Uids where the asset is the result owner. 
 	insert into #Uids
 		select	R.Uid
 		from	graph.AssetNode A,
@@ -246,6 +246,13 @@ begin
 				and E.Class = 1
 				and A.ID = D.ID;
 
+	--Delete all edge records including those linking the result to the evaluated asset.
+	delete	E
+	from    dbo.AssetResultEdge E
+			inner join AssetResult AR on E.$to_id = AR.$node_id
+			inner join #Uids S on S.Uid = AR.Uid
+	
+	--Delete all remaining edge records linked to the Asset, e.g. Where asset is not owner. 
 	delete	E
 	from    dbo.AssetResultEdge E
 			inner join graph.AssetNode N on E.$from_id = N.$node_id
