@@ -1125,7 +1125,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private loadAssetsForImport() {
         if (!this.areImportAssetsLoaded) {
             this.processService.getImportOptions(this.assetUid).subscribe(res => {
-                this.importAssets = res;          
+                this.importAssets = res;
                 this.areImportAssetsLoaded = true;
                 if (this.importAssets && this.importAssets.length > 0) {
                     delete this.popupMenuItems[1]['tooltip'];
@@ -1151,7 +1151,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.processService.replaceProcessDiagram(this.assetUid, this.selectedImportFromAsset['uid'])
             .subscribe(res => {
-                this.load(true);
+                if (res.hasError) {
+                    this.isImporting = false;
+                    this.isSaving = false;
+                    this.validationErrors = res;
+                    this.areNamesUnique = false;
+                    this.isErrorModalOpened = true;
+                    this.cdRef.detectChanges();
+                }
+                else {
+                    this.load(true);
+                }
             })
     }
 
