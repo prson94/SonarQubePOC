@@ -24,11 +24,8 @@ import * as _ from 'lodash';
     providers: [MetricsService, CompanySettingsService, FieldsObservableService, ResponsibilityTypeService, RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
-    .row-margin{
-        margin: 8px 0px;
-    }
     .row-label{
-        margin: 0px 0px -8px 0px;
+        margin: 0px 0px -16px 0px;
     }
     .conditions-row{
         display: flex;
@@ -169,18 +166,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             check: null
         });
 
-        this.checkTypeOptions = Object.keys(this.metricGovernanceCheckType).filter(e => !isNaN(+e)).map(o => {
-            let label = MetricGovernanceCheckType[o];
-            if (+o == MetricGovernanceCheckType.Relation) {
-                label = "Relationship"
-            }
-            if (+o == MetricGovernanceCheckType.Owner) {
-                label = "Ownership"
-            }
-            return {
-                value: +o, label: label
-            }
-        });
+        this.checkTypeOptions = [
+            { label: "Field", value: MetricGovernanceCheckType.Field },
+            { label: "Ownership", value: MetricGovernanceCheckType.Owner },
+            { label: "Relationship", value: MetricGovernanceCheckType.Relation },
+            { label: "Predicate", value: MetricGovernanceCheckType.Predicate },
+            { label: "External", value: MetricGovernanceCheckType.External }
+        ];
 
         this.load();
         this.loadFieldData();
