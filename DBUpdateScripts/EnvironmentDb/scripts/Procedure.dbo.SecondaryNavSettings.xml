@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.SecondaryNavSettings-v4">
+  <changeSet author="kmcnamee" id="Procedure.dbo.SecondaryNavSettings-v4.1">
     <comment>GOV-12825</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [dbo].[SecondaryNavSettings]
+CREATE OR ALTER   procedure [dbo].[SecondaryNavSettings]
 	@uid uniqueidentifier,
 	@assetTypeUid uniqueidentifier,
 	@resourceId int,
@@ -145,6 +145,15 @@ begin
 					inner join AssetType T on T.ID = A.AssetTypeID
 					inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
 					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1
+					where A.uid = @assetUid
+		)
+		begin
+			update @navItems set HasWorkflow = 1
+		end
+
+		--has actions on this asset also show the workflow tab
+		if exists(select a.uid from Asset A 
+					inner join dbo.[issue] I on I.Object = A.Object and I.ObjectID = A.ObjectID
 					where A.uid = @assetUid
 		)
 		begin
