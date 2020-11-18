@@ -298,8 +298,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     } else {
                         this.formattedCheck = "field not found";
                     }
-
-
                     break;
                 case 'Owner':
                     let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
@@ -341,10 +339,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     let label = "";
                     if (isSubject) {
                         labelName = relationshipType.Predicate.Name;
-                        assetName = relationshipType.Subject.Name
+                        assetName = relationshipType.Object.Name;
                     } else if (isObject) {
                         labelName = relationshipType.Predicate.Inverse;
-                        assetName = relationshipType.Object.Name;
+                        assetName = relationshipType.Subject.Name;                        
                     }
                     label = labelName + " " + assetName;
                     if (relationshipType) {
