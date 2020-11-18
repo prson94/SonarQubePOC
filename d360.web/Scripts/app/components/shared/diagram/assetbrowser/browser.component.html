@@ -29,7 +29,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-container *ngIf="isProcessDiagramEmpty()">
-                                    <button [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" pTooltip="Import diagram from another asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-upload" label="Import Diagram" (click)="processDiagramRef.doControlledAction('open-diagram-import')"></button>
+                                    <button [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded || processDiagramRef.hasNoImportAssets" pTooltip="Import diagram from another asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-upload" label="Import Diagram" (click)="processDiagramRef.doControlledAction('open-diagram-import')"></button>
                                 </ng-container>
                             </ng-container>
                         </ng-container>
