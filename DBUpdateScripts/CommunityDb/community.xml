@@ -70,5 +70,4 @@
   <include file="scripts/GOV-11888.xml"/>  <!-- Add CORS allowed origins company setting -->
   <include file="scripts/GOV-12607.xml"/>  <!-- Rename fusion and event tables in plugin-->
   <include file="scripts/GOV-6448.xml"/>  <!-- Drop ResourceType Table and ResourceTypeId column from Resource.-->
-  <include file="scripts/GOV-12183.xml"/>  <!-- Rename User/resource and model/taxonomy search type in system settings-->
 </databaseChangeLog>
