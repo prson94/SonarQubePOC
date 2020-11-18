@@ -40,6 +40,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     @Input() scoreType: ScoreTypeAllocation;
     @Input() scoreData: any;
     @Input() operators: OperatorModel[];
+    @Input() responsibilityTypes: any[] = [];
+    @Input() relationshipTypes: any[] = [];
     @Input() showDisabled: boolean = false;
 
     private metrics: MetricAssetViewModel[] = [];
