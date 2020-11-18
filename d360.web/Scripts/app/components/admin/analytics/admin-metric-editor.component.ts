@@ -100,6 +100,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     predicateTypes: any[] = [];
     predicateOperators: any[] = [];
     restrictedPredicateTypes: any[] = ["Diagram", "DiagramUse", "DiagramReference", "InterTypeHierarchy", "IntraTypeHierarchy"];
+    restricterdFusionTypes: any[] = ["FusionAttribute", "FusionAttributeType", "FusionType", "FusionExecution", "FusionQueryAttribute", "FusionQueryAttributeType"];
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
         + 'Only those assets matching the conditions will be scored using these measures. '
@@ -264,7 +265,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             });
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.relationshipTypes = data.filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1).map(x => {
+                    let fusionFiltered = data.filter(x => this.restricterdFusionTypes.indexOf(x.Subject.Class) == -1)
+                        .filter(x => this.restricterdFusionTypes.indexOf(x.Object.Class) == -1);;
+                    this.relationshipTypes = fusionFiltered.filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1).map(x => {
                         let isSubject = (x.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let isObject = (x.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let label = "";
