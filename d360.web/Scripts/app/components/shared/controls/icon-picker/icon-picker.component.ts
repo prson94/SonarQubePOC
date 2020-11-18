@@ -50,10 +50,7 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
 
         this.iconService.getIconProperties().subscribe(result => {
             this.iconService.getIconImages().subscribe(images => {
-                images.forEach(img => {
-                    result.push(img);
-                })
-
+                result = [...result, ...images];
                 result.forEach(i => {
                     let index = this.categories.findIndex(x => x.label == i.categories[0]);
                     if (!i.img) {

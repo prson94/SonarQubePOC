@@ -49,8 +49,7 @@ export class IconService extends BaseObservableService   {
         }).pipe(
             map((res: any) => {
                 this.observable = null;
-                this.data = res.body;
-                return this.data;
+                return res.body;
             }),
             catchError(err => this.handleError(err))
         );

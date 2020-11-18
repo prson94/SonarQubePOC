@@ -15,7 +15,7 @@
             <ng-template pTemplate="body" let-item>
                 <tr [pSelectableRow]="item">
                     <td>
-                        <span *ngIf="item.Icon"><i [class]="'fa '+ item.Icon"></i></span>
+                        <span *ngIf="item.Icon"><img class="gov-Icon" *ngIf="item.Icon.indexOf('/Content') != -1" [src]="item.Icon" /><i *ngIf="item.Icon.indexOf('/Content') == -1" [class]="'fa '+ item.Icon"></i></span>
                         <span *ngIf="item.ImageIconUrl != null">
                             <img [src]="item.FullURL" style="max-width: 15px; max-height: 15px;" />
                         </span>
