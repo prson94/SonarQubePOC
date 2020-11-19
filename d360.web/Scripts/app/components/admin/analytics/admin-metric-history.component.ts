@@ -202,13 +202,13 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                                 ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
                         }
-                        if (fieldType.Type == "Date" || fieldType.Type == "DateTime") {
+                        if (fieldType.Type == "Date") {
                             this.dateShowType = fieldType.Type;
                             this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
                             this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
 
                         }
-                        this.formattedCheck = fieldType.Name + " " + formattedoperator;
+                        this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
                     } else {
                         this.formattedCheck = "field not found";
                     }
@@ -229,21 +229,24 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                     }
                     break;
                 case 'Predicate':
-                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length == 1
+                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
                         ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
-                    let operatorStringForPredicate = "exists";
+                    let existsOperatorP = "exists";
                     if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
-                        operatorStringForPredicate = "does not exist";
+                        existsOperatorP = "does not exist";
                     }
-                    this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate;
-
+                    if (predicate) {
+                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;
+                    } else {
+                        this.formattedCheck = "";
+                    }                    
                     break;
                 case 'Relation':
                     let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
                         ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
-                    let operatorStringForRelation = "is used";
+                    let existsOperator = "is used";
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
-                        operatorStringForRelation = "is not used";
+                        existsOperator = "is not used";
                     }
 
                     let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.AssetType.Uid.toLowerCase());
@@ -253,14 +256,14 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                     let label = "";
                     if (isSubject) {
                         labelName = relationshipType.Predicate.Name;
-                        assetName = relationshipType.Subject.Name
+                        assetName = relationshipType.Object.Name
                     } else if (isObject) {
                         labelName = relationshipType.Predicate.Inverse;
-                        assetName = relationshipType.Object.Name;
+                        assetName = relationshipType.Subject.Name;
                     }
                     label = labelName + " " + assetName;
                     if (relationshipType) {
-                        this.formattedCheck = label + " " + operatorStringForRelation;
+                        this.formattedCheck = label + " " + existsOperator;
                     } else {
                         this.formattedCheck = "responsibility type not found";
                     }
