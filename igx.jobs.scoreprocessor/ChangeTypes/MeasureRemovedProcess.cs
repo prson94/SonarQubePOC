@@ -17,7 +17,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var measureChangedModel = await Storage.DeserializeJsonObjectFromBlobAsync<MeasureRemovedModel>(Info.StorageFolder, Info.StorageFile);
 
-            if (measureChangedModel.EffectiveEndDate.Date < DateTime.UtcNow.Date)
+            if (measureChangedModel.EffectiveEndDate.Date <= DateTime.UtcNow.Date)
             {
                 // We can continue processing it.
                 var Db = GetCompanyContext();
@@ -25,17 +25,18 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 // End-date asset scores where this measure is the only one that was present (a one-measure score).
                 var endedScores = await Db.QueryAsync<Guid>(@"
 create table #Scores (ScoreUid uniqueidentifier);
+declare @today date = cast(getutcdate() as date);
 
 insert into #Scores
 	select	distinct
 			S.Uid
 	from	metrics.ScoreItem I
 			inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @MetricAssetVersionUid
-			inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
+			inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate < @today and S.EndDate is null
 			left join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
 			left join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
 			left join metrics.AssetVersion V on V.Uid = I2.AssetVersionUid and V.State = 1
-			left join metrics.Asset A on A.State = 1 and A.Uid = V.AssetUid and A.IsGroup = 0
+			left join metrics.Asset A on A.State = 1 and A.Uid = V.AssetUid 
 	where	A.Uid is null 
             or V.EffectiveEndDate is not null;
 
@@ -47,7 +48,7 @@ from	metrics.Score T
 		inner join #Scores S on S.ScoreUid = T.Uid;
 
 select ScoreUid from #Scores;", new { measureChangedModel.MetricAssetVersionUid });
-                
+
                 // Log the scores end-dates.
                 await Db.SaveScoreProcessingResultsAsync(Info.ExecutionUid, Info.ChangeType, "EndDateScores", endedScores, Info.StartedOn);
 
@@ -59,12 +60,48 @@ select	distinct
 		I2.Value as Result
 from	metrics.ScoreItem I
 		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @MetricAssetVersionUid
-		inner join metrics.Score S on S.Uid = L.ScoreUid and S.EndDate is null
+        inner join metrics.AssetVersion LV on LV.Uid = I.AssetVersionUid 
+		inner join metrics.Score S on S.Uid = L.ScoreUid
 		inner join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
 		inner join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
 		inner join metrics.AssetVersion V on V.Uid = I2.AssetVersionUid and V.State = 1
-		inner join metrics.Asset A on A.State = 1 and A.Uid = V.AssetUid and A.IsGroup = 0", new { measureChangedModel.MetricAssetVersionUid });
+		inner join metrics.Asset A on A.State = 1 and A.Uid = V.AssetUid and A.IsGroup = 0 and (A.ParentUid <> LV.AssetUid or A.ParentUid is null)", new { measureChangedModel.MetricAssetVersionUid });
                 var itemsToRescore = itemsToRescoreQuery.ToList();
+
+                // Delete asset scores where this measure is the only one that was present and was created today (a one-measure score).
+                // Also delete score items linked to these scores that we will be deleting, but are NOT linked to any other (i.e. earlier) scores.
+                var deletedScores = await Db.QueryAsync<Guid>(@"
+create table #Scores (ScoreUid uniqueidentifier);
+declare @today date = cast(getutcdate() as date);
+
+insert into #Scores
+	select	distinct
+            L.ScoreUid
+	from	metrics.ScoreItem I
+			inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @MetricAssetVersionUid
+			inner join metrics.Score S on S.Uid = L.ScoreUid and S.EffectiveDate = @today and S.EndDate is null
+			left join metrics.ScoreItemLink L2 on L2.ScoreUid = S.Uid and L2.ScoreItemUid <> I.Uid
+			left join metrics.ScoreItem I2 on I2.Uid = L2.ScoreItemUid
+			left join metrics.AssetVersion V on V.Uid = I2.AssetVersionUid and V.State = 1
+			left join metrics.Asset A on A.State = 1 and A.Uid = V.AssetUid and A.ParentUid is null
+	where	A.Uid is null 
+            or V.EffectiveEndDate is not null;
+
+delete  I
+from	metrics.ScoreItem I
+        inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid
+		inner join #Scores S on S.ScoreUid = L.ScoreUid
+        left join metrics.ScoreItemLink NL on NL.ScoreItemUid = I.Uid and NL.ScoreUid <> S.ScoreUid
+where   NL.ScoreUid is null;
+
+delete  T
+from	metrics.Score T
+		inner join #Scores S on S.ScoreUid = T.Uid;
+
+select ScoreUid from #Scores;", new { measureChangedModel.MetricAssetVersionUid });
+
+                // Log the scores end-dates.
+                await Db.SaveScoreProcessingResultsAsync(Info.ExecutionUid, Info.ChangeType, "DeleteSamesDayScores", deletedScores, Info.StartedOn);
 
                 if (itemsToRescore.Count > 0)
                 {

@@ -87,8 +87,12 @@
             </div>
             <div *ngIf="!selection.IsGroup">
                 <p>Are you sure you want to disable the measure '{{selection.Name}}'?</p>
-                <p>
-                    The measure will no longer be used in score calculations for the asset of type '{{scoreType.assetTypePath}}'. <br />
+                <p *ngIf="todayAndEffectiveDateAreSame(selection)">
+                    The measure will no longer be used in score calculations for the asset of type '{{scoreType.assetTypePath}}'.
+                </p>
+                <p *ngIf="!todayAndEffectiveDateAreSame(selection)">
+                    The measure will no longer be used in score calculations for the asset of type '{{scoreType.assetTypePath}}'.
+                    Scores for impacted assets will be recalculated immediately.<br /><br />
                     A version history for this measure will be kept to maintain a scoring history for assets.
                 </p>
             </div>

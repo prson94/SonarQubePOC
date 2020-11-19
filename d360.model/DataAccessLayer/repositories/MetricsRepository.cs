@@ -43,17 +43,24 @@ namespace d360.model.DataAccessLayer
 
             var lastUsedMetric = GetMetricsLastUsedEffectiveDate(currentAssetVersion.Uid);
             if (lastUsedMetric == null)
-                currentAssetVersion.EffectiveEndDate = DateTime.Now.Date;
-            else
+            {
+                currentAssetVersion.EffectiveEndDate = (currentAssetVersion.EffectiveDate.Date == DateTime.Now.Date) ? DateTime.Now.Date.AddDays(-1) : DateTime.Now.Date;
+            }
+            else 
+            {
                 currentAssetVersion.EffectiveEndDate = lastUsedMetric;
+            }
 
             model.State = State.Deleted;
             model.UpdatedOn = DateTime.Now;
-            var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
-
+            var children = Company.Filter<MetricAsset>(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
             if (children.Count > 0)
             {
-                children.ForEach(c => c.State = State.Deleted);
+                var childVersions = Company.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
+                childVersions.ForEach(v => {
+                    v.EffectiveEndDate = (v.EffectiveDate.Date == DateTime.Now.Date) ? DateTime.Now.Date.AddDays(-1) : DateTime.Now.Date;
+                });
+                children.ForEach(c => c.State = State.Deleted );
             }
 
             var olderVersions = Company.MetricAssetVersions.Where(x => x.Uid == currentAssetVersion.Uid).ToList();
