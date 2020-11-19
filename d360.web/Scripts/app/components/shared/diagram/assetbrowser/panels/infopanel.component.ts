@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AssetBrowserDiagramAsset } from '../../../../../models/lineage.model';
-
 import { BrowserService } from '../../../../../services/browser.service';
 import { PermissionsService } from '../../../../../services/permissions.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
@@ -25,7 +24,7 @@ export class AssetBrowserInfoPanelComponent implements AfterViewInit {
         this.cdRef.markForCheck();
     }
 
-    private GetJSON(value: string) {
+    GetJSON(value: string) {
         try {
             return JSON.parse(value);
         } catch (err) {
