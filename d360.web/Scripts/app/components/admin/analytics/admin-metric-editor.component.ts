@@ -92,10 +92,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     showMatchPicker: boolean = false;
 
     relationshipTypes: any[] = [];
-    relationshipOperators: any[] = [];
-
     predicateTypes: any[] = [];
-    predicateOperators: any[] = [];
+
+    existsOperators: any[] = [];
     restrictedPredicateTypes: any[] = ["Diagram", "DiagramUse", "DiagramReference", "InterTypeHierarchy", "IntraTypeHierarchy"];
     restricterdFusionTypes: any[] = ["FusionAttribute", "FusionAttributeType", "FusionType", "FusionExecution", "FusionQueryAttribute", "FusionQueryAttributeType"];
 
@@ -290,14 +289,14 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     });
                     this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
                 }
-                this.relationshipOperators = [{ label: "is used", value: Operator.Populated }, { label: "is not used", value: Operator.NotPopulated }];
-                this.predicateOperators = [{ label: "exists", value: Operator.Populated }, { label: "does not exist", value: Operator.NotPopulated }];
+                this.existsOperators = [{ label: "exists", value: Operator.Populated }, { label: "does not exist", value: Operator.NotPopulated }];
                 if (this.model.Definition.Governance && this.model.Definition.Governance.Relation) {
                     this.model.Definition.Governance.Relation.Operator = Operator[this.model.Definition.Governance.Relation.Operator + ""];
                 }
                 if (this.model.Definition.Governance && this.model.Definition.Governance.Predicate) {
                     this.model.Definition.Governance.Predicate.Operator = Operator[this.model.Definition.Governance.Predicate.Operator + ""];
                 }
+                this.cdRef.markForCheck();
             });
         })
     }

@@ -12,7 +12,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel, ScoreType } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -84,7 +84,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid)
                 .subscribe(f => {
                     this.metricListFieldTypes = f;
-            });
+                });
 
             this.settingsService.getOperators().subscribe(o => {
                 this.operators = o;
@@ -113,9 +113,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);  
+        this.setCommonItems(true, this.selectedAssetType.Name);
         this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid) 
+        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
                 r.forEach(x => {
@@ -152,7 +152,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     private formatScoreCalc() {
         if (this.data) {
-            this.formattedScoreCalc = (this.data.isExternallyCalculated ? 'Externally Calculated':'Internally Calculated');
+            this.formattedScoreCalc = (this.data.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
         }
     }
 
@@ -193,10 +193,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 }
             }
         });
-    } 
+    }
 
     private hasConditions(item: MetricAssetViewModel) {
-        
+
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
             if (this.conditions && this.conditions.length > 0) {
@@ -250,12 +250,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     selectionChanged(event) {
         this.selectedMetric = event;
 
-        if (this.hasConditions(this.selectedMetric)) 
+        if (this.hasConditions(this.selectedMetric))
             this.showConditions = true;
-        else 
+        else
             this.showConditions = false;
 
-        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup) 
+        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
             this.showPassTest = true
         else
             this.showPassTest = false;
@@ -287,12 +287,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                                 ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
                         }
-                        if (fieldType.Type == "Date" || fieldType.Type == "DateTime") {
+                        if (fieldType.Type == "Date") {
                             this.dateShowType = fieldType.Type;
                             this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
                             this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
                             formattedValue = "";
-                            
+
                         }
                         this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
                     } else {
@@ -317,21 +317,21 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 case 'Predicate':
                     let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
                         ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
-                    let operatorStringForPredicate = "exists";
+                    let existsOperatorP = "exists";
                     if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
-                        operatorStringForPredicate = "does not exist";
+                        existsOperatorP = "does not exist";
                     }
                     if (predicate)
-                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate;
+                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;
                     else
                         this.formattedCheck = "";
                     break;
                 case 'Relation':
                     let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
                         ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
-                    let operatorStringForRelation = "is used";
+                    let existsOperator = "exists";
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
-                        operatorStringForRelation = "is not used";
+                        existsOperator = "does not exist";
                     }
                 
                     if (relationshipType) {
@@ -348,7 +348,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             assetName = relationshipType.Subject.Name;
                         }
                         label = labelName + " " + assetName;
-                        this.formattedCheck = label + " " + operatorStringForRelation;
+                        this.formattedCheck = label + " " + existsOperator;
                     } else {
                         this.formattedCheck = "Relationship not found";
                     }
@@ -362,4 +362,24 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.formattedCheck = "";
         }
     }
+
+    private save() {
+        this.formatScoreCalc();
+        this.showEdit = false;
+
+        if (this.data.scoreType.toString() == 'DataQuality') {
+            this.secondaryNavService.updateObject('firstTabTitle', 'Data Quality Score');
+        }
+
+        if (this.data.scoreType.toString() == 'Governance') {
+            this.secondaryNavService.updateObject('firstTabTitle', 'Governance Score');
+        }
+
+        var needsReroute = this.assetTypeUid != this.data.assetTypeUid;
+        if (needsReroute) {
+            var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.data.assetTypeUid + '/' + this.allocationUid;
+            this.router.navigateByUrl(url);
+        }
+    }
+
 }
