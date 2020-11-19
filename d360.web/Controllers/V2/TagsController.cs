@@ -51,7 +51,7 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"),
             Route("search"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("Value", "Name of tag.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("Value", "The value of the tag that's to be searched.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Search for tags completed.", typeof(List<dynamic>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while fetching tags.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
@@ -591,10 +591,7 @@ namespace d360.web.Controllers.V2
         /// <param name="tag">The tag to be created.</param>
         [HttpPost,
         Route("exists"),
-        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-        SwaggerResponse(HttpStatusCode.OK, "Check to see if tag exists complete.", typeof(Tag)),
-        SwaggerResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists.", typeof(ErrorResponse)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
+        ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult DoesTagExist(TagApiModel tag)
         {
             try
@@ -603,6 +600,40 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+            }
+
+        }
+
+        /// <summary>
+        /// A check to see if a tag already exists or not.
+        /// </summary>
+        /// <param name="value">The name of the tag that's been checked if exists.</param>
+        [HttpGet,
+        Route("exists"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+        SwaggerResponse(HttpStatusCode.OK, "Tag does exist.", typeof(HttpStatusCode)),
+        SwaggerResponse(HttpStatusCode.NotFound, "Tag doesn't exist.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
+        public IHttpActionResult CheckIfTagExist(string value)
+        {
+            try
+            {
+                var result = tagRepository.GetTagByName(value);
+
+                if(result == null)
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound));
+                }
+                else
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+                }
             }
             catch (Exception e)
             {
