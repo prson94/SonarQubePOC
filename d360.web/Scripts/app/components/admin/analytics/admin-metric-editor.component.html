@@ -106,9 +106,9 @@
                         </p-dropdown>
                     </div>
                     <div [ngSwitch]="model.Definition.Governance.Check">
-                        <div *ngSwitchCase="0">
+                        <div class="row" *ngSwitchCase="0">
                             <!--keep updateFrequency disabled until we are ready-->
-                            <div *ngIf="false" class="row row-margin">
+                            <div *ngIf="false" class="row">
                                 <label for="updateFrequency" class="ig-label">Update Frequency</label>
                                 <p-dropdown igDropdown
                                             igSize="small"
@@ -127,20 +127,20 @@
                                     </ng-template>
                                 </p-dropdown>
                             </div>
-                            <div class="row row-margin">
+                            <div class="row">
                                 <label for="instructionString" class="ig-label">Instruction String</label>
                                 <input igInput tabindex="7" igSize="full" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
                             </div>
                         </div>
-                        <div class="row row-margin" *ngSwitchCase="1">
+                        <div class="row field-row" *ngSwitchCase="1">
                             <label class="ig-label">Test Condition</label>
                             <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
-                        <div class="row row-margin" *ngSwitchCase="2">
+                        <div class="row" *ngSwitchCase="2">
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin conditions-row">
+                            <div class="row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -151,7 +151,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="ResponsibilityTypeUid"
-                                                placeholder="Value required"
+                                                placeholder="Choose a responsibility type"
                                                 tabindex="7"
                                                 [attr.name]="ResponsibilityTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -181,11 +181,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row row-margin" *ngSwitchCase="3">
+                        <div class="row" *ngSwitchCase="3">
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin conditions-row">
+                            <div class="row conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -196,7 +196,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="PredicateTypeUid"
-                                                placeholder="Value required"
+                                                placeholder="Choose a predicate"
                                                 tabindex="7"
                                                 [attr.name]="PredicateTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -225,11 +225,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row row-margin" *ngSwitchCase="4">
+                        <div class="row" *ngSwitchCase="4">
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row row-margin conditions-row">
+                            <div class="row conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -240,7 +240,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="IntersectTypeUid"
-                                                placeholder="Value required"
+                                                placeholder="Choose a relationship type"
                                                 tabindex="7"
                                                 [attr.name]="IntersectTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -270,7 +270,7 @@
                             </div>                            
                         </div>
                         <ng-template ngSwitchDefault>
-                            <div class="row row-margin">
+                            <div class="row">
                                 <ig-message-box>
                                     <span>
                                         Choose the type of test to perfom on assets (eg. a field, relationship or ownership test),

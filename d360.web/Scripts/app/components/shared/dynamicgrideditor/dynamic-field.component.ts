@@ -84,6 +84,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private doesAssetExists: boolean = false;
 
     private useColorMultiSelect: boolean = false;
+    private currentRelationshipLoadedFilter;
 
 
     private component_uid: string = '';
@@ -236,7 +237,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                             res => {
                                 if (this.field.UseColorControl)
                                     this.field.Items = this.getColorItemsAsSelectItem(res);
-                                else 
+                                else
                                     this.field.Items = res;
 
                                 if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
@@ -275,10 +276,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.relationItemsLoading = false;
                 this.field.Items = res.results["items"];
                 this.selectRelationItems(this.relationItems);
-
+                
                 //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
+                //Update page count only when filters changes
                 let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
-                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0) {
+                if (res.event.globalFilter !== this.currentRelationshipLoadedFilter) {
                     if (hasCardinalityOne) {
                         var selectedCount = this.relationItems ? this.relationItems.length : 0;
                         this.field.RecordCount = selectedCount + res.results["count"];
@@ -286,6 +288,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     else {
                         this.field.RecordCount = res.results["count"];
                     }
+
+                    this.currentRelationshipLoadedFilter = res.event.globalFilter;
                 }
                 this.ref.markForCheck();
             });
@@ -371,7 +375,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             window.setTimeout(() => {
-                
+
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                 this.ref.detectChanges();
             }, 250);

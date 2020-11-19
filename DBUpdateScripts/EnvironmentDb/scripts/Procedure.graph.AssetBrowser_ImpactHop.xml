@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v4">
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_ImpactHop-v5.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -337,6 +337,54 @@ begin
 	from	#hierarchies H
 			inner join ba on ba.[Key] = H.[Key];
 
+	--In case on Impact, map out how many process assets there are to return correct count
+	drop table if exists #processAssetCountMap
+	create table #processAssetCountMap(
+		[key] varchar(50),
+		[pUid] uniqueidentifier,
+		[dir] int,
+		[count] int
+	)
+
+	if @ancestry = 3
+	begin
+		;with cte as (select	distinct
+								Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+								E.PredicateUid as Uid, 
+								T.ID as AssetId,
+								1 as Direction
+						from	graph.AssetNode S,
+								graph.AssetEdge E,
+								graph.AssetNode T,
+								#hierarchies Hr
+						where	MATCH(S-(E)->T)
+								and E.PredicateType in (16,17)
+								and E.ID not in (select ID from @preloadedIntersects)
+								and E.ID not in (select IntersectID from #hops)
+								and Hr.ID = T.ID
+						union all
+						select	distinct
+								Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+								E.PredicateUid as Uid, 
+								S.ID as AssetId,
+								2 as Direction
+						from	graph.AssetNode S,
+								graph.AssetEdge E,
+								graph.AssetNode T,
+								#hierarchies Hr
+						where	MATCH(S-(E)->T)
+								and E.PredicateType in (16,17)
+								and E.ID not in (select ID from @preloadedIntersects)
+								and E.ID not in (select IntersectID from #hops)
+								and Hr.ID = T.ID
+				)
+				insert into #processAssetCountMap
+				select t.[key], t.[uid], t.[direction], count(*) as count from (	select distinct cte.[key],cte.[uid], cte.direction, pxd.diagramassetuid from cte
+						inner join asset a on a.id = cte.assetid
+						inner join processexpandeddata pxd on pxd.fromuid = a.uid or pxd.touid = a.uid) t
+				group by t.[key], t.[uid], t.[direction]
+	end
+
 	select		distinct
 				H.hierarchyKey,
 				H.focal,
@@ -389,7 +437,7 @@ begin
 			select	H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
 					ResponsibilityTypeName as responsibilityType, 
 					responsibilityTypeId,
-					count(1) as [count], 
+					count(1) as [count],
 					cast(0 as bit) as expanded
 			from	(
 					select		Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
@@ -410,7 +458,7 @@ begin
 					ID as predicateId, 
 					Uid as predicateUid, 
 					direction, 
-					count(1) as [count], 
+					isnull(pacm.count,count(1)) as [count], 
 					cast(0 as bit) as expanded
 			from	(
 					select	distinct
@@ -447,7 +495,8 @@ begin
 							and E.ID not in (select IntersectID from #hops)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
 					) O
-			group by [Predicate], ID, Uid, Direction
+			left join #processAssetCountMap pacm on pacm.puid = O.uid and pacm.dir = O.direction and pacm.[key]  = O.[key]
+			group by [Predicate], ID, Uid, Direction,O.[key],pacm.[count]
 			for json path
 			) as relationsJson
 	from	#hierarchies H

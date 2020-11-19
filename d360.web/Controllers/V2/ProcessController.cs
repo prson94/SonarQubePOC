@@ -365,6 +365,26 @@ namespace d360.web.Controllers.V2
                 }
 
                 List<UpsertModel> upsertModels = new List<UpsertModel>();
+
+
+                //Check for asset type, if asset type is deleted dont copy nodes and links
+                if (isDiagramReplace)
+                {
+                    if (toAdd.Any(n => !n.HasAssetType))
+                    {
+                        toAdd.ForEach(node =>
+                        {
+                            if (!node.HasAssetType)
+                            {
+                                model.linkDataArray = model.linkDataArray.Where(x => x.from != node.AssetUid && x.to != node.AssetUid).ToList();
+                                model.nodeDataArray = model.nodeDataArray.Where(x => x.AssetUid != node.AssetUid).ToList();
+                            }
+                        });
+
+                        toAdd = toAdd.Where(x => x.HasAssetType).ToList();
+                    }
+                }
+
                 foreach (var item in toAdd.GroupBy(x => x.AssetTypeUid))
                 {
                     var umItem = new UpsertModel();

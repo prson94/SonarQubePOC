@@ -24,24 +24,26 @@ namespace igx.jobs.indexer
     {
         static void Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
+            ElasticSearchSource source = new ElasticSearchSource();
+            Dictionary<string, Tuple<int, string>> envs = new Dictionary<string, Tuple<int, string>>() {
+                { "healthpayer", new Tuple<int, string>( 145, "server=d3sus.database.windows.net;Database=D3S_145;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
+                { "migration", new Tuple<int, string>( 110, "server=d3sus.database.windows.net;Database=D3S_110;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
+                { "demopreview", new Tuple<int, string>( 4, "server=d3sus.database.windows.net;Database=D3S_4;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
+                { "qa", new Tuple<int, string>( 1, "server=gov-eng-qa-sql.database.windows.net;Database=D3S_1;User ID=govsqladmin;Password=ZLWmhZjX5R9Ff7ra;MultipleActiveResultSets=True;" )},
+                { "tklok", new Tuple<int, string>( 7, "server=gov-eng-int-sql.database.windows.net;Database=D3S_7;User ID=govsqladmin;Password=ZLWmhZjX5R9Ff7ra;MultipleActiveResultSets=True;" )}
+            };
+            string current = "tklok";
 
-            /*
-             * Timer execution disabled (GOV-10646 - Lower / Stop rebuild of search indexes every weekend)
-             * To enable, uncomment the following line
-             */
-            //config.UseTimers();
+            ReindexModel c = new ReindexModel
+            {
+                CompanyID = envs[current].Item1
+            };
+            SqlConnection conn = new SqlConnection
+            {
+                ConnectionString = envs[current].Item2
+            };
 
-            //We should only process one reindex queue item at a time
-            config.Queues.BatchSize = 1;
-
-#if DEBUG
-            config.UseDevelopmentSettings();
-#endif
-
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            Indexer.ProcessCompany(source, conn, c);
         }
     }
 
@@ -128,7 +130,7 @@ namespace igx.jobs.indexer
             }
         }
 
-        public static async Task ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        public static async Task ProcessCompanyDeprecated(ElasticSearchSource source, SqlConnection company, ReindexModel c)
         {
             IEnumerable<IndexObjectModel> models = null;
 
@@ -283,11 +285,80 @@ namespace igx.jobs.indexer
             }
 
             LogReindexStart("Users", c.CompanyID);
-            
+
             try
             {
                 models = LoadUsers(company, c.CompanyID, source);
                 source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            await LogCompanyReindexComplete(c.CompanyID);
+        }
+
+        public static async Task ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        {
+            company.Open();
+            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+            bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
+
+            int SuggestedIndexLimit = SuggestIndexLimit(company);
+            if (SuggestedIndexLimit > 1000)
+            {
+                source.IndexFieldLimit = SuggestedIndexLimit;
+            }
+
+            List<AssetTypeClass> classes = new List<AssetTypeClass> {
+                AssetTypeClass.BusinessAsset,
+                AssetTypeClass.TechnicalAsset,
+                AssetTypeClass.Model,
+                AssetTypeClass.Policy,
+                AssetTypeClass.Rule,
+                AssetTypeClass.ReferenceItemType,
+                AssetTypeClass.Group,
+                AssetTypeClass.User
+            };
+
+            if(fusionEnabled)
+            {
+                classes.Add(AssetTypeClass.Fusion);
+                classes.Add(AssetTypeClass.FusionAttribute);
+            }
+            
+            SearchIndexer indexer = new SearchIndexer(company, c.CompanyID, source);
+            source.ClearIndex(c.CompanyID);
+
+            classes.ForEach(cls => {
+                LogReindexStart(cls.ToString(), c.CompanyID);
+                try
+                {
+                    indexer.IndexAssetClass(cls);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                }
+
+            });
+
+
+            LogReindexStart("Artifact Synonyms", c.CompanyID);
+            try
+            {
+                indexer.IndexObjectType("Intersect", false);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Custom Synonyms", c.CompanyID);
+            try
+            {
+                indexer.IndexObjectType("Synonym", false);
             }
             catch (Exception ex)
             {

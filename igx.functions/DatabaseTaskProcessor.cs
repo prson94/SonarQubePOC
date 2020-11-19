@@ -89,215 +89,61 @@ namespace igx.functions.databasetaskprocessor
 
                             Func<SqlConnection, string, int, string, long, string> resolveIndexItem = (companyConnection, o, oid, a, givenAssetId) =>
                             {
-                                // check if this object requires to go into elastic search
-                                if (!ShouldItemBeIndexedForElasticSearch(o)) return string.Empty;
+                                if (!SearchIndexer.IsIndexable(o)) return string.Empty;
 
-                                ObjectDetail detail = null;
-                                IndexObjectModel indexObject = new IndexObjectModel
+                                if (a == "D") //Delete - asset is no longer present, so we can only use given parameters
                                 {
-                                    CompanyID = c.CompanyID,
-                                    Fields = new Dictionary<string, string>(),
-                                    Category = o,
-                                    ID = oid,
-                                    Tags = new Dictionary<string, string>()
-                                };
-                                if (givenAssetId > 0)
-                                    indexObject.AssetID = givenAssetId;
-
-                                //Set uniqueID for index object
-                                if (o == "Synonym")
-                                {
-                                    indexObject.ItemUniqueID = $"custom|{oid}";
-                                }
-                                else if (o == "Artifact" && indexObject.AssetID > 0)
-                                {
-                                    indexObject.ItemUniqueID = indexObject.AssetID.ToString();
-                                }
-
-                                #region Load Info for Object
-
-                                //Only "Synonym' intersects should be indexed
-                                if (o == "Intersect")
-                                {
-                                    //If Intersect does not have an assetID it should not be indexed
-                                    if (givenAssetId > 0) return string.Empty;
-
-                                    var sql = @"SELECT * FROM (" + ElasticSearchSource.INTERSECT_SYNONYM_QUERY +
-                                        ") q WHERE q.ID = @oid AND q.SynonymAssetID = @givenAssetId";
-                                    dynamic intersectDetail = companyConnection.Query<dynamic>(sql, new { oid, givenAssetId }).SingleOrDefault();
-
-                                    //If Intersect does not have synonym details it should not be indexed
-                                    if (intersectDetail == null) return string.Empty;
-
-                                    indexObject.Category = "Synonym";
-                                    indexObject.AssetType = "Synonym";
-                                    indexObject.ItemUniqueID = $"intersect|{oid}|{intersectDetail.Direction}";
-                                    indexObject.RelativeUrl = intersectDetail.Url;
-                                    indexObject.Fields.Add("Name", intersectDetail.Synonym);
-                                    indexObject.Fields.Add("NymType", intersectDetail.PredicateName);
-                                    indexObject.Fields.Add("SynonymFor", intersectDetail.SynonymFor);
-                                    indexObject.Fields.Add("SynonymForObject", intersectDetail.SynonymForObject);
-                                    indexObject.Fields.Add("SynonymForObjectType", intersectDetail.SynonymForObjectType);
-                                }
-                                else
-                                {
-
-                                    detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
-
-                                    var fldInfo = companyConnection.Query<FieldWithRelation>(
-                                        "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
-                                        new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
-                                    );
-
-                                    if (fldInfo != null)
-                                        indexObject.Fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
-
-                                    indexObject.RelativeUrl = detail != null ? detail.Url : "";
-                                    indexObject.AssetType = detail != null ? detail.TypeName : "";
-
-                                    if (detail != null)
+                                    IndexObjectModel indexObject = new IndexObjectModel
                                     {
-                                        indexObject.Category = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
+                                        CompanyID = c.CompanyID,
+                                        Category = SearchIndexer.GetCategoryFromObject(o),
+                                        ID = oid,
+                                        To = QueueAction.RemoveFromIndex,
+                                        RelativeUrl = "#"
+                                    };
 
-                                        if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
-                                        else indexObject.Fields.Add("Name", detail.Name);
-
-                                        if (detail.AssetTypeUid.HasValue)
-                                        {
-                                            indexObject.AssetTypeUid = detail.AssetTypeUid.Value;
-                                        }
-
-                                        if (o == "Synonym")
-                                        {
-                                            indexObject.Fields.Add("SynonymFor", detail.TextPath);
-                                            indexObject.Fields.Add("SynonymForObject", detail.ParentType);
-                                            indexObject.Fields.Add("SynonymForObjectType", detail.Description);
-                                        }
-                                        else
-                                        {
-                                            if (!string.IsNullOrEmpty(detail.Description))
-                                            {
-                                                if (indexObject.Fields.ContainsKey("Description")) indexObject.Fields["Description"] = detail.Description;
-                                                else indexObject.Fields.Add("Description", detail.Description);
-                                            }
-
-                                            if (indexObject.Fields.ContainsKey("TextPath")) indexObject.Fields["TextPath"] = detail.TextPath;
-                                            else indexObject.Fields.Add("TextPath", detail.TextPath);
-
-                                            indexObject.AssetType = detail.TypeName;
-                                            indexObject.Uid = detail.UID;
-                                        }
-
-                                        if (indexObject.AssetID > 0)
-                                        {
-                                            indexObject.Tags = companyConnection
-                                                .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new { i = indexObject.AssetID })
-                                                .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
-
-                                            IEnumerable<ResponsibilitySqlModel> secset = companyConnection
-                                                .Query<ResponsibilitySqlModel>("SELECT * FROM (" + ElasticSearchSource.GetAssetResponsibilityQuery() + ") q WHERE q.AssetID = @i", new { i = indexObject.AssetID });
-
-                                            indexObject.NoRead = new Dictionary<string, List<int>> {
-                                                { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
-                                                { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
-                                                { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
-                };
-                                        }
+                                    if (givenAssetId > 0)
+                                    {
+                                        indexObject.AssetID = givenAssetId;
+                                        indexObject.ItemUniqueID = givenAssetId.ToString();
                                     }
-                                    else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
+                                    //Set uniqueID for index object
+                                    if (o == "Synonym")
                                     {
-                                        var sql = @"
-                                        select 
-	                                        s.Name as 'Synonym'
-	                                        ,c.Name as 'SynonymFor'
-	                                        ,s.[Object] as 'SynonymForObject'
-	                                        ,s.[ObjectID] as 'SynonymForObjectID'
-	                                        ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID], 0x0, 0) as 'Url'
-	                                        ,c.ObjectTypeName as 'SynonymForObjectType'	
-                                            ,p.Name as 'PredicateName'    
-                                            ,s.ID as 'ID'                
-                                        from
-	                                        [dbo].[nym] s
-	                                        inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
-                                            inner join [dbo].[predicate] p on (s.predicateid = p.id) where s.id = @id";
+                                        indexObject.ItemUniqueID = $"custom|{oid}";
+                                    }
+                                    //Intersects have two search documents, se we need to delete both
+                                    else if (o == "Intersect")
+                                    {
+                                        indexObject.Category = "Synonym";
+                                        indexObject.AssetType = "Synonym";
 
-                                        //custom synonym load details from nym table
-                                        var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
+                                        IndexObjectModel reciprocal = indexObject.ShallowCopy();
+                                        reciprocal.ItemUniqueID = $"intersect|{oid}|O";
+                                        indexObject.ItemUniqueID = $"intersect|{oid}|S";
+                                        indexCollectionModel.Deletes.Add(reciprocal);
+                                    }
 
-                                        if (nymRecord != null)
+                                    indexCollectionModel.Deletes.Add(indexObject);
+                                }
+                                else //Add or update
+                                {
+                                    if (o == "Synonym" || o == "ReferenceItemType" || (o == "Intersect" && givenAssetId > 0))
+                                    {
+                                        //These objects are not assets, so they do not have an Asset UID
+                                        indexCollectionModel.UpsertByObject.Add(new Tuple<string, long>(o, oid));
+                                    }
+                                    else
+                                    {
+                                        ObjectDetail detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
+                                        if (detail != null && detail.UID.HasValue && detail.UID != Guid.Empty)
                                         {
-                                            var nymDetail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = nymRecord.SynonymForObject, i = nymRecord.SynonymForObjectID }).SingleOrDefault();
-
-                                            indexObject.Fields.Add("NymType", nymRecord.PredicateName);
-                                            indexObject.Fields.Add("Name", nymRecord.Synonym);
-                                            indexObject.Fields.Add("SynonymFor", nymRecord.SynonymFor);
-                                            indexObject.Fields.Add("SynonymForObject", nymRecord.SynonymForObject);
-                                            indexObject.Fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
-
-                                            indexObject.RelativeUrl = nymDetail.Url;
+                                            indexCollectionModel.UpsertByUid.Add(detail.UID ?? Guid.Empty);
                                         }
                                     }
                                 }
 
-                                #endregion
-
-                                switch (a)
-                                {
-                                    case "A":   //Add
-                                        indexObject.To = QueueAction.AddToIndex;
-                                        bool isValid = true;
-
-                                        if (o == "Resource" && oid > 0)
-                                        {
-                                            dynamic userDetail = companyConnection.Query<dynamic>(@"SELECT Email,
-                                                CASE
-                                                WHEN Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
-                                                    THEN '0'
-                                                    ELSE '1'
-                                                END as Data3SixtyUser
-                                                FROM reporting.global_resource
-                                                WHERE ResourceID = @oid", new { oid }).SingleOrDefault();
-
-                                            if (userDetail != null)
-                                            {
-                                                if (indexObject.Fields.ContainsKey("Email")) indexObject.Fields["Email"] = userDetail.Email;
-                                                else indexObject.Fields.Add("Email", userDetail.Email);
-
-                                                if (indexObject.Fields.ContainsKey("Data3SixtyUser")) indexObject.Fields["Data3SixtyUser"] = userDetail.Data3SixtyUser;
-                                                else indexObject.Fields.Add("Data3SixtyUser", userDetail.Data3SixtyUser);
-                                            }
-                                            else
-                                            {
-                                                isValid = false;
-                                            }
-                                        }
-                                        if(isValid) indexCollectionModel.Adds.Add(indexObject);
-                                        break;
-                                    case "U":   //Update
-                                        indexObject.To = QueueAction.UpdateInIndex;
-                                        indexCollectionModel.Updates.Add(indexObject);
-                                        break;
-                                    case "D":   //Delete
-                                        indexObject.To = QueueAction.RemoveFromIndex;
-                                        indexObject.RelativeUrl = "#";
-
-                                        //Intersects have two search documents, se we need to delete both
-                                        if (o == "Intersect")
-                                        {
-                                            indexObject.Category = "Synonym";
-                                            indexObject.AssetType = "Synonym";
-
-                                            IndexObjectModel reciprocal = indexObject.ShallowCopy();
-                                            reciprocal.ItemUniqueID = $"intersect|{oid}|O";
-                                            indexObject.ItemUniqueID = $"intersect|{oid}|S";
-                                            indexCollectionModel.Deletes.Add(reciprocal);
-                                        }
-
-                                        indexCollectionModel.Deletes.Add(indexObject);
-                                        break;
-                                }
-
-                                return "";
+                                return string.Empty;
                             };
 
                             #endregion
@@ -544,6 +390,29 @@ from    [queue].[Task] T
                             {
                                 search.UpdateInIndex(indexCollectionModel.Updates);
                             }
+                            if (indexCollectionModel.UpsertByObject.Any() || indexCollectionModel.UpsertByUid.Any())
+                            {
+                                try
+                                {
+                                    using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                                    {
+                                        companyConnection.Open();
+                                        SearchIndexer indexer = new SearchIndexer(companyConnection, c.CompanyID, search);
+
+                                        if (indexCollectionModel.UpsertByUid.Any())
+                                            indexer.IndexAssets(indexCollectionModel.UpsertByUid);
+
+                                        if (indexCollectionModel.UpsertByObject.Any())
+                                            indexer.IndexAssets(indexCollectionModel.UpsertByObject);
+
+                                        indexer = null;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    CoreFunction.AITrackException(functionName, ex);
+                                }
+                            }
 
                             search = null;
                         }
@@ -693,11 +562,15 @@ from    [queue].[Task] T
             Adds = new ConcurrentBag<IndexObjectModel>();
             Deletes = new ConcurrentBag<IndexObjectModel>();
             Updates = new ConcurrentBag<IndexObjectModel>();
+            UpsertByUid = new ConcurrentBag<Guid>();
+            UpsertByObject = new ConcurrentBag<Tuple<string, long>>();
         }
 
         public ConcurrentBag<IndexObjectModel> Adds { get; set; }
         public ConcurrentBag<IndexObjectModel> Deletes { get; set; }
         public ConcurrentBag<IndexObjectModel> Updates { get; set; }
+        public ConcurrentBag<Guid> UpsertByUid { get; set; }
+        public ConcurrentBag<Tuple<string, long>> UpsertByObject { get; set; }
     }
 
     public class QueueTask
