@@ -50,10 +50,11 @@
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
             <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                                [MeasureUid]="selection?.Uid"
+                                [Measure]="selection"
                                 [operators]="operators"
-                                [AssetTypeDisplayValue]="assetType.Name"
-                                [MeasureDisplayValue]="selection?.Name"
+                                [responsibilityTypes]="responsibilityTypes"
+                                [relationshipTypes]="relationshipTypes"
+                                [AssetType]="assetType"
                                 [isExternallyCalculated]="isExternallyCalculated"
                                 [metricListFieldTypes]="metricListFieldTypes"
                                 (onClose)="showHistory(false);load(selection?.Name);">

@@ -30,6 +30,7 @@ export class MetricAssetHistoryViewModel {
     Weight: number;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     HasResults: boolean;
+    Definition: MetricAssetDefinitionViewModel;
 }
 type MatchTypeString = 'All' | 'Any';
 export class MetricAssetVersionConditionViewModel {

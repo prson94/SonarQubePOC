@@ -2186,12 +2186,13 @@ from    metrics.ScoreItem I
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
 												where	CI.AssetVersionConditionUid = C.Uid
 												for json path
-											) as ConditionItems
+											) as ConditionItems                                            
                     			from		metrics.AssetVersionCondition C
                     			where		C.AssetVersionUid = V.Uid
 								order by	C.Position
                     			for		json path
-                    		) as ConditionGroups
+                    		) as ConditionGroups,
+                            V.Definition as [DefinitionJson]
                     from	metrics.Asset A                    		
                             cross apply (
                     			select	EffectiveDate as EffectiveDate

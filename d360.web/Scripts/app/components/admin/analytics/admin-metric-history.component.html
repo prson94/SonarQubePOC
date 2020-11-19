@@ -2,7 +2,7 @@
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row" *ngIf="!isLoading" style="height:100%">
         <div style="margin-left: 0.67em;height: 5%">
-            <p>Version history of the measure '{{MeasureDisplayValue}}' for asset type '{{AssetTypeDisplayValue}}'</p>
+            <p>Version history of the measure '{{Measure.Name}}' for asset type '{{AssetType.Name}}'</p>
         </div>
         <div class="col s7" style="height:90%;overflow-y:auto;">
             <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px', 'height' : '100%' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)" styleClass="treetable">
@@ -65,9 +65,59 @@
                             </div>
                         </div>
                     </div>
+                    <div *ngIf="!isExternallyCalculated && showPassTest && formattedCheck" class="measure-details-item">
+                        <div class="details-header">Pass Test</div>
+                        <div class="details-condition">
+                            <div [ngSwitch]="selection.Definition.Governance.Check">
+                                <div *ngSwitchCase="'External'">
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            <div>External: {{formattedCheck}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row row-margin" *ngSwitchCase="'Field'">
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            <div *ngIf="dateShowType == null">Field: {{formattedCheck}}</div>
+                                            <div *ngIf="dateShowType == 'Date'">Field: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> and {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row row-margin" *ngSwitchCase="'Owner'">
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            Ownership: {{formattedCheck}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row row-margin" *ngSwitchCase="'Predicate'">
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            Prediate: {{formattedCheck}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row row-margin" *ngSwitchCase="'Relation'">
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            Relationship: {{formattedCheck}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <ng-template ngSwitchDefault>
+                                    <div class="condition-content">
+                                        <div class="condition-items">
+                                            default
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
                     <div class="measure-details-item">
                         <div class="details-header">UID</div>
-                        <div class="details-content">{{MeasureUid}}</div>
+                        <div class="details-content">{{Measure.Uid}}</div>
                     </div>
                 </div>
             </div>

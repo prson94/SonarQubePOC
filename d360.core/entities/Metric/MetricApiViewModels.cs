@@ -542,6 +542,11 @@ namespace d360.core.entities.Metric
         public DateTime? EffectiveEndDate { get; set; }
         public double Weight { get; set; }
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
-        public bool HasResults { get; set; } = false;
+        public bool HasResults { get; set; } = false;        
+        public string DefinitionJson { 
+            get { return null; } 
+            set { this.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(value ?? "{}");} 
+        }
+        public MetricAssetDefinitionViewModel Definition { get; set; }                                       
     }
 }
