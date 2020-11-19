@@ -317,21 +317,21 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 case 'Predicate':
                     let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
                         ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
-                    let operatorStringForPredicate = "exists";
+                    let existsOperatorP = "exists";
                     if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
-                        operatorStringForPredicate = "does not exist";
+                        existsOperatorP = "does not exist";
                     }
                     if (predicate)
-                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + operatorStringForPredicate;
+                        this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;
                     else
                         this.formattedCheck = "";
                     break;
                 case 'Relation':
                     let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
                         ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
-                    let operatorStringForRelation = "is used";
+                    let existsOperator = "exists";
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
-                        operatorStringForRelation = "is not used";
+                        existsOperator = "does not exist";
                     }
 
                     let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
@@ -348,7 +348,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     }
                     label = labelName + " " + assetName;
                     if (relationshipType) {
-                        this.formattedCheck = label + " " + operatorStringForRelation;
+                        this.formattedCheck = label + " " + existsOperator;
                     } else {
                         this.formattedCheck = "responsibility type not found";
                     }
