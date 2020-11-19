@@ -24,26 +24,24 @@ namespace igx.jobs.indexer
     {
         static void Main()
         {
-            ElasticSearchSource source = new ElasticSearchSource();
-            Dictionary<string, Tuple<int, string>> envs = new Dictionary<string, Tuple<int, string>>() {
-                { "healthpayer", new Tuple<int, string>( 145, "server=d3sus.database.windows.net;Database=D3S_145;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
-                { "migration", new Tuple<int, string>( 110, "server=d3sus.database.windows.net;Database=D3S_110;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
-                { "demopreview", new Tuple<int, string>( 4, "server=d3sus.database.windows.net;Database=D3S_4;User ID=d3s_user;Password=Malkisher45903WonderouS2eRdhgjt847kfF;MultipleActiveResultSets=True;" )},
-                { "qa", new Tuple<int, string>( 1, "server=gov-eng-qa-sql.database.windows.net;Database=D3S_1;User ID=govsqladmin;Password=ZLWmhZjX5R9Ff7ra;MultipleActiveResultSets=True;" )},
-                { "tklok", new Tuple<int, string>( 7, "server=gov-eng-int-sql.database.windows.net;Database=D3S_7;User ID=govsqladmin;Password=ZLWmhZjX5R9Ff7ra;MultipleActiveResultSets=True;" )}
-            };
-            string current = "tklok";
+            var config = CoreFunction.GetJobHostConfiguration();
 
-            ReindexModel c = new ReindexModel
-            {
-                CompanyID = envs[current].Item1
-            };
-            SqlConnection conn = new SqlConnection
-            {
-                ConnectionString = envs[current].Item2
-            };
+            /*
+             * Timer execution disabled (GOV-10646 - Lower / Stop rebuild of search indexes every weekend)
+             * To enable, uncomment the following line
+             */
+            //config.UseTimers();
 
-            Indexer.ProcessCompany(source, conn, c);
+            //We should only process one reindex queue item at a time
+            config.Queues.BatchSize = 1;
+
+#if DEBUG
+            config.UseDevelopmentSettings();
+#endif
+
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+            var host = new JobHost(config);
+            host.RunAndBlock();
         }
     }
 
