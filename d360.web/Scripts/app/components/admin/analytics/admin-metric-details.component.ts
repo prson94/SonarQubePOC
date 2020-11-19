@@ -333,24 +333,24 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
                         existsOperator = "does not exist";
                     }
-
-                    let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
-                    let isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
-                    let labelName = "";
-                    let assetName = "";
-                    let label = "";
-                    if (isSubject) {
-                        labelName = relationshipType.Predicate.Name;
-                        assetName = relationshipType.Object.Name
-                    } else if (isObject) {
-                        labelName = relationshipType.Predicate.Inverse;
-                        assetName = relationshipType.Subject.Name;
-                    }
-                    label = labelName + " " + assetName;
+                
                     if (relationshipType) {
+                        let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
+                        let labelName = "";
+                        let assetName = "";
+                        let label = "";
+                        if (isSubject) {
+                            labelName = relationshipType.Predicate.Name;
+                            assetName = relationshipType.Object.Name
+                        } else if (isObject) {
+                            labelName = relationshipType.Predicate.Inverse;
+                            assetName = relationshipType.Subject.Name;
+                        }
+                        label = labelName + " " + assetName;
                         this.formattedCheck = label + " " + existsOperator;
                     } else {
-                        this.formattedCheck = "responsibility type not found";
+                        this.formattedCheck = "Relationship not found";
                     }
                     break;
                 default:
