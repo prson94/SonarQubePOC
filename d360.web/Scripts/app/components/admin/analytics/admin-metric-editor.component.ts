@@ -24,17 +24,11 @@ import * as _ from 'lodash';
     providers: [MetricsService, CompanySettingsService, FieldsObservableService, ResponsibilityTypeService, RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
-    .row-margin{
-        margin: 8px 0px;
-    }
     .row-label{
-        margin: 0px 0px -8px 0px;
+        margin: 0px 0px -16px 0px;
     }
     .conditions-row{
         display: flex;
-        flex-direction: row;
-        width: 100%;
-        margin-bottom: 8px;
     }   
     .condition{
         margin-left: 8px;
@@ -46,6 +40,9 @@ import * as _ from 'lodash';
     .condition-med{
         max-width: 308px;
         flex-grow: 1;
+    }
+    .field-row{
+        margin-bottom: 8px;
     }
     `]
 
@@ -160,28 +157,33 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     ngOnInit() {
-        this.metricForm = this.fb.group({
-            name: ['', [Validators.required, this.isEmptyString()]],
-            description: null,
-            effectiveDate: null,
-            weight: ['', [this.isValidWeight()]],
-            isGroup: null,
-            matchType: null,
-            check: null
-        });
-
-        this.checkTypeOptions = Object.keys(this.metricGovernanceCheckType).filter(e => !isNaN(+e)).map(o => {
-            let label = MetricGovernanceCheckType[o];
-            if (+o == MetricGovernanceCheckType.Relation) {
-                label = "Relationship"
-            }
-            if (+o == MetricGovernanceCheckType.Owner) {
-                label = "Ownership"
-            }
-            return {
-                value: +o, label: label
-            }
-        });
+        if (this.isExternallyCalculated) {
+            this.metricForm = this.fb.group({
+                name: ['', [Validators.required, this.isEmptyString()]],
+                description: null,
+                effectiveDate: null
+            });
+            this.metricForm.updateValueAndValidity();
+        } else {
+            this.metricForm = this.fb.group({
+                name: ['', [Validators.required, this.isEmptyString()]],
+                description: null,
+                effectiveDate: null,
+                weight: ['', [this.isValidWeight()]],
+                isGroup: null,
+                matchType: null,
+                check: null
+            });
+            this.metricForm.updateValueAndValidity();
+        }
+        
+        this.checkTypeOptions = [
+            { label: "Field", value: MetricGovernanceCheckType.Field },
+            { label: "Ownership", value: MetricGovernanceCheckType.Owner },
+            { label: "Relationship", value: MetricGovernanceCheckType.Relation },
+            { label: "Predicate", value: MetricGovernanceCheckType.Predicate },
+            { label: "External", value: MetricGovernanceCheckType.External }
+        ];
 
         this.load();
         this.loadFieldData();
@@ -419,6 +421,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Owner.Operator) {
                     this.model.Definition.Governance.Owner.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             case 3:
                 this.metricForm.addControl("PredicateTypeUid", new FormControl(''));
@@ -426,6 +429,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Predicate.Operator) {
                     this.model.Definition.Governance.Predicate.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             case 4:
                 this.metricForm.addControl("IntersectTypeUid", new FormControl(''));
@@ -433,6 +437,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 if (!this.model.Definition.Governance.Relation.Operator) {
                     this.model.Definition.Governance.Relation.Operator = Operator.Populated;
                 }
+                this.cdRef.markForCheck();
                 break;
             default:
                 break;
@@ -641,6 +646,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 }
                 arr.push(fieldCondition);
             })
+        } else {
+            this.model.Definition = null;
         }
 
         if (!this.isExternallyCalculated) {

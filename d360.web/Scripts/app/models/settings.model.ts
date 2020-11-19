@@ -148,7 +148,7 @@ export module SettingsHelper {
         return [
             { title: StringConstants.AssetTypeClass_Business + "s", value: "BusinessAsset", selected: false },
             { title: StringConstants.AssetTypeClass_Technical + "s", value: "TechnicalAsset", selected: false },
-            { title: "Models", value: "Taxonomy", selected: false },
+            { title: "Models", value: "Model", selected: false },
             { title: "Policies", value: "Policy", selected: false },
             { title: "Rules", value: "Rule", selected: false },
             { title: "Reference Lists", value: "Reference", selected: false },
@@ -156,7 +156,7 @@ export module SettingsHelper {
             { title: "Fusion", value: "FusionAttributes", selected: false },
             { title: "Fusion Types", value: "FusionType", selected: false },
             { title: "Groups", value: "Group", selected: false },
-            { title: "Users", value: "Resource", selected: false }
+            { title: "Users", value: "User", selected: false }
         ];
     }
 

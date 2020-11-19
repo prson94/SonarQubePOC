@@ -80,6 +80,14 @@ namespace d360.core.entities.Process
                 return true;
             }
         }
+
+        public bool HasAssetType
+        {
+            get
+            {
+                return this.ContainsKey("assetTypeUid");
+            }
+        }
     }
 
     public class LinkData

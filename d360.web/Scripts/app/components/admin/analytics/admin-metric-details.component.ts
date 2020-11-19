@@ -333,6 +333,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
                         operatorStringForRelation = "is not used";
                     }
+                
                     if (relationshipType) {
                         let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());
                         let isObject = (relationshipType.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase());

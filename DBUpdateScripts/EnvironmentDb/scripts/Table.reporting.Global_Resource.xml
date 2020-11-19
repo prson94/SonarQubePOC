@@ -61,7 +61,53 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v1">
+  <changeSet author="TKlok" id="Table.reporting.Global_Resource-ReportingGlobalResource_AfterUpsert-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [reporting].[ReportingGlobalResource_AfterUpsert]
+	ON [reporting].[Global_Resource]
+	FOR INSERT, UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+			merge	dbo.Asset as T
+			using	(
+					SELECT	T.ID as AssetTypeID, 
+							1 as [State], 
+							O.ResourceID as SourceID, 
+							'Resource' as Object, 
+							O.ResourceID as ObjectID,
+							O.[uid]
+					FROM	inserted O
+							inner join  AssetType T on T.Object = 'ResourceType' and T.ObjectID = 1
+					) as S
+			on		(T.Object = S.Object and T.ObjectID = S.ObjectID)
+			when	matched then
+			update	set
+					T.[uid] = S.[uid],
+					T.UpdatedOn = getutcdate(),
+					T.UpdatedBy = 0
+			when not matched by target then
+			insert	([AssetTypeID], [State], SourceID, [Object], [ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy],[uid])
+			values	(S.[AssetTypeID], S.[State], S.SourceID, S.[Object], S.[ObjectID], getutcdate(), 0, getutcdate(), 0, S.[uid]);
+			
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'D',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted O INNER JOIN [dbo].[Asset] A
+		ON O.ResourceID = A.ObjectID AND 'Resource' = A.Object
+		WHERE O.State <> 1;
+END
+		]]>
+    </sql>
+	<rollback>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -97,10 +143,6 @@ BEGIN
 END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 

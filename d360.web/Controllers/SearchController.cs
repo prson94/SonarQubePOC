@@ -91,6 +91,15 @@ namespace d360.web.Controllers
             }
         }
 
+        [HttpGet, Route("Status")]
+        public JsonResult Status()
+        {
+            var o = new SearchResultsViewModel();
+            o.Result = SearchSource.GetStatusSearch(Company.CurrentCompanyID, o.Categories);
+            return Json(o, JsonRequestBehavior.AllowGet);
+        }
+
+
         #endregion
 
         private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
