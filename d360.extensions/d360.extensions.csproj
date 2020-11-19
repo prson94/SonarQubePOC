@@ -147,6 +147,7 @@
     <Compile Include="queue\AzureQueueSource.cs" />
     <Compile Include="queue\DummyQueueSource.cs" />
     <Compile Include="search\ElasticSearchSource.cs" />
+    <Compile Include="search\SearchIndexer.cs" />
     <Compile Include="storage\AzureStorageProvider.cs" />
   </ItemGroup>
   <ItemGroup>

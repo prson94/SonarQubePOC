@@ -140,7 +140,7 @@
                             <div class="row row-label">
                                 <label class="ig-label">Test Condition</label>
                             </div>
-                            <div class="row">
+                            <div class="row conditions-row">
                                 <div class="condition-med">
                                     <p-dropdown igDropdown
                                                 igSize="medium"
@@ -209,7 +209,7 @@
                                                 igDropdown
                                                 igSize="small"
                                                 [disabled]="disabled"
-                                                [options]="predicateOperators"
+                                                [options]="existsOperators"
                                                 [(ngModel)]="model.Definition.Governance.Predicate.Operator"
                                                 appendTo="body"
                                                 [required]="true"
@@ -253,7 +253,7 @@
                                                 igDropdown
                                                 igSize="small"
                                                 [disabled]="disabled"
-                                                [options]="relationshipOperators"
+                                                [options]="existsOperators"
                                                 [(ngModel)]="model.Definition.Governance.Relation.Operator"
                                                 appendTo="body"
                                                 [required]="true"

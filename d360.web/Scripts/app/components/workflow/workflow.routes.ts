@@ -13,11 +13,11 @@ const routes: Routes = [
         component: WorkflowComponent,
         children: [
             {
-                path: ':workflowUid', component: WorkflowViewDetailsComponent
-            },
-            {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
             },   
+            {
+                path: ':workflowUid', component: WorkflowViewDetailsComponent
+            },
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId/:version/:stepId/:fromMail', component: WorkflowNewDetailComponent
             }, 

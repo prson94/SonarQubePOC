@@ -54,7 +54,7 @@
         </ng-template>
     </span>
     <span *ngSwitchCase="'html'">
-        <span *ngIf="fieldValue != null"
+        <span class="ql-editor small-indent" *ngIf="fieldValue != null"
               [innerHtml]="fieldValue | safeHtml"></span>
     </span>
     <span *ngSwitchCase="'tag'">

@@ -263,11 +263,12 @@ namespace d360.extensions
         void ClearIndex(int companyID);
 
         /// <summary>
-        /// Clears out all group entries from a company's index.
+        /// Clears out all entries from a company's index based on category/class and optionally asset type.
         /// </summary>
         /// <param name="companyID">The current company ID</param>
-        /// <param name="group">The current group</param>
-        void ClearIndex(int companyID, string group);
+        /// <param name="category">The current categroy/class</param>
+        /// <param name="assetType">Optional asset type</param>
+        void ClearIndex(int companyID, string category, string assetType = null);
 
         /// <summary>
         /// Gets search results for the specified phrase.
@@ -287,6 +288,7 @@ namespace d360.extensions
         
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
 
+        IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories);
 
         /// <summary>
         /// Get list of phrases that match the starting term used by autocomplete to suggest matches

@@ -669,7 +669,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             let rootNode = ((direction == AssetBrowserApiHopDirection.Backward) ? l.fromNode : l.toNode) as go.Group;
             let rootNodeData = rootNode.data as AssetBrowserTranslationNode;
- 
+
             if (rootNodeData.template == "MoreData") {
                 this.diagram.model.setDataProperty(rootNodeData, 'opacity', 0);
             }
@@ -2065,7 +2065,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                     }
                 },
-                new go.Binding("visible", "", (o) => (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)).ofObject()
+                new go.Binding("visible", "", function (obj) {
+                    if (obj.part.data.template && obj.part.data.template == 'Owner')
+                        return false;
+                    return obj.part.data.assetUid !== this.emptyUid && obj.part.data.hasAssetReadAccess;
+                }).ofObject()
             ),
             this.g(
                 "ContextMenuButton",

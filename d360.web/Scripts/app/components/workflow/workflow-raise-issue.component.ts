@@ -219,7 +219,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         let action: ActionEditorModel = new ActionEditorModel();
         action.Fields = {};
 
-        if (this.selectedObjectType == 'ArtifactType') {
+        if (this.selectedAssetTypeUid) {
             action.AssetTypeUid = this.selectedAssetTypeUid;
         } else {
             action.AssetUid = this.selectedAssetUid;
