@@ -287,12 +287,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                                 ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
                         }
-                        if (fieldType.Type == "Date" || fieldType.Type == "DateTime") {
+                        if (fieldType.Type == "Date") {
                             this.dateShowType = fieldType.Type;
                             this.dateVal1 = gov.Field.Values.length > 0 ? new Date(gov.Field.Values[0]) : null;
                             this.dateVal2 = gov.Field.Values.length > 1 ? new Date(gov.Field.Values[1]) : null;
                             formattedValue = "";
-                            
+
                         }
                         this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
                     } else {
