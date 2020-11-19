@@ -282,4 +282,12 @@ namespace d360.core
             Name = name;
         }
     }
+
+    /// <summary>
+    /// Used by swagger to exclude particular properties in the swagger page
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class SwaggerExcludeAttribute : Attribute
+    {
+    }
 }

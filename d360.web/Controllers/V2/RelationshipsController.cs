@@ -1228,7 +1228,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Deletes a relationship and children of a given uid.
+        /// Deletes one or more relationships with the specified uid(s).
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
         /// <param name="relationships">The list of relationships for deletions.</param>
@@ -1241,7 +1241,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             MapToApiVersion("2.0"),
             Route("types/{intersectTypeUid}"),
-            Route("{intersectTypeUid}"),
+            Route("{intersectTypeUid}"),            
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
