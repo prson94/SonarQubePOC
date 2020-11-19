@@ -12,7 +12,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel } from '../../../models/metrics.model';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel, ScoreType } from '../../../models/metrics.model';
 import { AdminMetricListComponent } from './admin-metric-list.component';
 import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -84,7 +84,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid)
                 .subscribe(f => {
                     this.metricListFieldTypes = f;
-            });
+                });
 
             this.settingsService.getOperators().subscribe(o => {
                 this.operators = o;
@@ -113,9 +113,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);  
+        this.setCommonItems(true, this.selectedAssetType.Name);
         this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid) 
+        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
                 r.forEach(x => {
@@ -152,7 +152,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     private formatScoreCalc() {
         if (this.data) {
-            this.formattedScoreCalc = (this.data.isExternallyCalculated ? 'Externally Calculated':'Internally Calculated');
+            this.formattedScoreCalc = (this.data.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
         }
     }
 
@@ -193,10 +193,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 }
             }
         });
-    } 
+    }
 
     private hasConditions(item: MetricAssetViewModel) {
-        
+
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
             if (this.conditions && this.conditions.length > 0) {
@@ -250,12 +250,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     selectionChanged(event) {
         this.selectedMetric = event;
 
-        if (this.hasConditions(this.selectedMetric)) 
+        if (this.hasConditions(this.selectedMetric))
             this.showConditions = true;
-        else 
+        else
             this.showConditions = false;
 
-        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup) 
+        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
             this.showPassTest = true
         else
             this.showPassTest = false;
@@ -362,4 +362,24 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             this.formattedCheck = "";
         }
     }
+
+    private save() {
+        this.formatScoreCalc();
+        this.showEdit = false;
+
+        if (this.data.scoreType.toString() == 'DataQuality') {
+            this.secondaryNavService.updateObject('firstTabTitle', 'Data Quality Score');
+        }
+
+        if (this.data.scoreType.toString() == 'Governance') {
+            this.secondaryNavService.updateObject('firstTabTitle', 'Governance Score');
+        }
+
+        var needsReroute = this.assetTypeUid != this.data.assetTypeUid;
+        if (needsReroute) {
+            var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.data.assetTypeUid + '/' + this.allocationUid;
+            this.router.navigateByUrl(url);
+        }
+    }
+
 }

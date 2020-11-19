@@ -41,6 +41,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     assetActionClearSub: Subscription;
     homeUrlChangeSub: Subscription;
     statsSub: Subscription;
+    updateSub: Subscription;
 
     items: SecondaryNavItem[];
     buttons: DynamicButton[];
@@ -295,6 +296,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
             }
         })
+
+        this.updateSub = this.secondaryNavService.updateObject$.subscribe(res => {
+            if (res) {
+                if (res.key == 'firstTabTitle') {
+                    this.items[0].title = res.value;
+                    this.ref.markForCheck();
+                }
+            }
+        })
+
 
         this.emitChanges();
     }
