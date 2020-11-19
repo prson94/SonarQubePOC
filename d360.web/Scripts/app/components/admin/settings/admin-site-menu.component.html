@@ -185,7 +185,10 @@
                     <div class="col s12 m6">
                         <div class="FieldName">Preview</div>
                         <div *ngIf="iconType == 'icon'" style="padding:10px">
-                            <span style="font-size: 15px"><i [class]="'fa ' + newFolder.Icon"></i></span>
+                            <span style="font-size: 15px">
+                                <img class="d3s-govIcon" *ngIf="newFolder.Icon && newFolder.Icon.indexOf('/Content') != -1" [src]="newFolder.Icon" />
+                                <i *ngIf="newFolder.Icon && newFolder.Icon.indexOf('/Content') == -1"  [class]="'fa ' + newFolder.Icon"></i>
+                            </span>
                         </div>
                         <div *ngIf="iconType == 'image'" style="padding:10px">
                             <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
