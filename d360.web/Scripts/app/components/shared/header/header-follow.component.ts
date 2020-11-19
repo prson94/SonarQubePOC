@@ -123,9 +123,11 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
                     let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
                     let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;
                     let toastTitle = "Followed";
-                    if (this.active && includeChildren) {                                                
+                    if (this.active) {  
+                        if (includeChildren) {
                             toastTitle = "Following Type";
                             toastMessage = `You are now following type '${crumbs[crumbs.length - 1].text}'`;                        
+                        }                            
                     } else {
                         if (includeChildren) {
                             toastTitle = "Unfollowed Type";
