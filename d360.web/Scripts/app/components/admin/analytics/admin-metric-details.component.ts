@@ -341,10 +341,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         let label = "";
                         if (isSubject) {
                             labelName = relationshipType.Predicate.Name;
-                            assetName = relationshipType.Subject.Name
+                            assetName = relationshipType.Object.Name
                         } else if (isObject) {
                             labelName = relationshipType.Predicate.Inverse;
-                            assetName = relationshipType.Object.Name;
+                            assetName = relationshipType.Subject.Name;
                         }
                         label = labelName + " " + assetName;
                         this.formattedCheck = label + " " + operatorStringForRelation;
