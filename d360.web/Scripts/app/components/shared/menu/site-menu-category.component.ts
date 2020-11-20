@@ -12,7 +12,7 @@ import * as _ from 'lodash';
     template: ` 
                     <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(null, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;" >
                        <div class="menu-category-box">
-                            <img class="d3s-govIcon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
+                            <img class="d3s-gov-icon" *ngIf="rootIconName && rootIconName.indexOf('/Content') != -1" [src]="rootIconName" />
                             <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" />
                             <div [ngClass]="{'caption':true, 'min':!expanded}">

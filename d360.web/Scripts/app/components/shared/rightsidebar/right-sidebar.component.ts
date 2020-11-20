@@ -439,6 +439,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
+    checkIfImg(value: string) {
+        if (value && value.indexOf('/Content') != -1) {
+            return true;
+        }
+        else
+            return false;
+    }
+
     IsIcon(icon: string) {
         return !_.startsWith(icon.toUpperCase(), "URL-");
     }

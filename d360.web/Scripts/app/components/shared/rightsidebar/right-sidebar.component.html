@@ -2,8 +2,8 @@
     <div class="title">
         <span *ngIf="!IsIcon(area.icon)" class="d3s-icon asset-icon"><img [src]="GetURL(area.icon)" /></span>
         <span *ngIf="IsIcon(area.icon)" class="d3s-icon asset-icon">
-            <i  *ngIf="area.icon.indexOf('/Content') == -1" class="fa {{area.icon}}"></i>
-            <img class="d3s-govIcon" *ngIf=" area.icon.indexOf('/Content') != -1" [src]="area.icon" />
+            <i  *ngIf="!checkIfImg(area.icon)" class="fa {{area.icon}}"></i>
+            <img class="d3s-gov-icon" *ngIf=" checkIfImg(area.icon)" [src]="area.icon" />
         </span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
         <d3s-status-badge *ngIf="showStatus"
