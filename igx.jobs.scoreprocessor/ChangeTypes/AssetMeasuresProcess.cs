@@ -596,13 +596,11 @@ from	metrics.Asset A
                                                         // Check the measure validity.
                                                         assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
 
-                                                        var predicateExistenceSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                            "from [Intersect] I " +
-                                                            "inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID " +
-                                                            "inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID " +
-                                                            "inner join IntersectType T on T.ID = I.IntersectTypeID " +
-                                                            "inner join [Predicate] P on P.ID = T.PredicateID and P.Uid = @PredicateUid " +
-                                                            "and (S.Uid = @AssetUid OR O.Uid = @AssetUid)";
+                                                        var predicateExistenceSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (" +
+                                                            "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where PredicateUid = @PredicateUid and SubjectUid = @AssetUid  " +
+                                                            "union all " +
+                                                            "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where PredicateUid = @PredicateUid and ObjectUid = @AssetUid " +
+                                                            ") a";
 
                                                         switch (gDefinition.Predicate.Operator)
                                                         {
@@ -625,57 +623,65 @@ from	metrics.Asset A
                                                         // Check the measure validity.
                                                         assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
 
-                                                        var relationBaseSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                            "from IntersectDetail I inner join IntersectType T on T.ID = I.IntersectTypeID and T.Uid = @IntersectTypeUid ";
+                                                        var relationSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (";
+                                                        object parameters = null;
+
                                                         switch (gDefinition.Relation.Operator)
                                                         {
                                                             case Operator.Equals:
-                                                                scoreItem.Value = company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }, commandTimeout: 90
-                                                                    ).Single();
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.In:
-                                                                scoreItem.Value = company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new
-                                                                    {
-                                                                        gDefinition.Relation.IntersectTypeUid,
-                                                                        n.AssetUid,
-                                                                        Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
-                                                                    }, commandTimeout: 90
-                                                                    ).Single();
+                                                                parameters = new {
+                                                                    gDefinition.Relation.IntersectTypeUid,
+                                                                    n.AssetUid,
+                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
+                                                                };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotEquals:
-                                                                scoreItem.Value = !company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "and ( (I.SubjectUid = @AssetUid AND I.ObjectUid = @ValueUid) OR (I.SubjectUid = @ValueUid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) }, commandTimeout: 90
-                                                                    ).Single();
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotIn:
-                                                                scoreItem.Value = !company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "inner join @Uids U on ( (I.SubjectUid = @AssetUid AND I.ObjectUid = U.Uid) OR (I.SubjectUid = U.Uid AND I.ObjectUid = @AssetUid) )"),
-                                                                    new
-                                                                    {
-                                                                        gDefinition.Relation.IntersectTypeUid,
-                                                                        n.AssetUid,
-                                                                        Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
-                                                                    }, commandTimeout: 90
-                                                                    ).Single();
+                                                                parameters = new {
+                                                                    gDefinition.Relation.IntersectTypeUid,
+                                                                    n.AssetUid,
+                                                                    Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
+                                                                };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotPopulated:
-                                                                scoreItem.Value = !company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }, commandTimeout: 90
-                                                                    ).Single();
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
                                                                 break;
-                                                            case Operator.Populated:
-                                                                scoreItem.Value = company.Query<bool>(
-                                                                    string.Concat(relationBaseSql, "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)"),
-                                                                    new { gDefinition.Relation.IntersectTypeUid, n.AssetUid }, commandTimeout: 90
-                                                                    ).Single();
+                                                            default: // case Operator.Populated:
+                                                                parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid };
+                                                                relationSql += 
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
+                                                                    "union all " +
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                         }
+                                                        relationSql += ") a";
+
+                                                        scoreItem.Value = company.Query<bool>(relationSql, parameters, commandTimeout: 90).Single();
                                                     }
                                                     else
                                                     {
