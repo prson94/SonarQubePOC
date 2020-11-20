@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges} from '@angular/core';
+﻿import { Component, OnInit, OnChanges, Input, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -134,14 +134,6 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        this.load();
-    }
-
-    public ngOnChanges(changes: SimpleChanges) {
-        this.load();
-    }
-
-    load() {
         this.predefinedFilters = [];
         this.isLoading = true;
         this.sub = this.route.params.subscribe(params => {

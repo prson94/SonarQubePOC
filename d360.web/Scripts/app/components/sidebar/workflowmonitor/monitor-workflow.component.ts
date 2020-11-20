@@ -9,16 +9,22 @@ import { AssetService } from '../../../services/asset.service';
     selector: 'd3s-workflow-monitor',
     providers: [AssetService],
     template: ` 
-               <div>
-                    <d3s-monitor [objectType]="objectType" [objectId]="objectID"></d3s-monitor>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div class="row" *ngIf="showMonitor">
+                <div class="col s12">
+                    <div class="tile tile-detail">
+                        <d3s-monitor [objectType]="objectType" [objectId]="objectID"></d3s-monitor>
+                    </div>
                 </div>
-                `
+            </div>
+        `
 })
 
 export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     sub: any;
     objectType: string;
     objectID: number;
+    showMonitor: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -38,6 +44,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
             if (assetUid == null || assetUid == undefined) {
                 this.objectID = +params['objectId'];
                 this.objectType = params['objectType'];
+                this.showMonitor = true;
                 if (reloadNav)
                     this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
             }
@@ -47,6 +54,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
                 .subscribe(res => {
                     this.objectID = +res.ObjectId;
                     this.objectType = res.Object;
+                    this.showMonitor = true;
                     if (reloadNav)
                         this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
                 });
