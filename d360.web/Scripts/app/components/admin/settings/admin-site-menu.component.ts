@@ -115,6 +115,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.onFileChange(null);
     }
 
+    checkIfImg(value: string) {
+        if (value && value.indexOf('/Content') != -1) {
+            return true;
+        }
+        else
+            return false;
+    }
+
     onFileChange(event): void {
         if (this.iconImage == null)
             this.iconImage = new CompanyImage();

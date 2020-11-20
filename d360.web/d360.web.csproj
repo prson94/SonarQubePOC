@@ -494,6 +494,14 @@
     <Content Include="Content\images\govern-small-white.svg" />
     <Content Include="Content\images\govern-small.svg" />
     <Content Include="Content\images\govern.svg" />
+    <Content Include="Content\images\Governance Icons\bdd_circle.png" />
+    <Content Include="Content\images\Governance Icons\bpc_circle.png" />
+    <Content Include="Content\images\Governance Icons\dsr_circle.png" />
+    <Content Include="Content\images\Governance Icons\glo_circle.png" />
+    <Content Include="Content\images\Governance Icons\goc_circle.png" />
+    <Content Include="Content\images\Governance Icons\grc_circle.png" />
+    <Content Include="Content\images\Governance Icons\mmc_circle.png" />
+    <Content Include="Content\images\Governance Icons\report_circle.png" />
     <Content Include="Content\images\home.background.new.jpg" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.png" />
@@ -813,6 +821,7 @@
     <Content Include="Content\styles\infogix-ui\IgDropdown.less" />
     <Content Include="Content\styles\infogix-ui\IgRadioButton.less" />
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.less" />
+    <Content Include="Content\json\governanceIcons.json" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />

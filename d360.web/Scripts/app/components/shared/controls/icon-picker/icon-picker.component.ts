@@ -49,19 +49,35 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
         this.isRequired = this.required !== undefined;
 
         this.iconService.getIconProperties().subscribe(result => {
-            result.forEach(i => {
-                let index = this.categories.findIndex(x => x.label == i.categories[0]);
-
-                if (index == -1) {
-                    this.categories.push({
-                        label: i.categories[0],
-                        value: i.categories[0],
-                        items: [{ label: i.name, value: 'fa-' + i.id }]
-                    });
-                } else {
-                    this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id });
-                }
-            });
+            this.iconService.getIconImages().subscribe(images => {
+                result = [...result, ...images];
+                result.forEach(i => {
+                    let index = this.categories.findIndex(x => x.label == i.categories[0]);
+                    if (!i.img) {
+                        if (index == -1) {
+                            this.categories.push({
+                                label: i.categories[0],
+                                value: i.categories[0],
+                                items: [{ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img }]
+                            });
+                        } else {
+                            this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img });
+                        }
+                    }
+                    else {
+                        if (index == -1) {
+                            this.categories.push({
+                                label: i.categories[0],
+                                value: i.categories[0],
+                                items: [{ label: i.name, value: i.path, path: i.path, img: i.img }]
+                            });
+                        } else {
+                            this.categories[index].items.push({ label: i.name, value: i.path, path: i.path, img: i.img });
+                        }
+                    }
+                });
+            })
+            
 
             this.categories.forEach(c => c.items.sort((a, b) => this.sortByName(a, b)));
             this.categories.sort((a, b) => this.sortByName(a, b));
