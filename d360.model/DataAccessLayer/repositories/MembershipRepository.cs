@@ -865,7 +865,8 @@ namespace d360.model.DataAccessLayer
                                     LastName = user.LastName,
                                     State = user.State ?? companyResource.State,
                                     UpdatedOn = DateTime.UtcNow,
-                                    Uid = (Guid)user.uid
+                                    Uid = (Guid)user.uid,
+                                    CreatedOn = DateTime.UtcNow
                                 };
 
                                 CompanyContext.Add(globalResource);
