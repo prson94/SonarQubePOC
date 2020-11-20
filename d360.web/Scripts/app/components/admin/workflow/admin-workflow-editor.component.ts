@@ -197,7 +197,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                     let scoreIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'ScoreType');
 
                                     if (scoreIndex > -1) {
-                                        this.model.Event.ScoreType = this.conditions[scoreIndex]['@Value'];
+                                        this.model.Event.ScoreType = +this.conditions[scoreIndex]['@Value'];
                                     }
                                     this.validate();
                                 });
