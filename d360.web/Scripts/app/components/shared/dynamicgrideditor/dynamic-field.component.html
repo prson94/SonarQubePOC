@@ -254,7 +254,7 @@
                 <ig-color-picker [colors]="defaultColorOptions" [formControlName]="field.FieldName" [invalidOptions]="['Custom']"></ig-color-picker>
             </div>
             <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-            <ig-switch *ngSwitchCase="'Boolean'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
+            <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
             <div *ngSwitchCase="'Date'">
                 <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
