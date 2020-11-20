@@ -266,6 +266,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     .subscribe(res => {
                         this.scoreTypes = res;
                         this.scoreTypes.unshift({ label: '', value: null });
+                        this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
                     });
             }
 

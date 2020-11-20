@@ -77,7 +77,6 @@ export class WorkflowFieldsService {
 
     setAvailableScoreTypes(scoreTypes: any[]) {
         this.scoreTypes = scoreTypes;
-        if (this.changeType == WorkflowChangeType.ScoreUpdate) {
             this.scoreTypes.forEach(s => {
                 this.contextualFields.push({
                     value: 'Contextual|Score|' + s.value,
@@ -85,7 +84,6 @@ export class WorkflowFieldsService {
                     type: 'number'
                 });
             });
-        }
     }
 
     pushUsedField(fieldId: string, stepId: string, transitionId: string, transitionName: string) {
