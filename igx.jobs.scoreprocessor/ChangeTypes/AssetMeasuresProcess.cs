@@ -597,10 +597,12 @@ from	metrics.Asset A
                                                         assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
 
                                                         var predicateExistenceSql = "select cast(iif(count(1) > 0, 1, 0) as bit) " +
-                                                            "from IntersectDetail I " +
-                                                            "inner join [Predicate] P on P.ID = I.PredicateID " +
-                                                            "and P.Uid = @PredicateUid " +
-                                                            "and (I.SubjectUid = @AssetUid OR I.ObjectUid = @AssetUid)";
+                                                            "from [Intersect] I " +
+                                                            "inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID " +
+                                                            "inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID " +
+                                                            "inner join IntersectType T on T.ID = I.IntersectTypeID " +
+                                                            "inner join [Predicate] P on P.ID = T.PredicateID and P.Uid = @PredicateUid " +
+                                                            "and (S.Uid = @AssetUid OR O.Uid = @AssetUid)";
 
                                                         switch (gDefinition.Predicate.Operator)
                                                         {

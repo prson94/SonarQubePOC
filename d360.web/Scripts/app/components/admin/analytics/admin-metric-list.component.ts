@@ -61,6 +61,19 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     private isHistoryModalVisible: boolean = false;
 
+    todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
+        if (item) {
+            let today = new Date();
+            let todayMs = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+            let effectiveDate = new Date(item.EffectiveDate);
+            let effectiveDateMs = effectiveDate.getTime();
+            return (effectiveDateMs == todayMs);
+        }
+        else {
+            return false;
+        }
+    }
+
     menuClicked($event) {
         switch ($event.value) {
             case 'Edit': this.edit();
