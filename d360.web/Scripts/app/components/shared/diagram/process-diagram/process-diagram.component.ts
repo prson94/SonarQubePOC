@@ -1128,10 +1128,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.importAssets = res;
                 this.areImportAssetsLoaded = true;
                 if (this.importAssets && this.importAssets.length > 0) {
+                    this.hasNoImportAssets = false;
                     delete this.popupMenuItems[1]['tooltip'];
                     delete this.popupMenuItems[1]['disabled'];
                 }
                 else {
+                    this.hasNoImportAssets = true;
+
                     this.popupMenuItems[1]['tooltip'] = `There are currently no other assets of type ${this.assetDetail?.TypeName} to import a diagram from.`;
                 }
                 this.cdRef.detectChanges();
