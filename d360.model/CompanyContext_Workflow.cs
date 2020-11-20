@@ -2329,13 +2329,13 @@ namespace d360.model
                     //get the objects name
                     item = GetObjectDetail(obj.ToString(), objectID);
                 }
-                int? score = null;
+                decimal? score = null;
 
                 if(item != null && item.AssetID.HasValue)
                     score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
 
-                result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
-                result = result.Replace("[SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
+                result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
+                result = result.Replace("[SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
             }
 
             if (result.Contains("[DQ_SCORE]"))
@@ -2355,12 +2355,12 @@ namespace d360.model
                     //get the objects name
                     item = GetObjectDetail(obj.ToString(), objectID);
                 }
-                int? score = null;
+                decimal? score = null;
 
                 if (item != null && item.AssetID.HasValue)
                     score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
 
-                result = result.Replace("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
+                result = result.Replace("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(unknown score)");
             }
 
             if (result.Contains("[DQ_SCORE_PREV]"))
@@ -2380,11 +2380,11 @@ namespace d360.model
                     //get the objects name
                     item = GetObjectDetail(obj.ToString(), objectID);
                 }
-                int? score = null;
+                decimal? score = null;
 
                 if (item != null && item.AssetID.HasValue)
                     score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.DataQuality);
-                result = result.Replace("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString()}%" : "(No prior score)");
+                result = result.Replace("[DQ_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
             }
 
 
@@ -2405,11 +2405,11 @@ namespace d360.model
                     //get the objects name
                     item = GetObjectDetail(obj.ToString(), objectID);
                 }
-                int? score = null;
+                decimal? score = null;
 
                 if (item != null && item.AssetID.HasValue)
                     score = GetPreviousAssetScore(item.AssetID.Value, ScoreType.Governance);
-                result = result.Replace("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString()}%" : "(No prior score)");
+                result = result.Replace("[GOV_SCORE_PREV]", score.HasValue ? $"{score.Value.ToString("0.#")}%" : "(No prior score)");
             }
 
             if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))

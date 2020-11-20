@@ -135,7 +135,7 @@ namespace d360.model.workflow
                     long? assetId = context.GetObjectDetail(@object, objectId)?.AssetID;
                     if (assetId.HasValue)
                     {
-                        int? score = context.GetAssetScore((int)assetId, stype);
+                        decimal? score = context.GetAssetScore((int)assetId, stype);
                         if (!item.IsValueMatch(score.ToString())) return false;
                     }
                     else
