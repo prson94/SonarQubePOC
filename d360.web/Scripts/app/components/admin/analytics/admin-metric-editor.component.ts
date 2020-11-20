@@ -95,7 +95,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     predicateTypes: any[] = [];
 
     existsOperators: any[] = [];
-    restrictedPredicateTypes: any[] = ["Diagram", "DiagramUse", "DiagramReference", "InterTypeHierarchy", "IntraTypeHierarchy"];
+    restrictedPredicateTypes: any[] = ["Diagram", "DiagramUse", "DiagramReference", "InterTypeHierarchy", "IntraTypeHierarchy", "FusionMapping"];
     restricterdFusionTypes: any[] = ["FusionAttribute", "FusionAttributeType", "FusionType", "FusionExecution", "FusionQueryAttribute", "FusionQueryAttributeType"];
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -284,7 +284,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         return { label: label, value: x.Uid };
                     });
                     this.predicateTypes = data.filter(x => this.restrictedPredicateTypes.indexOf(x.Predicate.Type) == -1).map((x, idx, self) => {
-                        let label = x.Predicate.Name + '/' + x.Predicate.Inverse + ' (' + x.Predicate.Type + ')';
+                        let label = x.Predicate.Name + '/' + x.Predicate.Inverse + ' (' + x.Predicate.FriendlyTypeName  + ')';
                         return { label: label, value: x.Predicate.Uid };
                     });
                     this.predicateTypes = this.predicateTypes.filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));

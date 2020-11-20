@@ -83,6 +83,10 @@ namespace d360.core.entities
         [JsonConverter(typeof(StringEnumConverter))]
         public PredicateType Type { get; set; }
 
+        public string FriendlyTypeName {
+            get { return this.Type.GetName(); } 
+        }
+
         public string Name { get; set; }
 
         public string Inverse { get; set; }
