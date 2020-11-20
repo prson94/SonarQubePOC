@@ -793,5 +793,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.ref.markForCheck();
         }
     }
-
+    isRequired() {
+        return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
+    }
 }

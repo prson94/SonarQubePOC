@@ -791,8 +791,6 @@ export class BaseComponent {
             }
         }
 
-        console.log(data);
-
         if (objectType)
             data.ObjectType = objectType;
 

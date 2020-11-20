@@ -266,7 +266,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
 
-                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
+                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN' && f.Value != null) {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
                         f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
@@ -333,7 +333,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            } else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
+            }
+            else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
                     field.Value = date;
@@ -343,7 +344,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     value: (field.Value),
                     disabled: field.ReadOnly
                 }, this.getFieldValidators(field));
-            } else {
+            }
+            else {
                 if (field.FieldType == "Relationship" && this.selection) {
                     if (field.Value != null) {
                         field.Value = JSON.parse(field.Value);
@@ -370,8 +372,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     setDisabled = true;
                 }
 
+                var fieldValue = field.Value;
+                if (field.FieldType != 'Boolean') {
+                    fieldValue = field.Value === null ? '' : field.Value;
+                }
+                else if (field.FieldType == 'Boolean' && field.Value == null) {
+                    fieldValue = undefined;
+                }
+
+
                 group[field.FieldName] = new FormControl({
-                    value: (field.Value === null ? '' : field.Value),
+                    value: fieldValue,
                     disabled: setDisabled
                 }, this.getFieldValidators(field));
             }
@@ -528,8 +539,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
 
         }
-
-
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {
             this.modelChanged.emit({ values: values, fields: this.fields });
@@ -588,10 +597,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 //ignore
             }
             else {
-                asset.Fields[p] = values[p];
+                if (values[p] == undefined) {
+                    asset.Fields[p] = null;
+                }
+                else {
+                    asset.Fields[p] = values[p];
+                }
             }
         }
-
         this.assetService.saveAsset(this.objectTypeUid, asset)
             .subscribe(res => {
                 event.Success = res.Success;
