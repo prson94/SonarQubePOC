@@ -126,15 +126,16 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.setBrowserTitle(this.titleService, 'Workflow Item Status');
 
         this.sub = this.route.params.subscribe(params => {
-            this.workflowId = +params['workflowId'];
-            this.workflowUid = params['workflowUid'];
-            if (this.workflowUid) {
+            this.workflowUid = params['workflowInstance'];
+            if (parseInt(this.workflowUid)) {
+                this.workflowId = +this.workflowUid;
+            }
+            if (!this.workflowId) {
                 this.workflowService.getWorkflowId(this.workflowUid)
                     .subscribe(res => {
                         this.workflowId = res;
                         this.load();
                     })
-
             }
             else {
                 this.load();
