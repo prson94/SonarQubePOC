@@ -96,7 +96,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
                 result => {
                     this.searchDetails = result;
-                    if (this.searchDetails && this.searchDetails.AssetDetail.Status) {
+                    if (this.searchDetails && this.searchDetails?.AssetDetail.Status) {
                         this.status = this.searchDetails.AssetDetail.Status;
                         this.showStatus = true;
                     } else {

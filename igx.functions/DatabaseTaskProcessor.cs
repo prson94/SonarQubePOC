@@ -135,10 +135,13 @@ namespace igx.functions.databasetaskprocessor
                                     }
                                     else
                                     {
-                                        ObjectDetail detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
-                                        if (detail != null && detail.UID.HasValue && detail.UID != Guid.Empty)
+                                        Guid AssetUid = (givenAssetId > 0) ?
+                                            companyConnection.Query<Guid>("SELECT Uid FROM [dbo].[Asset] WHERE id = @a", new { a = givenAssetId }).SingleOrDefault() :
+                                            companyConnection.Query<Guid>("SELECT Uid FROM [dbo].[Asset] WHERE [Object] = @t AND [ObjectID] = @i", new { t = o, i = oid }).SingleOrDefault();
+
+                                        if (AssetUid != Guid.Empty)
                                         {
-                                            indexCollectionModel.UpsertByUid.Add(detail.UID ?? Guid.Empty);
+                                            indexCollectionModel.UpsertByUid.Add(AssetUid);
                                         }
                                     }
                                 }

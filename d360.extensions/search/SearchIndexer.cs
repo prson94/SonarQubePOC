@@ -266,7 +266,7 @@ namespace d360.extensions.search
 	                        cast(A.ID as varchar) as ItemUniqueID,
 	                        A.ObjectID as ID,
 	                        att.ObjectID as TypeID,
-	                        adv.DisplayValue,
+	                        ISNULL(adv.DisplayValue, [utility].GetAssetDisplayValue(A.ID)) DisplayValue,
 	                        att.Name as TypeName,
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
@@ -281,7 +281,7 @@ namespace d360.extensions.search
 	                        [dbo].Asset a
 	                        inner join reporting.global_resource u on u.ResourceID = a.ObjectID and a.[Object] = 'Resource'
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
-	                        inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
+	                        left outer join [dbo].assetdisplayvalue adv on adv.assetid = a.id
                         where
 	                         {whereCondition}
                         ORDER BY A.ID";
