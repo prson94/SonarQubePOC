@@ -90,6 +90,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
                     c.OperationFilter<Produces>();
                     c.OperationFilter<ExamplesOperationFilter>();
                     c.OperationFilter<SwaggerParameterAttributeFilter>();
+                    c.SchemaFilter<SwaggerExcludeFilter>();
                     c.PrettyPrint();
                     c.DescribeAllEnumsAsStrings(false);
                     c.MultipleApiVersions(versionSupportResolver, versionInfoBuilder);
@@ -107,7 +108,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
                     c.InjectStylesheet(typeof(WebApiConfig).Assembly, "d360.web.Content.Swagger.swagger.css");
                     c.DisableValidator();
                     c.SupportedSubmitMethods("GET", "POST", "PUT", "DELETE");
-                    c.EnableDiscoveryUrlSelector();
+                    c.EnableDiscoveryUrlSelector();                    
                 });
 
             #endregion
