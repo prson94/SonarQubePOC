@@ -2547,15 +2547,18 @@ from	IntersectType I
                             AddMeasurement(metrics, $"results.AddRange >> DatabaseBulkAssetResult>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
 
-                            //include hierarchical records for graph tables
-                            graphResults.AddRange(
-                                Query<DatabaseBulkAssetResult>(
-                                    $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
-                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
-                                )
-                            );
-                            AddMeasurement(metrics, $"graphResults.AddRange >> DatabaseBulkAssetResult >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                            sw.Restart();
+                            if (sendGraphEvents)
+                            {
+                                //include hierarchical records for graph tables
+                                graphResults.AddRange(
+                                    Query<DatabaseBulkAssetResult>(
+                                        $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                    )
+                                );
+                                AddMeasurement(metrics, $"graphResults.AddRange >> DatabaseBulkAssetResult >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                sw.Restart();
+                            }
 
                             OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
                             {
