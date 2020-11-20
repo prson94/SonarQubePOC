@@ -19,7 +19,7 @@
     </div>
     <div class="card-row elide-container">
         <div class="path category elided" title="{{formatPathAsString()}}">
-            {{result?.Group}}<span *ngIf="result?.AssetPath"><i class="fa fa-angle-right"></i><asset-path-widget [path]="result.AssetPath" [withType]="true"></asset-path-widget></span>
+            {{result?.Group}}<span *ngIf="result?.AssetPath?.length"><i class="fa fa-angle-right"></i><asset-path-widget [path]="result.AssetPath" [withType]="true"></asset-path-widget></span>
         </div>
         
     </div>

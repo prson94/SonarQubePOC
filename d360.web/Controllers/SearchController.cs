@@ -151,6 +151,7 @@ namespace d360.web.Controllers
                 switch (type)
                 {
                     case "Resource":
+                    case "User":
                         return "fa-user";
                     case "Group":
                         return "fa-users";
