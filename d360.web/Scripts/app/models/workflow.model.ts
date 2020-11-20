@@ -407,7 +407,7 @@ export class WorkflowEventRegistration {
     LastExecuted: any;
     conditions: EventCondition[] = [];
     IssueObject: string = "";
-    ScoreType: string;
+    ScoreType: number;
 }
 
 export class WorkflowObjectType {
