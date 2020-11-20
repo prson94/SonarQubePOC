@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using System;
 
 namespace d360.core.entities
 {
@@ -13,7 +14,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int IntersectTypeID { get; set; }
-
+        
+        [DataMember]
+        public Guid IntersectTypeUid { get; set; }
 
         [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }
@@ -77,6 +80,8 @@ namespace d360.core.entities
         [DataMember]
         public string ObjectIconText { get; set; }
 
+        [DataMember]
+        public Guid PredicateUid { get; set; }
 
         [DataMember]
         public int? PredicateID { get; set; }
