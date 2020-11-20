@@ -1861,7 +1861,8 @@ from	IntersectType I
             T.AssetID = S.ID
     from	api.ExecutionDeletedAsset T
 		    inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
-		    inner join AssetType ST on ST.Uid = @uid and ST.ID = S.AssetTypeID;",
+    where 
+            exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",		    
                     new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
 
                         AddMeasurement(metrics, "Resolve assets based on UIDs", sw.ElapsedMilliseconds, ++step);
