@@ -354,7 +354,7 @@ export class BaseComponent {
                     'Workflow',
                     'monitor',
                     ['fa-usb'],
-                    `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
+                    `/sidebar/workflowmonitor${this.uidContextUrl()}`, null, 30
                 );
                 this.secondaryNavService.showItem(this.monitorSidebar);
             }
