@@ -372,7 +372,7 @@ where	ExecutionID = @executionID
             left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
             left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
             where A.executionid = @executionID 
-            and (trim(EF.Value) is null or EF.Value = char(0))
+            and (trim(EF.FormattedValue) is null or EF.FormattedValue = char(0))
             and (trim(F.FieldValue) is null or trim(F.FieldValue) = char(0))
             group by A.executionid,a.itemnumber;
 
