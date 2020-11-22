@@ -99,6 +99,7 @@ import { HeaderActions } from '../../models/header.model';
 
 export class WorkflowViewDetailsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
+    private workflowInstance: string;
     private workflowId: number;
     private workflowUid: string;
     private details: any;
@@ -126,10 +127,13 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.setBrowserTitle(this.titleService, 'Workflow Item Status');
 
         this.sub = this.route.params.subscribe(params => {
-            this.workflowUid = params['workflowInstance'];
-            if (parseInt(this.workflowUid)) {
-                this.workflowId = +this.workflowUid;
+            this.workflowInstance = params['workflowInstance'];
+            if (this.isUid(this.workflowInstance)) {
+                this.workflowUid = this.workflowInstance;
             }
+            else
+                this.workflowId = +this.workflowInstance;
+
             if (!this.workflowId) {
                 this.workflowService.getWorkflowId(this.workflowUid)
                     .subscribe(res => {
@@ -173,6 +177,11 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     }
                 }
             });
+    }
+
+    private isUid(value: string) {
+        let regex = /[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}/;
+        return regex.test(value);
     }
 
     private showHideFollow(show: boolean) {
