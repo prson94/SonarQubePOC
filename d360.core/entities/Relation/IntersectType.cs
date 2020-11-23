@@ -84,7 +84,12 @@ namespace d360.core.entities
         public PredicateType Type { get; set; }
 
         public string FriendlyTypeName {
-            get { return this.Type.GetName(); } 
+            get {
+                if (Type == 0)
+                    return null;
+                else
+                    return Type.GetName();
+            } 
         }
 
         public string Name { get; set; }
