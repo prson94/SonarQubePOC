@@ -393,7 +393,7 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
-                var result = this.workflowRepository.GetWorkflowIDByUID(uid);
+                var result = this.workflowRepository.GetWorkflowItemByUID(uid);
 
                 if(result == null)
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Cannot find the specified workflow instance."));
