@@ -54,6 +54,7 @@ namespace d360.web.Controllers
             document.SetCellValue(1, 7, "Completed");
             document.SetCellValue(1, 8, "Status");
             document.SetCellValue(1, 9, "Workflow Instance UID");
+            document.SetCellValue(1, 10, "Url");
             
 
             #endregion
@@ -80,6 +81,7 @@ namespace d360.web.Controllers
 
                 document.SetCellValue(rowIndex, 8, row.Status ?? "");
                 document.SetCellValue(rowIndex, 9, row.UID.ToString() ?? "");
+                document.SetCellValue(rowIndex, 10, "/workflow/details/" + (row.UID.ToString() ?? ""));
 
             }
 
