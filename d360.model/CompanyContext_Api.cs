@@ -606,7 +606,7 @@ where	ExecutionID = @executionID
             if (isInsert)
             {
                 Connection.Execute($@"
-                    insert into AssetDisplayValue WITH(TABLOCK) (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
+                    insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash,DisplayValuePrefix) 
                         {fieldsSelectSql}
                 ",
                 new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -733,7 +733,7 @@ where	ExecutionID = @executionID
                 Connection.Execute(
                     $@"
                         INSERT INTO 
-                        dbo.[Field] WITH(TABLOCK) ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
+                        dbo.[Field] ([ObjectType],[ObjectID],[FieldTypeID],[Value],[FormattedValue],[UpdatedOn],[UpdatedBy],[AssetID])                         
                         {fieldValuesSql}
                     "
                     , new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
@@ -4580,7 +4580,7 @@ from	api.ExecutionAsset T
     from    api.ExecutionAsset T
             inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between @beginItemNumber and @endItemNumber;";
                             var insertGraphAssetNode = $@"		
-insert into graph.AssetNode WITH(TABLOCK) (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
         select  EA.AssetID,
 				EA.Uid,
 				@AssetTypeID,
@@ -4921,7 +4921,7 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R)
     output $action, inserted.[uid] into #ParentChildRelationships;
 
-	insert into graph.AssetEdge WITH(TABLOCK) ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+	insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
     select  SG.$node_id,
             OG.$node_id,
             I.ID,
