@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Initial-v13">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v14">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -492,6 +492,30 @@ begin
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
+
+		-- This is for root assets that also link to the same targets as their leaf assets. VERY SPECIAL CASE.
+		insert into #hierarchies (Salt, Hop, AssetTypeID, [Key], Uid)
+			select		H.Salt,
+						H.Hop,
+						H.AssetTypeID,
+						utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar)),
+						CAST(0x0 AS UNIQUEIDENTIFIER)
+			from		#hierarchies H
+						inner join	(
+									select		O.*
+									from		#hierarchies O
+												inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
+									) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
+
+		-- Update parent key for single-level assets with key for asset type records added above.
+		update	H
+		set		H.ParentKey = utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar))
+		from	#hierarchies H
+				inner join	(
+							select		O.*
+							from		#hierarchies O
+										inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
+							) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
 	end
 
 	update	T
@@ -1288,6 +1312,52 @@ begin
 			H.HierarchyKey = ba.HierarchyKey
 	from	#hierarchies H
 			inner join ba on ba.[Key] = H.[Key];
+			
+	--In case on Impact, map out how many process assets there are to return correct count
+	drop table if exists #processAssetCountMap
+	create table #processAssetCountMap(
+		[key] varchar(50),
+		[pUid] uniqueidentifier,
+		[dir] int,
+		[count] int
+	)
+	if @ancestry = 3
+	begin
+		;with cte as (select	distinct
+								Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+								E.PredicateUid as Uid, 
+								T.ID as AssetId,
+								1 as Direction
+						from	graph.AssetNode S,
+								graph.AssetEdge E,
+								graph.AssetNode T,
+								#hierarchies Hr
+						where	MATCH(S-(E)->T)
+								and E.PredicateType in (16,17)
+								and Hr.ID = S.ID
+								and E.ID not in (select IntersectID from #hops where Hop <> 1)
+						union all
+						select	distinct
+								Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+								E.PredicateUid as Uid, 
+								S.ID as AssetId,
+								2 as Direction
+						from	graph.AssetNode S,
+								graph.AssetEdge E,
+								graph.AssetNode T,
+								#hierarchies Hr
+						where	MATCH(S-(E)->T)
+								and E.PredicateType in (16,17)
+								and Hr.ID = T.ID
+								and E.ID not in (select IntersectID from #hops where Hop <> -1)
+				)
+				insert into #processAssetCountMap
+				select t.[key], t.[uid], t.[direction], count(*) as count from (	select distinct cte.[key],cte.[uid], cte.direction, pxd.diagramassetuid from cte
+						inner join asset a on a.id = cte.assetid
+						inner join processexpandeddata pxd on pxd.fromuid = a.uid or pxd.touid = a.uid) t
+				group by t.[key], t.[uid], t.[direction]
+	end
+
 
 	update	T
 	set		T.focal = 1
@@ -1370,7 +1440,7 @@ begin
 					ID as predicateId, 
 					Uid as predicateUid, 
 					direction, 
-					count(1) as [count]
+					isnull(pacm.count,count(1)) as [count]
 			from	(
 					select	distinct
 							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
@@ -1404,7 +1474,8 @@ begin
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
 							and E.ID not in (select IntersectID from #hops where Hop <> -1)
 					) O
-			group by [Predicate], ID, Uid, Direction
+			left join #processAssetCountMap pacm on pacm.puid = O.uid and pacm.dir = O.direction and pacm.[key]  = O.[key]
+			group by [Predicate], ID, Uid, Direction,O.[key],pacm.[count]
 			for json path
 			) as relationsJson
 	from	#hierarchies H

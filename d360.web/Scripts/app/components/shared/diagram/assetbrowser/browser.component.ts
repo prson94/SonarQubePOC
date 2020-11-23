@@ -388,45 +388,47 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private badge_RemoveDependentNodes(badgeIdentifier: string, direction: AssetBrowserApiHopDirection) {
         let links = this.diagramModelAsGraph().linkDataArray;
-        let badgeLink = links.find(l => { return l.badgeIdentifier === badgeIdentifier; });
-        if (badgeLink) {
-            // Line below would only be used IF impacts were to go in both directions. As it is now, we hard-code them to only go in one direction (forward).
-            //let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
-            let impactNodeKey = badgeLink.to;
-            let impactNode = this.diagram.findNodeForKey(impactNodeKey);
-            if (impactNode) {
-                let impactData = impactNode.data as AssetBrowserTranslationNode;
-                if (impactData) {
-                    // First, remove this node from the hierarchy collection, which represents all root nodes currently in the diagram.
-                    let ixToDelete = this.diagramData.hierarchy.findIndex(o => { return o.hierarchyKey === impactNodeKey; });
-                    if (ixToDelete > -1) {
-                        this.diagramData.hierarchy.splice(ixToDelete, 1);
-                        ixToDelete = -1;
-                    }
-                    // Next, remove this and all descendant nodes from the nodes collection, which is a flat list of nodes currently in the diagram.
-                    let nodesToDelete = this.diagramData.nodes.filter(o => { return o.hierarchyKey === impactNodeKey; });
-                    nodesToDelete.forEach(nodeToDelete => {
-                        ixToDelete = this.diagramData.nodes.findIndex(o => { return o.key === nodeToDelete.key; });
+        let badgeLinks = links.filter(l => { return l.badgeIdentifier === badgeIdentifier; });
+        badgeLinks.forEach(badgeLink => {
+            if (badgeLink) {
+                // Line below would only be used IF impacts were to go in both directions. As it is now, we hard-code them to only go in one direction (forward).
+                //let impactNodeKey = direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
+                let impactNodeKey = badgeLink.to;
+                let impactNode = this.diagram.findNodeForKey(impactNodeKey);
+                if (impactNode) {
+                    let impactData = impactNode.data as AssetBrowserTranslationNode;
+                    if (impactData) {
+                        // First, remove this node from the hierarchy collection, which represents all root nodes currently in the diagram.
+                        let ixToDelete = this.diagramData.hierarchy.findIndex(o => { return o.hierarchyKey === impactNodeKey; });
                         if (ixToDelete > -1) {
-                            let dn = this.diagram.findNodeForKey(nodeToDelete.key);
-                            if (dn) {
-                                this.diagram.remove(dn);
-                            }
-                            this.diagramData.nodes.splice(ixToDelete, 1);
+                            this.diagramData.hierarchy.splice(ixToDelete, 1);
                             ixToDelete = -1;
                         }
-                    });
-                    // Last, remove the dependent impact nodes attached to the one we are currently trying to remove.
-                    impactData.relations.forEach((r, rix) => {
-                        let innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
-                        this.badge_RemoveDependentNodes(innerBadgeIdentifier, r.direction);
-                    });
-                }
+                        // Next, remove this and all descendant nodes from the nodes collection, which is a flat list of nodes currently in the diagram.
+                        let nodesToDelete = this.diagramData.nodes.filter(o => { return o.hierarchyKey === impactNodeKey; });
+                        nodesToDelete.forEach(nodeToDelete => {
+                            ixToDelete = this.diagramData.nodes.findIndex(o => { return o.key === nodeToDelete.key; });
+                            if (ixToDelete > -1) {
+                                let dn = this.diagram.findNodeForKey(nodeToDelete.key);
+                                if (dn) {
+                                    this.diagram.remove(dn);
+                                }
+                                this.diagramData.nodes.splice(ixToDelete, 1);
+                                ixToDelete = -1;
+                            }
+                        });
+                        // Last, remove the dependent impact nodes attached to the one we are currently trying to remove.
+                        impactData.relations.forEach((r, rix) => {
+                            let innerBadgeIdentifier: string = impactData.hierarchyKey + '|' + rix;
+                            this.badge_RemoveDependentNodes(innerBadgeIdentifier, r.direction);
+                        });
+                    }
 
-                this.diagram.remove(impactNode);
+                    this.diagram.remove(impactNode);
+                }
+                this.diagramModelAsGraph().removeLinkData(badgeLink);
             }
-            this.diagramModelAsGraph().removeLinkData(badgeLink);
-        }
+        });
     }
 
     private badge_ClickImpact(e, obj) {
