@@ -179,15 +179,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
-                if (result[0].Success) {
-                    result.title = 'Success!';
-                    this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
-                } else {
-                    result.title = 'Error!';
-                    result.type = 'error';
-                    result.message = result[0].Message;
-                    this.showMessageForResult(this.messagesService, result, result[0].Message);
-                }
+                result.title = 'Success!';
+                this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
                 this.isDeleting = false;
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();
