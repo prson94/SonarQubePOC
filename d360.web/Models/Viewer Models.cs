@@ -179,7 +179,10 @@ namespace d360.web.Models
                         {
                             case "Boolean":
                                 value = form[ft.Name];
-                                value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
+                                if (string.IsNullOrEmpty(value))
+                                    value = null;
+                                else
+                                    value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
                                 break;
                             case "Html":
                                 value = Server != null ? Server.HtmlDecode(form[ft.Name]) : HttpUtility.HtmlDecode(form[ft.Name]);

@@ -30,6 +30,7 @@ import { AssetEditorModel, AssetTypeClass } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
 import { Subject } from 'rxjs';
+import { Value } from '../../../models/settings.model';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -519,7 +520,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (Array.isArray(this.form.value[p])) {
                     values[p] = this.form.value[p].join();
                 } else {
-                    values[p] = this.form.value[p];
+                    if (this.form.value[p] === undefined && this.fields.filter(x => x.FieldName == p && x.FieldType == 'Boolean').length > 0)
+                        values[p] = null;
+                    else
+                        values[p] = this.form.value[p];
                 }
             }
         }
