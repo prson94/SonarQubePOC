@@ -117,6 +117,8 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
         if (this.conditions.length == 0) {
             this.tryAddNewCondition();
+        } else {
+            this.onChange.emit({ event: 'Value changed', value: this.conditions });
         }
 
         window.setTimeout(() => {

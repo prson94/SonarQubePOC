@@ -1,6 +1,6 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, OnChanges, SimpleChanges, HostListener, ChangeDetectorRef, ViewChildren, QueryList, ChangeDetectionStrategy } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, Condition, MetricAssetVersionConditionItemViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel, MetricRuleResultOperation, MetricMatchType } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
@@ -116,10 +116,17 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
     private fields: any[] = [];
 
+    saveLabel: string = "Create";
+    closeLabel: string = "Cancel";
+    originalModel: MetricAssetViewModel;
+    originalConditions: FieldCondition[];
+    originalEffectiveDate: Date;
+    hasModelChanged: boolean = false;
+
     delayedReload = _.debounce(() => {
         this.load();
     }, 200);
-
+    
     constructor(private metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
         private settingsService: CompanySettingsService,
@@ -188,11 +195,29 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.loadFieldData();
     }
 
+    ngAfterViewInit() {
+        this.originalConditions = _.cloneDeep(this.conditions)
+        this.originalModel = _.cloneDeep(this.model);
+        this.originalEffectiveDate = new Date(this.model.EffectiveDate.toString());
+        if (this.uid) {
+            this.metricForm?.valueChanges.subscribe(() => {
+                setTimeout(() => {
+                    this.checkModelChanged();
+                })
+            });
+
+            this.cdRef.detectChanges();
+        } else {
+            this.hasModelChanged = true;
+        }
+    }
+
     updateFormValidity(event) {
         if (this.groups && this.groups.length > 0) {
             this.groups.forEach(x => { x.refreshBadgeCounts(); });
-        }
-        this.cdRef.markForCheck();
+        }        
+        this.checkModelChanged();
+        this.cdRef.markForCheck();        
     }
 
     loadFieldData() {
@@ -309,6 +334,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.currentEffectiveDate = null;
         if (this.uid) {
             this.verb = "Edit"
+            this.saveLabel = "Save Changes";
+            this.closeLabel = "Close";
             if (this.model.EffectiveDate !== null) {
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
@@ -721,4 +748,166 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             return null;
         };
     }
+
+    checkModelChanged() {
+        if (!this.model)
+            return false;
+
+        if (this.model.Name && this.originalModel.Name != this.model.Name
+            || (this.originalModel.Description && this.originalModel.Description != this.model.Description)
+            || (!this.originalModel.Description && !(!this.model.Description || this.model.Description == null || this.model.Description.trim() == ""))
+            || (this.displayWeight && (this.originalModel.Weight * 100) != this.displayWeight)
+            || (this.displayEffectiveDate && this.getFormattedEffectiveDate(this.originalEffectiveDate).getTime() !== this.getFormattedEffectiveDate(this.displayEffectiveDate).getTime())
+            || (this.originalModel.IsGroup != this.model.IsGroup)
+            || this.haveConditionsChanged(this.conditions.filter(x => x.field), this.originalConditions)
+            || this.havePassTestCriteriaChanged(this.model.Definition, this.originalModel.Definition)) {
+            this.hasModelChanged = true;
+        } else {
+            this.hasModelChanged = false;
+            this.validateConditions();
+        }
+        
+        if (this.verb == "Edit") {
+            if (this.hasModelChanged) {
+                this.closeLabel = "Discard Changes"
+            } else {
+                this.closeLabel = "Close"
+            }
+        }
+        this.cdRef.markForCheck();
+    }
+
+    getFormattedEffectiveDate(effectiveDate: Date): Date {
+        let d = new Date(effectiveDate);
+        let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+        condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
+        return condate
+    }
+
+    haveConditionsChanged(updated: FieldCondition[], original: FieldCondition[]) {        
+
+        if (updated.length != original.length || !original.every((item) => {
+            return updated.findIndex(x => x.field == item.field
+                && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
+                && x.value.toString() == item.value.toString()) > -1
+        })) {
+            return true;
+        }
+
+        if (this.originalModel.ConditionGroups && this.originalModel.ConditionGroups.length > 0) {
+            if (this.matchType && this.originalModel.ConditionGroups[0].MatchType.toString() !== this.matchType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    havePassTestCriteriaChanged(updated: MetricAssetDefinitionViewModel, original: MetricAssetDefinitionViewModel): boolean {
+            if ((updated.DataQuality && !original.DataQuality) || (!updated.DataQuality && original.DataQuality)) {
+                return true;
+            }
+            
+            if (updated.DataQuality) {
+                if (updated.DataQuality.ResultPathUid != original.DataQuality.ResultPathUid
+                    || !(updated.DataQuality.ResultOperation == original.DataQuality.ResultOperation || MetricRuleResultOperation[updated.DataQuality.ResultOperation] != <any>original.DataQuality.ResultOperation)
+                    || !(updated.DataQuality.FilterMatchType == original.DataQuality.FilterMatchType || MetricMatchType[updated.DataQuality.FilterMatchType] != <any>original.DataQuality.FilterMatchType)
+                    || updated.DataQuality.Filters.length != original.DataQuality.Filters.length
+                    || !original.DataQuality.Filters.every((item) => {
+                        return updated.DataQuality.Filters.findIndex(x => x.AssetTypeUid == item.AssetTypeUid
+                            && (x.Operator == item.Operator || Operator[x.Operator] == <any>item.Operator)
+                            && x.FieldTypeName == item.FieldTypeName
+                            && x.Values.every(v => item.Values.indexOf(v) > -1)) > -1
+                    })) {
+                    return true;
+                }                
+            }
+
+            if ((updated.Governance && !original.Governance) || (!updated.Governance && original.Governance)) {
+                return true;
+            }
+            if (updated.Governance) {                
+                if (!(updated.Governance.Check == original.Governance.Check || MetricGovernanceCheckType[updated.Governance.Check] == <any>original.Governance.Check)) {
+                    return true;
+                }                
+
+                //Field
+                if ((updated.Governance.Field && !original.Governance.Field)
+                    || (!updated.Governance.Field && original.Governance.Field))
+                {
+                    return true;
+                }
+
+                if (updated.Governance.Field && this.testFieldConditions[0] &&
+                    ((this.testFieldConditions[0].field != original.Governance.Field.FieldTypeName)
+                    || !(this.testFieldConditions[0].operator == original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] == <any>original.Governance.Field.Operator)
+                    || ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null }).every(v => original.Governance.Field.Values.indexOf(v) > -1)
+                )
+                ) {
+                    return true;
+                }
+
+                //External
+                if (
+                    (updated.Governance.External && !original.Governance.External)
+                    || (!updated.Governance.External && original.Governance.External)
+                ) {
+                    return true;
+                }
+                
+                if (updated.Governance.External &&
+                    (
+                    (updated.Governance.External.Instructions != original.Governance.External.Instructions)
+                    || !(updated.Governance.External.UpdateFrequency == original.Governance.External.UpdateFrequency || MetricUpdateFrequency[updated.Governance.External.UpdateFrequency] == <any>original.Governance.External.UpdateFrequency.toString())                        
+                    )                    
+                ) {
+                    return true;
+                }
+
+                //Owner/Responsibility
+                if ((updated.Governance.Owner && !original.Governance.Owner)
+                    || (!updated.Governance.Owner && original.Governance.Owner)) {
+                    return true;
+                }
+                if (updated.Governance.Owner &&
+                    (
+                    (updated.Governance.Owner.ResponsibilityTypeUid != original.Governance.Owner.ResponsibilityTypeUid)
+                    || !(updated.Governance.Owner.Operator == original.Governance.Owner.Operator || Operator[updated.Governance.Owner.Operator] == <any>original.Governance.Owner.Operator)
+                    )
+                ) {
+                    return true;
+                }
+
+                //Predicate
+                if ((updated.Governance.Predicate && !original.Governance.Predicate)
+                    || (!updated.Governance.Predicate && original.Governance.Predicate)) {
+                    return true;
+                }
+                if (updated.Governance.Predicate &&
+                    (
+                    (updated.Governance.Predicate.PredicateUid != original.Governance.Predicate.PredicateUid)
+                    || !(updated.Governance.Predicate.Operator == original.Governance.Predicate.Operator || Operator[updated.Governance.Predicate.Operator] == <any>original.Governance.Predicate.Operator)
+                    )
+                ) {
+                    return true;
+                }
+
+                //Relation
+                if ((updated.Governance.Relation && !original.Governance.Relation)
+                    || (!updated.Governance.Relation && original.Governance.Relation)) {
+                    return true;
+                }
+                if (updated.Governance.Relation &&
+                    (
+                    (updated.Governance.Relation.IntersectTypeUid != original.Governance.Relation.IntersectTypeUid)
+                    || !(updated.Governance.Relation.Operator == original.Governance.Relation.Operator || Operator[updated.Governance.Relation.Operator] == <any>original.Governance.Relation.Operator)
+                    || !updated.Governance.Relation.Values.every(v => original.Governance.Relation.Values.indexOf(v) > -1)
+                    )
+                ) {
+                    return true;
+                }
+        }            
+
+        return false;
+    }    
 };
