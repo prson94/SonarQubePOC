@@ -14,10 +14,7 @@ const routes: Routes = [
         children: [
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE, component: WorkflowRaiseIssueComponent
-            },   
-            {
-                path: ':workflowUid', component: WorkflowViewDetailsComponent
-            },
+            },  
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2 + '/:workflowTypeId/:version/:stepId/:fromMail', component: WorkflowNewDetailComponent
             }, 
@@ -26,9 +23,9 @@ const routes: Routes = [
             },            
             {
                 path: SiteUrlHelpers.SITE_URL_WORKFLOW_FORM + '/:workflowId/:stepId/:itemId', component: WorkflowFormComponent
-            },                   
+            }, 
             {
-                path: SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS + '/:workflowId', component: WorkflowViewDetailsComponent
+                path: SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS + '/:workflowInstance', component: WorkflowViewDetailsComponent
             },
         ]
     }
