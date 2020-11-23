@@ -1,9 +1,9 @@
 ﻿import {Input, Component, OnInit, OnDestroy} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
 import {BaseComponent} from '../../shared/base.component';
-import {ObjectStatisticsService} from '../../../services/object-statistics.service';
-import {ObjectStatistics, ObjectStatisticChildItem} from '../../../models/object-statistics.model';
-import {ObjectDetailService} from '../../../services/object-detail.service';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { ObjectStatisticChildItem } from '../../../models/object-statistics.model';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
@@ -26,7 +26,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                                 <div class="col s2 count center">{{child.Count}}</div>
                             </div>
                         </div>
-                        <div class="col l9 s12">
+                        <div class="col l9 s12" *ngIf="parentUid">
                             <d3s-artifact-item-child-grid [parentUid]="parentUid" [displayName]="displayName"
                                                           [artifactTypeId]="selected?.TypeID"></d3s-artifact-item-child-grid>
                         </div>
