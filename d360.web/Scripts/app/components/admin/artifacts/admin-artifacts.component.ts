@@ -213,14 +213,14 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
     private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
         var match = false;
-        nodes.forEach((node) => {            
+        nodes.forEach((node) => {
             fields.forEach(field => { if (node.data[field].includes(search)) { match = true } }); //check each of the global filterfields for filter value            
             if (node.children && node.children.length > 0) {
                 node.expanded = this.expandChildNodes(node.children, fields, search);   //expand the node if any child matches.          
                 if (node.expanded) {
                     match = true; // if current node doesn't match but a child does.
                 }
-            }      
+            }
         }
         );
         return match;

@@ -2861,7 +2861,7 @@ from	IntersectType I
                                         isnull(HierarchyLevel,0) as Level,
                                         ItemNumber 
                                         from api.ExecutionDeletedAssetType 
-                                        where executionid = @executionUid", new { executionUid = execution.ExecutionID }).ToList();
+                                        where executionid = @executionUid and success is null", new { executionUid = execution.ExecutionID }).ToList();
 
                                 //Delete hierarchy by hierarchy and start from highest level (children)
                                 var hierarchies = assetTypes.GroupBy(x => x.ItemNumber).ToList();
@@ -3055,7 +3055,6 @@ from	IntersectType I
                                 results = Connection.Query<DatabaseBulkAssetTypeResult>(@"select	*
                                     	                            from	api.ExecutionDeletedAssetType
                                     	                            where	ExecutionID = @executionUid 
-                                    			                            and ItemNumber = @itemNumber
                                     			                            and FromHierarchy = 0;", new { executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, commandTimeout: timeout).ToList();
 
 
@@ -3485,7 +3484,7 @@ from	IntersectType I
 						0 as [Level]
 				from	api.ExecutionDeletedAssetType D
 						inner join AssetType A on D.ExecutionID = @executionUid and A.ID = D.AssetTypeID
-				where	D.AssetTypeID is not null
+				where	D.AssetTypeID is not null and D.Success is null
 				union all
 				select	P.ExecutionID,
 						P.ItemNumber,
@@ -3515,7 +3514,7 @@ from	IntersectType I
 				from    h 
 				where   IntersectTypeID is not null 
 						and [Level] > 0 
-						and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @executionUid);
+						and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @executionUid and Success is null);
 			
 			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
 				select	'ObjectIndex', 
