@@ -244,9 +244,9 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                 case 'Relation':
                     let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
                         ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
-                    let existsOperator = "is used";
+                    let existsOperator = "exists";
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
-                        existsOperator = "is not used";
+                        existsOperator = "does not exist";
                     }
 
                     let isSubject = (relationshipType.Subject.Uid.toLowerCase() === this.AssetType.Uid.toLowerCase());
