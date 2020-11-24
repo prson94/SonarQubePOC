@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="View.dbo.FollowDetail-v5">
+  <changeSet author="bquinlivan" id="View.dbo.FollowDetail-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -141,7 +141,45 @@ create or alter view [dbo].[FollowDetail]
 					inner join PredicateIntersect I on I.Object = 'Taxonomy' and I.ObjectID = T.ObjectID and I.PredicateType = 4  
 					inner join TaxonomyParents  p on I.Subject = 'Taxonomy' and I.SubjectID = p.ID  
 			where 	T.Object = 'Taxonomy'  
-		) 
+		),
+		TaxonomyTypes as (
+			select 	ID as FollowID,  
+					ObjectType as [Object],  
+					ObjectID,  
+					ResourceID,  
+					1 as HardFollow  
+			from 	Follow  
+			where 	ObjectType = 'TaxonomyType' 
+					and FollowTypeID = 3  
+			union all  
+			select 	P.ID as FollowID,  
+					cast('Taxonomy' as varchar(50)) as [Object],  
+					A.ObjectID as ObjectID,
+					P.ResourceID,
+					0 as HardFollow
+			from 	Asset A
+					inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Taxonomy'
+					inner join Follow P on P.ObjectType = 'TaxonomyType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3
+		),
+		RuleTypes as (
+			select 	ID as FollowID,  
+					ObjectType as [Object],  
+					ObjectID,  
+					ResourceID,  
+					1 as HardFollow  
+			from 	Follow  
+			where 	ObjectType = 'RuleType' 
+					and FollowTypeID = 3  
+			union all  
+			select 	P.ID as FollowID,  
+					cast('Rule' as varchar(50)) as [Object],  
+					A.ObjectID as ObjectID,
+					P.ResourceID,
+					0 as HardFollow
+			from 	Asset A
+					inner join AssetType ATT on ATT.ID = A.AssetTypeID and A.[Object] = 'Rule'
+					inner join Follow P on P.ObjectType = 'RuleType' and P.ObjectID = ATT.ObjectID and P.FollowTypeID = 3
+		)
 	  
 		select	F.FollowID,  
 				F.ResourceID,  
@@ -223,7 +261,21 @@ create or alter view [dbo].[FollowDetail]
 						ID as ObjectID,   
 						ResourceID,   
 						HardFollow   
-				from 	TaxonomyParents  
+				from 	TaxonomyParents 
+				union  
+				select 	FollowID,  
+						[Object],   
+						ObjectID,   
+						ResourceID,   
+						HardFollow   
+				from 	TaxonomyTypes
+				union  
+				select 	FollowID,  
+						[Object],   
+						ObjectID,   
+						ResourceID,   
+						HardFollow   
+				from 	RuleTypes				
 				union  
 				select 	ID as FollowID,  
 						ObjectType as [Object],   
@@ -470,7 +522,7 @@ create or alter view [dbo].[FollowDetail]
 		) F  
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
 		inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
-		inner join Asset A on A.Object = F.Object and A.ObjectID = F.ObjectID
+		left join Asset A on A.Object = F.Object and A.ObjectID = F.ObjectID
 		outer apply (
 			select	S.Value
 			from	metrics.Score S
