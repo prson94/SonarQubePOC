@@ -837,11 +837,12 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 {
                     return true;
                 }
-
+                
                 if (updated.Governance.Field && this.testFieldConditions[0] &&
                     ((this.testFieldConditions[0].field != original.Governance.Field.FieldTypeName)
                     || !(this.testFieldConditions[0].operator == original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] == <any>original.Governance.Field.Operator)
-                    || ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null }).every(v => original.Governance.Field.Values.indexOf(v) > -1)
+                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined }).length
+                    || (original.Governance.Field.Values.length>0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined }).every(v => original.Governance.Field.Values.indexOf(v) > -1))
                 )
                 ) {
                     return true;
