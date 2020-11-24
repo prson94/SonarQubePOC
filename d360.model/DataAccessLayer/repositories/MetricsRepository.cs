@@ -1603,7 +1603,7 @@ from    metrics.Allocation  ma
 														CI.ConditionIntersectTypeID,
                                                         IT.Uid as ConditionIntersectTypeUid,
 														CI.Operator,
-														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
+														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
                                                 from	metrics.AssetVersionConditionItem CI
                                                         left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
                                                         left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
