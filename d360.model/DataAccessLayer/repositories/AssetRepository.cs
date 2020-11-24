@@ -978,9 +978,7 @@ namespace d360.model.DataAccessLayer
         public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
-
-            dbArgs.Add("@assetTypeId", assetType.ID);
-
+                        
             int pageSize = 5000;
             int pageNum = 0;
             bool includeTotal = true;
@@ -1009,31 +1007,27 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-
-            dbArgs.Add("@assetTypeUid", assetType.uid);
+            dbArgs.Add("@assetTypeId", assetType.ID);
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
-
-            var countSql = $@"select count(*) 
-                from	graph.AssetNodeKeyPath P
-		                inner join Asset A on A.ID = P.ID
-		                inner join AssetType T on T.id = A.AssetTypeID
-                where T.uid = @assetTypeUid";
-
+            dbArgs.Add("@offset", (pageSize * pageNum));
+                                    
             var sql = $@"
                 select	P.[uid],
 		                P.[keypath] as [path]  
-                from	graph.AssetNodeKeyPath P
-		                inner join Asset A on A.ID = P.ID
-		                inner join AssetType T on T.id = A.AssetTypeID
-                where T.uid = @assetTypeUid
-                order by A.ID
-                OFFSET @pageSize*@pageNum ROWS FETCH NEXT @pageSize ROWS ONLY";
-
+                from	graph.AssetNodeKeyPath P		                
+                where P.assetTypeId = @assetTypeId
+                order by P.ID
+                OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            
             int? total = null;
             if (includeTotal)
             {
-                total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs, ApiTimeout)).FirstOrDefault();
+                var countSql = $@"select count(1) 
+                from	graph.AssetNodeKeyPath P		                
+                where P.assetTypeId = @assetTypeId";
+
+                total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
             }
 
             var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs, ApiTimeout);
