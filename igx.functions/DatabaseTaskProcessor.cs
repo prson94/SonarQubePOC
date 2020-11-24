@@ -339,6 +339,24 @@ from    [queue].[Task] T
                                                         addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update settings", q.Custom, q.AssetID);
 
                                                         break;
+                                                    case "QueueRebuild":
+                                                        if (!string.IsNullOrEmpty(q.Custom))
+                                                        {
+                                                            var queue = new AzureQueueSource();
+                                                            switch (q.Custom)
+                                                            {
+                                                                case "AssetGraph":
+                                                                    queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = c.CompanyID });
+                                                                    break;
+                                                                case "DisplayValue":
+                                                                    queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = c.CompanyID, RebuildAll = true });
+                                                                    break;
+                                                                case "SearchIndex":
+                                                                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
+                                                                    break;
+                                                            }
+                                                        }
+                                                        break;
                                                 }
 
 
