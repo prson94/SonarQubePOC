@@ -76,7 +76,8 @@ export class WorkflowFieldsService {
     }
 
     setAvailableScoreTypes(scoreTypes: any[]) {
-        this.scoreTypes = scoreTypes;
+        this.contextualFields = this.contextualFields.filter(c => !c.value.startsWith('Contextual|Score|'));
+        this.scoreTypes = scoreTypes.filter(s => s.value != null);
             this.scoreTypes.forEach(s => {
                 this.contextualFields.push({
                     value: 'Contextual|Score|' + s.value,
@@ -201,6 +202,5 @@ export class WorkflowFieldsService {
 
     getContextualFieldsForType() {
         return this.contextualFields;
-
     }
 }
