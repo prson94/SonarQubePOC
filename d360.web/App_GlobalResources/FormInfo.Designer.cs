@@ -898,6 +898,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Field type in When filters for this asset type..
+        /// </summary>
+        public static string Responsibility_Then_InvalidFieldType {
+            get {
+                return ResourceManager.GetString("Responsibility_Then_InvalidFieldType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?.
         /// </summary>
         public static string SynonymType_Remove {

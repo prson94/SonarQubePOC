@@ -175,6 +175,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         this.responsibilityTypeService.getRelationRuleFormData(this.model.Object, this.model.ObjectID)
             .subscribe(d => {
+                this.model.StructuredDefinition.When = [];
                 this.whenFieldTypes = d.FieldTypes;
                 this.whenIntersectTypes = d.IntersectTypes;
                 this.whenFieldTypes.unshift({ label: 'Choose...', value: null, type: null, isLookup: false, values: [] });
