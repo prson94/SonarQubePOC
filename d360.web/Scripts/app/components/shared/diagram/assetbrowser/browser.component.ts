@@ -1888,8 +1888,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return brush.isDark() ? '#ffffff' : '#000000';
     }
 
-    private template_AncestorNode(): go.Group {
+    private objectsWidthMap: any;
 
+    private template_AncestorNode(): go.Group {
+        console.log(this.diagram);
         return this.g(
             go.Group,
             "Auto",
@@ -1977,7 +1979,44 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             toolTip: this.template_Tooltip()
                         },
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                        new go.Binding("text", "text").makeTwoWay()
+                        new go.Binding("text", "text").makeTwoWay(),
+                        new go.Binding("width", "", function (obj: go.GraphObject) {
+                            var dia = obj.diagram;
+                            var topLevel = obj.part.findTopLevelPart();
+
+                            if (topLevel['__gohashid'] == obj.part['__gohashid'])
+                                return null;
+
+                            var key = obj.part.data['hierarchyKey'].toString();
+                            if (!dia['objectsWidthMap']) {
+                                dia['objectsWidthMap'] = {};
+                            }
+
+                            if (!dia['objectsWidthMap'][key]) {
+                                var parentWidth = 0;
+                                var parts = dia
+                                    .findObjectsAt(new go.Point(obj.part.getDocumentBounds().left, obj.part.getDocumentBounds().top))
+                                    .filter(x => x.part.data['hierarchyKey'] == key)
+                                    .filter(x => x.part['__gohashid'] != topLevel['__gohashid']);
+
+                                parts.each(go => {
+                                    console.log(go.part.data['text'], go.part.getDocumentBounds());
+                                    if (go.part.getDocumentBounds().width > parentWidth) {
+                                        parentWidth = go.part.getDocumentBounds().width;
+                                    }
+                                })
+                                if (parentWidth) {
+                                    dia['objectsWidthMap'][key] = { width: parentWidth };
+                                }
+                            }
+
+                            if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
+                                console.log(dia['objectsWidthMap'][key]['width']);
+                                return dia['objectsWidthMap'][key]['width'];
+                            }
+
+                            return null;
+                        }).ofObject()
                     )
                 ),  // end Horizontal Panel
                 this.g(
