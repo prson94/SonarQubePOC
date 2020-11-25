@@ -386,7 +386,7 @@ namespace d360.web.Controllers
                             {
                                 // The company resource account is not active, so ensure that user is NOT able to log in.
                                 resource = null;
-                                //if you change headers it throws and error after the redirect so dont continue rest return
+                                //if you change headers it throws and error after the redirect so dont continue just return
                                 return Redirect("/noaccess"); 
                             }
                         }
