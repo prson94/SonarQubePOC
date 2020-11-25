@@ -198,7 +198,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     ngAfterViewInit() {
         this.originalConditions = _.cloneDeep(this.conditions)
         this.originalModel = _.cloneDeep(this.model);
-        this.originalEffectiveDate = new Date(this.model.EffectiveDate.toString());
+        this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (this.uid) {
             this.metricForm?.valueChanges.subscribe(() => {
                 setTimeout(() => {
