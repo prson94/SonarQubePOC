@@ -21,7 +21,11 @@
             min-width: 200px;
             font-family: monospace
         }
-
+        .flexccontainer {
+            display: flex;
+            min-width: 500px;
+            padding: 10px;
+        }
         `
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
