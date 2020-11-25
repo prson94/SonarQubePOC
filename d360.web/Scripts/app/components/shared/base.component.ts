@@ -396,11 +396,13 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.commentsSidebar);
 
-                this.actionsSidebar = new SecondaryNavItem(
-                    'Actions', 'Actions', null,
-                    `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
-                );
-                this.secondaryNavService.showItem(this.actionsSidebar);
+                if (CompanySettings.DisableIssueManagement != 'true') {
+                    this.actionsSidebar = new SecondaryNavItem(
+                        'Actions', 'Actions', null,
+                        `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
+                    );
+                    this.secondaryNavService.showItem(this.actionsSidebar);
+                }
             }
 
             if (this.objectType == 'TaskType') {
