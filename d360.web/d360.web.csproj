@@ -776,6 +776,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.loading.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.accordion.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.number-field.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.search-field.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.tooltip.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.color-picker.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.autocomplete.component.html" />
@@ -829,10 +830,12 @@
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.less" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.less" />
+    <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.less" />
     <None Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.less" />
     <Content Include="Scripts\app\components\shared\controls\number-picker\number-input.component.html" />
     <Content Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.html" />
     <Content Include="Scripts\app\components\shared\controls\property-group\property-group.component.html" />
+    <Content Include="Scripts\app\components\shared\controls\search-field\search-field.component.html" />
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -962,6 +965,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.accordion.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.number-field.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.autocomplete.component.ts" />
@@ -995,6 +999,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\popup-menu\popup-menu.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />

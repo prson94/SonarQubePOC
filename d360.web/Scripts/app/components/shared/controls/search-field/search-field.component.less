@@ -1,0 +1,47 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import "../../../../../../Content/styles/_Variables.less";
+
+.ig-search-field {
+    position: relative;
+    display: inline-block;
+    min-width:200px;
+    flex-grow:1;
+
+    .ig-input {
+        width: 100%;
+    }
+}
+
+.ig-search-field-button {
+    border: none;
+    color: #202020;
+    background: rgba(0, 0, 0, 0.07);
+    border-radius: 2px;
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    height: 24px;
+    width: 24px;
+
+    &.clear {
+        right: 32px;
+    }
+
+    &.keypress, &.keypress:hover, &.keypress:active {
+        background: none;
+    }
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.14);
+    }
+
+    &:active {
+        background: rgba(0, 0, 0, 0.21);
+    }
+
+    &:disabled, &[disabled] {
+        color: rgb(32, 32, 32);
+        background: rgba(0, 0, 0, 0.07);
+        opacity: 0.5;
+    }
+}

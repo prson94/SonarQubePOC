@@ -48,6 +48,7 @@ export class GalleryComponent implements OnInit {
         { label: 'Property Group', key: 'propery-group', type: 'Form' },
         { label: 'Radio Button', key: 'radio-button', type: 'Form' },
         { label: 'Field Condition Grid', key: 'field-condition-grid', type: 'Govern Components' },
+        { label: 'Search Field', key: 'search-field', type: 'Govern Components'},
     ];
 
     categories: any[] = [];

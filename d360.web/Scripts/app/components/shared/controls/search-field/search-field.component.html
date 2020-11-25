@@ -1,0 +1,34 @@
+﻿<span class="ig-search-field">
+    <input igInput #iginput
+        [tabindex]="tabindex"
+        type="text" autocomplete="off" placeholder="{{placeholder}}"
+        [disabled]="disabled"
+        [ngModel]="value"
+        (ngModelChange)="writeValue($event)"
+        (keydown)="onInputKey($event)"
+        (keyup)="onInputKey($event)"
+        (blur)="onModelTouched()"
+        (input)="onModelChange($event.target.value)">
+    <button *ngIf="hasValue"
+            class="ig-search-field-button clear"
+            [disabled]="disabled"
+            tabindex="-1"
+            type="button"
+            (click)="clearValue()"
+            pTooltip="Clear Search"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip"
+            ><span aria-hidden="true" class="fa fa-times"></span>
+    </button>
+    <button
+            class="ig-search-field-button"
+            [ngClass]="{'keypress':isKeypress()}"
+            [disabled]="disabled"
+            tabindex="-1"
+            type="button"
+            (click)="clicksearch()"
+            pTooltip="Search"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip"><span aria-hidden="true" class="fa fa-search"></span>
+    </button>
+</span>
