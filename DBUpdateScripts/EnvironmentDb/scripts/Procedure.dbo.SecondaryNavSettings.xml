@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.dbo.SecondaryNavSettings-v4.1">
-    <comment>GOV-12825</comment>
+  <changeSet author="bquinlivan" id="Procedure.dbo.SecondaryNavSettings-v5">
+    <comment>GOV-12937</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -173,6 +173,15 @@ begin
 		if exists(select a.uid from Asset A 
 					inner join [Follow] F ON F.ObjectType = A.Object and F.ObjectID = A.ObjectID
 					where A.uid = @assetUid
+					union
+					select 
+						ast.uid
+					from 						
+						AssetType ast
+						inner join 
+						@assetData ad on ad.AssetTypeId = ast.ID
+						inner join 
+						Follow F on F.ObjectType = ast.Object and F.ObjectID = ast.ObjectID
 		)
 		begin
 			update @navItems set HasFollowers = 1
@@ -191,7 +200,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter procedure [dbo].[SecondaryNavSettings]
+CREATE OR ALTER   procedure [dbo].[SecondaryNavSettings]
 	@uid uniqueidentifier,
 	@assetTypeUid uniqueidentifier,
 	@resourceId int,
@@ -323,7 +332,16 @@ begin
 		if exists(select a.uid from Asset A 
 					inner join AssetType T on T.ID = A.AssetTypeID
 					inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
-					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1
+					where A.uid = @assetUid
+		)
+		begin
+			update @navItems set HasWorkflow = 1
+		end
+
+		--has actions on this asset also show the workflow tab
+		if exists(select a.uid from Asset A 
+					inner join dbo.[issue] I on I.Object = A.Object and I.ObjectID = A.ObjectID
 					where A.uid = @assetUid
 		)
 		begin
