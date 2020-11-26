@@ -1888,10 +1888,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return brush.isDark() ? '#ffffff' : '#000000';
     }
 
-    private objectsWidthMap: any;
-
     private template_AncestorNode(): go.Group {
-        console.log(this.diagram);
         return this.g(
             go.Group,
             "Auto",
@@ -1996,13 +1993,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 var parentWidth = 0;
                                 var parts = dia
                                     .findObjectsAt(new go.Point(obj.part.getDocumentBounds().left, obj.part.getDocumentBounds().top))
-                                    .filter(x => x.part.data['hierarchyKey'] == key)
-                                    .filter(x => x.part['__gohashid'] != topLevel['__gohashid']);
+                                    .filter(x => x.part.data['hierarchyKey'] == key);
 
                                 parts.each(go => {
-                                    console.log(go.part.data['text'], go.part.getDocumentBounds());
                                     if (go.part.getDocumentBounds().width > parentWidth) {
-                                        parentWidth = go.part.getDocumentBounds().width;
+                                        var resize = 0;
+                                        switch (go.part.data['template']) {
+                                            case 'PortGroup':
+                                                resize = 55;
+                                                break;
+                                            case 'FocalPortGroup':
+                                                resize = 100;
+                                                break;
+                                            default:
+                                                resize = 0;
+                                        }
+
+                                        parentWidth = go.part.getDocumentBounds().width - resize;
                                     }
                                 })
                                 if (parentWidth) {
@@ -2011,7 +2018,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
 
                             if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
-                                console.log(dia['objectsWidthMap'][key]['width']);
                                 return dia['objectsWidthMap'][key]['width'];
                             }
 
