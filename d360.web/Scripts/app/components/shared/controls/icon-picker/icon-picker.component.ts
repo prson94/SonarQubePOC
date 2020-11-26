@@ -29,6 +29,7 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     @Input() ngModel: string;
     @Input() tabindex: number = 0;
     @Input() disabled: boolean = false;
+    @Input() showGovIcons : boolean = false;
     @Input() required;
     @Input() style: any;
 
@@ -47,10 +48,11 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
 
     ngOnInit() {
         this.isRequired = this.required !== undefined;
-
         this.iconService.getIconProperties().subscribe(result => {
             this.iconService.getIconImages().subscribe(images => {
-                result = [...result, ...images];
+                if (this.showGovIcons)
+                    result = [...result, ...images];
+
                 result.forEach(i => {
                     let index = this.categories.findIndex(x => x.label == i.categories[0]);
                     if (!i.img) {
