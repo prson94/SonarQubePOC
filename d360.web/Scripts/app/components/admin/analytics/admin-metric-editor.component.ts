@@ -667,6 +667,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         break;
                 }
 
+                switch (<any>c.operator) {
+                    case Operator.Populated:
+                    case Operator.NotPopulated:
+                    case Operator.IsTrue:
+                    case Operator.IsFalse:
+                    case "Populated":
+                    case "NotPopulated":
+                    case "IsTrue":
+                    case "IsFalse":
+                        fieldCondition.Values = [];
+                        break;
+                }
+
                 if (c['uid']) {
                     fieldCondition.Uid = c['uid'];
                 }
