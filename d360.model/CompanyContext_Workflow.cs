@@ -475,6 +475,26 @@ namespace d360.model
                             }
                         }
                         break;
+                    case "RULETYPE":
+                        var rules = Query<dynamic>(sql, new { obj = "Rule", id = registration.ObjectID }).ToList();
+                        foreach (var rule in rules)
+                        {
+                            if (await CreateWorkflowItem(registration.TypeID,
+                                    new EventObjectInfo
+                                    {
+                                        Object = core.SystemObjects.Rule,
+                                        ObjectID = rule.ID,
+                                        ObjectType = core.SystemObjects.RuleType,
+                                        ObjectTypeID = registration.ObjectID
+                                    },
+                                    registration,
+                                    0))
+                            {
+                                matchingItems++;
+                                items.Add(rule.DisplayValue);
+                            }
+                        }
+                        break;
                     case "TAXONOMYTYPE":
 
                         var taxonomies = Query<dynamic>(sql, new { obj = "Taxonomy", id = registration.ObjectID }).ToList();

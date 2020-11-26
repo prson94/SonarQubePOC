@@ -1367,7 +1367,8 @@ order by wi.StartedOn desc";
                 case ChangeType.Schedule:
                     types = types.Where(t => t.type == "ArtifactType" 
                     || t.type == "TaxonomyType" 
-                    || t.type == "IssueType")
+                    || t.type == "IssueType"
+                    || t.type == "RuleType")
                         .OrderBy(t => t.name)
                         .ToList();
                     break;
