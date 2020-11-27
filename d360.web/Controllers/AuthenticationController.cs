@@ -386,9 +386,8 @@ namespace d360.web.Controllers
                             {
                                 // The company resource account is not active, so ensure that user is NOT able to log in.
                                 resource = null;
-                                //return Content("You do not have a valid account for this Govern environment.");
-                                Response.Redirect("/noaccess");
-                                //Response.Redirect("Error");
+                                //if you change headers it throws and error after the redirect so dont continue just return
+                                return Redirect("/noaccess"); 
                             }
                         }
 
