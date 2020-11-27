@@ -29,4 +29,26 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapGraph-v2">
+  <comment>GOV-12928</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph')
+			BEGIN
+				exec sp_rename 'dbo.MapGraph', 'MapGraph_backup';
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph_backup')
+			BEGIN
+				exec sp_rename 'dbo.MapGraph_backup', 'MapGraph'
+			END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
