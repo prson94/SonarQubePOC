@@ -70,4 +70,5 @@
   <include file="scripts/GOV-11888.xml"/>  <!-- Add CORS allowed origins company setting -->
   <include file="scripts/GOV-12607.xml"/>  <!-- Rename fusion and event tables in plugin-->
   <include file="scripts/GOV-6448.xml"/>  <!-- Drop ResourceType Table and ResourceTypeId column from Resource.-->
+  <include file="scripts/GOV-12608.xml"/>  <!-- Drop fusion and event tables in plugin rename in GOV-12607-->
 </databaseChangeLog>
