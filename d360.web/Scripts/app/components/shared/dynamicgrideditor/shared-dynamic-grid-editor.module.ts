@@ -36,6 +36,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
+import { SwitchModule } from '../controls/switch/switch';
 
 @NgModule({
     imports: [
@@ -56,6 +57,7 @@ import { IgColorPickerModule } from '../controls/color-picker/color-picker.modul
         TagUsageInfoModule,
         TagViewModule,
         IgColorPickerModule,
+        SwitchModule,
         //prime        
         CalendarModule,
         DropdownModule,

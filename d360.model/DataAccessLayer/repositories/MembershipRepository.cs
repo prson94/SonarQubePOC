@@ -670,7 +670,7 @@ namespace d360.model.DataAccessLayer
                         FieldValue,
                         FieldTypeID,
                         LookupValue,
-                        0 as Ignore
+                        null as Ignore
                         from #UserFields
                         ", transaction: trans);
                     }

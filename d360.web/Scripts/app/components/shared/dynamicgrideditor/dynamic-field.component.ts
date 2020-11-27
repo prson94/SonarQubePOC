@@ -276,7 +276,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.relationItemsLoading = false;
                 this.field.Items = res.results["items"];
                 this.selectRelationItems(this.relationItems);
-                
+
                 //When setting count we need to take into calculation items that are disregarded in cardinality check but still presend in already selected items
                 //Update page count only when filters changes
                 let hasCardinalityOne: boolean = res.results["hasCardinalityOne"] ? res.results["hasCardinalityOne"] : false;
@@ -793,5 +793,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.ref.markForCheck();
         }
     }
-
+    isRequired() {
+        return (this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true) || this.field.Required;
+    }
 }
