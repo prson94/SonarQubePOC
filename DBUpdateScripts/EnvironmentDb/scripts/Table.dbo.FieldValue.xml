@@ -5,69 +5,42 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FieldValue-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.FieldValue-v3">
+    <comment>GOV-12594</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue')
-BEGIN
-	CREATE TABLE [dbo].[FieldValue](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[ObjectType] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
-		[FieldTypeID] [int] NOT NULL,
-		[Value] [nvarchar](250) NULL,
-		CONSTRAINT [PK_FieldValue] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FieldValue_FieldType')
-BEGIN
-	ALTER TABLE [dbo].[FieldValue] WITH CHECK ADD CONSTRAINT [FK_FieldValue_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[FieldValue] CHECK CONSTRAINT [FK_FieldValue_FieldType]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldValue_ObjectTypeObjectIDFieldTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_FieldValue_ObjectTypeObjectIDFieldTypeID] ON [dbo].[FieldValue] ( [ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC )
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Table.dbo.FieldValue-v2">
-    <comment>GOV-12593</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-		IF EXISTS (select * 
-				   from sys.foreign_keys where name = 'FK_FieldValue_FieldType' 
-				   and object_name(parent_object_id) = 'FieldValue' and schema_name(schema_id) = 'dbo'
-				   )
-		BEGIN	
-			ALTER TABLE [dbo].[FieldValue] DROP CONSTRAINT [FK_FieldValue_FieldType]
-		END
-
-		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue')
-		BEGIN
-			exec sp_rename '[dbo].[FieldValue]', 'FieldValue_bak'
-		END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 		IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue_bak')
 		BEGIN
-			exec sp_rename '[dbo].[FieldValue_bak]', 'FieldValue'
+			drop table [dbo].[FieldValue_bak]
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldValue_bak')
+		BEGIN
+			CREATE TABLE [dbo].[FieldValue_bak](
+				[ID] [int] IDENTITY(1,1) NOT NULL,
+				[ObjectType] [varchar](50) NOT NULL,
+				[ObjectID] [int] NOT NULL,
+				[FieldTypeID] [int] NOT NULL,
+				[Value] [nvarchar](250) NULL,
+				CONSTRAINT [PK_FieldValue] PRIMARY KEY CLUSTERED ( [ID] ASC )
+			)
+		END
+
+		IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FieldValue_FieldType')
+		BEGIN
+			ALTER TABLE [dbo].[FieldValue_bak] WITH CHECK ADD CONSTRAINT [FK_FieldValue_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
+			ALTER TABLE [dbo].[FieldValue_bak] CHECK CONSTRAINT [FK_FieldValue_FieldType]
+		END
+
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldValue_ObjectTypeObjectIDFieldTypeID')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_FieldValue_ObjectTypeObjectIDFieldTypeID] ON [dbo].[FieldValue_bak] ( [ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC )
 		END
 		]]>
 	</rollback>
