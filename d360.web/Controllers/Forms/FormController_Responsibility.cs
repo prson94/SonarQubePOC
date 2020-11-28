@@ -38,7 +38,7 @@ namespace d360.web.Controllers
                     Selected = ($"R|{i.ID}" == selectedID)
                 })
                 .OrderBy(i => i.Text)
-                .ToList();            
+                .ToList();
 
             var groupSQL = $@"SELECT G.ID, G.Name, secasset.Uid FROM [Group] G INNER JOIN [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = g.id";
 
@@ -139,7 +139,7 @@ namespace d360.web.Controllers
                 {
                     dbArgs.Add("resourceId", -1);
                     dbArgs.Add("groupId", secAssetTypeid);
-                }                                               
+                }
 
                 querySql = @"
                     		select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
@@ -184,7 +184,7 @@ namespace d360.web.Controllers
         [HttpGet, Route("Responsibility"), NonNullableParameters]
         public JsonNetResult Responsibility(long assetID, long? overrideID, Guid? assetUid, Guid? responsibilityUid, Guid? ResourceUid)
         {
-            if(assetUid.HasValue)
+            if (assetUid.HasValue)
             {
                 assetID = Company.Assets.FirstOrDefault(a => a.uid == assetUid.Value).ID;
             }
@@ -202,7 +202,7 @@ namespace d360.web.Controllers
                     case "Organization":
                         resourceType = "O";
                         break;
-                }                    
+                }
                 overrideID = Company.ResponsibilityTypeRelationOverrideItems.FirstOrDefault(ro => ro.ResponsibilityTypeID == responsibilityID && ro.AssetID == assetID && ro.SecurityAssetID == Resource.ObjectID && ro.SecurityAsset == resourceType).ID;
             }
 
@@ -236,7 +236,7 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-        
+
 
         #endregion
 
@@ -389,7 +389,7 @@ namespace d360.web.Controllers
                 {
                     return jsonException($"Name provided must be less then 250 characters in length.", HttpStatusCode.BadRequest);
                 }
-                
+
                 model.UID = Guid.NewGuid();
                 Company.Add(model);
 
@@ -439,7 +439,7 @@ namespace d360.web.Controllers
                 fusionCaseSql = $@" when 'FusionAttributeType' then 'Fusion Attribute :: ' when 'FusionType' then 'Fusion Type :: ' ";
             }
 
-var AllocationOptions = Company.Query<dynamic>($@"
+            var AllocationOptions = Company.Query<dynamic>($@"
 select	cast(0 as bit) as IsUsed,
         A.ID, 
 		A.[Class],
@@ -766,25 +766,25 @@ order by	case
 
         [HttpGet, ActionName("ResponsibilityTypeRelationRuleRelationships_FormData"), Route("ResponsibilityTypeRelationRuleRelationships_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelationRuleRelationships_FormData(SystemObjects type, int id, int intersectTypeID)
-        {            
+        {
             string objType;
             string joinColumn;
-            
+
             var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
             if (intersectType.Object == type.ToString() && intersectType.ObjectID == id)
             {
-                objType = intersectType.Subject;            
+                objType = intersectType.Subject;
                 joinColumn = "Subject";
             }
             else
             {
-                objType = intersectType.Object;                
+                objType = intersectType.Object;
                 joinColumn = "Object";
             }
 
             if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
-            {                
+            {
                 return new JsonNetResult
                 {
                     Data = Company.Query<dynamic>($@"
@@ -798,7 +798,7 @@ order by	case
                     Formatting = Newtonsoft.Json.Formatting.None
                 };
             }
-            else if( (objType == SystemObjects.ArtifactType.ToString()) || (objType == SystemObjects.RuleType.ToString()))
+            else if ((objType == SystemObjects.ArtifactType.ToString()) || (objType == SystemObjects.RuleType.ToString()))
             {
                 return new JsonNetResult
                 {
@@ -810,13 +810,13 @@ order by	case
                             inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
                             inner join AssetDisplayValue DN on DN.AssetID = D.ID
                             order by DN.DisplayValuePrefix"),
-                            Formatting = Newtonsoft.Json.Formatting.None
+                    Formatting = Newtonsoft.Json.Formatting.None
                 };
             }
 
             return new JsonNetResult
-                {
-                    Data = Company.Query<dynamic>($@"
+            {
+                Data = Company.Query<dynamic>($@"
                         select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
 		                    DN.DisplayValue as label 
                         from	Asset D
@@ -824,8 +824,8 @@ order by	case
                             inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
                             cross apply dbo.GetAssetDisplayValueById(D.ID) DN
                             order by DN.DisplayValue"),
-                    Formatting = Newtonsoft.Json.Formatting.None
-            };                       
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
         }
 
         #endregion
@@ -842,7 +842,7 @@ order by	case
 
                 var model = Company.GetById<ResponsibilityTypeRelationRule>(id, i => i.ResponsibilityType);
                 if (model == null) throw new NotFoundException("responsibility type rule");
-                
+
                 var results = await ResponsibilityRepository.DeleteResponsibilityRules(model.ResponsibilityType.UID, new List<Guid>() { model.UID.Value });
                 if (results == null)
                 {
@@ -944,6 +944,18 @@ order by	case
                 if (existing.StructuredDefinition?.Then?.Conditions?.Where(x => x.Value == null).Count() > 0)
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_Filter_Value_Required);
+                }
+                if (model.StructuredDefinition?.When != null)
+                {
+                    var allowedFieldTypeIds = Company.FieldTypes.Where(x => x.Object == model.Object & x.ObjectID == model.ObjectID).Select(x => x.ID).ToList();
+
+                    foreach (var action in model.StructuredDefinition.When)
+                    {
+                        if (!allowedFieldTypeIds.Contains(action.FieldTypeID))
+                        {
+                            throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_InvalidFieldType);
+                        }
+                    }
                 }
 
                 var definitionIsDifferent = (previousDefinition != existing.Definition);

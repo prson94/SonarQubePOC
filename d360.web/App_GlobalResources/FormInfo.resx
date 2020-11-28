@@ -396,6 +396,9 @@
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
     <value>The Responsibility Then Filter value is required</value>
   </data>
+  <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
+    <value>Invalid Field type in When filters for this asset type.</value>
+  </data>
   <data name="SynonymType_Remove" xml:space="preserve">
     <value>Removing this synonym type will permanently remove all synonyms associated with this type.  You will not be able to undo this action. &lt;br/&gt;&lt;br/&gt;Do you want to proceed?</value>
   </data>
