@@ -238,6 +238,13 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 })).subscribe();
     }
 
+    changeTypeChanged(event) {
+        this.model.Event.ChangeType = event;
+        this.showAddCondition = false;
+        this.validate();
+        this.loadObjects();
+    }
+
     selectObjectType(e: any) {
         this.selectedObjectType = e;
         this.showAddCondition = false;
@@ -401,17 +408,27 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.errorMessage = "";
 
         if (this.model == null) return;
-
+        let hasConditionsError = false;
         this.conditions.forEach(c => {
             if (c['@ContextualFieldID'] != null && this.excludedContextualFields.indexOf(c['@ContextualFieldID']) != -1)
                 return;
 
             if (c['@FieldName'] == null && c['@ContextualFieldID'] == null) {
                 this.errorMessage = "One or more conditions is not valid.";
-                this.isValid = false;
+                hasConditionsError = true;
+                return;
+            }
+            if (this.model.Event.ChangeType != WorkflowChangeType.Update && c['@Operator'] == 'C') {
+                this.errorMessage = "The value changed operator for conditions may only be used with the Item Changed workflow change type.";
+                hasConditionsError = true;
                 return;
             }
         });
+
+        if (hasConditionsError) {
+            this.isValid = false;
+            return;
+        }
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
             if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
