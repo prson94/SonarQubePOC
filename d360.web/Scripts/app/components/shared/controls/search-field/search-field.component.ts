@@ -26,7 +26,6 @@ export const SEARCH_VALUE_ACCESSOR: any = {
 })
 
 export class SearchFieldComponent implements ControlValueAccessor, OnInit, OnDestroy {
-    @Input() ngModel: string;
     @Input() mode: string = 'Enter';
     @Input() placeholder: string = 'Search';
     @Input() tabindex: number = 0;

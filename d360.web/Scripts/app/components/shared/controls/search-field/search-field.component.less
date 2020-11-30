@@ -1,6 +1,9 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import "../../../../../../Content/styles/_Variables.less";
 
+@searchfield-iconsize: 24px;
+@searchfield-iconpadding: 4px;
+
 ig-search-field {
     display: inline-block;
     min-width: 200px;
@@ -11,27 +14,28 @@ ig-search-field {
     position: relative;
     display: inline-block;
     min-width: 200px;
-    width:100%;
+    width: 100%;
     flex-grow: 1;
 
     .ig-input {
         width: 100%;
+        padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
     }
 }
 
 .ig-search-field-button {
     border: none;
-    color: #202020;
-    background: rgba(0, 0, 0, 0.07);
+    color: @ig-black;
+    background: @ig-color-field-button;
     border-radius: 2px;
     position: absolute;
-    right: 4px;
-    top: 4px;
-    height: 24px;
-    width: 24px;
+    right: @searchfield-iconpadding;
+    top: @searchfield-iconpadding;
+    height: @searchfield-iconsize;
+    width: @searchfield-iconsize;
 
     &.clear {
-        right: 32px;
+        right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
     }
 
     &.keypress, &.keypress:hover, &.keypress:active {
@@ -39,16 +43,16 @@ ig-search-field {
     }
 
     &:hover {
-        background: rgba(0, 0, 0, 0.14);
+        background: @ig-color-field-button-hover;
     }
 
     &:active {
-        background: rgba(0, 0, 0, 0.21);
+        background: @ig-color-field-button-active;
     }
 
     &:disabled, &[disabled] {
-        color: rgb(32, 32, 32);
-        background: rgba(0, 0, 0, 0.07);
-        opacity: 0.5;
+        color: @ig-black;
+        background: @ig-color-field-button;
+        opacity: 0.33;
     }
 }
