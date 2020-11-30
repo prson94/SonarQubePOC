@@ -432,14 +432,18 @@ namespace d360.model.DataAccessLayer
                         }
                     }
 
-                    Guid currentUser = (Guid)user.uid;
-                    var isUser = this.AssetRepository.GetAssetByUID(currentUser);
-
-                    if (isUser == null || isUser.Object != "Resource")
+                    if(user.uid != null)
                     {
-                        success = false;
-                        messages.Add($"User for uid [{user.uid}] not found");
+                        Guid currentUser = (Guid)user.uid;
+                        var isUser = this.AssetRepository.GetAssetByUID(currentUser);
+
+                        if (isUser == null || isUser.Object != "Resource")
+                        {
+                            success = false;
+                            messages.Add($"User for uid [{user.uid}] not found");
+                        }
                     }
+                    
                     if (string.IsNullOrEmpty(user.FirstName))
                     {
                         success = false;
