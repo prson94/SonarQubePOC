@@ -182,6 +182,22 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             }
                         }
                         break;
+                    case 'Date':
+                        if (c.Values) {
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
+                            }
+                        }
+                        break;
+                    case 'DateTime':
+                        if (c.Values) {
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
+                            }
+                        }
+                        break;
                     default:
                         if (c.Values) {
                             if (c.Values[0]) {
