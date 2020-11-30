@@ -1889,7 +1889,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private template_AncestorNode(): go.Group {
-
         return this.g(
             go.Group,
             "Auto",
@@ -1977,7 +1976,53 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             toolTip: this.template_Tooltip()
                         },
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                        new go.Binding("text", "text").makeTwoWay()
+                        new go.Binding("text", "text").makeTwoWay(),
+                        new go.Binding("width", "", function (obj: go.GraphObject) {
+                            var dia = obj.diagram;
+                            var topLevel = obj.part.findTopLevelPart();
+
+                            if (topLevel['__gohashid'] == obj.part['__gohashid'])
+                                return null;
+
+                            var key = obj.part.data['hierarchyKey'].toString();
+                            if (!dia['objectsWidthMap']) {
+                                dia['objectsWidthMap'] = {};
+                            }
+
+                            if (!dia['objectsWidthMap'][key]) {
+                                var parentWidth = 0;
+                                var parts = dia
+                                    .findObjectsAt(new go.Point(obj.part.getDocumentBounds().left, obj.part.getDocumentBounds().top))
+                                    .filter(x => x.part.data['hierarchyKey'] == key);
+
+                                parts.each(go => {
+                                    if (go.part.getDocumentBounds().width > parentWidth) {
+                                        var resize = 0;
+                                        switch (go.part.data['template']) {
+                                            case 'PortGroup':
+                                                resize = 55;
+                                                break;
+                                            case 'FocalPortGroup':
+                                                resize = 100;
+                                                break;
+                                            default:
+                                                resize = 0;
+                                        }
+
+                                        parentWidth = go.part.getDocumentBounds().width - resize;
+                                    }
+                                })
+                                if (parentWidth) {
+                                    dia['objectsWidthMap'][key] = { width: parentWidth };
+                                }
+                            }
+
+                            if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
+                                return dia['objectsWidthMap'][key]['width'];
+                            }
+
+                            return null;
+                        }).ofObject()
                     )
                 ),  // end Horizontal Panel
                 this.g(
