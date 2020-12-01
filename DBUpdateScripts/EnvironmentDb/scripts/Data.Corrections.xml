@@ -1109,4 +1109,44 @@ where	V.Definition = '{}' or V.Definition is null or V.Definition = 'null';
 ]]>
     </sql>
 	</changeSet>
+
+	<changeSet author="TKlok" id="Data.Corrections.GOV-12440">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+BEGIN
+	DECLARE @fixedValue NVARCHAR(MAX)
+	DECLARE LinkCursor CURSOR
+	FOR SELECT f.Value
+	FROM field f INNER JOIN fieldtype ft ON ft.id = f.fieldtypeid
+	WHERE ft.type = 'Link'
+	AND (f.Value LIKE '% |%' OR f.Value LIKE '%| %')
+	FOR UPDATE OF Value, FormattedValue
+
+	OPEN LinkCursor
+
+	FETCH NEXT FROM LinkCursor INTO @fixedValue
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		WHILE (CHARINDEX(' |', @fixedValue) > 0)
+		BEGIN
+			SET @fixedValue = replace(@fixedValue, ' |', '|');
+		END
+		WHILE (CHARINDEX('| ', @fixedValue) > 0)
+		BEGIN
+			SET @fixedValue = replace(@fixedValue, '| ', '|');
+		END
+
+		UPDATE Field
+		SET Value = @fixedValue,
+			FormattedValue = [utility].[GetFormattedFieldLinkValue](@fixedValue)
+		WHERE CURRENT OF LinkCursor;
+		FETCH NEXT FROM LinkCursor INTO @fixedValue
+	END
+
+	CLOSE LinkCursor
+	DEALLOCATE LinkCursor
+END
+]]>
+    </sql>
+	</changeSet>
 </databaseChangeLog>

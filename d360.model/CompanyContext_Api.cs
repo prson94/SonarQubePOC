@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace d360.model
 {
@@ -1480,6 +1481,11 @@ where T.ExecutionId = @executionid;
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
+                                    }
+                                    if (success)
+                                    {
+                                        //Remove 'inner' trailing/leading spaces in link value
+                                        fieldValue = Regex.Replace(fieldValue, "(\\s*\\|\\s*)", "|");
                                     }
                                     break;
                                 case "Lookup":
