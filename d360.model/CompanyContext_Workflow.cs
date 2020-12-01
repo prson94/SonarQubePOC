@@ -1168,11 +1168,15 @@ namespace d360.model
                     var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
                     field.Value = string.Join(",", newValues);
+                    field.UpdatedOn = DateTime.UtcNow;
+                    field.UpdatedBy = CurrentResourceID;
                 }
                 else
                 {
                     //update
                     field.Value = val;
+                    field.UpdatedOn = DateTime.UtcNow;
+                    field.UpdatedBy = CurrentResourceID;
                 }
 
                 //Remove the field from db if field value is null or empty 
@@ -1280,12 +1284,12 @@ namespace d360.model
                      "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                      new
                      {
-                         Object = objectInfo.Object.ToString(),
-                         ObjectID = objectInfo.ObjectID,
+                         Object = (asset != null) ? asset.Object : objectInfo.Object.ToString(),
+                         ObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
                          ParentObject = objectInfo.Object.ToString(),
                          date = DateTime.UtcNow,
-                         ParentObjectID = objectInfo.ObjectID,
-                         ResourceID = 0,
+                         ParentObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
+                         ResourceID = CurrentResourceID,
                          op = "Updated" 
                      });
         }
