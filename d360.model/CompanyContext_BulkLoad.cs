@@ -858,7 +858,7 @@ from	[Load] L
                                 drop table if exists #AssetActiveKey;
 
                                 select		A.Uid,
-                                            utility.GetHash(cast(@atID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+                                            utility.GetHash(cast(@atID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
                                 into		#AssetActiveKey
                                 from		Asset A 
                                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = A.Object and I.ObjectID = A.ObjectID
@@ -890,7 +890,7 @@ from	[Load] L
                                 drop table if exists #AssetActiveKey;
 
                                 select		A.Uid,
-			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
                                 Into		#AssetActiveKey
                                 from		Asset A 
 			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
