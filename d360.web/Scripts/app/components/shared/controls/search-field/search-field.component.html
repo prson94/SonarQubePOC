@@ -1,14 +1,14 @@
 ﻿<span class="ig-search-field">
     <input igInput #iginput
-        [tabindex]="tabindex"
-        type="text" autocomplete="off" placeholder="{{placeholder}}"
-        [disabled]="disabled"
-        [ngModel]="value"
-        (ngModelChange)="writeValue($event)"
-        (keydown)="onInputKey($event)"
-        (keyup)="onInputKey($event)"
-        (blur)="onModelTouched()"
-        (input)="onModelChange($event.target.value)">
+           [tabindex]="tabindex"
+           type="text" autocomplete="off" placeholder="{{placeholder}}"
+           [disabled]="disabled"
+           [ngModel]="value"
+           (ngModelChange)="writeValue($event)"
+           (keydown)="onInputKey($event)"
+           (keyup)="onInputKey($event)"
+           (blur)="onModelTouched()"
+           (input)="onModelChange($event.target.value)">
     <button *ngIf="hasValue"
             class="ig-search-field-button clear"
             [disabled]="disabled"
@@ -17,10 +17,10 @@
             (click)="clearValue()"
             pTooltip="Clear Search"
             tooltipPosition="top"
-            tooltipStyleClass="ig-tooltip"
-            ><span aria-hidden="true" class="fa fa-times"></span>
+            tooltipStyleClass="ig-tooltip">
+        <span aria-hidden="true" class="fa fa-times"></span>
     </button>
-    <button
+    <button *ngIf="isEnter(); else keypressicon"
             class="ig-search-field-button"
             [ngClass]="{'keypress':isKeypress()}"
             [disabled]="disabled"
@@ -29,6 +29,10 @@
             (click)="clicksearch()"
             pTooltip="Search"
             tooltipPosition="top"
-            tooltipStyleClass="ig-tooltip"><span aria-hidden="true" class="fa fa-search"></span>
+            tooltipStyleClass="ig-tooltip">
+        <span aria-hidden="true" class="fa fa-search"></span>
     </button>
+    <ng-template #keypressicon>
+        <span class="ig-search-field-keypress"><span aria-hidden="true" class="fa fa-search"></span></span>
+    </ng-template>
 </span>

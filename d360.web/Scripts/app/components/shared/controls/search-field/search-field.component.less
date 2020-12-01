@@ -38,10 +38,6 @@ ig-search-field {
         right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
     }
 
-    &.keypress, &.keypress:hover, &.keypress:active {
-        background: none;
-    }
-
     &:hover {
         background: @ig-color-field-button-hover;
     }
@@ -55,4 +51,14 @@ ig-search-field {
         background: @ig-color-field-button;
         opacity: 0.33;
     }
+}
+.ig-search-field-keypress {
+    color: @ig-grey;
+    text-align: center;
+    position: absolute;
+    right: @searchfield-iconpadding;
+    top: @searchfield-iconpadding;
+    height: @searchfield-iconsize;
+    width: @searchfield-iconsize;
+    padding-top: 2px;
 }
