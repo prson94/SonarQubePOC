@@ -54,4 +54,23 @@ ALTER TABLE [dbo].[AssetResultEdge] ADD CONSTRAINT [EC_AssetResultEdge] CONNECTI
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.AssetResultEdge-v3">
+  <comment>GOV-12894</comment>
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF not EXISTS (select * from sys.indexes where name = 'IX_AssetResultEdge_From')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetResultEdge_From] ON [dbo].[AssetResultEdge] ($from_id, $to_id)
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetResultEdge_From')
+BEGIN
+	DROP INDEX [IX_AssetResultEdge_From] ON [dbo].[AssetResultEdge] 
+END
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
