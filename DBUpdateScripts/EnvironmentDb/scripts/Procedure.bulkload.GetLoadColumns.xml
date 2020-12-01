@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.bulkload.GetLoadColumns-v3">
-    <comment>GOV-8541</comment>
+  <changeSet author="kmcnamee" id="Procedure.bulkload.GetLoadColumns-v3.1">
+    <comment>GOV-8541,GOV-13040</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [bulkload].[GetLoadColumns]
+CREATE or ALTER procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,
@@ -294,10 +294,9 @@ begin
 			from		FieldType 
 			where		Object = @type 
 						and ObjectID = @id 
-						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship', 'Tag')
+						and Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
-						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON'))
-						and (@action = 'P' and [Type] <> 'Relationship')
+						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON'))						
 			order by	ColumnOrder;
 		
 			insert into @lookups (FieldTypeID, [Label])
@@ -664,6 +663,7 @@ begin
 						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship', 'Tag')
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
 						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON'))
+						and (@action = 'P' and [Type] <> 'Relationship')
 			order by	ColumnOrder;
 		
 			insert into @lookups (FieldTypeID, [Label])
@@ -741,7 +741,7 @@ begin
 	from	@fields F
 	for json path
 end
-		]]>
+]]>
 	</rollback>
   </changeSet>
 
