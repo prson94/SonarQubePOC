@@ -519,6 +519,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     } else {
                         this.model.FieldType.Type[this.currentType].FieldTypeName = null;
                     }
+
+                    if (!this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
+                        if (this.currentType == 'RefListRelationship') {
+                            if (this.lookups.Field_CardinalReferenceRelationships
+                                && this.lookups.Field_CardinalReferenceRelationships.length > 0) {
+                                this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_CardinalReferenceRelationships[0].value;
+                            }
+                        }
+
+                        if (this.currentType == 'FieldFromRelationship') {
+                            if (this.lookups.Field_FieldFromRelRelationships
+                                && this.lookups.Field_FieldFromRelRelationships.length > 0) {
+                                this.model.FieldType.Type[this.currentType].IntersectTypeUid = this.lookups.Field_FieldFromRelRelationships[0].value;
+                            }
+                        }
+                    }
                 }
             ));
     }
@@ -1004,7 +1020,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (fieldname == '*') {
             this.validationErrors.clear();
         }
-      
+
         if (fieldname == '*' || fieldname == "NameTaken") {
             this.setValidation('name_already_taken', 'API Name already in use.', (() => {
                 if (this.model.FieldType.Name && this.actionName == 'Add') {
