@@ -10,7 +10,6 @@ import { SwitchModule } from '../shared/controls/switch/switch'
 import { CoreModule } from '../shared/core.module';
 import { IgDateModule } from '../shared/controls/date/date';
 
-
 import { GalleryComponent } from './gallery.component';
 import { GalleryRoutingModule } from './gallery.routes';
 
@@ -61,6 +60,8 @@ import { GalleryRadioButtonComponent } from './gallery.radio-button.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { GalleryFieldConditionGridComponent } from './gallery.field-condition-grid.component';
 import { FieldConditionGridModule } from '../shared/controls/field-condition-grid/field-condition-grid.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
+import { GallerySearchFieldComponent } from './gallery.search-field.component';
 
 @NgModule({
     imports: [
@@ -79,6 +80,7 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
         TagPickerModule,
         IgColorPickerModule,
         IgDateModule,
+        SearchFieldModule,
         SimpleAccordionModule,
         SharedGridSelectionInfoModule,
         SharedGridPagingInfoModule,
@@ -125,7 +127,8 @@ import { FieldConditionGridModule } from '../shared/controls/field-condition-gri
         GalleryCheckboxComponent,
         GalleryPropertyGroupComponent,
         GalleryFieldConditionGridComponent,
-        GalleryRadioButtonComponent
+        GalleryRadioButtonComponent,
+        GallerySearchFieldComponent
     ],
     providers: [
         GalleryGuard,

@@ -1,0 +1,108 @@
+﻿<div class="tile tile-detail">
+    <header>SearchField Compomnent</header>
+    <p>desciption.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic - search on Enter</h4>
+        <div>
+            <ig-search-field (onSearch)="doneSearch($event, 'status1');"></ig-search-field><br />
+            <div class="searchoutput ig-lightblue-t5" id="status1"></div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Search on Keypress</h4>
+        <div>
+            <ig-search-field mode="Keypress" (onSearch)="doneSearch($event, 'status2');"></ig-search-field><br />
+            <div class="searchoutput ig-lightblue-t5" id="status2"></div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Width - Grows when placed in flexbox container</h4>
+        <div class="flexccontainer ig-lightblue-t5">
+            <ig-search-field></ig-search-field>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input igInput type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <ig-search-field tabindex="3"></ig-search-field>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input igInput type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Search on Keypress with 2 second debounce</h4>
+        <div>
+            <ig-search-field mode="Keypress" [debounce]="2000" (onSearch)="doneSearch($event, 'status3');"></ig-search-field><br />
+            <div class="searchoutput ig-lightblue-t5" id="status3"></div>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <div>
+            <ig-search-field [disabled]="true"></ig-search-field>
+        </div>
+    </div>
+
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-event>
+            <tr>
+                <td>{{event.Name}}</td>
+                <td>{{event.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

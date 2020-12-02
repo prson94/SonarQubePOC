@@ -1,0 +1,64 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import "../../../../../../Content/styles/_Variables.less";
+
+@searchfield-iconsize: 24px;
+@searchfield-iconpadding: 4px;
+
+ig-search-field {
+    display: inline-block;
+    min-width: 200px;
+    flex-grow: 1;
+}
+
+.ig-search-field {
+    position: relative;
+    display: inline-block;
+    min-width: 200px;
+    width: 100%;
+    flex-grow: 1;
+
+    .ig-input {
+        width: 100%;
+        padding-right: 2 * @searchfield-iconsize + 3 * @searchfield-iconpadding;
+    }
+}
+
+.ig-search-field-button {
+    border: none;
+    color: @ig-black;
+    background: @ig-color-field-button;
+    border-radius: 2px;
+    position: absolute;
+    right: @searchfield-iconpadding;
+    top: @searchfield-iconpadding;
+    height: @searchfield-iconsize;
+    width: @searchfield-iconsize;
+
+    &.clear {
+        right: @searchfield-iconsize + 2 * @searchfield-iconpadding;
+    }
+
+    &:hover {
+        background: @ig-color-field-button-hover;
+    }
+
+    &:active {
+        background: @ig-color-field-button-active;
+    }
+
+    &:disabled, &[disabled] {
+        color: @ig-black;
+        background: @ig-color-field-button;
+        opacity: 0.33;
+    }
+}
+.ig-search-field-keypress {
+    color: @ig-grey;
+    text-align: center;
+    position: absolute;
+    right: @searchfield-iconpadding;
+    top: @searchfield-iconpadding;
+    height: @searchfield-iconsize;
+    width: @searchfield-iconsize;
+    padding-top: 2px;
+}
