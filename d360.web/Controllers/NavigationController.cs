@@ -796,12 +796,11 @@ namespace d360.web.Controllers
             return items;
         }
 
-        [HttpPost, Route("GetSecondaryNavigationSettings")]
+        [HttpPost, Route("secondaryNavigationSettings")]
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
             bool execProcedure = true;
             SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
-
             //Static nav
             if (model.AssetUid == null)
             {
@@ -1024,6 +1023,13 @@ namespace d360.web.Controllers
                     {
                         var apiCtrlr = new TaxonomyController(this.Community, this.Company);
                         responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+                    }
+
+
+                    var anyDiagramRelationTypes = Company.Query<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and Subject = @ObjectType and SubjectID = @ObjectTypeId", new { responseModel.ObjectType, responseModel.ObjectTypeId, predicateType = (int)PredicateType.Diagram }).SingleOrDefault();
+                    if (anyDiagramRelationTypes)
+                    {
+                        responseModel.Items.HasProcessDiagram = true;
                     }
                 }
             }
