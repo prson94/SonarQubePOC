@@ -231,21 +231,41 @@ export class BaseComponent {
         hasField?: boolean,
         hasChild?: boolean,
         hasRuleResult?: boolean,
-        hasGovernanceRoleSet?: boolean
+        hasGovernanceRoleSet?: boolean,
+        hasProcessDiagram?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
-            if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
+            let lineageVersion: number = 1;
 
-                let lineageVersion: number = 1;
+            if (CompanySettings != null && CompanySettings.LineageVersion != null) {
+                lineageVersion = +CompanySettings.LineageVersion;
+            }
 
-                if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-                    lineageVersion = +CompanySettings.LineageVersion;
+            let showLineage = hasLineage && CompanySettings.ShowLineageSidebar != 'false';
+            let showImpact = hasImpact && CompanySettings.ShowImpactSidebar != 'false';
+
+            if (lineageVersion === 3 && (showLineage || showImpact || hasProcessDiagram)) {
+                let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
+                if (!isVisualizationDisabled) {
+                    this.lineageSidebar = new SecondaryNavItem(
+                        'Diagrams',
+                        'lineage',
+                        ['fa-random'],
+                        `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
+                    );
+
+                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
+                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
+
+                    this.secondaryNavService.showItem(this.lineageSidebar);
                 }
-
-                if (lineageVersion !== 3) {
+            }
+            else {
+                if (showLineage) {
                     const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
                     const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
 
@@ -257,22 +277,15 @@ export class BaseComponent {
                     );
                     this.secondaryNavService.showItem(this.lineageSidebar);
                 }
-                else {
-                    let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
-                    if (!isVisualizationDisabled) {
-                        this.lineageSidebar = new SecondaryNavItem(
-                            'Diagrams',
-                            'lineage',
-                            ['fa-random'],
-                            `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
-                        );
 
-                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
-                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
-                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
-
-                        this.secondaryNavService.showItem(this.lineageSidebar);
-                    }
+                if (showImpact) {
+                    this.impactSidebar = new SecondaryNavItem(
+                        'Impact',
+                        'impact',
+                        ['fa-exchange'],
+                        `/sidebar/visualization/impact${this.objectContextUrl()}`, null, 10
+                    );
+                    this.secondaryNavService.showItem(this.impactSidebar);
                 }
             }
 
@@ -317,16 +330,6 @@ export class BaseComponent {
                 );
 
                 this.secondaryNavService.showItem(this.dashboardSidebar);
-            }
-
-            if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
-                this.impactSidebar = new SecondaryNavItem(
-                    'Impact',
-                    'impact',
-                    ['fa-exchange'],
-                    `/sidebar/visualization/impact${this.objectContextUrl()}`, null, 10
-                );
-                this.secondaryNavService.showItem(this.impactSidebar);
             }
 
             if (hasRelationships) {
@@ -827,13 +830,13 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-            
+
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
-            
+
             var areaName = r.DisplayValue;
             var mainTabTitle = r.MainTabTitle;
             if (r.PreloadData) {
@@ -887,8 +890,8 @@ export class BaseComponent {
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
-            
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet);
+
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet, r.Items.HasProcessDiagram);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
@@ -930,7 +933,7 @@ export class BaseComponent {
         if (this.breadcrumbsService) {
             currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
         }
-        
+
         var components: SecondaryNavItem[] = [];
         components.push(this.scoreSidebar);
         components.push(this.dashboardSidebar);
