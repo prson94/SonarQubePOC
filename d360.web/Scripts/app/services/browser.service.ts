@@ -199,44 +199,16 @@ export class BrowserService extends BaseObservableService {
         return newResponse;
     }
 
-    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
+    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number, includeNonLeaf: boolean): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
             numberOfHops = 3;
 
-        return this.http.post(url, { ancestry: +ancestry, uid: uid, hopCount: numberOfHops }).pipe(
-            map((response: AssetBrowserResponseModel) => {
-                this.processResponse(response);
-                return response;
-            }),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
-        const url = `api/v2/browser/impact/initial`;
-        if (numberOfHops <= 0 || numberOfHops > 5)
-            numberOfHops = 3;
-
-        return this.http.post(url, { uid: uid, hopCount: numberOfHops }).pipe(
-            map((response: AssetBrowserResponseModel) => {
-                this.processResponse(response);
-                return response;
-            }),
-            catchError(err => this.handleError(err))
-        );
-    }
-
-    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
-        const url = `api/v2/browser/impact/hop`;
-
         return this.http.post(url, {
-            ancestry: ancestry,
-            hierarchyKey: hierarchyKey,
-            assets: assets,
-            preloadedIntersects: preloadedIntersects,
-            predicateUid: predicateUid,
-            direction: direction
+            ancestry: +ancestry,
+            uid: uid,
+            hopCount: numberOfHops,
+            includeNonLeaf: includeNonLeaf
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -246,10 +218,55 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+    public getInitialImpact(uid: string, numberOfHops: number, includeNonLeaf: boolean): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/initial`;
+        if (numberOfHops <= 0 || numberOfHops > 5)
+            numberOfHops = 3;
+
+        return this.http.post(url, {
+            uid: uid,
+            hopCount: numberOfHops,
+            includeNonLeaf: includeNonLeaf
+        }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/hop`;
+
+        return this.http.post(url, {
+            ancestry: ancestry,
+            hierarchyKey: hierarchyKey,
+            assets: assets,
+            preloadedIntersects: preloadedIntersects,
+            predicateUid: predicateUid,
+            direction: direction,
+            includeNonLeaf: includeNonLeaf
+        }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/hop`;
 
-        return this.http.post(url, { ancestry: ancestry, hierarchyKey: hierarchyKey, assets: assets, preloadedIntersects: preloadedIntersects, direction: direction }).pipe(
+        return this.http.post(url, {
+            ancestry: ancestry,
+            hierarchyKey: hierarchyKey,
+            assets: assets,
+            preloadedIntersects: preloadedIntersects,
+            direction: direction,
+            includeNonLeaf: includeNonLeaf
+        }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
                 return response;

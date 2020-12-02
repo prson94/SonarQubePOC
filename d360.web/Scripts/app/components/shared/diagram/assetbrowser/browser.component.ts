@@ -455,10 +455,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === node.hierarchyKey; });
                     hierarchyNodes.forEach(n => {
                         if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) {
-                            assets.push({
-                                Uid: n.assetUid,
-                                Key: n.key
-                            });
+                            if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
+                                assets.push({
+                                    Uid: n.assetUid,
+                                    Key: n.key
+                                });
+                            }
                         }
                     });
 
@@ -466,7 +468,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let direction = relation.direction;
 
                     let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
-                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, assets, preloadedIntersects)
+                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
                         .subscribe((response: AssetBrowserResponseModel) => {
 
                             // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
@@ -530,7 +532,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
                         assets.push({ Uid: node.assetUid, Key: node.key });
                     }
-
 
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                         let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
@@ -1355,10 +1356,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             //!this.displayConfiguration.IncludeNonLeaf;
             if (isLineage) {
-                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops()).subscribe(subscriber);
+                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
             }
             else {
-                this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops()).subscribe(subscriber);
+                this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
             }
         });
 
@@ -1456,17 +1457,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             hierarchyNodes.forEach(n => {
                 if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) {
-                    assets.push({
-                        Uid: n.assetUid,
-                        Key: n.key
-                    });
+                    if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
+                        assets.push({
+                            Uid: n.assetUid,
+                            Key: n.key
+                        });
+                    }
                 }
             });
 
             let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
             let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, assets, preloadedIntersects)
+            this.browserService.getLineageHop(this.displayConfiguration.AncestryMode, data.hierarchyKey, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
                 .subscribe((response: AssetBrowserResponseModel) => {
 
                     if (response.hierarchy && response.hierarchy.length > 0) {
