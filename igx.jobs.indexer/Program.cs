@@ -400,10 +400,24 @@ namespace igx.jobs.indexer
         #region Supporting Functions
 
         private static int SuggestIndexLimit(SqlConnection context) {
-            var sql = "SELECT COUNT(*) FROM [dbo].[FieldType]";
-            int FieldTypeCount = context.Query<int>(sql).FirstOrDefault();
-            double MultiplicationFactor = 1.2;
-            return Convert.ToInt16(FieldTypeCount * MultiplicationFactor);
+            /*
+             * To estimate the limit of fields in the index, we count the number of field types and add 20%
+             * We are not indexing all field types, and field types with the same name are mapped to the same elastic field
+             * If the number of field types is too high, then count the distinct field names and add 80%.
+             * Under no circumstance should we set limit higher than 30,000
+             * https://www.elastic.co/guide/en/elasticsearch/reference/6.8/mapping.html#mapping-limit-settings
+             */
+            var sql = @"SELECT CASE
+                            WHEN a.dist > 30000 THEN 30000
+                            WHEN a.total > 30000 THEN a.dist
+                            ELSE a.total
+                        END
+                        FROM (
+                            SELECT FLOOR(COUNT(*) * 1.2) AS total,
+                                    FLOOR(COUNT(DISTINCT [Name]) * 1.8) AS dist
+                            FROM [dbo].[FieldType]
+                        ) a;";
+            return context.Query<int>(sql).FirstOrDefault();
         }
 
         private static IEnumerable<IndexObjectModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
