@@ -1,0 +1,13 @@
+﻿
+<div class="row">
+    <div class="col s12 m6">
+        <div class="tile tile-detail" [hidden]="workflowId == null">
+            <d3s-workflow-monitor-step-list [itemId]="workflowId" (selectionChange)="stepChange($event)"></d3s-workflow-monitor-step-list>
+        </div>
+    </div>
+    <div class="col s12 m6">
+        <div class="tile tile-detail" [hidden]="!detailVisible">
+            <d3s-workflow-monitor-step-details [itemStepId]="itemStepId" [(visible)]="detailVisible"></d3s-workflow-monitor-step-details>
+        </div>
+    </div>
+</div>

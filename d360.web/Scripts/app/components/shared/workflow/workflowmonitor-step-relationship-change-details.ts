@@ -1,6 +1,6 @@
 ﻿import { Component, Input } from "@angular/core";
-import { BaseComponent } from "../shared/base.component";
-import { WorkflowStepRelationshipChangeDetail } from "../../models/workflow.model";
+import { BaseComponent } from "../../shared/base.component";
+import { WorkflowStepRelationshipChangeDetail } from "../../../models/workflow.model";
 
 
 @Component({
