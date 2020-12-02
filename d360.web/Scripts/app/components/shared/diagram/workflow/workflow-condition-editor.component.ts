@@ -23,6 +23,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() condition: any = null;
     @Input() changeType: WorkflowChangeType = null;
     @Input() diagram: go.Diagram;
+    @Input() isForTransition: boolean = false;
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
@@ -265,7 +266,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@FieldName'] = special.label;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
 
-            //console.log('selectField: ', e, special, this.selectedType, this.selectedField);
 
         }
         else if (this.selectedField.split('|')[0] == 'HTTPRequest') {
@@ -319,7 +319,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
         //only supporting fields at the moment
         if (fieldType == 'FieldType') {
-            ops.push('C');
+            if (this.changeType == WorkflowChangeType.Update && !this.isForTransition) {
+                ops.push('C');
+            }
             ops.push('P');
             ops.push('NP');
         }
@@ -372,7 +374,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     selectIssueObject(e: any) {
-        //console.log(e);
         this.condition['@Object'] = e.Object;
         this.condition['@ObjectID'] = e.ObjectID;
         this.condition['@Value'] = e.TextPath;

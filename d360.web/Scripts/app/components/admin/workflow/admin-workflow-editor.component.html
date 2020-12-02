@@ -26,7 +26,7 @@
                 <select style="width:95%;"
                         placeholder="Choose a value"
                         [ngModel]="model.Event.ChangeType"
-                        (ngModelChange)="model.Event.ChangeType = $event; validate(); loadObjects();">
+                        (ngModelChange)="changeTypeChanged($event)">
                     <option></option>
                     <option *ngFor="let i of changesTypes"
                             [value]="i.ID">
