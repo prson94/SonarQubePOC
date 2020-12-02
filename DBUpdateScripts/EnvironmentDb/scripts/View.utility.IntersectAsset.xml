@@ -5,12 +5,23 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.utility.IntersectAsset-v1">
+  <changeSet author="Puneet Gupta" id="View.utility.IntersectAsset-v2">
+  <comment>GOV-12916</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from sys.objects
+		   where name = 'IntersectAsset' and type = 'V' and schema_name(schema_id) = 'utility'
+          )
+begin
+	drop view [utility].[IntersectAsset]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter view [utility].[IntersectAsset]
 WITH SCHEMABINDING  
 as  
@@ -28,12 +39,6 @@ as
 			inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
 			inner join dbo.[Predicate] P on P.ID = IT.PredicateID
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

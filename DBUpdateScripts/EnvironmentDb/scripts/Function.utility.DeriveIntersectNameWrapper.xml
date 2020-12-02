@@ -5,12 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.DeriveIntersectNameWrapper-v1">
+  <changeSet author="Puneet Gupta" id="Function.utility.DeriveIntersectNameWrapper-v2">
+    <comment>GOV-12916</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'DeriveIntersectNameWrapper')
+begin
+	drop function [utility].[deriveintersectnamewrapper]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'DeriveIntersectNameWrapper')
 begin
 	EXEC('CREATE FUNCTION [utility].[DeriveIntersectNameWrapper]
@@ -24,12 +33,6 @@ begin
 	END')
 end
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>
