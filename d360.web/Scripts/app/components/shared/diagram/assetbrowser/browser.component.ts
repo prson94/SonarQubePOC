@@ -100,6 +100,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     diagramTypes: DiagramTypesModel = null;
 
+    showNodeCount: boolean = true;
+    autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
+
     popupMenuItems = [
         {
             title: 'Export to excel',
@@ -1919,11 +1922,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",  // title above Placeholder
+                {
+                    name: 'header-panel'
+                },
                 this.g(
                     go.Panel,
                     "Horizontal",
                     // button next to TextBlock
-                    { stretch: go.GraphObject.Horizontal },
+                    {
+                        stretch: go.GraphObject.Horizontal
+                    },
                     new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                     new go.Binding("background", "", v => (v.isHighlighted) ?
                         go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
@@ -1931,7 +1939,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     ).ofObject(),
                     this.g(
                         "SubGraphExpanderButton",
-                        { alignment: go.Spot.Right, margin: 5 }
+                        {
+                            alignment: go.Spot.Right,
+                            margin: 5
+                        }
                     ),
                     //icon
                     this.g(
@@ -1977,11 +1988,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         },
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "text").makeTwoWay(),
-                        new go.Binding("width", "", function (obj: go.GraphObject) {
-                            var dia = obj.diagram;
+                        new go.Binding("width", "", function (obj: go.GraphObject, target: go.GraphObject) {
                             var topLevel = obj.part.findTopLevelPart();
+                            var dia = obj.diagram;
 
-                            if (topLevel['__gohashid'] == obj.part['__gohashid'])
+                            if (topLevel['__gohashid'] == obj.part['__gohashid'] || topLevel.getDocumentBounds().x == NaN)
                                 return null;
 
                             var key = obj.part.data['hierarchyKey'].toString();
@@ -1990,31 +2001,26 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
 
                             if (!dia['objectsWidthMap'][key]) {
-                                var parentWidth = 0;
-                                var parts = dia
-                                    .findObjectsAt(new go.Point(obj.part.getDocumentBounds().left, obj.part.getDocumentBounds().top))
-                                    .filter(x => x.part.data['hierarchyKey'] == key);
+                                var targetRight = topLevel.actualBounds.left + target.actualBounds.right;
+                                var topRight = topLevel.actualBounds.right;
+                                var widthDiff = topRight - targetRight;
+                                var parentWidth = widthDiff + target.getDocumentBounds().width;
+                                if (topLevel.part.data['template'] === 'FocalPortGroup')
+                                    parentWidth -= 48;
 
-                                parts.each(go => {
-                                    if (go.part.getDocumentBounds().width > parentWidth) {
-                                        var resize = 0;
-                                        switch (go.part.data['template']) {
-                                            case 'PortGroup':
-                                                resize = 55;
-                                                break;
-                                            case 'FocalPortGroup':
-                                                resize = 100;
-                                                break;
-                                            default:
-                                                resize = 0;
-                                        }
+                                if (topLevel.part.data['template'] === 'PortGroup')
+                                    parentWidth -= 32;
 
-                                        parentWidth = go.part.getDocumentBounds().width - resize;
-                                    }
-                                })
-                                if (parentWidth) {
+
+
+                                if (parentWidth > 0 && parentWidth != NaN) {
+
+                                    if (parentWidth > 184)
+                                        parentWidth = 184;
+
                                     dia['objectsWidthMap'][key] = { width: parentWidth };
                                 }
+
                             }
 
                             if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
@@ -2024,6 +2030,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             return null;
                         }).ofObject()
                     )
+                    , this.template_nodeCount()
                 ),  // end Horizontal Panel
                 this.g(
                     go.Placeholder,
@@ -2770,7 +2777,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor },
                             this.g(
                                 "SubGraphExpanderButton",
-                                { alignment: go.Spot.Right, margin: 5 }
+                                {
+                                    alignment: go.Spot.Right,
+                                    margin: 5
+                                }
                             ),
                             //icon
                             this.g(
@@ -2913,18 +2923,30 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                 ),
                 this.g(go.Panel, "Vertical",
+                    {
+                        name: 'header-panel'
+                    },
                     this.g(
                         go.Panel,
                         "Horizontal",
                         // button next to TextBlock
-                        { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
+                        {
+                            stretch: go.GraphObject.Horizontal,
+                            alignment: go.Spot.Top
+                        },
+                        new go.Binding("width", "", function (val: go.GraphObject, target: go.GraphObject) {
+                            target.part.data['_horizontalPanelXLoc'] = target.getDocumentBounds().right;
+                        }).ofObject(),
                         new go.Binding("background", "", v => (v.isHighlighted) ?
                             go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
                             go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
                         ).ofObject(),
                         this.g(
                             "SubGraphExpanderButton",
-                            { alignment: go.Spot.Right, margin: 5 }
+                            {
+                                alignment: go.Spot.Right,
+                                margin: 5
+                            }
                         ),
                         //icon
                         this.g(
@@ -2970,8 +2992,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             },
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "text").makeTwoWay()
-                        )
-                    ),  // end Horizontal Panel
+                        ),
+                        this.template_nodeCount()
+                    ),
+                    // end Horizontal Panel
                     this.g(
                         go.Panel,
                         "Horizontal",
@@ -2981,7 +3005,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             go.Placeholder,
                             { padding: 2, alignment: go.Spot.TopLeft },
                         )
-                    )  //end Horizontal Panel
+                    )
+                    //end Horizontal Panel
                 ) //end Vertical Panel,
             ) //end Auto Panel (main group Panel),
         ); //end Vertical Panel
@@ -2997,6 +3022,106 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("text", "text")
             )
         );
+    }
+
+    private template_nodeCount(): go.Panel {
+        var $ = go.GraphObject.make;
+        var self = this;
+
+        var badge = $(go.Panel,
+            "Vertical",
+            {
+                stretch: go.GraphObject.Horizontal
+            },
+            new go.Binding("width", "", function (val: go.GraphObject, target: go.GraphObject) {
+                let width: number = null;
+                if (val.part.data['_childrenCount']) {
+                    var lng = val.part.data['_childrenCount'].toString().length - 1;
+                    if (lng > 0)
+                        target.part.data['_nodeCountPanelDefaultWidth'] = 16 + lng * 6;
+                    else
+                        target.part.data['_nodeCountPanelDefaultWidth'] = 20;
+                }
+
+                if (!target.part['isSubGraphExpanded']) {
+                    width = (+target.part.data['_nodeCountPanelDefaultWidth']);
+                }
+                else {
+                    var parentmaxX = target.part.data['_horizontalPanelXLoc'];
+
+                    var diff = parentmaxX - target.getDocumentBounds().right;
+                    if (diff && diff != NaN && diff > 4) {
+                        target.part.data['_nodeCountPanelCalculatedWidth'] = Math.round(diff + (+target.part.data['_nodeCountPanelDefaultWidth']));
+                    }
+                }
+
+                if (target.part.data['_nodeCountPanelCalculatedWidth'] && width == null) {
+                    width = +target.part.data['_nodeCountPanelCalculatedWidth'];
+                }
+                return width;
+
+            }).ofObject(),
+            new go.Binding("visible", "", function (v) {
+                return self.showNodeCount;
+            }),
+            $(go.Panel, "Position",
+                {
+                    alignment: go.Spot.Right
+                },
+                $(go.Shape, "Rectangle",
+                    {
+                        position: new go.Point(0, 0),
+                        maxSize: new go.Size(48, 16),
+                        margin: new go.Margin(0, 3, 0, 0),
+                        strokeWidth: 1,
+                        stroke: "white",
+                        fill: "white"
+                    },
+                    new go.Binding("maxSize", "", function (obj: go.GraphObject) {
+                        if (obj.part.data['_childrenCount']) {
+                            var lng = obj.part.data['_childrenCount'].toString().length - 1;
+                            if (lng > 0) {
+                                return new go.Size(16 + lng * 6, 16);
+                            }
+                        }
+                        return new go.Size(16, 16);
+                    }).ofObject()
+                ),
+                $(go.TextBlock,
+                    {
+                        editable: false,
+                        margin: new go.Margin(4, 0, 0, 6),
+                        font: this.fontLabel,
+                        maxLines: this.textMaxLines,
+                        overflow: this.textOverflowStyle,
+                        background: "white",
+                    },
+                    new go.Binding("text", "", function (obj: go.GraphObject) {
+                        var data = obj.diagram.nodes.filter(x =>
+                            x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
+                            && x.data['group'] == obj.part.data['key']
+                        );
+
+                        if (self.autoCollapseNodeCount > 0) {
+                            if (data.count >= self.autoCollapseNodeCount) {
+
+                                var node = obj.diagram.findNodeForKey(obj.part.data['key']);
+
+                                //If already happened dont do it again, otherwise its not possible to expand 
+                                if (!node.data['autoCollapsed']) {
+                                    (node as any).collapseSubGraph();
+                                    node.data['autoCollapsed'] = true;
+                                }
+                            }
+                        }
+                        obj.part.data['_childrenCount'] = data.count;
+
+                        return data.count;
+                    }).ofObject()
+                ))
+
+        );
+        return badge;
     }
 
     //#endregion
@@ -3057,5 +3182,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         return 'diagram';
     }
+}
 
-} 
+
