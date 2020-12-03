@@ -55,7 +55,7 @@ namespace d360.core.entities
 
         public string AssetTypeExportTemplateStyleJson { get; set; }        
 
-        [DataMember, ForeignKey("AssetTypeExportTemplateID")]
+        [IgnoreDataMember, ForeignKey("AssetTypeExportTemplateID")]
         public virtual ICollection<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
         [
