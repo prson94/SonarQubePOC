@@ -16,15 +16,6 @@ import { WorkflowMonitorComponent } from './workflowmonitor.component';
 import { WorkflowMonitorListComponent } from './workflowmonitor-list.component';
 import { WorkflowMonitorListFilterComponent } from './workflowmonitor-list-filter.component';
 import { WorkflowMonitorListColumnFilterComponent } from './workflowmonitor-list-column-filter.components';
-import { WorkflowMonitorStepListComponent } from './workflowmonitor-step-list.component';
-import { WorkflowMonitorStepGridComponent } from './workflowmonitor-step-grid.component';
-import { WorkflowMonitorStepDetailsComponent } from './workflowmonitor-step-details.component';
-import { WorkflowMonitorStepFormDetailsComponent } from './workflowmonitor-step-form-details.component';
-import { WorkflowMonitorStepEmailDetailsComponent } from './workflowmonitor-step-email-details.component';
-import { WorkflowMonitorActionDetailsComponent } from './workflowmonitor-action-details.component';
-import { WorkflowMonitorStepFieldChangeDetailsComponent } from './workflowmonitor-step-field-change-details.component';
-import { WorkflowMonitorStepHttpDetailsComponent } from './workflowmonitor-step-http-details.component';
-import { WorkflowMonitorStepRelationshipChangeDetailsComponent } from './workflowmonitor-step-relationship-change-details';
 
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 import { D3SSharedModule } from '../shared/shared.module';
@@ -40,6 +31,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DropdownModule } from 'primeng/dropdown';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TooltipModule } from 'primeng/tooltip';
+import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
 
 
 @NgModule({
@@ -63,6 +55,7 @@ import { TooltipModule } from 'primeng/tooltip';
         TableModule,
 
         WorkflowMonitorRoutingModule,
+        SharedWorkflowMonitorModule,
 
         //d3s        
         CoreModule,
@@ -77,22 +70,10 @@ import { TooltipModule } from 'primeng/tooltip';
         WorkflowMonitorListComponent,
         WorkflowMonitorListFilterComponent,
         WorkflowMonitorListColumnFilterComponent,
-        WorkflowMonitorComponent,   
-        WorkflowMonitorStepGridComponent,
-        WorkflowMonitorStepListComponent,
-        WorkflowMonitorStepDetailsComponent,
-        WorkflowMonitorStepFormDetailsComponent,
-        WorkflowMonitorStepEmailDetailsComponent,
-        WorkflowMonitorActionDetailsComponent,
-        WorkflowMonitorStepFieldChangeDetailsComponent,
-        WorkflowMonitorStepRelationshipChangeDetailsComponent,
-        WorkflowMonitorStepHttpDetailsComponent,
     ],
     exports: [
         WorkflowMonitorComponent,  
         WorkflowMonitorListComponent,
-        WorkflowMonitorStepListComponent,
-        WorkflowMonitorStepDetailsComponent,
 
     ],
     providers: [
