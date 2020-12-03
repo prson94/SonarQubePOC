@@ -4717,7 +4717,8 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Asset] as T
     using   (
             select  A.ItemNumber,
-                    CR.LookupValue as Color
+                    CR.LookupValue as Color,
+                    A.Uid
             from    api.ExecutionAsset A
                     left join {ApiExecutionFieldTable} CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
@@ -4726,8 +4727,8 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
             ) S
     on      1 = 0
     when    not matched then
-    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
+    insert  (Uid,AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (isnull(S.Uid,newid()),@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
     output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
 
@@ -4841,6 +4842,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         merge   [Asset] as T
                                                         using   (
                                                                 select  A.ItemNumber,
+                                                                        A.Uid,
                                                                         C.FieldValue as [Code],
                                                                         CR.LookupValue as [Color],
                                                                         I.FieldValue as [Icon]
@@ -4854,8 +4856,8 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                                 ) S
                                                         on      (1 = 0)
                                                         when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-                                                        values  (@AssetTypeID,1,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
+                                                        insert  (Uid, AssetTypeID,State,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+                                                        values  (isnull(S.Uid,newid()), @AssetTypeID,1,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
                                                         output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T

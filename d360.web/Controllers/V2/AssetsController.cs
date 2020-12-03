@@ -850,6 +850,10 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
+                if (assets.Any(x => x.Uid != null || x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
+                }
 
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
