@@ -84,8 +84,8 @@ namespace d360.core.entities.Metric
         {
             get
             {
-                var hashItems = from g in ConditionGroups
-                                from c in g.ConditionItems
+                var hashItems = from g in (ConditionGroups ?? new List<MetricAssetVersionConditionViewModel>())
+                                from c in (g.ConditionItems ?? new List<MetricAssetVersionConditionItemViewModel>())
                                 from v in (c.Values ?? new List<string>())
                                 orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v
                                 select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v}";

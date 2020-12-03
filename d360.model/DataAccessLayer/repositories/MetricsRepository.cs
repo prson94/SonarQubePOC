@@ -707,12 +707,6 @@ from	metrics.RollupPath P
                     {
                         var fieldType = new FieldType();
 
-                        // Set the default if no value property passed.
-                        if (condition.Values == null)
-                        {
-                            condition.Values = new List<string>();
-                        }
-
                         // Remove null values
                         condition.Values.RemoveAll(v => string.IsNullOrEmpty(v));
                         //Trim remaining values.
