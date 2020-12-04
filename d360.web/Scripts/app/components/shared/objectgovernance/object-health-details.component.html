@@ -157,8 +157,8 @@
         <div class="score-header-actions">
             <p-dropdown igDropdown
                         igSize="medium"
+                        [styleClass]="'scoring-picker-dropdown'"
                         required
-                        [appendTo]="'body'"
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
                         (onChange)="onScorePointChange($event)">
@@ -170,12 +170,24 @@
                     <ng-container *ngIf="!score.value.EndDate">present</ng-container>
                 </ng-template>
                 <ng-template let-score pTemplate="item">
-                    <div class="ui-helper-clearfix" style="position: relative;height:25px;">
-                        {{score.value.EffectiveDate | utcDate | date:'shortDate'}} to
-                        <ng-container *ngIf="score.value.EndDate">
-                            {{score.value.EndDate | utcDate | date:'shortDate'}}
+                    <div class="inline-item date">
+                        {{score.value.EffectiveDate | utcDate | date:'shortDate'}}
+                    </div>
+                    <div class="inline-item score">
+                        <ng-container [ngSwitch]="score.value.ScoreProgression">
+                            <div *ngSwitchCase="1">
+                                <i class="fa fa-caret-up arrow-up"></i> {{score.value.Score}}%
+                            </div>
+                            <div *ngSwitchCase="-1">
+                                <i class="fa fa-caret-down arrow-down"></i> {{score.value.Score}}%
+                            </div>
+                            <div *ngSwitchCase="0">
+                                <i class="fa fa-square square"></i>{{score.value.Score}}%
+                            </div>
+                            <div *ngSwitchDefault>
+                                {{score.value.Score}}%
+                            </div>
                         </ng-container>
-                        <ng-container *ngIf="!score.value.EndDate">present</ng-container>
                     </div>
                 </ng-template>
             </p-dropdown>

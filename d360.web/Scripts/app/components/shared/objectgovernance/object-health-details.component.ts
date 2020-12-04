@@ -271,6 +271,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             this.scoresPointsDDL.push({ value: p, label: 'Default' });
                         });
 
+                        this.scoresPointsDDL[0].value['isFirst'] = true;
+                        this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
                         this.scoresPointSelected = this.scoresPointsDDL[0].value;
                     }
 
