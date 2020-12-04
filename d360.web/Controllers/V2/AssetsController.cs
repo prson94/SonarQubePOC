@@ -201,6 +201,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -228,7 +229,7 @@ namespace d360.web.Controllers.V2
             var prefix = "Assets.GetAssetsAsync => ";
 
             try
-            {
+            {                
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 string isValid = isPageSizeAndNumValid(queryParams);
@@ -249,6 +250,12 @@ namespace d360.web.Controllers.V2
                 if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
+                }
+
+                //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object,assetType.ObjectID,Permission.ReadAsset))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
 
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
