@@ -23,6 +23,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { DirectivesModule } from '../directives/directives.module';
 import { FormsModule } from '@angular/forms';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { IgBadgeModule } from '../controls/badge/badge.module';
 
 @NgModule({
     imports: [
@@ -39,6 +40,7 @@ import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
         WorkflowModule,
         PipesModule,
         PopupMenuModule,
+        IgBadgeModule,
         //prime        
         ButtonModule,
         SharedModule,

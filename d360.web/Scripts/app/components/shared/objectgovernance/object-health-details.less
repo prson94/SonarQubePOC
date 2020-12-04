@@ -52,6 +52,40 @@
         color: #ed3765;
     }
 
+    .score-data {
+        border: 1px solid #eff2f6;
+
+        .score-item {
+            display: flex;
+            width: 100%;
+            padding: 16px;
+            cursor: pointer;
+
+            &:nth-child(even) {
+                background-color: #eff2f6;
+            }
+
+            .expander {
+                width: 40px;
+            }
+
+            .score-name {
+                flex-grow: 1;
+
+                .name {
+                    font-weight: bold;
+                }
+            }
+
+            .score-badges {
+                padding: 8px;
+            }
+
+            &.selected {
+                background: @ig-orange-t3;
+            }
+        }
+    }
 
     .score-chart-container {
         .heading {

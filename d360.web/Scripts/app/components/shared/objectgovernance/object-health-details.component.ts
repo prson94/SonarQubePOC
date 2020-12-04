@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, ViewEncapsulation } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, ViewEncapsulation, DebugElement } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -59,6 +59,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     ]
 
+    private selectScoreItem(item: PointBreakdown) {
+        this.pointBreakdown.forEach(x => x._isSelected = false);
+        item._isSelected = true;
+    }
+
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,
         private cdRef: ChangeDetectorRef
@@ -78,6 +83,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.loadTypesAndLatestScore();
         }
     }
+
+
 
     private loadTypesAndLatestScore() {
         if (this.uid) {
@@ -247,6 +254,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                     this.chartInstance = Highcharts.chart('healthChart', this.scoreHistory);
 
+
+                    //Set data for UI
                     this.scoresPointsDDL = [];
                     if (this.scoresPoints.length > 0) {
                         this.scoresPoints.forEach(p => {
@@ -282,6 +291,39 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     if (isTabChange) {
                         this.scoreDate = new Date().toDateString();
                     }
+
+                    //Set data for UI
+                    this.pointBreakdown.forEach(pb => {
+                        console.log(pb);
+                        if (!pb.IsGroup) {
+                            if (pb.Value) {
+                                pb._badgeStyle = 'positive';
+                                pb._finalScore = pb.AdjustedWeight;
+                            }
+                            else {
+                                pb._badgeStyle = 'negative';
+                                pb._finalScore = 0;
+                            }
+                        }
+                        else {
+                            var positive = pb.Measures.filter(x => x.Value);
+                            if (positive.length == 0) {
+                                pb._badgeStyle = 'negative';
+                                pb._finalScore = 0;
+                            }
+                            else if (positive.length == pb.Measures.length) {
+                                pb._badgeStyle = 'positive';
+                                pb._finalScore = pb.AdjustedMaxWeight;
+                            }
+                            else {
+                                pb._badgeStyle = 'warning';
+                                var sum = 0;
+                                positive.forEach(x => sum = + x.Weight);
+                                pb._finalScore = pb.AdjustedMaxWeight * sum;
+                            }
+                        }
+                    })
+
                     this.loadingPoints = false;
                 });
         }
