@@ -1,6 +1,6 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { RouterModule }    from '@angular/router';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
@@ -9,56 +9,59 @@ import { SharedModule } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
 
 import { CoreModule } from '../core.module';
-import { TilesModule  } from '../tiles/tiles.module';
+import { TilesModule } from '../tiles/tiles.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
-import { ObjectIssuesComponent } from './object-issues.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
-import { SimpleCarouselModule } from '../small-widgets/carausel/simple-carousel.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { DropdownModule } from 'primeng/dropdown';
+import { DirectivesModule } from '../directives/directives.module';
+import { FormsModule } from '@angular/forms';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 
 @NgModule({
     imports: [
+        FormsModule,
         CommonModule,
         RouterModule,
         HttpClientModule,
+        DirectivesModule,
         //d3s
         CoreModule,
-        SharedGridPagingInfoModule,        
+        SharedGridPagingInfoModule,
         SocialModule,
         TilesModule,
         WorkflowModule,
         PipesModule,
+        PopupMenuModule,
         //prime        
         ButtonModule,
-        SharedModule,  
+        SharedModule,
         TreeTableModule,
         TooltipModule,
+        DropdownModule
 
-        //charts                
-        SimpleCarouselModule
     ],
-    declarations: [    
+    declarations: [
         ObjectBoardComponent,
-        ObjectHealthDetailsComponent,        
-        ObjectIssuesComponent,
+        ObjectHealthDetailsComponent,
         ObjectHealthDetailsItemComponent,
     ],
     exports: [
-        ObjectBoardComponent,                
-        ObjectHealthDetailsComponent,     
+        ObjectBoardComponent,
+        ObjectHealthDetailsComponent,
     ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true
-        }        
+        }
     ]
 })
 export class SharedObjectGovernanceModule { }

@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, ViewEncapsulation } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -8,17 +8,24 @@ import { ObjectHealthDetailsItemComponent } from './object-health-details-item.c
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { Observable, Subject } from 'rxjs';
+import { SelectItem } from 'primeng/api';
 
 @Component({
     selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
+    styleUrls: ['object-health-details.less'],
+    encapsulation: ViewEncapsulation.None,
     providers: [ScoreService, ObjectStatisticsService],
 })
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
     scoreHistory: Highcharts.Options;
+
     scoresPoints: ScorePoint[];
+    scoresPointsDDL: SelectItem[];
+    scoresPointSelected: SelectItem;
+
     lastScorePoint: Date;
     averageScore: number;
     scoreDate: string = null;
@@ -39,6 +46,18 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     loadingHistory: boolean = false;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
     showExpandAndCollapse: boolean = true;
+
+    private headerMenu = [
+        {
+            "title": "Expand All",
+            "callback": () => this.setCollapsed(false)
+        },
+        {
+            "title": "Collapse All",
+            "callback": () => this.setCollapsed(true)
+        }
+
+    ]
 
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -170,8 +189,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 threshold: null
                             },
                             series: {
-                                cursor: 'pointer',                                
-                                step: 'right',                                
+                                cursor: 'pointer',
+                                step: 'right',
                                 point: {
                                     events: {
                                         click: e => {
@@ -227,7 +246,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     };
 
                     this.chartInstance = Highcharts.chart('healthChart', this.scoreHistory);
-                    
+
+                    this.scoresPointsDDL = [];
+                    if (this.scoresPoints.length > 0) {
+                        this.scoresPoints.forEach(p => {
+                            this.scoresPointsDDL.push({ value: p, label: 'Default' });
+                        });
+
+                        this.scoresPointSelected = this.scoresPointsDDL[0].value;
+                    }
+
                     subject.next(true);
                 });
         }
@@ -237,6 +265,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         return subject.asObservable();
     }
 
+    onScorePointChange($event) {
+        this.scoreDate = $event.value.EffectiveDate;
+        this.selectPointOnGraph();
+        this.loadPoints();
+    }
+
     private loadPoints(isTabChange: boolean = false) {
         this.loadingPoints = true;
         if (this.uid) {
@@ -244,7 +278,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 .subscribe(res => {
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
-                     
+
                     if (isTabChange) {
                         this.scoreDate = new Date().toDateString();
                     }
@@ -357,7 +391,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             }
             searchDetailRelevantScores = null;
         }
-        
+
         if (latestScore > 1) {
             latestScore /= 100;
         }
@@ -379,7 +413,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
 
         if (hasEndDate) {
-            this.calculatedScoreText += " <span class='inactive'>(latest score is no longer active)</span>"; 
+            this.calculatedScoreText += " <span class='inactive'>(latest score is no longer active)</span>";
         }
     }
     getAsPrecentage(val: number) {
@@ -417,7 +451,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     //scoring carousel, table and graph interactivity
-    private selectPointOnGraph() {        
+    private selectPointOnGraph() {
         if (this.chartInstance) {
             if (this.chartInstance.series) {
                 if (this.chartInstance.series.length > 0) {
@@ -440,7 +474,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.cdRef.markForCheck();
                 }
             }
-            
+
         }
     }
 
@@ -451,14 +485,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.loadPoints();
     }
 
-    private onCarouselScoreClick(item: ScorePoint) {
-        this.scoreDate = item.EffectiveDate;
-        this.selectPointOnGraph();
-        this.loadPoints();
-    }
-
     private chartInstance: Highcharts.Chart;
-    
+
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {
