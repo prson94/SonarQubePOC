@@ -54,6 +54,7 @@
 
     .score-data {
         border: 1px solid #eff2f6;
+        overflow: auto;
 
         .score-item {
             display: flex;
@@ -71,18 +72,48 @@
 
             .score-name {
                 flex-grow: 1;
+                position: relative;
 
                 .name {
                     font-weight: bold;
+                    display: inline-block;
+                    max-width: 400px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
             }
 
-            .score-badges {
-                padding: 8px;
-            }
 
             &.selected {
                 background: @ig-orange-t3;
+            }
+        }
+    }
+
+    .total-score-data {
+        width: 180px;
+        position: relative;
+        float: right;
+        border-top: 2px solid black;
+        margin-right: 16px;
+    }
+
+    .score-badges {
+        padding: 8px;
+        width: 180px;
+        text-align: center;
+
+        .ig-badge {
+            font-weight: bold;
+            width: 58px;
+            text-align: center;
+        }
+
+        &.big-badges {
+            .ig-badge {
+                width: 72px;
+                font-size: 18px;
             }
         }
     }

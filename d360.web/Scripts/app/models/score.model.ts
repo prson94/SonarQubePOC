@@ -15,13 +15,13 @@ export class PointBreakdown {
     ScoreType: ScoreType;
     Conditions: PointBreakdownCondition[];
     Measures: PointBreakdown[];
-    expandable: boolean = true;
-    IsCollapsed: boolean = false;
+
 
     //ui data
     _finalScore: number = 0;
     _isSelected: boolean = false;
     _badgeStyle: string = 'default';
+    _isCollapsed: boolean = false;
 }
 
 export class PointBreakdownCondition {

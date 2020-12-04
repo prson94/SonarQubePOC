@@ -32,7 +32,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements A
     }
     
     ngAfterViewInit(): void {
-        this.checkExpanders();
+        //this.checkExpanders();
     }
 
 
@@ -80,36 +80,36 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements A
         return s;   
     }
 
-    private checkExpanders() {
-        clearTimeout(this.handle);
-        this.handle = window.setTimeout(() => {
-            if (this.item && this.item) {
-                if (this.showtype == ScoreType.Governance) {
-                    this.expandable = !(!this.item.Description && !this.item.Measures);// && !this.currentItemDetails.Conditions);
-                    if (this.item.Measures) {
-                        this.item.Measures.forEach(x => {
-                            let expandable: boolean = ((x.Description != undefined && x.Description !== "") || (x.Conditions && x.Conditions.length > 0)); //!(!x.Description && !x.Conditions && !(x.Conditions.length > 0));
-                            x.expandable = expandable;
-                        });
-                    }
-                    this.checkExpander.emit();
-                }
-                else {
-                    if (this.dqDescription) {
-                        let htmlEl = this.dqDescription.nativeElement;
-                        if (htmlEl.offsetHeight > 34) {
-                            this.expandable = true;
-                            this.checkExpander.emit();
-                        } else {
-                            this.expandable = false;
-                            this.checkExpander.emit();
-                        }
-                    } else {
-                        this.expandable = false;
-                        this.checkExpander.emit();
-                    }
-                }
-            }
-        }, 100);
-    }
+    //private checkExpanders() {
+    //    clearTimeout(this.handle);
+    //    this.handle = window.setTimeout(() => {
+    //        if (this.item && this.item) {
+    //            if (this.showtype == ScoreType.Governance) {
+    //                this.expandable = !(!this.item.Description && !this.item.Measures);// && !this.currentItemDetails.Conditions);
+    //                if (this.item.Measures) {
+    //                    this.item.Measures.forEach(x => {
+    //                        let expandable: boolean = ((x.Description != undefined && x.Description !== "") || (x.Conditions && x.Conditions.length > 0)); //!(!x.Description && !x.Conditions && !(x.Conditions.length > 0));
+    //                        x.expandable = expandable;
+    //                    });
+    //                }
+    //                this.checkExpander.emit();
+    //            }
+    //            else {
+    //                if (this.dqDescription) {
+    //                    let htmlEl = this.dqDescription.nativeElement;
+    //                    if (htmlEl.offsetHeight > 34) {
+    //                        this.expandable = true;
+    //                        this.checkExpander.emit();
+    //                    } else {
+    //                        this.expandable = false;
+    //                        this.checkExpander.emit();
+    //                    }
+    //                } else {
+    //                    this.expandable = false;
+    //                    this.checkExpander.emit();
+    //                }
+    //            }
+    //        }
+    //    }, 100);
+    //}
 }

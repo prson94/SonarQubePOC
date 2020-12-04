@@ -25,6 +25,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     scoresPoints: ScorePoint[];
     scoresPointsDDL: SelectItem[];
     scoresPointSelected: SelectItem;
+    scorePointsMaxHeight: number = 200;
 
     lastScorePoint: Date;
     averageScore: number;
@@ -44,8 +45,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     loadingPoints: boolean = false;
     loadingDefinition: boolean = false;
     loadingHistory: boolean = false;
-    @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
+
     showExpandAndCollapse: boolean = true;
+
+    totalScore: number;
 
     private headerMenu = [
         {
@@ -60,7 +63,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ]
 
     private selectScoreItem(item: PointBreakdown) {
-        this.pointBreakdown.forEach(x => x._isSelected = false);
+        this.pointBreakdown.forEach(x => {
+            x._isSelected = false;
+            if (x.Measures) {
+                x.Measures.forEach(m => m._isSelected = false);
+            }
+        });
         item._isSelected = true;
     }
 
@@ -209,7 +217,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 },
                                 animation: {
                                     complete: function () {
-                                        this.selectPointOnGraph();
+                                        if (this.selectPointOnGraph)
+                                            this.selectPointOnGraph();
                                     }
                                 }
                             }
@@ -283,6 +292,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadPoints(isTabChange: boolean = false) {
         this.loadingPoints = true;
         if (this.uid) {
+            if (this.scoreDate.indexOf('0Z') == -1) {
+                this.scoreDate += 'T00:00:00.000Z';
+            }
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
                 .subscribe(res => {
                     this.pointBreakdown = res;
@@ -293,8 +305,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     }
 
                     //Set data for UI
+                    this.totalScore = 0;
                     this.pointBreakdown.forEach(pb => {
-                        console.log(pb);
                         if (!pb.IsGroup) {
                             if (pb.Value) {
                                 pb._badgeStyle = 'positive';
@@ -306,24 +318,45 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             }
                         }
                         else {
-                            var positive = pb.Measures.filter(x => x.Value);
-                            if (positive.length == 0) {
-                                pb._badgeStyle = 'negative';
-                                pb._finalScore = 0;
-                            }
-                            else if (positive.length == pb.Measures.length) {
-                                pb._badgeStyle = 'positive';
-                                pb._finalScore = pb.AdjustedMaxWeight;
-                            }
-                            else {
-                                pb._badgeStyle = 'warning';
-                                var sum = 0;
-                                positive.forEach(x => sum = + x.Weight);
-                                pb._finalScore = pb.AdjustedMaxWeight * sum;
+                            if (pb.Measures) {
+                                pb.Measures.forEach(m => {
+                                    if (m.Value) {
+                                        m._badgeStyle = 'positive';
+                                        m._finalScore = m.AdjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
+                                    }
+                                    else {
+                                        m._badgeStyle = 'negative';
+                                        m.AdjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
+                                        m._finalScore = 0;
+                                    }
+                                });
+
+                                var positive = pb.Measures.filter(x => x.Value);
+                                if (positive.length == 0) {
+                                    pb._badgeStyle = 'negative';
+                                    pb._finalScore = 0;
+                                }
+                                else if (positive.length == pb.Measures.length) {
+                                    pb._badgeStyle = 'positive';
+                                    pb._finalScore = pb.AdjustedMaxWeight;
+                                }
+                                else {
+                                    pb._badgeStyle = 'warning';
+                                    var sum = 0;
+                                    positive.forEach(x => {
+                                        sum += x._finalScore;
+                                    });
+
+                                    pb._finalScore = sum;;
+                                }
+
+
+
                             }
                         }
-                    })
 
+                        this.totalScore += pb._finalScore;
+                    })
                     this.loadingPoints = false;
                 });
         }
@@ -334,17 +367,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.showEmptyMessage = this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
-    }
-
-    hasAnyExpanders() {
-        clearTimeout(this.handle);
-        this.handle = window.setTimeout(() => {
-            if (this.OHDitems && !this.loadingHistory && !this.loadingPoints) {
-                this.showExpandAndCollapse = this.OHDitems.filter(x => {
-                    return x.expandable;
-                }).length > 0;
-            }
-        }, 100);
     }
 
     private setSelectedButton(scoreType: ScoreType) {
@@ -374,18 +396,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     }
     private setCollapsed(val: boolean) {
-        if (this.OHDitems && this.OHDitems.length > 0)
-            this.OHDitems.forEach(x => { x.setCollapsed(val); })
-    }
-
-    isAllCollapsed() {
-        if (this.OHDitems && this.OHDitems.length > 0) {
-            let any = this.OHDitems.filter(x => { return !x.isCollapsed; });
-            if (any && any.length > 0)
-                return false;
-            else
-                return true;
-        }
+        this.pointBreakdown.forEach(p => {
+            p._isCollapsed = !val;
+            if (p.Measures) {
+                p.Measures.forEach(m => {
+                    m._isCollapsed = !val;
+                });
+            }
+        })
     }
 
     hasAnyScoreType(scoreType: ScoreType) {
@@ -555,6 +573,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 }
             }
         }
+
+        //height - to top of the screen - to bottom of the screen - padding
+        this.scorePointsMaxHeight = window.innerHeight - 228 - 60 - 16;
+
         this.cdRef.detectChanges();
 
     }

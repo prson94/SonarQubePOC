@@ -3,7 +3,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { SiteMenuService } from '../../../services/site-menu.service';
 
 
 @Component({
@@ -12,7 +11,7 @@ import { SiteMenuService } from '../../../services/site-menu.service';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail score-tile-detail">
+                    <div class="score-tile-detail">
                        <d3s-object-health-details *ngIf="showBoard"
                                        [uid]="uid"
                                        [objectName]="objectName"></d3s-object-health-details>
