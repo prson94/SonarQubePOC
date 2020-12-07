@@ -299,6 +299,8 @@ namespace igx.jobs.indexer
 
         public static async Task ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
         {
+            await UpdateRebuildJobStatus(c.CompanyID, CompanyRebuildJobStatusState.Active);
+
             company.Open();
             List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
             bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
@@ -370,6 +372,11 @@ namespace igx.jobs.indexer
         {
             CoreFunction.AITrackTrace(functionName, $"Completed reindex for company {companyID}", companyId: companyID);
 
+            await UpdateRebuildJobStatus(companyID, CompanyRebuildJobStatusState.Inactive);
+        }
+
+        private static async Task UpdateRebuildJobStatus(int companyID, CompanyRebuildJobStatusState status)
+        {
             #region Create EF connection
 
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
@@ -388,7 +395,11 @@ namespace igx.jobs.indexer
 
             #endregion
 
-            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Inactive);
+            CompanyRebuildJobStatusState currentStatue = await community.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
+
+            if(currentStatue != status)
+                await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
+
         }
 
         private static void LogReindexStart(string typeName, int companyID)
