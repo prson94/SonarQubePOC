@@ -1235,7 +1235,7 @@ where T.ExecutionId = @executionid;
                                 ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectType),
                                 ObjectID = result.ObjectID,
                                 ObjectTypeID = objectTypeID,
-                                ChangedFieldIds = changedFieldsIDS, 
+                                ChangedFieldIds = changedFieldsIDS,
                                 ScoreType = scoreType
                             }
                         });
@@ -1868,7 +1868,7 @@ from	IntersectType I
     from	api.ExecutionDeletedAsset T
 		    inner join Asset S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID
     where 
-            exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",		    
+            exists (select 1 from AssetType ST where ST.Uid = @uid and ST.ID = S.AssetTypeID);",
                     new { execution.ExecutionID, at.uid }, commandTimeout: timeout);
 
                         AddMeasurement(metrics, "Resolve assets based on UIDs", sw.ElapsedMilliseconds, ++step);
@@ -4289,7 +4289,8 @@ where   ExecutionID = @ExecutionID
                                 row["ExecutionID"] = execution.ExecutionID;
                                 row["ItemNumber"] = i;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
-                                row["Uid"] = model.Uid;
+                                if (model.Uid != Guid.Empty)
+                                    row["Uid"] = model.Uid;
                                 if (model.ParentUid.HasValue) row["ParentUid"] = model.ParentUid;
                                 row["ObjectType"] = at.Object;
                                 row["ObjectTypeID"] = at.ObjectID;
@@ -5852,7 +5853,7 @@ from	IntersectType T
 where   T.ID = @ID", new { rt.ID }).Single();
 
                     if (assetTypeHasScoringAllocation)
-                    { 
+                    {
                         var measureAssets = Query<ExternalMeasureResultsCreatedModel>(@"declare @utc datetime = getutcdate()
     select	distinct
 		    SA.Uid as MetricAssetUid,

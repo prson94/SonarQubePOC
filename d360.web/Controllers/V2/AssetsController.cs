@@ -229,7 +229,7 @@ namespace d360.web.Controllers.V2
             var prefix = "Assets.GetAssetsAsync => ";
 
             try
-            {                
+            {
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 string isValid = isPageSizeAndNumValid(queryParams);
@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object,assetType.ObjectID,Permission.ReadAsset))
+                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
@@ -869,10 +869,12 @@ namespace d360.web.Controllers.V2
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
-                if (assets.Any(x => x.Uid != null || x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
+                if (assets.Any(x => x.Uid != null) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
                 }
+
+
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
