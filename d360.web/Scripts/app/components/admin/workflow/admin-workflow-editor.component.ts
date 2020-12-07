@@ -189,7 +189,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         }
 
-                        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
+                        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+                            || this.model.Event.ChangeType == WorkflowChangeType.Update
+                            || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+                            || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
                             this.workflowService.getScoreTypes(this.objectID, this.objectType)
                                 .subscribe(res => {
                                     this.scoreTypes = res;
@@ -241,6 +244,24 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     changeTypeChanged(event) {
         this.model.Event.ChangeType = event;
         this.showAddCondition = false;
+
+        if (this.objectID != null && this.objectType != null) {
+            if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+                || this.model.Event.ChangeType == WorkflowChangeType.Update
+                || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+                || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
+                this.workflowService.getScoreTypes(this.objectID, this.objectType)
+                    .subscribe(res => {
+                        this.scoreTypes = res;
+                        this.scoreTypes.unshift({ label: '', value: null });
+                        this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
+                    });
+            }
+        } else {
+            this.scoreTypes = [];
+            this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
+        }
+
         this.validate();
         this.loadObjects();
     }
@@ -268,7 +289,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
             }
 
-            if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
+            if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+                || this.model.Event.ChangeType == WorkflowChangeType.Update
+                || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+                || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
                 this.workflowService.getScoreTypes(this.objectID, this.objectType)
                     .subscribe(res => {
                         this.scoreTypes = res;

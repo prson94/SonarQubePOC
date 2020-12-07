@@ -510,7 +510,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private setWorkflowFields() {
         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
-        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
+        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+            || this.model.Event.ChangeType == WorkflowChangeType.Update
+            || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+            || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
             this.workflowService.getScoreTypes(this.model.Event.ObjectID, this.model.Event.Object)
                 .subscribe(res => {
                     this.workflowFieldsService.setAvailableScoreTypes(res);
