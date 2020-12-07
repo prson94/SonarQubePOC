@@ -41,18 +41,19 @@ namespace d360.web.Controllers.V2
                 AllocationUid = Guid.Empty,
                 Definition = new MetricAssetDefinitionViewModel
                 {
-                    DataQuality = new MetricAssetDefinitionDataQualityViewModel { 
-                     FilterMatchType = MetricMatchType.All,
-                     Filters = new List<MetricAssetDefinitionDataQualityFilterViewModel>() { 
-                      new MetricAssetDefinitionDataQualityFilterViewModel { 
+                    DataQuality = new MetricAssetDefinitionDataQualityViewModel
+                    {
+                        FilterMatchType = MetricMatchType.All,
+                        Filters = new List<MetricAssetDefinitionDataQualityFilterViewModel>() {
+                      new MetricAssetDefinitionDataQualityFilterViewModel {
                        AssetTypeUid = Guid.Empty,
                        FieldTypeName = "Dimension",
                        Operator = Operator.Equals,
                        Values = new List<string>() { "Accuracy" }
                       }
                      },
-                     ResultOperation = MetricRuleResultOperation.Average,
-                     ResultPathUid = Guid.Empty
+                        ResultOperation = MetricRuleResultOperation.Average,
+                        ResultPathUid = Guid.Empty
                     },
                     Governance = new MetricAssetDefinitionGovernanceViewModel
                     {
@@ -68,17 +69,20 @@ namespace d360.web.Controllers.V2
                             Operator = Operator.NotEquals,
                             Values = new List<string>() { "Country" }
                         },
-                        Owner = new MetricAssetDefinitionGovernanceOwnerViewModel { 
-                         ResponsibilityTypeUid = Guid.Empty
+                        Owner = new MetricAssetDefinitionGovernanceOwnerViewModel
+                        {
+                            ResponsibilityTypeUid = Guid.Empty
                         },
-                        Predicate = new MetricAssetDefinitionGovernancePredicateViewModel { 
-                         Operator = Operator.Equals,
-                         PredicateUid = Guid.Empty
+                        Predicate = new MetricAssetDefinitionGovernancePredicateViewModel
+                        {
+                            Operator = Operator.Equals,
+                            PredicateUid = Guid.Empty
                         },
-                        Relation = new MetricAssetDefinitionGovernanceRelationViewModel { 
-                         IntersectTypeUid = Guid.Empty,
-                         Operator = Operator.Equals,
-                         Values = new List<string>() { Guid.Empty.ToString() }
+                        Relation = new MetricAssetDefinitionGovernanceRelationViewModel
+                        {
+                            IntersectTypeUid = Guid.Empty,
+                            Operator = Operator.Equals,
+                            Values = new List<string>() { Guid.Empty.ToString() }
                         }
                     }
                 },
@@ -170,28 +174,28 @@ namespace d360.web.Controllers.V2
             }
         }
 
-/*
- Enum operators to be used in a later sprint.
-- Equals (1)
-- NotEquals (2)
-- Contains (3)
-- NotContains (4)
-- StartsWith (5)
-- EndsWith (6)
-- Before (7)
-- After (8)
-- Between (9)
-- Populated (10)
-- NotPopulated (11)
-- GreaterThan (12)
-- LessThanOrEquals (13)
-- LessThan (14)
-- GreaterThanOrEquals (15)
-- In (16)
-- NotIn (17)
-- IsTrue (18)
-- IsFalse (19)         
- */
+        /*
+         Enum operators to be used in a later sprint.
+        - Equals (1)
+        - NotEquals (2)
+        - Contains (3)
+        - NotContains (4)
+        - StartsWith (5)
+        - EndsWith (6)
+        - Before (7)
+        - After (8)
+        - Between (9)
+        - Populated (10)
+        - NotPopulated (11)
+        - GreaterThan (12)
+        - LessThanOrEquals (13)
+        - LessThan (14)
+        - GreaterThanOrEquals (15)
+        - In (16)
+        - NotIn (17)
+        - IsTrue (18)
+        - IsFalse (19)         
+         */
         /// <summary>
         /// Add or updates a metric.
         /// </summary>
@@ -253,7 +257,7 @@ namespace d360.web.Controllers.V2
                     throw new WorkStatusException(HttpStatusCode.Unauthorized, "You are not allowed to update this metric.");
                 }
 
-                if (string.IsNullOrEmpty(model.Name) || (model.Name+"").Trim() == "")
+                if (string.IsNullOrEmpty(model.Name) || (model.Name + "").Trim() == "")
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, $"Name must not be empty.");
                 }
@@ -360,7 +364,7 @@ namespace d360.web.Controllers.V2
             #endregion Validation
 
             var result = MetricsRepository.AddOrUpdateMetrics(model);
-            
+
             if (!result.StatusCode.In(HttpStatusCode.OK, HttpStatusCode.Created))
                 return errorMessageResponse(result.StatusCode, result.Error, result.Message);
 
@@ -524,9 +528,9 @@ namespace d360.web.Controllers.V2
                 if (assetDetail == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found."));
 
-                var allocation = Company.Filter<MetricAllocation>(al => 
-                    al.AssetTypeUid == assetDetail.AssetTypeUid && 
-                    al.ScoreType == scoreType && 
+                var allocation = Company.Filter<MetricAllocation>(al =>
+                    al.AssetTypeUid == assetDetail.AssetTypeUid &&
+                    al.ScoreType == scoreType &&
                     string.IsNullOrEmpty(al.OverrideName)
                     ).FirstOrDefault();
 
@@ -734,7 +738,7 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
-                
+
                 (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
 
                 if (!string.IsNullOrEmpty(errorMessage))
@@ -1052,7 +1056,7 @@ namespace d360.web.Controllers.V2
                     return ResponseMessage(result);
                 }
                 else
-                {                    
+                {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataQualityResult));
                 }
 
@@ -1483,7 +1487,98 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
-        }        
+        }
+
+        /// <summary>
+        /// Returns graph data for assets score tab
+        /// </summary>
+        /// <returns>Returns a list of all score points for an asset and scores by measures.</returns>
+        [
+            HttpGet,
+            Route("{scoreType}/{assetUid:Guid}/graphPoints"),
+            SwaggerRequestExample(typeof(DataQualityUpdateModel), typeof(DataQualityUpdateExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetGraphDataPoints(ScoreType scoreType, Guid assetUid)
+        {
+            try
+            {
+                var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+                if (assetDetail == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset corresponding with identifier of {assetUid} could not be found."));
+
+                var allocation = Company.Filter<MetricAllocation>(al =>
+                  al.AssetTypeUid == assetDetail.AssetTypeUid &&
+                  al.ScoreType == scoreType &&
+                  string.IsNullOrEmpty(al.OverrideName)
+                  ).FirstOrDefault();
+
+                var results = Company.Query<GraphPoints>(@"select [EffectiveDate]
+      ,[Value]
+  from [metrics].[Score]
+  where assetuid = @assetUid and AllocationUid = @allocationUid
+  order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
+
+
+                List<GraphPoints> allPoints = new List<GraphPoints>();
+                foreach (var item in results)
+                {
+                    item.key = "score";
+                    var dataPerPoint = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, item.EffectiveDate.Date.ToLocalTime());
+
+                    foreach (var measure in dataPerPoint)
+                    {
+                        if (!measure.IsGroup)
+                        {
+                            var point = new GraphPoints();
+                            point.key = measure.Uid.ToString();
+                            point.EffectiveDate = item.EffectiveDate;
+                            point.Value = measure.AdjustedWeight * (measure.Value.HasValue && measure.Value.Value ? 1 : 0);
+                            allPoints.Add(point);
+                        }
+                        else
+                        {
+                            var maxWeight = measure.AdjustedMaxWeight;
+                            decimal result = 0;
+                            foreach (var m in measure.Measures)
+                            {
+                                var point = new GraphPoints();
+                                point.key = m.Uid.ToString();
+                                point.EffectiveDate = item.EffectiveDate;
+                                point.Value = maxWeight * m.AdjustedWeight * (m.Value.HasValue && m.Value.Value ? 1 : 0);
+                                result += point.Value;
+                                allPoints.Add(point);
+                            }
+
+                            var measurePoint = new GraphPoints();
+                            measurePoint.key = measure.Uid.ToString();
+                            measurePoint.EffectiveDate = item.EffectiveDate;
+                            measurePoint.Value = result;
+                            allPoints.Add(measurePoint);
+                        }
+                    }
+                }
+                allPoints.AddRange(results);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ex.Message));
+
+            }
+
+        }
+
+        public class GraphPoints
+        {
+            public string key { get; set; }
+            public DateTime EffectiveDate { get; set; }
+            public decimal Value { get; set; }
+        }
 
         /// <summary>
         /// Create the Excel document for export
@@ -1582,7 +1677,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
-                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString(): "");
+                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);

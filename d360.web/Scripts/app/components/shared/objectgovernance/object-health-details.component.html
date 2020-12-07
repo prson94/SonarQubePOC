@@ -82,9 +82,17 @@
                 </div>
             </div>
 
-        </div>       
+        </div>
         <div class="col s4 no-margin no-padding">
-           
+            <div class="card-box">
+                <score-history #scoreHistory 
+                               [selectedPoint]="selectedPoint" 
+                               [assetUid]="uid" 
+                               [scoreType]="selectedScoreType"
+                               [scoreDate]="scoreDate"
+                               (datePointChanged)="dateChanged($event)"
+                               ></score-history>
+            </div>
         </div>
     </div>
 

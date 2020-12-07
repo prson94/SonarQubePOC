@@ -1,4 +1,4 @@
-﻿<div class="score-chart-container card-box">
+﻿<div class="score-chart-container">
     <div class="heading">
         <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
     </div>
@@ -8,7 +8,7 @@
         <div #scoreTable class="score-table">
             <div class="col s12">
                 <div class="row score-tbl-header">
-                    <div class="col s6 column">Score Change Date</div>
+                    <div class="col s6 column">Date (UTC)</div>
                     <div class="col s6 column">Score</div>
                 </div>
                 <div class="body">

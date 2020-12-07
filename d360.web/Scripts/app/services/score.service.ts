@@ -8,7 +8,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { ScoreType } from '../models/metrics.model';
 
 @Injectable()
-export class ScoreService extends BaseObservableService  {
+export class ScoreService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
@@ -47,6 +47,14 @@ export class ScoreService extends BaseObservableService  {
 
     getScoreTypes(assetUid: string): Observable<number[]> {
         return this.http.get(`/api/v2/metrics/ScoreTypes/${assetUid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getAssetScoreGraphPoints(assetUid: string, type: ScoreType): Observable<number[]> {
+        return this.http.get(`/api/v2/metrics/${type}/${assetUid}/graphPoints`)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
