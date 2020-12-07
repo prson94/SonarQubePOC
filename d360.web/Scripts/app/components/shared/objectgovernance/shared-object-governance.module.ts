@@ -24,6 +24,7 @@ import { DirectivesModule } from '../directives/directives.module';
 import { FormsModule } from '@angular/forms';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../controls/badge/badge.module';
+import { ScoreHistoryComponent } from './score-history.component';
 
 @NgModule({
     imports: [
@@ -53,6 +54,7 @@ import { IgBadgeModule } from '../controls/badge/badge.module';
         ObjectBoardComponent,
         ObjectHealthDetailsComponent,
         ObjectHealthDetailsItemComponent,
+        ScoreHistoryComponent
     ],
     exports: [
         ObjectBoardComponent,

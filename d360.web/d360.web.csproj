@@ -877,6 +877,7 @@
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\score-history.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
@@ -1016,6 +1017,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\score-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
