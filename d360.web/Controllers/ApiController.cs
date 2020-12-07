@@ -2808,11 +2808,11 @@ from    (
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Uid", FieldName = "Asset Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Type Uid", FieldName = "Asset Type Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
@@ -2871,11 +2871,11 @@ from    (
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Uid", FieldName = "Asset Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Type Uid", FieldName = "Asset Type Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
@@ -3600,11 +3600,11 @@ from    (
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Uid", FieldName = "Asset Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Type Uid", FieldName = "Asset Type Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
@@ -3669,11 +3669,11 @@ from    (
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Uid", FieldName = "Asset Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Type Uid", FieldName = "Asset Type Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = asset.AssetType.uid.ToString(), DataType = "string" }
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
@@ -4258,11 +4258,11 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Uid", FieldName = "Asset Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.Asset_UID_Name, FieldName = "AssetUid", FieldDescription = Resources.FieldInfo.Asset_UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Asset Type Uid", FieldName = "Asset Type Uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = levelInfo.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = levelInfo.AssetType.uid.ToString(), DataType = "string" }
                             },
                             Category = Resources.FieldInfo.SystemFieldCategory
                         });
