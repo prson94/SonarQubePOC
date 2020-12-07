@@ -1,15 +1,10 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, ViewEncapsulation, DebugElement, Output, SimpleChanges, EventEmitter } from '@angular/core';
+﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
-import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
-import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
-import { Observable, Subject } from 'rxjs';
-import { SelectItem } from 'primeng/api';
-import { Key } from 'gojs';
 
 @Component({
     selector: 'score-history',
@@ -39,6 +34,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     mainScoreGraphColor = '#9edae5';
     measureScoreGraphColor = '#d2edf4';
+
+    private graphHash: string = '';
 
 
     constructor(protected scoreService: ScoreService,
@@ -114,11 +111,21 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     }
 
     public drawGraph() {
-        if (this.chartInstance)
-            this.chartInstance.destroy();
 
         if (this.scoresPoints.length <= 0)
             return;
+
+        var currentGraphHash = this.assetUid + '_' + this.scoreType;
+        if (this.selectedPoint) {
+            currentGraphHash += '_' + this.selectedPoint.Uid;
+        }
+
+        if (currentGraphHash == this.graphHash)
+            return;
+
+        this.graphHash = currentGraphHash;
+        if (this.chartInstance)
+            this.chartInstance.destroy();
 
         this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 
@@ -151,11 +158,11 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
         this.scoreHistory = {
             chart: {
-                zoomType: 'x',
+                zoomType: 'xy',
                 style: {
                     fontFamily: 'Source Sans Pro'
                 },
-                height: '240px'
+                height: '300px'
             },
             title: {
                 text: ''
@@ -183,26 +190,14 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 enabled: false
             },
             plotOptions: {
-                line: {
-                    marker: {
-                        radius: 1
-                    },
-                    lineWidth: 4,
-                    allowPointSelect: true,
-                    states: {
-                        hover: {
-                            lineWidth: 4
-                        }
-                    },
-                    threshold: null
-                },
+
                 series: {
                     cursor: 'pointer',
                     step: 'right',
+                    animationLimit: 0,
                     point: {
                         events: {
                             click: e => {
-                                console.log(e);
                                 this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                 this.selectPointOnGraph();
                                 this.datePointChanged.emit(this.scoreDate);
@@ -215,7 +210,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                                 this.selectPointOnGraph();
                         }
                     }
-                }
+                },
             },
             tooltip: {
                 shared: true,
@@ -233,34 +228,49 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             series: [{
                 type: 'area',
                 name: 'Governance Score',
-                opacity: 1,
-                fillOpacity: 1,
+                data: this.historicalData,
+                color: this.mainScoreGraphColor,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
-                    radius: 5,
+                    radius: 6,
                     states: {
                         hover: {
-                            fillColor: 'white',
-                            lineColor: this.mainScoreGraphColor,
-                            lineWidth: 3,
-                            opacity: 1
+                            fillColor: '#81b3bd',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1
                         },
                         select: {
-                            fillColor: this.mainScoreGraphColor,
-                            lineColor: this.mainScoreGraphColor,
-                            lineWidth: 3
+                            fillColor: '#81b3bd',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1
                         }
                     }
-                },
-                data: this.historicalData,
-                color: this.mainScoreGraphColor
+                }
             },
             {
                 type: 'area',
                 name: 'Other data',
                 data: this.historicalMeasureData,
-                color: this.measureScoreGraphColor
+                color: this.measureScoreGraphColor,
+                marker: {
+                    enabled: false,
+                    symbol: 'circle',
+                    radius: 6,
+                    fillOpacity: 1,
+                    states: {
+                        hover: {
+                            fillColor: '#afe1eb',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1,
+                        },
+                        select: {
+                            fillColor: '#afe1eb',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1
+                        }
+                    }
+                }
             }
             ]
         };
@@ -347,6 +357,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         if (this.chartInstance) {
             if (this.chartInstance.series) {
                 if (this.chartInstance.series.length > 0) {
+
                     var ms = new Date(this.scoreDate.toString()).getTime();
                     var idx = this.chartInstance.series[0].data.findIndex(p => { return p.x == ms });
 
@@ -362,6 +373,18 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                         this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', point.x);
                         point.setState("select");
                     }
+
+                    //now select measure point
+                    if (this.selectedPoint) {
+                        for (var i = 0; i < this.chartInstance.series[1].data.length; i++) {
+                            this.chartInstance.series[1].data[i].select(false, true);
+                        }
+                        var point = this.chartInstance.series[1].data[idx];
+                        if (point) {
+                            point.setState("select");
+                        }
+                    }
+
                     this.cdRef.detectChanges();
                     this.cdRef.markForCheck();
                 }
