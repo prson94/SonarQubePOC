@@ -1567,7 +1567,7 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknow error."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknown error."));
             }
         }
 
