@@ -441,9 +441,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 e.diagram.scrollToRect(rect);
                 self.diagramOriginalPosition = null;
             }
-
-            self.scale = self.myDiagram.scale;
-            self.cdRef.markForCheck();
+            if (self.myDiagram) {
+                self.scale = self.myDiagram.scale;
+                self.cdRef.markForCheck();
+            }
         });
 
         this.myDiagram.addDiagramListener("BackgroundSingleClicked", function (e: go.DiagramEvent) {
@@ -566,7 +567,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.cdRef.detectChanges();
     }
     private isEmpty() {
-        return this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0;
+        return this.diagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
     }
 
     private isCurrentStateSaved() {
