@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
-                if (!Company.CurrentResourceIsAdmin && !Company.HasAssetTypePermission(assetType.Object,assetType.ObjectID,Permission.ReadAsset))
+                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
