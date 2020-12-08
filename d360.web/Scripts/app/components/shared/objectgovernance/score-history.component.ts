@@ -227,17 +227,19 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 pointFormatter: function () {
 
                     var additionalValue = this.series.userOptions.name;
-                    return '<span style="font-weight: bold">' + additionalValue + '<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
+                    return '<div><span>' + additionalValue + '<span style="padding-left: 4px;">' + this.y + '%</span></span></div>';
                 },
                 headerFormat: '<span>{point.key}</span><br/>',
                 useHTML: true,
                 shape: 'square',
-                borderColor: '#c8cfd9',
-                borderWidth: 2
+                backgroundColor: 'white',
+                borderColor: '#e4e4e4',
+                borderWidth: 1,
+                animation: false
             },
             series: [{
                 type: 'area',
-                name: 'Governance Score',
+                name: this.getScoreType() + ' score',
                 data: this.historicalData,
                 color: this.mainScoreGraphColor,
                 marker: {
@@ -260,7 +262,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             },
             {
                 type: 'area',
-                name: 'Other data',
+                name: 'Measure score',
                 data: this.historicalMeasureData,
                 color: this.measureScoreGraphColor,
                 marker: {

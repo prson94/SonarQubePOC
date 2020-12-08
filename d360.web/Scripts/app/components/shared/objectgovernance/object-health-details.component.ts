@@ -5,13 +5,15 @@ import { PointBreakdown, ScorePoint } from '../../../models/score.model';
 import { ScoreType } from '../../../models/metrics.model';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
+import { Score } from '../../../models/fieldtype-api.model';
+import { MetricsService } from '../../../services/metrics.service';
 
 @Component({
     selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
     styleUrls: ['object-health-details.less'],
     encapsulation: ViewEncapsulation.None,
-    providers: [ScoreService],
+    providers: [ScoreService, MetricsService],
 })
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
@@ -33,6 +35,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes: number[] = [];
+    private allocationData: any[] = [];
     showEmptyMessage: boolean = false;
 
     showExpandAndCollapse: boolean = true;
@@ -53,6 +56,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ]
 
     constructor(protected scoreService: ScoreService,
+        protected metricService: MetricsService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
@@ -85,11 +89,23 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadTypesAndLatestScore() {
         if (this.uid) {
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
-                this.scoreTypes = x;
+                this.scoreTypes = x.map(x => x.scoretype as ScoreType);
+                this.allocationData = x;
                 if (x.length > 0) {
-                    this.setSelectedButton(x[0])
+                    this.setSelectedButton(this.scoreTypes[0])
                 }
+
+                this.allocationData.forEach(alloc => {
+                    console.log(alloc);
+                    this.metricService.getMetricsByAllocation(alloc.uid, true)
+                        .subscribe(res => {
+                            console.log(res);
+                        });
+
+                });
+
             });
+
         }
     }
 
@@ -134,7 +150,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     }
 
                     subject.next(true);
-                    this.isDataLoaded = true;
                 });
         }
         else {
@@ -149,6 +164,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private loadPoints(isTabChange: boolean = false) {
+        this.isDataLoaded = false;
         if (this.uid) {
             if (this.scoreDate.indexOf('0Z') == -1) {
                 this.scoreDate += 'T00:00:00.000Z';
@@ -217,6 +233,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     })
                     if (this.pointBreakdown.length > 0)
                         this.selectScoreItem(this.pointBreakdown[0]);
+
+
+                    this.isDataLoaded = true;
+                    this.cdRef.markForCheck();
                 });
         }
     }

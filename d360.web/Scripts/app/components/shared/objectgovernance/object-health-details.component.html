@@ -1,6 +1,4 @@
-﻿<d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
-
-<div class="scoring-v2" *ngIf="isDataLoaded">
+﻿<div class="scoring-v2">
     <div class="row col s12 no-margin no-padding">
         <div class="col s8 no-margin no-padding right-padding-16">
             <div class="card-box">
@@ -9,78 +7,81 @@
                         <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s12">
-                        <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
-                            <ng-container *ngFor="let item of pointBreakdown">
-                                <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
-                                    <div class="expander">
-                                        <ng-container *ngIf="item.Measures && item.Measures.length > 0">
-                                            <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed"></i>
-                                            <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed"></i>
-                                        </ng-container>
-                                    </div>
-
-                                    <div class="score-name">
-                                        <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
-                                        <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
-                                        <div>
-                                            Effective
-                                            {{item.EffectiveDate | utcDate | date:'shortDate'}} to
-                                            <ng-container *ngIf="item.EndDate">
-                                                {{item.EndDate | utcDate | date:'shortDate'}}
+                <d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
+                <ng-container *ngIf="isDataLoaded">
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
+                                <ng-container *ngFor="let item of pointBreakdown">
+                                    <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
+                                        <div class="expander">
+                                            <ng-container *ngIf="item.Measures && item.Measures.length > 0">
+                                                <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed"></i>
+                                                <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed"></i>
                                             </ng-container>
-                                            <ng-container *ngIf="!item.EndDate">present</ng-container>
+                                        </div>
+
+                                        <div class="score-name">
+                                            <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
+                                            <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
+                                            <div>
+                                                Effective
+                                                {{item.EffectiveDate | utcDate | date:'shortDate'}} to
+                                                <ng-container *ngIf="item.EndDate">
+                                                    {{item.EndDate | utcDate | date:'shortDate'}}
+                                                </ng-container>
+                                                <ng-container *ngIf="!item.EndDate">present</ng-container>
+                                            </div>
+                                        </div>
+                                        <div class="score-badges big-badges">
+                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                            <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
                                         </div>
                                     </div>
-                                    <div class="score-badges big-badges">
-                                        <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                        <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
-                                    </div>
-                                </div>
-                                <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">
-                                    <ng-container *ngFor="let subItem of item.Measures">
-                                        <div class="score-item {{subItem._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(subItem)">
-                                            <div class="expander"></div>
-                                            <div class="expander"></div>
-                                            <div class="score-name">
-                                                <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
-                                                <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
-                                                <div>
-                                                    Effective
-                                                    {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
-                                                    <ng-container *ngIf="subItem.EndDate">
-                                                        {{subItem.EndDate | utcDate | date:'shortDate'}}
-                                                    </ng-container>
-                                                    <ng-container *ngIf="!subItem.EndDate">present</ng-container>
+                                    <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">
+                                        <ng-container *ngFor="let subItem of item.Measures">
+                                            <div class="score-item {{subItem._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(subItem)">
+                                                <div class="expander"></div>
+                                                <div class="expander"></div>
+                                                <div class="score-name">
+                                                    <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
+                                                    <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
+                                                    <div>
+                                                        Effective
+                                                        {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
+                                                        <ng-container *ngIf="subItem.EndDate">
+                                                            {{subItem.EndDate | utcDate | date:'shortDate'}}
+                                                        </ng-container>
+                                                        <ng-container *ngIf="!subItem.EndDate">present</ng-container>
+                                                    </div>
+                                                </div>
+                                                <div class="score-badges">
+                                                    <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
                                                 </div>
                                             </div>
-                                            <div class="score-badges">
-                                                <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
-                                            </div>
-                                        </div>
+                                        </ng-container>
                                     </ng-container>
                                 </ng-container>
-                            </ng-container>
-                        </div>
-
-                        <div class="total-score-data">
-                            <div class="score-badges big-badges">
-                                <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
                             </div>
-                        </div>
 
-                        <ng-template #emptyMessage>
-                            <div class="scorecards-container">
-                                <div class="scorecard-item empty">
-                                    This score was calculated and sent in from an external source. No measures have been defined.
+                            <div class="total-score-data">
+                                <div class="score-badges big-badges">
+                                    <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
                                 </div>
                             </div>
-                        </ng-template>
+
+                            <ng-template #emptyMessage>
+                                <div class="scorecards-container">
+                                    <div class="scorecard-item empty">
+                                        This score was calculated and sent in from an external source. No measures have been defined.
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </div>
                     </div>
-                </div>
+                </ng-container>
             </div>
 
         </div>
@@ -99,7 +100,12 @@
                                    [scoreDate]="scoreDate"
                                    (datePointChanged)="dateChanged($event)"></score-history>
                 </ng-container>
-
+                <ng-container *ngIf="activeTab=='Calculation'">
+                    <score-calculation [selected]="selectedPoint"></score-calculation>
+                </ng-container>
+                <ng-container *ngIf="activeTab=='Definition'">
+                    <score-definition></score-definition>
+                </ng-container>
             </div>
         </div>
     </div>

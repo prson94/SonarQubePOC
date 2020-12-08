@@ -26,6 +26,8 @@ import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../controls/badge/badge.module';
 import { ScoreHistoryComponent } from './score-history.component';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ScoreCalculationComponent } from './score-calculation.component';
+import { ScoreDefinitionComponent } from './score-definition.component';
 
 @NgModule({
     imports: [
@@ -56,7 +58,9 @@ import { CheckboxModule } from 'primeng/checkbox';
         ObjectBoardComponent,
         ObjectHealthDetailsComponent,
         ObjectHealthDetailsItemComponent,
-        ScoreHistoryComponent
+        ScoreHistoryComponent,
+        ScoreCalculationComponent,
+        ScoreDefinitionComponent
     ],
     exports: [
         ObjectBoardComponent,
