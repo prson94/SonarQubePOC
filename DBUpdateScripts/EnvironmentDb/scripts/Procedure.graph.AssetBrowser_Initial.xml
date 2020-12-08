@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v16">
+  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v16.1">
     <comment>GOV-13106</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -60,7 +60,7 @@ begin
 		declare @insertedRowCount int = 0;
 	
 		-- Current Asset is the starting point IE level 0
-		insert into #directParentAncestryLinks select ID, 0 from asset where [uid] = 'f3b530e2-9e85-410a-8446-1263326073b7';
+		insert into #directParentAncestryLinks select ID, 0 from asset where [uid] = @uid;
 		SELECT @insertedRowCount=@@ROWCOUNT;
 
 		-- Loop through as long as more descendants were added at the last level and add next level down.  Query using the graph tables to get current items children
