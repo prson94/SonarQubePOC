@@ -79,6 +79,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The Asset UID is the unique identifier for this item across all of Data360..
+        /// </summary>
+        public static string Asset_UID_Description {
+            get {
+                return ResourceManager.GetString("Asset_UID_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset UID.
+        /// </summary>
+        public static string Asset_UID_Name {
+            get {
+                return ResourceManager.GetString("Asset_UID_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The Asset ID is the unique identifier for this asset across all Data360 assets..
         /// </summary>
         public static string AssetId_Description {
@@ -93,6 +111,24 @@ namespace Resources {
         public static string AssetId_Name {
             get {
                 return ResourceManager.GetString("AssetId_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Asset Type UID is the unique identifier for the Asset Type across all of Data360..
+        /// </summary>
+        public static string AssetType_UID_Description {
+            get {
+                return ResourceManager.GetString("AssetType_UID_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type UID.
+        /// </summary>
+        public static string AssetType_UID_Name {
+            get {
+                return ResourceManager.GetString("AssetType_UID_Name", resourceCulture);
             }
         }
         

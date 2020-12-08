@@ -314,7 +314,7 @@ order by wi.StartedOn desc";
         }
 
         [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}")]
-        public HttpResponseMessage ReassignWorkflowResource(int itemStepId, int resourceId)
+        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId)
         {
             try
             {
@@ -362,6 +362,9 @@ order by wi.StartedOn desc";
                 Company.WorkflowItemAssignments.Add(assignment);
 
                 Company.SaveChanges();
+
+                var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
+                await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
 
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }

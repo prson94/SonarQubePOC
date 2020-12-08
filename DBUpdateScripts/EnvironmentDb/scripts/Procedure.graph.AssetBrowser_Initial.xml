@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v14">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v15">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,7 +16,8 @@ create or alter procedure [graph].[AssetBrowser_Initial]
 	@uid uniqueidentifier,
 	@resourceId int,
 	@isAdmin bit,
-	@hopCount int
+	@hopCount int,
+	@includeNonLeaf bit = 1
 as
 begin
 	set nocount on;
@@ -48,7 +49,7 @@ begin
 		insert into #ids (ID)
 			select ID from Asset where Uid = @uid;
 	end
-	else
+	else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 	begin	-- This is lineage
 		-- Get descendents (if any) of the current asset.
 		declare @directParentAncestryLinks table (ID bigint, lvl int);
@@ -685,6 +686,7 @@ begin
 													or (Ro.AssetID = 0 and Ho.AssetTypeID = Ro.AssetTypeID)
 												) 
 											and Ro.IsVisible = 1
+											and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					group by	Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
 					) O
 			group by ResponsibilityTypeName, ResponsibilityTypeID
@@ -712,6 +714,7 @@ begin
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
 							and E.ID not in (select IntersectID from #hops where Hop <> 1)
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					union all
 					select	distinct
 							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
@@ -728,6 +731,7 @@ begin
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
 							and E.ID not in (select IntersectID from #hops where Hop <> -1)
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					) O
 			left join #processAssetCountMap pacm on pacm.puid = O.uid and pacm.dir = O.direction and pacm.[key]  = O.[key]
 			group by [Predicate], ID, Uid, Direction,O.[key],pacm.[count]
@@ -1261,6 +1265,30 @@ begin
 		from	#hierarchies O
 				left join #hierarchies C on C.ParentID = O.ID and C.Hop = O.Hop
 		where	C.ID is null and O.ParentID is null and O.ID is not null;
+
+		-- This is for root assets that also link to the same targets as their leaf assets. VERY SPECIAL CASE.
+		insert into #hierarchies (Salt, Hop, AssetTypeID, [Key], Uid)
+			select		H.Salt,
+						H.Hop,
+						H.AssetTypeID,
+						utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar)),
+						CAST(0x0 AS UNIQUEIDENTIFIER)
+			from		#hierarchies H
+						inner join	(
+									select		O.*
+									from		#hierarchies O
+												inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
+									) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
+
+		-- Update parent key for single-level assets with key for asset type records added above.
+		update	H
+		set		H.ParentKey = utility.GetHash(H.Salt + '|T' + cast(H.AssetTypeID as varchar))
+		from	#hierarchies H
+				inner join	(
+							select		O.*
+							from		#hierarchies O
+										inner join #hierarchies C on C.ParentKey = O.[Key] and C.Hop = O.Hop and O.ParentID is null
+							) A on A.ID = H.ID and A.[Key] <> H.[Key] and A.Hop = H.Hop;
 	end
 
 	update	T

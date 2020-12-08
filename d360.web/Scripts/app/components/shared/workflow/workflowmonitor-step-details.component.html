@@ -1,0 +1,294 @@
+﻿<ng-container *ngIf="visible">
+    <div class="detail-panel">
+        <header>
+            {{step?.Name}}
+        </header>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <ng-container *ngIf="!isLoading && step != null">
+            <!-- common task properties -->
+            <ng-container *ngIf="step.StepType == StepType.Task">
+                <div class="row">
+                    <ng-container [ngSwitch]="step.ActivityType">
+                        <div *ngSwitchCase="WorkflowActivityType.Form" class="col s4">
+                            <span class="FieldName">
+                                Form:
+                            </span>
+                            <span>
+                                {{step?.Fields?.form['@title']}}
+                            </span>
+                        </div>
+                        <div *ngSwitchDefault class="col s4">
+                            <span class="FieldName">
+                                Activity Type: 
+                            </span>
+                            <span>
+                                {{helper.activityTypeName(step.ActivityType)}}
+                            </span>
+                        </div>
+                    </ng-container>
+                    <div class="col s4">
+                        <span class="FieldName">
+                            Date Started:
+                        </span>
+                        <span>
+                            {{(step.StartedOn | date: 'short')}}
+                        </span>
+                    </div>
+                    <div class="col s4">
+                        <span class="FieldName">
+                            Date Completed:
+                        </span>
+                        <span>
+                            {{step.CompletedOn == null ? 'N/A' : (step.CompletedOn | date: 'short')}}
+                        </span>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-container [ngSwitch]="step.ActivityType">
+                <ng-container *ngSwitchCase="WorkflowActivityType.EmailNotification">
+                    <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
+                    <div *ngIf="step.Settings.IncludePreviousFormResponses == 'true' && step.ItemSettings.hasForms == true" class="row">
+                        <div class="col s12">
+                            <d3s-workflow-monitor-step-form-details [step]="step"></d3s-workflow-monitor-step-form-details>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.FieldChange">
+                    <d3s-workflow-monitor-step-field-change-details [fieldChanges]="step.FieldChanges"></d3s-workflow-monitor-step-field-change-details>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
+                    <d3s-workflow-monitor-step-relationship-change-details [relationshipChange]="step.RelationshipChange"></d3s-workflow-monitor-step-relationship-change-details>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.HTTPRequest">
+                    <d3s-workflow-monitor-step-http-details [step]="step"></d3s-workflow-monitor-step-http-details>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.StateChange">
+                    <div class="row">
+                        <div class="col s6">
+                            <span class="FieldName">
+                                State:
+                            </span>
+                            <span>
+                                {{states[step?.StateChange]?.label || 'Unknown'}}
+                            </span>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngSwitchCase="WorkflowActivityType.Form">
+                    <ng-container *ngIf="step.Settings.SendFormEmail == 'true' && step.ItemSettings.hasEmails == true">
+                        <d3s-workflow-monitor-step-email-details [step]="step"></d3s-workflow-monitor-step-email-details>
+                    </ng-container>
+                    <div *ngIf="bulkReassignments.length > 0" class="row">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Form was reassigned to another User
+                            </div>
+                            <div *ngFor="let r of bulkReassignments; let i = index">
+                                {{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last" />
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="step.ItemSettings.hasEmails == false && step.Settings.MessageRecipientType == 'Responsibility'" class="row">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Form Responsibilities:
+                            </div>
+                            <div *ngFor="let res of step.ItemSettings.Responsibilities">
+                                {{res.name}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName">
+                                Form Description:
+                            </div>
+                            <div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description'] | safeHtml">
+                            </div>
+                            <div *ngIf="step?.Fields?.form['@description'] == null" class="panel-section FormFieldContent" style="color: #aaa;">
+                                [empty]
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="reassignment != null">
+                        <div class="row">
+                            <div class="col s12 FieldName">
+                                Action is Reassigned to {{reassignment.ReassignType}}
+                            </div>
+                        </div>
+                        <div class="row" *ngIf="step?.ItemFields?.Reassigned['@reassignType']=='Object'">
+                            <div class="col s6">
+                                <span class="FieldName">
+                                    Asset Type:
+                                </span>
+                                <span>
+                                    {{reassignment.ObjectType}}
+                                </span>
+                            </div>
+                            <div class="col s6">
+                                <span class="FieldName">
+                                    Asset Name:
+                                </span>
+                                <span>
+                                    {{reassignment.ObjectName}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <span class="FieldName">
+                                Form Response Type:
+                            </span>
+                            <span>
+                                {{helper.formResponseTypeName(step.Settings.FormResponseType)}}
+                            </span>
+                        </div>
+                    </div>
+                    <d3s-workflow-monitor-step-form-details [step]="step"></d3s-workflow-monitor-step-form-details>
+                </ng-container>
+            </ng-container>
+
+            <!-- non-tasks (start, finish, terminate)-->
+            <ng-container *ngIf="step.StepType != StepType.Task">
+                <div class="row">
+                    <div class="col s4">
+                        <span class="FieldName">
+                            Change Type:
+                        </span>
+                        <span>
+                            {{helper.changeTypeName(step.ChangeType)}}
+                        </span>
+                    </div>
+                    <div class="col s4">
+                        <span class="FieldName">
+                            Date Started:
+                        </span>
+                        <span>
+                            {{(step.StartedOn | date: 'short')}}
+                        </span>
+                    </div>
+                    <div class="col s4">
+                        <span class="FieldName">
+                            Date Completed:
+                        </span>
+                        <span>
+                            {{step.CompletedOn == null ? 'N/A' : (step.CompletedOn | date: 'short')}}
+                        </span>
+                    </div>
+                </div>
+                <ng-container [ngSwitch]="step.StepType">
+                    <ng-container *ngSwitchCase="StepType.Start">
+                        <div class="row">
+                            <div class="col s12">
+                                <span class="FieldName">
+                                    Version:
+                                </span>
+                                <span>
+                                    {{step.Version}} {{step.IsPublishedVersion ? '(Published)' : ''}}
+                                </span>
+                            </div>
+                        </div>
+                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
+                            <div class="col s12">
+                                <span class="FieldName">
+                                    Schedule Interval:
+                                </span>
+                                <span>
+                                    {{step?.EventSettings?.ScheduleInterval}}
+                                </span>
+                            </div>
+                        </div>
+                        <ng-container *ngIf="step.IsIssueType && step.IssueDetails != null; else objectDetails">
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Action Type:
+                                    </span>
+                                    <span>
+                                        {{step.IssueDetails.IssueName}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Action Asset Type:
+                                    </span>
+                                    <span>
+                                        {{step.IssueDetails.ObjectTypeName}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Asset:
+                                    </span>
+                                    <span>
+                                        {{step.IssueDetails.ObjectName}}
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-template #objectDetails>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Asset Type:
+                                    </span>
+                                    <span>
+                                        {{step.ObjectTypeName}}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="FieldName">
+                                        Asset:
+                                    </span>
+                                    <span>
+                                        {{step.ObjectName}}
+                                    </span>
+                                </div>
+                            </div>
+                        </ng-template>
+                        <div *ngIf="step.ItemSettings.hasConditions == true" class="row">
+                            <div class="col s12">
+                                <div class="FieldName">
+                                    Trigger Conditions:
+                                </div>
+                                <div class="panel-section">
+                                    <div *ngIf="showAllAnyCondition">
+                                        Satisfy <strong>{{isSatisfyAll ? "all" : "any" }}</strong>
+                                    </div>
+                                    <ng-container *ngFor="let condition of step.Condition">
+                                        <div *ngIf="condition['@ContextualFieldID'] == null">
+                                            {{condition['@FieldLabel']}} {{operatorName(condition)}} {{condition['@ValueLabel']}}
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
+                            <div class="col s12">
+                                <span class="FieldName">
+                                    Send Aggregate Email:
+                                </span>
+                                <span>
+                                    {{(step?.EventSettings?.SendAggregateEmail == 'true' ? 'Yes' : 'No')}}
+                                </span>
+                            </div>
+                        </div>
+                        <d3s-workflow-monitor-step-email-details *ngIf="step?.EventSettings?.SendAggregateEmail == 'true'" [step]="step" [isAggregate]="true"></d3s-workflow-monitor-step-email-details>
+                    </ng-container>
+                </ng-container>
+            </ng-container>
+        </ng-container>
+    </div>
+</ng-container>
