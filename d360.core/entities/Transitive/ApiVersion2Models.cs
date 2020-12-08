@@ -184,7 +184,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
-        [DataMember, SwaggerExclude]
+        [DataMember]
         public bool? Cascade { get; set; }
     }
 
