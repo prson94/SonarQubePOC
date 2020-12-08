@@ -373,7 +373,16 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.newField['@type'] = e;
         if (e == 'boolean') this.newField['@required'] = true;
         if (e == 'relationshipType' && this.intersectTypes == null) {
-            this.workflowService.getAllowIntersectTypes(this.objectType, this.objectId)
+
+            let type = this.objectType;
+            let id = this.objectId;
+
+            if (this.issueObject.indexOf('|') > -1) {
+                type = this.issueObject.split('|')[0];
+                id = +this.issueObject.split('|')[1];
+            }
+
+            this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe(r => {
                     this.intersectTypes = r;
                 });
