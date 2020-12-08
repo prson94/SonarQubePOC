@@ -39,8 +39,23 @@
                             rootIconName="fa-cog"
                             [menu]="adminMenu"></d3s-site-menu-category>
 </ul>
-<div [ngClass]="{'menu-toggle':!menuOpen, 'menu-toggle-open':menuOpen}"
-     title="Toggle full width navigation"
-     (click)="toggleMenu();"><i class="fa fa-arrow-circle-left"
-                                [class.rotate-right]="!menuOpen"
-                                [class.rotate-left]="menuOpen"></i></div>
+<div class="toggle-container" [ngClass]="{'open ': menuOpen}">
+    <div [ngClass]="{'open ': menuOpen}"
+         class="menu-toggle"
+         title="Toggle full width navigation"
+         (click)="toggleMenu();">
+        <i class="fa fa-arrow-circle-left"
+           [class.rotate-right]="!menuOpen"
+           [class.rotate-left]="menuOpen"></i>
+    </div>
+    <div *ngIf="isScrollerVisable"
+         [ngClass]="{'open ': menuOpen}"
+         class="menu-toggle scroll"
+         title="Scoll menu"
+         (click)="doScroll()">
+        <i class="fa fa-arrow-circle-down"
+           [class.rotate-scoll-up]="atBottom"
+           [class.rotate--scoll-down]="!atBottom"></i>
+    </div>
+</div>
+
