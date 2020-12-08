@@ -1,48 +1,98 @@
-﻿<div class="score-chart-container">
+﻿
+<d3s-loading [isLoading]="!isHistoryLoaded"></d3s-loading>
+<div class="score-chart-container" [hidden]="!isHistoryLoaded">
     <div class="heading">
         <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
     </div>
     <div class="score-chart">
-        <div class="chart-header">{{getScoreType()}} Score History</div>
         <div id="healthChart"></div>
+
+        <p-checkbox igCheckbox [(ngModel)]="showMeasurePoints" (click)="refreshGraph()" binary="true" label="Show scoring history of selected measure"></p-checkbox>
         <div #scoreTable class="score-table">
             <div class="col s12">
                 <div class="row score-tbl-header">
-                    <div class="col s6 column">Date (UTC)</div>
-                    <div class="col s6 column">Score</div>
+                    <div class="col s4 column">Date (UTC)</div>
+                    <div class="col s4 column">
+                        <ng-container *ngIf="showMeasurePoints">
+                            <div class="round-circle"></div>
+                            Measure
+                        </ng-container>
+                    </div>
+                    <div class="col s4 column">
+                        <div class="round-circle"></div>
+                        Score
+                    </div>
                 </div>
                 <div class="body">
-                    <div class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
-                        <div class="col s6 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
-                        <ng-container [ngSwitch]="item.ScoreProgression">
-                            <div *ngSwitchCase="1" class="col s6 column">
-                                <i class="fa fa-caret-up arrow-up"></i> {{item.Score}}%
-                            </div>
-                            <div *ngSwitchCase="-1" class="col s6 column">
-                                <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i> {{item.Score}}%
-                            </div>
-                            <div *ngSwitchCase="0"
-                                 pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
-                                 tooltipPosition="top"
-                                 tooltipStyleClass="ig-tooltip"
-                                 class="col s6 column">
-                                <i class="fa fa-square turn"></i>
-                                {{item.Score}}%
-                            </div>
-                            <div *ngSwitchDefault class="col s6 column">
-                                {{item.Score}}%
-                            </div>
-                        </ng-container>
+                    <div *ngFor="let item of scoresPoints" class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)">
+                        <div class="col s4 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
+                        <div class="col s4 column">
+                            <ng-container *ngIf="showMeasurePoints" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
+                                <ng-container *ngSwitchCase="1">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-caret-up arrow-up"></i>
+                                    </span>
+                                    <span class="score-text">
+                                        {{getMeasurePoint(item).Score}}%
+                                    </span>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="-1">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-caret-down arrow-down"></i>
+                                    </span>
+                                    <span class="score-text">
+                                        {{getMeasurePoint(item).Score}}%
+                                    </span>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="0">
+                                    <i class="fa fa-square turn"></i><span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                </ng-container>
+                                <ng-container *ngSwitchDefault>
+                                    <div>
+                                        <span class="icon-holder"></span>
+                                        <span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="col s4 column" [ngSwitch]="item.ScoreProgression">
+                            <ng-container *ngSwitchCase="1">
+                                <span class="icon-holder">
+                                    <i class="fa fa-caret-up arrow-up"></i>
+                                </span>
+                                <span class="score-text">{{item.Score}}%</span>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="-1">
+                                <span class="icon-holder">
+                                    <i class="fa fa-caret-down arrow-down"></i>
+                                </span>
+                                <span class="score-text">{{item.Score}}%</span>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="0">
+                                <div pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                     tooltipPosition="top"
+                                     tooltipStyleClass="ig-tooltip">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-square turn"></i>
+                                    </span>
+
+                                    <span class="score-text">{{item.Score}}%</span>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>
+                                <div>
+                                    <span class="icon-holder"></span>
+
+                                    <span class="score-text">{{item.Score}}%</span>
+                                </div>
+                            </ng-container>
+                        </div>
                     </div>
                     <div class="row">
 
                     </div>
                 </div>
             </div>
-            <div class="clearfix"></div>
-        </div>
-        <div class="table-caption">
-            All dates are based on UTC
         </div>
     </div>
 

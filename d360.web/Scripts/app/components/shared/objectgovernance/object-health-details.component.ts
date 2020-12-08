@@ -1,20 +1,17 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, ViewEncapsulation, DebugElement } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
 import { ScoreType } from '../../../models/metrics.model';
-import { SearchDetail } from '../../../models/search-result.model';
-import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
-import { ScoreHistoryComponent } from './score-history.component';
 
 @Component({
     selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
     styleUrls: ['object-health-details.less'],
     encapsulation: ViewEncapsulation.None,
-    providers: [ScoreService, ObjectStatisticsService],
+    providers: [ScoreService],
 })
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
@@ -37,15 +34,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes: number[] = [];
     showEmptyMessage: boolean = false;
-    private searchDetails: SearchDetail;
-    private handle: any;
-    loadingPoints: boolean = false;
-    loadingDefinition: boolean = false;
-    loadingHistory: boolean = false;
 
     showExpandAndCollapse: boolean = true;
-
     totalScore: number;
+    activeTab: string = 'History';
+    isDataLoaded: boolean = false;
 
     private headerMenu = [
         {
@@ -60,7 +53,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ]
 
     constructor(protected scoreService: ScoreService,
-        protected objectStatisticsService: ObjectStatisticsService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
@@ -98,23 +90,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.setSelectedButton(x[0])
                 }
             });
-            this.objectStatisticsService.getSearchDetails(this.uid).subscribe(
-                result => {
-                    this.searchDetails = result;
-                }
-            );
         }
     }
 
     private loadSeriesData(): Observable<boolean> {
         var subject = new Subject<boolean>();
-
+        this.isDataLoaded = false;
         if (this.uid) {
-            this.loadingHistory = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
-
-                    this.loadingHistory = false;
                     this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
@@ -150,6 +134,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     }
 
                     subject.next(true);
+                    this.isDataLoaded = true;
                 });
         }
         else {
@@ -164,7 +149,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private loadPoints(isTabChange: boolean = false) {
-        this.loadingPoints = true;
         if (this.uid) {
             if (this.scoreDate.indexOf('0Z') == -1) {
                 this.scoreDate += 'T00:00:00.000Z';
@@ -231,7 +215,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                         this.totalScore += pb._finalScore;
                     })
-                    this.loadingPoints = false;
                     if (this.pointBreakdown.length > 0)
                         this.selectScoreItem(this.pointBreakdown[0]);
                 });

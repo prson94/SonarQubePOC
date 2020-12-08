@@ -36,7 +36,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     measureScoreGraphColor = '#d2edf4';
 
     private graphHash: string = '';
-
+    private showMeasurePoints: boolean = false;
+    private isHistoryLoaded: boolean = false;
 
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -57,11 +58,13 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     }
 
     loadDataPoints() {
+        this.isHistoryLoaded = false;
         this.scoreService.getAssetScoreGraphPoints(this.assetUid, this.scoreType).
             subscribe(res => {
                 this.allLoadedPoints = res;
                 this.scoresPoints = this.getDataForKey('score');
                 this.drawGraph();
+                this.isHistoryLoaded = true;
             });
     }
 
@@ -73,7 +76,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     (dataSet.data as []).forEach(pt => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
-                        sp.Score = (+pt['Value'] * 100);
+                        sp.Score = Math.round((+pt['Value'] * 100) * 10) / 10;
                         arr.push(sp);
                     })
 
@@ -110,6 +113,10 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         this.drawGraph();
     }
 
+    private refreshGraph() {
+        this.graphHash = '';
+        this.drawGraph();
+    }
     public drawGraph() {
 
         if (this.scoresPoints.length <= 0)
@@ -134,8 +141,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         });
 
         if (this.selectedPoint && this.selectedPoint.Uid) {
-            var measurePoints = this.getDataForKey(this.selectedPoint.Uid);
-            this.historicalMeasureData = measurePoints.map(val => {
+            this.measurePoints = this.getDataForKey(this.selectedPoint.Uid);
+            this.historicalMeasureData = this.measurePoints.map(val => {
                 return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
             });
         }
@@ -155,6 +162,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             }
         }
 
+        if (!this.showMeasurePoints) {
+            this.historicalMeasureData = [];
+        }
 
         this.scoreHistory = {
             chart: {
@@ -162,7 +172,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 style: {
                     fontFamily: 'Source Sans Pro'
                 },
-                height: '300px'
+                height: '250px'
             },
             title: {
                 text: ''
@@ -426,7 +436,13 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     }
                 }
             }
+
+            (tblBody as HTMLElement).style.maxHeight = (window.innerHeight - this.scoreTable.nativeElement.getBoundingClientRect().top - 72) + 'px';
         }
         this.cdRef.detectChanges();
+    }
+
+    private getMeasurePoint(item: ScorePoint): ScorePoint {
+        return this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
     }
 }

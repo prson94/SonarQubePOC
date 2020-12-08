@@ -1,4 +1,6 @@
-﻿<div class="scoring-v2">
+﻿<d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
+
+<div class="scoring-v2" *ngIf="isDataLoaded">
     <div class="row col s12 no-margin no-padding">
         <div class="col s8 no-margin no-padding right-padding-16">
             <div class="card-box">
@@ -7,8 +9,7 @@
                         <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
                     </div>
                 </div>
-                <ng-container *ngTemplateOutlet="pointsLoading"></ng-container>
-                <div class="row" *ngIf="!loadingPoints && !loadingDefinition">
+                <div class="row">
                     <div class="col s12">
                         <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
                             <ng-container *ngFor="let item of pointBreakdown">
@@ -85,26 +86,25 @@
         </div>
         <div class="col s4 no-margin no-padding">
             <div class="card-box">
-                <score-history #scoreHistory 
-                               [selectedPoint]="selectedPoint" 
-                               [assetUid]="uid" 
-                               [scoreType]="selectedScoreType"
-                               [scoreDate]="scoreDate"
-                               (datePointChanged)="dateChanged($event)"
-                               ></score-history>
+                <div class="button-group show-multiple">
+                    <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
+                    <button igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
+                    <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
+                </div>
+                <ng-container *ngIf="activeTab=='History'">
+                    <score-history #scoreHistory
+                                   [selectedPoint]="selectedPoint"
+                                   [assetUid]="uid"
+                                   [scoreType]="selectedScoreType"
+                                   [scoreDate]="scoreDate"
+                                   (datePointChanged)="dateChanged($event)"></score-history>
+                </ng-container>
+
             </div>
         </div>
     </div>
 
 </div>
-
-<ng-template #chartLoading>
-    <d3s-loading [isLoading]="chartLoading"></d3s-loading>
-</ng-template>
-
-<ng-template #pointsLoading>
-    <d3s-loading [isLoading]="loadingPoints && loadingDefinition"></d3s-loading>
-</ng-template>
 
 <ng-template #score_list_header>
     <div class="score-header">
@@ -135,17 +135,17 @@
                     <div class="inline-item score">
                         <ng-container [ngSwitch]="score.value.ScoreProgression">
                             <div *ngSwitchCase="1">
-                                <i class="fa fa-caret-up arrow-up"></i> {{score.value.Score}}%
+                                <i class="fa fa-caret-up arrow-up"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
                             <div *ngSwitchCase="-1">
-                                <i class="fa fa-caret-down arrow-down"></i> {{score.value.Score}}%
+                                <i class="fa fa-caret-down arrow-down"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
                             <div *ngSwitchCase="0">
-                                <i class="fa fa-square square"></i>{{score.value.Score}}%
+                                <i class="fa fa-square square"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
-                            <div *ngSwitchDefault>
+                            <span *ngSwitchDefault class="value-text">
                                 {{score.value.Score}}%
-                            </div>
+                            </span>
                         </ng-container>
                     </div>
                 </ng-template>

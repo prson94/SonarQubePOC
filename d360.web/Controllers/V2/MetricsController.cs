@@ -1563,6 +1563,11 @@ namespace d360.web.Controllers.V2
                 }
                 allPoints.AddRange(results);
 
+                allPoints.ForEach(point =>
+                {
+                    point.Value = Math.Round(point.Value, 3);
+                });
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
             }
             catch (Exception ex)

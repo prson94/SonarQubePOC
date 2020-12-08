@@ -25,6 +25,7 @@ import { FormsModule } from '@angular/forms';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../controls/badge/badge.module';
 import { ScoreHistoryComponent } from './score-history.component';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     imports: [
@@ -47,7 +48,8 @@ import { ScoreHistoryComponent } from './score-history.component';
         SharedModule,
         TreeTableModule,
         TooltipModule,
-        DropdownModule
+        DropdownModule,
+        CheckboxModule
 
     ],
     declarations: [
