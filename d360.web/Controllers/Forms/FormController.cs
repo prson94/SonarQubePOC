@@ -788,6 +788,7 @@ namespace d360.web.Controllers
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
             model.AllowedOrigins = (settings.Any(i => i.SettingID == 76) ? settings.Single(i => i.SettingID == 76).Value : "");
+            model.HideEmptySearchCategories = (settings.Any(i => i.SettingID == 77) ? bool.Parse(settings.Single(i => i.SettingID == 77).Value) : false);
 
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -972,6 +973,7 @@ namespace d360.web.Controllers
                 #region Search
 
                 updateCompanySetting(settings, 13, (formModel.DefaultSearchTypes ?? "").ToString());
+                updateCompanySetting(settings, 77, formModel.HideEmptySearchCategories.ToString().ToLower());
 
                 #endregion
 
