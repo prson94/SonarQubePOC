@@ -1279,6 +1279,7 @@
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
+    <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
