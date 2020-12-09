@@ -730,6 +730,7 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-details.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-history.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-pass-test-details.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
@@ -943,6 +944,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-history.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />

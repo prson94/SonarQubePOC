@@ -17,6 +17,7 @@ import { AdminMetricConditionListComponent } from './admin-metric-condition-list
 import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
 import { AdminMetricEditorComponent } from './admin-metric-editor.component';
 import { AdminMetricListComponent } from './admin-metric-list.component';
+import { AdminMetricPassTestDetailsComponent } from './admin-metric-pass-test-details.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -113,7 +114,8 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         AdminMetricListComponent,
         AdminAllocationEditorComponent,
         AdminAnalyticsDetailsComponent,
-        AdminMetricHistoryComponent
+        AdminMetricHistoryComponent,
+        AdminMetricPassTestDetailsComponent,
     ],
     providers: [
         {
