@@ -71,9 +71,14 @@
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
-                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}}
+                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}} <span *ngIf="!searchType.visible && companySettings.HideEmptySearchCategories" class="hiddencategory">(hidden)</span>
                 </li>
             </ul>
+            <input type="checkbox" [(ngModel)]="companySettings.HideEmptySearchCategories" /> Hide Empty Search Categories<br />
+            <div class="directions">
+                Hide Categories with no defined types in search options.
+            </div>
+
         </div>
         <div class="tile tile-detail">
             <header>Default Route</header>
