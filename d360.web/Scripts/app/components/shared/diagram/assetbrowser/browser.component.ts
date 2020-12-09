@@ -1106,7 +1106,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.commitTransaction('HideDeselectedResponsibilityTypes');
     }
 
-    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[]) {
+    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[], visitedNodes: Set<string>) {        
+        // cycle detection. Set
+        if (visitedNodes == null) {
+            visitedNodes = new Set<string>();
+        }
+
+        // check if we already encountered this key it would already be in the Set if we have.
+        if (visitedNodes.has(key)) {
+            console.log('warning:cycle detected ending node highlighting of this path.')
+            return;
+        }
+
+        visitedNodes.add(key);
 
         let fwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Forward));
         let bwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Backward));
@@ -1131,7 +1143,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let oNode = this.diagram.findNodeForKey(l.to);
                     if (oNode) {
                         oNode.isHighlighted = true;
-                        this.helper_HighlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations);
+                        this.helper_HighlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations, visitedNodes);
                     }
                 }
             }
@@ -1142,14 +1154,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let sNode = this.diagram.findNodeForKey(l.from);
                     if (sNode) {
                         sNode.isHighlighted = true;
-                        this.helper_HighlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations);
+                        this.helper_HighlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations, visitedNodes);
                     }
                 }
             }
         });
     }
 
-    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
+    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {        
         try {
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
@@ -1158,9 +1170,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (obj.key) {
                 // Highlight the selected node.
                 obj.isHighlighted = true;
-
+                                
                 // Recurse through and highlight based on the atomic (non-grouped) links.
-                this.helper_HighlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined);
+                this.helper_HighlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined, null);
             }
             else {
                 // You are clicking on a link instead.                
