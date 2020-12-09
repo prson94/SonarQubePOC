@@ -129,13 +129,11 @@
         }
     }
 
-    .score-chart-container {
-        .heading {
-            padding: 16px 0px;
-        }
-    }
-
     .scoring-picker-dropdown {
+        .ui-dropdown-filter-container {
+            display: none;
+        }
+
         li {
             position: relative;
             height: 32px;
@@ -177,104 +175,4 @@
             }
         }
     }
-
-    .score-table {
-        background-color: white;
-        display: flex;
-
-        .score-tbl-header {
-            border-bottom: 1px solid #d1d3d7;
-            font-weight: bold;
-
-            .round-circle {
-                width: 16px;
-                height: 16px;
-                display: inline-block;
-                border-radius: 50%;
-                position: relative;
-                top: 3px;
-                left: -3px;
-            }
-
-            &.has-scroll {
-                padding-right: 26px;
-            }
-        }
-
-        .row {
-            line-height: 38px;
-
-            &:nth-child(even) {
-                background-color: #eff2f6;
-            }
-        }
-
-
-
-        .column {
-            height: 38px;
-
-            .icon-holder {
-                width: 12px;
-                display: inline-block;
-            }
-
-            i.fa {
-                font-size: 20px;
-                position: relative;
-                top: 2px;
-                right: 7px;
-
-
-                &.turn {
-                    color: @ig-slate;
-                    transform: rotate(45deg);
-                    font-size: 10px;
-                    width: 13px;
-                    top: 0px;
-                    right: 5px;
-                }
-            }
-
-            i.fa-circle {
-                font-size: 16px;
-            }
-        }
-
-        .body {
-            min-height: 100px;
-            display: block;
-            overflow-x: auto;
-
-            .score-point, .measure-point {
-                padding-left: 16px;
-            }
-
-            &.has-scroll {
-                .score-point, .measure-point {
-                    padding-left: 12px;
-                }
-            }
-
-            .row {
-                cursor: pointer;
-
-                &:hover {
-                    background-color: @ig-orange-t3;
-                    font-weight: bold;
-                    cursor: pointer;
-                }
-
-                &.selected {
-                    background-color: @ig-orange-t3;
-                    font-weight: bold;
-                }
-
-                &.selected:hover {
-                    cursor: default;
-                }
-            }
-        }
-    }
-
 }

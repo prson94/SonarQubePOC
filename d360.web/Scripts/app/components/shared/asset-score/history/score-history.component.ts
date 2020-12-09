@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter } from '@angular/core';
+﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter, ViewEncapsulation } from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
@@ -11,6 +11,8 @@ import { PointBreakdown, ScorePoint } from '../../../../models/score.model';
 @Component({
     selector: 'score-history',
     templateUrl: `score-history.component.html`,
+    styleUrls: ['score-history.less'],
+    encapsulation: ViewEncapsulation.None,
     providers: [ScoreService, ObjectStatisticsService],
 })
 export class ScoreHistoryComponent extends BaseComponent implements OnChanges {

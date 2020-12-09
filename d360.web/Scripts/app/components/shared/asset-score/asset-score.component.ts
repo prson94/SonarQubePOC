@@ -267,9 +267,15 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
 
                     this.isDataLoaded = true;
+                    this.setDropdownHeader();
                     this.cdRef.markForCheck();
                 });
         }
+    }
+
+    private setDropdownHeader() {
+        var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
+        console.log(dropdown);
     }
 
     private isDQAndNoItems() {

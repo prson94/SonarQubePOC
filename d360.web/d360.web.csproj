@@ -824,6 +824,7 @@
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.less" />
     <Content Include="Content\json\governanceIcons.json" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\score-definition.less" />
+    <Content Include="Scripts\app\components\shared\asset-score\history\score-history.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
