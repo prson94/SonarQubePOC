@@ -136,20 +136,74 @@
 
         .score-dropdown-header {
             display: flex;
-            width: 100%;
             font-weight: bold;
             color: @ig-black;
-            padding: 12px;
-            width: 240px;
+            padding: 16px 12px 8px 12px;
+            width: 206px;
+
+            .date-wrapper, .score-wrapper, .measure-wrapper {
+                flex-grow: 1;
+            }
+
+            .date-wrapper {
+                padding-left: 12px;
+            }
+
+            .score-wrapper {
+                width: 30px;
+            }
+        }
+
+        &.has-scroll {
+            .score-dropdown-header {
+                width: 238px;
+            }
+        }
+
+        &.has-measures {
+            .score-dropdown-header {
+                width: 275px;
+            }
+
+            .inline-item {
+                &.date {
+                    max-width: 95px;
+                }
+
+                &.measure-score {
+                    flex-grow: 1;
+                    padding-left: 10px;
+                }
+
+                &.score {
+                    position: relative;
+                    top: -2px;
+                }
+            }
+
+            &.has-scroll {
+                .score-dropdown-header {
+                    width: 315px;
+
+                    .date-wrapper {
+                        max-width: 116px;
+                    }
+
+                    .score-wrapper {
+                        max-width: 85px;
+                    }
+                }
+            }
         }
 
         .ui-dropdown-items-wrapper {
             width: 90%;
             margin: 0 auto;
+            border-top: 2px solid #dde0e4;
         }
 
         .ui-dropdown-panel {
-            padding-bottom: 32px;
+            padding-bottom: 16px;
         }
 
         ul {
@@ -157,16 +211,15 @@
                 background-color: red !important;
             }
 
+
             li {
                 position: relative;
                 height: 32px;
                 display: flex;
 
-
-
                 .fa {
                     position: relative;
-                    top: 3px;
+                    top: 1px;
                 }
 
                 .arrow-up {
@@ -183,6 +236,7 @@
                     color: #597897;
                     transform: rotate(45deg);
                     font-size: 10px;
+                    top: -1px;
                 }
 
                 .inline-item {

@@ -129,7 +129,7 @@
         <div class="score-header-actions">
             <p-dropdown igDropdown
                         igSize="medium"
-                        [styleClass]="'scoring-picker-dropdown'"
+                        [styleClass]="dropdownClassName"
                         required
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
@@ -147,6 +147,22 @@
                 <ng-template let-score pTemplate="item">
                     <div class="inline-item date">
                         {{score.value.EffectiveDate | utcDate | date:'shortDate'}}
+                    </div>
+                    <div *ngIf="scoresPointsShowMeasure && getMeasurePoint(score.value.EffectiveDate)" class="inline-item score measure-score">
+                        <ng-container [ngSwitch]="getMeasurePoint(score.value.EffectiveDate).ScoreProgression">
+                            <div *ngSwitchCase="1">
+                                <i class="fa fa-caret-up arrow-up"></i><span class="value-text">{{getMeasurePoint(score.value.EffectiveDate).Score}}%</span>
+                            </div>
+                            <div *ngSwitchCase="-1">
+                                <i class="fa fa-caret-down arrow-down"></i><span class="value-text">{{getMeasurePoint(score.value.EffectiveDate).Score}}%</span>
+                            </div>
+                            <div *ngSwitchCase="0">
+                                <i class="fa fa-square square"></i><span class="value-text">{{getMeasurePoint(score.value.EffectiveDate).Score}}%</span>
+                            </div>
+                            <span *ngSwitchDefault class="value-text">
+                                {{getMeasurePoint(score.value.EffectiveDate).Score}}%
+                            </span>
+                        </ng-container>
                     </div>
                     <div class="inline-item score">
                         <ng-container [ngSwitch]="score.value.ScoreProgression">

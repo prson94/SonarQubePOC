@@ -49,6 +49,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     selectedMetric: any;
     isExternallyCalculated: boolean = false;
+    dropdownClassName: string = 'scoring-picker-dropdown';
 
     private headerMenu = [
         {
@@ -177,7 +178,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.scoresPointSelected = this.scoresPointsDDL[0].value;
                     }
 
-                    this.scoresPointsDDL = this.scoresPointsDDL.slice(0, 10);
                     subject.next(true);
 
                     if (this.allocationData) {
@@ -285,8 +285,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 console.log("adding element");
                 var div = document.createElement('div');
                 div.className = 'score-dropdown-header';
+                this.dropdownClassName = 'scoring-picker-dropdown';
+
                 if (this.scoresPointsDDL.length > 10) {
-                    div.className = 'score-dropdown-header has-scroll';
+                    this.dropdownClassName += ' has-scroll';
                 }
 
                 var date = document.createElement('div');
@@ -301,16 +303,29 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 score.className = 'score-wrapper';
                 score.innerHTML = 'Score';
 
-                console.log(this.measurePoints);
+                if (this.measurePoints && this.measurePoints.length > 0) {
+                    this.scoresPointsShowMeasure = true;
+                } else {
+                    this.scoresPointsShowMeasure = false;
+                }
+
+                if (this.scoresPointsShowMeasure) {
+                    this.dropdownClassName += ' has-measures';
+                }
 
                 div.append(date);
-                if (this.scoresPointsShowMeasure)
+                if (this.scoresPointsShowMeasure) {
                     div.append(measure);
+                }
                 div.append(score);
 
                 panel.prepend(div);
             }
         }
+    }
+
+    private getMeasurePoint(effectiveDate: string): ScorePoint {
+        return this.measurePoints.filter(x => x.EffectiveDate == effectiveDate)[0];
     }
 
     private isDQAndNoItems() {
