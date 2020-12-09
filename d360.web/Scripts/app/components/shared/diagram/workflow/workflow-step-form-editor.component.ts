@@ -371,24 +371,24 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     changeType(e: any) {
         this.newField['@type'] = e;
+
+        let type = this.objectType;
+        let id = this.objectId;
+
+        if (this.issueObject.indexOf('|') > -1) {
+            type = this.issueObject.split('|')[0];
+            id = +this.issueObject.split('|')[1];
+        }
+
         if (e == 'boolean') this.newField['@required'] = true;
         if (e == 'relationshipType' && this.intersectTypes == null) {
-
-            let type = this.objectType;
-            let id = this.objectId;
-
-            if (this.issueObject.indexOf('|') > -1) {
-                type = this.issueObject.split('|')[0];
-                id = +this.issueObject.split('|')[1];
-            }
-
             this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe(r => {
                     this.intersectTypes = r;
                 });
         }
         if (e == 'list' && this.lookups == null) {
-            this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
+            this.workflowService.getWorkflowVersionStepFormLookups(type, id)
                 .subscribe(r => {
                     this.lookups = r;
                 });
