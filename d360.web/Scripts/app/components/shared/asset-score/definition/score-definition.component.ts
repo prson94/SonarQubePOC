@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, ViewChild, ElementRef, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { BaseComponent } from '../../base.component';
 import { CompanySettingsService } from '../../../../services/settings.service';
@@ -11,9 +11,11 @@ import { OperatorModel, Operator } from '../../../../models/operator.model';
 @Component({
     selector: 'score-definition',
     templateUrl: `score-definition.component.html`,
+    styleUrls: ['score-definition.less'],
+    encapsulation: ViewEncapsulation.None,
     providers: [CompanySettingsService, MetricsService, ResponsibilityTypeService, RelationshipsService]
 })
-export class ScoreDefinitionComponent extends BaseComponent implements OnChanges {
+export class ScoreDefinitionComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() selectedMetric: MetricAssetViewModel;
     @Input() assetTypeUid: string;
 
@@ -32,7 +34,8 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
         private settingsService: CompanySettingsService,
         private metricsService: MetricsService,
         private responsibilityService: ResponsibilityTypeService,
-        private relationshipService: RelationshipsService
+        private relationshipService: RelationshipsService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -183,5 +186,16 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
         } else {
             this.formattedCheck = "";
         }
+    }
+
+    @ViewChild('scoreDefinitionPanel', { static: false }) scoreDefinitionPanel: ElementRef;
+    ngAfterViewChecked() {
+        if (this.scoreDefinitionPanel) {
+
+            var table = this.scoreDefinitionPanel.nativeElement as HTMLElement;
+            table.style.maxHeight = (window.innerHeight - this.scoreDefinitionPanel.nativeElement.getBoundingClientRect().top - 64) + 'px';
+
+        }
+        this.cdRef.detectChanges();
     }
 }

@@ -1582,7 +1582,8 @@ order by	R.[Name]";
             var sql = $@"
 select  distinct 
         ma.scoretype,
-        ma.uid
+        ma.uid,
+        ma.isexternallycalculated
 from    metrics.Allocation  ma
 		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1";
             return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();

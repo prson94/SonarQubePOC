@@ -45,6 +45,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     isDataLoaded: boolean = false;
 
     selectedMetric: any;
+    isExternallyCalculated: boolean = false;
 
     private headerMenu = [
         {
@@ -120,7 +121,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 }
 
                 this.allocationData.forEach(alloc => {
-                    console.log("here");
                     this.metricService.getMetricsByAllocation(alloc.uid, true)
                         .subscribe(res => {
                             alloc['metricDefinition'] = res;
@@ -173,8 +173,14 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
                         this.scoresPointSelected = this.scoresPointsDDL[0].value;
                     }
-
                     subject.next(true);
+
+                    if (this.allocationData) {
+                        var selected = this.allocationData.filter(x => x.scoretype == this.selectedScoreType);
+                        if (selected.length > 0) {
+                            this.isExternallyCalculated = selected[0]['isexternallycalculated'];
+                        }
+                    }
                 });
         }
         else {
@@ -347,8 +353,13 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         //height - to top of the screen - to bottom of the screen - padding
         this.scorePointsMaxHeight = window.innerHeight - 228 - 60 - 16;
-
+        if (this.scorePointsMaxHeight < 100)
+            this.scorePointsMaxHeight = 100;
         this.cdRef.detectChanges();
 
+    }
+
+    getAsDQBadgeText(item: PointBreakdown) {
+        return item.Value ? 'Pass' : 'Fail';
     }
 }

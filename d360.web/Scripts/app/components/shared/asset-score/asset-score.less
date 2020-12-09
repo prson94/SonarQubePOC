@@ -13,11 +13,14 @@
         display: flex;
         flex-grow: 1;
 
+        &.width-300 {
+            width: 300px;
+        }
+
         &.show-multiple {
             button {
                 border-radius: 0px;
                 flex-grow: 1;
-                max-width: 162px;
 
                 &:focus {
                     border: none;
@@ -182,6 +185,20 @@
         .score-tbl-header {
             border-bottom: 1px solid #d1d3d7;
             font-weight: bold;
+
+            .round-circle {
+                width: 16px;
+                height: 16px;
+                display: inline-block;
+                border-radius: 50%;
+                position: relative;
+                top: 3px;
+                left: -3px;
+            }
+
+            &.has-scroll {
+                padding-right: 26px;
+            }
         }
 
         .row {
@@ -191,6 +208,8 @@
                 background-color: #eff2f6;
             }
         }
+
+
 
         .column {
             height: 38px;
@@ -204,7 +223,7 @@
                 font-size: 20px;
                 position: relative;
                 top: 2px;
-                right: 5px;
+                right: 7px;
 
 
                 &.turn {
@@ -213,6 +232,7 @@
                     font-size: 10px;
                     width: 13px;
                     top: 0px;
+                    right: 5px;
                 }
             }
 
@@ -222,9 +242,19 @@
         }
 
         .body {
-            max-height: 378px;
+            min-height: 100px;
             display: block;
             overflow-x: auto;
+
+            .score-point, .measure-point {
+                padding-left: 16px;
+            }
+
+            &.has-scroll {
+                .score-point, .measure-point {
+                    padding-left: 12px;
+                }
+            }
 
             .row {
                 cursor: pointer;
@@ -247,32 +277,4 @@
         }
     }
 
-    .score-definition-container {
-        padding: 16px 0px;
-
-        .measure-details-item {
-            margin-bottom: 8px;
-
-            .condition-content {
-                display: inline-flex;
-
-                .condition-items {
-                    padding-right: 4px;
-                    flex-direction: column;
-                }
-            }
-
-            .details-header {
-                font-weight: bold;
-            }
-
-            .score-ranges {
-                display: inline-flex;
-
-                .score-range {
-                    padding-right: 16px;
-                }
-            }
-        }
-    }
 }

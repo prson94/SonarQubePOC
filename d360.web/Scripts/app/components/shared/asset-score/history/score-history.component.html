@@ -7,27 +7,27 @@
     <div class="score-chart">
         <div id="healthChart"></div>
 
-        <p-checkbox igCheckbox [(ngModel)]="showMeasurePoints" (click)="refreshGraph()" binary="true" label="Show scoring history of selected measure"></p-checkbox>
+        <p-checkbox *ngIf="!isExternallyCalculated" igCheckbox [(ngModel)]="showMeasurePoints" (click)="refreshGraph()" binary="true" label="Show scoring history of selected measure"></p-checkbox>
         <div #scoreTable class="score-table">
             <div class="col s12">
-                <div class="row score-tbl-header">
+                <div class="row score-tbl-header {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
                     <div class="col s4 column">Date (UTC)</div>
                     <div class="col s4 column">
-                        <ng-container *ngIf="showMeasurePoints">
-                            <div class="round-circle"></div>
+                        <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated">
+                            <div [style.background-color]="measureScoreGraphColor" class="round-circle"></div>
                             Measure
                         </ng-container>
                     </div>
                     <div class="col s4 column">
-                        <div class="round-circle"></div>
+                        <div [style.background-color]="mainScoreGraphColor" class="round-circle"></div>
                         Score
                     </div>
                 </div>
-                <div class="body">
+                <div class="body {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
                     <div *ngFor="let item of scoresPoints" class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)">
                         <div class="col s4 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
-                        <div class="col s4 column">
-                            <ng-container *ngIf="showMeasurePoints" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
+                        <div class="col s4 column measure-point">
+                            <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
                                 <ng-container *ngSwitchCase="1">
                                     <span class="icon-holder">
                                         <i class="fa fa-caret-up arrow-up"></i>
@@ -55,7 +55,7 @@
                                 </ng-container>
                             </ng-container>
                         </div>
-                        <div class="col s4 column" [ngSwitch]="item.ScoreProgression">
+                        <div class="col s4 column score-point" [ngSwitch]="item.ScoreProgression">
                             <ng-container *ngSwitchCase="1">
                                 <span class="icon-holder">
                                     <i class="fa fa-caret-up arrow-up"></i>

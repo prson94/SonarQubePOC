@@ -18,6 +18,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     @Input() assetUid: string;
     @Input() selectedPoint: PointBreakdown;
     @Input() scoreDate: string;
+    @Input() isExternallyCalculated: boolean;
 
     @Output() datePointChanged = new EventEmitter();
 
@@ -26,6 +27,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     private historicalData: any[];
     private historicalMeasureData: any[];
+
+    private tableHasVerticalScrollbar: boolean = false;
 
     private lastScorePoint: Date;
     private chartInstance: Highcharts.Chart;
@@ -164,7 +167,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             }
         }
 
-        if (!this.showMeasurePoints) {
+        if (!this.showMeasurePoints || this.isExternallyCalculated) {
             this.historicalMeasureData = [];
         }
 
@@ -441,7 +444,10 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 }
             }
 
-            (tblBody as HTMLElement).style.maxHeight = (window.innerHeight - this.scoreTable.nativeElement.getBoundingClientRect().top - 72) + 'px';
+            var table = tblBody as HTMLElement;
+            table.style.maxHeight = (window.innerHeight - this.scoreTable.nativeElement.getBoundingClientRect().top - 72) + 'px';
+
+            this.tableHasVerticalScrollbar = table.scrollHeight > table.clientHeight;
         }
         this.cdRef.detectChanges();
     }
