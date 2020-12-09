@@ -22,7 +22,6 @@
         display: block;
     }
     /* hiding scrollbar */
-    -ms-overflow-style: none !important; /* IE 10+ */
     scrollbar-width: none !important; /* Firefox */
     /* end hiding scrollbar*/
     li {
@@ -281,27 +280,6 @@
     }
 }
 
-.ie-min-content {
-    display: -ms-grid;
-    -ms-grid-columns: min-content;
-}
-
-//anything in this only applies to IE for fixes
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-    .megamenu-items {
-        padding-top: 40px;
-    }
-}
-
-//anything in this only applies to Edge for fixes
-@supports
-
-(-ms-ime-align: auto) {
-    .megamenu-items {
-        padding-top: 40px;
-    }
-}
-
 .megamenu-panel {
     background: @igx-left-side-nav;
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 2px;
@@ -348,10 +326,6 @@
             z-index: 1002;
             line-height: 30px;
             outline: none !important;
-
-            ::-ms-clear {
-                display: none;
-            }
         }
 
         ::-webkit-input-placeholder { /* Chrome/Opera/Safari */
@@ -360,11 +334,6 @@
         }
 
         ::-moz-placeholder { /* Firefox 19+ */
-            color: white;
-            font-weight: normal;
-        }
-
-        :-ms-input-placeholder { /* IE 10+ */
             color: white;
             font-weight: normal;
         }
@@ -384,7 +353,6 @@
     .megamenu-items {
         overflow-y: auto;
         overflow-x: hidden;
-        -ms-overflow-style: auto;
 
         .megamenu-items-container {
             padding: 0px;
