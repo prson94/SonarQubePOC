@@ -102,7 +102,8 @@
                                    [scoreType]="selectedScoreType"
                                    [scoreDate]="scoreDate"
                                    [isExternallyCalculated]="isExternallyCalculated"
-                                   (datePointChanged)="dateChanged($event)"></score-history>
+                                   (datePointChanged)="dateChanged($event)"
+                                   (measurePointsChanged)="measurePoints=$event"></score-history>
                 </ng-container>
                 <ng-container *ngIf="activeTab=='Calculation'">
                     <score-calculation [selected]="selectedPoint"></score-calculation>

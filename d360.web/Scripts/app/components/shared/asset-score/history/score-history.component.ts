@@ -23,6 +23,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     @Input() isExternallyCalculated: boolean;
 
     @Output() datePointChanged = new EventEmitter();
+    @Output() measurePointsChanged = new EventEmitter();
 
     private scoresPoints: ScorePoint[] = [];
     private measurePoints: ScorePoint[];
@@ -171,7 +172,13 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
         if (!this.showMeasurePoints || this.isExternallyCalculated) {
             this.historicalMeasureData = [];
+            this.measurePointsChanged.emit([]);
         }
+        else {
+            this.measurePointsChanged.emit(this.measurePoints);
+        }
+
+
 
         this.scoreHistory = {
             chart: {

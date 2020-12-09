@@ -21,7 +21,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     assetTypeUid: string;
 
     scoresPoints: ScorePoint[];
+    measurePoints: ScorePoint[];
+
     scoresPointsDDL: SelectItem[];
+    scoresPointsShowMeasure: boolean = false;
     scoresPointSelected: SelectItem;
     scorePointsMaxHeight: number = 200;
 
@@ -173,6 +176,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
                         this.scoresPointSelected = this.scoresPointsDDL[0].value;
                     }
+
+                    this.scoresPointsDDL = this.scoresPointsDDL.slice(0, 10);
                     subject.next(true);
 
                     if (this.allocationData) {
@@ -267,7 +272,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
 
                     this.isDataLoaded = true;
-                    this.setDropdownHeader();
                     this.cdRef.markForCheck();
                 });
         }
@@ -275,7 +279,38 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private setDropdownHeader() {
         var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
-        console.log(dropdown);
+        var panel = dropdown.getElementsByClassName('ui-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('ui-dropdown-panel')[0] : null;
+        if (panel) {
+            if (panel.getElementsByClassName('score-dropdown-header').length == 0) {
+                console.log("adding element");
+                var div = document.createElement('div');
+                div.className = 'score-dropdown-header';
+                if (this.scoresPointsDDL.length > 10) {
+                    div.className = 'score-dropdown-header has-scroll';
+                }
+
+                var date = document.createElement('div');
+                date.className = 'date-wrapper';
+                date.innerHTML = 'Date (UTC)';
+
+                var measure = document.createElement('div');
+                measure.className = 'measure-wrapper';
+                measure.innerHTML = 'Measure';
+
+                var score = document.createElement('div');
+                score.className = 'score-wrapper';
+                score.innerHTML = 'Score';
+
+                console.log(this.measurePoints);
+
+                div.append(date);
+                if (this.scoresPointsShowMeasure)
+                    div.append(measure);
+                div.append(score);
+
+                panel.prepend(div);
+            }
+        }
     }
 
     private isDQAndNoItems() {
@@ -361,6 +396,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.scorePointsMaxHeight = window.innerHeight - 228 - 60 - 16;
         if (this.scorePointsMaxHeight < 100)
             this.scorePointsMaxHeight = 100;
+
+        this.setDropdownHeader();
+
         this.cdRef.detectChanges();
 
     }

@@ -134,43 +134,69 @@
             display: none;
         }
 
-        li {
-            position: relative;
-            height: 32px;
+        .score-dropdown-header {
             display: flex;
+            width: 100%;
+            font-weight: bold;
+            color: @ig-black;
+            padding: 12px;
+            width: 240px;
+        }
 
-            .fa {
+        .ui-dropdown-items-wrapper {
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .ui-dropdown-panel {
+            padding-bottom: 32px;
+        }
+
+        ul {
+            li:nth-child(even) {
+                background-color: red !important;
+            }
+
+            li {
                 position: relative;
-                top: 3px;
-            }
+                height: 32px;
+                display: flex;
 
-            .arrow-up {
-                color: #4ecc89;
-                font-size: 20px;
-            }
 
-            .arrow-down {
-                color: #ed3765;
-                font-size: 20px;
-            }
 
-            .square {
-                color: #597897;
-                transform: rotate(45deg);
-                font-size: 10px;
-            }
-
-            .inline-item {
-                display: inline-block;
-
-                &.date {
-                    flex-grow: 1;
+                .fa {
+                    position: relative;
+                    top: 3px;
                 }
 
-                .value-text {
-                    min-width: 40px;
+                .arrow-up {
+                    color: #4ecc89;
+                    font-size: 20px;
+                }
+
+                .arrow-down {
+                    color: #ed3765;
+                    font-size: 20px;
+                }
+
+                .square {
+                    color: #597897;
+                    transform: rotate(45deg);
+                    font-size: 10px;
+                }
+
+                .inline-item {
                     display: inline-block;
-                    margin-left: 6px;
+
+                    &.date {
+                        flex-grow: 1;
+                    }
+
+                    .value-text {
+                        min-width: 40px;
+                        display: inline-block;
+                        margin-left: 6px;
+                    }
                 }
             }
         }
