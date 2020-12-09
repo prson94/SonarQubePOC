@@ -567,7 +567,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.cdRef.detectChanges();
     }
     private isEmpty() {
-        return this.diagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
+        return this.myDiagram ? (this.myDiagram.nodes.count == 0 && this.myDiagram.links.count == 0) : true;
     }
 
     private isCurrentStateSaved() {
