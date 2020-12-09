@@ -103,7 +103,7 @@
     <div prompt>
         <ng-container *ngIf="selection.hasMeasure || selection.hasField">
             <ng-container *ngIf="selection.hasMeasure">
-                Sorry, you are unable to delete a score with measures defined.
+                Sorry, you are unable to delete a score definition with measures defined.
             </ng-container>
             <ng-container *ngIf="!selection.hasMeasure && selection.hasField">
                 Sorry, you cannot delete a scoring definition when it is referenced by a Score field on an Asset Type. Please remove the field from the Asset Type and try again.
