@@ -5,18 +5,17 @@ import { PointBreakdown, ScorePoint } from '../../../models/score.model';
 import { ScoreType } from '../../../models/metrics.model';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
-import { Score } from '../../../models/fieldtype-api.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
 
 @Component({
-    selector: 'd3s-object-health-details',
-    templateUrl: `./object-health-details.component.html`,
-    styleUrls: ['object-health-details.less'],
+    selector: 'd3s-asset-score',
+    templateUrl: `./asset-score.component.html`,
+    styleUrls: ['asset-score.less'],
     encapsulation: ViewEncapsulation.None,
     providers: [ScoreService, MetricsService, AssetService],
 })
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
+export class AssetScoreComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
     assetTypeUid: string;

@@ -10,7 +10,6 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { RuleResultsRoutingModule } from './rule-results.routes';
 import { RuleResultsComponent } from './rule-results.component';
-import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shared-object-governance.module';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RuleModule } from '../../rule/rule.module';

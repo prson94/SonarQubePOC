@@ -12,9 +12,9 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="score-tile-detail">
-                       <d3s-object-health-details *ngIf="showBoard"
+                       <d3s-asset-score *ngIf="showBoard"
                                        [uid]="uid"
-                                       [objectName]="objectName"></d3s-object-health-details>
+                                       [objectName]="objectName"></d3s-asset-score>
                     </div>
                 </div>
             </div>
@@ -22,7 +22,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 })
 
 export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
-    
+
     @Input() uid: string = "";
     @Input() objectName: string = "";
 
@@ -49,7 +49,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
         this.sub = this.route.params.subscribe(params => {
             this.uid = params['Uid'];
             this.objectName = params['objectName'];
-            
+
             this.isLoading = false;
             this.showBoard = true;
         });

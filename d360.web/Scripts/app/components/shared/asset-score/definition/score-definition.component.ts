@@ -1,14 +1,12 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { PointBreakdown } from '../../../models/score.model';
-import { BaseComponent } from '../base.component';
-import { MetricAssetViewModel, MetricAssetDefinitionGovernanceViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
-import { OperatorModel, Operator } from '../../../models/operator.model';
-import { CompanySettingsService } from '../../../services/settings.service';
-import { MetricsService } from '../../../services/metrics.service';
-import { ResponsibilityService } from '../../../services/responsibility.service';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { RelationshipsService } from '../../../services/relationships.service';
 import { forkJoin } from 'rxjs';
+import { BaseComponent } from '../../base.component';
+import { CompanySettingsService } from '../../../../services/settings.service';
+import { MetricsService } from '../../../../services/metrics.service';
+import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
+import { RelationshipsService } from '../../../../services/relationships.service';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel } from '../../../../models/metrics.model';
+import { OperatorModel, Operator } from '../../../../models/operator.model';
 
 @Component({
     selector: 'score-definition',

@@ -1,10 +1,12 @@
 ﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter } from '@angular/core';
-import { BaseComponent } from '../base.component';
-import { ScoreService } from '../../../services/score.service';
-import { PointBreakdown, ScorePoint } from '../../../models/score.model';
+
 import * as Highcharts from 'highcharts';
-import { ScoreType } from '../../../models/metrics.model';
-import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
+import { ScoreService } from '../../../../services/score.service';
+import { ScoreType } from '../../../../models/metrics.model';
+import { BaseComponent } from '../../base.component';
+import { PointBreakdown, ScorePoint } from '../../../../models/score.model';
+
 
 @Component({
     selector: 'score-history',

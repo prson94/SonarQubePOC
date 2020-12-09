@@ -1,6 +1,5 @@
 ﻿import { Component, Input } from '@angular/core';
-import { PointBreakdown } from '../../../models/score.model';
-import { BaseComponent } from '../base.component';
+import { PointBreakdown } from '../../../../models/score.model';
 
 @Component({
     selector: 'score-calculation',

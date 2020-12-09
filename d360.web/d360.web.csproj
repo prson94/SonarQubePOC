@@ -875,11 +875,10 @@
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\score-definition.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\score-calculation.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\score-history.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\asset-score.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\history\score-history.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\relationships-modal.component.html" />
@@ -990,6 +989,9 @@
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\browser-warning\browser-warning.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\badge\badge.module.ts" />
@@ -1018,10 +1020,10 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\multiselect-grid-v2.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor-v2\shared-dynamic-grid-editor-v2.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\score-definition.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\score-calculation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\score-history.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\asset-score.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationships-modal.component.ts" />
@@ -1284,7 +1286,7 @@
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-category.component.html" />
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.less" />
+    <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1420,8 +1422,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\shared-asset-score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />

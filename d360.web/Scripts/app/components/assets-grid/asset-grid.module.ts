@@ -26,12 +26,12 @@ import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { AssetGridColumnFilterComponent } from './asset-grid-column-filter.component';
 import { AssetGridCustomExportComponent } from './asset-grid-custom-export.component';
 import { AssetGridTopLevelListComponent } from './asset-grid-top-level-list.component';
 import { AssetGridTopLevelFilterComponent } from './asset-grid-top-level-filter.component';
 import { AssetGridComponent } from './asset-grid.component';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 
 @NgModule({
@@ -61,7 +61,7 @@ import { AssetGridComponent } from './asset-grid.component';
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
         SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,
+        SharedAssetScoreModule,
         SharedAssetEditorsModule,
         TilesModule,
         WorkflowModule,

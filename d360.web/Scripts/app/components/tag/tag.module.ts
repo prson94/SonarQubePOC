@@ -16,12 +16,12 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
 import { TableModule } from 'primeng/table';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { TagComponent } from './tag.component';
 import { TagItemComponent } from './tag-item.component';
 import { TagRoutingModule } from './tag.routes';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 @NgModule({
     imports: [
@@ -47,7 +47,7 @@ import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
         SharedDeleteFormModule,        
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
-        SharedObjectGovernanceModule,
+        SharedAssetScoreModule,
     ],
     declarations: [
         TagComponent,

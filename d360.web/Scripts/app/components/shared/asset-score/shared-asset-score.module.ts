@@ -13,21 +13,23 @@ import { TilesModule } from '../tiles/tiles.module';
 import { SocialModule } from '../social/social.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
-
-import { ObjectBoardComponent } from './object-board.component';
-import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { PipesModule } from '../../../pipes/pipes.module';
-import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { DirectivesModule } from '../directives/directives.module';
 import { FormsModule } from '@angular/forms';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../controls/badge/badge.module';
-import { ScoreHistoryComponent } from './score-history.component';
 import { CheckboxModule } from 'primeng/checkbox';
-import { ScoreCalculationComponent } from './score-calculation.component';
-import { ScoreDefinitionComponent } from './score-definition.component';
+import { ScoreHistoryComponent } from './history/score-history.component';
+import { ScoreCalculationComponent } from './calculation/score-calculation.component';
+import { ScoreDefinitionComponent } from './definition/score-definition.component';
+import { AssetScoreComponent } from './asset-score.component';
+import { ScoreCalculationModule } from './calculation/score-calculation.module';
+import { ScoreDefinitionModule } from './definition/score-definition.module';
+import { ScoreHistoryModule } from './history/score-history.module';
+
+
 
 @NgModule({
     imports: [
@@ -51,20 +53,17 @@ import { ScoreDefinitionComponent } from './score-definition.component';
         TreeTableModule,
         TooltipModule,
         DropdownModule,
-        CheckboxModule
+        CheckboxModule,
 
+        ScoreCalculationModule,
+        ScoreDefinitionModule,
+        ScoreHistoryModule
     ],
     declarations: [
-        ObjectBoardComponent,
-        ObjectHealthDetailsComponent,
-        ObjectHealthDetailsItemComponent,
-        ScoreHistoryComponent,
-        ScoreCalculationComponent,
-        ScoreDefinitionComponent
+        AssetScoreComponent
     ],
     exports: [
-        ObjectBoardComponent,
-        ObjectHealthDetailsComponent,
+        AssetScoreComponent
     ],
     providers: [
         {
@@ -74,4 +73,4 @@ import { ScoreDefinitionComponent } from './score-definition.component';
         }
     ]
 })
-export class SharedObjectGovernanceModule { }
+export class SharedAssetScoreModule { }
