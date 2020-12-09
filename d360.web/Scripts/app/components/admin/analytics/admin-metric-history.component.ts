@@ -32,11 +32,6 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
     private showConditions: boolean;
 
     showPassTest: boolean;
-    formattedCheck: string;
-
-    dateVal1: Date;
-    dateVal2: Date;
-    dateShowType: string;
 
     constructor(
         private metricsService: MetricsService
@@ -107,7 +102,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                                 }
                             }
                         }
-                        break; 
+                        break;
                     case 'Date':
                         if (c.Values) {
                             if (c.Values[0]) {
@@ -177,7 +172,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
         else {
             this.showConditions = false;
         }
-
+     
         if (this.hasPassTest(this.selection) && !this.Measure.IsGroup)
             this.showPassTest = true
         else

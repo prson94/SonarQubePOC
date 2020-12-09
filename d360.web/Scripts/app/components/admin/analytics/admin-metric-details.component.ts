@@ -38,7 +38,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
     operators: OperatorModel[];
-    formattedCheck: string = "";
 
     CheckType = MetricGovernanceCheckType;
 
@@ -49,10 +48,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     showPassTest: boolean = false;
     responsibilityTypes: any[] = [];
     relationshipTypes: any[] = [];
-
-    dateVal1: Date;
-    dateVal2: Date;
-    dateShowType: string;
 
     constructor(
         secondaryNavService: SecondaryNavService,

@@ -65,8 +65,13 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="!isExternallyCalculated && showPassTest && formattedCheck" class="measure-details-item">
-                        add the new pass test details component here
+                    <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
+                        <d3s-admin-metric-pass-test-details [selection]="selection"
+                                                            [operators]="operators"
+                                                            [metricListFieldTypes]="metricListFieldTypes"
+                                                            [responsibilityTypes]="responsibilityTypes"
+                                                            [relationshipTypes]="relationshipTypes"
+                                                            [assetTypeUid]="Measure.Uid"></d3s-admin-metric-pass-test-details>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">UID</div>
