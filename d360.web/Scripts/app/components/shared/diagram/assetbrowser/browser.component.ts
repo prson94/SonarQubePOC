@@ -1161,8 +1161,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
-    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
-        console.log('helper_HighlightPath');
+    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {        
         try {
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
