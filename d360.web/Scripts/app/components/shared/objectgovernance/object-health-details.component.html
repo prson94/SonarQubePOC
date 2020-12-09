@@ -104,7 +104,7 @@
                     <score-calculation [selected]="selectedPoint"></score-calculation>
                 </ng-container>
                 <ng-container *ngIf="activeTab=='Definition'">
-                    <score-definition></score-definition>
+                    <score-definition [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
                 </ng-container>
             </div>
         </div>

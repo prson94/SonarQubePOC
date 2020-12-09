@@ -7,17 +7,19 @@ import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { Score } from '../../../models/fieldtype-api.model';
 import { MetricsService } from '../../../services/metrics.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
     styleUrls: ['object-health-details.less'],
     encapsulation: ViewEncapsulation.None,
-    providers: [ScoreService, MetricsService],
+    providers: [ScoreService, MetricsService, AssetService],
 })
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
+    assetTypeUid: string;
 
     scoresPoints: ScorePoint[];
     scoresPointsDDL: SelectItem[];
@@ -43,6 +45,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     activeTab: string = 'History';
     isDataLoaded: boolean = false;
 
+    selectedMetric: any;
+
     private headerMenu = [
         {
             "title": "Expand All",
@@ -56,6 +60,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ]
 
     constructor(protected scoreService: ScoreService,
+        protected assetService: AssetService,
         protected metricService: MetricsService,
         private cdRef: ChangeDetectorRef
     ) {
@@ -84,10 +89,30 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         });
         item._isSelected = true;
         this.selectedPoint = JSON.parse(JSON.stringify(item));
+        this.setCurrentDefinition();
+    }
+
+    private setCurrentDefinition() {
+        if (!this.selectedPoint || !this.allocationData) return;
+
+        this.allocationData.forEach(alloc => {
+            if (alloc['metricDefinition']) {
+                var arr = alloc['metricDefinition'] as any[];
+                arr.forEach(metric => {
+                    if (metric['Uid'] == this.selectedPoint.Uid) {
+                        this.selectedMetric = metric;
+                    }
+                })
+            }
+        })
     }
 
     private loadTypesAndLatestScore() {
         if (this.uid) {
+            this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
+                this.assetTypeUid = res.AssetTypeUid;
+            })
+
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
                 this.scoreTypes = x.map(x => x.scoretype as ScoreType);
                 this.allocationData = x;
@@ -96,10 +121,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 }
 
                 this.allocationData.forEach(alloc => {
-                    console.log(alloc);
+                    console.log("here");
                     this.metricService.getMetricsByAllocation(alloc.uid, true)
                         .subscribe(res => {
-                            console.log(res);
+                            alloc['metricDefinition'] = res;
+                            this.setCurrentDefinition();
                         });
 
                 });
