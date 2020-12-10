@@ -323,49 +323,9 @@ order by wi.StartedOn desc";
                     throw new Exception("item step id not found");
                 else
                 {
-                    var fieldElement = XElement.Parse(itemStep.Fields);
-                    var reassigned = new XElement("Reassigned");
-                    reassigned.Add(new XAttribute("reassignType", "Resource"));
-                    reassigned.Add(new XAttribute("toResourceId", resourceId.ToString()));
-                    reassigned.Add(new XAttribute("fromResourceId", Company.CurrentResourceID.ToString()));
-                    reassigned.Add(new XAttribute("byResourceId", Company.CurrentResourceID.ToString()));
-                    reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
-
-                    fieldElement.Add(reassigned);
-                    itemStep.Fields = fieldElement.ToString();
-                    Company.SaveChanges();
+                    var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
                 }
-                //remove all the current version step items assignments
-                var currentAssignments = Company.WorkflowItemAssignments.Where(x => x.ItemID == itemStep.ItemID);
-
-                if (currentAssignments != null)
-                {
-                    Company.WorkflowItemAssignments.RemoveRange(currentAssignments);
-
-                    Company.SaveChanges();
-                }
-
-                // add an assignment for the specified user
-
-                var assignment = new WorkflowItemAssignment
-                {
-                    ItemStepID = itemStep.ID,
-                    ItemID = itemStep.ItemID,
-                    CreatedBy = Company.CurrentResourceID,
-                    CreatedOn = DateTime.UtcNow,
-                    ResourceObject = "Resource",
-                    ResourceObjectID = resourceId,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.WorkflowItemAssignments.Add(assignment);
-
-                Company.SaveChanges();
-
-                var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
-
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
             catch (Exception ex)
