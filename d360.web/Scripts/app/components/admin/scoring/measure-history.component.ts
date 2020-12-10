@@ -7,12 +7,12 @@ import { OperatorModel, Operator } from '../../../models/operator.model';
 import { AssetType, AssetTypeMetricModel } from '../../../models/asset.model';
 
 @Component({
-    selector: 'd3s-metric-history',
-    templateUrl: `./admin-metric-history.component.html`,
+    selector: 'measure-history',
+    templateUrl: `./measure-history.component.html`,
     providers: [MetricsService]
 })
 
-export class AdminMetricHistoryComponent extends BaseComponent implements OnInit, OnDestroy {
+export class AdminMeasureHistoryComponent extends BaseComponent implements OnInit, OnDestroy {
 
     @Input() Measure: MetricAssetViewModel;
     @Input() AssetType: AssetTypeMetricModel;
@@ -97,8 +97,8 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                             if (field.Values.length > 0) {
                                 if (c.Values) {
                                     if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
                                         if (valueModel) {
                                             c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;
@@ -212,7 +212,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                     let formattedValue = gov.Field.Values.join(", ");
                     if (fieldType) {
                         if (fieldType.Type == "Lookup") {
-                            let fieldValue = +gov.Field.Values[0] ?? -1;
+                            let fieldValue = gov.Field.Values[0] ?? "";
 
                             let lookupValues = fieldType.Values;
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0

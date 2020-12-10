@@ -274,7 +274,7 @@ export class RelationshipsService extends BaseObservableService {
 
     private tagTooltipsCache: any[] = [];
 
-    getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<any> {
+    getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
         var cachedItem = this.tagTooltipsCache.find(x => x.assetTypeUid == assetTypeUid);
         if (cachedItem)
@@ -283,7 +283,7 @@ export class RelationshipsService extends BaseObservableService {
         let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active`;
 
         var obs = this.http.get(url)
-            .pipe(map(response => <any>response),
+            .pipe(map(response => <RelationshipType[]>response),
                 publishReplay(1),
                 refCount(),
                 catchError(err => this.handleError(err)));

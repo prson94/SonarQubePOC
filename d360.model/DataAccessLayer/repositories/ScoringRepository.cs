@@ -43,6 +43,19 @@ namespace d360.model.DataAccessLayer
             {
                 switch (kp.Key.ToLower())
                 {
+                    case "allocationuid":
+                        Guid allocationUid = Guid.Empty;
+                        Guid.TryParse(kp.Value, out allocationUid);
+
+                        if (allocationUid == Guid.Empty)
+                        {
+                            error = "Invalid Allocation UID specified.";
+                            return null;
+                        }
+
+                        whereStatements.Add("AL.Uid = @allocationUid");
+                        dbArgs.Add("@allocationUid", allocationUid);
+                        break;
                     case "assettypeuid":
                         Guid assetTypeUid = Guid.Empty;
                         Guid.TryParse(kp.Value, out assetTypeUid);

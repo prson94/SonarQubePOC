@@ -1,12 +1,12 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <div *ngIf="metricTree.length == 0 && !isExternallyCalculated" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
+    <div *ngIf="metricTree.length == 0 && !allocation.isExternallyCalculated" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
     <div>
         <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
-                    <th style="width: 120px" *ngIf="!isExternallyCalculated">Weight</th>
+                    <th style="width: 120px" *ngIf="!allocation.isExternallyCalculated">Weight</th>
                     <th style="width: 120px">Effective Date</th>
                     <th style="width: 40px"></th>
                     <th style="width: 40px"></th>
@@ -19,7 +19,7 @@
                         {{item.Name}}
                         <div class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></div>
                     </td>
-                    <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
+                    <td *ngIf="!allocation.isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                     <td>
                         <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
@@ -42,26 +42,50 @@
         <div *ngIf="metricTree.length == 0" class="no-measure-message">No measures defined</div>
     </div>
     <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;">
-        <d3s-admin-metric-editor [assetTypeUid]="assetType.Uid" [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [operators]="operators" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
+        <measure-editor [allocation]="allocation"
+                        [metricEditorFieldTypes]="fields"
+                        [operators]="operators" 
+                        [predicates]="predicates" 
+                        [relationships]="relationships" 
+                        [responsibilities]="responsibilities" 
+                        [paths]="paths"
+                        [parentUid]="selection?.Uid" 
+                        (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);" 
+                        (onSave)="formMode = FormMode.Default; load($event); ">
+        </measure-editor>
     </d3s-modal>
     <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;">
-        <d3s-admin-metric-editor [assetTypeUid]="assetType.Uid" *ngIf="formMode == FormMode.Editing" [isExternallyCalculated]="isExternallyCalculated" [scoreData]="scoreData" [allocationUid]="allocationUid" [(model)]="selection" [operators]="operators" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load($event)" (onSave)="formMode = FormMode.Default; load($event); "></d3s-admin-metric-editor>
+        <measure-editor *ngIf="formMode == FormMode.Editing" 
+                        [allocation]="allocation"
+                        [metricEditorFieldTypes]="fields"
+                        [operators]="operators" 
+                        [predicates]="predicates" 
+                        [relationships]="relationships" 
+                        [responsibilities]="responsibilities" 
+                        [paths]="paths"
+                        [scoreData]="scoreData" 
+                        [(model)]="selection" 
+                        [uid]="selection?.Uid" 
+                        (onCancel)="formMode = FormMode.Default; load($event)" 
+                        (onSave)="formMode = FormMode.Default; load($event); ">
+        </measure-editor>
     </d3s-modal>
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
-            <d3s-metric-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                                [Measure]="selection"
-                                [operators]="operators"
-                                [responsibilityTypes]="responsibilityTypes"
-                                [relationshipTypes]="relationshipTypes"
-                                [AssetType]="assetType"
-                                [isExternallyCalculated]="isExternallyCalculated"
-                                [metricListFieldTypes]="metricListFieldTypes"
-                                (onClose)="showHistory(false);load(selection?.Name);">
-            </d3s-metric-history>
+            <measure-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
+                            [Measure]="selection"
+                            [operators]="operators"
+                            [responsibilityTypes]="responsibilityTypes"
+                            [relationshipTypes]="relationshipTypes"
+                            [AssetType]="assetType"
+                            [isExternallyCalculated]="allocation.isExternallyCalculated"
+                            [metricListFieldTypes]="metricListFieldTypes"
+                            (onClose)="showHistory(false);load(selection?.Name);">
+            </measure-history>
         </div>
     </d3s-modal>
-    <d3s-delete-form *ngIf="selection" [uri]="'api/v2/metrics/' + selection?.Uid"
+    <d3s-delete-form *ngIf="selection" 
+                     [uri]="'api/v2/metrics/' + selection?.Uid"
                      [method]="'delete'"
                      [showAsModal]="true"
                      [isModalVisible]="formMode == FormMode.Deleting"
@@ -82,17 +106,17 @@
                     </ul>
                 </div>
                 <p>
-                    These measures will no longer be used in score calculations for the assets of type '{{scoreType.assetTypePath}}'. <br />
+                    These measures will no longer be used in score calculations for the assets of type '{{allocation.assetTypePath}}'. <br />
                     Version histories for these measures will be kept to maintain a scoring history for assets.
                 </p>
             </div>
             <div *ngIf="!selection.IsGroup">
                 <p>Are you sure you want to disable the measure '{{selection.Name}}'?</p>
                 <p *ngIf="todayAndEffectiveDateAreSame(selection)">
-                    The measure will no longer be used in score calculations for the asset of type '{{scoreType.assetTypePath}}'.
+                    The measure will no longer be used in score calculations for the asset of type '{{allocation.assetTypePath}}'.
                 </p>
                 <p *ngIf="!todayAndEffectiveDateAreSame(selection)">
-                    The measure will no longer be used in score calculations for the asset of type '{{scoreType.assetTypePath}}'.
+                    The measure will no longer be used in score calculations for the asset of type '{{allocation.assetTypePath}}'.
                     Scores for impacted assets will be recalculated immediately.<br /><br />
                     A version history for this measure will be kept to maintain a scoring history for assets.
                 </p>

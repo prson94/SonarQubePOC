@@ -1,18 +1,20 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, MetricPathOptionViewModel } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
-import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 import { OperatorModel } from '../../../models/operator.model';
 import * as _ from 'lodash';
+import { ResponsibilityType } from '../../../models/responsibility-type.model';
+import { RelationshipType } from '../../../models/relationship.model';
+import { Predicate } from '../../../models/predicate.model';
 
 @Component({
-    selector: 'd3s-admin-metric-list',
-    templateUrl: './admin-metric-list.component.html',
+    selector: 'measure-list',
+    templateUrl: './measure-list.component.html',
     providers: [MetricsService, AllocationService],
     styles: [
         `
@@ -33,15 +35,18 @@ import * as _ from 'lodash';
     encapsulation: ViewEncapsulation.None
 })
 
-export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() assetType: AssetTypeMetricModel;
-    @Input() allocationUid: string;
+export class MeasureListComponent extends BaseComponent implements OnInit, OnChanges {
     @Output() selectionChange = new EventEmitter();
-    @Input() scoreType: ScoreTypeAllocation;
+    @Input() allocation: ScoreTypeAllocation;
     @Input() scoreData: any;
+
+    @Input() fields: MetricFieldTypeViewModel[] = [];
     @Input() operators: OperatorModel[];
-    @Input() responsibilityTypes: any[] = [];
-    @Input() relationshipTypes: any[] = [];
+    @Input() predicates: Predicate[];
+    @Input() relationships: RelationshipType[];
+    @Input() responsibilities: ResponsibilityType[];
+    @Input() paths: MetricPathOptionViewModel[] = [];
+
     @Input() showDisabled: boolean = false;
 
     private metrics: MetricAssetViewModel[] = [];
@@ -51,12 +56,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private previousSelection: MetricAssetViewModel;
     private previousSelectedNode: TreeNode;
 
-    @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
-
     private formMode = FormMode.Default;
     FormMode = FormMode;
 
-    private isExternallyCalculated: boolean = false;
     showDelete: boolean = false;
 
     private isHistoryModalVisible: boolean = false;
@@ -118,7 +120,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad = false;
-        if (changes['allocationUid'] && this.allocationUid) {
+        if (changes['allocation'] && this.allocation) {
             requiresLoad = true;
         }
         if (changes['scoreData'] && this.scoreData) {
@@ -137,8 +139,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.isLoading = true;
         this.metrics = [];
         this.metricTree = [];
-        if (this.allocationUid) {
-            this.metricsService.getMetricsByAllocation(this.allocationUid, this.showDisabled)
+        if (this.allocation.uid) {
+            this.metricsService.getMetricsByAllocation(this.allocation.uid, this.showDisabled)
                 .subscribe(r => {
                     this.metrics = r;
                     if (this.metrics) {
@@ -156,9 +158,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     } else {
                         this.selectionChange.emit(null);
                     }
-                    this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
+                    this.allocationService.getAllocationsByAssetTypeUid(this.allocation.assetTypeUid).subscribe(res => {
                         this.isLoading = false;
-                        this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
                         if (this.metricTree !== null && this.metricTree.length > 0) {
                             let node = this.metricTree[0];
                             if (initiallySelected) {
@@ -183,6 +184,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                             this.selectionChange.emit(null);
                         }
                     })
+                    this.isLoading = false;
                 });
         }
         else {
@@ -253,6 +255,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     public delete() {
         this.formMode = FormMode.Deleting;
     }
+
     public close() {
         this.formMode = FormMode.Default;
         if (this.previousSelectedNode && this.metrics && this.metrics.length > 0)
@@ -261,6 +264,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
             this.selection = { ...this.previousSelection };
         this.selectionChange.emit(this.selection);
     }
+
     public showHistory(isHistoryVisible: boolean) {
         this.isHistoryModalVisible = isHistoryVisible;
     }

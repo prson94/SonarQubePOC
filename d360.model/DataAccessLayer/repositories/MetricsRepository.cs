@@ -1621,6 +1621,25 @@ from    metrics.Allocation  ma
 								order by	C.Position
                     			for		json path
                     		) as ConditionGroups,
+                            JSON_QUERY((
+                            select	P.RollupPathUid as ResultPathUid,
+		                            P.FilterMatchType,
+                                    JSON_VALUE(V.Definition, '$.DataQuality.ResultOperation') as ResultOperation,
+		                            (
+		                            select	A.Uid as AssetTypeUid,
+				                            F.Name as FieldTypeName,
+				                            PF.Operator,
+				                            JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionRollupPathFilterValue where	AssetVersionRollupPathFilterUid = PF.Uid)) as [Values]
+                                    from	metrics.AssetVersionRollupPathFilter PF
+				                            inner join AssetType A on A.ID = PF.AssetTypeID
+				                            inner join FieldType F on F.ID = PF.FieldTypeID
+		                            where	PF.AssetVersionRollupPathUid = P.Uid
+		                            for json path
+		                            ) as Filters
+                            from	metrics.AssetVersionRollupPath P
+                            where	AssetVersionUid = V.Uid
+                            for json path, without_array_wrapper
+                            )) as DataQualityDefinition,
                             VC.Count as [VersionCount],
                             A.[State],
                             V.Definition as [DefinitionJson]
@@ -1638,29 +1657,60 @@ from    metrics.Allocation  ma
                     for		json path", new { allocationUid, states }, ApiTimeout).ToList();
         }
 
-        public List<string> GetMetricFieldFragments(Guid assetTypeUid)
+        public List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid)
         {
-            return Company.Query<string>($@"
-                            select	F.ID,
+            return Company.Query<MetricFieldTypeViewModel>($@"
+                            select	A.Uid as AssetTypeUid,
+			                        A.Name as AssetTypeName,
+                                    F.ID,
                             		F.FriendlyName as Name,
                                     F.Name as ApiName,
                             		F.Type,
                             		(
-                            			select	Value,
+                            			select	AssetUid as Value,
                             					Text
                             			from	FieldLookupValue
                             			where	FieldTypeID = F.ID
                             			for		json path
                             
-                            		) as [Values]
+                            		) as ValuesJson
                             from	AssetType A
-                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Json','JsonElement', 'Lookup', 'Number', 'Text')
-                            for		json path", new { assetTypeUid }, ApiTimeout).ToList();
+                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Json','JsonElement', 'Lookup', 'Number', 'Text')", 
+                                    new { assetTypeUid }, ApiTimeout).ToList();
         }
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
         {
             return Company.BulkMetricsImport(model, execution);
+        }
+
+        public async Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
+        {
+            var sql = @"
+select      A.Uid as AssetTypeUid,
+			A.Name as AssetTypeName,
+            F.ID,
+            F.Name as ApiName,
+            F.FriendlyName as Name,
+            F.[Type],
+		    (
+                select      AssetUid as Value,
+					        [Text]
+                from        FieldLookupValue
+                where       FieldTypeID = F.ID
+                order by    [Text]
+                for json path
+            ) as ValuesJson
+from        [metrics].[RollupPath] P
+            inner join [metrics].[RollupPathSegment] SE on SE.RollupPathUid = P.Uid
+            inner join AssetType A on A.ID = SE.AssetTypeID
+            inner join FieldType F on F.AssetTypeID = A.ID
+where       P.Uid = @ruleResultPathUid 
+            and SE.[Position] > 1
+            and F.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'JsonElement', 'Lookup', 'Number', 'Text')
+order by    SE.[Position], F.FriendlyName";
+            var results = await Company.QueryAsync<MetricFieldTypeViewModel>(sql, new { ruleResultPathUid }, ApiTimeout);
+            return results.ToList();
         }
 
         public async Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType)
@@ -1673,9 +1723,11 @@ from    (
 		        metrics.CalculateRollupPath(P.Uid) as [Path],
 		        (
                     select      A.Uid as AssetTypeUid,
-					            A.Name
+					            A.Name,
+                                AP.[Path]
                     from        [metrics].[RollupPathSegment] SE
                                 inner join AssetType A on A.ID = SE.AssetTypeID
+                                cross apply dbo.GetAssetTypeTextPathById(A.ID, '->') AP
                     where       RollupPathUid = P.Uid
                     order by    [Position]
                     for json path

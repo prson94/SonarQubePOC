@@ -57,6 +57,12 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 20)]
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+
+        /// <summary>
+        /// Used to help parse the json from the database.
+        /// </summary>
+        [DataMember] 
+        public MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
 
 
@@ -215,7 +221,8 @@ namespace d360.core.entities.Metric
         [DataMember] 
         public List<string> Values { get; set; }
 
-        /// <summary>
+
+       /// <summary>
         /// Property below used solely for processing incoming data.
         /// </summary>
         public int AssetTypeID { get; set; }
@@ -223,6 +230,11 @@ namespace d360.core.entities.Metric
         /// Property below used solely for processing incoming data.
         /// </summary>
         public int FieldTypeID { get; set; }
+    }
+
+    public class MetricAssetDefinitionDataQualityFilterViewModelValueObject
+    {
+        public string Value { get; set; }
     }
 
     #endregion
@@ -491,18 +503,35 @@ namespace d360.core.entities.Metric
 
     }
 
+    [DataContract]
     public class MetricFieldTypeViewModel
     {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+        [DataMember] 
+        public string AssetTypeName { get; set; }
+        [DataMember] 
         public int ID { get; set; }
+        [DataMember] 
         public string ApiName { get; set; }
+        [DataMember] 
         public string Name { get; set; }
+        [DataMember] 
         public string Type { get; set; }
-        public List<MetricFieldTypeValueViewModel> Values { get; set; }
+        public string ValuesJson { get; set; }
+        [DataMember]
+        public List<MetricFieldTypeValueViewModel> Values 
+        { 
+            get 
+            {
+                return JsonConvert.DeserializeObject<List<MetricFieldTypeValueViewModel>>(ValuesJson ?? "[]");
+            } 
+        }
     }
 
     public class MetricFieldTypeValueViewModel
     {
-        public int Value { get; set; }
+        public Guid Value { get; set; }
         public string Text { get; set; }
     }
 
@@ -530,6 +559,7 @@ namespace d360.core.entities.Metric
     {
         public Guid AssetTypeUid { get; set; }
         public string Name { get; set; }
+        public string Path { get; set; }
     }
 
     public class MeasureVersionHistoryModel

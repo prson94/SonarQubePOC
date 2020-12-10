@@ -23,6 +23,10 @@ export class OperatorDataTypeModel {
     ID: number;
     Name: string;
 }
+export class OperatorMetricGovernanceCheckTypeInfo {
+    ID: number;
+    Name: string;
+}
 export class OperatorModel {
     ID: Operator;
     Name: string;
@@ -30,5 +34,6 @@ export class OperatorModel {
     MinimumValueCount: number;
     MaximumValueCount: number;
     AllowedDataTypes: OperatorDataTypeModel[];
+    AllowedMeasureChecks: OperatorMetricGovernanceCheckTypeInfo[];
     FieldRequiresMultipleValueSupport: boolean;
 }

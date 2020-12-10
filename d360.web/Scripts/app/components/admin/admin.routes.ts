@@ -15,7 +15,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, loadChildren: () => import('./workflow/admin-workflow.module').then(m => m.AdminWorkflowModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, loadChildren: () => import('./load/admin-load.module').then(m => m.AdminLoadModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, loadChildren: () => import('./settings/admin-settings.module').then(m => m.AdminSettingsModule) },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SCORING, loadChildren: () => import('./analytics/admin-analytics.module').then(m => m.AdminAnalyticsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SCORING, loadChildren: () => import('./scoring/admin-scoring.module').then(m => m.AdminScoringModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, loadChildren: () => import('./dashboards/admin-dashboards.module').then(m => m.AdminDashboardsModule) },            
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, loadChildren: () => import('./rules/admin-rules.module').then(m => m.AdminRulesModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, loadChildren: () => import('./responsibilities/admin-responsibilities.module').then(m => m.AdminResponsibilitiesModule) },
