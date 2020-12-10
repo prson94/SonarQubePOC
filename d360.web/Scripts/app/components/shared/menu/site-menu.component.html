@@ -51,11 +51,11 @@
     <div *ngIf="isScrollerVisable"
          [ngClass]="{'open ': menuOpen}"
          class="menu-toggle scroll"
-         title="Scoll menu"
+         title="{{scrollTitle}}"
          (click)="doScroll()">
         <i class="fa fa-arrow-circle-down"
-           [class.rotate-scoll-up]="atBottom"
-           [class.rotate--scoll-down]="!atBottom"></i>
+           [class.rotate-scoll-up]="scrollingUp"
+           [class.rotate-scoll-down]="!scrollingUp"></i>
     </div>
 </div>
 

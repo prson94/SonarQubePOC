@@ -41,7 +41,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     protected countData: any[];
 
     isScrollerVisable: boolean = false; 
-    atBottom: boolean = false;
+    scrollingUp: boolean = false;
+    scrollTitle: string = "Scroll down";
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChild("menu", { static: false }) menu: ElementRef;
@@ -113,17 +114,26 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     doScroll() {
         if (this.menu && this.isScrollerVisable) {
             let elem = this.menu.nativeElement;
-            let marginBottom = this.menuOpen ? 80 : 100;
-            if (this.atBottom) {
-                elem.scrollTop = 0;
-                this.atBottom = false;
+            let scrollDistance = (elem.offsetHeight - 120);
+            let timeToScroll = 300;
+            if (this.scrollingUp) {
+                elem.scrollTop -= scrollDistance;;
             } else {
-                elem.scrollTop += 160;
-                if ((elem.scrollTop + marginBottom) >= ((elem.scrollHeight - elem.offsetHeight))) {
-                    this.atBottom = true;
-                }
+                elem.scrollTop += scrollDistance;
             }
-            this.ref.markForCheck();
+            //need to delay until the scolling has finished for numbers to be correct
+            window.setTimeout(() => {
+                if (elem.scrollTop >= ((elem.scrollHeight - elem.offsetHeight)) && elem.scrollTop != 0) {
+                    this.scrollingUp = true;
+                    this.scrollTitle = "Scroll up";
+                    this.ref.markForCheck();
+                } else if (elem.scrollTop <= 0) {
+                    this.scrollingUp = false;
+                    this.scrollTitle = "Scroll down";
+                    this.ref.markForCheck();
+                } 
+            }, timeToScroll);
+
         }
     }
 
