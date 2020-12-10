@@ -116,5 +116,5 @@
 
 </d3s-delete-form>
 <d3s-modal [title]="editTitle" additionalClasses="medium-dialog" (onClose)="onSaveCancel()" [isVisible]="showEdit">
-    <d3s-admin-allocation-editor [disabled]="selection.hasMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load($event);"></d3s-admin-allocation-editor>
+    <d3s-admin-allocation-editor [disabled]="selection.hasMeasure||selection.hasDisabledMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load($event);"></d3s-admin-allocation-editor>
 </d3s-modal> 
