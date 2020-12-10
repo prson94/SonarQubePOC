@@ -26,6 +26,7 @@
             <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"
                                            [objectId]="objectId"
                                            [objectType]="objectType"
+                                           [issueObject]="issueObject"
                                            [condition]="condition"
                                            (onSave)="saveCondition($event)"
                                            (onClose)="formMode = FormMode.Default"
