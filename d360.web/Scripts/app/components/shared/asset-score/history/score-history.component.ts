@@ -236,12 +236,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                             }
                         }
                     },
-                    animation: {
-                        complete: function () {
-                            if (this.selectPointOnGraph)
-                                this.selectPointOnGraph();
-                        }
-                    }
+                    animation: false
                 },
             },
             tooltip: {
@@ -264,21 +259,23 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 name: this.getScoreType() + ' score',
                 data: this.historicalData,
                 color: this.mainScoreGraphColor,
+                opacity: 1,
+                fillOpacity: 1,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
                     radius: 6,
                     states: {
+                        select: {
+                            fillColor: '#81b3bd',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1
+                        },
                         hover: {
                             fillColor: '#81b3bd',
                             lineColor: '#2e2e2e',
                             lineWidth: 1
                         },
-                        select: {
-                            fillColor: '#81b3bd',
-                            lineColor: '#2e2e2e',
-                            lineWidth: 1
-                        }
                     }
                 }
             },
@@ -287,19 +284,21 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 name: 'Measure score',
                 data: this.historicalMeasureData,
                 color: this.measureScoreGraphColor,
+                opacity: 1,
+                fillOpacity: 1,
                 marker: {
                     enabled: false,
                     symbol: 'circle',
                     radius: 6,
                     fillOpacity: 1,
                     states: {
-                        hover: {
-                            fillColor: '#afe1eb',
-                            lineColor: '#2e2e2e',
-                            lineWidth: 1,
-                        },
                         select: {
                             fillColor: '#afe1eb',
+                            lineColor: '#2e2e2e',
+                            lineWidth: 1
+                        },
+                        hover: {
+                            fillColor: '#81b3bd',
                             lineColor: '#2e2e2e',
                             lineWidth: 1
                         }

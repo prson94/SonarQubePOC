@@ -1585,7 +1585,7 @@ select  distinct
         ma.uid,
         ma.isexternallycalculated
 from    metrics.Allocation  ma
-		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1";
+		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 order by ma.scoretype";
             return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 

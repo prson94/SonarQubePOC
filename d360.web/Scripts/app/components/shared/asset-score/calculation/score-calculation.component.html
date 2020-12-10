@@ -39,12 +39,16 @@
                 <i class="fa fa-times-circle bad"></i> Failed
             </ng-container>
         </div>
-        <div class="calculation-group">
+        <div class="calculation-group" *ngIf="selected.Value">
             <div class="title">Measure Score</div>
             <div class="indented-line">= maximum possible score</div>
             <div class="indented-line">
                 = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
             </div>
+        </div>
+        <div class="calculation-group" *ngIf="!selected.Value">
+            <div class="title">Measure Score</div>
+            <div class="indented-line">= 0</div>
         </div>
 
         <ng-container *ngIf="!selected._adjustedGroupWeight">
