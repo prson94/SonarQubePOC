@@ -5,19 +5,53 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Relationship_All-v1">
+  <changeSet author="sDooley" id="View.reporting.Relationship_All-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
- CREATE OR ALTER VIEW [reporting].[Relationship_All] AS
-    SELECT  ID as IntersectID, * FROM IntersectDetail
+    CREATE OR ALTER VIEW [reporting].[Relationship_All] AS SELECT  
+	   ID as IntersectID
+	  ,[uid]
+      ,[ID]
+      ,[IntersectTypeID]
+      ,[State]
+      ,[Subject]
+      ,[SubjectID]
+      ,[SubjectName]
+      ,[SubjectShortName]
+      ,[SubjectUrl]
+      ,[SubjectType]
+      ,[SubjectTypeID]
+      ,[SubjectUid]
+      ,[SubjectTypeName]
+      ,[SubjectIconBackColor]
+      ,[SubjectIconForeColor]
+      ,[SubjectIconText]
+      ,[Object]
+      ,[ObjectID]
+      ,[ObjectName]
+      ,[ObjectShortName]
+      ,[ObjectUrl]
+      ,[ObjectType]
+      ,[ObjectTypeID]
+      ,[ObjectUid]
+      ,[ObjectTypeName]
+      ,[ObjectIconBackColor]
+      ,[ObjectIconForeColor]
+      ,[ObjectIconText]
+      ,[PredicateID]
+      ,[PredicateType]
+      ,[PredicateTypeName]
+      ,[PredicateName]
+      ,[PredicateInverse] FROM IntersectDetail
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+CREATE OR ALTER VIEW [reporting].[Relationship_All] AS
+    SELECT  ID as IntersectID, * FROM IntersectDetail
 		]]>
 	</rollback>
   </changeSet>

@@ -896,6 +896,8 @@
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
+    <Content Include="Scripts\app\components\shared\workflow\workflowmonitor-step-details.component.html" />
+    <Content Include="Scripts\app\components\shared\workflow\workflowmonitor-step-email-details.component.html" />
     <Content Include="Scripts\app\components\sidebar\connector-labels\connector-labels-sidebar.component.html" />
     <Content Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
@@ -939,8 +941,6 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.html" />
     <Content Include="Scripts\app\components\shoppingcart\shopping-cart.component.html" />
-    <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.html" />
-    <Content Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-email-details.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
@@ -1033,6 +1033,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
+    <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="Views\Shared\Unsupported.cshtml" />
     <Content Include="webpack.aot.config.js" />
@@ -1289,6 +1290,7 @@
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
+    <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -1558,6 +1560,16 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\where-used\where-used.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\where-used\where-used.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-action-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-email-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-field-change-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-form-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-http-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\shared-workflow.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\workflow\workflowmonitor-step-relationship-change-details.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart-request.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
@@ -1713,17 +1725,8 @@
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\tag\tag.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-action-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-filter.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-email-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-http-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-field-change-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-form-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-step-relationship-change-details.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor.routes.ts" />

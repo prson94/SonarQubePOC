@@ -39,6 +39,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
 
 @NgModule({
     imports: [
@@ -63,6 +64,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         SharedModule,
         TableModule,
 
+
+        SharedWorkflowMonitorModule,
         //d3s
         
         CoreModule,

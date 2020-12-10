@@ -39,11 +39,14 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
         { value: '[WORKFLOW_STEP_ID]', label: 'Workflow Step ID' },
         { value: '[WORKFLOW_ID]', label: 'Workflow ID' },
         { value: '[WORKFLOW_INSTANCE_ID]', label: 'Workflow Instance ID' },
+        { value: '[ASSET_UID]', label: 'Asset UID' },
     ];
 
     private relationshipFields = [
         { value: '[REL_SUBJECT_NAME]', label: 'Relationship Subject Name' },
         { value: '[REL_OBJECT_NAME]', label: 'Relationship Object Name' },
+        { value: '[REL_SUBJECT_UID]', label: 'Relationship Subject UID' },
+        { value: '[REL_OBJECT_UID]', label: 'Relationship Object UID' },
     ];
 
     selected = "none";

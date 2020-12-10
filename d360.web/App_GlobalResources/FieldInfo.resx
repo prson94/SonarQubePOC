@@ -339,8 +339,20 @@
   <data name="UID_Description" xml:space="preserve">
     <value>The UID is the unique identifier for this item across all of Data360.</value>
   </data>
+  <data name="Asset_UID_Description" xml:space="preserve">
+    <value>The Asset UID is the unique identifier for this item across all of Data360.</value>
+  </data>
+  <data name="AssetType_UID_Description" xml:space="preserve">
+    <value>The Asset Type UID is the unique identifier for the Asset Type across all of Data360.</value>
+  </data>
   <data name="UID_Name" xml:space="preserve">
     <value>UID</value>
+  </data>
+  <data name="Asset_UID_Name" xml:space="preserve">
+    <value>Asset UID</value>
+  </data>
+  <data name="AssetType_UID_Name" xml:space="preserve">
+    <value>Asset Type UID</value>
   </data>
   <data name="UpdatedOn_Description" xml:space="preserve">
     <value>The date that this item was last modified in Data360.</value>

@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, OnInit } from "@angular/core";
-import { BaseComponent } from "../shared/base.component";
-import { WorkflowStepFieldChangeDetail } from "../../models/workflow.model";
+import { BaseComponent } from "../../shared/base.component";
+import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
 
-
+ 
 @Component({
     selector: 'd3s-workflow-monitor-step-field-change-details',
     template:
