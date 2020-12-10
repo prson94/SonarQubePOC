@@ -5,7 +5,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { MetricsService } from '../../../../services/metrics.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel } from '../../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel, MetricGovernanceCheckType } from '../../../../models/metrics.model';
 import { OperatorModel, Operator } from '../../../../models/operator.model';
 
 @Component({
@@ -18,6 +18,7 @@ import { OperatorModel, Operator } from '../../../../models/operator.model';
 export class ScoreDefinitionComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() selectedMetric: MetricAssetViewModel;
     @Input() assetTypeUid: string;
+    @Input() isExternallyCalculated: boolean = false;
 
     operators: OperatorModel[];
     metricListFieldTypes: MetricFieldTypeViewModel[] = [];
@@ -41,10 +42,10 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && changes.selectedMetric && changes.assetTypeUid) {
+        if (changes && changes.assetTypeUid && this.assetTypeUid) {
             this.loadData();
         }
-        else if (changes && changes.selectedMetric) {
+        else if (changes && changes.selectedMetric && this.assetTypeUid) {
             this.showPassTest = true
 
             if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
@@ -197,5 +198,27 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
 
         }
         this.cdRef.detectChanges();
+    }
+
+    public getPassCheckValue(): string {
+        if (!this.formattedCheck || this.isExternallyCalculated)
+            return '';
+        var prefix = '';
+        let check: string = '';
+        if (this.selectedMetric.Definition.Governance)
+            check = this.selectedMetric.Definition.Governance.Check.toString();
+
+        if (!check)
+            return '';
+
+        switch (check) {
+            case 'External': prefix = 'External: '; break;
+            case 'Field': prefix = 'Field: '; break;
+            case 'Owner': prefix = 'Ownership: '; break;
+            case 'Predicate': prefix = 'Predicate: '; break;
+            case 'Relation': prefix = 'Relationship: '; break;
+            default: ' default';
+        }
+        return prefix + this.formattedCheck;
     }
 }

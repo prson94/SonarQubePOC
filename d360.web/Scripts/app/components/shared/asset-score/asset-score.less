@@ -25,6 +25,17 @@
                 &:focus {
                     border: none;
                     outline: none;
+                    box-shadow: none;
+
+                    &.ig-state-active {
+                        background: @ig-grey-t3;
+                    }
+                }
+
+                &:hover {
+                    &.ig-state-active {
+                        background: @ig-grey-t3;
+                    }
                 }
             }
 
@@ -56,15 +67,15 @@
     }
 
     .arrow-up {
-        color: #4ecc89;
+        color: @ig-green;
     }
 
     .arrow-down {
-        color: #ed3765;
+        color: @ig-red;
     }
 
     .score-data {
-        border: 1px solid #eff2f6;
+        border: 1px solid @ig-grey-t5;
         overflow: auto;
 
         .score-item {
@@ -74,7 +85,7 @@
             cursor: pointer;
 
             &:nth-child(even) {
-                background-color: #eff2f6;
+                background-color: @ig-grey-t5;
             }
 
             .expander {
@@ -106,7 +117,7 @@
         width: 180px;
         position: relative;
         float: right;
-        border-top: 2px solid black;
+        border-top: 2px solid @ig-black;
         margin-right: 16px;
     }
 
@@ -199,7 +210,7 @@
         .ui-dropdown-items-wrapper {
             width: 90%;
             margin: 0 auto;
-            border-top: 2px solid #dde0e4;
+            border-top: 2px solid @ig-grey-t5;
         }
 
         .ui-dropdown-panel {
@@ -207,11 +218,6 @@
         }
 
         ul {
-            li:nth-child(even) {
-                background-color: red !important;
-            }
-
-
             li {
                 position: relative;
                 height: 32px;
@@ -223,17 +229,17 @@
                 }
 
                 .arrow-up {
-                    color: #4ecc89;
+                    color: @ig-green;
                     font-size: 20px;
                 }
 
                 .arrow-down {
-                    color: #ed3765;
+                    color: @ig-red;
                     font-size: 20px;
                 }
 
                 .square {
-                    color: #597897;
+                    color: @ig-slate;
                     transform: rotate(45deg);
                     font-size: 10px;
                     top: -1px;
@@ -252,6 +258,30 @@
                         margin-left: 6px;
                     }
                 }
+            }
+        }
+    }
+
+    .score-calculation-container {
+        padding: 16px 0px;
+
+        .calculation-group {
+            padding-bottom: 16px;
+
+            .title {
+                font-weight: bold;
+            }
+
+            .indented-line {
+                padding-left: 16px;
+            }
+
+            .good {
+                color: @ig-green;
+            }
+
+            .bad {
+                color: @ig-red;
             }
         }
     }

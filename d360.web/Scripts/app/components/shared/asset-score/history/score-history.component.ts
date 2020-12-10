@@ -55,7 +55,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes && (changes.selectedPoint || changes.scoreType || changes.assetUid)) {
+        if (changes && (changes.selectedPoint || changes.assetUid)) {
             if (this.selectedPoint)
                 this.measureChanged();
         }
@@ -67,6 +67,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     loadDataPoints() {
         this.isHistoryLoaded = false;
+        this.allLoadedPoints = [];
+        this.scoresPoints = [];
         this.scoreService.getAssetScoreGraphPoints(this.assetUid, this.scoreType).
             subscribe(res => {
                 this.allLoadedPoints = res;
@@ -141,6 +143,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         this.graphHash = currentGraphHash;
         if (this.chartInstance)
             this.chartInstance.destroy();
+
+        this.historicalData = [];
+        this.historicalMeasureData = [];
 
         this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 

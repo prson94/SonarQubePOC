@@ -1,3 +1,88 @@
-﻿<div class="score-calculation-container">
-    {{selected | json}}
+﻿<div class="score-calculation-container" *ngIf="selected">
+
+    <ng-container *ngIf="selected.IsGroup">
+        <div class="calculation-group">
+            <div class="title">Measure Score</div>
+            <div class="indented-line">= sum of sub-measures</div>
+            <div class="indented-line">
+                =
+                <span *ngFor="let item of selected.Measures;let i = index;">
+                    {{getAsPrecentage(item._finalScore)}}
+                    <ng-container *ngIf="(selected.Measures.length-1) != i">+</ng-container>
+                </span>
+            </div>
+            <div class="indented-line">
+                = {{getAsPrecentage(selected._finalScore)}}
+            </div>
+        </div>
+        <div class="calculation-group">
+            <div class="title">Maximum Possible Score</div>
+            <div class="indented-line">= adjusted measure weight</div>
+            <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
+            <div class="indented-line">
+                = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(getSum())}}) x 100%
+            </div>
+            <div class="indented-line">
+                = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+            </div>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="!selected.IsGroup">
+        <div class="calculation-group">
+            <div class="title">Pass Test</div>
+            <div class="pass-test">{{formattedCheck}}</div>
+            <ng-container *ngIf="selected.Value">
+                <i class="fa fa-check-circle good"></i> Succeeded
+            </ng-container>
+            <ng-container *ngIf="!selected.Value">
+                <i class="fa fa-times-circle bad"></i> Failed
+            </ng-container>
+        </div>
+        <div class="calculation-group">
+            <div class="title">Measure Score</div>
+            <div class="indented-line">= maximum possible score</div>
+            <div class="indented-line">
+                = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+            </div>
+        </div>
+
+        <ng-container *ngIf="!selected._adjustedGroupWeight">
+            <div class="calculation-group">
+                <div class="title">Maximum Possible Score</div>
+                <div class="indented-line">= adjusted measure weight</div>
+                <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
+                <div class="indented-line">
+                    = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(getSum())}}) x 100%
+                </div>
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+                </div>
+            </div>
+        </ng-container>
+
+        <!--Scores of measures within a group-->
+        <ng-container *ngIf="selected._adjustedGroupWeight">
+            <div class="calculation-group">
+                <div class="title">Maximum Possible Score</div>
+                <div class="indented-line">= (adjusted measure weight  &#247; 100%) x adjusted group weight</div>
+                <div class="indented-line">
+                    = ({{getAsPrecentage(selected._adjustedMeasureWeight)}}  &#247; 100%) x {{getAsPrecentage(selected._adjustedGroupWeight)}}
+                </div>
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected.AdjustedMaxWeight)}}
+                </div>
+            </div>
+            <div class="calculation-group">
+                <div class="title">Adjusted Measure Weight</div>
+                <div class="indented-line">= (defined weight &#247; sum of weights) x 100% </div>
+                <div class="indented-line">
+                    = ({{getAsPrecentage(selected.Weight)}} &#247; {{getAsPrecentage(selected._measureSumWeight)}}) x 100%
+                </div>
+                <div class="indented-line">
+                    = {{getAsPrecentage(selected._adjustedMeasureWeight)}}
+                </div>
+            </div>
+        </ng-container>
+    </ng-container>
 </div>

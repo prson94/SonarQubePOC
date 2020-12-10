@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ChangeDetectorRef, AfterViewChecked, ViewEncapsulation, ViewChildren } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -27,6 +27,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     scoresPointsShowMeasure: boolean = false;
     scoresPointSelected: SelectItem;
     scorePointsMaxHeight: number = 200;
+    panelHeight: number = 200;
 
     averageScore: number;
     scoreDate: string = null;
@@ -217,6 +218,21 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     //Set data for UI
                     this.totalScore = 0;
                     this.pointBreakdown.forEach(pb => {
+                        //set adjusted weights
+                        pb._adjustedGroupWeight = null;
+                        if (pb.Measures) {
+                            pb._measureSumWeight = 0;
+                            pb.Measures.forEach(m => {
+                                m._adjustedGroupWeight = pb.AdjustedMaxWeight;
+                                pb._measureSumWeight += m.Weight;
+                            });
+
+                            pb.Measures.forEach(m => {
+                                m._measureSumWeight = pb._measureSumWeight;
+                                m._adjustedMeasureWeight = m.Weight / pb._measureSumWeight;
+                            });
+                        }
+
                         if (!pb.IsGroup) {
                             if (pb.Value) {
                                 pb._badgeStyle = 'positive';
@@ -340,6 +356,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             case ScoreType.Governance:
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
+                this.activeTab = 'History';
+
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadSeriesData().subscribe(b => {
@@ -350,6 +368,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
+                this.activeTab = 'History';
+
                 this.scoreDate = new Date().toDateString();
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadSeriesData().subscribe(b => {
@@ -408,7 +428,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     ngAfterViewChecked() {
 
         //height - to top of the screen - to bottom of the screen - padding
-        this.scorePointsMaxHeight = window.innerHeight - 228 - 60 - 16;
+        this.panelHeight = window.innerHeight - 180;
+        this.scorePointsMaxHeight = this.panelHeight - 100 - 16;
         if (this.scorePointsMaxHeight < 100)
             this.scorePointsMaxHeight = 100;
 

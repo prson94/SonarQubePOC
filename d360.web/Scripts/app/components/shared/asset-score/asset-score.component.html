@@ -1,7 +1,7 @@
 ﻿<div class="scoring-v2">
     <div class="row col s12 no-margin no-padding">
         <div class="col s8 no-margin no-padding right-padding-16">
-            <div class="card-box">
+            <div class="card-box" [style.height.px]="panelHeight">
                 <div class="row">
                     <div class="col s12">
                         <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
@@ -89,13 +89,13 @@
 
         </div>
         <div class="col s4 no-margin no-padding">
-            <div class="card-box">
+            <div class="card-box" [style.height.px]="panelHeight">
                 <div class="button-group show-multiple">
                     <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
                     <button *ngIf="!isExternallyCalculated" igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
                     <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
                 </div>
-                <ng-container *ngIf="activeTab=='History'">
+                <div [hidden]="!(activeTab=='History')">
                     <score-history #scoreHistory
                                    [selectedPoint]="selectedPoint"
                                    [assetUid]="uid"
@@ -104,13 +104,13 @@
                                    [isExternallyCalculated]="isExternallyCalculated"
                                    (datePointChanged)="dateChanged($event)"
                                    (measurePointsChanged)="measurePoints=$event"></score-history>
-                </ng-container>
-                <ng-container *ngIf="activeTab=='Calculation'">
-                    <score-calculation [selected]="selectedPoint"></score-calculation>
-                </ng-container>
-                <ng-container *ngIf="activeTab=='Definition'">
-                    <score-definition [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
-                </ng-container>
+                </div>
+                <div [hidden]="!(activeTab=='Calculation')">
+                    <score-calculation [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
+                </div>
+                <div [hidden]="!(activeTab=='Definition')">
+                    <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
+                </div>
             </div>
         </div>
     </div>

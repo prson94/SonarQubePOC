@@ -22,6 +22,9 @@ export class PointBreakdown {
     _isSelected: boolean = false;
     _badgeStyle: string = 'default';
     _isCollapsed: boolean = false;
+    _adjustedGroupWeight: number = 0;
+    _adjustedMeasureWeight: number = 0;
+    _measureSumWeight: number = 0;
 }
 
 export class PointBreakdownCondition {
