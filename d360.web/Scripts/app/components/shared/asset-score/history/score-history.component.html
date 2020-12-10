@@ -7,7 +7,7 @@
     <div class="score-chart">
         <div id="healthChart"></div>
 
-        <p-checkbox *ngIf="!isExternallyCalculated" igCheckbox [(ngModel)]="showMeasurePoints" (click)="refreshGraph()" binary="true" label="Show scoring history of selected measure"></p-checkbox>
+        <p-checkbox *ngIf="!isExternallyCalculated" igCheckbox [(ngModel)]="showMeasurePoints" (click)="saveState();refreshGraph();" binary="true" label="Show scoring history of selected measure"></p-checkbox>
         <div #scoreTable class="score-table">
             <div class="col s12">
                 <div class="row score-tbl-header {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">

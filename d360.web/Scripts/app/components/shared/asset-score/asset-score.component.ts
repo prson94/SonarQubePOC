@@ -7,6 +7,7 @@ import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
+import { expand } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -36,6 +37,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private pointBreakdown: PointBreakdown[] = [];
     private selectedPoint: PointBreakdown;
+
+    private selectedMeasureUid = '';
 
     ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
@@ -94,6 +97,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         });
         item._isSelected = true;
         this.selectedPoint = JSON.parse(JSON.stringify(item));
+        this.selectedMeasureUid = this.selectedPoint.Uid;
         this.setCurrentDefinition();
     }
 
@@ -283,11 +287,34 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         this.totalScore += pb._finalScore;
                     })
-                    if (this.pointBreakdown.length > 0)
+
+                    var preselected: PointBreakdown;
+                    if (this.selectedMeasureUid && this.pointBreakdown) {
+                        this.pointBreakdown.forEach(pb => {
+                            if (pb.Uid == this.selectedMeasureUid)
+                                preselected = pb;
+
+                            if (pb.Measures) {
+                                pb.Measures.forEach(m => {
+                                    if (m.Uid == this.selectedMeasureUid) {
+                                        preselected = m;
+                                    }
+                                })
+                            }
+                        });
+
+                    }
+
+                    if (preselected) {
+                        this.selectScoreItem(preselected);
+                    }
+                    else if (this.pointBreakdown.length > 0) {
                         this.selectScoreItem(this.pointBreakdown[0]);
+                    }
 
 
                     this.isDataLoaded = true;
+                    this.loadState();
                     this.cdRef.markForCheck();
                 });
         }
@@ -390,6 +417,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 });
             }
         })
+        this.saveState();
     }
 
     hasAnyScoreType(scoreType: ScoreType) {
@@ -434,7 +462,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             this.scorePointsMaxHeight = 100;
 
         this.setDropdownHeader();
-
         this.cdRef.detectChanges();
 
     }
@@ -442,4 +469,35 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     getAsDQBadgeText(item: PointBreakdown) {
         return item.Value ? 'Pass' : 'Fail';
     }
+
+    private getStorageKey() {
+        return 'scoring_storage_' + this.selectedScoreType + '_' + this.assetTypeUid;
+    }
+
+    saveState() {
+        if (this.pointBreakdown) {
+            var data = {};
+            data['expanded'] = this.pointBreakdown.filter(x => x._isCollapsed == true).map(x => x.Uid);
+            localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
+        }
+    }
+
+    loadState() {
+        if (this.pointBreakdown) {
+            var data = JSON.parse(localStorage.getItem(this.getStorageKey()));
+            if (data) {
+                if (data['expanded']) {
+                    var expanded = data['expanded'] as [];
+                    expanded.forEach(ex => {
+                        this.pointBreakdown.forEach(pb => {
+                            if (pb.Uid == ex)
+                                pb._isCollapsed = true;
+                        })
+                    })
+                }
+            }
+
+        }
+    }
+
 }

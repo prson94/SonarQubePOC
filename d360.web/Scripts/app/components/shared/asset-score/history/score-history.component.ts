@@ -144,6 +144,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         if (this.chartInstance)
             this.chartInstance.destroy();
 
+
+        this.loadState();
+
         this.historicalData = [];
         this.historicalMeasureData = [];
 
@@ -467,6 +470,27 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     }
 
     private getMeasurePoint(item: ScorePoint): ScorePoint {
-        return this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
+        if (this.measurePoints)
+            return this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
+        else return new ScorePoint();
+    }
+
+    private getStorageKey() {
+        return 'scoring_checkbox_storage_' + this.assetUid;
+    }
+
+    saveState() {
+        var data = {};
+        data['showMeasurePoints'] = this.showMeasurePoints;
+        localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
+    }
+
+    loadState() {
+        var data = JSON.parse(localStorage.getItem(this.getStorageKey()));
+        if (data) {
+            if (data['showMeasurePoints']) {
+                this.showMeasurePoints = data['showMeasurePoints'] as boolean;
+            }
+        }
     }
 }

@@ -16,8 +16,8 @@
                                     <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
                                         <div class="expander" *ngIf="!isExternallyCalculated">
                                             <ng-container *ngIf="item.Measures && item.Measures.length > 0">
-                                                <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed"></i>
-                                                <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed"></i>
+                                                <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
+                                                <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
                                             </ng-container>
                                         </div>
 
@@ -34,8 +34,12 @@
                                             </div>
                                         </div>
                                         <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
-                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                            <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
+                                            <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                            </span>
+                                            <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
+                                            </span>
                                         </div>
                                         <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
                                             <ig-badge [variant]="item._badgeStyle" [text]="getAsDQBadgeText(item)"></ig-badge>
@@ -59,8 +63,12 @@
                                                     </div>
                                                 </div>
                                                 <div class="score-badges">
-                                                    <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
+                                                    <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                        <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                    </span>
+                                                    <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                        <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
+                                                    </span>
                                                 </div>
                                             </div>
                                         </ng-container>
@@ -121,8 +129,8 @@
     <div class="score-header">
         <div class="button-group {{(hasAnyScoreType(ScoreType.Governance) && hasAnyScoreType(ScoreType.DataQuality) ? 'show-multiple':'')}}">
             <div class="width-300">
-                <button igButton *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'ig-state-active': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" label="Governance Score"></button>
-                <button igButton *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'ig-state-active': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality)" label="Data Quality Score"></button>
+                <button igButton *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'ig-state-active': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance);" label="Governance Score"></button>
+                <button igButton *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'ig-state-active': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality);" label="Data Quality Score"></button>
             </div>
         </div>
 
