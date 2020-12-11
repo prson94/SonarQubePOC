@@ -135,28 +135,28 @@ export class SearchType {
     title: string;
     value: string;
     selected: boolean = false;
+    visible: boolean = true;
 
     constructor(title: string, value: string) {
         this.title = title;
         this.value = value;
     }
-
 }
 
 export module SettingsHelper {
     export function getSearchTypesList(): SearchType[] {
         return [
-            { title: StringConstants.AssetTypeClass_Business + "s", value: "BusinessAsset", selected: false },
-            { title: StringConstants.AssetTypeClass_Technical + "s", value: "TechnicalAsset", selected: false },
-            { title: "Models", value: "Model", selected: false },
-            { title: "Policies", value: "Policy", selected: false },
-            { title: "Rules", value: "Rule", selected: false },
-            { title: "Reference Lists", value: "Reference", selected: false },
-            { title: "Grammatic Types", value: "Synonym", selected: false },
-            { title: "Fusion", value: "FusionAttributes", selected: false },
-            { title: "Fusion Types", value: "FusionType", selected: false },
-            { title: "Groups", value: "Group", selected: false },
-            { title: "Users", value: "User", selected: false }
+            new SearchType(StringConstants.AssetTypeClass_Business + "s", "BusinessAsset"),
+            new SearchType(StringConstants.AssetTypeClass_Technical + "s", "TechnicalAsset"),
+            new SearchType("Models", "Model"),
+            new SearchType("Policies", "Policy"),
+            new SearchType("Rules", "Rule"),
+            new SearchType("Reference Lists", "Reference"),
+            new SearchType("Grammatic Types", "Synonym"),
+            new SearchType("Fusion", "FusionAttributes"),
+            new SearchType("Fusion Types", "FusionType"),
+            new SearchType("Groups", "Group"),
+            new SearchType("Users", "User"),
         ];
     }
 
@@ -164,8 +164,8 @@ export module SettingsHelper {
         return list.filter(l => l.selected).map(l => l.value).join(',');
     }
 
-    export function searchTypeStringToList(searchTypes: string): SearchType[] {
-        let t = getSearchTypesList();
+    export function searchTypeStringToList(searchTypes: string, list: SearchType[] = undefined): SearchType[] {
+        let t = (list === undefined) ? getSearchTypesList() : list;
         searchTypes.split(',').forEach(i => {
             let k = t.find(j => j.value == i);
             if (k)

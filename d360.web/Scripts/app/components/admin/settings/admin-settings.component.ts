@@ -3,13 +3,13 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { CompanySettings, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
+import { SearchService } from '../../../services/search.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SelectItem } from 'primeng/api';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'admin-settings',
@@ -22,6 +22,10 @@ import { StringConstants } from '../../../static/string-constants';
             font-size: 1.5em;
             vertical-align: middle;
         }
+        .hiddencategory {
+            color: #bdbfc6;
+            font-style: italic;
+        }
         input[type=text] {
             width: 90%;
             height:25px;
@@ -32,7 +36,7 @@ import { StringConstants } from '../../../static/string-constants';
 export class AdminSettingsComponent extends AdminBaseComponent {
     
     companySettings: CompanySettings = new CompanySettings();
-    searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
+    searchTypes: SearchType[];
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
     homePageImage: CompanyImage = new CompanyImage()
@@ -56,6 +60,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
+        private searchService: SearchService,
         secondaryNavService: SecondaryNavService,
         titleService: Title,
         private messagesService: MessagesObservableService,
@@ -78,16 +83,10 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
                 this.companySettings = data;
 
-                this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
-
-                if (this.companySettings["FusionEnabled"] == false) {
-                    this.searchTypes = this.searchTypes.filter(x => x.title != 'Fusion' && x.title != 'Fusion Types');
-                }
-
-                if (+this.companySettings["LineageVersion"] != 3) {
-                    this.searchTypes = this.searchTypes.filter(x => x.title != StringConstants.AssetTypeClass_Technical);
-                }
-
+                this.searchService.getSearchCategories(data, true, true).subscribe(cat => {
+                    this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes, cat);
+                });
+                
                 this.companySettings.SiteNav.forEach(s => {
                     s.IsCustom = (s.Name.indexOf('#') != 0)
                 });
