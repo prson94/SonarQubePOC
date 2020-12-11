@@ -52,7 +52,8 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
     @ViewChild('metricList', { static: false }) metricList: MeasureListComponent;
     showConditions: boolean;
-    scoreData: any[];
+
+    maxScoreEffectiveDate: Date;
     showDisabled: boolean = false;
     showPassTest: boolean = false;
     ruleResultPaths: MetricPathOptionViewModel[] = [];
@@ -167,18 +168,34 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
                 this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
-                    if (res && res.length > 0)
-                        var items = res.filter(x => { return x.uid == this.allocation.uid });
-                    if (items.length > 0) {
-                        this.allocation = items[0];
-                        this.formatScoreCalc();
-                        this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
-                            .subscribe(f => {
-                                if (f && f.items && f.items.length > 0) {
-                                    this.scoreData = f.items;
-                                }
-                            });
-                        this.isLoading = false;
+                    if (res && res.length > 0) {
+                        const items = res.filter(x => { return x.uid == this.allocation.uid });
+
+                        if (items.length > 0) {
+                            this.allocation = items[0];
+                            this.formatScoreCalc();
+                            this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
+                                .subscribe(f => {
+                                    if (f && f.items && f.items.length > 0) {
+                                        let maxDates: any[] = [];
+                                        f.items.forEach(x => {
+                                            if (x.Scores && x.Scores.length > 0) {
+                                                let scores = x.Scores.sort((x, y) => {
+                                                    let datex = new Date(x.EffectiveDate);
+                                                    let datey = new Date(y.EffectiveDate);
+                                                    return datey.getTime() - datex.getTime();
+                                                });
+                                                maxDates.push(new Date(scores[0].EffectiveDate));
+                                            }
+                                        });
+                                        maxDates.sort((x, y) => {
+                                            return y.getTime() - x.getTime();
+                                        });
+                                        this.maxScoreEffectiveDate = maxDates[0];
+                                    }
+                                });
+                            this.isLoading = false;
+                        }
                     }
                 });
             });

@@ -14,7 +14,9 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { ScoringIndexComponent } from './index.component';
 import { ScoringDetailComponent } from './detail.component';
 import { AdminScoringRoutingModule } from './admin-scoring.routes';
-import { AdminMeasureEditorComponent } from './measure-editor.component';
+import { DataQualityMeasureEditorComponent } from './measure-editor-dataquality.component';
+import { ExternalMeasureEditorComponent } from './measure-editor-external.component';
+import { GovernanceMeasureEditorComponent } from './measure-editor-governance.component';
 import { MeasureListComponent } from './measure-list.component';
 
 import { SharedModule } from 'primeng/api';
@@ -110,7 +112,9 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         ScoringDetailComponent,
 
         AllocationEditorComponent,
-        AdminMeasureEditorComponent,
+        DataQualityMeasureEditorComponent,
+        ExternalMeasureEditorComponent,
+        GovernanceMeasureEditorComponent,
 
         MeasureListComponent,
         AdminMeasureHistoryComponent

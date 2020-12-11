@@ -77,15 +77,13 @@
                             <ig-switch tabindex="5"
                                        formControlName="isGroup"
                                        [(ngModel)]="model.IsGroup"
-                                       (onChange)="onGroupchange($event)"></ig-switch>
+                                       (onChange)="onGroupChange($event)"></ig-switch>
                         </ng-container>
                     </div>
                 </div><br />
             </ig-property-group>
 
-
-
-            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
                         <label for="check" class="ig-label">Test Type</label>
@@ -284,7 +282,6 @@
                     </div>
                 </div>
             </ig-property-group>
-
 
             <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>

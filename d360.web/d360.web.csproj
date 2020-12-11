@@ -727,6 +727,8 @@
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\scoring\detail.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\index.component.html" />
+    <Content Include="Scripts\app\components\admin\scoring\measure-editor-external.component.html" />
+    <Content Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\measure-list.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\measure-history.component.html" />
     <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
@@ -907,7 +909,7 @@
     <Content Include="images\heroAccent.png" />
     <Content Include="images\loading.gif" />
     <Content Include="images\x.png" />
-    <Content Include="Scripts\app\components\admin\scoring\measure-editor.component.html" />
+    <Content Include="Scripts\app\components\admin\scoring\measure-editor-dataquality.component.html" />
     <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
@@ -941,6 +943,9 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-external.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
@@ -1344,7 +1349,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <Content Include="Scripts\app\components\admin\scoring\allocation-editor.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\allocation-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-dataquality.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.ts" />
@@ -2098,7 +2103,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://mpappas.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

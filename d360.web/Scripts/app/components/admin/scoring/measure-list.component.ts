@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewEncapsulation } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, MetricPathOptionViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, MetricPathOptionViewModel, ScoreType } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
@@ -38,7 +38,7 @@ import { Predicate } from '../../../models/predicate.model';
 export class MeasureListComponent extends BaseComponent implements OnInit, OnChanges {
     @Output() selectionChange = new EventEmitter();
     @Input() allocation: ScoreTypeAllocation;
-    @Input() scoreData: any;
+    @Input() maxScoreEffectiveDate: Date;
 
     @Input() fields: MetricFieldTypeViewModel[] = [];
     @Input() operators: OperatorModel[];
@@ -116,15 +116,13 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     ngOnInit() {
         this.delayedReload();
+        this.allocation.scoreType = ScoreType[this.allocation.scoreType+''];
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad = false;
         if (changes['allocation'] && this.allocation) {
             requiresLoad = true;
-        }
-        if (changes['scoreData'] && this.scoreData) {
-            this.scoreData = [...this.scoreData];
         }
         if (changes['showDisabled'] != null || changes['showDisabled'] != undefined) {
             requiresLoad = true;
@@ -285,5 +283,15 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         if (s.startsWith('0'))
             s = s.substr(1, s.length);
         return s;
+    }
+
+    isDataQualityScoreType() {
+        return this.allocation.scoreType == ScoreType.DataQuality && !this.allocation.isExternallyCalculated;
+    }
+    isExternalScoreType() {
+        return this.allocation.isExternallyCalculated;
+    }
+    isGovernanceScoreType() {
+        return this.allocation.scoreType == ScoreType.Governance && !this.allocation.isExternallyCalculated;
     }
 };
