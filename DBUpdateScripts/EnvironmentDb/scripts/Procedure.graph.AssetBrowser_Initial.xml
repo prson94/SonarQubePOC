@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v16.1">
-    <comment>GOV-13106</comment>
+  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v17">
+    <comment>GOV-13147</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure [graph].[AssetBrowser_Initial]
+create or ALTER     procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -673,27 +673,51 @@ begin
 	group by	H.Direction, S.hierarchyKey, T.hierarchyKey, H.predicateId, P.Uid, iif(@ancestry = 3 and H.SubjectHop < 0, P.Inverse, P.Name), P.Type;
 
 	-- Get hierarchy (or root node) collection.
-	select	H.hierarchyKey,
+	select	H.hierarchyKey,			
 			(
-			select	H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
-					ResponsibilityTypeName as responsibilityType, 
-					responsibilityTypeId,
-					count(1) as [count], 
+			  select H.hierarchyKey + '-O-' + cast(a.responsibilityTypeId as varchar) as [key], a.* from (
+				select 					
+					rt.id as responsibilityTypeId,
+					rt.Name as responsibilityType,
+					null as [count],
 					cast(0 as bit) as expanded
-			from	(
-					select		Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
-					from		ResponsibilityDetail Ro
-								inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey 
-											and (
-													Ho.ID = Ro.AssetID 
-													or (Ro.AssetID = 0 and Ho.AssetTypeID = Ro.AssetTypeID)
-												) 
-											and Ro.IsVisible = 1
-											and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
-					group by	Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
-					) O
-			group by ResponsibilityTypeName, ResponsibilityTypeID
-			for json path
+				from 
+					ResponsibilityType rt
+					inner join ResponsibilityTypeRelationRule rr on rt.id = rr.responsibilitytypeid
+					inner join assettype att on rr.[Object] = att.[Object] and rr.ObjectID = att.ObjectID  and rr.IsVisible = 1
+					inner join  asset a on a.AssetTypeID = att.ID
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and  Ho.ID = a.ID
+				where
+					exists (select 1 from ResponsibilityRuleResultAsset rra where a.ID = rra.AssetID  and rra.RuleID = rr.responsibilityTypeId) 
+				-- assigned to asset type
+				union
+				select 
+					rt.id as responsibilityTypeId,
+					rt.Name as responsibilityType,
+					null as [count],
+					cast(0 as bit) as expanded
+				from 
+					ResponsibilityType rt
+					inner join ResponsibilityTypeRelationRule rr on rt.id = rr.responsibilitytypeid
+					inner join assettype att on rr.[Object] = att.[Object] and rr.ObjectID = att.ObjectID  and rr.IsVisible = 1
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.AssetTypeID = att.ID
+				where
+					exists (select 1 from ResponsibilityRuleResultAsset rra where rra.AssetID = 0 and att.ID = rra.AssetTypeID and rra.RuleID = rr.responsibilityTypeId )
+				-- overrides on asset												
+				union 
+				select 
+					rt.id as responsibilityTypeId,
+					rt.Name as responsibilityType,
+					null as [count],
+					cast(0 as bit) as expanded
+				from ResponsibilityType rt
+					inner join ResponsibilityTypeRelation rtr on rt.id = rtr.responsibilitytypeid
+					inner join assettype att on rtr.[Objecttype] = att.[Object] and rtr.ObjectID = att.ObjectID  --and rr.IsVisible = 1
+					inner join  asset a on a.AssetTypeID = att.ID
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID
+				where
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where a.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id) 
+               ) as a for json path
 			) as ownersJson,
 			(
 			select	[predicate], 
@@ -827,38 +851,40 @@ begin
 	end
 	else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 	begin	-- This is lineage
-		-- Get descendents (if any) of the current asset.
-		declare @directParentAncestryLinks table (ID bigint, lvl int);
-		
-		with h as (
-			select	A.ID,
-					cast(null as bigint) as ParentID,
-					A.Object,
-					A.ObjectID,
-					cast(null as varchar(50)) as ParentObject,
-					cast(null as int) as ParentObjectID,
-					1 as lvl
-			from	Asset A
-			where	A.Uid = @uid
-			union all
-			select	C.ID,
-					h.ID as ParentID,
-					C.Object,
-					C.ObjectID,
-					h.Object as ParentObject,
-					h.ObjectID as ParentObjectID,
-					h.lvl+1 as lvl
-			from	h
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = h.Object and I.SubjectID = h.ObjectID
-					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-		)
+		-- Get descendants (if any) of the current asset.
+		create table #directParentAncestryLinks (ID bigint, lvl int);
+		create clustered index IX_TempdirectParentAncestryLinks_lvl on #directParentAncestryLinks (id,lvl);
 
-		insert into @directParentAncestryLinks
-			select ID, lvl from h;
+		declare @currentLevel int = 0;
+		declare @insertedRowCount int = 0;
+	
+		-- Current Asset is the starting point IE level 0
+		insert into #directParentAncestryLinks select ID, 0 from asset where [uid] = @uid;
+		SELECT @insertedRowCount=@@ROWCOUNT;
+
+		-- Loop through as long as more descendants were added at the last level and add next level down.  Query using the graph tables to get current items children
+		while( @insertedRowCount > 0)
+		begin
+			insert into #directParentAncestryLinks with(tablock)
+				select 	
+					T.ID,
+					@currentLevel+1 as lvl
+				from	
+					graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#directParentAncestryLinks link
+				where	MATCH(S-(E)->T)
+									and E.PredicateType in (3,4)					
+									and S.ID = link.ID and link.lvl = @currentLevel
+			SELECT @insertedRowCount=@@ROWCOUNT
+			set @currentLevel=@currentLevel+1;
+		
+		end
 
 		declare @descendantCount int = 0;
 		select	@descendantCount = count(*) 
-		from		@directParentAncestryLinks 
+		from		#directParentAncestryLinks 
 		where		lvl > 1;
 
 		--too many descendants to reasonably display on the diagram
@@ -877,14 +903,14 @@ begin
 		begin
 			
 			declare @directParentLevel int
-			select @directParentLevel = max(lvl)-1 from @directParentAncestryLinks;
+			select @directParentLevel = max(lvl)-1 from #directParentAncestryLinks;
 			insert into #ids (ID)
-				select ID from @directParentAncestryLinks where lvl >= @directParentLevel;
+				select ID from #directParentAncestryLinks where lvl >= @directParentLevel;
 		end
 		else
 		begin
-			insert into #ids (ID)
-				select ID from @directParentAncestryLinks;
+			insert into #ids with(tablock) (ID)
+				select ID from #directParentAncestryLinks;
 
 			insert into #ids (ID)
 				select	P.S.value('@assetId', 'bigint') as AssetId 

@@ -40,6 +40,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
+import { forEach } from 'core-js/fn/dict';
 
 declare var window: any;
 
@@ -1237,7 +1238,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }
+            }            
         });
     }
 
@@ -1319,6 +1320,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.helper_CalculateAlertCount();
     }
 
+    // Used to load the counts for the owner badges
+    private loadOwnerCounts() {        
+        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.AncestryMode).subscribe(res => {
+
+                for (let item of res) { // each owner count                   
+                    if (item.owners) {                        
+                        for (let owner of item.owners) { // each 
+                            let nd = this.diagram.model.nodeDataArray.filter(n => { return n.owners && n.owners.some(m => m.responsibilityTypeId == owner.responsibilityTypeId) });                            
+                            if (nd && nd.length > 0) {
+                                for (let node of nd) {
+                                    let ownerBadges = node.owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId });
+                                    for (let badge of ownerBadges) {
+                                        this.diagram.model.setDataProperty(badge, "count", owner.count);                                                                                
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+    }
+
     private helper_PopulateDiagram(): Observable<boolean> {
         let dgmObs: Observable<boolean>;
 
@@ -1352,6 +1375,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                         this.loadingText = "";
                         this.isLoading = false;
+                        this.loadOwnerCounts();
                     }
                 }
                 else {
@@ -1395,7 +1419,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedAssetTypes();
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
-            this.helper_CalculateAlertCount();
+            this.helper_CalculateAlertCount();            
         });
     }
 
@@ -2457,9 +2481,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor
+                            stroke: this.fontRelationBadgeCountForeColor,                            
                         },
-                        new go.Binding("text", "count")
+                        new go.Binding("text", "count")                        
                     ),
                 )
             )
@@ -2748,9 +2772,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeCountForeColor
+                            stroke: this.fontOwnerBadgeCountForeColor,                            
                         },
-                        new go.Binding("text", "count")                   
+                        new go.Binding("text", "count", (h) => (h ? h : this.loadingIcon)),
+                        new go.Binding("font", "count", (h) => (h ? this.fontOwnerBadge : this.fontLoadingIcon))
                     ),                                      
                 )
             )

@@ -15,7 +15,8 @@ import {
     AssetBrowserAlertRequest,
     DiagramTypesModel,
     AssetBrowserResponseModel,
-    AssetBrowserApiHopAssetRequestModel
+    AssetBrowserApiHopAssetRequestModel,
+    DiagramOwnerCount
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -375,6 +376,12 @@ export class BrowserService extends BaseObservableService {
     public getDiagramTypes(uid: string): Observable<DiagramTypesModel> {
         return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
             map((response: DiagramTypesModel) => response),
+            catchError(err => this.handleError(err)));
+    }
+
+    public getOwnerCounts(uid: string, hopCount: number, includeNonLeaf: boolean, ancestry: FilterAncestryMode): Observable<DiagramOwnerCount[]> {
+        return this.http.get(`api/v2/browser/ownershipCounts/${uid}/${hopCount}/${includeNonLeaf}/${ancestry}`).pipe(
+            map((response: DiagramOwnerCount[]) => response),
             catchError(err => this.handleError(err)));
     }
 

@@ -358,6 +358,11 @@ export class DiagramTypesModel {
     items: any[] = [];
 }
 
+export class DiagramOwnerCount {
+    hierarchyKey: string;
+    owners: AssetBrowserTranslationOwnerCount[];
+}
+
 // #region Asset Browser : Responses
 
 // Relationship Models

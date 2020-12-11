@@ -466,6 +466,7 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
+  <include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
