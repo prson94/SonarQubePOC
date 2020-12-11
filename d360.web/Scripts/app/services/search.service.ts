@@ -38,9 +38,7 @@ export class SearchService extends BaseObservableService  {
 
     public getSearchCategories(settings: any, showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
         let exclude: string[] = [];
-        let hideEmpty: boolean = false;
         if (settings) {
-            hideEmpty = settings['HideEmptySearchCategories'].toString() === "true";
             if (settings['FusionEnabled'].toString() === 'false') {
                 exclude.push('FusionAttributes');
                 exclude.push('FusionType');
@@ -54,16 +52,12 @@ export class SearchService extends BaseObservableService  {
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter(t => exclude.indexOf(t.value) == -1);
 
-        if (keepNotVisible || hideEmpty) {
-            return this.getVisibleCategories().pipe(
-                map(res => categories.map(c => {
-                    c.visible = res.indexOf(c.value) >= 0;
-                    return c;
-                }).filter(c => keepNotVisible || (hideEmpty && c.visible)))
-            );
-        } else {
-            return of(categories);
-        }
+        return this.getVisibleCategories().pipe(
+            map(res => categories.map(c => {
+                c.visible = res.indexOf(c.value) >= 0;
+                return c;
+            }).filter(c => keepNotVisible || c.visible))
+        );
     }
 
     //Observable for caching visible Categories

@@ -134,11 +134,15 @@ namespace d360.web.Controllers
                 if (Company.FusionTypes.Any())
                     visibleCategories.Add("FusionType");
             }
+#if DEBUG
+            visibleCategories.Remove(AssetTypeClass.Policy.ToString());
+            visibleCategories.Remove(AssetTypeClass.Rule.ToString());
+#endif
 
             return Json(visibleCategories, JsonRequestBehavior.AllowGet);
         }
 
-        #endregion
+#endregion
 
         private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
         {
