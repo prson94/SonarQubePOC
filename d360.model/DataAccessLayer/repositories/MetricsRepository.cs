@@ -706,7 +706,7 @@ from	metrics.RollupPath P
                     foreach (var condition in group.ConditionItems)
                     {
                         var fieldType = new FieldType();
-                        
+
                         // Remove null values
                         condition.Values.RemoveAll(v => string.IsNullOrEmpty(v));
                         //Trim remaining values.

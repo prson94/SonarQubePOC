@@ -90,6 +90,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         formatted.state = x.state;
         formatted.uid = x.uid;
         formatted.hasMeasure = x.hasMeasure;
+        formatted.hasDisabledMeasure = x.hasDisabledMeasure;
         formatted.hasField = x.hasField;
         formatted.isExternallyCalculated = x.isExternallyCalculated ? 'External' : 'Internal';
         formatted.lowerThreshold = x.lowerThreshold;

@@ -1,5 +1,6 @@
 ﻿<div class="saved-filter-controls">
-    <p-dropdown [(ngModel)]="selectedFilter"
+    <p-dropdown igDropdown
+                [(ngModel)]="selectedFilter"
                 [options]="savedFilters"
                 [showClear]="true"
                 [style]="{'width':'100%'}"
@@ -8,8 +9,8 @@
                 (onChange)="apply($event)"
                 styleClass="filter-dropdown"
                 style="width:100%"></p-dropdown>
-    <p-menu #filtermenu [popup]="true" [model]="getFilterMenuItems()" appendTo="body"></p-menu>
-    <button type="button" pButton icon="fa fa-ellipsis-v" (click)="filtermenu.toggle($event)"></button>
+    <button igButton type="button" icon="fa fa-ellipsis-v" class="ig-button" (click)="filtermenu.toggle($event)"></button>
+    <ig-popup-menu #filtermenu [items]="menuitems"></ig-popup-menu>
 </div>
 
 <d3s-modal [title]="'Create New Filter Set'" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
@@ -17,15 +18,13 @@
         <div class="content">
             <div class="row">
                 <label for="name" style="margin-right:10px;">Name</label>
-                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
+                <input igInput igAutoFocus igSize="full" type="text" [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
             </div>
         </div>
         <div class="action-bar">
-            <button class="button" (click)="cancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+            <button igButton (click)="cancel()" [disabled]="saveFilterModalWorking" label="Cancel"></button>
             <span class="grow"></span>
-            <button class="button primary" (click)="create()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid">
-                Create
-            </button>
+            <button igButton class="ig-button-primary" (click)="create()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid" label="Create"></button>
         </div>
     </form>
 </d3s-modal>
@@ -37,10 +36,8 @@
         </div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="cancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+        <button igButton (click)="cancel()" label="Cancel" [disabled]="saveFilterModalWorking"></button>
         <span class="grow"></span>
-        <button class="button primary" (click)="delete()">
-            Delete
-        </button>
+        <button igButton class="ig-button-primary" (click)="delete()" label="Delete"></button>
     </div>
 </d3s-modal>

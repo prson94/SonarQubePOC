@@ -222,6 +222,7 @@ export class ScoreTypeAllocation {
     scoreType: ScoreType;
     state: State;
     hasMeasure: boolean;
+    hasDisabledMeasure: boolean;
     hasField: boolean;
     isExternallyCalculated: boolean;
     lowerThreshold: number;
@@ -238,6 +239,7 @@ export class ScoreTypeAllocationFormatted {
     scoreType: string;
     state: State;
     hasMeasure: boolean;
+    hasDisabledMeasure: boolean;
     hasField: boolean;
     isExternallyCalculated: string;
     lowerThreshold: number;

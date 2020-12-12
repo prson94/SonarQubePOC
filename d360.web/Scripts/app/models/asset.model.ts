@@ -1,5 +1,4 @@
-﻿import { ReferenceItemType } from "./reference.model";
-import { TreeNode } from "primeng/api";
+﻿import { TreeNode } from "primeng/api";
 
 
 export enum State {
@@ -152,13 +151,14 @@ export class AssetCount {
             mappedArr[arrElem.id]['children'] = [];
         }
 
-
         for (var id in mappedArr) {
             if (mappedArr.hasOwnProperty(id)) {
                 mappedElem = mappedArr[id];
                 // If the element is not at the root level, add it to its parent array of children.
                 if (mappedElem.parentid) {
-                    mappedArr[mappedElem['parentid']]['children'].push(mappedElem);
+                    if (mappedArr[mappedElem['parentid']]['children']) {
+                        mappedArr[mappedElem['parentid']]['children'].push(mappedElem);
+                    }
                 }
                 // If the element is at the root level, add it to first level elements array.
                 else {

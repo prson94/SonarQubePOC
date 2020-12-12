@@ -311,7 +311,30 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                #region Set the default for condition group, item, and value arrays.
+
+                if (model.ConditionGroups == null)
+                {
+                    model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>();
+                }
+                model.ConditionGroups.ForEach(g =>
+                {
+                    if (g.ConditionItems == null)
+                    {
+                        g.ConditionItems = new List<MetricAssetVersionConditionItemViewModel>();
+                    }
+                    g.ConditionItems.ForEach(i => {
+                        if (i.Values == null)
+                        {
+                            i.Values = new List<string>();
+                        }
+                    });
+                });
+
                 model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
+
+                #endregion
+
                 if (model.IsGroup && model.ConditionGroups.Count > 0)
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");

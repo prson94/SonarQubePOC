@@ -1,5 +1,5 @@
 ﻿import { Component, Input } from "@angular/core";
-import { BaseComponent } from "../shared/base.component";
+import { BaseComponent } from "../../shared/base.component";
 
 @Component({
     selector: 'd3s-workflow-monitor-step-http-details',

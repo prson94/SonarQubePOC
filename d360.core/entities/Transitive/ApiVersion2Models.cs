@@ -126,7 +126,7 @@ namespace d360.core.entities
     [DataContract(Name = "asset")]
     public class AssetInsert : IAssetUpsert, IExecutionItem
     {
-        [IgnoreDataMember]
+        [DataMember]
         public Guid Uid { get; set; }
 
         [DataMember]
@@ -184,7 +184,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
-        [DataMember, SwaggerExclude]
+        [DataMember]
         public bool? Cascade { get; set; }
     }
 

@@ -65,8 +65,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         let formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
         let changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
         let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
+        let objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
 
-        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged)    {
+        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged)    {
             this.loadContextualFields();
             this.loadFormFields();
             this.loadHttpFields();
