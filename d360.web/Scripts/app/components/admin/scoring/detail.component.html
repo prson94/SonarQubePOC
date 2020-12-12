@@ -169,5 +169,5 @@
     </div>
 </div>
 <d3s-modal *ngIf="data" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
-    <allocation-editor [disabled]="data?.hasMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
+    <allocation-editor [disabled]="allocation?.hasMeasure||allocation?.hasDisabledMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
 </d3s-modal>
