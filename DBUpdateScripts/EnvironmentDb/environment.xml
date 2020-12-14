@@ -50,8 +50,9 @@
 	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
 	<include file="scripts/Function.utility.JS_Hashcode.xml"/>
-  <include file="scripts/Function.utility.OrderedSplit.xml"/>
-
+	<include file="scripts/Function.utility.OrderedSplit.xml"/>
+	<include file="scripts/Function.utility.GetObjectObjectIdByUID.xml"/>
+	
   <!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
 	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
