@@ -779,7 +779,11 @@ namespace d360.extensions.search
         public PagedQuery(SqlConnection connection, string query, DynamicParameters param = null)
         {
             _connection = connection;
-            _query = "SELECT TOP (@PageSize) pagedquery.* FROM (" + query + ") pagedquery WHERE pagedquery.AssetID >= @PagerAssetID ORDER BY pagedquery.AssetID"; ;
+
+            //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
+            string alias = "pagedquery";
+            string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ({query}) {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.AssetID"; ;
             _param = new DynamicParameters();
             if (param != null)
             {
