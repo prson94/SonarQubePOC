@@ -267,7 +267,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     save() {
         //calculate the next id # based on existing fields
-        let len = this.step.fields.form.field.length;
+        let len = this.step.fields.form.field.filter(f => f['@type'] == this.newField['@type']).length;
         let count = len == 0 ? 1 : this.step.fields.form.field
             .filter(f => f['@type'] == this.newField['@type'])
             .map(f => +(f['@id'].replace(this.newField['@type'], '')))
@@ -371,15 +371,24 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     changeType(e: any) {
         this.newField['@type'] = e;
+
+        let type = this.objectType;
+        let id = this.objectId;
+
+        if (this.issueObject.indexOf('|') > -1) {
+            type = this.issueObject.split('|')[0];
+            id = +this.issueObject.split('|')[1];
+        }
+
         if (e == 'boolean') this.newField['@required'] = true;
         if (e == 'relationshipType' && this.intersectTypes == null) {
-            this.workflowService.getAllowIntersectTypes(this.objectType, this.objectId)
+            this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe(r => {
                     this.intersectTypes = r;
                 });
         }
         if (e == 'list' && this.lookups == null) {
-            this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId)
+            this.workflowService.getWorkflowVersionStepFormLookups(type, id)
                 .subscribe(r => {
                     this.lookups = r;
                 });

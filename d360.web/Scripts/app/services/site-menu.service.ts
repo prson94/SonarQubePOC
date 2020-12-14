@@ -198,7 +198,7 @@ export class SiteMenuService extends BaseObservableService {
             })
         }
 
-        return this.http.post(`navigation/GetSecondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
+        return this.http.post(`navigation/secondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

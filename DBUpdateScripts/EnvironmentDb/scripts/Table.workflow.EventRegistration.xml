@@ -41,4 +41,36 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.workflow.EventRegistration-v2">
+    <comment>GOV-12894</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF not EXISTS (select * from sys.indexes where name = 'IX_EventRegistration_object_objectid_state')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_EventRegistration_object_objectid_state] ON [Workflow].[EventRegistration] ([object] ASC,[objectid] ASC,[state] ASC)
+END
+
+IF not EXISTS (select * from sys.indexes where name = 'IX_EventRegistration_typeid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_EventRegistration_typeid] ON [Workflow].[EventRegistration] ([typeid] ASC)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_EventRegistration_object_objectid_state')
+BEGIN
+	DROP INDEX [IX_EventRegistration_object_objectid_state] ON [Workflow].[EventRegistration]
+END
+
+IF EXISTS (select * from sys.indexes where name = 'IX_EventRegistration_typeid')
+BEGIN
+	DROP INDEX [IX_EventRegistration_typeid] ON [Workflow].[EventRegistration]
+END
+		]]>
+	</rollback>
+  </changeSet>  
 </databaseChangeLog>

@@ -5,12 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetFieldHash-v1">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetAssetFieldHash-v2">
+    <comment>GOV-12916</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'dbo' and SPECIFIC_NAME = 'GetAssetFieldHash')
+begin
+	drop function [dbo].[GetAssetFieldHash]
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetAssetFieldHash]()
 RETURNS TABLE 
 AS
@@ -28,12 +37,6 @@ RETURN
 	group by	A.AssetTypeID, A.ID
 )
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

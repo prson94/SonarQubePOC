@@ -623,14 +623,16 @@ from	metrics.Asset A
                                                         // Check the measure validity.
                                                         assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, null);
 
-                                                        var relationSql = "select cast(iif(sum(bit1) > 0, 1, 0) as bit) from (";
+                                                        var operatorSql = "";
+                                                        var bitSql = "";
                                                         object parameters = null;
 
                                                         switch (gDefinition.Relation.Operator)
                                                         {
                                                             case Operator.Equals:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
-                                                                relationSql += 
+                                                                bitSql = "iif(sum(bit1) > 0, 1, 0)";
+                                                                operatorSql = 
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
                                                                     "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
@@ -641,17 +643,19 @@ from	metrics.Asset A
                                                                     n.AssetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
                                                                 };
-                                                                relationSql += 
+                                                                bitSql = "iif(sum(bit1) > 0, 1, 0)";
+                                                                operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
                                                                     "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotEquals:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid, ValueUid = Guid.Parse(gDefinition.Relation.Values[0]) };
-                                                                relationSql += 
-                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
+                                                                bitSql = "iif(sum(bit1) = 0, 1, 0)";
+                                                                operatorSql =
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid and ObjectUid = @ValueUid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @ValueUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotIn:
                                                                 parameters = new {
@@ -659,27 +663,30 @@ from	metrics.Asset A
                                                                     n.AssetUid,
                                                                     Uids = gDefinition.Relation.Values.Select(u => new { Uid = Guid.Parse(u) }).AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" })
                                                                 };
-                                                                relationSql += 
-                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
+                                                                bitSql = "iif(sum(bit1) = 0, 1, 0)";
+                                                                operatorSql =
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = @AssetUid and I.ObjectUid = U.Uid " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail I inner join @Uids U on I.IntersectTypeUid = @IntersectTypeUid and I.SubjectUid = U.Uid and I.ObjectUid = @AssetUid ";
                                                                 break;
                                                             case Operator.NotPopulated:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid };
-                                                                relationSql += 
-                                                                    "select iif(count(1) > 0, 0, 1) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
+                                                                bitSql = "iif(sum(bit1) = 0, 1, 0)";
+                                                                operatorSql =
+                                                                    "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
                                                                     "union all " +
-                                                                    "select iif(count(1) > 0, 0, 1) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
+                                                                    "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                             default: // case Operator.Populated:
                                                                 parameters = new { gDefinition.Relation.IntersectTypeUid, n.AssetUid };
-                                                                relationSql += 
+                                                                bitSql = "iif(sum(bit1) > 0, 1, 0)";
+                                                                operatorSql =
                                                                     "select iif(count(1) > 0, 1, 0) bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and SubjectUid = @AssetUid  " +
                                                                     "union all " +
                                                                     "select iif(count(1) > 0, 1, 0) as bit1 from IntersectDetail where IntersectTypeUid = @IntersectTypeUid and ObjectUid = @AssetUid ";
                                                                 break;
                                                         }
-                                                        relationSql += ") a";
+                                                        var relationSql = $"select cast({bitSql} as bit) from ({operatorSql}) a";
 
                                                         scoreItem.Value = company.Query<bool>(relationSql, parameters, commandTimeout: 90).Single();
                                                     }

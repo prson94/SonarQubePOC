@@ -29,6 +29,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
+import { SharedWorkflowMonitorModule } from '../shared/workflow/shared-workflow.module';
 
 @NgModule({
     imports: [
@@ -48,6 +49,7 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         TableModule,
         MonitorRoutingModule,
         TabViewModule,
+        SharedWorkflowMonitorModule,
 
         //d3s        
         CoreModule,        

@@ -9,7 +9,10 @@ import { MenuItem } from 'primeng/api';
     selector: 'd3s-assetbrowser-savedfilter',
     templateUrl: './savedfilter.component.html',
     providers: [BrowserService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    styles: [`
+.ig-dropdown{ padding-right: 4px };
+        `]
 })
 export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() diagramType: DiagramType;
@@ -26,6 +29,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     deleteFilterModalVisible: boolean = false;
     deleteFilterModalWorking: boolean = false;
 
+
+    menuitems = [
+        { title: 'Add', callback: (event) => { this.add() } },
+        { title: 'Save', disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.update() } },
+        { title: 'Remove', disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.showRemove() } }
+    ];
+
     constructor(
         private browserService: BrowserService,
         protected messagesService: MessagesObservableService,
@@ -41,6 +51,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
     }
+
+
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["diagramType"]) {
@@ -77,6 +89,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     }
 
     apply(e) {
+        this.menuitems.forEach(x => {
+            if (x.title == "Remove" || x.title == "Save") {
+                x.disabled = !this.hasSelectedUserFilter();
+                this.cdRef.markForCheck();
+            }
+        });
+
         if (!this.hasSelectedUserFilter())
             return;
 
@@ -133,6 +152,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.allFilters.push(filter);
                 this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
+                this.menuitems.forEach(x => {
+                    if (x.title == "Remove" || x.title == "Save") {
+                        x.disabled = !this.hasSelectedUserFilter();
+                        this.cdRef.markForCheck();
+                    }
+                });
                 this.messagesService.showInfoMessage('Success', 'Filter added successfully');
                 this.cdRef.markForCheck();
             });
@@ -150,6 +175,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                         filters.splice(idx, 1);
                         this.savedFilters = filters.filter(f => true);
                         this.selectedFilter = undefined;
+                        this.menuitems.forEach(x => {
+                            if (x.title == "Remove" || x.title == "Save") {
+                                x.disabled = !this.hasSelectedUserFilter();
+                                this.cdRef.markForCheck();
+                            }
+                        });
                         this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
                         this.cdRef.markForCheck();
                         this.deleteFilterModalWorking = false;
@@ -157,14 +188,6 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                     }
                 });
         }
-    }
-
-    getFilterMenuItems(): MenuItem[] {
-        return [
-            { label: 'Add', command: (event) => { this.add() } },
-            { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.update() } },
-            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.showRemove() } }
-        ];
     }
 
     private hasSelectedUserFilter(): boolean {
@@ -214,6 +237,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.allFilters[idx] = filter;
                 this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
+                this.menuitems.forEach(x => {
+                    if (x.title == "Remove" || x.title == "Save") {
+                        x.disabled = !this.hasSelectedUserFilter();
+                        this.cdRef.markForCheck();
+                    }
+                });
                 this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
                 this.cdRef.markForCheck();
             });

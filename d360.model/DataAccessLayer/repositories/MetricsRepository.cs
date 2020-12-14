@@ -193,6 +193,7 @@ namespace d360.model.DataAccessLayer
             MetricAssetVersion metricAssetVersion = null;
             AssetType targetAssetType = null;
             bool isNew = true;
+            bool changeWillEffectScore = false;
 
             var operatorInfos = Operator.After.GetAsList();
 
@@ -230,6 +231,11 @@ namespace d360.model.DataAccessLayer
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You must provide a valid AllocationUid.");
                 }
+            }
+
+            if (isNew)
+            {
+                changeWillEffectScore = true;
             }
 
             if (model.Definition != null)
@@ -700,7 +706,7 @@ from	metrics.RollupPath P
                     foreach (var condition in group.ConditionItems)
                     {
                         var fieldType = new FieldType();
-                        
+
                         // Remove null values
                         condition.Values.RemoveAll(v => string.IsNullOrEmpty(v));
                         //Trim remaining values.
@@ -972,51 +978,51 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                 Company.Connection.Execute("update metrics.AssetVersion set EffectiveEndDate = @EffectiveEndDate where Uid = @Uid", existingAssetVersions[i], transaction: trans);
                             }
                         }
+
+                        changeWillEffectScore = true; //the fact that you are adding a new version means you should recalculate.
                     }
                     else
                     {
                         var existingVersionResultCount = Company.Connection.Query<int>("select count(1) from metrics.ScoreItem where AssetVersionUid = @Uid", new { metricAssetVersion.Uid }, transaction: trans).Single();
+                        var existingDefinition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(metricAssetVersion.Definition ?? "{}");
+                        var existingDefinitionHash = existingDefinition.GetHashValue();
+                        var newDefinitionHash = model.Definition.GetHashValue();
+                        if (metricAssetVersion.Conditions == null)
+                        {
+                            metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+                        }
+                        var existingHashItems = (
+                                                from g in metricAssetVersion.Conditions
+                                                from c in (g.Items ?? new List<MetricAssetVersionConditionItem>())
+                                                from v in (c.Values ?? new List<MetricAssetVersionConditionItemValue>())
+                                                orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
+                                                select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}"
+                                                ).ToList();
+                        var existingConditionHash = string.Join("|", existingHashItems);
+                        existingConditionHash = existingConditionHash.GetD3sHashString();
 
                         // Only validate if there any existing results for this metric. If not, do not worry about it.
                         if (existingVersionResultCount > 0)
                         {
                             if (metricAssetVersion.Weight != model.Weight)
-                            {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the weight of this metric without also altering its effective date.");
-                            }
 
                             if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly)
-                            {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the condition type of this metric without also altering its effective date.");
-                            }
 
-                            var existingDefinition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(metricAssetVersion.Definition ?? "{}");
-                            var existingDefinitionHash = existingDefinition.GetHashValue();
-                            var newDefinitionHash = model.Definition.GetHashValue();
                             if (existingDefinitionHash != newDefinitionHash)
-                            {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the definition of this metric without also altering its effective date.");
-                            }
 
-
-                            if (metricAssetVersion.Conditions == null)
-                            {
-                                metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
-                            }
-                            var existingHashItems = (
-                                                    from g in metricAssetVersion.Conditions
-                                                    from c in (g.Items ?? new List<MetricAssetVersionConditionItem>())
-                                                    from v in (c.Values ?? new List<MetricAssetVersionConditionItemValue>())
-                                                    orderby g.Position, c.ConditionFieldTypeID, c.ConditionIntersectTypeID, v.Value
-                                                    select $"{g.MatchType};{g.Position};{g.Weight};{c.ConditionFieldTypeID};{c.ConditionIntersectTypeID};{c.ConditionType};{c.Operator};{v.Value}"
-                                                    ).ToList();
-                            string existingConditionHash = string.Join("|", existingHashItems);
-                            existingConditionHash = existingConditionHash.GetD3sHashString();
                             if (newConditionHash != existingConditionHash)
-                            {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, "You may not alter the conditions of this metric without also altering its effective date.");
-                            }
                         }
+
+                        // Will existing scores be effected?
+                        if (metricAssetVersion.Weight != model.Weight) changeWillEffectScore = true;
+                        if (metricAssetVersion.MatchConditionsOnly != model.MatchConditionsOnly) changeWillEffectScore = true;
+                        if (existingDefinitionHash != newDefinitionHash) changeWillEffectScore = true;
+                        if (newConditionHash != existingConditionHash) changeWillEffectScore = true;
+
 
                         // Set the properties.
                         metricAssetVersion.Name = model.Name;
@@ -1359,7 +1365,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                 }
             }
 
-            if (metricAsset != null && metricAssetVersion != null)
+            if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
             { 
                 Company.SendScoreEventWithPayload(
                     Guid.NewGuid(), 

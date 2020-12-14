@@ -14,6 +14,7 @@ import { URLSearchParams } from 'url';
 import { FormResponseType } from '../models/workflow.model';
 import { SelectItem } from 'primeng/api';
 import { LookupGrid } from '../models/grid-definition.model';
+import * as _ from 'lodash';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -157,6 +158,12 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public GetObjectUIDetailsForAssetUID(uid: string): Observable<any> {
+        return this.http.get('api/v2/assets/GetObjectDetailUIDetails/' + uid)
+            .pipe(map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
     getAssetsComplexFieldValue(assetUid: string, fieldName: string, params: any = null, isExport: boolean = false, fileName: string = ''): Observable<LookupGrid> | null {
         var url = `/api/v2/assets/${assetUid}/fields/${fieldName}?forUi=true`;
 
@@ -186,15 +193,16 @@ export class AssetService extends BaseObservableService {
     }
 
     public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
+        var copyParams = _.clone(params);
 
         //Setup paging for export
-        params['_pageNum'] = 1;
-        params['_pageSize'] = 200000;
-        params['_includeTotal'] = false;
+        copyParams['_pageNum'] = 1;
+        copyParams['_pageSize'] = 200000;
+        copyParams['_includeTotal'] = false;
 
         var qString = '';
-        if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+        if (copyParams) {
+            qString = Object.keys(copyParams).map(key => key + '=' + copyParams[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }

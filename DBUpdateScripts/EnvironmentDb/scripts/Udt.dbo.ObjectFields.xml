@@ -5,12 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Udt.dbo.ObjectFields-v1">
+  <changeSet author="Puneet Gupta" id="Udt.dbo.ObjectFields-v2">
+  <comment>GOV-12916</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+IF TYPE_ID(N'dbo.ObjectFields') IS NOT NULL 
+BEGIN
+	DROP TYPE [dbo].[ObjectFields]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF TYPE_ID(N'dbo.ObjectFields') IS NULL 
 BEGIN
 	CREATE TYPE [dbo].[ObjectFields] AS TABLE(
@@ -21,12 +30,6 @@ BEGIN
 	)
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

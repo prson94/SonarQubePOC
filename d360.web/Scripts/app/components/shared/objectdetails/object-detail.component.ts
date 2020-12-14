@@ -163,7 +163,7 @@ export class ObjectDetailComponent implements OnChanges {
                         }
                     });
             }
-            if (f.Name == 'UID') {
+            if ((f.FieldName || "").toUpperCase() == 'ASSETUID') {
                 this.assetUID = f.Value;
             }
 

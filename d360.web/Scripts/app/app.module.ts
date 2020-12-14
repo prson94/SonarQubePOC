@@ -23,6 +23,7 @@ import { FavoritesService } from './services/favorites.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { ApplicationInsightsService } from './services/application-insights.service';
+import { SearchService } from './services/search.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service'
 import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service'
@@ -118,7 +119,8 @@ export function localeInitializer(localeId: string) {
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
         },
-        ApplicationInsightsService
+        ApplicationInsightsService,
+        SearchService
     ],
     entryComponents: [D3SModal],
 

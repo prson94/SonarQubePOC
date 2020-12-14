@@ -84,6 +84,7 @@ import { DynEditorService } from '../../../services/dyn-editor.service';
 import { ProcessDiagramListViewComponent } from './process-diagram/process-diagram-list-view.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 
 @NgModule({
@@ -133,7 +134,8 @@ import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
         NgxJsonViewModule,
         AssetSearchModule,
         TagViewModule,
-        PopupMenuModule
+        PopupMenuModule,
+        SearchFieldModule
     ],
     declarations: [
         AssetBrowserAddPanelComponent,

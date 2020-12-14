@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList} from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, ViewChildren, QueryList, ViewEncapsulation, ViewChild, ElementRef, HostListener, AfterContentInit} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { StateService } from '../../../services/state.service';
@@ -18,10 +18,13 @@ declare var CompanySettings;
     selector: 'd3s-site-menu',
     templateUrl: './site-menu.component.html',
     providers: [SiteMenuService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['./site-menu.less'],
+    
 })
 
-export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy {
+export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestroy, AfterContentInit {
     @Input() menuOpen: boolean;
     @Output() menuChanged = new EventEmitter<boolean>();
 
@@ -37,7 +40,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subReloadCounts: any;
     protected countData: any[];
 
+    isScrollerVisable: boolean = false; 
+    scrollingUp: boolean = false;
+    scrollTitle: string = "Scroll down";
+
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
+    @ViewChild("menu", { static: false }) menu: ElementRef;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -49,6 +57,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private favoritesService: FavoritesService
     ) {
         super();
+    }
+
+    ngAfterContentInit(): void {
+        this.checkScroller();
     }
 
     ngOnInit() {
@@ -67,6 +79,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             this.loadFavorites();
         });
     }
+
 
     private rebuildCounts() {
         this.siteMenuService.getCounts().subscribe((res) => {
@@ -96,6 +109,44 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 item.clearInput();
             }
         });
+    }
+
+    doScroll() {
+        if (this.menu && this.isScrollerVisable) {
+            let elem = this.menu.nativeElement;
+            let scrollDistance = (elem.offsetHeight - 120);
+            let timeToScroll = 300;
+            if (this.scrollingUp) {
+                elem.scrollTop -= scrollDistance;;
+            } else {
+                elem.scrollTop += scrollDistance;
+            }
+            //need to delay until the scolling has finished for numbers to be correct
+            window.setTimeout(() => {
+                if (elem.scrollTop >= ((elem.scrollHeight - elem.offsetHeight)) && elem.scrollTop != 0) {
+                    this.scrollingUp = true;
+                    this.scrollTitle = "Scroll up";
+                    this.ref.markForCheck();
+                } else if (elem.scrollTop <= 0) {
+                    this.scrollingUp = false;
+                    this.scrollTitle = "Scroll down";
+                    this.ref.markForCheck();
+                } 
+            }, timeToScroll);
+
+        }
+    }
+
+    checkScroller() {
+        if (this.menu) {
+            let elem = this.menu.nativeElement;
+            this.isScrollerVisable = (elem.clientHeight < elem.scrollHeight);
+        }
+    }
+
+    @HostListener('window:resize', ['$event'])
+    onResize(event) {
+        this.checkScroller();
     }
 
     loadFavorites() {
@@ -212,6 +263,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     }                    
                    
                     localStorage.setItem("NavigationMenu", JSON.stringify(navigationState));
+                    window.setTimeout(() => { this.checkScroller(); this.ref.markForCheck(); }, 250);
                     this.ref.markForCheck();
                 }).add(() => {
                     //set the nav state for each of the siteMenu elements
@@ -228,7 +280,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     });
                 });
     }
-
 
     loadCounts(menu: any, items: any[]) {
         if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
@@ -291,6 +342,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Workflows', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Workflow Actions', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count: null });        
+        this.configMenu.NavigationItems.push({ Name: 'Scoring Definitions', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
     }
 
@@ -328,8 +380,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, IsHomePage: false, count:null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
-
-        this.adminMenu.NavigationItems.push({ Name: 'Scoring Definitions', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
                

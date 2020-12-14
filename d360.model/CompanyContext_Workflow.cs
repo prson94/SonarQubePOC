@@ -1188,11 +1188,15 @@ namespace d360.model
                     var newValues = val?.Split(',').Where(s => !string.IsNullOrEmpty(s.Trim())).Select(x => x.Trim()) ?? new string[0];
                     newValues = oldValues.Union(newValues).Distinct().OrderBy(x => x);
                     field.Value = string.Join(",", newValues);
+                    field.UpdatedOn = DateTime.UtcNow;
+                    field.UpdatedBy = CurrentResourceID;
                 }
                 else
                 {
                     //update
                     field.Value = val;
+                    field.UpdatedOn = DateTime.UtcNow;
+                    field.UpdatedBy = CurrentResourceID;
                 }
 
                 //Remove the field from db if field value is null or empty 
@@ -1300,12 +1304,12 @@ namespace d360.model
                      "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
                      new
                      {
-                         Object = objectInfo.Object.ToString(),
-                         ObjectID = objectInfo.ObjectID,
+                         Object = (asset != null) ? asset.Object : objectInfo.Object.ToString(),
+                         ObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
                          ParentObject = objectInfo.Object.ToString(),
                          date = DateTime.UtcNow,
-                         ParentObjectID = objectInfo.ObjectID,
-                         ResourceID = 0,
+                         ParentObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
+                         ResourceID = CurrentResourceID,
                          op = "Updated" 
                      });
         }
@@ -1472,7 +1476,7 @@ namespace d360.model
         /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
         /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
         /// <returns></returns>
-        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
+        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool reassignToUser = false)
         {
             foreach (var itemStep in itemSteps)
             {
@@ -1500,6 +1504,24 @@ namespace d360.model
                 {
                     WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }
+
+                if (reassignToUser)
+                {
+                    // add an assignment for the specified user
+                    var assignment = new WorkflowItemAssignment
+                    {
+                        ItemStepID = itemStep.ID,
+                        ItemID = itemStep.ItemID,
+                        CreatedBy = CurrentResourceID,
+                        CreatedOn = DateTime.UtcNow,
+                        ResourceObject = "Resource",
+                        ResourceObjectID = resource.ResourceID,
+                        UpdatedBy = CurrentResourceID,
+                        UpdatedOn = DateTime.UtcNow
+                    };
+                    WorkflowItemAssignments.Add(assignment);
+                }
+
 
                 if (sendFormEmails && stepSettings.FormShouldSendEmail)
                 {
@@ -2700,6 +2722,78 @@ namespace d360.model
                 result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
             }
 
+            if (result.Contains("[ASSET_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+                    if (issue != null)
+                    {
+                        var issueAsset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                        if(issueAsset != null) 
+                            uid = issueAsset.uid.ToString();
+                    }
+                }
+                else if(obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        uid = intersect.uid.ToString();
+                    }
+                }
+                else
+                {
+                    var asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
+                    if (asset != null)
+                        uid = asset.uid.ToString();
+                }
+
+                result = result.Replace("[ASSET_UID]", (uid ?? "(unknown item)"));
+            }
+
+            if (result.Contains("[REL_SUBJECT_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Subject, intersect.SubjectID);
+
+                        if (item != null)
+                        {
+                            uid = item.UID.ToString();
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
+            }
+            if (result.Contains("[REL_OBJECT_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Object, intersect.ObjectID);
+
+                        if (item != null)
+                        {
+                            uid = item.UID.ToString();
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+            }
 
             return result;
         }

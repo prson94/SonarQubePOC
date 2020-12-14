@@ -71,7 +71,7 @@
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
-                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}}
+                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}} <span *ngIf="!searchType.visible" class="hiddencategory">(hidden)</span>
                 </li>
             </ul>
         </div>
