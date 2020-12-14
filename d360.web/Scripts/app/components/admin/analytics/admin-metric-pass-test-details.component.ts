@@ -54,7 +54,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges, OnDestroy
             this.dateShowType = null;
             switch (<any>gov.Check) {
                 case 'External':
-                    this.formattedCheck = (gov.External.Instructions) ? (' Instruction string: ' + gov.External.Instructions) : '';
+                    this.formattedCheck = (gov.External.Instructions) ? ('External: Instruction string: ' + gov.External.Instructions) : 'External';
                     break;
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
