@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.helpers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -262,7 +263,7 @@ namespace d360.core.enums
         public MetricGovernanceCheckType ID { get; set; }
         public string Name { get; set; }
     }
-    
+
     public static class OperatorClassExtensions
     {
         public static string GetDisplayName(this Operator type)
@@ -462,6 +463,16 @@ namespace d360.core.enums
                                 result = (fieldValue == value);
                             }
                             break;
+                        case "Lookup":
+                            if (allowMultipleValues)
+                            {
+                                var valuesToCompare = (valueToCompare ?? "").Split(',');
+                                result = valuesToCompare.Intersect(values, new LowercaseStringEqualityComparer()).Any();
+                            }
+                            else {
+                                result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
+                            }
+                            break;
                         default:
                             result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
                             break;
@@ -522,7 +533,7 @@ namespace d360.core.enums
                     break;
                 case Operator.In:
                     var fieldValuesIn = (valueToCompare ?? "").Split(',');
-                    result = fieldValuesIn.Intersect(values).Any();
+                    result = fieldValuesIn.Intersect(values, new LowercaseStringEqualityComparer()).Any();
                     break;
                 case Operator.IsFalse:
                     if (!string.IsNullOrEmpty(valueToCompare) && dataType == DataType.Boolean.ToString())
@@ -568,6 +579,17 @@ namespace d360.core.enums
                                 result = (fieldValue != value);
                             }
                             break;
+                        case "Lookup":
+                            if (allowMultipleValues)
+                            {
+                                var valuesToCompare = (valueToCompare ?? "").Split(',');
+                                result = !valuesToCompare.Intersect(values, new LowercaseStringEqualityComparer()).Any();
+                            }
+                            else
+                            {
+                                result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
+                            }
+                            break;
                         case "Number":
                             if (long.TryParse(values[0], out _) && long.TryParse(valueToCompare, out _))
                             {
@@ -583,7 +605,7 @@ namespace d360.core.enums
                     break;
                 case Operator.NotIn:
                     var fieldValuesNotIn = (valueToCompare ?? "").Split(',');
-                    result = !fieldValuesNotIn.Intersect(values).Any();
+                    result = !fieldValuesNotIn.Intersect(values, new LowercaseStringEqualityComparer()).Any();
                     break;
                 case Operator.NotPopulated:
                     result = (valueToCompare == null);
