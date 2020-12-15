@@ -12,7 +12,8 @@ namespace d360.web.Models
         date,
         textarea,
         list,
-        relationshipType
+        relationshipType,
+        html,
     }
 
     public class WorkflowFormModelField

@@ -496,6 +496,12 @@ order by wi.StartedOn desc";
                             }
                         }
                     }
+                    else if (field.FieldType == WorkflowFormModelFieldType.html)
+                    {
+                        var sanitizer = new Ganss.XSS.HtmlSanitizer();
+                        sanitizer.AllowedSchemes.Add("data");
+                        val = sanitizer.Sanitize(val);
+                    }
 
 
                     newForm.Add(new XElement("field",
