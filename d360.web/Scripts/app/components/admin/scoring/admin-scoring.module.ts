@@ -11,12 +11,14 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
-import { AdminAnalyticsComponent } from './admin-analytics.component';
-import { AdminMetricAssetTypeListComponent } from './admin-metric-asset-type-list.component';
-import { AdminMetricConditionListComponent } from './admin-metric-condition-list.component';
-import { AdminAnalyticsRoutingModule } from './admin-analytics.routes';
-import { AdminMetricEditorComponent } from './admin-metric-editor.component';
-import { AdminMetricListComponent } from './admin-metric-list.component';
+import { ScoringIndexComponent } from './index.component';
+import { ScoringDetailComponent } from './detail.component';
+import { AdminScoringRoutingModule } from './admin-scoring.routes';
+import { DataQualityMeasureEditorComponent } from './measure-editor-dataquality.component';
+import { ExternalMeasureEditorComponent } from './measure-editor-external.component';
+import { GovernanceMeasureEditorComponent } from './measure-editor-governance.component';
+import { MeasureListComponent } from './measure-list.component';
+import { AdminMetricPassTestDetailsComponent } from './admin-metric-pass-test-details.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -39,13 +41,13 @@ import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
-import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
+import { AllocationEditorComponent } from './allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
+
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
 import { SwitchModule } from '../../shared/controls/switch/switch';
-import { AdminMetricHistoryComponent } from './admin-metric-history.component'
+import { AdminMeasureHistoryComponent } from './measure-history.component'
 import { IgDateModule } from '../../shared/controls/date/date';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';
@@ -54,6 +56,7 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 
+
 @NgModule({
     imports: [
         CommonModule,
@@ -61,7 +64,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         HttpClientModule,
         ReactiveFormsModule,
 
-        AdminAnalyticsRoutingModule,
+        AdminScoringRoutingModule,
 
         //prime
         ButtonModule,
@@ -106,14 +109,17 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 
     ],
     declarations: [
-        AdminAnalyticsComponent,
-        AdminMetricAssetTypeListComponent,
-        AdminMetricConditionListComponent,
-        AdminMetricEditorComponent,
-        AdminMetricListComponent,
-        AdminAllocationEditorComponent,
-        AdminAnalyticsDetailsComponent,
-        AdminMetricHistoryComponent
+        ScoringIndexComponent,
+        ScoringDetailComponent,
+
+        AllocationEditorComponent,
+        DataQualityMeasureEditorComponent,
+        ExternalMeasureEditorComponent,
+        GovernanceMeasureEditorComponent,
+
+        MeasureListComponent,
+        AdminMetricPassTestDetailsComponent,
+        AdminMeasureHistoryComponent
     ],
     providers: [
         {
@@ -124,5 +130,5 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
     ]
 })
 
-export class AdminAnalyticsModule {
+export class AdminScoringModule {
 }

@@ -123,8 +123,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             case 'Date':
             case 'DateTime':
                 return 'date';
-            case 'Text':
             case 'Html':
+                return 'html';
+            case 'Text':
             default:
                 return 'text';
         }
@@ -568,7 +569,9 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             case 'DateTime':
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'date');
             case 'Text':
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
             case 'Html':
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'html' || f['@type'] == 'text');
             default:
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
         }

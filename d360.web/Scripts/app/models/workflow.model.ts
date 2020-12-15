@@ -472,6 +472,7 @@ export enum WorkflowFormFieldType {
     TextArea = 4,
     List = 5,
     RelationshipType = 6,
+    HTML = 7,
 }
 
 export enum WorkflowActivityType {

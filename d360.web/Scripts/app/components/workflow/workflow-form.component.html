@@ -108,6 +108,50 @@
                                                    [style]="{width:'100%'}"
                                                    ngDefaultControl></p-multiSelect>
                                 </div>
+                                <div *ngSwitchCase="fieldType.HTML">
+                                    <p-editor [name]="'input_'+indx" [(ngModel)]="field.Value" [style]="{'height':'150px'}" ngDefaultControl #ed>
+                                        <header style="padding-bottom:0px !important">
+                                            <span class="ql-formats">
+                                                <select class="ql-header">
+                                                    <option value="1">Heading</option>
+                                                    <option value="2">Subheading</option>
+                                                    <option selected>Normal</option>
+                                                </select>
+                                                <select class="ql-font">
+                                                    <option selected>Sans Serif</option>
+                                                    <option value="serif">Serif</option>
+                                                    <option value="monospace">Monospace</option>
+                                                </select>
+                                            </span>
+                                            <span class="ql-formats">
+                                                <button class="ql-bold"></button>
+                                                <button class="ql-italic"></button>
+                                                <button class="ql-underline"></button>
+                                            </span>
+                                            <span class="ql-formats">
+                                                <select class="ql-color"></select>
+                                                <select class="ql-background"></select>
+                                            </span>
+                                            <span class="ql-formats">
+                                                <button class="ql-list" value="ordered"></button>
+                                                <button class="ql-list" value="bullet"></button>
+                                                <select class="ql-align">
+                                                    <option selected></option>
+                                                    <option value="center"></option>
+                                                    <option value="right"></option>
+                                                    <option value="justify"></option>
+                                                </select>
+                                            </span>
+                                            <span class="ql-formats">
+                                                <button class="ql-link"></button>
+                                                <button class="ql-code-block"></button>
+                                            </span>
+                                            <span class="ql-formats">
+                                                <button class="ql-clean"></button>
+                                            </span>
+                                        </header>
+                                    </p-editor>
+                                </div>
                             </div>
                             <div class="col s12" *ngIf="field.FieldType != fieldType.Boolean && workflowFormGroup && workflowFormGroup.controls['input_'+indx ]">
                                 <span *ngIf="!workflowFormGroup.controls['input_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
