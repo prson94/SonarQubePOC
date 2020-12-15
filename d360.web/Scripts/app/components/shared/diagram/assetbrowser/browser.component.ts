@@ -1326,11 +1326,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let isLineage: boolean = this.helper_LineageDiagramApplies();
         this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, isLineage ? this.displayConfiguration.AncestryMode : FilterAncestryMode.NoAncestor).subscribe(res => {            
             for (let item of res) { // each owner count                  
-                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });
+                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });                
                 if (nd.length > 0) {
                     for (let owner of item.owners) { // each responsibility on that node                                                       
-                        var badge = nd[0].owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId })[0];
-                        this.diagram.model.setDataProperty(badge, "count", owner.count);                        
+                        var badge = nd[0].owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId });
+                        if (badge && badge.length > 0)
+                            this.diagram.model.setDataProperty(badge[0], "count", owner.count ? owner.count : 0);
+                        else
+                            console.warn(`cant find ${owner.responsibilityTypeId} in ${item.predictableId} `);
                     }
                 }
             }

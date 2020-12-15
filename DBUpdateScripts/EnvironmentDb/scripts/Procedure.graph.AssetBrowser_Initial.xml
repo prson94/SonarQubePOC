@@ -675,11 +675,11 @@ begin
 
 	-- Get hierarchy (or root node) collection.
 	select	H.hierarchyKey,
-		utility.GetHash(STRING_AGG ( H.ID, ',' )) as predictableId,			
+		utility.GetHash(STRING_AGG ( H.ID, ',' )) as predictableId,		
 			(
-			  select H.hierarchyKey + '-O-' + cast(a.responsibilityTypeId as varchar) as [key]			         
-			    , a.* from (
-				select 					
+			  select a.* from (
+				select 	
+					H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
 					rt.id as responsibilityTypeId,
 					rt.Name as responsibilityType,
 					cast(0 as bit) as expanded
@@ -688,12 +688,14 @@ begin
 					inner join ResponsibilityTypeRelationRule rr on rt.id = rr.responsibilitytypeid
 					inner join assettype att on rr.[Object] = att.[Object] and rr.ObjectID = att.ObjectID  and rr.IsVisible = 1
 					inner join  asset a on a.AssetTypeID = att.ID
-					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and  Ho.ID = a.ID
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and  Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityRuleResultAsset rra where a.ID = rra.AssetID  and rra.RuleID = rr.responsibilityTypeId) 
+					exists (select 1 from ResponsibilityRuleResultAsset rra where Ho.ID = rra.AssetID  and rra.RuleID = rr.Id ) 
+					and exists (select 1 from ResponsibilityRuleResultSecurityAsset rra where rra.RuleID = rr.Id ) 
 				-- assigned to asset type
 				union
 				select 
+					H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
 					rt.id as responsibilityTypeId,
 					rt.Name as responsibilityType,
 					cast(0 as bit) as expanded
@@ -701,12 +703,15 @@ begin
 					ResponsibilityType rt
 					inner join ResponsibilityTypeRelationRule rr on rt.id = rr.responsibilitytypeid
 					inner join assettype att on rr.[Object] = att.[Object] and rr.ObjectID = att.ObjectID  and rr.IsVisible = 1
-					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.AssetTypeID = att.ID
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.AssetTypeID = att.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityRuleResultAsset rra where rra.AssetID = 0 and att.ID = rra.AssetTypeID and rra.RuleID = rr.responsibilityTypeId )
+					exists (select 1 from ResponsibilityRuleResultAsset rra where rra.AssetID = 0 and rra.AssetTypeID = Ho.AssetTypeID and rra.RuleID = rr.Id  )
+					and exists (select 1 from ResponsibilityRuleResultSecurityAsset rra where rra.RuleID = rr.Id ) 
 				-- overrides on asset												
 				union 
 				select 
+					distinct
+					H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
 					rt.id as responsibilityTypeId,
 					rt.Name as responsibilityType,
 					cast(0 as bit) as expanded
@@ -714,9 +719,9 @@ begin
 					inner join ResponsibilityTypeRelation rtr on rt.id = rtr.responsibilitytypeid
 					inner join assettype att on rtr.[Objecttype] = att.[Object] and rtr.ObjectID = att.ObjectID  --and rr.IsVisible = 1
 					inner join  asset a on a.AssetTypeID = att.ID
-					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID
+					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where a.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id) 
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id ) 
                ) as a for json path
 			) as ownersJson,
 			(
@@ -807,7 +812,7 @@ begin
 	
 	select @dataLimitReached;
 end
-		]]>
+]]>
     </sql>
 	<rollback>
 		<![CDATA[	
