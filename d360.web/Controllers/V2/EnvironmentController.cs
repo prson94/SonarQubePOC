@@ -281,7 +281,23 @@ namespace d360.web.Controllers.V2
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
-                        value = model.StringSetting.Value;
+
+                        if (setting.ID == 73 && clearSetting == false)
+                        {
+                            if (Guid.TryParse(model.StringSetting.Value, out Guid val))
+                            {
+                                value = val.ToString();
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid Uid");
+                            }
+                        }
+                        else
+                        {
+                            value = model.StringSetting.Value;
+                        }
+                        
                         break;
                     case SettingType.Number:
                         if (model.NumberSetting == null)
