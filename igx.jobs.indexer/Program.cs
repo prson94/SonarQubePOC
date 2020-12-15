@@ -139,6 +139,7 @@ namespace igx.jobs.indexer
             List<AssetTypeClass> classes = new List<AssetTypeClass> {
                 AssetTypeClass.BusinessAsset,
                 AssetTypeClass.TechnicalAsset,
+                AssetTypeClass.Diagram,
                 AssetTypeClass.Model,
                 AssetTypeClass.Policy,
                 AssetTypeClass.Rule,

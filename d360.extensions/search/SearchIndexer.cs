@@ -32,8 +32,10 @@ namespace d360.extensions.search
                 SystemObjects.Artifact.ToString(),
                 SystemObjects.Resource.ToString(),
                 SystemObjects.Taxonomy.ToString(),
+                SystemObjects.Task.ToString(),
                 AssetTypeClass.BusinessAsset.ToString(),
                 AssetTypeClass.TechnicalAsset.ToString(),
+                AssetTypeClass.Diagram.ToString(),
                 AssetTypeClass.Model.ToString(),
                 AssetTypeClass.Policy.ToString(),
                 AssetTypeClass.Rule.ToString(),
@@ -155,6 +157,7 @@ namespace d360.extensions.search
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Diagram:
                 case AssetTypeClass.Model:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Rule:
