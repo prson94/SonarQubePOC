@@ -101,7 +101,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     diagramTypes: DiagramTypesModel = null;
 
     showNodeCount: boolean = true;
-    autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
     popupMenuItems = [
         {
@@ -2026,7 +2025,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "text").makeTwoWay()
                     )
-                    , this.template_nodeCount()
                 ),  // end Horizontal Panel
                 this.g(
                     go.Placeholder,
@@ -2985,8 +2983,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             },
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "text").makeTwoWay()
-                        ),
-                        this.template_nodeCount()
+                        )
                     ),
                     // end Horizontal Panel
                     this.g(
@@ -3015,125 +3012,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("text", "text")
             )
         );
-    }
-
-    private template_nodeCount(): go.Panel {
-        var $ = go.GraphObject.make;
-        var self = this;
-        return $(go.Panel,
-            "Vertical",
-            {
-                stretch: go.GraphObject.Horizontal,
-                background: 'red'
-            });
-        var badge = $(go.Panel,
-            "Vertical",
-            {
-                stretch: go.GraphObject.Horizontal,
-                background: 'red'
-            },
-            new go.Binding("width", "", function (val: go.GraphObject, target: go.GraphObject) {
-                return;
-                let width: number = null;
-                if (val.part.data['_childrenCount']) {
-                    var lng = val.part.data['_childrenCount'].toString().length - 1;
-                    if (lng > 0)
-                        target.part.data['_nodeCountPanelDefaultWidth'] = 16 + lng * 6;
-                    else
-                        target.part.data['_nodeCountPanelDefaultWidth'] = 20;
-                }
-
-                if (!target.part['isSubGraphExpanded']) {
-                    width = (+target.part.data['_nodeCountPanelDefaultWidth']);
-                }
-                else if (!target.part.data['_nodeCountPanelCalculatedWidth']) {
-                    var topLevel = target.part.findTopLevelPart();
-                    var currentName = target.part.data['text'];
-                    if (topLevel.part.data['text'] == 'Host_edited' && currentName == 'Host_edited') {
-                        var topRight = topLevel.part.getDocumentBounds().right;
-                        var targetRight = target.getDocumentBounds().right;
-
-                        if (!isNaN(topRight) && !isNaN(targetRight)) {
-                            //console.log("target:", target.part.data['text']);
-                            //console.log("top right:", topRight);
-                            //console.log("target right:", targetRight);
-                            var diff = topRight - targetRight;
-                            console.log(diff);
-                            if (diff && diff != NaN && diff > 8 && diff < 150) {
-                                var newWidth = Math.round(diff + (+target.part.data['_nodeCountPanelDefaultWidth']) + 8);
-                                if (newWidth < topLevel.getDocumentBounds().width)
-                                    target.part.data['_nodeCountPanelCalculatedWidth'] = newWidth;
-                            }
-                        }
-                    }
-                }
-
-                if (target.part.data['_nodeCountPanelCalculatedWidth'] && width == null) {
-                    width = +target.part.data['_nodeCountPanelCalculatedWidth'];
-                }
-                return width;
-
-            }).ofObject(),
-            new go.Binding("visible", "", function (v) {
-                return self.showNodeCount;
-            }),
-            $(go.Panel, "Position",
-                {
-                    alignment: go.Spot.Right
-                },
-                $(go.Shape, "Rectangle",
-                    {
-                        position: new go.Point(0, 0),
-                        maxSize: new go.Size(48, 16),
-                        margin: new go.Margin(0, 3, 0, 0),
-                        strokeWidth: 1,
-                        stroke: "white",
-                        fill: "white"
-                    },
-                    new go.Binding("maxSize", "", function (obj: go.GraphObject) {
-                        if (obj.part.data['_childrenCount']) {
-                            var lng = obj.part.data['_childrenCount'].toString().length - 1;
-                            if (lng > 0) {
-                                return new go.Size(16 + lng * 6, 16);
-                            }
-                        }
-                        return new go.Size(16, 16);
-                    }).ofObject()
-                ),
-                $(go.TextBlock,
-                    {
-                        editable: false,
-                        margin: new go.Margin(4, 0, 0, 6),
-                        font: this.fontLabel,
-                        maxLines: this.textMaxLines,
-                        overflow: this.textOverflowStyle,
-                        background: "white",
-                    },
-                    new go.Binding("text", "", function (obj: go.GraphObject, target: go.GraphObject) {
-                        var data = obj.diagram.nodes.filter(x =>
-                            x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
-                            && x.data['group'] == obj.part.data['key']
-                        );
-
-                        if (self.autoCollapseNodeCount > 0) {
-                            if (data.count >= self.autoCollapseNodeCount) {
-
-                                var node = obj.diagram.findNodeForKey(obj.part.data['key']);
-                                //If already happened dont do it again, otherwise its not possible to expand 
-                                if (!node.data['autoCollapsed']) {
-                                    (node as any).collapseSubGraph();
-                                    node.data['autoCollapsed'] = true;
-                                }
-                            }
-                        }
-                        obj.part.data['_childrenCount'] = data.count;
-
-                        return data.count;
-                    }).ofObject()
-                ))
-
-        );
-        return badge;
     }
 
     //#endregion
