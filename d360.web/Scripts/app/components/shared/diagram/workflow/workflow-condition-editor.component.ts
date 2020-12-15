@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { WorkflowChangeType } from '../../../../models/workflow.model';
+import { ConditionFieldType, WorkflowChangeType } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
@@ -184,7 +184,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@Operator'];
             delete this.condition['@Value'];
 
-            this.setOperators(field.Type, this.selectedField.split('|')[0]);
+            this.setOperators(field, ConditionFieldType.Field);
 
             this.condition['@FieldTypeID'] = field.ID.toString();
             this.condition['@FieldName'] = field.FriendlyName + (field.Object == 'IssueType' ? ' (Action Field)' : '');
@@ -203,8 +203,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
             this.selectedType = input['@type'].toLowerCase();
 
-            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
-
+            this.setOperators(input, ConditionFieldType.Form);
 
             if (this.selectedType == 'list' || this.selectedType == 'relationshiptype') {
                 if (this.diagram != null) {
@@ -264,7 +263,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 this.condition['@ContextualFieldID'] = fieldId;
             }
 
-            this.setOperators(this.selectedType, this.selectedField.split('|')[0]);
+            this.setOperators(special, ConditionFieldType.Contextual);
             this.condition['@FieldName'] = special.label;
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
 
@@ -283,7 +282,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             delete this.condition['@Value'];
 
             this.selectedType = field['@type'].toLowerCase();
-            this.setOperators(this.selectedType, null);
+            this.setOperators(field, ConditionFieldType.HttpRequest);
 
             this.condition['@FieldName'] = 'HTTP Request :: ' + field['@label'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
@@ -292,12 +291,37 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         }
     }
 
-    setOperators(type: string = '', fieldType: string = '') {
+    setOperators(field: any = null, fieldType: ConditionFieldType = null) {
+        let type: string = '';
+        let fieldId: string = '';
         let ops = [];
+
+        switch (fieldType) {
+            case ConditionFieldType.Field:
+                type = field.Type;
+                fieldId = field.ID.toString();
+                break;
+            case ConditionFieldType.Form:
+                type = field['@type'].toLowerCase();
+                fieldId = field['@id'];
+                break;
+            case ConditionFieldType.Contextual:
+                type = field.type.toLowerCase();
+                if (field.value.indexOf('|') > -1) {
+                    fieldId = field.value.split('|')[1];
+                }
+                break;
+            case ConditionFieldType.HttpRequest:
+                type = field['@type'];
+                fieldId = field['@id'];
+                break;
+        }
+
+        //default operators based on type
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
-            case 'list':            
+            case 'list':
             case 'text':
                 ops.push('=');
                 ops.push('!=');
@@ -319,13 +343,23 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 break;
         }
 
-        //only supporting fields at the moment
-        if (fieldType == 'FieldType') {
+        if (fieldType == ConditionFieldType.Field) {
             if (this.changeType == WorkflowChangeType.Update && !this.isForTransition) {
                 ops.push('C');
             }
             ops.push('P');
             ops.push('NP');
+        }
+
+        if (fieldType == ConditionFieldType.Contextual) {
+            if (fieldId.indexOf('Score') > -1) {
+                if (this.changeType == WorkflowChangeType.Update
+                    || this.changeType == WorkflowChangeType.RequestCertification
+                    || this.changeType == WorkflowChangeType.Schedule) {
+                    ops.push('P');
+                    ops.push('NP');
+                }
+            }
         }
 
         this.operators = [];
