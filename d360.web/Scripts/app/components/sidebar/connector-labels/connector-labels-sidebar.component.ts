@@ -349,7 +349,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         trElement.classList.remove('p-highlight');
         trElement.querySelector('span.p-checkbox-icon').classList.remove('pi-check');
         trElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
-        trElement.querySelector('div.p-checkbox-box').classList.remove('p-state-active');//Need fix here for ui-state-active
+        trElement.querySelector('div.p-checkbox-box').classList.remove('p-state-active');
 
     }
     private selectElement(element: HTMLElement) {
@@ -358,7 +358,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         trElement.classList.add('p-highlight');
         trElement.querySelector('span.p-checkbox-icon').classList.add('pi-check');
         trElement.querySelector('span.p-checkbox-icon').classList.add('pi');
-        trElement.querySelector('div.p-checkbox-box').classList.add('p-state-active');//Need fix here for ui-state-active
+        trElement.querySelector('div.p-checkbox-box').classList.add('p-state-active');
 
     }
 

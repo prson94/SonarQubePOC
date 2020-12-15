@@ -1,7 +1,7 @@
 ﻿import { CommonModule } from '@angular/common';
 import { NgModule, Input, Component, Output, EventEmitter } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-//Need fix here for ui-state-active
+
 @Component({
     selector: 'simple-accordion',
     template: `
