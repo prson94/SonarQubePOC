@@ -1322,8 +1322,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     // Used to load the counts for the owner badges
-    private loadOwnerCounts() {        
-        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.AncestryMode).subscribe(res => {            
+    private loadOwnerCounts() {     
+        let isLineage: boolean = this.helper_LineageDiagramApplies();
+        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, isLineage ? this.displayConfiguration.AncestryMode : FilterAncestryMode.NoAncestor).subscribe(res => {            
             for (let item of res) { // each owner count                  
                 let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });
                 if (nd.length > 0) {
