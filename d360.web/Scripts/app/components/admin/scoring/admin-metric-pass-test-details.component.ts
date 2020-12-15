@@ -67,7 +67,6 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges, OnDestroy
                             let fieldValue = gov.Field.Values[0] ?? -1;
 
                             let lookupValues = fieldType.Values;
-                            console.log(lookupValues);
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
                                 ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
                         }
