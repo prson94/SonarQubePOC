@@ -358,11 +358,6 @@ export class DiagramTypesModel {
     items: any[] = [];
 }
 
-export class DiagramOwnerCount {
-    hierarchyKey: string;
-    owners: AssetBrowserTranslationOwnerCount[];
-}
-
 // #region Asset Browser : Responses
 
 // Relationship Models
@@ -389,6 +384,7 @@ export class AssetBrowserTranslationOwnerCount {
     users: number[];
     count: number;
     expanded: boolean;
+    id: string;
 }
 
 export class AssetBrowserTranslationRelationCount { 
@@ -408,6 +404,7 @@ export class AssetBrowserTranslationHierarchy {
     forwardReveal: AssetBrowserApiHopDirection;
     owners: AssetBrowserTranslationOwnerCount[] = [];
     relations: AssetBrowserTranslationRelationCount[] = [];
+    predictableId: string;
 }
 
 export class AssetBrowserTranslationChildLink {
@@ -470,9 +467,16 @@ export class AssetBrowserTranslationNode {
 
     hideMode: AssetBrowserApiHopDirection = null;
     filterHiddenBy: string = null;
+
+    predictableId: string;
 }
 
 // Ownership Models
+
+export class DiagramOwnerCount {
+    predictableId: string;
+    owners: AssetBrowserTranslationOwnerCount[];
+}
 
 export class AssetBrowserOwnerRelationModel {
     assetUid: string;

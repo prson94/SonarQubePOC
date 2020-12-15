@@ -75,7 +75,8 @@ export class BrowserService extends BaseObservableService {
         response.hierarchy.forEach(h => {
             try {
                 let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
-                if (rootNode) {
+                if (rootNode) {                    
+                    rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
                     rootNode.relations = h.relations;
                     if (h.backwardReveal !== AssetBrowserApiHopDirection.None) {
@@ -122,7 +123,8 @@ export class BrowserService extends BaseObservableService {
             backwardReveal: AssetBrowserApiHopDirection.None,
             forwardReveal: AssetBrowserApiHopDirection.None,
             owners: [],
-            relations: []
+            relations: [],
+            predictableId: null
         });
 
         let rootLink: AssetBrowserTranslationLink = {

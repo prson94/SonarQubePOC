@@ -509,6 +509,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+
     private badge_ClickOwner(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
@@ -1322,24 +1323,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     // Used to load the counts for the owner badges
     private loadOwnerCounts() {        
-        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.AncestryMode).subscribe(res => {
-
-                for (let item of res) { // each owner count                   
-                    if (item.owners) {                        
-                        for (let owner of item.owners) { // each 
-                            let nd = this.diagram.model.nodeDataArray.filter(n => { return n.owners && n.owners.some(m => m.responsibilityTypeId == owner.responsibilityTypeId) });                            
-                            if (nd && nd.length > 0) {
-                                for (let node of nd) {
-                                    let ownerBadges = node.owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId });
-                                    for (let badge of ownerBadges) {
-                                        this.diagram.model.setDataProperty(badge, "count", owner.count);                                                                                
-                                    }
-                                }
-                            }
-                        }
+        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, this.displayConfiguration.AncestryMode).subscribe(res => {            
+            for (let item of res) { // each owner count                  
+                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });
+                if (nd.length > 0) {
+                    for (let owner of item.owners) { // each responsibility on that node                                                       
+                        var badge = nd[0].owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId })[0];
+                        this.diagram.model.setDataProperty(badge, "count", owner.count);                        
                     }
                 }
-            });
+            }
+        });
     }
 
     private helper_PopulateDiagram(): Observable<boolean> {
@@ -2713,13 +2707,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_OwnerBadges(): go.Panel {
+    private template_OwnerBadges(): go.Panel {        
         return this.g(go.Panel, "TableRow", {
             alignment: go.Spot.TopCenter,
             alignmentFocus: go.Spot.Bottom,
             padding: 0,
             cursor: "pointer",
-            click: (e, obj) => this.badge_ClickOwner(e, obj),
+            click: (e, obj) => this.badge_ClickOwner(e, obj)            
         },
             this.g(go.Panel, "Horizontal",
                 new go.Binding("visible", "showBadge"),
@@ -2733,7 +2727,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         go.TextBlock,
                         {
-                            row: 0,                            
+                            row: 0,
                             margin: 2,
                             alignment: go.Spot.Left,
                             editable: false,
@@ -2741,7 +2735,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             stroke: this.fontOwnerBadgeLabelForeColor
                         },
                         new go.Binding("text", "responsibilityType"),
-                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2,2,2,2) ))
+                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
                     ),
                     this.g(
                         go.TextBlock,
@@ -2771,10 +2765,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeCountForeColor,                            
+                            font: this.fontLoadingIcon,
+                            stroke: this.fontOwnerBadgeCountForeColor,
+                            text: this.loadingIcon
                         },
-                        new go.Binding("text", "count", (h) => (h ? h : this.loadingIcon)),
+                        new go.Binding("text", "count", (h) => (h ? h: this.loadingIcon)),
                         new go.Binding("font", "count", (h) => (h ? this.fontOwnerBadge : this.fontLoadingIcon))
                     ),                                      
                 )

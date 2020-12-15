@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_OwnershipCounts-v1">
+  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_OwnershipCounts-v1.1">
     <comment>GOV-13147</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER procedure [graph].[AssetBrowser_OwnershipCounts]
+CREATE OR ALTER   procedure [graph].[AssetBrowser_OwnershipCounts]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -247,8 +247,8 @@ begin
 								HasAssetReadAccess bit default(1) not null,
 								Back varchar(25), BackAmount decimal(2,1), HierarchyKey varchar(50)
 							  );
-	create clustered index cix_TempHierarchies on #hierarchies (HierarchyKey);
-	create nonclustered index ix_TempHierarchies_ID on #hierarchies (ID);
+	create nonclustered index cix_TempHierarchies on #hierarchies (HierarchyKey);
+	create clustered index ix_TempHierarchies_ID on #hierarchies (ID);
 	create nonclustered index ix_TempHierarchies_ID_Hop on #hierarchies (ID, Hop);
 	create nonclustered index ix_TempHierarchies_ParentID_Hop on #hierarchies (ParentID, Hop);
 
@@ -547,12 +547,13 @@ begin
 			inner join ba on ba.[Key] = H.[Key];
 			
 
-
+	drop table if exists #results;
+	create table #results (predictableId varchar(50) not null, owners nvarchar(max));
 
 	-- Get hierarchy (or root node) collection.
-	select	H.hierarchyKey,
+	insert into #results with(tablock)	select utility.GetHash(STRING_AGG ( H.ID, ',' )) as predictableId,
 			(
-			select	H.hierarchyKey + '-O-' + cast(responsibilityTypeId as varchar) as [key],
+			select	
 					ResponsibilityTypeName as responsibilityType, 
 					responsibilityTypeId,			
 					count(1) as [count], 
@@ -572,11 +573,13 @@ begin
 			group by ResponsibilityTypeName, ResponsibilityTypeID
 			for json path
 			) as owners
-	from	#hierarchies H --where H.ownersJson is not null
+	from	#hierarchies H
 	group by H.hierarchyKey;
+
+	select predictableId, owners from #results where owners is not null;
 	
 end
-		]]>
+]]>
     </sql>
 	<rollback>
 		<![CDATA[	
