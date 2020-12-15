@@ -220,12 +220,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
                 correctedValue = condate.toUTCString();
                 break;
-            //case 'Lookup':
-            //    fieldCondition.Values[0] = c.value;
-            //    break;
-            //default:
-            //    fieldCondition.Values[0] = c.value;
-            //    break;
         }
 
         return correctedValue;

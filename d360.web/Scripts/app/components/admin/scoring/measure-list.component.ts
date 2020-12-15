@@ -11,6 +11,7 @@ import * as _ from 'lodash';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { RelationshipType } from '../../../models/relationship.model';
 import { Predicate } from '../../../models/predicate.model';
+import { AssetTypeMetricModel } from '../../../models/asset.model';
 
 @Component({
     selector: 'measure-list',
@@ -37,6 +38,7 @@ import { Predicate } from '../../../models/predicate.model';
 
 export class MeasureListComponent extends BaseComponent implements OnInit, OnChanges {
     @Output() selectionChange = new EventEmitter();
+    @Input() assetType: AssetTypeMetricModel;
     @Input() allocation: ScoreTypeAllocation;
     @Input() maxScoreEffectiveDate: Date;
 

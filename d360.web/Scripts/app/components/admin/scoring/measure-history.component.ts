@@ -16,7 +16,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
 
     @Input() Measure: MetricAssetViewModel;
     @Input() AssetType: AssetTypeMetricModel;
-    @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
+    @Input() assetTypeFields: MetricFieldTypeViewModel[] = [];
     @Input() isExternallyCalculated: boolean = false;
     @Input() operators: OperatorModel[];    
     @Input() responsibilityTypes: any[] = [];
@@ -84,7 +84,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
+            const field = this.assetTypeFields.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
@@ -207,8 +207,8 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
                         ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
-                    let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
-                        ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
+                    let fieldType = this.assetTypeFields.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
+                        ? this.assetTypeFields.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
                     let formattedValue = gov.Field.Values.join(", ");
                     if (fieldType) {
                         if (fieldType.Type == "Lookup") {
