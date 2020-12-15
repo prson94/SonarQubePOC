@@ -949,7 +949,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
