@@ -725,6 +725,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-700.svg" />
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
+    <Content Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\detail.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\index.component.html" />
     <Content Include="Scripts\app\components\admin\scoring\measure-editor-external.component.html" />
@@ -943,6 +944,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-external.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-governance.component.ts" />

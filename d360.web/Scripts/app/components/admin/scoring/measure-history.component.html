@@ -65,55 +65,13 @@
                             </div>
                         </div>
                     </div>
-                    <div *ngIf="!isExternallyCalculated && showPassTest && formattedCheck" class="measure-details-item">
-                        <div class="details-header">Pass Test</div>
-                        <div class="details-condition">
-                            <div [ngSwitch]="selection.Definition.Governance.Check">
-                                <div *ngSwitchCase="'External'">
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            <div>External: {{formattedCheck}}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row row-margin" *ngSwitchCase="'Field'">
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            <div *ngIf="dateShowType == null">Field: {{formattedCheck}}</div>
-                                            <div *ngIf="dateShowType == 'Date'">Field: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> and {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row row-margin" *ngSwitchCase="'Owner'">
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            Ownership: {{formattedCheck}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row row-margin" *ngSwitchCase="'Predicate'">
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            Predicate: {{formattedCheck}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row row-margin" *ngSwitchCase="'Relation'">
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            Relationship: {{formattedCheck}}
-                                        </div>
-                                    </div>
-                                </div>
-                                <ng-template ngSwitchDefault>
-                                    <div class="condition-content">
-                                        <div class="condition-items">
-                                            default
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </div>
-                        </div>
+                    <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
+                        <d3s-admin-metric-pass-test-details [selection]="selection"
+                                                            [operators]="operators"
+                                                            [metricListFieldTypes]="assetTypeFields"
+                                                            [responsibilityTypes]="responsibilityTypes"
+                                                            [relationshipTypes]="relationshipTypes"
+                                                            [assetTypeUid]="Measure.Uid"></d3s-admin-metric-pass-test-details>
                     </div>
                     <div class="measure-details-item">
                         <div class="details-header">UID</div>
