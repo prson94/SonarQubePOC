@@ -100,8 +100,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     diagramTypes: DiagramTypesModel = null;
 
-    showNodeCount: boolean = true;
-
     popupMenuItems = [
         {
             title: 'Export to excel',
