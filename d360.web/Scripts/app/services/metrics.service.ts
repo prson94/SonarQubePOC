@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JsonResult } from '../models/jsonresult.model';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetHistoryViewModel } from '../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, MetricAssetHistoryViewModel, MetricPathOptionViewModel, ScoreTypeAllocation } from '../models/metrics.model';
 import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable()
 export class MetricsService extends BaseObservableService {
@@ -25,10 +25,36 @@ export class MetricsService extends BaseObservableService {
             .pipe(catchError(err => this.handleError(err)));
     }
 
+    public getAllocationByUid(uid: string): Observable<ScoreTypeAllocation> {
+
+        return this.http
+            .get<ScoreTypeAllocation[]>(`/api/v2/scoring/allocations/?allocationUid=${uid}`)
+            .pipe(
+                map((res: ScoreTypeAllocation[]) => {
+                    return res[0];
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public getMetricsByAllocation(allocationUid: string, includeDisabled: boolean = false): Observable<MetricAssetViewModel[]> {
 
         return this.http
             .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure?_includeDisabled=${includeDisabled}`)
+            .pipe(catchError(err => this.handleError(err)));
+    }
+
+    public getRuleResultPathOptions(assetTypeUid: string, type: ScoreType): Observable<MetricPathOptionViewModel[]> {
+
+        return this.http
+            .get<MetricPathOptionViewModel[]>(`/api/v2/metrics/${assetTypeUid}/${type}/pathoptions`)
+            .pipe(catchError(err => this.handleError(err)));
+    }
+
+    public getRuleResultPathOptionFields(ruleResultPathUid: string): Observable<MetricFieldTypeViewModel[]> {
+
+        return this.http
+            .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/pathoptions/${ruleResultPathUid}/fields`)
             .pipe(catchError(err => this.handleError(err)));
     }
 

@@ -12,44 +12,51 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel, ScoreType } from '../../../models/metrics.model';
-import { AdminMetricListComponent } from './admin-metric-list.component';
+import { ScoreTypeAllocation, MetricAssetViewModel, MetricAssetVersionConditionItemViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionItemFieldValueViewModel, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceViewModel, ScoreType, MetricPathOptionViewModel } from '../../../models/metrics.model';
+import { MeasureListComponent } from './measure-list.component';
 import { OperatorModel, Operator } from '../../../models/operator.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../services/relationships.service';
+import { RelationshipType } from '../../../models/relationship.model';
+import { ResponsibilityType } from '../../../models/responsibility-type.model';
+import { Predicate } from '../../../models/predicate.model';
 
 @Component({
-    selector: 'd3s-admin-analytics-details',
-    templateUrl: 'admin-metric-details.component.html',
+    selector: 'd3s-allocation-detail',
+    templateUrl: 'detail.component.html',
     providers: [MetricsService, CompanySettingsService, AssetTypeService, AllocationService, ResponsibilityTypeService, RelationshipsService]
 })
 
-export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
+export class ScoringDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     selectedAssetType: AssetTypeMetricModel = null;
     selectedMetric = null;
     routeParamsSubscription: any;
-    data: ScoreTypeAllocation = null;
-    private assetTypeUid: string;
+    allocation: ScoreTypeAllocation = null;
     private allocationUid: string;
+    private assetTypeUid: string;
     formattedScoreCalc: string;
     MatchType: MetricMatchType = MetricMatchType.All;
-    private metricListFieldTypes: MetricFieldTypeViewModel[] = [];
+    
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
-    operators: OperatorModel[];
     formattedCheck: string = "";
 
     CheckType = MetricGovernanceCheckType;
 
-    @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
+    fields: MetricFieldTypeViewModel[] = [];
+    operators: OperatorModel[];
+    predicates: Predicate[];
+    relationships: RelationshipType[];
+    responsibilities: ResponsibilityType[];
+
+    @ViewChild('metricList', { static: false }) metricList: MeasureListComponent;
     showConditions: boolean;
-    scoreData: any[];
+
+    maxScoreEffectiveDate: Date;
     showDisabled: boolean = false;
     showPassTest: boolean = false;
-    responsibilityTypes: any[] = [];
-    relationshipTypes: any[] = [];
-
+    ruleResultPaths: MetricPathOptionViewModel[] = [];
     dateVal1: Date;
     dateVal2: Date;
     dateShowType: string;
@@ -73,30 +80,58 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
-            this.assetTypeUid = params['assetTypeUid'];
             this.allocationUid = params['allocationUid'];
+            this.assetTypeUid = params['assetTypeUid'];
+
             this.isLoading = true;
+
+            this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
+                this.allocation = res;
+
+                if (res.scoreType.toString() == "DataQuality") {
+                    this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe(options => {
+                        options.forEach(p => {
+                            let html: string = p.Path;
+                            p.Segments.forEach(s => {
+                                let segmentPath = s.Path.split('->').join(' > ');
+                                html = html.replace(s.Name, `<b title="${segmentPath}">${s.Name}</b>`);
+                            });
+                            html = html.replace('which', ''); //replaces the first instance.
+                            html = html.split(' which').join(', which');
+                            p.label = html;
+                            p.value = p.Uid;
+                        });
+                        this.ruleResultPaths = options;
+                    });
+                }
+            });
+
             this.assetTypeService.GetAssetTypeByUid(this.assetTypeUid).subscribe(res => {
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
                 this.changeAssetType(this.selectedAssetType);
             });
 
-            this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid)
-                .subscribe(f => {
-                    this.metricListFieldTypes = f;
-                });
+            this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe(f => {
+                this.fields = f;
+            });
 
             this.settingsService.getOperators().subscribe(o => {
                 this.operators = o;
             });
+
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.responsibilityTypes = data;
+                    this.responsibilities = data;
                 }
             });
+
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.relationshipTypes = data;
+
+                    this.relationships = data;
+                    this.predicates = data.map(x => {
+                        return x.Predicate;
+                    });
                 }
             });
         });
@@ -129,36 +164,52 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     x.icon = 'fa-drivers-license-o';
                 });
 
-                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocationUid, r);
+                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, r);
 
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
                 this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
-                    if (res && res.length > 0)
-                        var items = res.filter(x => { return x.uid == this.allocationUid });
-                    if (items.length > 0) {
-                        this.data = items[0];
-                        this.formatScoreCalc();
-                        this.metricsService.getMetricsScores(this.assetTypeUid, this.data.scoreType)
-                            .subscribe(f => {
-                                if (f && f.items && f.items.length > 0) {
-                                    this.scoreData = f.items;
-                                }
-                            });
-                        this.isLoading = false;
+                    if (res && res.length > 0) {
+                        const items = res.filter(x => { return x.uid == this.allocation.uid });
+
+                        if (items.length > 0) {
+                            this.allocation = items[0];
+                            this.formatScoreCalc();
+                            this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
+                                .subscribe(f => {
+                                    if (f && f.items && f.items.length > 0) {
+                                        let maxDates: any[] = [];
+                                        f.items.forEach(x => {
+                                            if (x.Scores && x.Scores.length > 0) {
+                                                let scores = x.Scores.sort((x, y) => {
+                                                    let datex = new Date(x.EffectiveDate);
+                                                    let datey = new Date(y.EffectiveDate);
+                                                    return datey.getTime() - datex.getTime();
+                                                });
+                                                maxDates.push(new Date(scores[0].EffectiveDate));
+                                            }
+                                        });
+                                        maxDates.sort((x, y) => {
+                                            return y.getTime() - x.getTime();
+                                        });
+                                        this.maxScoreEffectiveDate = maxDates[0];
+                                    }
+                                });
+                            this.isLoading = false;
+                        }
                     }
                 });
             });
     }
 
     private formatScoreCalc() {
-        if (this.data) {
-            this.formattedScoreCalc = (this.data.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
+        if (this.allocation) {
+            this.formattedScoreCalc = (this.allocation.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
         }
     }
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
+            const field = this.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
@@ -171,8 +222,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                             if (field.Values.length > 0) {
                                 if (c.Values) {
                                     if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
                                         if (valueModel) {
                                             c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;
@@ -225,6 +276,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             return false;
         }
     }
+
     private hasPassTest(item: MetricAssetViewModel) {
         if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {
             this.formatDefinition();
@@ -292,12 +344,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 case 'Field':
                     let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
                         ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
-                    let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
-                        ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
+                    let fieldType = this.fields.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
+                        ? this.fields.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
                     let formattedValue = gov.Field.Values.join(", ");
                     if (fieldType) {
                         if (fieldType.Type == "Lookup") {
-                            let fieldValue = +gov.Field.Values[0] ?? -1;
+                            let fieldValue = gov.Field.Values[0] ?? "";
 
                             let lookupValues = fieldType.Values;
                             formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
@@ -318,8 +370,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
                     break;
                 case 'Owner':
-                    let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
-                        ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
+                    let responsibilitytype = this.responsibilities.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
+                        ? this.responsibilities.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
                     let operatorString = "is assigned";
                     if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
                         operatorString = "is not assigned";
@@ -331,8 +383,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     }
                     break;
                 case 'Predicate':
-                    let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
-                        ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
+                    let predicate = this.relationships.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
+                        ? this.relationships.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
                     let existsOperatorP = "exists";
                     if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
                         existsOperatorP = "does not exist";
@@ -343,8 +395,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                         this.formattedCheck = "";
                     break;
                 case 'Relation':
-                    let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
-                        ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
+                    let relationshipType = this.relationships.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
+                        ? this.relationships.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
                     let existsOperator = "exists";
                     if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
                         existsOperator = "does not exist";
@@ -383,17 +435,17 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.formatScoreCalc();
         this.showEdit = false;
 
-        if (this.data.scoreType.toString() == 'DataQuality') {
+        if (this.allocation.scoreType.toString() == 'DataQuality') {
             this.secondaryNavService.updateObject('firstTabTitle', 'Data Quality Score');
         }
 
-        if (this.data.scoreType.toString() == 'Governance') {
+        if (this.allocation.scoreType.toString() == 'Governance') {
             this.secondaryNavService.updateObject('firstTabTitle', 'Governance Score');
         }
 
-        var needsReroute = this.assetTypeUid != this.data.assetTypeUid;
+        var needsReroute = this.assetTypeUid != this.allocation.assetTypeUid;
         if (needsReroute) {
-            var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.data.assetTypeUid + '/' + this.allocationUid;
+            var url = SiteUrlHelpers.SITE_URL_ADMIN_ROOT + '/' + SiteUrlHelpers.SITE_URL_ADMIN_SCORING + '/' + this.allocation.assetTypeUid + '/' + this.allocation.uid;
             this.router.navigateByUrl(url);
         }
     }

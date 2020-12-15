@@ -1,5 +1,4 @@
-﻿
-<div class="modal-measure-editor">
+﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="measure-form" [style.maxHeight.px]="maxHeight">
         <form [formGroup]="metricForm" *ngIf="model">
@@ -78,12 +77,13 @@
                             <ig-switch tabindex="5"
                                        formControlName="isGroup"
                                        [(ngModel)]="model.IsGroup"
-                                       (onChange)="onGroupchange($event)"></ig-switch>
+                                       (onChange)="onGroupChange($event)"></ig-switch>
                         </ng-container>
                     </div>
                 </div><br />
             </ig-property-group>
-            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && !isExternallyCalculated && model.Definition && model.Definition.Governance">
+
+            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
                         <label for="check" class="ig-label">Test Type</label>
@@ -267,7 +267,7 @@
                                         </ng-template>
                                     </p-dropdown>
                                 </div>
-                            </div>                            
+                            </div>
                         </div>
                         <ng-template ngSwitchDefault>
                             <div class="row">
@@ -282,6 +282,7 @@
                     </div>
                 </div>
             </ig-property-group>
+
             <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
                     <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
