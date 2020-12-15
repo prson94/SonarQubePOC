@@ -1516,7 +1516,7 @@ select		R.*,
 											select	top 1
 													[Text]
 											from	FieldLookupValue
-											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and [Value] = CIV.Value
+											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
 										)
 									ELSE CIV.Value 
 								end
@@ -1542,7 +1542,7 @@ select		R.*,
 											select	top 1
 													[Text]
 											from	FieldLookupValue
-											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and [Value] = CIV.Value
+											where	FieldTypeID = F.ID and LookupObjectType = F.LookupObjectType and LookupObjectID = F.LookupObjectID and AssetUid = CIV.Value
 										)
 									ELSE CIV.Value 
 								end
