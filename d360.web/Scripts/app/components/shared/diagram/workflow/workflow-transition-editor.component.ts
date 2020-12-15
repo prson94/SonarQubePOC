@@ -22,6 +22,7 @@ import * as go from 'gojs';
 export class WorkflowTransitionEditorComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() objectId: number;
     @Input() objectType: string;
+    @Input() issueObject: string;
     @Input() transition: LinkModel;
     @Input() diagram: go.Diagram;
     @Input() workflowChangeType: WorkflowChangeType;

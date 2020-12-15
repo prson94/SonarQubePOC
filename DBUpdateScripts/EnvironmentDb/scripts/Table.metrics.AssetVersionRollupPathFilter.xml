@@ -54,4 +54,20 @@ DROP TABLE IF EXISTS [metrics].[AssetVersionRollupPathFilter]
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionRollupPathFilter-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table [metrics].[AssetVersionRollupPathFilter] alter column [Operator] int not null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table [metrics].[AssetVersionRollupPathFilter] alter column [Operator] varchar(10) not null
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

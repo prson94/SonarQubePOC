@@ -1,0 +1,84 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Puneet Gupta" id="Function.utility.GetObjectObjectIdByUID-v1">
+  <comment>GOV-12848</comment>
+ <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE or ALTER FUNCTION [utility].[GetObjectObjectIdByUID]
+(
+	@uid uniqueidentifier = null
+)
+RETURNS @tbl TABLE 
+(
+	Object varchar(50),
+	ObjectID int
+)
+as
+Begin
+	Declare @Object varchar(50),
+	@ObjectID int = 0;
+
+	select	@Object = A.Object,
+			@ObjectID = A.ObjectID
+	from Asset A 
+	where uid = @uid
+	
+	if (@Object is null)
+		begin
+			select	@Object = AST.Object ,
+					@ObjectId = AST.ObjectID
+			from	AssetType AST
+			where uid = @uid
+		end
+		
+	if (@Object is null)
+		begin
+			select	@Object = 'Intersect',
+					@ObjectID = I.ID
+			from	[Intersect] I 
+			where uid = @uid
+		end
+
+	if (@Object is null)
+		select	@Object = 'IntersectType',
+				@ObjectID = I_T.ID
+		from	IntersectType I_T							
+		where uid = @uid
+				
+	if (@Object is null)
+		begin
+			select	@Object = 'Issue',
+					@ObjectID = I.ID
+			from	[Issue] I 
+			where uid = @uid
+		end
+
+	if (@Object is null)
+		begin
+			select	@Object = 'IssueType',
+					@ObjectID = I_T.ID
+			from	IssueType I_T							
+			where uid = @uid
+		end
+		
+	insert into @tbl values (isnull(@object,'NOTFOUND'),@ObjectId);
+	
+	Return
+End
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		drop function if exists [utility].[GetObjectObjectIdByUID]
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

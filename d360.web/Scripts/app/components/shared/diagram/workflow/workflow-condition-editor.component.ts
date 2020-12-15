@@ -18,6 +18,7 @@ import { map } from 'rxjs/operators';
 export class WorkflowConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() objectType: string;
     @Input() objectId: number;
+    @Input() issueObject: string = null;
     @Input() formFields: any[] = [];
     @Input() httpFields: any[] = [];
     @Input() condition: any = null;
@@ -65,8 +66,9 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         let formFieldsChanged = changes['formFields'] != null && !changes['formFields'].isFirstChange();
         let changeTypeChanged = changes['changeType'] != null && !changes['changeType'].isFirstChange();
         let httpFieldsChanged = changes['httpFields'] != null && !changes['httpFields'].isFirstChange();
+        let objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
 
-        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged)    {
+        if (formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged)    {
             this.loadContextualFields();
             this.loadFormFields();
             this.loadHttpFields();
@@ -76,7 +78,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.fields.forEach(f => {
                 this.fieldList.push({
                     value: 'FieldType|' + f.ID.toString(),
-                    label: f.FriendlyName
+                    label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
                 });
             });
 
@@ -98,7 +100,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                     this.fields.forEach(f => {
                         this.fieldList.push({
                             value: 'FieldType|' + f.ID.toString(),
-                            label: f.FriendlyName
+                            label: f.FriendlyName + (f.Object == 'IssueType' ? ' (Action Field)' : '')
                         });
                     });
 
@@ -119,7 +121,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     }
 
     loadObjectFields(): Observable<any> {
-        return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true)
+        return this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .pipe(
                 map(r => {
                     this.fields = [];
@@ -131,6 +133,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadFormFields() {
         if (this.formFields.length > 0) {
             this.formFields.forEach(f => {
+                if (f['@type'] == 'html')
+                    return;
                 this.fieldList.push({
                     value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                     label: 'Form :: ' + f['@label']
@@ -185,7 +189,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.setOperators(field.Type, this.selectedField.split('|')[0]);
 
             this.condition['@FieldTypeID'] = field.ID.toString();
-            this.condition['@FieldName'] = field.FriendlyName;
+            this.condition['@FieldName'] = field.FriendlyName + (field.Object == 'IssueType' ? ' (Action Field)' : '');
             this.condition['@ValueType'] = this.getValueType(field.Type);
 
             this.lookups = [];

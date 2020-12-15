@@ -3,6 +3,9 @@
         <div class="ig-pg-header" (click)="expanded = !expanded" tabindex="1" (keypress)="onInputKeyUp($event)">
             <span class="fa fa-chevron-circle-right" [ngClass]="{'down': expanded}"></span>
             <div class="pg-title noselect" pTooltip="{{title}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [ngClass]="{'close': !expanded}">{{title}}</div>
+            <div class="info-tip" *ngIf="showMoreInfo">
+                <i class="fa fa-question-circle" pTooltip="{{moreInfoHtml}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </div>
         </div>
         <div class="badge-containers">
             <span class="badge-feedback inv noselect" tabindex="1" (keypress)="onInputKeyUp($event)" pTooltip="Click to focus invalid fields" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-small" (click)="focusInvalid($event)" *ngIf="invalidCount > 0">{{invalidCount}} invalid</span>

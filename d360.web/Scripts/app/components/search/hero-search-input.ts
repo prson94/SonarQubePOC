@@ -4,44 +4,39 @@ import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
-import { SettingsHelper } from '../../models/settings.model';
 
 declare var CompanySettings;
 @Component({
     selector: 'd3s-hero-search-input',
     templateUrl: 'hero-search-input.html',
-    providers: [SearchService, TypeaheadSearchService],
+    providers: [TypeaheadSearchService],
 })
 
 export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
-    searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
-        return {
-            label: set.title,
-            value: set.value
-        };
-    });
+    searchObjectTypes: SelectItem[] = [];
 
-    constructor(protected authenticationService: AuthenticationService) {
+    constructor(protected authenticationService: AuthenticationService, protected searchService: SearchService) {
         super();
     }
 
     ngOnInit() {
         if (CompanySettings) {
-            if (CompanySettings.FusionEnabled == 'false') {
-                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-            }
-            if (CompanySettings.FusionEnabled == 'true') {
-                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'TechnicalAsset');
-            }
+            this.searchService.getSearchCategories(CompanySettings, this.authenticationService.isAdmin, false).subscribe(cat => {
+                this.searchObjectTypes = cat.map((set) => {
+                    return {
+                        label: set.title,
+                        value: set.value
+                    };
+                });
+                var availableTypes = this.searchObjectTypes.map((x) => x.value);
+                this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
+
+                this.setEventTypeLabel();
+            });
         }
-        if (!this.authenticationService.isAdmin) {
-            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'Resource' && x.value != 'Group');
-        }
-        var availableTypes = this.searchObjectTypes.map((x) => x.value);
-        this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
     }
 
     ngAfterViewInit(): void {

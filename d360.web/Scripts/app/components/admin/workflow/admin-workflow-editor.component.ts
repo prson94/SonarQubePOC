@@ -15,7 +15,7 @@ import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { map, finalize, concatMap} from 'rxjs/operators';
+import { map, finalize, concatMap } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
 import { Observable, of, Subscription } from 'rxjs';
@@ -114,16 +114,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
     }
 
-    load(){
+    load() {
         this.isLoading = true;
         this.workflowService.getChangeTypes()
             .pipe(map(r => { this.changesTypes = r; }))
-            .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id,this.uid)
+            .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id, this.uid)
                 .pipe(
                     map(r => {
-                    if ((this.id > 0 || (this.uid && this.uid != "00000000-0000-0000-0000-000000000000")) && this.model == null && r != null)
-                        this.model = r;
-                            
+                        if ((this.id > 0 || (this.uid && this.uid != "00000000-0000-0000-0000-000000000000")) && this.model == null && r != null)
+                            this.model = r;
+
                         //create initial model and settings if needed
                         if (this.model == null)
                             this.model = new WorkflowDiagramModel();
@@ -143,6 +143,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         this.objectID = this.model.Event.ObjectID;
                         this.objectType = this.model.Event.Object;
 
+
                         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
                         if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
@@ -158,16 +159,6 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                 this.conditions = this.model.Event.ConditionObject.Condition;
                         }
                     }))))
-            .pipe(concatMap(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true)
-                .pipe(
-                    map(r => {
-                        r.forEach(t => {
-                            let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
-                            if (c != null)
-                                c.forEach(f => f['@FieldName'] = t.FriendlyName);
-                        });
-                    }))))
-
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
@@ -189,8 +180,19 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         }
 
-                        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
-                            this.workflowService.getScoreTypes(this.objectID, this.objectType)
+                        let type = this.objectType;
+                        let id = this.objectID;
+
+                        if (this.model.Event.IssueObject != null && this.model.Event.IssueObject.indexOf('|') > -1) {
+                            type = this.model.Event.IssueObject.split('|')[0];
+                            id = +this.model.Event.IssueObject.split('|')[1];
+                        }
+
+                        if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+                            || this.model.Event.ChangeType == WorkflowChangeType.Update
+                            || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+                            || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
+                            this.workflowService.getScoreTypes(id, type)
                                 .subscribe(res => {
                                     this.scoreTypes = res;
                                     this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
@@ -201,9 +203,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                                     }
                                     this.validate();
                                 });
-
                         }
-
+                    }))))
+            .pipe(concatMap(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true, this.model.Event.IssueObject)
+                .pipe(
+                    map(r => {
+                        r.forEach(t => {
+                            let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
+                            if (c != null)
+                                c.forEach(f => f['@FieldName'] = t.FriendlyName + (t.Object == 'IssueType' ? ' (Action Field)' : ''));
+                        });
                     }))))
             .pipe(concatMap(() => of(
                 //apply names to contextual fields
@@ -241,6 +250,9 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     changeTypeChanged(event) {
         this.model.Event.ChangeType = event;
         this.showAddCondition = false;
+
+        this.loadContextualFields();
+
         this.validate();
         this.loadObjects();
     }
@@ -268,19 +280,16 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
             }
 
-            if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) {
-                this.workflowService.getScoreTypes(this.objectID, this.objectType)
-                    .subscribe(res => {
-                        this.scoreTypes = res;
-                        this.scoreTypes.unshift({ label: '', value: null });
-                        this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
-                    });
-            }
-
+            this.loadContextualFields();
             this.loadResponsibilities();
         } else {
             this.isValid = false;
         }
+    }
+
+    selectIssueObjectType(e: any) {
+        this.model.Event.IssueObject = e;
+        this.loadContextualFields();
     }
 
     loadResponsibilities() {
@@ -291,6 +300,36 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .subscribe(r => this.responsibilities = r);
 
         this.validate();
+    }
+
+    loadContextualFields() {
+        let type = this.objectType;
+        let id = this.objectID;
+
+        if (this.model.Event.IssueObject != null && this.model.Event.IssueObject.indexOf('|') > -1) {
+            type = this.model.Event.IssueObject.split('|')[0];
+            id = +this.model.Event.IssueObject.split('|')[1];
+        }
+
+        if (type != null && id != null) {
+            if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
+                || this.model.Event.ChangeType == WorkflowChangeType.Update
+                || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
+                || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
+                this.workflowService.getScoreTypes(id, type)
+                    .subscribe(res => {
+                        this.scoreTypes = res;
+                        this.scoreTypes.unshift({ label: '', value: null });
+                        this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
+                    });
+            } else {
+                this.scoreTypes = [];
+                this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
+            }
+        } else {
+            this.scoreTypes = [];
+            this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
+        }
     }
 
     showCondition() {
@@ -316,7 +355,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     onStateChange($event) {
-         if ($event) {
+        if ($event) {
             this.model.Type.State = State.Active;
         } else {
             this.model.Type.State = State.InActive;
@@ -360,7 +399,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         //add/remove hidden contextual field conditions for actions and scores
         let contextualFields = [
-            { key: 'IssueObject', value: obj, type: 'T', applies: (this.objectType == 'IssueType' && objid != null)},
+            { key: 'IssueObject', value: obj, type: 'T', applies: (this.objectType == 'IssueType' && objid != null) },
             { key: 'IssueObjectID', value: objid, type: 'D', applies: (this.objectType == 'IssueType' && objid != null) },
             { key: 'ScoreType', value: this.model.Event.ScoreType, type: 'D', applies: (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate) },
 

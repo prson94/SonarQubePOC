@@ -7,16 +7,16 @@ import { OperatorModel, Operator } from '../../../models/operator.model';
 import { AssetType, AssetTypeMetricModel } from '../../../models/asset.model';
 
 @Component({
-    selector: 'd3s-metric-history',
-    templateUrl: `./admin-metric-history.component.html`,
+    selector: 'measure-history',
+    templateUrl: `./measure-history.component.html`,
     providers: [MetricsService]
 })
 
-export class AdminMetricHistoryComponent extends BaseComponent implements OnInit, OnDestroy {
+export class AdminMeasureHistoryComponent extends BaseComponent implements OnInit, OnDestroy {
 
     @Input() Measure: MetricAssetViewModel;
     @Input() AssetType: AssetTypeMetricModel;
-    @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
+    @Input() assetTypeFields: MetricFieldTypeViewModel[] = [];
     @Input() isExternallyCalculated: boolean = false;
     @Input() operators: OperatorModel[];    
     @Input() responsibilityTypes: any[] = [];
@@ -79,7 +79,7 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
+            const field = this.assetTypeFields.find(f => f.ApiName === c.ConditionFieldTypeName);
             c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
@@ -92,8 +92,8 @@ export class AdminMetricHistoryComponent extends BaseComponent implements OnInit
                             if (field.Values.length > 0) {
                                 if (c.Values) {
                                     if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === +c.Values[0]);
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
                                         if (valueModel) {
                                             c.SingleValue = c.Values[0];
                                             c.ValuesText = valueModel.Text;

@@ -14,10 +14,11 @@ namespace d360.model.DataAccessLayer
         List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution);
         void DeleteMetric(MetricAsset model);
         MetricAsset GetActiveMetric(Guid uid);
+        Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid);
         MetricAsset GetMetricByUid(Guid uid);
         MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate);
         MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate);
-        List<string> GetMetricFieldFragments(Guid assetTypeUid);
+        List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate);
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
         List<int> GetScoreTypesForAsset(Guid assetUid);

@@ -14,6 +14,8 @@ import * as _ from 'lodash';
 export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() igformGroup: FormGroup;
     @Input() title: string = "Property Group";
+    @Input() showMoreInfo: boolean = false;
+    @Input() moreInfoHtml: string = "";
 
     invalidCount: number = 0;
     requiredCount: number = 0;

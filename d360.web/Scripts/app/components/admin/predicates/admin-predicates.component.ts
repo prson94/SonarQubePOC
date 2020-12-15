@@ -120,7 +120,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
             .subscribe(predicates => {
                 this.predicates = predicates;
                 this.selected = predicates[0];
-                this.predicates.forEach(p => p.FriendTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type)
+                this.predicates.forEach(p => p.FriendlyTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type)
                 this.isLoading = false;
             })
     }
@@ -129,7 +129,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         this.clearSidebar();
     }
 
-    deletePredicate(uid: number) {
+    deletePredicate(uid: string) {
         this.predicatesService.deletePredicate(uid)
             .subscribe(result => {
                 this.showMessageForApiResults(this.messagesService, result, "Predicate deleted", true);
