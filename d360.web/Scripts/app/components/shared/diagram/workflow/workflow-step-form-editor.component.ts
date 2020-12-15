@@ -69,6 +69,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: WorkflowFormFieldType.Date, label: 'date' },
         { value: WorkflowFormFieldType.List, label: 'list' },
         { value: WorkflowFormFieldType.RelationshipType, label: 'relationshipType' },
+        { value: WorkflowFormFieldType.HTML, label: 'html' },
 
     ];
 
