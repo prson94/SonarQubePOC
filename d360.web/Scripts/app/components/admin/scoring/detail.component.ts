@@ -46,7 +46,6 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     CheckType = MetricGovernanceCheckType;
 
     fields: MetricFieldTypeViewModel[] = [];
-    operators: OperatorModel[];
     predicates: Predicate[];
     relationships: RelationshipType[];
     responsibilities: ResponsibilityType[];
