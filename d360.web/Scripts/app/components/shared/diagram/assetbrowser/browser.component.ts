@@ -40,7 +40,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
-import { forEach } from 'core-js/fn/dict';
 
 declare var window: any;
 
