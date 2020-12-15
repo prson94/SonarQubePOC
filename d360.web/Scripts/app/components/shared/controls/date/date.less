@@ -69,20 +69,20 @@ ig-date {
     }
 
 
-    .ui-datepicker, &.ui-datepicker {
+    .p-datepicker, &.p-datepicker {
         border-radius: @ig-field-border-radius;
         box-shadow: 0 1px 4px rgba(0,0,0,.5);
 
-        .ui-datepicker-group {
+        .p-datepicker-group {
             padding: 8px;
             border-radius: @ig-field-border-radius;
 
-            .ui-datepicker-header {
+            .p-datepicker-header {
                 background: @ig-white;
                 border: none;
 
                 a {
-                    &.ui-datepicker-next {
+                    &.p-datepicker-next {
                         border-radius: @ig-field-border-radius;
                         height: 24px;
                         width: 24px;
@@ -103,7 +103,7 @@ ig-date {
                         }
                     }
 
-                    &.ui-datepicker-prev {
+                    &.p-datepicker-prev {
                         border-radius: @ig-field-border-radius;
                         height: 24px;
                         width: 24px;
@@ -125,22 +125,22 @@ ig-date {
                     }
                 }
 
-                .ui-datepicker-title {
+                .p-datepicker-title {
                     color: @ig-black;
                     text-transform: none;
                     text-shadow: none;
                 }
             }
 
-            .ui-datepicker-calendar-container {
+            .p-datepicker-calendar-container {
 
-                .ui-datepicker-today a.ui-state-highlight {
+                .p-datepicker-today {
                     border: none !important;
                     background: @ig-grey-t4;
                     border-radius: 2px;
                 }
 
-                .ui-datepicker-current-day a {
+                .p-highlight {
                     background: @ig-orange-t3 !important;
                     border-radius: 2px;
                     color: @ig-black !important;
@@ -161,7 +161,17 @@ ig-date {
                     td {
                         border: none;
 
-                        span.ui-state-default {
+                        &.p-datepicker-today span {
+                            border: none !important;
+                            background: @ig-grey-t4;
+                            border-radius: 2px;
+
+                            &.p-disabled {
+                                background: none;
+                            }
+                        }
+
+                        span {
                             border: none !important;
                             width: 40px;
                             height: 32px;
@@ -169,28 +179,37 @@ ig-date {
                             font-weight: normal !important;
                             font-size: 14px;
 
-                            &.ui-state-disabled {
+                            &.p-disabled {
                                 background: none;
                             }
                         }
 
-                        &.ui-datepicker-other-month {
+                        &.p-datepicker-other-month {
                             border: none;
                             color: @ig-grey;
                         }
 
-                        &.ui-datepicker-today {
-                            border: none !important;
-                            background: @ig-grey-t4;
-                            border-radius: 2px;
-
-                            &.ui-state-disabled {
-                                background: none;
-                            }
-                        }
-
-                        a {
+                        span {
                             text-decoration: none;
+                            background: @ig-white;
+                            color: @ig-black;
+                            border: none;
+                            width: 40px;
+                            height: 32px;
+                            border-radius: 2px;
+                            font-weight: normal !important;
+                            font-size: 14px;
+                            line-height: 32px;
+
+
+                            &:hover {
+                                background: @ig-orange-t4;
+                            }
+
+                            &:active {
+                                background: @ig-orange-t3;
+                            }
+
 
                             &:focus {
                                 outline: 0 none;
@@ -202,32 +221,12 @@ ig-date {
 
 
 
-                            &.ui-state-highlight .ui-datepicker-today {
+                            &.p-highlight .p-datepicker-today {
                                 border: none !important;
                                 background: @ig-grey-t4;
                                 border-radius: 2px;
                             }
-
-                            &.ui-state-default {
-                                background: @ig-white;
-                                color: @ig-black;
-                                border: none;
-                                width: 40px;
-                                height: 32px;
-                                border-radius: 2px;
-                                font-weight: normal !important;
-                                font-size: 14px;
-                                line-height: 32px;
-
-
-                                &:hover {
-                                    background: @ig-orange-t4;
-                                }
-
-                                &:active {
-                                    background: @ig-orange-t3;
-                                }
-                            }
+                            
                         }
                     }
                 }
@@ -236,7 +235,7 @@ ig-date {
     }
 
 
-    button.ui-calendar-button {
+    button.p-button {
         color: @ig-black;
         background: rgba(0,0,0,0.07);
         border-radius: 2px;
@@ -246,7 +245,7 @@ ig-date {
         height: 24px;
         width: 24px;
 
-        &.ui-button-icon-only .ui-button-icon-left {
+        &.p-button-icon-only .p-button-icon-left {
             font-weight: normal !important;
         }
 

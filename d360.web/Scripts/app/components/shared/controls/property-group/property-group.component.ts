@@ -135,7 +135,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                             elem.querySelector('input').click();
                         }
                         else if (elem.tagName === 'P-DROPDOWN') {
-                            (elem.querySelectorAll('.ui-dropdown-trigger')[0] as HTMLElement).click();
+                            (elem.querySelectorAll('.p-dropdown-trigger')[0] as HTMLElement).click();
                         }
                         elem.focus();
                         found = true;

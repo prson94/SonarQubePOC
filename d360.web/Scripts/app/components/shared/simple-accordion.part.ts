@@ -1,12 +1,12 @@
 ﻿import { CommonModule } from '@angular/common';
 import { NgModule, Input, Component, Output, EventEmitter } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-
+//Need fix here for ui-state-active
 @Component({
     selector: 'simple-accordion',
     template: `
-        <div class="ui-accordion ui-widget" [@state]="state">
-            <div class="ui-accordion-header ui-state-default" (click)="toggleActive();" [ngClass]="{'ui-state-active': active,'ui-state-hover':hover}" (mouseenter)="hover=true" (mouseleave)="hover=false">
+        <div class="ui-accordion p-component" [@state]="state">
+            <div class="ui-accordion-header p-state-default" (click)="toggleActive();" [ngClass]="{'p-state-active': active,'p-state-hover':hover}" (mouseenter)="hover=true" (mouseleave)="hover=false">
                 <span *ngIf="active" style="float:right;"><i class="fa fa-chevron-up"></i></span>
                 <span *ngIf="!active" style="float:right;"><i class="fa fa-chevron-down"></i></span>                
                 <div class="ui-accordion-header-info">

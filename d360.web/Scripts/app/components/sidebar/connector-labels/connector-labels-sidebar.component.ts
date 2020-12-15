@@ -298,7 +298,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
                 var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
                 for (var i = lastIndex; i <= currentIndex; i++) {
-                    if (!tableRows[i].classList.contains('ui-state-highlight')) {
+                    if (!tableRows[i].classList.contains('p-highlight')) {
                         this.selected.push(this.labels[i]);
                         this.selectElement(tableRows[i]);
                     }
@@ -346,19 +346,19 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     private deselectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);
 
-        trElement.classList.remove('ui-state-highlight');
-        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
-        trElement.querySelector('span.ui-chkbox-icon').classList.remove('pi');
-        trElement.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
+        trElement.classList.remove('p-highlight');
+        trElement.querySelector('span.p-checkbox-icon').classList.remove('pi-check');
+        trElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
+        trElement.querySelector('div.p-checkbox-box').classList.remove('p-state-active');//Need fix here for ui-state-active
 
     }
     private selectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);
 
-        trElement.classList.add('ui-state-highlight');
-        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
-        trElement.querySelector('span.ui-chkbox-icon').classList.add('pi');
-        trElement.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
+        trElement.classList.add('p-highlight');
+        trElement.querySelector('span.p-checkbox-icon').classList.add('pi-check');
+        trElement.querySelector('span.p-checkbox-icon').classList.add('pi');
+        trElement.querySelector('div.p-checkbox-box').classList.add('p-state-active');//Need fix here for ui-state-active
 
     }
 
@@ -371,7 +371,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     private clearAllSelectedItems(element: any) {
-        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
+        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.p-highlight");
         Array.from(nodeList)
             .forEach(x => {
                 this.deselectElement(x as HTMLElement);
