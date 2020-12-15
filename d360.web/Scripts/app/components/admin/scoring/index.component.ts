@@ -1,20 +1,23 @@
-﻿import { Component, OnInit, ViewChild } from '@angular/core';
-import { BaseComponent } from '../../shared/base.component';
-import { ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
-import { AssetTypeClass } from '../../../models/asset.model';
+﻿import { Input, Component, OnInit, OnDestroy, Output, ViewChild } from '@angular/core';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { AdminBaseComponent } from '../admin-base.component';
+import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 import { Table } from 'primeng/table';
+import { ScoreType, ScoreTypeAllocation, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
-    selector: 'd3s-admin-metric-asset-type-list',
-    templateUrl: 'admin-metric-asset-type-list.component.html',
+    selector: 'scoring-index-component',
+    templateUrl: './index.component.html',
     providers: [AllocationService]
 })
 
-export class AdminMetricAssetTypeListComponent extends BaseComponent implements OnInit {
+export class ScoringIndexComponent extends AdminBaseComponent implements OnInit, OnDestroy {
 
     private _loadedAllocations: ScoreTypeAllocation[];
     selection: ScoreTypeAllocation = new ScoreTypeAllocation();
@@ -31,11 +34,18 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     @ViewChild('dt', { static: false }) dt: Table;
 
-    constructor(private allocationService: AllocationService,
+    constructor(
+        private allocationService: AllocationService,
+        secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService,
-        private router: Router
-    ) {
-        super();
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        private router: Router) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
+        this.areaName = "Scoring Definitions";
+        this.tabTitle = 'Scoring Definitions';
+        this.setCommonItems();
+        this.setCommonSecondaryNavTabs(false);
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
     }
@@ -43,6 +53,10 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     ngOnInit() {
         this.load();
         this.theDeleteCallback = this.deleteAllocation.bind(this);
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
     }
 
     load(event: any = null) {
@@ -172,4 +186,4 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     get deletePopupTitle(): string {
         return (this.selection.hasField || this.selection.hasMeasure) ? 'Cannot Delete Scoring Definition' : 'Delete Scoring Definition';
     }
-};
+}

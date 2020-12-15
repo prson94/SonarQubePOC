@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System;
 
 namespace d360.core.entities
 {
@@ -17,9 +18,12 @@ namespace d360.core.entities
         public int? LookupObjectID { get; set; }
 
         [Column(Order = 4), DataMember, Key]
-        public int Value { get; set; }
+        public Guid AssetUid { get; set; }
 
         [Column(Order = 5), DataMember, Key]
+        public int Value { get; set; }
+
+        [Column(Order = 6), DataMember, Key]
         public string Text { get; set; }
     }
 }

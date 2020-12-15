@@ -92,7 +92,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
 
             this.fields.forEach(f => {
                 this.fieldsSelect.push({
-                    value: f.Name,
+                    value: `${f.AssetTypeUid}.${f.Name}`,
                     label: f.FriendlyName
                 });
             });
@@ -132,7 +132,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         if (this.singleSelectMode) {
             if (this.conditions.length == 0) {
                 var hash = this.randstr('id');
-                let cond = { field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
                 this.createFormControl(cond);
                 this.conditions.push(cond);
             }
@@ -140,7 +140,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
             if (!lastCondition || (lastCondition.operator != null && lastCondition.operator)) {
                 if (availableFields.length > 0) {
                     var hash = this.randstr('id');
-                    let cond = { field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
+                    let cond = { assetTypeUid: '', field: '', operator: null, value: null, disabled: false, value2: null, isValid: true, hash: hash };
                     this.createFormControl(cond);
                     this.conditions.push(cond);
                 }
@@ -273,18 +273,22 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     }
 
     getFieldType(item: FieldCondition) {
-        if (this.fields)
-            return this.fields.filter(x => x.Name === item.field)[0];
+        if (this.fields) {
+            let fieldDataArray = item.field.split('.');
+            return this.fields.filter(x => x.AssetTypeUid === fieldDataArray[0] && x.Name === fieldDataArray[1])[0];
+        }
 
         return null;
     }
 
     getAvailableFields(item: FieldCondition) {
+
         var allowedFields = this.fieldsSelect.filter(x => !this.conditions.some(c => c.field === x.value));
         if (item && item.field) {
-            var field = this.fields.filter(x => x.Name == item.field)[0];
+            let fieldDataArray = item.field.split('.');
+            var field = this.fields.filter(x => x.AssetTypeUid == fieldDataArray[0] && x.Name == fieldDataArray[1])[0];
             if (field) {
-                allowedFields.push({ value: field.Name, label: field.FriendlyName });
+                allowedFields.push({ value: `${field.AssetTypeUid}.${field.Name}`, label: field.FriendlyName });
                 allowedFields = allowedFields.sort((a, b) => a.label > b.label ? 1 : -1);
             }
         }
