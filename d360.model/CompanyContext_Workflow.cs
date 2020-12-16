@@ -1505,24 +1505,6 @@ namespace d360.model
                     WorkflowItemAssignments.RemoveRange(currentAssignments);
                 }
 
-                if (reassignToUser)
-                {
-                    // add an assignment for the specified user
-                    var assignment = new WorkflowItemAssignment
-                    {
-                        ItemStepID = itemStep.ID,
-                        ItemID = itemStep.ItemID,
-                        CreatedBy = CurrentResourceID,
-                        CreatedOn = DateTime.UtcNow,
-                        ResourceObject = "Resource",
-                        ResourceObjectID = resource.ResourceID,
-                        UpdatedBy = CurrentResourceID,
-                        UpdatedOn = DateTime.UtcNow
-                    };
-                    WorkflowItemAssignments.Add(assignment);
-                }
-
-
                 if (sendFormEmails && stepSettings.FormShouldSendEmail)
                 {
                     var obj = itemStep.Item.Object;
