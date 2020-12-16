@@ -1359,11 +1359,6 @@ order by wi.StartedOn desc";
 
             switch (changeType)
             {
-                case ChangeType.Loaded:
-                    types = types.Where(t => t.type == "Fusion")
-                        .OrderBy(t => t.name)
-                        .ToList();
-                    break;
                 case ChangeType.Schedule:
                     types = types.Where(t => t.type == "ArtifactType" 
                     || t.type == "TaxonomyType" 

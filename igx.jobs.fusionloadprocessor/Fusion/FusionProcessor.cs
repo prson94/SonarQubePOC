@@ -206,8 +206,6 @@ namespace igx.jobs.fusionloadprocessor
                     //If any changes were made add record to queue.task
                     await UpdateQueue(companyConnection);
 
-                    //if any changes occured fire off message to say 
-                    MarkFusionJobAsHavingLoaded();
                 }
                 catch (AggregateException exception)
                 {
@@ -240,32 +238,6 @@ namespace igx.jobs.fusionloadprocessor
             CoreFunction.AITrackRequest(FUSION_PROCESSOR_AI_NAME_TOTAL, jobDuration.Elapsed);
         }
 
-        private void MarkFusionJobAsHavingLoaded()
-        {
-            if (_workArea.Changes.AddCount <= 0 && _workArea.Changes.UpdateCount <= 0 && _workArea.Changes.DeleteCount <= 0) return;
-
-            var topicName = CompanyConnectionUtils.GetEventTopicName(CompanyID);
-
-            if (string.IsNullOrEmpty(topicName)) return;
-
-            var eventBus = new AzureQueueSource();
-            var company = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x=> x.CompanyID == CompanyID);
-
-            eventBus.CreateTopicMessage(topicName, new d360.core.queue.EventInfo
-            {
-                CompanyID = CompanyID,
-                Action = d360.core.enums.Workflow.ChangeType.Loaded,
-                ResourceID = 0,
-                Object = new d360.core.queue.EventObjectInfo
-                {
-                    Object = SystemObjects.Fusion,
-                    ObjectID = FusionID,
-                    ObjectType = SystemObjects.FusionType,
-                    ObjectTypeID = -1
-                },
-                DomainPrefix = company.UrlPrefix
-            });
-        }
 
         private async Task UpdateQueue(SqlConnection companyConnection)
         {

@@ -1149,4 +1149,14 @@ END
 ]]>
     </sql>
 	</changeSet>
+
+  <changeSet author="sDooley" id="Data.Corrections.GOV-11855">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+      <![CDATA[
+update [workflow].[Type] set State = 3
+from [workflow].[Type] T 
+inner join [workflow].[EventRegistration] ER ON ER.ChangeType = 7 AND ER.TypeID = T.ID
+]]>
+    </sql>
+  </changeSet>
 </databaseChangeLog>
