@@ -49,8 +49,8 @@
 <div class="tile tile-detail measures">
     <div class="measure-actions" *ngIf="!isLoading">
         <div class="action-box">
-            <p-checkbox igCheckbox [(ngModel)]="showDisabled" [binary]="true" label="Show disabled measures"></p-checkbox>
-            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure"></button>
+            <p-checkbox igCheckbox [(ngModel)]="showDisabled" [binary]="true" label="Show disabled measures" *ngIf="!isMeasureListCommandBarDisabled"></p-checkbox>
+            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure" [disabled]="isMeasureListCommandBarDisabled"></button>
         </div>
     </div>
     <div class="measure-heading measure-list">
@@ -111,14 +111,16 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest" class="measure-details-item">
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest">
                     <d3s-admin-metric-pass-test-details 
-                                                        [selection]="selectedMetric" 
+                                                        [definition]="selectedMetric?.Definition"
                                                         [operators]="operators" 
                                                         [metricListFieldTypes]="fields" 
                                                         [responsibilityTypes]="responsibilityTypes" 
                                                         [relationshipTypes]="relationshipTypes" 
-                                                        [assetTypeUid]="selectedAssetType.Uid"></d3s-admin-metric-pass-test-details>
+                                                        [assetTypeUid]="selectedAssetType.Uid"
+                                                        [paths]="ruleResultPaths">
+                    </d3s-admin-metric-pass-test-details>
                 </div>
                 <div class="measure-details-item">
                     <div class="details-header">UID</div>

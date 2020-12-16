@@ -1,6 +1,19 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <div *ngIf="metricTree.length == 0 && !allocation.isExternallyCalculated" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
+    <div *ngIf="metricTree.length == 0 && !allocation.isExternallyCalculated && !showRulePathsError()" class="empty-metric-message">
+        <i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition
+    </div>
+    <div *ngIf="showRulePathsError()" class="empty-metric-message">
+        <div class="details-header"><i class="fa fa-exclamation-triangle"></i> No Rule Selections Available</div>
+        <div class="details-content">
+            Before you can create any measures, you need to define at least one relationship type
+            to associate this asset type ({{allocation?.assetTypePath}}) with rule types, either directly or via relationships
+            to other asset types.
+        </div>
+        <div class="help-link">
+            <a [href]="helpUri" target="help"><i class="fa fa-external-link"></i>Read more about Rule Results.</a>
+        </div>
+    </div>
     <div>
         <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
             <ng-template pTemplate="header">
@@ -108,18 +121,19 @@
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
             <measure-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                            [Measure]="selection"
-                            [operators]="operators"
-                            [responsibilityTypes]="responsibilityTypes"
-                            [relationshipTypes]="relationshipTypes"
-                            [AssetType]="assetType"
-                            [isExternallyCalculated]="allocation.isExternallyCalculated"
-                            [assetTypeFields]="fields"
-                            (onClose)="showHistory(false);load(selection?.Name);">
+                             [Measure]="selection"
+                             [operators]="operators"
+                             [responsibilityTypes]="responsibilityTypes"
+                             [relationshipTypes]="relationshipTypes"
+                             [AssetType]="assetType"
+                             [isExternallyCalculated]="allocation.isExternallyCalculated"
+                             [assetTypeFields]="fields"
+                             [paths]="paths"
+                             (onClose)="showHistory(false);load(selection?.Name);">
             </measure-history>
         </div>
     </d3s-modal>
-    <d3s-delete-form *ngIf="selection" 
+    <d3s-delete-form *ngIf="selection"
                      [uri]="'api/v2/metrics/' + selection?.Uid"
                      [method]="'delete'"
                      [showAsModal]="true"

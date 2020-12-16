@@ -30,7 +30,8 @@ import { Predicate } from '../../../models/predicate.model';
 
 export class ScoringDetailComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     selectedAssetType: AssetTypeMetricModel = null;
-    selectedMetric = null;
+    selectedMetric: MetricAssetViewModel = null;
+    selectedRuleResultPath: MetricPathOptionViewModel = null;
     routeParamsSubscription: any;
     allocation: ScoreTypeAllocation = null;
     private allocationUid: string;
@@ -57,7 +58,8 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     showDisabled: boolean = false;
     showPassTest: boolean = false;
     ruleResultPaths: MetricPathOptionViewModel[] = [];
-    
+
+    isMeasureListCommandBarDisabled: boolean = false;
 
     responsibilityTypes: any[] = [];
     relationshipTypes: any[] = [];
@@ -103,7 +105,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             p.value = p.Uid;
                         });
                         this.ruleResultPaths = options;
+
+                        this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length == 0;
                     });
+                }
+                else {
+                    this.isMeasureListCommandBarDisabled = false;
                 }
             });
 
@@ -279,7 +286,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
 
     private hasPassTest(item: MetricAssetViewModel) {
-        if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {
+        if (
+            item &&
+            item.Definition &&
+            (item.Definition.DataQuality || (item.Definition.Governance && item.Definition.Governance.Check))
+        )
+        {
             return true;
         } else {
             return false;
@@ -315,7 +327,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         return s;
     }
 
-    selectionChanged(event) {
+    selectionChanged(event:MetricAssetViewModel) {
         this.selectedMetric = event;
 
         if (this.hasConditions(this.selectedMetric))

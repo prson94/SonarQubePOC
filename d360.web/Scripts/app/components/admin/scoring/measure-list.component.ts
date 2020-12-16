@@ -12,6 +12,7 @@ import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { RelationshipType } from '../../../models/relationship.model';
 import { Predicate } from '../../../models/predicate.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
+import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
 @Component({
     selector: 'measure-list',
@@ -50,6 +51,8 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     @Input() paths: MetricPathOptionViewModel[] = [];
 
     @Input() showDisabled: boolean = false;
+
+    helpUri = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
 
     private metrics: MetricAssetViewModel[] = [];
     private metricTree: TreeNode[] = [];
@@ -295,5 +298,21 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
     isGovernanceScoreType() {
         return this.allocation.scoreType == ScoreType.Governance && !this.allocation.isExternallyCalculated;
+    }
+
+    showRulePathsError() {
+        return this.isDataQualityScoreType() && this.paths.length == 0; 
+    }
+
+    getSelectedRuleResultPath() {
+        let html = ';'
+        const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
+        if (ruleResultPathUid) {
+            const matches = this.paths.filter(p => { return p.value == ruleResultPathUid; });
+            if (matches.length > 0) {
+                html = matches[0].label;
+            }
+        }
+        return html;
     }
 };
