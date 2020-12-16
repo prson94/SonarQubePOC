@@ -101,7 +101,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     diagramTypes: DiagramTypesModel = null;
 
     showNodeCount: boolean = true;
-    autoCollapseNodeCount: number = 5; //0 or less disables auto-collapse
+    autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
     popupMenuItems = [
         {
