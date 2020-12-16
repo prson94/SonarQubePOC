@@ -2,6 +2,7 @@
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.helpers;
 using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
@@ -9,6 +10,7 @@ using d360.extensions.queue;
 using d360.extensions.storage;
 using d360.model;
 using d360.utils.company;
+using igx.jobs.scoreprocessor.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -40,7 +42,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         }
 
         internal MetConditionsModel CheckMeasureConditions(
-            List<FieldDetail> assetFields,
+            List<AssetMeasuresProcessField> assetFields,
             List<FieldType> assetFieldTypes,
             AllocationDataModel measure,
             bool matchExtraneousConditions = false)
@@ -63,13 +65,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                         c.Items.ForEach(i =>
                         {
-                            var assetField = assetFields.SingleOrDefault(f => f.FieldTypeID == i.ConditionFieldTypeID);
                             var fieldType = assetFieldTypes.SingleOrDefault(f => f.ID == i.ConditionFieldTypeID);
-                            if (assetField != null && fieldType != null)
+                            var fieldValue = assetFields.FirstOrDefault(f => f.FieldTypeID == i.ConditionFieldTypeID);
+                            if (fieldValue != null && fieldType != null)
                             {
                                 if (fieldType.Type == DataType.Lookup.ToString() && fieldType.AllowMultipleValues)
                                 {
-                                    var fieldValues = (assetField.Value ?? "").Split(',');
+                                    var fieldValues = fieldValue.Values.Split(',');
                                     if (i.ConditionType == MetricConditionType.And)
                                     {
                                         if (i.Operator == Operator.NotEquals)
@@ -123,7 +125,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                         }
                                         else
                                         {
-                                            if (i.Values.Intersect(fieldValues).Any())
+                                            if (i.Values.Intersect(fieldValues, new LowercaseStringEqualityComparer()).Any())
                                             {
                                                 conditionsMetCount++;
                                             }
@@ -132,7 +134,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 }
                                 else
                                 {
-                                    if (i.Operator.TestTwoValues(fieldType.Type, fieldType.AllowMultipleValues, i.Values, assetField.Value))
+                                    if (i.Operator.TestTwoValues(fieldType.Type, fieldType.AllowMultipleValues, i.Values, fieldValue.Values))
                                     {
                                         conditionsMetCount++;
                                     }
