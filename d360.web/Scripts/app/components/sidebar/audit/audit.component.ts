@@ -34,7 +34,6 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private auditService: AuditService,
-        private headerBreadcrumbService: HeaderBreadcrumbService,
         private changeDetectorRef: ChangeDetectorRef,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService

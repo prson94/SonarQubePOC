@@ -535,6 +535,13 @@ export enum EmailTaskRecipientType {
     Group
 }
 
+export enum ConditionFieldType {
+    Field,
+    Form,
+    Contextual,
+    HttpRequest
+}
+
 //#endregion
 
 export class WorkflowAssignmentSummary {

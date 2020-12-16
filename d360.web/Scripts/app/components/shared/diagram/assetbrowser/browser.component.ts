@@ -511,6 +511,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+
     private badge_ClickOwner(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
@@ -1240,7 +1241,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }
+            }            
         });
     }
 
@@ -1322,6 +1323,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.helper_CalculateAlertCount();
     }
 
+    // Used to load the counts for the owner badges
+    private loadOwnerCounts() {     
+        let isLineage: boolean = this.helper_LineageDiagramApplies();
+        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, isLineage ? this.displayConfiguration.AncestryMode : FilterAncestryMode.NoAncestor).subscribe(res => {            
+            for (let item of res) { // each owner count                  
+                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });                
+                if (nd.length > 0) {
+                    for (let owner of item.owners) { // each responsibility on that node                                                       
+                        var badge = nd[0].owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId });
+                        if (badge && badge.length > 0)
+                            this.diagram.model.setDataProperty(badge[0], "count", owner.count ? owner.count : 0);
+                        else
+                            console.warn(`cant find ${owner.responsibilityTypeId} in ${item.predictableId} `);
+                    }
+                }
+            }
+        });
+    }
+
     private helper_PopulateDiagram(): Observable<boolean> {
         let dgmObs: Observable<boolean>;
 
@@ -1355,6 +1375,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                         this.loadingText = "";
                         this.isLoading = false;
+                        this.loadOwnerCounts();
                     }
                 }
                 else {
@@ -1398,7 +1419,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedAssetTypes();
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
-            this.helper_CalculateAlertCount();
+            this.helper_CalculateAlertCount();            
         });
     }
 
@@ -2460,9 +2481,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor
+                            stroke: this.fontRelationBadgeCountForeColor,                            
                         },
-                        new go.Binding("text", "count")
+                        new go.Binding("text", "count")                        
                     ),
                 )
             )
@@ -2692,13 +2713,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_OwnerBadges(): go.Panel {
+    private template_OwnerBadges(): go.Panel {        
         return this.g(go.Panel, "TableRow", {
             alignment: go.Spot.TopCenter,
             alignmentFocus: go.Spot.Bottom,
             padding: 0,
             cursor: "pointer",
-            click: (e, obj) => this.badge_ClickOwner(e, obj),
+            click: (e, obj) => this.badge_ClickOwner(e, obj)            
         },
             this.g(go.Panel, "Horizontal",
                 new go.Binding("visible", "showBadge"),
@@ -2750,11 +2771,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeCountForeColor
+                            font: this.fontLoadingIcon,
+                            stroke: this.fontOwnerBadgeCountForeColor,
+                            text: this.loadingIcon
                         },
-                        new go.Binding("text", "count")
-                    ),
+                        new go.Binding("text", "count", (h) => (h ? h: this.loadingIcon)),
+                        new go.Binding("font", "count", (h) => (h ? this.fontOwnerBadge : this.fontLoadingIcon))
+                    ),                                      
                 )
             )
         );

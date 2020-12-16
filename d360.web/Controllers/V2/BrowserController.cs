@@ -335,6 +335,44 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
             }
         }
 
+        [
+            Route("ownershipCounts/{uid:Guid}/{hopCount:int}/{includeNonLeaf:bool}/{ancestry:int}"),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry )
+        {
+            try
+            {
+                var sql = "exec graph.AssetBrowser_OwnershipCounts @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
+                var res = await Company.QueryAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)ancestry,
+                        uid,
+                        resourceId = Company.CurrentResourceID,
+                        isAdmin = Company.CurrentResourceIsAdmin,
+                        hopCount,
+                        includeNonLeaf
+                    },
+                    timeout: 120
+                );
+
+                foreach (var item in res){
+                    if(!string.IsNullOrEmpty(item.owners))
+                        item.owners = JsonConvert.DeserializeObject(item.owners);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, res);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
         /// <summary>
         /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
         /// </summary>
