@@ -65,6 +65,16 @@ namespace d360.model.workflow
             if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
 
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
+            
+            if (issueObjectTypeId > -1)
+            {
+                //get asset fields for this action
+                var issue = context.Issues.FirstOrDefault(x => x.ID == objectId);
+                if (issue != null)
+                {
+                    fields = fields.Union(context.Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object));
+                }
+            }
 
             foreach (var item in expression)
             {
