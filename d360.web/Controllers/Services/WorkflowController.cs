@@ -324,7 +324,7 @@ order by wi.StartedOn desc";
                 else
                 {
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, true);
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
                 }
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }

@@ -1476,7 +1476,7 @@ namespace d360.model
         /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
         /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
         /// <returns></returns>
-        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool reassignToUser = false)
+        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
         {
             foreach (var itemStep in itemSteps)
             {
