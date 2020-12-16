@@ -1371,7 +1371,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                     Guid.NewGuid(), 
                     ScoreQueueChangeType.MeasureChanged, 
                     new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
-                    );            
+                    );
             }
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");
