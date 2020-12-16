@@ -672,7 +672,6 @@
     <Content Include="Content\primeng\v9.1.0\images\loading.gif" />
     <Content Include="Content\primeng\v9.1.0\images\password-meter.png" />
     <Content Include="Content\primeng\v9.1.0\primeng.css" />
-    <Content Include="Content\primeng\v9.1.0\theme.css" />
     <Content Include="Content\primeng\v9.1.0\theme.less" />
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
