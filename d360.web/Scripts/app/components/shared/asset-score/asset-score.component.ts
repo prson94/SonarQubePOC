@@ -7,7 +7,6 @@ import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
-import { expand } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -109,7 +108,29 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 var arr = alloc['metricDefinition'] as any[];
                 arr.forEach(metric => {
                     if (metric['Uid'] == this.selectedPoint.Uid) {
-                        this.selectedMetric = metric;
+                        this.selectedMetric = null;
+                        var effDate = new Date(metric.EffectiveDate);
+                        var selectedDate = new Date(this.scoreDate);
+                        if (effDate < selectedDate) {
+                            this.selectedMetric = metric;
+                        }
+                        else {
+                            var isMetricSet: boolean = false;
+                            this.metricService.getMetricsVersionHistory(metric['Uid']).subscribe(res => {
+                                res.forEach(item => {
+                                    if (!isMetricSet) {
+                                        var date = new Date(item.EffectiveDate);
+                                        if (selectedDate > date) {
+                                            this.selectedMetric = item;
+                                            this.selectedMetric['Uid'] = this.selectedMetric['MeasureUid'];
+                                            this.selectedMetric['State'] = 3;
+                                            isMetricSet = true;
+                                            this.cdRef.markForCheck();
+                                        }
+                                    }
+                                })
+                            });
+                        }
                     }
                 })
             }

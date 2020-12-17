@@ -205,7 +205,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             return '';
         var prefix = '';
         let check: string = '';
-        if (this.selectedMetric.Definition.Governance)
+        if (this.selectedMetric && this.selectedMetric.Definition.Governance)
             check = this.selectedMetric.Definition.Governance.Check.toString();
 
         if (!check)
