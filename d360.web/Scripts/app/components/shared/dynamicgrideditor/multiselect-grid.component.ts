@@ -23,16 +23,16 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                 <th style="width: 38px">
                                     <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
                                 </th>
-                                <th>Name</th>
+                                <th>Asset Path</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>
+                                <td class="front-elide">
                                         <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                                         <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                                 </td>
-                                <td>
+                                <td class="front-elide">
                                     <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
                                 </td>
                             </tr>
