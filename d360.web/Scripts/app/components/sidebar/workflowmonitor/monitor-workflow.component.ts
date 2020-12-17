@@ -50,7 +50,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
             }
             else
             {
-                this.assetService.getUIDetailsForAssetUID(assetUid)
+                this.assetService.GetObjectUIDetailsForAssetUID(assetUid)
                 .subscribe(res => {
                     this.objectID = +res.ObjectId;
                     this.objectType = res.Object;

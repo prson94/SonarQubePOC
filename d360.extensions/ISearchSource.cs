@@ -271,6 +271,13 @@ namespace d360.extensions
         void ClearIndex(int companyID, string category, string assetType = null);
 
         /// <summary>
+        /// Clears out all entries from a company's index based on asset type UID.
+        /// </summary>
+        /// <param name="companyID">The current company ID</param>
+        /// <param name="assetTypeUid">UID of Asset Type to remove/param>
+        void ClearIndex(int companyID, Guid assetTypeUid);
+
+        /// <summary>
         /// Gets search results for the specified phrase.
         /// </summary>
         /// <param name="companyID">The current company ID</param>

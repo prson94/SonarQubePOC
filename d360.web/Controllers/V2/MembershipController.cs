@@ -61,6 +61,7 @@ namespace d360.web.Controllers.V2
         /// <param name="_direction">The direction in which to return results by asc/desc. </param>
         /// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
         /// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
+        /// <param name="_includeOrganization">Include the users organization uid if they are part of an organization.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -70,7 +71,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
+        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
         {
             try
             {
@@ -90,14 +91,26 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
 
                 string finalSql = "";
-                string joinsSql = " outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A ";
+                string joinsSql = $@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
+                                        {(_includeOrganization ? 
+                                                    @" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
+                                                    left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID " 
+                                    : "")}";
                 string whereSql = "";
-                string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
+                string selectSql = $@"select
+                    gr.uid,
+                    {(_includeOrganization ? " ao.Uid as OrganizationUid, " : "")} 
+                    gr.ResourceID, 
+                    gr.FirstName, 
+                    gr.LastName,
+                    gr.Email,
+                    gr.IsAdministrator,
+                    gr.LastLoggedInOn, 
                     case gr.State 
-                     when 1 then 'Active'
-                     when 2 then 'InActive'
-                     when 3 then 'Deleted' end as State,
-                     CreatedOn";
+                         when 1 then 'Active'
+                         when 2 then 'InActive'
+                         when 3 then 'Deleted' end as State,
+                    gr.CreatedOn";
                 string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
                 string orderBySQL = $"";
                 long pageSize;

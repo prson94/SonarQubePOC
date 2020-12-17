@@ -8,7 +8,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { AuthenticationService } from '../../services/authentication.service';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchService } from '../../services/search.service';
-import { SettingsHelper } from '../../models/settings.model';
+import { SearchType } from '../../models/settings.model';
 import { SearchSession } from './search-session';
 
 declare var CompanySettings;
@@ -18,17 +18,18 @@ export class SearchStateService extends BaseObservableService {
     private readonly sessionKey:string = 'd360SearchState';
     private readonly sessionAgeMinutes: number = 10;
     private readonly debounceValue: number = 400;
-    private searchService: SearchService;
 
     private AggSub$: Subscription;
     private MainSub$: Subscription;
     private AggQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
     private MainQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService) {
+    private searchTypes: SearchType[] = []
+
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService, protected searchService: SearchService) {
         super(messagesService);
-        this.searchService = new SearchService(http, messagesService);
         this.createQuerySubscriptions();
+        this.searchService.getSearchCategories(CompanySettings, this.authenticationService.isAdmin).subscribe(res => this.searchTypes = res);
     }
 
     //Subject definitions
@@ -291,23 +292,13 @@ export class SearchStateService extends BaseObservableService {
 
     /******* Utility functions*****************************/
 
-    //Cache lookups
-    private _displayNameLookup: string[];
     /**
      * Translates the internal d3s Class value to the display name from the Settings list of Search Types
      * @param category
      */
     private getDisplayLookup(category: string) {
-        if (this._displayNameLookup == undefined) {
-            this._displayNameLookup = SettingsHelper.getSearchTypesList().reduce(function (map, obj) {
-                map[obj.value] = obj.title;
-                return map;
-            }, []);
-        }
-        if (this._displayNameLookup[category] != undefined)
-            return this._displayNameLookup[category];
-        else
-            return category;
+        let type = this.searchTypes.find(t => t.value == category);
+        return (type == undefined) ? category : type.title;
     }
 
     /**
@@ -338,7 +329,7 @@ export class SearchStateService extends BaseObservableService {
      **/
     private getBaseCategoryTree() {
         if (this._baseCategoryTree == undefined) {
-            this._baseCategoryTree = SettingsHelper.getSearchTypesList().map((val) => {
+            this._baseCategoryTree = this.searchTypes.map((val) => {
                 return {
                     "label": val.title,
                     "count": 0,
@@ -347,17 +338,6 @@ export class SearchStateService extends BaseObservableService {
                     "key": val.value
                 }
             })
-            if (CompanySettings) {
-                if (CompanySettings.FusionEnabled == 'false') {
-                    this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'FusionAttributes' && x.key != 'FusionType');
-                }
-                if (CompanySettings.FusionEnabled == 'true') {
-                    this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'TechnicalAsset');
-                }
-            }
-            if (!this.authenticationService.isAdmin) {
-                this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'Resource' && x.key != 'Group');
-            }
         }
         return this._baseCategoryTree;
     }

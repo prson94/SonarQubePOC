@@ -58,7 +58,6 @@ export class LoadService extends BaseObservableService {
         }
         if (this.lineageVersion == 1) {
             this.aOptions.push({label: 'Lineage : Business', value: 'BL'});
-            this.aOptions.push({label: 'Lineage : Technical', value: 'TL'});
         }
         return this.aOptions;
     }

@@ -355,7 +355,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     if (this.model.Nodes != null)
                     this.model.Nodes.forEach(n => n.ActivityTypeInfo = this.activityTypes.find(a => a.ID == n.ActivityType));
                     }),
-                map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true)
+                map(() => this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                     .subscribe(r => this.fieldTypes = r)),
                 map(() => this.parseData(this.model)),
                 map(() => this.setIssueObject()),
@@ -510,11 +510,19 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private setWorkflowFields() {
         this.workflowFieldsService.setWorkflow(this.model.Event.Object, this.model.Event.ObjectID, this.model.Event.ChangeType);
 
+        let type = this.model.Event.Object;
+        let id = this.model.Event.ObjectID;
+
+        if (this.model.Event.IssueObject != null && this.model.Event.IssueObject.indexOf('|') > -1) {
+            type = this.model.Event.IssueObject.split('|')[0];
+            id = +this.model.Event.IssueObject.split('|')[1];
+        }
+
         if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate
             || this.model.Event.ChangeType == WorkflowChangeType.Update
             || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
             || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
-            this.workflowService.getScoreTypes(this.model.Event.ObjectID, this.model.Event.Object)
+            this.workflowService.getScoreTypes(id, type)
                 .subscribe(res => {
                     this.workflowFieldsService.setAvailableScoreTypes(res);
                 });
@@ -972,7 +980,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private setConditionLabel(condition: any) {
         let i = this.fieldTypes.findIndex(f => f.ID == condition['@FieldTypeID']);
         if (i >= 0)
-            condition['@FieldName'] = this.fieldTypes[i].FriendlyName;
+            condition['@FieldName'] = this.fieldTypes[i].FriendlyName + (this.fieldTypes[i].Object == 'IssueType' ? ' (Action Field)' : '');
 
 
         if (condition['@FormInputID'] != null) {

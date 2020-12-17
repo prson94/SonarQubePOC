@@ -6408,6 +6408,10 @@ table {
                     padding-right: 16px;
                 }
             }
+
+            .details-content{
+                word-break:break-word;
+            }
         }
     }
 }
@@ -6848,4 +6852,12 @@ table {
     ul, li {
         list-style: inherit !important;
     }
+}
+.front-elide {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    direction: rtl;
+    text-align: left;
 }

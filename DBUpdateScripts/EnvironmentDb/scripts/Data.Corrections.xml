@@ -1149,4 +1149,18 @@ END
 ]]>
     </sql>
 	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-12994">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update 	V 
+set 	V.Value = lower(A.Uid) 
+from	[metrics].[AssetVersionConditionItemValue] V 
+		inner join [metrics].[AssetVersionConditionItem] I on I.Uid = V.Uid and TRY_CAST(V.Value as int) > 0 
+		inner join FieldType F on F.ID = I.ConditionFieldTypeID and F.[Type] = 'Lookup' 
+		inner join Asset A on A.Object = 'ReferenceItem' and A.ObjectID = TRY_CAST(V.Value as int) 
+]]>
+    </sql>
+	</changeSet>
+
 </databaseChangeLog>

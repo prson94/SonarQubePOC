@@ -2,10 +2,10 @@
     Name: string;
     Inverse: string;
     Type: string;
-    FriendTypeName: string;
+    FriendlyTypeName: string;
     IsInUse: boolean;
     IsSystem: boolean;
-    Uid: number;
+    Uid: string;
 }
 
 export enum PredicateType {

@@ -69,6 +69,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         { value: WorkflowFormFieldType.Date, label: 'date' },
         { value: WorkflowFormFieldType.List, label: 'list' },
         { value: WorkflowFormFieldType.RelationshipType, label: 'relationshipType' },
+        { value: WorkflowFormFieldType.HTML, label: 'html' },
 
     ];
 
@@ -267,7 +268,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     save() {
         //calculate the next id # based on existing fields
-        let len = this.step.fields.form.field.length;
+        let len = this.step.fields.form.field.filter(f => f['@type'] == this.newField['@type']).length;
         let count = len == 0 ? 1 : this.step.fields.form.field
             .filter(f => f['@type'] == this.newField['@type'])
             .map(f => +(f['@id'].replace(this.newField['@type'], '')))

@@ -1043,6 +1043,22 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Gets the object and objectId of a Uid
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetObjectDetailUIDetails(Guid assetUid)
+        {
+            return Company.Query<dynamic>($@"select Object,ObjectId from [utility].[GetObjectObjectIdByUID](@assetUid)", new { assetUid }, ApiTimeout).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Get field types for the given asset type Uid
         /// </summary>
         /// <param name="assetUid">The Uid of the asset type</param>

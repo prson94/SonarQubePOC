@@ -15,7 +15,8 @@ import {
     AssetBrowserAlertRequest,
     DiagramTypesModel,
     AssetBrowserResponseModel,
-    AssetBrowserApiHopAssetRequestModel
+    AssetBrowserApiHopAssetRequestModel,
+    DiagramOwnerCount
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -74,7 +75,8 @@ export class BrowserService extends BaseObservableService {
         response.hierarchy.forEach(h => {
             try {
                 let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
-                if (rootNode) {
+                if (rootNode) {                    
+                    rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
                     rootNode.relations = h.relations;
                     if (h.backwardReveal !== AssetBrowserApiHopDirection.None) {
@@ -121,7 +123,8 @@ export class BrowserService extends BaseObservableService {
             backwardReveal: AssetBrowserApiHopDirection.None,
             forwardReveal: AssetBrowserApiHopDirection.None,
             owners: [],
-            relations: []
+            relations: [],
+            predictableId: null
         });
 
         let rootLink: AssetBrowserTranslationLink = {
@@ -375,6 +378,12 @@ export class BrowserService extends BaseObservableService {
     public getDiagramTypes(uid: string): Observable<DiagramTypesModel> {
         return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
             map((response: DiagramTypesModel) => response),
+            catchError(err => this.handleError(err)));
+    }
+
+    public getOwnerCounts(uid: string, hopCount: number, includeNonLeaf: boolean, ancestry: FilterAncestryMode): Observable<DiagramOwnerCount[]> {
+        return this.http.get(`api/v2/browser/ownershipCounts/${uid}/${hopCount}/${includeNonLeaf}/${ancestry}`).pipe(
+            map((response: DiagramOwnerCount[]) => response),
             catchError(err => this.handleError(err)));
     }
 

@@ -63,6 +63,9 @@ namespace d360.core.queue
 
     public class ReindexModel : QueueObject
     {
+        public string Category { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public Guid? AssetUid { get; set; }
         //No additional properties
     }
 

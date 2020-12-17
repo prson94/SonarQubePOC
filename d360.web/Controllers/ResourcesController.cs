@@ -688,6 +688,9 @@ Order by ColumnOrder,Name
                     {
                         if (det.UID.HasValue)
                             det.Url = Company.GetDiagramUrlForDiagramAsset(det.UID.Value);
+
+                        if(det.UID.HasValue)
+                            levels = GetFieldLevelPathFromAssetNodeSegment(det.UID ?? Guid.Empty);
                     }
                     else if (objectType == "ConnectorLabel")
                     {
@@ -803,6 +806,55 @@ Order by ColumnOrder,Name
                 Formatting = Newtonsoft.Json.Formatting.None
 
             };
+        }
+
+        private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid) {
+            List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
+            string segments = Company.Query<string>($@"SELECT Segments FROM graph.AssetNode WHERE Uid = @assetUid", new { assetUid = uid }).FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
+            {
+                XElement segmentXML = XElement.Parse(segments);
+                List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
+                int currentlevel = 1;
+                int level = 0;
+                int position = 0;
+                int assetTypeId = -1;
+                List<string> elementPath = new List<string>();
+
+                foreach (XElement element in segmentList)
+                {
+                    if (int.TryParse(element.Attribute("level").Value, out level))
+                    {
+                        if (int.TryParse(element.Attribute("position").Value, out position))
+                        {
+                            if (level != currentlevel)
+                            {
+                                levels.Add(new TooltipFieldLevelPathModel()
+                                {
+                                    Level = currentlevel,
+                                    LevelName = Company.AssetTypes.Where(d => d.ID == assetTypeId).SingleOrDefault().Name,
+                                    Path = string.Join("/", elementPath.ToArray())
+                                });
+                                currentlevel = level;
+                                elementPath = new List<string>();
+                            }
+                            elementPath.Add(element.Value);
+                            int.TryParse(element.Attribute("assetTypeId").Value, out assetTypeId);
+                        }
+                    }
+                }
+                //capture the last element path
+                if (elementPath.Any())
+                {
+                    levels.Add(new TooltipFieldLevelPathModel()
+                    {
+                        Level = currentlevel,
+                        LevelName = Company.AssetTypes.Where(d => d.ID == assetTypeId).SingleOrDefault().Name,
+                        Path = string.Join("/", elementPath.ToArray())
+                    });
+                }
+            }
+            return levels;
         }
 
         #endregion

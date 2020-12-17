@@ -1,13 +1,11 @@
 ﻿import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
-import { SearchService } from '../../services/search.service';
 import { SearchResultsObject } from '../../models/search-result.model';
 import { SearchStateService } from './search-state.service';
 
 @Component({
     selector: 'd3s-search-results',
     templateUrl: './search-results-component.html',
-    providers: [SearchService],
     changeDetection: ChangeDetectionStrategy.Default
 })
 

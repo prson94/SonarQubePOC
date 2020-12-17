@@ -20,11 +20,16 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         Form completed by {{form.resourceName}}
                     </div>
                     <div *ngFor="let f of form.field">
-                        <ng-container *ngIf="f['@fieldtype'] == 'date'">
-                            <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? getDate(f['@value']) : getDate(f['@displayvalue']))}}
-                        </ng-container>
-                        <ng-container *ngIf="f['@fieldtype'] != 'date'">
-                            <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
+                        <ng-container [ngSwitch]="f['@fieldtype']">
+                            <ng-container *ngSwitchCase="'date'">
+                                <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? getDate(f['@value']) : getDate(f['@displayvalue']))}}
+                            </ng-container>
+                            <ng-container *ngSwitchCase="'html'">
+                                <strong>{{f['@label']}}</strong>: <div [innerHtml]="f['@value'] | safeHtml"></div>
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>
+                                <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
+                            </ng-container>
                         </ng-container>
                     </div>
                 </div>

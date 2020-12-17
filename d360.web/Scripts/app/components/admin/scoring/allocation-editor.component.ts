@@ -8,8 +8,8 @@ import { CurrentEnvironmentSettings } from '../../../static/environment-settings
 import * as _ from 'lodash';
 
 @Component({
-    selector: 'd3s-admin-allocation-editor',
-    templateUrl: 'admin-allocation-editor.component.html',
+    selector: 'allocation-editor',
+    templateUrl: 'allocation-editor.component.html',
     providers: [AllocationService],
     styles: [`
         .separator{
@@ -18,7 +18,7 @@ import * as _ from 'lodash';
     `],
 })
 
-export class AdminAllocationEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
+export class AllocationEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
 
     @Input() selection: ScoreTypeAllocation = new ScoreTypeAllocation();
     @Input() disabled: boolean = false;
@@ -95,8 +95,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     }
 
     isExtCalcDisabled(): boolean {
-        if (this.selection.scoreType)
-            return this.selection.scoreType.toString() == 'DataQuality';
+        //if (this.selection.scoreType)
+        //    return this.selection.scoreType.toString() == 'DataQuality';
         return false;
     }
 

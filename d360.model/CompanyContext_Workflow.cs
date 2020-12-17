@@ -2717,6 +2717,15 @@ namespace d360.model
                             uid = issueAsset.uid.ToString();
                     }
                 }
+                else if(obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        uid = intersect.uid.ToString();
+                    }
+                }
                 else
                 {
                     var asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();

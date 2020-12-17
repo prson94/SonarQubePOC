@@ -3079,6 +3079,14 @@ from	IntersectType I
                         }
 
                         Connection.Close();
+
+                        // Queue successfully deleted asset types for reindexing
+                        results.Where(r => r.Success).ToList().ForEach(r => {
+                            Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel {
+                                CompanyID = CurrentCompanyID,
+                                AssetTypeUid = r.uid
+                            });
+                        });
                     }
                 }
             }

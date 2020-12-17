@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -99,8 +100,46 @@ namespace d360.web.Controllers
             return Json(o, JsonRequestBehavior.AllowGet);
         }
 
+        private readonly static List<AssetTypeClass> assetTypeClasses = new List<AssetTypeClass> {
+            AssetTypeClass.BusinessAsset,
+            AssetTypeClass.TechnicalAsset,
+            AssetTypeClass.Diagram,
+            AssetTypeClass.Model,
+            AssetTypeClass.Policy,
+            AssetTypeClass.Rule,
+            AssetTypeClass.Group,
+            AssetTypeClass.User,
+            AssetTypeClass.Reference
+        };
 
-        #endregion
+        [HttpGet, Route("Categories")]
+        public JsonResult GetCategories()
+        {
+            List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
+
+            //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
+            if (Company.Nyms.Any())
+                visibleCategories.Add("Synonym");
+            else if (Company.Query<int>(@"select case when exists(select *
+                    from[intersect] I
+                    inner join IntersectType T on T.ID = I.IntersectTypeID
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6) then 1
+                    else 0 end").FirstOrDefault() == 1)
+                visibleCategories.Add("Synonym");
+
+            if (Community.IsFusionEnabled())
+            {
+                if (Company.FusionAttributes.Any())
+                    visibleCategories.Add("FusionAttributes");
+
+                if (Company.FusionTypes.Any())
+                    visibleCategories.Add("FusionType");
+            }
+
+            return Json(visibleCategories, JsonRequestBehavior.AllowGet);
+        }
+
+#endregion
 
         private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
         {
@@ -159,6 +198,8 @@ namespace d360.web.Controllers
                         return "fa-comments";
                     case "Attribute":
                         return "fa-pencil-square-o";
+                    case "Diagram":
+                        return "fa-share-alt";
                     case "Fusion":
                     case "FusionType":
                         siteNavName = "#Fusion";

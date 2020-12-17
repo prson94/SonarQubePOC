@@ -53,7 +53,8 @@
                 </div>
                 <div>
                     <p-dropdown [options]="issueObjectTypes"
-                                [(ngModel)]="model.Event.IssueObject"
+                                [ngModel]="model.Event.IssueObject"
+                                (ngModelChange)="selectIssueObjectType($event)"
                                 [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
                                 [filter]="true">
@@ -103,6 +104,7 @@
                         <d3s-workflow-condition-editor [objectId]="objectID"
                                                        [objectType]="objectType"
                                                        [changeType]="model.Event.ChangeType"
+                                                       [issueObject]="model.Event.IssueObject"
                                                        (onSave)="addCondition($event)"
                                                        (onClose)="showAddCondition = false;">
                         </d3s-workflow-condition-editor>
