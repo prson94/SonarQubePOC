@@ -106,31 +106,73 @@ namespace igx.jobs.indexer
 
         public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
-            var c = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
+            ReindexModel reindex = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 
             try
             {
                 var source = new ElasticSearchSource();
-                using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
+                using (var company = CompanyConnectionUtils.GetCompanyConnection(reindex.CompanyID))
                 {
-                    await ProcessCompany(source, company, c);
+                    await ProcessRebuildRequest(source, company, reindex);
                 }
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                CoreFunction.AITrackException(functionName, ex, reindex.CompanyID);
             }
         }
 
-        public static async Task ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        public static async Task ProcessRebuildRequest(ElasticSearchSource source, SqlConnection company, ReindexModel reindex)
         {
-            await UpdateRebuildJobStatus(c.CompanyID, CompanyRebuildJobStatusState.Active);
+            SearchIndexer indexer = new SearchIndexer(company, reindex.CompanyID, source);
+            if (reindex.AssetUid.HasValue)
+            {
+                Guid assetUid = reindex.AssetUid ?? Guid.Empty;
+                if (assetUid != Guid.Empty)
+                    indexer.IndexAsset(assetUid);
+            }
+            else if (reindex.AssetTypeUid.HasValue)
+            {
+                Guid assetTypeUid = reindex.AssetTypeUid ?? Guid.Empty;
+                if (assetTypeUid != Guid.Empty)
+                    indexer.IndexAssetType(assetTypeUid);
+            }
+            else if (!string.IsNullOrEmpty(reindex.Category))
+            {
+                if (SearchIndexer.IsIndexable(reindex.Category))
+                {
+                    LogReindexStart(reindex.Category, reindex.CompanyID);
 
-            company.Open();
-            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                    AssetTypeClassInfo info = AssetTypeClassExtensions.GetAsList(AssetTypeClass.Generic).Where(c => c.Value == reindex.Category).FirstOrDefault();
+                    if (info != null)
+                    {
+                        indexer.IndexAssetClass(info.ID);
+                    }
+                    else if (reindex.Category == "Intersect" || reindex.Category == "Synonym")
+                    {
+                        //Synonyms and Intersects are the same category
+                        indexer.IndexObjectType("Intersect", true);
+                        indexer.IndexObjectType("Synonym");
+                    }
+                    LogReindexEnd(reindex.Category, reindex.CompanyID);
+
+                }
+            }
+            else
+            {
+                await RebuildAllIndex(source, company, reindex.CompanyID, indexer);
+            }
+        }
+
+        public static async Task RebuildAllIndex(ElasticSearchSource source, SqlConnection companyConn, int CompanyID, SearchIndexer indexer)
+        {
+            await UpdateRebuildJobStatus(CompanyID, CompanyRebuildJobStatusState.Active);
+
+            companyConn.Open();
+            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(CompanyID);
             bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
 
-            int SuggestedIndexLimit = SuggestIndexLimit(company);
+            int SuggestedIndexLimit = SuggestIndexLimit(companyConn);
             if (SuggestedIndexLimit > 1000)
             {
                 source.IndexFieldLimit = SuggestedIndexLimit;
@@ -154,44 +196,43 @@ namespace igx.jobs.indexer
                 classes.Add(AssetTypeClass.FusionAttribute);
             }
             
-            SearchIndexer indexer = new SearchIndexer(company, c.CompanyID, source);
-            source.ClearIndex(c.CompanyID);
+            source.ClearIndex(CompanyID);
 
             classes.ForEach(cls => {
-                LogReindexStart(cls.ToString(), c.CompanyID);
+                LogReindexStart(cls.ToString(), CompanyID);
                 try
                 {
                     indexer.IndexAssetClass(cls);
                 }
                 catch (Exception ex)
                 {
-                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    CoreFunction.AITrackException(functionName, ex, CompanyID);
                 }
 
             });
 
 
-            LogReindexStart("Artifact Synonyms", c.CompanyID);
+            LogReindexStart("Artifact Synonyms", CompanyID);
             try
             {
                 indexer.IndexObjectType("Intersect", false);
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                CoreFunction.AITrackException(functionName, ex, CompanyID);
             }
 
-            LogReindexStart("Custom Synonyms", c.CompanyID);
+            LogReindexStart("Custom Synonyms", CompanyID);
             try
             {
                 indexer.IndexObjectType("Synonym", false);
             }
             catch (Exception ex)
             {
-                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                CoreFunction.AITrackException(functionName, ex, CompanyID);
             }
 
-            await LogCompanyReindexComplete(c.CompanyID);
+            await LogCompanyReindexComplete(CompanyID);
         }
 
         #region Supporting Functions
@@ -233,6 +274,11 @@ namespace igx.jobs.indexer
         private static void LogReindexStart(string typeName, int companyID)
         {
             CoreFunction.AITrackTrace(functionName, $"Starting {typeName} reindex for company {companyID}", companyId: companyID);
+        }
+
+        private static void LogReindexEnd(string typeName, int companyID)
+        {
+            CoreFunction.AITrackTrace(functionName, $"Completed {typeName} reindex for company {companyID}", companyId: companyID);
         }
 
         private static int SuggestIndexLimit(SqlConnection context) {
