@@ -35,6 +35,21 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             {
                 var executionRecord = company.Query<ApiExecution>("select * from api.Execution where ExecutionID = @id", new { id = Info.ExecutionUid }).SingleOrDefault();
 
+                if (executionRecord == null && assetMeasures.Count > 10)
+                {
+                    executionRecord = new ApiExecution
+                    {
+                        ExecutionID = Info.ExecutionUid,
+                        StartedOn = Info.StartedOn,
+                        ResourceID = Info.ResourceID ?? 0,
+                        Method = "SCORE",
+                        State = State.Unknown,
+                        Route = "ScoreEngine",
+                        Total = assetMeasures.Count
+                    };
+                    Db.Add(executionRecord);
+                }
+
                 if (executionRecord != null)
                 {
                     // This means that the original execution came in via one of the external measure/score endpoints.
@@ -47,7 +62,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 select  cast(iif(count(1) > 0, 1, 0) as bit) 
 from    api.Execution 
 where   ExecutionID <> @id 
-        and [Route] like '/api/v2/scoring/%/results' 
+        and [Route] = 'ScoreEngine'
         and MarkedForProcessing = 1 
         and (
     (Total <= 1000 and ProcessingStartedOn > dateadd(mi, -10, getutcdate())) OR

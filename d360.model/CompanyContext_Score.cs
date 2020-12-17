@@ -763,6 +763,7 @@ where   E.ExecutionID = @ExecutionID
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
+                ResourceID = CurrentResourceID,
                 ChangeType = changeType,
                 ExecutionUid = executionUid,
                 StartedOn = startedOn.Value,
