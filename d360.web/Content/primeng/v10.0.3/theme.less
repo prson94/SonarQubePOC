@@ -1397,13 +1397,13 @@ th.p-state-default {
     box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
 }
 
-.p-datepicker-calendar p.hightlight span {
+.p-datepicker td span.p-highlight {
     background: @ig-midblue-s1 !important;
     filter: none !important;
     color: @ig-white !important;
 }
 
-.p-datepicker-today {
+.p-datepicker .p-datepicker-today span {
     border: 1px solid @ig-midblue !important;
 }
 
@@ -2457,7 +2457,7 @@ p-datatable .p-datatable .p-datatable-data > tr > td {
     height: auto;
 }
 
-.p-multiselect-item .p-highlight, .p-component-content .p-highlight, .p-component-header .p-highlight {
+.p-multiselect-item .p-highlight:not(.p-checkbox-box), .p-component .p-highlight, [class$="-header"] .p-highlight {
     background: #ffef99;
 }
 /* paging controls on search tables*/
@@ -2638,4 +2638,8 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
 
 .treetable .pi-sort-amount-up-alt:before {
     content: "\e914";
+}
+
+.p-datatable-scrollable-header {
+    background-color: @ig-grey-s2;
 }

@@ -824,7 +824,6 @@
     <Content Include="Content\styles\infogix-ui\IgRadioButton.less" />
     <Content Include="Scripts\app\components\shared\controls\field-condition-grid\field-condition-grid.component.less" />
     <Content Include="Content\json\governanceIcons.json" />
-    <Content Include="libman.json" />
     <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.eot" />
     <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff" />
