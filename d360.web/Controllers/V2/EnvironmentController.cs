@@ -5,9 +5,12 @@ using d360.extensions;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
 using Microsoft.Web.Http;
+using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -413,6 +416,290 @@ namespace d360.web.Controllers.V2
             var response = Operator.Equals.GetAsList();
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
+        }
+
+        /// <summary>
+        /// Retrieves all the usage info for users in govern.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("usage"),
+            SwaggerConsumes("application/json"), 
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disle including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_startDate", "Start date for events to return", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_endDate", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_resourceUid", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetTypeUid", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
+
+        ]
+        public async Task<IHttpActionResult> GetUsageDetails()
+        {
+            var prefix = "Environment.GetUsageDetails => ";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin."));
+
+
+                var queryParams = Request.GetQueryNameValuePairs();
+                string isValid = isPageSizeAndNumValid(queryParams);
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
+
+                var dbArgs = new DynamicParameters();
+
+                var orderBySql = "";
+                var offsetSql = "";
+                var orderDirection = "";
+                var pageNum = -1;
+                var pageSize = 200;
+                var whereClause = "";
+                bool includeTotal = true;
+                
+                List<string> whereClauseItems = new List<string>();
+
+                var columns = new string[] 
+                { 
+                    "action", 
+                    "user agent", 
+                    "host", 
+                    "browser language", 
+                    "timestamp" , 
+                    "assettypename", 
+                    "assettypeuid", 
+                    "assetuid", 
+                    "assetdisplayvalue", 
+                    "class", 
+                    "assetTypeuid2" 
+                };
+
+                #region handle queryparams
+                if (queryParams.Any(x => x.Key == "_direction"))
+                {
+                    string[] allowedDirections = new string[] { "asc", "desc" };
+                    var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+
+                    orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+                }
+
+                if (!queryParams.Any(p => p.Key == "_order"))
+                {
+                    orderBySql = $"order by Timestamp {orderDirection}";
+                }
+
+                string errorMessage = null;
+                HttpStatusCode code = HttpStatusCode.OK;
+
+                queryParams.ToList().ForEach(q =>
+                {
+                    var key = q.Key.ToLower();
+
+                    if (key.StartsWith("_"))
+                    {
+                        if (key == "_order")
+                        {
+                            if (columns.Contains(q.Value.ToLower()))
+                            {
+                                orderBySql = $"order by {q.Value} {orderDirection}";
+                            }
+                            else
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _order provided!";
+                            }
+                        }
+                        else if (key == "_pagenum")
+                        {
+                            if (int.TryParse(q.Value, out pageNum))
+                            {
+                                if (pageNum < 1) pageNum = 1;
+                            }
+                        }
+                        else if (key == "_pagesize")
+                        {
+                            if (int.TryParse(q.Value, out pageSize))
+                            {
+                                if (pageSize < 1) pageSize = 1;
+                            }
+                        }
+                        else if(key == "_includetotal")
+                        {
+                            if(!bool.TryParse(q.Value, out includeTotal))
+                            {
+                                includeTotal = true;
+                            }
+
+                        }
+                        else if (key == "_startdate")
+                        {
+                            DateTime startDate = DateTime.MinValue;
+                            if (!DateTime.TryParse(q.Value, out startDate))
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _startDate provided!";
+                            }
+                            else
+                            {
+                                dbArgs.Add("startDate", startDate);
+                                whereClauseItems.Add("stat.Timestamp >= @startDate");
+                            }
+                        }
+                        else if (key == "_enddate")
+                        {
+
+                            DateTime endDate = DateTime.MaxValue;
+                            if (!DateTime.TryParse(q.Value, out endDate))
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _endDate provided!";
+                            }
+                            else
+                            {
+                                dbArgs.Add("endDate", endDate);
+                                whereClauseItems.Add("stat.Timestamp <= @endDate");
+                            }
+                        }
+                        else if(key == "_resourceuid")
+                        {
+                            Guid ruid = Guid.Empty;
+                            if (Guid.TryParse(q.Value,out ruid))
+                            {
+                                whereClauseItems.Add("gr.uid = @resourceUid");
+                                dbArgs.Add("resourceUid", ruid);
+                            }
+                            else
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _resourceuid provided!";
+                            }
+                        }
+                        else if (key == "_assetuid")
+                        {
+                            Guid auid = Guid.Empty;
+                            if (Guid.TryParse(q.Value, out auid))
+                            {
+                                whereClauseItems.Add("a.uid = @assetuid");
+                                dbArgs.Add("assetuid", auid);
+                            }
+                            else
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _assetuid provided!";
+                            }
+                        }
+                        else if (key == "_assettypeuid")
+                        {
+                            Guid atuid = Guid.Empty;
+                            if (Guid.TryParse(q.Value, out atuid))
+                            {
+                                whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
+                                dbArgs.Add("assettypeuid", atuid);
+                            }
+                            else
+                            {
+                                code = HttpStatusCode.BadRequest;
+                                errorMessage = $"Invalid _assettypeuid provided!";
+                            }
+                        }
+                    }
+                });
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return await Task.FromResult(errorMessageResponse(code, code.ToString(), errorMessage));
+                }
+
+                if (pageSize > 0 || pageNum > 0)
+                {
+                    if (pageSize < 1) pageSize = 1;
+                    if (pageNum < 1) pageNum = 1;
+
+                    offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+
+                }
+
+                
+
+                if(whereClauseItems.Count > 0)
+                {
+                    whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray()) } ";
+                }
+
+                #endregion
+
+                string sql = $@"
+                select 
+                    act.value as 'Action', 
+                    ua.Value as 'User Agent',
+                    h.Value as 'Host',
+                    bl.Value as 'Browser Language', 
+		            stat.Timestamp, 
+                    att.Name as 'AssetTypeName', 
+                    COALESCE(att.uid,  att2.uid) as 'AssetTypeUid', 
+                    a.uid as 'AssetUid', 
+                    adv.DisplayValue as 'AssetDisplayValue', 
+                    COALESCE(att.class,  att2.class) as 'class'
+                from analytics.Statistic stat
+	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
+	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
+	                inner join analytics.Host h on h.id = stat.HostID
+	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
+	                inner join analytics.Object o on o.id = stat.Object
+	                inner join analytics.action act on act.id = stat.ActionID
+	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
+	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
+	                left join AssetDisplayValue adv on adv.AssetID = a.id
+	                left join assettype att2 on att2.id = a.AssetTypeID
+                    {whereClause}
+                    {orderBySql}
+                    {offsetSql}
+                ";
+
+                string countSql = $@"
+                select count(*) from analytics.Statistic stat
+	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
+	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
+	                inner join analytics.Host h on h.id = stat.HostID
+	                inner join analytics.UserAgent ua on ua.id = stat.UserAgentID
+	                inner join analytics.Object o on o.id = stat.Object
+	                inner join analytics.action act on act.id = stat.ActionID
+	                left join assettype att on att.ObjectID = stat.ObjectID and att.object = o.value
+	                left join asset a on a.Object = o.value and a.ObjectID = stat.ObjectID
+	                left join AssetDisplayValue adv on adv.AssetID = a.id
+	                left join assettype att2 on att2.id = a.AssetTypeID
+                    {whereClause}
+                ";
+
+                var response = await Company.QueryAsync<dynamic>(sql, dbArgs);
+
+                
+                if (includeTotal)
+                {
+                    var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
+                    var model = new { pageSize, pageNum, total = count, items = response };
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", prefix } });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
     }
 }
