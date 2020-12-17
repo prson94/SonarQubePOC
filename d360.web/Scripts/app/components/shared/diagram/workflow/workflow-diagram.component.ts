@@ -1037,7 +1037,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         break;
                     case "Followers":
                         let obj = this.model.Event.Object;
-                        if (obj == 'IntersectType' || this.model.Event.ChangeType == WorkflowChangeType.Loaded) 
+                        if (obj == 'IntersectType') 
                             return false;
 
                         if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
