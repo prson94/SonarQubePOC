@@ -122,12 +122,17 @@ export class IpAddressSetting {
     Value: Value[];
 }
 
+export class GuidSetting {
+    Value: string;
+}
+
 export class SettingsPutModel {
     SettingID: number;
     StringSetting: StringSetting;
     NumberSetting: NumberSetting;
     BooleanSetting: BooleanSetting;
     IpAddressSetting: IpAddressSetting;
+    GuidSetting: GuidSetting;
 }
 
 

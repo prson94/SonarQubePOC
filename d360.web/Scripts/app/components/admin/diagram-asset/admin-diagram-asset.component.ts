@@ -98,7 +98,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
                 }
                 this.selectedItemChange();
                 this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
-                    if (res[0] && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                    if (res[0] && res[0].GuidSetting.Value === '00000000-0000-0000-0000-000000000000') {
                         this.disableAdd = true;
                     }
                     this.isLoading = false;

@@ -220,7 +220,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
                 }
 
-                var response = settings.Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
+                var response = settings.Select(s => new CompanySettingApiModel(s , companySettings[s.FieldName]));
    
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
@@ -282,23 +282,10 @@ namespace d360.web.Controllers.V2
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
 
-                        if (setting.ID == 73 && clearSetting == false)
-                        {
-                            if (Guid.TryParse(model.StringSetting.Value, out Guid val))
-                            {
-                                value = val.ToString();
-                            }
-                            else
-                            {
-                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid Uid");
-                            }
-                        }
-                        else
-                        {
                             value = model.StringSetting.Value;
-                        }
                         
                         break;
+
                     case SettingType.Number:
                         if (model.NumberSetting == null)
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
@@ -367,6 +354,16 @@ namespace d360.web.Controllers.V2
 
                             value = xml.ToString();
                         }
+                        break;
+
+                    case SettingType.Guid:
+                        if (model.GuidSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.GuidSetting.Value == null)
+                            clearSetting = true;
+
+                        value = model.GuidSetting.Value.ToString();
+
                         break;
                 }
 

@@ -9,7 +9,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { forkJoin } from 'rxjs';
-import { CompanySettingEnum, SettingsPutModel, StringSetting } from '../../../models/settings.model';
+import { CompanySettingEnum, SettingsPutModel, GuidSetting} from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
@@ -68,7 +68,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
             .subscribe((r3) => {
                 this.originalModel = new GovernanceRole();
 
-                this.originalModel.RefListUid = r3[0].StringSetting.Value;
+                this.originalModel.RefListUid = r3[0].GuidSetting.Value;
 
                 this.model = this.getInitialData();
                 this.isLoading = false;
@@ -96,9 +96,9 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.isSaving = true;
 
         var updateRefList = new SettingsPutModel();
-        updateRefList.StringSetting = new StringSetting();
+        updateRefList.GuidSetting = new GuidSetting();
         updateRefList.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
-        updateRefList.StringSetting.Value = this.model.RefListUid;
+        updateRefList.GuidSetting.Value = this.model.RefListUid;
 
 
         this.settingsService.putSetting(updateRefList)
