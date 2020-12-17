@@ -176,6 +176,25 @@ order by RT.Name", new { id }).AsQueryable();
         }
 
         /// <summary>
+        /// Used to determine if a user has read permissions on a given asset type.  Read is assumed to be present unless denied.
+        /// </summary>        
+        /// <param name="assetTypeId"></param>        
+        /// <returns></returns>
+        public async Task<bool> HasAssetTypeReadPermission(int assetTypeId)
+        {
+            Permission permission = Permission.ReadAsset;
+
+            return await Database.Connection.QuerySingleAsync<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t and ua.AssetID = 0)
+                                                                                        begin
+                                                                                            select 0;
+                                                                                        end				                                                                        
+				                                                                        else
+				                                                                        begin
+                                                                                            select 1;
+                                                                                        end", new { t = assetTypeId, r = CurrentResourceID });
+        }
+
+        /// <summary>
         /// Used to get if a user has read permissions on a given item.  Read is assumed to be present unless denied.
         /// </summary>
         /// <param name="type"></param>

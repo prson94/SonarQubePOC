@@ -3,6 +3,7 @@ import { FieldTypeAPIModelField } from "./fieldtype-api.model";
 import { Operator } from "./operator.model";
 
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
+    AssetTypeUid: string;
     Values: SelectItem[];
     Operators: SelectItem[];
 }

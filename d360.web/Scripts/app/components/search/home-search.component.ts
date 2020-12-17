@@ -14,7 +14,7 @@ declare var CompanySettings;
     template: `               
                 <d3s-hero-search-input [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes"></d3s-hero-search-input>                
                 `,
-    providers: [SearchService, TypeaheadSearchService],
+    providers: [TypeaheadSearchService],
 })
 
 export class HomeSearchComponent extends BaseComponent {

@@ -1,0 +1,133 @@
+﻿<div class="row">
+    <div class="tile tile-detail measures">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+        <div *ngIf="!isLoading">
+            <div class="measure-heading">
+                <div class="title">Score Definition</div>
+                <div class="actions">
+                    <button igButton icon="fa-pencil" (click)="showEdit = true" tooltip="Edit score definition"></button>
+                </div>
+            </div>
+            <div class="measure-details">
+                <div class="col s6">
+                    <div class="measure-details-item">
+                        <div class="details-header">Asset Type</div>
+                        <div class="details-content">{{allocation?.assetTypePath}}</div>
+                    </div>
+                    <div class="measure-details-item">
+                        <div class="details-header">Score Calculation</div>
+                        <div class="details-content">{{formattedScoreCalc}}</div>
+                    </div>
+                </div>
+                <div class="col s6 measure-ranges">
+                    <div class="measure-details-item">
+                        <div class="details-header">Scoring Bands</div>
+                        <div class="score-ranges">
+                            <div class="score-range">
+                                <span class="score-box score-poor"></span>
+                                <span class="text">0%-{{allocation.lowerThreshold}}%</span>
+                            </div>
+                            <div class="score-range">
+                                <span class="score-box score-average"></span>
+                                <span class="text">{{allocation.lowerThreshold}}.%-{{allocation.upperThreshold}}%</span>
+                            </div>
+                            <div class="score-range">
+                                <span class="score-box score-good"></span>
+                                <span class="text">{{allocation.upperThreshold}}.%-100%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="measure-details-item">
+                        <div class="details-header">UID</div>
+                        <div class="details-content">{{allocation.uid}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tile tile-detail measures">
+    <div class="measure-actions" *ngIf="!isLoading">
+        <div class="action-box">
+            <p-checkbox igCheckbox [(ngModel)]="showDisabled" [binary]="true" label="Show disabled measures"></p-checkbox>
+            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure"></button>
+        </div>
+    </div>
+    <div class="measure-heading measure-list">
+        <div class="title">Measures</div>
+    </div>
+    <div class="measure-details">
+        <div class="col s7">
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <measure-list #metricList 
+                          *ngIf="!isLoading"
+                          [fields]="fields"
+                          [operators]="operators"
+                          [predicates]="predicates"
+                          [responsibilities]="responsibilities"
+                          [relationships]="relationships"
+                          [allocation]="allocation"
+                          [assetType]="selectedAssetType"
+                          [paths]="ruleResultPaths"
+                          [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                          [(showDisabled)]="showDisabled"
+                          (selectionChange)="selectionChanged($event)">
+            </measure-list>
+        </div>
+        <div *ngIf="!isLoading && selectedMetric" class="col s5 measure-details-panel">
+            <div>
+                <div class="panel-heading">
+                    {{selectedMetric?.Name}}
+                </div>
+                <div class="measure-details-item">
+                    <div class="details-header">Description</div>
+                    <div class="details-content">{{selectedMetric?.Description ? selectedMetric?.Description :'---'}}</div>
+                </div>
+                <div class="measure-details-item">
+                    <div class="details-header">Effective Dates</div>
+                    <div class="details-content">
+                        {{selectedMetric?.EffectiveDate | utcDate  | date:'shortDate'}} -
+                        <span *ngIf="selectedMetric.State == 1">Present</span>
+                        <span *ngIf="selectedMetric.State == 3">{{selectedMetric?.EffectiveEndDate | utcDate  | date:'shortDate'}}</span>
+                    </div>
+                </div>
+                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+                    <div class="details-header">Weight</div>
+                    <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
+                </div>
+                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+                    <div class="details-header">Grouping Measure</div>
+                    <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
+                </div>
+                <div *ngIf="showConditions" class="measure-details-item">
+                    <div class="details-header">Asset Conditions</div>
+                    <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
+                        <div class="condition-content">
+                            <div class="condition-items">
+                                <div *ngFor="let condition of conditionGroup.ConditionItems" class="right-space">
+                                    {{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest" class="measure-details-item">
+                    <d3s-admin-metric-pass-test-details 
+                                                        [selection]="selectedMetric" 
+                                                        [operators]="operators" 
+                                                        [metricListFieldTypes]="fields" 
+                                                        [responsibilityTypes]="responsibilities" 
+                                                        [relationshipTypes]="relationships" 
+                                                        [assetTypeUid]="selectedAssetType.Uid"></d3s-admin-metric-pass-test-details>
+                </div>
+                <div class="measure-details-item">
+                    <div class="details-header">UID</div>
+                    <div class="details-content">{{selectedMetric?.Uid}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<d3s-modal *ngIf="data" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
+    <allocation-editor [disabled]="allocation?.hasMeasure||allocation?.hasDisabledMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
+</d3s-modal>

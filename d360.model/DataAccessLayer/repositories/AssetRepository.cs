@@ -20,6 +20,7 @@ using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.core.entities.Process;
 using AngleSharp.Text;
+using System.Drawing;
 
 namespace d360.model.DataAccessLayer
 {
@@ -2085,7 +2086,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                 CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
                             }
                         }
-                        CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
+                        CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth && l.AssetTypeID == assetType.ID);
                     }
 
                     if (model.Class == AssetTypeClass.Diagram)
@@ -3135,7 +3136,10 @@ where   A.[uid] = @assetUid";
 	                                            ATET.UpdatedBy,
 	                                            ATET.UpdatedOn,
                                                 ATET.UsageNotes,
-                                                CASE WHEN ATET.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile
+                                                CASE WHEN ATET.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile,
+                                                (SELECT * from AssetTypeExportTemplateStyle where AssetTypeExportTemplateID = ATET.ID
+					                             FOR JSON PATH
+					                             ) as AssetTypeExportTemplateStyleJson
                                             from 
                                                 AssetTypeExportTemplate ATET 
                                                 left join AssetType AT ON ATET.AssetTypeID = AT.ID 
@@ -3149,6 +3153,19 @@ where   A.[uid] = @assetUid";
                     string templateFieldTypesSQL = $@"select FT.Name from AssetTypeExportTemplateField ATETF inner join FieldType FT on ATETF.FieldTypeId = FT.ID where ATETF.TemplateId = @templateId order by [Order] asc";
 
                     template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
+
+                    if(template.AssetTypeExportTemplateStyleJson!= null)
+                    {
+                        var styles = JsonConvert.DeserializeObject<ICollection<AssetTypeExportTemplateStyle>>(template.AssetTypeExportTemplateStyleJson ?? "[]");
+                        foreach (var style in styles)
+                        {
+                            style.BgColor = style.BackgroundColor.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(style.BackgroundColor.Value)) : "#FFFFFF";
+                            style.TextColor = style.Color.HasValue ? ColorTranslator.ToHtml(Color.FromArgb(style.Color.Value)) : "#000000";
+                        }
+                        template.AssetTypeExportTemplateStyles = styles;
+
+                        template.AssetTypeExportTemplateStyleJson = null;
+                    }
                 }
             }
 

@@ -71,10 +71,9 @@ namespace d360.web.Models
     {
         public string key { get; set; }
         public bool expanded { get; set; }
-        //[JsonIgnore]
-        //public string usersList { get; set; }
-        //public List<int> users { get { return JsonConvert.DeserializeObject<List<int>>(usersList ?? "[]"); } }
-        public int count { get; set; }
+
+        public string id { get; set; }
+        public int? count { get; set; }
         public int responsibilityTypeId { get; set; }
         public string responsibilityType { get; set; }
     }
@@ -101,6 +100,7 @@ namespace d360.web.Models
         [JsonIgnore]
         public string relationsJson { get; set; }
         public List<AssetBrowserNodeRelationCount> relations { get { return JsonConvert.DeserializeObject<List<AssetBrowserNodeRelationCount>>(relationsJson ?? "[]"); } }
+        public string predictableId { get; set; }
     }
 
     public class AssetBrowserRevealNode
@@ -166,12 +166,14 @@ namespace d360.web.Models
         public AssetBrowserAncestry ancestry { get; set; }
         public Guid uid { get; set; }
         public int hopCount { get; set; }
+        public bool includeNonLeaf { get; set; } = true;
     }
 
     public class AssetBrowserImpactInitialModel
     {
         public Guid uid { get; set; }
         public int hopCount { get; set; }
+        public bool includeNonLeaf { get; set; } = true;
     }
 
     public class AssetBrowserLineageInitialModel
@@ -179,6 +181,7 @@ namespace d360.web.Models
         public AssetBrowserAncestry ancestry { get; set; }
         public Guid uid { get; set; }
         public int hopCount { get; set; }
+        public bool includeNonLeaf { get; set; } = true;
     }
 
     public abstract class AssetBrowserHopModelBase
@@ -192,6 +195,7 @@ namespace d360.web.Models
         public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
         public List<long> preloadedIntersects { get; set; }
         public AssetBrowserApiHopDirection direction { get; set; }
+        public bool includeNonLeaf { get; set; } = true;
     }
 
     public class AssetBrowserLineageHopModel : AssetBrowserHopModelRelationBase

@@ -249,6 +249,7 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
+        Task<bool> HasAssetTypeReadPermission(int assetTypeId);
         decimal? GetAssetScore(long assetId, ScoreType type);
         decimal? GetPreviousAssetScore(long assetId, ScoreType type);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);

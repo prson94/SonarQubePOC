@@ -784,18 +784,6 @@ from	[Load] L
                         "
                             , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class }, transaction: trans, commandTimeout: timeout);
 
-                        if (hasLookups)
-                        {
-                            ResolveFieldLookupValues(executionID, "#BulkExecutionField", timeout, trans);
-                            await Connection.ExecuteAsync(@"
-                            update  I
-                            set     I.LookupValue = B.LookupValue
-                            from    LoadItemColumn I
-                                    inner join #BulkExecutionField B on B.ItemNumber = I.RowIndex and B.ColumnIndex = I.ColumnIndex
-                            where   B.LookupValue is not null and I.LoadID = @ID
-                            ", new { load.ID }, transaction: trans, commandTimeout: timeout);
-                        }
-
                         if (intersectTypeId.HasValue && calculateParentHashByUid)
                         {
                             //need to parse parent column here to be used in proposed key

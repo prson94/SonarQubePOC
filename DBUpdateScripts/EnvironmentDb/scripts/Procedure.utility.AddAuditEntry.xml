@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.utility.AddAuditEntry-v7">
-  <comment>GOV-12060</comment>
+  <changeSet author="Puneet upta" id="Procedure.utility.AddAuditEntry-v8">
+  <comment>GOV-13027</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -452,13 +452,13 @@ begin
 								inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
 								inner join (
 											select		F.FieldTypeID,
-														F.FieldName,
+														case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
 														max([Version]) as [Version]
 											from		reporting.Global_Audit A
 														inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
 											group by	F.FieldTypeID,
-														F.FieldName
-											) V on V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme and V.[Version] = F.[Version]
+														case when F.FieldTypeID > 0 then ' ' else F.FieldName end
+											) V on ((V.FieldTypeID = 0 and V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme) or (V.FieldTypeID > 0 and V.FieldTypeID = F.FieldTypeID)) and V.[Version] = F.[Version]
 						) S on (S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID and S.FieldName = T.FieldName) or (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)
 
 	declare	@auditID bigint,
@@ -946,6 +946,18 @@ begin
 		insert into @tbl  select 0, 'IconBackColor', IconBackColor, 0, 0 from AssetTypeStyle where ID = @AssetTypeID	
 		insert into @tbl  select 0, 'IconForeColor', IconForeColor, 0, 0 from AssetTypeStyle where ID = @AssetTypeID		
  
+	end
+	
+	if @MainObject = 'TaskType'
+	begin
+		select	@MainObjectTypeName = 'Task Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
 	end
 		
 	if @MainObject in ('Artifact', 'Attribute', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Rule', 'Policy', 'Taxonomy', 'ReferenceItem') and @DependentObject = @MainObject

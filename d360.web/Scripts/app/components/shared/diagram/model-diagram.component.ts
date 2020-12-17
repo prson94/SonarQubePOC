@@ -2,16 +2,23 @@
 import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { HierarchyDiagramModel } from '../../../models/model.model';
+import { HierarchyDiagramModel, Model } from '../../../models/model.model';
 import { DiagramService } from '../../../services/diagram.service';
 import { DiagramBaseComponent } from './diagram-base.component';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { ModelsService } from '../../../services/models.service';
+import { Title } from '@angular/platform-browser';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../../models/secondaryNav.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-model-diagram',
     templateUrl: './model-diagram.component.html',
-    providers: [DiagramService]
+    providers: [DiagramService,ModelsService]
 })
 
 export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -27,11 +34,22 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     public headerText = 'Info';
     public tab = 'info';
 
+    public objectType: string = 'TaxonomyType';
+    public navFolderName: string = '#Models';
+    currentAreaName: any;
+    assetType: Model;
+
     constructor(
         private myElement: ElementRef,
-        private diagramService: DiagramService
+        private diagramService: DiagramService,
+        secondaryNavService: SecondaryNavService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        private modelsService: ModelsService,
+        protected titleService: Title,
     ) {
         super();
+        this.breadcrumbsService = headerBreadcrumbService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     public ngOnInit() {
@@ -79,6 +97,12 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                 this.isLoading = false;
             }
         );
+
+        this.modelsService.getModel(this.id)
+            .subscribe(result => {
+                this.assetType = result;
+                this.buildNav();
+            });
 
     }
 
@@ -204,6 +228,40 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
             {routing: go.Link.Orthogonal, corner: 5, selectable: false},
             this.g(go.Shape)
         );
+    }
+
+    buildNav() {
+        this.setCommonSecondaryNavTabs(true);
+        this.breadcrumbsService
+            .getAreaName(this.objectType, this.id)
+            .subscribe(result => {
+                this.currentAreaName = result  
+                this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `TaxonomyType/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
+
+                    this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.id, this.currentAreaName ? this.currentAreaName : res)
+                        .subscribe(icon => {
+                            this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, "Model");
+                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
+                            this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
+                            let diagramTab = new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
+                            this.secondaryNavService.showItem(diagramTab);
+                            diagramTab.active = true;
+
+                            if (this.auditSidebar) {
+                                this.auditSidebar.url = `/sidebar/audit/${this.assetType.AssetTypeUID}`;
+                            }
+
+                            this.secondaryNavService.setLocalHomeUrl(SiteUrlHelpers.getObjectUrl(this.objectType, this.assetType.ID));
+                            this.secondaryNavService.showHeader(true);
+                        });
+
+                    this.setBrowserTitle(this.titleService, this.assetType.Name);
+                    this.isLoading = false;
+                });
+        });
     }
 
     //#endregion

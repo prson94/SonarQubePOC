@@ -471,6 +471,7 @@ export enum WorkflowFormFieldType {
     TextArea = 4,
     List = 5,
     RelationshipType = 6,
+    HTML = 7,
 }
 
 export enum WorkflowActivityType {
@@ -531,6 +532,13 @@ export enum EmailTaskRecipientType {
     SpecificUser,
     Followers,
     Group
+}
+
+export enum ConditionFieldType {
+    Field,
+    Form,
+    Contextual,
+    HttpRequest
 }
 
 //#endregion

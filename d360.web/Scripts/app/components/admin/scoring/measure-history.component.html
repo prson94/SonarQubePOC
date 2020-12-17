@@ -1,0 +1,92 @@
+﻿<div class="modal-measure-history">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row" *ngIf="!isLoading" style="height:100%">
+        <div style="margin-left: 0.67em;height: 5%">
+            <p>Version history of the measure '{{Measure.Name}}' for asset type '{{AssetType.Name}}'</p>
+        </div>
+        <div class="col s7" style="height:90%;overflow-y:auto;">
+            <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px', 'height' : '100%' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)" styleClass="treetable">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th [ttSortableColumn]="'Version'">
+                            Version
+                            <p-treeTableSortIcon [field]="'Version'"></p-treeTableSortIcon>
+                        </th>
+                        <th *ngIf="!isExternallyCalculated" [ttSortableColumn]="'Weight'">
+                            Weight
+                            <p-treeTableSortIcon [field]="'Weight'"></p-treeTableSortIcon>
+                        </th>
+                        <th [ttSortableColumn]="'EffectiveDate'">
+                            Effective From
+                            <p-treeTableSortIcon [field]="'EffectiveDate'"></p-treeTableSortIcon>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                    <tr [ttSelectableRow]="rowNode">
+                        <td>
+                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                            {{item.Version}}
+                        </td>
+                        <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
+                        <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                    </tr>
+                </ng-template>
+            </p-treeTable>
+        </div>
+        <div *ngIf="selectedNode" class="col s5 measure-details-panel" style="max-height:90%;overflow-y: auto;">
+            <div>
+                <div>
+                    <div class="measure-details-item">
+                        <div class="details-header">Name</div>
+                        <div class="details-content">{{selection?.Name}}</div>
+                    </div>
+                    <div class="measure-details-item">
+                        <div class="details-header">Description</div>
+                        <div class="details-content">{{selection?.Description ? selection?.Description :'---'}}</div>
+                    </div>
+                    <div class="measure-details-item">
+                        <div class="details-header">Effective Dates</div>
+                        <div class="details-content">{{selection?.EffectiveDate  | utcDate | date:'shortDate'}} - {{selection?.EffectiveEndDate ? (selection.EffectiveEndDate  | utcDate | date:'shortDate') : 'Present'}}</div>
+                    </div>
+                    <div *ngIf="!isExternallyCalculated" class="measure-details-item">
+                        <div class="details-header">Weight</div>
+                        <div class="details-content">{{getAsPrecentage(selection?.Weight)}}</div>
+                    </div>
+                    <div *ngIf="showConditions" class="measure-details-item">
+                        <div class="details-header">Asset Conditions</div>
+                        <div class="details-condition" *ngFor="let conditionGroup of selection?.ConditionGroups">
+                            <div class="condition-content">
+                                <div class="condition-items">
+                                    <div *ngFor="let condition of conditionGroup.ConditionItems" class="right-space">
+                                        {{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
+                        <d3s-admin-metric-pass-test-details [selection]="selection"
+                                                            [operators]="operators"
+                                                            [metricListFieldTypes]="assetTypeFields"
+                                                            [responsibilityTypes]="responsibilityTypes"
+                                                            [relationshipTypes]="relationshipTypes"
+                                                            [assetTypeUid]="Measure.Uid"></d3s-admin-metric-pass-test-details>
+                    </div>
+                    <div class="measure-details-item">
+                        <div class="details-header">UID</div>
+                        <div class="details-content">{{Measure.Uid}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding-top:20px;padding-bottom:20px;height:5%;align-content:center;" class="right">
+            <button igButton class="ig-button-primary"
+                    type="button"
+                    (click)="cancel()"
+                    label="Close">
+            </button>
+        </div>
+    </div>
+</div>

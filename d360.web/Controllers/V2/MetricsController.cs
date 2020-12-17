@@ -311,7 +311,30 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                #region Set the default for condition group, item, and value arrays.
+
+                if (model.ConditionGroups == null)
+                {
+                    model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>();
+                }
+                model.ConditionGroups.ForEach(g =>
+                {
+                    if (g.ConditionItems == null)
+                    {
+                        g.ConditionItems = new List<MetricAssetVersionConditionItemViewModel>();
+                    }
+                    g.ConditionItems.ForEach(i => {
+                        if (i.Values == null)
+                        {
+                            i.Values = new List<string>();
+                        }
+                    });
+                });
+
                 model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
+
+                #endregion
+
                 if (model.IsGroup && model.ConditionGroups.Count > 0)
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, "Groups should not have conditions.");
@@ -455,7 +478,7 @@ namespace d360.web.Controllers.V2
             Route("{assetTypeUid:Guid}/{scoreType}/pathoptions"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<MetricPathOptionViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetMetricPathOptionsBy(Guid assetTypeUid, ScoreType scoreType)
@@ -470,6 +493,41 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {assetTypeUid} could not be found."));
 
                 var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of fields for each asset type within the path (with one exception) that act as filters for rule results to include as part of the measure calculation in a score.
+        /// </summary>
+        /// <remarks>
+        /// The list of fields for this rule result path will NOT include the starting asset type. Those fields would not be included as result filter fields, instead using measure conditions.
+        /// </remarks>
+        /// <param name="ruleResultPathUid">The Uid of the asset type.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("pathoptions/{ruleResultPathUid:Guid}/fields"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<MetricPathOptionViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
+        {
+            var prefix = "Metrics.GetFieldsByRuleResultPath => ";
+
+            try
+            {
+                var results = await MetricsRepository.GetFieldsByRuleResultPath(ruleResultPathUid);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -627,11 +685,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                List<MetricFieldTypeViewModel> models = null;
-                List<string> fragments = MetricsRepository.GetMetricFieldFragments(assetTypeUid);
-
-                models = JsonConvert.DeserializeObject<List<MetricFieldTypeViewModel>>(string.Join("", fragments));
-
+                var models = MetricsRepository.GetMetricConditionsFields(assetTypeUid);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models ?? new List<MetricFieldTypeViewModel>()));
             }
             catch (Exception ex)

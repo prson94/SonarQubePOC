@@ -44,7 +44,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount";
+                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -53,7 +53,8 @@ namespace d360.web.Controllers.V2
                         postModel.uid,
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin,
-                        postModel.hopCount
+                        postModel.hopCount,
+                        postModel.includeNonLeaf
                     },
                     timeout: 120
                 );
@@ -105,7 +106,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
         {
-            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid };
+            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf };
             return await getInitial(o);
         }
 
@@ -120,7 +121,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetInitialImpact(AssetBrowserImpactInitialModel model)
         {
-            var o = new AssetBrowserInitialModel { ancestry = AssetBrowserAncestry.TypeOnly, hopCount = model.hopCount, uid = model.uid };
+            var o = new AssetBrowserInitialModel { ancestry = AssetBrowserAncestry.TypeOnly, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf };
             return await getInitial(o);
         }
 
@@ -152,7 +153,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin";
+                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -164,7 +165,8 @@ namespace d360.web.Controllers.V2
                         hopModel.predicateUid,
                         direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                         resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin
+                        isAdmin = Company.CurrentResourceIsAdmin,
+                        hopModel.includeNonLeaf
                     },
                     timeout: 60
                 );
@@ -198,7 +200,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin";
+                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -209,7 +211,8 @@ namespace d360.web.Controllers.V2
                         preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
                         direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F", 
                         resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin
+                        isAdmin = Company.CurrentResourceIsAdmin,
+                        hopModel.includeNonLeaf
                     },
                     timeout: 60
                 );
@@ -325,6 +328,44 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                      }).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, new AssetBrowserOwnersModel { owners = distinctOwners, ownerRelations = ownerRelations });
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
+        [
+            Route("ownershipCounts/{uid:Guid}/{hopCount:int}/{includeNonLeaf:bool}/{ancestry:int}"),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry )
+        {
+            try
+            {
+                var sql = "exec graph.AssetBrowser_OwnershipCounts @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
+                var res = await Company.QueryAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)ancestry,
+                        uid,
+                        resourceId = Company.CurrentResourceID,
+                        isAdmin = Company.CurrentResourceIsAdmin,
+                        hopCount,
+                        includeNonLeaf
+                    },
+                    timeout: 120
+                );
+
+                foreach (var item in res){
+                    if(!string.IsNullOrEmpty(item.owners))
+                        item.owners = JsonConvert.DeserializeObject(item.owners);
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, res);
             }
             catch (Exception ex)
             {

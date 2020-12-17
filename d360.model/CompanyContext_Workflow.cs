@@ -2704,6 +2704,78 @@ namespace d360.model
                 result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
             }
 
+            if (result.Contains("[ASSET_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+                    if (issue != null)
+                    {
+                        var issueAsset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                        if(issueAsset != null) 
+                            uid = issueAsset.uid.ToString();
+                    }
+                }
+                else if(obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        uid = intersect.uid.ToString();
+                    }
+                }
+                else
+                {
+                    var asset = Assets.Where(x => x.Object == obj.ToString() && x.ObjectID == objectID).FirstOrDefault();
+                    if (asset != null)
+                        uid = asset.uid.ToString();
+                }
+
+                result = result.Replace("[ASSET_UID]", (uid ?? "(unknown item)"));
+            }
+
+            if (result.Contains("[REL_SUBJECT_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Subject, intersect.SubjectID);
+
+                        if (item != null)
+                        {
+                            uid = item.UID.ToString();
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_SUBJECT_UID]", uid ?? "(unknown intersect)");
+            }
+            if (result.Contains("[REL_OBJECT_UID]"))
+            {
+                string uid = null;
+                if (obj == SystemObjects.Intersect)
+                {
+                    var intersect = Intersects.Where(i => i.ID == objectID).FirstOrDefault();
+
+                    if (intersect != null)
+                    {
+                        var item = GetObjectDetail(intersect.Object, intersect.ObjectID);
+
+                        if (item != null)
+                        {
+                            uid = item.UID.ToString();
+                        }
+                    }
+                }
+
+                result = result.Replace("[REL_OBJECT_UID]", uid ?? "(unknown intersect)");
+            }
 
             return result;
         }

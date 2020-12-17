@@ -68,9 +68,12 @@ namespace d360.core
                     int pos = 0;
                     foreach (JToken c in p.Value)
                     {
-                        properties.AddRange(
-                            (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos)
-                            );
+                        if (c is JObject)
+                        {
+                            properties.AddRange(
+                                (c as JObject).ParseJsonIntoJsonPropertiesCollection(pos)
+                                );
+                        }
                         pos++;
                     }
                 }

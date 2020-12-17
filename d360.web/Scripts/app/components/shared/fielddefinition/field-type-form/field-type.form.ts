@@ -1335,7 +1335,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.objectType == 'TaskType') {
             if (this.name == 'Name') return true;
-            if ((this.name == 'StepNo' || this.name == 'GovernanceRole') && (val != 'IsEditable' && val != 'IsRequired')) {
+            if ((this.name == 'StepNo' || this.name == 'GovernanceRole') && (val != 'IsEditable' && val != 'IsRequired' && val != 'SearchAddToResult')) {
                 return true;
             }
             var staticFields: string[] = [];

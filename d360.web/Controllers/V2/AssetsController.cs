@@ -201,6 +201,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -249,6 +250,12 @@ namespace d360.web.Controllers.V2
                 if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
+                }
+
+                //if the user is not an admin make sure they can read this asset type if not tell them they are forbidden
+                if (!Company.CurrentResourceIsAdmin && !(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Invalid request", "You do not have permissions to read the specified asset type."));
                 }
 
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
@@ -850,7 +857,6 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
-
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
@@ -862,6 +868,11 @@ namespace d360.web.Controllers.V2
 
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
+
+                if (assets.Any(x => x.Uid != null && x.Uid != Guid.Empty) && (assetType.Class == AssetTypeClass.Rule || assetType.Class == AssetTypeClass.FusionAttribute))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID parameter is not supported for {assetType.Class.GetDisplayName()} Asset Type."));
+                }
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_PostAssets { AssetTypeUid = assetTypeUid });
 
@@ -1029,6 +1040,22 @@ namespace d360.web.Controllers.V2
         public dynamic GetUIDetails(Guid assetUid)
         {
             return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the object and objectId of a Uid
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("GetObjectDetailUIDetails/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetObjectDetailUIDetails(Guid assetUid)
+        {
+            return Company.Query<dynamic>($@"select Object,ObjectId from [utility].[GetObjectObjectIdByUID](@assetUid)", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
         /// <summary>
@@ -1556,7 +1583,7 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknow error."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknown error."));
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import {    
+import {
     ResponsibilityTypeRelation,
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
@@ -9,7 +9,7 @@ import {
     ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,    
+    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
     ResponsibilityTypeRelationRuleFormDataFieldType
 } from '../../../models/responsibility-type.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -53,7 +53,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
     public isThenTestLoading: boolean = false;
     public isWhenTestLoading: boolean = false;
-        
+
     model: ResponsibilityTypeRelationRule = new ResponsibilityTypeRelationRule();
     disableTestWhen: boolean = false;
     disableTestThen: boolean = false;
@@ -86,7 +86,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     errorMessage: string = "";
 
     constructor(private responsibilityTypeService: ResponsibilityTypeService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
-        super();        
+        super();
     }
 
     ngOnInit() {
@@ -119,7 +119,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                     this.whenFieldTypes = d.FieldTypes;
                                     this.whenIntersectTypes = d.IntersectTypes;
 
-                                    if (this.model.StructuredDefinition.When){
+                                    if (this.model.StructuredDefinition.When) {
                                         this.model.StructuredDefinition.When.forEach(wft => this.loadWhenValuesForFieldType(wft));
                                     }
 
@@ -132,7 +132,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                             //load the then islookup and field values
                             if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0) {
                                 for (let item of this.model.StructuredDefinition.Then.Conditions) {
-                                    this.loadThenValuesForFieldType(item,false);
+                                    this.loadThenValuesForFieldType(item, false);
                                 }
                             }
 
@@ -172,8 +172,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         this.model.Object = otData[0];
         this.model.ObjectID = +otData[1];
-        
+
         this.model.StructuredDefinition.When = [];
+        this.model.StructuredDefinition.Then.Object = '';
+        this.model.StructuredDefinition.Then.Conditions = [];
         this.responsibilityTypeService.getRelationRuleFormData(this.model.Object, this.model.ObjectID)
             .subscribe(d => {
                 this.whenFieldTypes = d.FieldTypes;
@@ -217,7 +219,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 else if (selectedFieldType.type == 'Boolean') {
                     item.IsBool = true;
                     item.ValueOptions = this.whenBoolTypes;
-                    item.IsLookup = selectedFieldType.isLookup;                    
+                    item.IsLookup = selectedFieldType.isLookup;
                 }
                 else {
                     item.ValueOptions = [];
@@ -342,8 +344,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {
                 let excluded = selectedFieldType.values.findIndex(a => a.label == 'Choose...');
-                if (excluded < 0)
-                {
+                if (excluded < 0) {
                     selectedFieldType.values.unshift({ label: 'Choose...', value: null });
                 }
                 item.ValueOptions = selectedFieldType.values;

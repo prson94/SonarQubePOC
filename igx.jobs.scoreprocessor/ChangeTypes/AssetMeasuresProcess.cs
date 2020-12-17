@@ -94,6 +94,7 @@ where   ExecutionID <> @id
 
                 List<AllocationDataModel> allocations = null;
                 List<FieldType> fieldTypes = null;
+                List<AssetMeasuresProcessField> fields = null;
                 List<AssetAllocationPreviousResult> allPreviousScoreItems = null;
                 List<MatchingScoreModel> matchingScores = null;
                 List<ExternalMeasureResultsCreatedModel> models = null;
@@ -155,6 +156,30 @@ select * from #AssetAllocations;
 
 select * from FieldType where AssetTypeID in (select AssetTypeID from #AssetAllocations group by AssetTypeID);
 
+select	A.Uid as AssetUid,
+		FT.ID as FieldTypeID,
+        FT.Name as FieldTypeName,
+		COALESCE (V.LookupValues, F.Value, F.FormattedValue, FT.DefaultValue) as [Values] 
+from	Asset A 
+        inner join (
+			select		AssetUid
+			from		#AssetAllocations		
+			group by	AssetUid
+		) Al on Al.AssetUid = A.Uid
+		inner join FieldType FT ON FT.AssetTypeID = A.AssetTypeID 
+		left join Field F ON F.FieldTypeID = FT.ID AND F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+		outer apply (
+			select	string_agg(lower(cast(LA.Uid as nvarchar(50))), ',') as LookupValues
+			from	STRING_SPLIT(COALESCE(F.Value, FT.DefaultValue),',') MV
+					inner join Asset LA on LA.ObjectID = MV.value
+					inner join AssetType LAT on LAT.Object = FT.LookupObjectType+'Type' and LAT.ObjectID = FT.LookupObjectID and LAT.ID = LA.AssetTypeID
+			where	FT.Type = 'Lookup'
+		) V
+where	(F.FormattedValue IS NOT NULL 
+		OR FT.DefaultValue IS NOT NULL 
+		OR FT.ShowIfEmpty = 1)
+		and FT.Type not in ('JSON','Path','Relationship','FieldFromRelationship','ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship','Tag','Score');
+
 select  *
 from    (
         select  Al.AllocationUid,
@@ -208,6 +233,7 @@ from    (
 where   O.RowNum = 1;", transaction: trans, commandTimeout: 900);
                     models = supportingDataRequest.Read<ExternalMeasureResultsCreatedModel>().ToList();
                     fieldTypes = supportingDataRequest.Read<FieldType>().ToList();
+                    fields = supportingDataRequest.Read<AssetMeasuresProcessField>().ToList();
                     allPreviousScoreItems = supportingDataRequest.Read<AssetAllocationPreviousResult>().ToList();
                     matchingScores = supportingDataRequest.Read<MatchingScoreModel>().ToList();
 
@@ -383,7 +409,7 @@ from	metrics.Asset A
 
                     var allMeasures = allocations.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
                     var providedMeasureResults = models.Where(i => i.AllocationUid == assetEffectiveDate.AllocationUid && i.AssetUid == assetEffectiveDate.AssetUid && i.EffectiveDate == assetEffectiveDate.EffectiveDate).ToList();
-                    var assetFields = company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
+                    var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList(); //company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
 
                     providedMeasureResults.ForEach(async n =>
@@ -541,32 +567,16 @@ from	metrics.Asset A
                                                 case MetricGovernanceCheckType.Field:
                                                     if (gDefinition.Field != null)
                                                     {
-                                                        var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.Name == gDefinition.Field.FieldTypeName);
                                                         var assetFieldType = fieldTypes.FirstOrDefault(i => i.Name == gDefinition.Field.FieldTypeName);
+                                                        string dataType = (assetFieldType != null) ? assetFieldType.Type : "Text";
+                                                        bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
 
                                                         // Check the measure validity.
                                                         assetVersionCheckObjectTypeAction(gDefinition, measure.MetricAssetVersionUid, (assetFieldType != null));
 
-                                                        string value = (assetFieldForFieldCheck != null) ? assetFieldForFieldCheck.Value : null;
-                                                        string dataType = (assetFieldType != null) ? assetFieldType.Type : "Text";
-                                                        bool allowMultipleValues = (assetFieldType != null) ? assetFieldType.AllowMultipleValues : false;
-                                                        if (assetFieldType != null && assetFieldForFieldCheck != null)
-                                                        {
-                                                            if (assetFieldType.Type == DataType.Lookup.ToString())
-                                                            {
-                                                                int objectID;
-                                                                if (int.TryParse(assetFieldForFieldCheck.Value, out objectID))
-                                                                {
-                                                                    var lookupObject = assetFieldType.LookupObjectType + "Type";
-                                                                    var assetDetail = Db.Filter<AssetDetail>(i => i.Type == lookupObject && i.TypeID == assetFieldType.LookupObjectID && i.ObjectID == objectID).FirstOrDefault();
-                                                                    if (assetDetail != null)
-                                                                    {
-                                                                        value = assetDetail.ObjectID.ToString();
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        scoreItem.Value = gDefinition.Field.Operator.TestTwoValues(dataType, allowMultipleValues, gDefinition.Field.Values, value);
+                                                        var assetFieldForFieldCheck = assetFields.FirstOrDefault(f => f.FieldTypeName == gDefinition.Field.FieldTypeName);
+
+                                                        scoreItem.Value = gDefinition.Field.Operator.TestTwoValues(dataType, allowMultipleValues, gDefinition.Field.Values, ((assetFieldForFieldCheck == null) ? null : assetFieldForFieldCheck.Values));
                                                     }
                                                     break;
                                                 case MetricGovernanceCheckType.Owner:

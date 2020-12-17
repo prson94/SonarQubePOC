@@ -71,6 +71,8 @@ namespace d360.core.entities.Metric
 
         public bool hasMeasure { get; set; }
 
+        public bool hasDisabledMeasure { get; set; }
+
         public bool hasField { get; set; }
 
         public bool isExternallyCalculated { get; set; }

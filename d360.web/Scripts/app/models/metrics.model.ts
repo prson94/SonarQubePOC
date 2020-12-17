@@ -111,6 +111,9 @@ export class MetricAssetDefinitionGovernanceOwnerViewModel {
 }
 
 export class MetricFieldTypeViewModel {
+    AssetTypeUid: string;
+    AssetTypeName: string;
+    ID: number;
     ApiName: string;
     Name: string;
     Type: string;
@@ -119,10 +122,25 @@ export class MetricFieldTypeViewModel {
 }
 
 export class MetricAssetVersionConditionItemFieldValueViewModel {
-    Value: number;
+    Value: string;
     Text: string;
 }
 
+export class MetricPathOptionSegmentViewModel {
+    AssetTypeUid: string;
+    Name: string;
+    Path: string;
+}
+
+export class MetricPathOptionViewModel {
+    Uid: string;
+    State: State;
+    Path: string;
+    Segments: MetricPathOptionSegmentViewModel[];
+
+    label: string;
+    value: string;
+}
 
 export class Group {
     ID: number;
@@ -204,6 +222,7 @@ export class ScoreTypeAllocation {
     scoreType: ScoreType;
     state: State;
     hasMeasure: boolean;
+    hasDisabledMeasure: boolean;
     hasField: boolean;
     isExternallyCalculated: boolean;
     lowerThreshold: number;
@@ -220,6 +239,7 @@ export class ScoreTypeAllocationFormatted {
     scoreType: string;
     state: State;
     hasMeasure: boolean;
+    hasDisabledMeasure: boolean;
     hasField: boolean;
     isExternallyCalculated: string;
     lowerThreshold: number;

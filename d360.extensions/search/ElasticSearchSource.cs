@@ -335,7 +335,7 @@ namespace d360.extensions.search
             }
             sb.Append("  },");
             sb.Append("  \"" + DYNAMIC_FIELD + "\": {");
-            sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
+            sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value, i.Key.ToLower() != "name") + "\"").ToArray()));
             sb.Append("  }");
             sb.Append("}");
             return sb.ToString();
@@ -436,12 +436,13 @@ namespace d360.extensions.search
             }
         }
 
-        private string EscapeValueForDoc(string input)
+        private string EscapeValueForDoc(string input, bool removeTags = true)
         {
-            if(!string.IsNullOrEmpty(input))
+            if (!string.IsNullOrEmpty(input))
             {
                 input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
-                input = core.helpers.HtmlHelper.RemoveTags(input);
+                if (removeTags && input.Contains("<") && input.Contains(">"))
+                    input = core.helpers.HtmlHelper.RemoveTags(input);
             }
             return input;
         }
@@ -552,6 +553,28 @@ namespace d360.extensions.search
                 Query = new BoolQuery
                 {
                     Must = termQueries
+                }
+            };
+
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString);
+
+            if (!deleteResponse.Success)
+                throw new ApplicationException(deleteResponse.OriginalException.Message);
+        }
+
+        public void ClearIndex(int companyID, Guid assetTypeGuid)
+        {
+            CreateIndexIfNotExists(companyID);
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new TermQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "AssetTypeUid"),
+                    Value = assetTypeGuid
                 }
             };
 

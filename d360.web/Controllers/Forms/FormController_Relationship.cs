@@ -381,11 +381,13 @@ namespace d360.web.Controllers
 select		A.ID,
             A.[Object],
             A.ObjectID,
-            A.Uid
+            A.Uid,
+            P.DisplayPath as [Path]
 from		Asset A
             inner join AssetType T on A.AssetTypeID = T.ID
             inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
 			left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
+            left join graph.AssetNodeDisplayPath P on P.ID = A.ID
             {SemanticRelationshipSql}
 where		I.ID is null 
             {(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
@@ -603,18 +605,18 @@ order by r.Name";
                     }
                     else
                     {
-                        sql = $@"select C.uid, C.Object, D.DisplayValue as Name from {subSql} inner join AssetDisplayValue D on D.AssetID =  C.ID order by D.DisplayValue";
+                        sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
                     }
                     break;
                 #endregion
                 case "ArtifactType":
                 case "LookupType":
                 case "RuleType":
-                    sql = $@"select C.uid, C.Object, D.DisplayValue as Name from {subSql} inner join AssetDisplayValue D on D.AssetID =  C.ID order by D.DisplayValue";
+                    sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
                     break;
                 case "PolicyType":
                 case "TaxonomyType":
-                    sql = $@"select	c.uid, TP.TextPath as Name, c.Object from {subSql} cross apply dbo.GetAssetTextPathById(C.ID, '/') TP order by TP.TextPath";
+                    sql = $@"select	c.uid, C.Path as Name, c.Object from {subSql} order by C.Path";
                     break;
             }
 

@@ -1577,9 +1577,6 @@ order by Sort, title";
                 case "BL":   // Lineage
                     models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
                     break;
-                case "TL":   // Technical Lineage
-                    models = new List<OptionModel> { new OptionModel { title = "Default", value = "TechnicalLineage|-1" } };
-                    break;
             }
 
             if (!string.IsNullOrEmpty(sql))

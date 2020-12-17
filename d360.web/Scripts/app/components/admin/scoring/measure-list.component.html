@@ -1,0 +1,161 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+    <div *ngIf="metricTree.length == 0 && !allocation.isExternallyCalculated" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
+    <div>
+        <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th style="width: 120px" *ngIf="!allocation.isExternallyCalculated">Weight</th>
+                    <th style="width: 120px">Effective Date</th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                <tr [ttSelectableRow]="rowNode">
+                    <td class="no-overflow" [attr.title]="item.Name">
+                        <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                        {{item.Name}}
+                        <div class="badge-container"><ig-badge *ngIf="item.State == 3" [text]="'Disabled'"></ig-badge></div>
+                    </td>
+                    <td *ngIf="!allocation.isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
+                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                    <td>
+                        <button *ngIf="item.IsGroup" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" pTooltip="Add measure to group" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                    </td>
+                    <td>
+
+                        <ng-container *ngIf="item.State == 1">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
+
+                        <ng-container *ngIf="item.State == 3">
+                            <button type="button" icon="fa-ellipsis-v" igButton (click)="selectNode(rowNode.node);disabledMenuRef.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                            <ig-popup-menu (onSelect)="selectNode(rowNode.node);menuClicked($event)" [items]="disabledMenu" #disabledMenuRef [tabIndex]="1"></ig-popup-menu>
+                        </ng-container>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-treeTable>
+        <div *ngIf="metricTree.length == 0" class="no-measure-message">No measures defined</div>
+    </div>
+    <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;">
+        <dataquality-measure-editor *ngIf="isDataQualityScoreType()"
+                                    [allocation]="allocation"
+                                    [assetTypeFields]="fields"
+                                    [operators]="operators"
+                                    [paths]="paths"
+                                    [parentUid]="selection?.Uid"
+                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                    (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
+                                    (onSave)="formMode = FormMode.Default; load($event); ">
+        </dataquality-measure-editor>
+        <external-measure-editor *ngIf="isExternalScoreType()"
+                                 [allocation]="allocation"
+                                 [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                 (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
+                                 (onSave)="formMode = FormMode.Default; load($event); ">
+        </external-measure-editor>
+        <governance-measure-editor *ngIf="isGovernanceScoreType()"
+                                   [allocation]="allocation"
+                                   [assetTypeFields]="fields"
+                                   [operators]="operators"
+                                   [predicates]="predicates"
+                                   [relationships]="relationships"
+                                   [responsibilities]="responsibilities"
+                                   [parentUid]="selection?.Uid"
+                                   [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                   (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
+                                   (onSave)="formMode = FormMode.Default; load($event); ">
+        </governance-measure-editor>
+    </d3s-modal>
+    <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;">
+        <dataquality-measure-editor *ngIf="isDataQualityScoreType() && formMode == FormMode.Editing"
+                                    [allocation]="allocation"
+                                    [assetTypeFields]="fields"
+                                    [operators]="operators"
+                                    [paths]="paths"
+                                    [(model)]="selection"
+                                    [uid]="selection?.Uid"
+                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                    (onCancel)="formMode = FormMode.Default; load($event)"
+                                    (onSave)="formMode = FormMode.Default; load($event); ">
+        </dataquality-measure-editor>
+        <external-measure-editor *ngIf="isExternalScoreType() && formMode == FormMode.Editing"
+                                 [allocation]="allocation"
+                                 [(model)]="selection"
+                                 [uid]="selection?.Uid"
+                                 [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                 (onCancel)="formMode = FormMode.Default; load($event)"
+                                 (onSave)="formMode = FormMode.Default; load($event); ">
+        </external-measure-editor>
+        <governance-measure-editor *ngIf="isGovernanceScoreType() && formMode == FormMode.Editing"
+                                   [allocation]="allocation"
+                                   [assetTypeFields]="fields"
+                                   [operators]="operators"
+                                   [predicates]="predicates"
+                                   [relationships]="relationships"
+                                   [responsibilities]="responsibilities"
+                                   [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                   [(model)]="selection"
+                                   [uid]="selection?.Uid"
+                                   (onCancel)="formMode = FormMode.Default; load($event)"
+                                   (onSave)="formMode = FormMode.Default; load($event); ">
+        </governance-measure-editor>
+    </d3s-modal>
+    <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
+        <div style="max-height: calc(100% - 60px);">
+            <measure-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
+                            [Measure]="selection"
+                            [operators]="operators"
+                            [responsibilityTypes]="responsibilities"
+                            [relationshipTypes]="relationships"
+                            [AssetType]="assetType"
+                            [isExternallyCalculated]="allocation.isExternallyCalculated"
+                            [assetTypeFields]="fields"
+                            (onClose)="showHistory(false);load(selection?.Name);">
+            </measure-history>
+        </div>
+    </d3s-modal>
+    <d3s-delete-form *ngIf="selection" 
+                     [uri]="'api/v2/metrics/' + selection?.Uid"
+                     [method]="'delete'"
+                     [showAsModal]="true"
+                     [isModalVisible]="formMode == FormMode.Deleting"
+                     [modalTitle]="'Disable Measure'"
+                     [deleteButtonText]="'Disable'"
+                     (onCancel)="formMode = FormMode.Default;load(selection?.Name);"
+                     (onDeleteSuccess)="formMode = FormMode.Default;load(selection?.Name);"
+                     (onDeleteFail)="formMode = FormMode.Default;load(selection?.Name);">
+        <div prompt>
+            <div *ngIf="selection.IsGroup">
+                <p>
+                    Are you sure you want to disable the grouping measure '{{selection.Name}}'?<br />
+                    <span *ngIf="selectedNode.children.length > 0">This will also disable the following grouped measures:</span>
+                </p>
+                <div *ngIf="selectedNode.children.length > 0">
+                    <ul class="measure-list">
+                        <li *ngFor="let item of selectedNode.children">{{item.data.Name}}</li>
+                    </ul>
+                </div>
+                <p>
+                    These measures will no longer be used in score calculations for the assets of type '{{allocation.assetTypePath}}'. <br />
+                    Version histories for these measures will be kept to maintain a scoring history for assets.
+                </p>
+            </div>
+            <div *ngIf="!selection.IsGroup">
+                <p>Are you sure you want to disable the measure '{{selection.Name}}'?</p>
+                <p *ngIf="todayAndEffectiveDateAreSame(selection)">
+                    The measure will no longer be used in score calculations for the asset of type '{{allocation.assetTypePath}}'.
+                </p>
+                <p *ngIf="!todayAndEffectiveDateAreSame(selection)">
+                    The measure will no longer be used in score calculations for the asset of type '{{allocation.assetTypePath}}'.
+                    Scores for impacted assets will be recalculated immediately.<br /><br />
+                    A version history for this measure will be kept to maintain a scoring history for assets.
+                </p>
+            </div>
+        </div>
+    </d3s-delete-form>
+</div>

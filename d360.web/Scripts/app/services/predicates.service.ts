@@ -36,7 +36,7 @@ export class PredicatesService extends BaseObservableService {
             );
     }
 
-    deletePredicate(uid: number): Observable<ApiResult[]> {
+    deletePredicate(uid: string): Observable<ApiResult[]> {
         var model = [];
         model.push({ Uid: uid });
         const httpHeaders = {

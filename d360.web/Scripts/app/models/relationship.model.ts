@@ -1,9 +1,5 @@
-﻿export class RelationshipTypePredicate {
-    Uid: string;
-    Type: string;
-    Name: string;
-    Inverse: string;
-}
+﻿import { Predicate } from "./predicate.model";
+
 export class RelationshipTypeEdge {
     Uid: string;
     Name: string;
@@ -15,7 +11,7 @@ export class RelationshipType {
     Uid: string;
     State: string;
     IsSystem: boolean;
-    Predicate: RelationshipTypePredicate;
+    Predicate: Predicate;
     Subject: RelationshipTypeEdge;
     Object: RelationshipTypeEdge;
 }

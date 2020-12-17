@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_LineageHop-v3">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_LineageHop-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,7 +18,8 @@ create or alter procedure [graph].[AssetBrowser_LineageHop]
 	@preloadedIntersects dbo.Ids readonly,
 	@direction char(1) = 'F', -- (F)orward, (B)ackward
 	@resourceId int,
-	@isAdmin bit
+	@isAdmin bit,
+	@includeNonLeaf bit = 1
 as
 begin
 	set nocount on;
@@ -318,6 +319,7 @@ begin
 													or (Ro.AssetID = 0 and Ho.AssetTypeID = Ro.AssetTypeID)
 												) 
 											and Ro.IsVisible = 1
+											and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					group by	Ro.ResponsibilityTypeName, Ro.ResponsibilityTypeID, Ro.ResourceID
 					) O
 			group by ResponsibilityTypeName, ResponsibilityTypeID
@@ -343,6 +345,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = S.ID
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					union all
 					select	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
 							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
@@ -356,6 +359,7 @@ begin
 					where	MATCH(S-(E)->T)
 							and E.PredicateType not in (select ID from @offLimitImpactFunctionalTypes)
 							and Hr.hierarchyKey = H.hierarchyKey and Hr.ID = T.ID
+							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					) O
 			group by [Predicate], ID, Uid, Direction
 			for json path
@@ -403,6 +407,7 @@ end
 	<rollback>
 		<![CDATA[	
 create or alter procedure [graph].[AssetBrowser_LineageHop]
+	@ancestry int, -- 1 = all, 2 = direct-parent
 	@hierarchyKey varchar(50),
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@preloadedIntersects dbo.Ids readonly,
@@ -500,42 +505,66 @@ begin
 	create nonclustered index ix_TempHierarchies_ID on #hierarchies (ID);
 	create nonclustered index ix_TempHierarchies_ParentID on #hierarchies (ParentID);
 
-	with h as (
-		select	A.Uid,
-				A.ID,
-				A.AssetTypeID,
-				I.Object,
-				I.ObjectID,
-				P.ID ParentID,
-				I.Subject as ParentObject,
-				I.SubjectID as ParentObjectID
-		from	Asset A
-				inner join #hopAssets L on L.ID = A.ID
-				left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-		union all
-		select	A.Uid,
-				A.ID,
-				A.AssetTypeID,
-				A.Object,
-				A.ObjectID,
-				I.ParentID,
-				I.Subject as ParentObject,
-				I.SubjectID as ParentObjectID
-		from	h
-				inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
-				outer apply (
-					select	P.ID as ParentID,
-							I.Subject,
-							I.SubjectID
-					from	PredicateIntersect I 
-							inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-					where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
-				) I
-	)
+	if @ancestry = 1
+	begin
+		with h as (
+			select	A.Uid,
+					A.ID,
+					A.AssetTypeID,
+					I.Object,
+					I.ObjectID,
+					P.ID ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	Asset A
+					inner join #hopAssets L on L.ID = A.ID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			union all
+			select	A.Uid,
+					A.ID,
+					A.AssetTypeID,
+					A.Object,
+					A.ObjectID,
+					I.ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	h
+					inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
+					outer apply (
+						select	P.ID as ParentID,
+								I.Subject,
+								I.SubjectID
+						from	PredicateIntersect I 
+								inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					) I
+		)
 
-	insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
-		select distinct Uid, ID, ParentID, AssetTypeID from h
+		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+			select distinct Uid, ID, ParentID, AssetTypeID from h;
+	end
+	else 
+	begin
+		insert into #hierarchies (Uid, ID, ParentID, AssetTypeID)
+			select	A.Uid,
+					A.ID,
+					P.ID ParentID,
+					A.AssetTypeID
+			from	Asset A
+					inner join #hopAssets L on L.ID = A.ID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		
+		insert into #hierarchies (Uid, ID, AssetTypeID)
+			select	P.Uid,
+					P.ID,
+					P.AssetTypeID
+			from	#hierarchies h
+					inner join Asset C on C.ID = h.ID
+					inner join Asset P on P.ID = h.ParentID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = P.Object and I.SubjectID = P.ObjectID and I.Object = C.Object and I.ObjectID = C.ObjectID
+	end
 
 	update	H
 	set		H.[Key] = utility.GetHash(@salt + '|' + cast(H.ID as varchar)),

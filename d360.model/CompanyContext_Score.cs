@@ -130,6 +130,7 @@ CREATE TABLE #InternalMeasures (
     IsValidAllocation bit NULL,
 	IsValidAsset bit NULL,
 	IsValidMeasure bit NULL,
+    IsValidCheck bit null,
 	IsValidEffectiveDate bit NULL,
 	
     Success bit NULL,
@@ -186,6 +187,17 @@ set     T.IsValidMeasure = IIF(S.[Uid] is not null, 1, 0)
 from    #InternalMeasures T 
         left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1", transaction: trans);
 
+                    // Resolve Measure Check
+                    Connection.Execute(@"
+update  T 
+set     T.IsValidCheck = IIF(V.[Uid] is not null, 1, 0) 
+from    #InternalMeasures T 
+        left join metrics.[Asset] S on S.[Uid] = T.MetricAssetUid and S.[State] = 1
+        outer apply (
+                    select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = S.[Uid] and EffectiveDate <= T.[EffectiveDate]
+                    ) M_M
+        left join metrics.AssetVersion V on V.AssetUid = S.Uid and V.EffectiveDate = M_M.EffectiveDate and JSON_VALUE(V.Definition, '$.Governance.Check') = 'External'", transaction: trans);
+
                     // Resolve Metric Group/Item Effective Date
                     Connection.Execute(@"
 update  T 
@@ -203,6 +215,7 @@ from    #InternalMeasures T
                         when IsValidAllocation = 0 then 0
                         when IsValidAsset = 0 then 0
                         when IsValidMeasure = 0 then 0
+                        when IsValidCheck = 0 then 0
                         when IsValidEffectiveDate = 0 then 0
                         else 1
                       end;
@@ -214,6 +227,10 @@ from    #InternalMeasures T
     update  #InternalMeasures
     set     Message = coalesce(Message, '') + 'Invalid measure specified; '
     where   IsValidMeasure = 0;
+
+    update  #InternalMeasures
+    set     Message = coalesce(Message, '') + 'Measure does not have a Test Type of External; '
+    where   IsValidCheck = 0;
 
     update  #InternalMeasures
     set     Message = coalesce(Message, '') + 'Invalid measure specified for the date provided; '
