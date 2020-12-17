@@ -28,7 +28,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             bool? res = null;
             List<int> changedFields = new List<int> { };
 
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields, "ArtifactType", 199);
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "Issue", 1, condition, -1, changedFields, "ArtifactType", 199);
             Assert.True(res, "Invalid evaluation result!");
 
         }
