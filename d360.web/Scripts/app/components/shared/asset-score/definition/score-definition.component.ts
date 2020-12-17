@@ -110,8 +110,8 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
                             let fieldValue = +gov.Field.Values[0] ?? -1;
 
                             let lookupValues = fieldType.Values;
-                            formattedValue = lookupValues.filter(x => x.Value == fieldValue).length > 0
-                                ? lookupValues.filter(x => x.Value == fieldValue)[0].Text : gov.Field.Values.join(", ");
+                            formattedValue = lookupValues.filter(x => x.Value == fieldValue.toString()).length > 0
+                                ? lookupValues.filter(x => x.Value == fieldValue.toString())[0].Text : gov.Field.Values.join(", ");
                         }
                         if (fieldType.Type == "Date") {
                             this.dateShowType = fieldType.Type;
