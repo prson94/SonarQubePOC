@@ -57,10 +57,6 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     showDisabled: boolean = false;
     showPassTest: boolean = false;
     ruleResultPaths: MetricPathOptionViewModel[] = [];
-    
-
-    responsibilityTypes: any[] = [];
-    relationshipTypes: any[] = [];
 
     constructor(
         secondaryNavService: SecondaryNavService,
