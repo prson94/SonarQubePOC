@@ -100,6 +100,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     diagramTypes: DiagramTypesModel = null;
 
+    showNodeCount: boolean = true;
+    autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
+
     popupMenuItems = [
         {
             title: 'Export to excel',
@@ -441,7 +444,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
 
             this.diagram.model.setDataProperty(relation, 'showLoading', true);
-            
+
             if (!relation.disabled) {
                 if (relation.expanded) {
                     this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
@@ -501,7 +504,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                             this.helper_HideDeselectedAssetTypes();
                             this.helper_HideDeselectedPredicates();
-                            this.helper_HideDeselectedResponsibilityTypes();                     
+                            this.helper_HideDeselectedResponsibilityTypes();
                         });
                 }
             }
@@ -517,7 +520,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
 
             this.diagram.model.setDataProperty(owner, 'showLoading', true);
-            if (owner.expanded) {                
+            if (owner.expanded) {
                 this.badge_RemoveDependentNodes(badgeIdentifier, AssetBrowserApiHopDirection.Forward);
                 this.diagram.model.removeArrayItem(node.owners, ix);
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
@@ -898,7 +901,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 }
             }
-        });        
+        });
     }
 
     private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
@@ -1107,7 +1110,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.commitTransaction('HideDeselectedResponsibilityTypes');
     }
 
-    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[], visitedNodes: Set<string>) {        
+    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[], visitedNodes: Set<string>) {
         // cycle detection. Set
         if (visitedNodes == null) {
             visitedNodes = new Set<string>();
@@ -1162,7 +1165,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
-    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {        
+    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
         try {
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
@@ -1171,7 +1174,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (obj.key) {
                 // Highlight the selected node.
                 obj.isHighlighted = true;
-                                
+
                 // Recurse through and highlight based on the atomic (non-grouped) links.
                 this.helper_HighlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined, null);
             }
@@ -1385,7 +1388,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 obs.next(true);
                 obs.complete();
             };
-                        
+
             if (isLineage) {
                 this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf).subscribe(subscriber);
             }
@@ -1566,7 +1569,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         });
         this.filter_AvailableOptions.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        
+
         //#endregion
 
         //#region Predicates
@@ -1582,7 +1585,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         });
         this.filter_AvailableOptions.FilterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        
+
         //#endregion
 
         //#region Responsibility Types
@@ -1602,7 +1605,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         });
         this.filter_AvailableOptions.FilterResponsibilityTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        
+
         //#endregion
 
         this.cdRef.markForCheck();
@@ -1966,9 +1969,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (!dia['objectsWidthMap']) {
                         dia['objectsWidthMap'] = {};
                     }
-
                     var topWidth = topLevel.getDocumentBounds().width;
-                
+
                     var levelPadding = target.getDocumentBounds().x * 2;
                     var parentWidth = topWidth - levelPadding;
 
@@ -1977,25 +1979,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         if (parentWidth > 255)
                             parentWidth = 255;
 
-
                         dia['objectsWidthMap'][key] = { width: parentWidth };
                     }
 
-
                     if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
                         size.width = dia['objectsWidthMap'][key]['width'];
-                        target.part['rightXLocation'] = target.getDocumentBounds().right;
-                        return size;
+                        target.minSize = size;
                     }
 
                     return;
                 }).ofObject(),
                 this.g(
                     go.Panel,
-                    "Horizontal",
+                    "Table",
                     // button next to TextBlock
                     {
-                        stretch: go.GraphObject.Horizontal
+                        stretch: go.GraphObject.Horizontal,
                     },
                     new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                     new go.Binding("background", "", v => (v.isHighlighted) ?
@@ -2005,17 +2004,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         "SubGraphExpanderButton",
                         {
-                            alignment: go.Spot.Right,
-                            margin: 5
+                            row: 1,
+                            column: 1,
+                            margin: new go.Margin(0, 5, 0, 3)
                         }
                     ),
                     //icon
                     this.g(
                         go.TextBlock,
                         {
-                            row: 0,
-                            margin: 0,
-                            alignment: go.Spot.Center,
+                            row: 1,
+                            column: 2,
                             editable: false,
                             font: this.fontLabelIcon
                         },
@@ -2033,7 +2032,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             visible: false,
                             maxLines: this.textMaxLines,
                             overflow: this.textOverflowStyle,
-                            margin: new go.Margin(0, -4, 0, 0)
+                            margin: new go.Margin(0, -4, 0, 0),
+                            row: 1,
+                            column: 3,
                         },
                         new go.Binding("text", "highlight").makeTwoWay(),
                         new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -2042,18 +2043,21 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         go.TextBlock,
                         {
-                            alignment: go.Spot.Left,
                             editable: false,
                             margin: 5,
                             font: this.fontLabel,
                             maxLines: this.textMaxLines,
                             maxSize: this.textMaxSize,
                             overflow: this.textOverflowStyle,
-                            toolTip: this.template_Tooltip()
+                            toolTip: this.template_Tooltip(),
+                            row: 1,
+                            column: 4,
+                            stretch: go.GraphObject.Horizontal
                         },
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "text").makeTwoWay()
-                    )
+                    ),
+                    this.template_nodeCount()
                 ),  // end Horizontal Panel
                 this.g(
                     go.Placeholder,
@@ -2178,7 +2182,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.context_Hide(e, obj, AssetBrowserApiHopDirection.Forward) },
                 new go.Binding("visible", "", (o) => (!o.part.data.group && !o.part.data.downstreamHidden)).ofObject()
-            )            
+            )
         );
     }
 
@@ -2421,12 +2425,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_ImpactBadges(): go.Panel {
         return this.g(go.Panel, "TableRow", {
-                alignment: go.Spot.TopCenter,
-                alignmentFocus: go.Spot.Bottom,
-                padding: 0,
-                cursor: "pointer",
-                click: (e, obj) => this.badge_ClickImpact(e, obj),
-            },
+            alignment: go.Spot.TopCenter,
+            alignmentFocus: go.Spot.Bottom,
+            padding: 0,
+            cursor: "pointer",
+            click: (e, obj) => this.badge_ClickImpact(e, obj),
+        },
             this.g(go.Panel, "Horizontal",
                 new go.Binding("visible", "showBadge"),
                 { alignment: go.Spot.Center },
@@ -2452,7 +2456,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         go.TextBlock,
                         {
-                            row: 0,                            
+                            row: 0,
                             margin: 2,
                             alignment: go.Spot.Right,
                             editable: false,
@@ -2978,11 +2982,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     },
                     this.g(
                         go.Panel,
-                        "Horizontal",
+                        "Table",
                         // button next to TextBlock
                         {
                             stretch: go.GraphObject.Horizontal,
-                            alignment: go.Spot.Left
                         },
                         new go.Binding("background", "", v => (v.isHighlighted) ?
                             go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
@@ -2991,19 +2994,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.g(
                             "SubGraphExpanderButton",
                             {
-                                alignment: go.Spot.Right,
-                                margin: 5
+                                row: 1,
+                                column: 1,
+                                margin: new go.Margin(0, 5, 0, 3)
                             }
                         ),
                         //icon
                         this.g(
                             go.TextBlock,
                             {
-                                row: 0,
-                                margin: 0,
-                                alignment: go.Spot.Center,
                                 editable: false,
-                                font: this.fontLabelIcon
+                                font: this.fontLabelIcon,
+                                row: 1,
+                                column: 2
                             },
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "icon"),
@@ -3019,7 +3022,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 visible: false,
                                 maxLines: this.textMaxLines,
                                 overflow: this.textOverflowStyle,
-                                margin: new go.Margin(0, -4, 0, 0)
+                                margin: new go.Margin(0, 0, 0, 4),
+                                row: 1,
+                                column: 3
                             },
                             new go.Binding("text", "highlight").makeTwoWay(),
                             new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -3028,18 +3033,21 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.g(
                             go.TextBlock,
                             {
-                                alignment: go.Spot.Left,
                                 editable: false,
                                 margin: 5,
                                 font: this.fontLabel,
                                 maxLines: this.textMaxLines,
                                 maxSize: this.textMaxSize,
                                 overflow: this.textOverflowStyle,
-                                toolTip: this.template_Tooltip()
+                                toolTip: this.template_Tooltip(),
+                                row: 1,
+                                column: 4,
+                                stretch: go.GraphObject.Horizontal
                             },
                             new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "text").makeTwoWay()
-                        )
+                        ),
+                        this.template_nodeCount()
                     ),
                     // end Horizontal Panel
                     this.g(
@@ -3068,6 +3076,80 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("text", "text")
             )
         );
+    }
+
+    private template_nodeCount(): go.Panel {
+        var $ = go.GraphObject.make;
+        var self = this;
+        var badge = $(go.Panel,
+            "Position",
+            {
+                row: 1,
+                column: 100
+            },
+            new go.Binding("visible", "", function (v) {
+                return self.showNodeCount;
+            }),
+            $(go.Shape, "Rectangle",
+                {
+                    position: new go.Point(0, 0),
+                    maxSize: new go.Size(48, 16),
+                    margin: new go.Margin(0, 3, 0, 0),
+                    strokeWidth: 1,
+                    stroke: "white",
+                    fill: "white"
+                },
+                new go.Binding("maxSize", "", function (obj: go.GraphObject) {
+                    if (obj.part.data['_childrenCount']) {
+                        var lng = obj.part.data['_childrenCount'].toString().length - 1;
+                        if (lng > 0) {
+                            return new go.Size(16 + lng * 6, 16);
+                        }
+                    }
+                    return new go.Size(16, 16);
+                }).ofObject()
+            ),
+            $(go.TextBlock,
+                {
+                    editable: false,
+                    margin: new go.Margin(4, 0, 0, 6),
+                    font: this.fontLabel,
+                    maxLines: this.textMaxLines,
+                    overflow: this.textOverflowStyle,
+                    background: "white",
+                },
+                new go.Binding("text", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                    var data = obj.diagram.nodes.filter(x =>
+                        x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
+                        && x.data['group'] == obj.part.data['key']
+                    );
+
+                    try {
+                        if (self.autoCollapseNodeCount > 0) {
+                            if (data.count >= self.autoCollapseNodeCount) {
+                                var node = obj.diagram.findNodeForKey(obj.part.data['key']);
+                                //If already happened dont do it again, otherwise its not possible to expand 
+                                if (!node.data['autoCollapsed']) {
+                                    var topLevel = target.part.findTopLevelPart();
+                                    var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
+                                    if (obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) {
+                                        (node as any).collapseSubGraph();
+                                        node.data['autoCollapsed'] = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (ex) {
+                        console.warn(ex);
+                    }
+
+                    obj.part.data['_childrenCount'] = data.count;
+
+                    return data.count;
+                }).ofObject()
+            ));
+        return badge;
     }
 
     //#endregion
