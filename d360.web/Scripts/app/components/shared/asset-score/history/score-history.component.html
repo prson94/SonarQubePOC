@@ -27,7 +27,8 @@
                     <div *ngFor="let item of scoresPoints" class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)">
                         <div class="col s4 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
                         <div class="col s4 column measure-point">
-                            <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
+                            <ng-container *ngIf="showMeasurePoints && !getMeasurePoint(item)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;---</ng-container>
+                            <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated && getMeasurePoint(item)" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
                                 <ng-container *ngSwitchCase="1">
                                     <span class="icon-holder">
                                         <i class="fa fa-caret-up arrow-up"></i>

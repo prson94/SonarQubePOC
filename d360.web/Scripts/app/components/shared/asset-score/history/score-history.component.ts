@@ -86,7 +86,8 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                     (dataSet.data as []).forEach(pt => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
-                        sp.Score = Math.round((+pt['Value'] * 100) * 10) / 10;
+                        var score = Math.ceil(+pt['Value'] * 1000) / 1000;
+                        sp.Score = Math.round(score * 100 * 10) / 10;
                         arr.push(sp);
                     })
 
@@ -173,7 +174,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             );
             if (this.historicalMeasureData && this.historicalMeasureData.length > 0) {
                 this.historicalMeasureData.unshift(
-                    [currenDateMs, this.historicalMeasureData[0].Score, this.getScoreType()]
+                    [currenDateMs, this.historicalMeasureData[0][1], this.getScoreType()]
                 );
             }
         }
@@ -469,9 +470,14 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     }
 
     private getMeasurePoint(item: ScorePoint): ScorePoint {
+        var point = null;
         if (this.measurePoints)
-            return this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
-        else return new ScorePoint();
+            point = this.measurePoints.filter(x => x.EffectiveDate == item.EffectiveDate)[0];
+
+        if (point == null || point == undefined) {
+            return null;
+        }
+        else return point;
     }
 
     private getStorageKey() {

@@ -172,6 +172,9 @@
                             </span>
                         </ng-container>
                     </div>
+                    <div *ngIf="scoresPointsShowMeasure && !getMeasurePoint(score.value.EffectiveDate)" class="inline-item score measure-score">
+                        ---
+                    </div>
                     <div class="inline-item score">
                         <ng-container [ngSwitch]="score.value.ScoreProgression">
                             <div *ngSwitchCase="1">

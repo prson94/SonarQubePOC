@@ -146,6 +146,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private loadSeriesData(): Observable<boolean> {
         var subject = new Subject<boolean>();
         this.isDataLoaded = false;
+
         if (this.uid) {
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
@@ -287,6 +288,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                         this.totalScore += pb._finalScore;
                     })
+                    this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
 
                     var preselected: PointBreakdown;
                     if (this.selectedMeasureUid && this.pointBreakdown) {
@@ -367,8 +369,15 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         }
     }
 
-    private getMeasurePoint(effectiveDate: string): ScorePoint {
-        return this.measurePoints.filter(x => x.EffectiveDate == effectiveDate)[0];
+    private getMeasurePoint(effectiveDate: any): ScorePoint {
+        var point = null;
+        if (this.measurePoints)
+            point = this.measurePoints.filter(x => x.EffectiveDate == effectiveDate)[0];
+
+        if (point == null || point == undefined) {
+            return null;
+        }
+        else return point;
     }
 
     private isDQAndNoItems() {
