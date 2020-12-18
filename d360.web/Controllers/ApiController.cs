@@ -2049,13 +2049,15 @@ order by    rnk, [Name]";
             Dictionary<string, object> result = null;
             if ((offset + rows) > 0)
             {
+                List<string> excludeValues = selection.Select(s => s.Value).ToList(); //Exclude values already added to selection
                 result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
                 if (result.ContainsKey("Items"))
                 {
                     List<dynamic> items = (List<dynamic>)result["Items"];
                     items.ForEach(d =>
                     {
-                        selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = false });
+                        if(!excludeValues.Contains(d.Value.ToString()))
+                            selection.Add(new System.Web.Mvc.SelectListItem { Text = d.Text, Value = d.Value.ToString(), Selected = false });
                     });
                 }
             }
