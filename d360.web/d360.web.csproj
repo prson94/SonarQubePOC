@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -652,17 +652,17 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\wifi.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
-    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="Content\primeng\v9.1.0\images\color.png" />
-    <Content Include="Content\primeng\v9.1.0\images\hue.png" />
-    <Content Include="Content\primeng\v9.1.0\images\line.gif" />
-    <Content Include="Content\primeng\v9.1.0\images\loading.gif" />
-    <Content Include="Content\primeng\v9.1.0\images\password-meter.png" />
-    <Content Include="Content\primeng\v9.1.0\primeng.css" />
-    <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
-    <Content Include="Content\primeng\v9.1.0\theme.css" />
-    <Content Include="Content\primeng\v9.1.0\theme.less" />
-    <Content Include="Content\primeng\v9.1.0\theme.min.css">
+    <Content Include="Content\primeng\v10.0.3\default.min.css" />
+    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v10.0.3\images\color.png" />
+    <Content Include="Content\primeng\v10.0.3\images\hue.png" />
+    <Content Include="Content\primeng\v10.0.3\images\line.gif" />
+    <Content Include="Content\primeng\v10.0.3\images\loading.gif" />
+    <Content Include="Content\primeng\v10.0.3\images\password-meter.png" />
+    <Content Include="Content\primeng\v10.0.3\primeng.css" />
+    <Content Include="Content\primeng\v10.0.3\primeng.min.css" />
+    <Content Include="Content\primeng\v10.0.3\theme.css" />
+    <Content Include="Content\primeng\v10.0.3\theme.min.css">
       <DependentUpon>theme.css</DependentUpon>
     </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
@@ -827,6 +827,12 @@
     <Content Include="Content\json\governanceIcons.json" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\score-definition.less" />
     <Content Include="Scripts\app\components\shared\asset-score\history\score-history.less" />
+    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\primeng\v10.0.3\theme.less" />
+    <Content Include="Content\primeng\v10.0.3\default.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -1180,10 +1186,6 @@
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.woff" />
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
-    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>

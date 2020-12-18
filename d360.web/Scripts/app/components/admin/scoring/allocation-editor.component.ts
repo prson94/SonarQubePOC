@@ -273,10 +273,10 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         var goodColor = window.getComputedStyle(goodEl).backgroundColor;
 
         var backgroundStyle = `linear-gradient(90deg, ${poorColor} ${this.selection.lowerThreshold}%, ${poorColor} ${this.selection.lowerThreshold}%,${averageColor} ${this.selection.lowerThreshold}%, ${averageColor} ${this.selection.upperThreshold}%, ${goodColor} ${this.selection.upperThreshold}%, ${goodColor} 100%)`;
-        var sliderElement = this.slider["el"].nativeElement.getElementsByClassName('ui-slider-horizontal')[0];
+        var sliderElement = this.slider["el"].nativeElement.getElementsByClassName('p-slider-horizontal')[0];
         sliderElement.style.background = backgroundStyle;
 
-        var sliders = this.slider["el"].nativeElement.getElementsByClassName('ui-slider-handle');
+        var sliders = this.slider["el"].nativeElement.getElementsByClassName('p-slider-handle');
 
         this.rangeValues.forEach((value: number, index) => {
             var tooltip = sliders[index].getElementsByClassName('slider-tooltip');

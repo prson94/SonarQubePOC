@@ -1150,6 +1150,15 @@ END
     </sql>
 	</changeSet>
 
+  <changeSet author="sDooley" id="Data.Corrections.GOV-11855">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+      <![CDATA[
+update [workflow].[Type] set State = 3
+from [workflow].[Type] T 
+inner join [workflow].[EventRegistration] ER ON ER.ChangeType = 7 AND ER.TypeID = T.ID
+]]>
+    </sql>
+  </changeSet>
 	<changeSet author="Pappas" id="Data.Corrections.GOV-12994">
     <sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
@@ -1162,5 +1171,4 @@ from	[metrics].[AssetVersionConditionItemValue] V
 ]]>
     </sql>
 	</changeSet>
-
 </databaseChangeLog>

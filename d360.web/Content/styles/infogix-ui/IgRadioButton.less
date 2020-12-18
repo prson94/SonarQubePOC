@@ -2,9 +2,9 @@
 @import './IgUiVariables.less';
 @import '../_Variables.less';
 
-.ui-radiobutton {
+.p-radiobutton {
     .ig-radio-button {
-        &.ui-radiobutton-box {
+        &.p-radiobutton-box {
             width: 16px;
             height: 16px;
             border: 1px solid rgba(0,0,0,0.2);
@@ -13,27 +13,25 @@
             border-radius: 50%;
             color: @ig-black;
 
-            &:hover:not(.ui-state-disabled) {
+            &:hover:not(.p-disabled) {
                 border: 1px solid rgba(0,0,0,0.4);
             }
 
-            &:active:not(.ui-state-disabled) {
+            &:active:not(.p-disabled) {
                 border: 1px solid rgba(0,0,0,0.6);
             }
 
-            &:focus:not(.ui-state-disabled), &.ui-state-focus:not(.ui-state-disabled) {
+            &:focus:not(.p-disabled), &.p-focus:not(.p-disabled) {
                 box-shadow: 0 0 0 2px @ig-midblue-t3 !important;
                 outline: none !important;
                 background: @ig-white;
             }
 
             &[aria-checked="true"] {
-                .ui-radiobutton-icon {
+                .p-radiobutton-icon {
                     width: 8px;
                     height: 8px;
                     background: @ig-black;
-                    margin-top: -4px;
-                    margin-left: -4px;
                     display: block;
                     border-radius: 50%;
                 }
@@ -44,7 +42,7 @@
             }
 
             &[aria-checked="false"] {
-                .ui-radiobutton-icon {
+                .p-radiobutton-icon {
                     width: 8px;
                     height: 8px;
                     background: @ig-black;
@@ -61,11 +59,11 @@
         }
     }
 
-    .ui-state-disabled {
+    .p-disabled {
         opacity: 0.33;
     }
 
-    .ui-label-disabled {
+    .p-label-disabled {
         opacity: 1;
     }
 }

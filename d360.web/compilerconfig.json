@@ -56,8 +56,17 @@
     "sourceMap": false
   },
   {
-    "outputFile": "Content/primeng/v9.1.0/theme.css",
-    "inputFile": "Content/primeng/v9.1.0/theme.less",
+    "outputFile": "Content/primeng/v10.0.3/theme.css",
+    "inputFile": "Content/primeng/v10.0.3/theme.less",
+    "minify": {
+      "enabled": true
+    },
+    "sourceMap": false
+  },
+
+  {
+    "outputFile": "Content/primeng/v10.0.3/default.css",
+    "inputFile": "Content/primeng/v10.0.3/default.less",
     "minify": {
       "enabled": true
     },

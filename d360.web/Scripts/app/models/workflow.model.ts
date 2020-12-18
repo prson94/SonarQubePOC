@@ -460,7 +460,6 @@ export enum WorkflowChangeType {
     Delete = 3,
     Schedule = 4,
     ScoreUpdate = 5,
-    Loaded = 7,
     RequestCertification = 8,
 }
 

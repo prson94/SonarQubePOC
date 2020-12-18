@@ -36,6 +36,29 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.ResponsibilityRuleResultAsset-v2">
+    <comment>GOV-13152</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResultAsset_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX IX_ResponsibilityRuleResultAsset_AssetID ON [dbo].[ResponsibilityRuleResultAsset] ( [AssetID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResultAsset_AssetID')
+BEGIN
+	DROP INDEX IX_ResponsibilityRuleResultAsset_AssetID ON [dbo].[ResponsibilityRuleResultAsset]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

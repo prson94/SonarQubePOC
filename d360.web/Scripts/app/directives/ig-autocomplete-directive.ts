@@ -17,11 +17,11 @@ export class AutocompleteDirective implements AfterViewInit, OnDestroy {
         var input = htmlEl.getElementsByTagName('INPUT')[0];
         DomHandler.addClass(input, 'ig-input');
 
-        DomHandler.removeClass(input, 'ui-inputtext');
-        DomHandler.removeClass(input, 'ui-widget');
-        DomHandler.removeClass(input, 'ui-state-default');
-        DomHandler.removeClass(input, 'ui-corner-all');
-        DomHandler.removeClass(input, 'ui-autocomplete-input');
+        DomHandler.removeClass(input, 'p-inputtext');
+        DomHandler.removeClass(input, 'p-component');
+        DomHandler.removeClass(input, 'p-state-default');
+        DomHandler.removeClass(input, 'p-corner-all');
+        DomHandler.removeClass(input, 'p-autocomplete-input');
 
         //remove z index from autocomplete so input within takes advantage
         htmlEl.tabIndex = -1;

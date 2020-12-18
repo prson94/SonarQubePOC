@@ -7,7 +7,7 @@ import { EventEmitter } from '@angular/core';
 @Component({
     selector: 'd3s-sortIcon',
     template: `
-        <a href="#" (click)="onClick($event)" [attr.aria-label]="ariaText" class="ui-sort-icon" style="color: #fff">
+        <a href="#" (click)="onClick($event)" [attr.aria-label]="ariaText" class="p-sort-icon" style="color: #fff">
             <i class="fa fa-fw" [ngClass]="{'fa-sort-asc': sortOrder === 1, 'fa-sort-desc': sortOrder === -1, 'fa-sort': sortOrder === 0}"></i>
         </a>
     `

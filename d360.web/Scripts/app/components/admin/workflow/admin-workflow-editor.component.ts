@@ -38,8 +38,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     @ViewChild('ed2', { static: false }) ed: Editor;
     @Input() isClone: boolean = false;
     @Output() onWorkflowNameChange = new EventEmitter();
-    private workflowObjectTypes: WorkflowObjectType[] = [];
-    private defaultWorkflowObject = new WorkflowObjectType();
+    private workflowObjectTypes: WorkflowObjectType[] = [];  
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
     private conditions: any[] = [];
@@ -115,7 +114,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     load() {
-        this.isLoading = true;
+        this.isLoading = true;        
         this.workflowService.getChangeTypes()
             .pipe(map(r => { this.changesTypes = r; }))
             .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id, this.uid)
@@ -162,7 +161,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
-                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
+                        this.workflowObjectTypes = r;
                         if (this.hideShoppingCart) {
                             this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                         }
@@ -239,7 +238,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
+                map(r => this.workflowObjectTypes = r),
                 map(() => {
                     if (this.hideShoppingCart) {
                         this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');

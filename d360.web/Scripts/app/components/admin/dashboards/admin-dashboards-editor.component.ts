@@ -59,7 +59,7 @@ declare var CompanySettings;
                         </div>
                         <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && !editedReport.ShowOnHomePage && editedReport.ObjectType">
                             <div class="FieldName">Restrict Visibility To</div>
-                            <div><p-multiSelect [options]="responsibilities" defaultLabel="Choose" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities"></p-multiSelect></div>
+                            <div><p-multiSelect [options]="responsibilities" placeholder="Choose" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities"></p-multiSelect></div>
                         </div>
                         <div class="col s12">
                             <div class="FieldName">Description</div>

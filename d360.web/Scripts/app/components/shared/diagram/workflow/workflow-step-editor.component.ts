@@ -94,7 +94,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                     if (e.ID < 1)
                         return;
                     else if (e.ID == EmailTaskRecipientType.Followers) {
-                        if (this.objectType == 'IntersectType' || this.ChangeType == WorkflowChangeType.Loaded)
+                        if (this.objectType == 'IntersectType')
                             return false;
 
                         if (!(this.ChangeType == WorkflowChangeType.Add ||

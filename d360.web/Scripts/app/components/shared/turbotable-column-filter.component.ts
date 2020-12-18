@@ -7,9 +7,9 @@ import { EventEmitter } from '@angular/core';
     selector: 'd3s-column-filter',
     template: `
         <ng-container [ngSwitch]="datatype">
-            <input *ngSwitchCase="'text'" type="text" pInputText value="{{value}}" (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="ui-column-filter ui-inputtext">
-            <input *ngSwitchCase="'number'" type="number" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="ui-column-filter ui-inputtext">
-            <input *ngSwitchCase="'date'" type="text" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode)" class="ui-column-filter ui-inputtext">
+            <input *ngSwitchCase="'text'" type="text" pInputText value="{{value}}" (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="p-column-filter p-inputtext">
+            <input *ngSwitchCase="'number'" type="number" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode);onChange($event.target.value);" class="p-column-filter p-inputtext">
+            <input *ngSwitchCase="'date'" type="text" pInputText (input)="dt.filter($event.target.value, field, filterMatchMode)" class="p-column-filter p-inputtext">
         </ng-container>
     `
 })

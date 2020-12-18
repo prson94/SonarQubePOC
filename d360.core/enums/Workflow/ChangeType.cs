@@ -20,8 +20,6 @@ namespace d360.core.enums.Workflow
         Schedule = 4,
         [Description("Score Changed")]
         ScoreUpdate = 5,
-        [Description("Fusion Loaded")]
-        Loaded = 7,
         [Description("Request Certification")]
         RequestCertification = 8        
     }
