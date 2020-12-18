@@ -10,9 +10,20 @@ using System.Threading.Tasks;
 
 namespace d360.core.entities.Metric
 {
+    public interface IConditionGroupMeasure
+    {
+        List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; }
+    }
+
+    public interface IDefinitionMeasure
+    {
+        string DefinitionJson { get; set; }
+        MetricAssetDefinitionViewModel Definition { get; set; }
+        MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
+    }
 
     [DataContract]
-    public class MetricBaseApiModel
+    public abstract class MetricBaseApiModel
     {
         [DataMember, JsonProperty(Order = 1)]
         public Guid Uid { get; set; }
@@ -26,12 +37,6 @@ namespace d360.core.entities.Metric
         [DataMember, JsonProperty(Order = 4)]
         public MetricAssetDefinitionViewModel Definition { get; set; }
         
-        /// <summary>
-        /// Used to help parse the json from the database.
-        /// </summary>
-        [IgnoreDataMember]
-        public string DefinitionJson { get; set; }
-
         [DataMember, JsonProperty(Order = 6)]
         public bool IsGroup { get; set; }
 
@@ -61,13 +66,19 @@ namespace d360.core.entities.Metric
         /// <summary>
         /// Used to help parse the json from the database.
         /// </summary>
+        [DataMember]
+        public string DefinitionJson { get; set; }
+
+        /// <summary>
+        /// Used to help parse the json from the database.
+        /// </summary>
         [DataMember] 
         public MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
 
 
     [DataContract]
-    public class MetricAssetViewModel : MetricBaseApiModel
+    public class MetricAssetViewModel : MetricBaseApiModel, IConditionGroupMeasure, IDefinitionMeasure
     {
         [DataMember, JsonProperty(Order = 21)]
         public int VersionCount { get; set; }
@@ -83,7 +94,7 @@ namespace d360.core.entities.Metric
     }
 
     [DataContract]
-    public class MetricAssetEditModel : MetricBaseApiModel
+    public class MetricAssetEditModel : MetricBaseApiModel, IConditionGroupMeasure, IDefinitionMeasure
     {
         [IgnoreDataMember]
         public string CurrentConditionHash
@@ -405,7 +416,7 @@ namespace d360.core.entities.Metric
     #endregion
 
     [DataContract]
-    public class MetricAssetViewDetailModel : MetricBaseApiModel
+    public class MetricAssetViewDetailModel : MetricBaseApiModel, IConditionGroupMeasure, IDefinitionMeasure
     {
         [DataMember, JsonProperty(Order = 98)]
         public Guid AssetTypeUid { get; set; }
@@ -562,7 +573,7 @@ namespace d360.core.entities.Metric
         public string Path { get; set; }
     }
 
-    public class MeasureVersionHistoryModel
+    public class MeasureVersionHistoryModel: IConditionGroupMeasure, IDefinitionMeasure
     {
         public Guid MeasureUid { get; set; }
         public int Version { get; set; }
@@ -571,12 +582,18 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveDate { get; set; }
         public DateTime? EffectiveEndDate { get; set; }
         public double Weight { get; set; }
+        
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
+        
         public bool HasResults { get; set; } = false;        
-        public string DefinitionJson { 
-            get { return null; } 
-            set { this.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(value ?? "{}");} 
-        }
-        public MetricAssetDefinitionViewModel Definition { get; set; }                                       
+        
+        public string DefinitionJson { get; set; }
+        public MetricAssetDefinitionViewModel Definition { get; set; }
+
+        /// <summary>
+        /// Used to help parse the json from the database.
+        /// </summary>
+        [DataMember]
+        public MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
 }

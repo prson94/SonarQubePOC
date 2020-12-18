@@ -429,41 +429,11 @@ namespace d360.web.Controllers.V2
                         throw new ArgumentException($"Invalid value [{includeDisabledString}] provided in the request", "_includedisabled");
                     }
                 }
-                List<MetricAssetViewModel> models = null;
                 List<State> states = new List<State>() { State.Active };
                 if (includeDisabled)
                     states.Add(State.Deleted);
 
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid, states);
-                var jsonString = string.Join("", fragments);
-                JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
-                models = items.ToObject<List<MetricAssetViewModel>>();
-               
-                if (models == null)
-                    models = new List<MetricAssetViewModel>();
-
-                // Check to ensure that no conditions groups are empty. If any are empty, remove before sending down to consumer.
-                models.ForEach(m =>
-                {
-                    m.ConditionGroups.RemoveAll(g => g.ConditionItems == null || g.ConditionItems.Count == 0);
-
-                    var rawData = items.FirstOrDefault(x => string.Equals(m.Uid.ToString(), x["Uid"].ToString(), StringComparison.OrdinalIgnoreCase));   
-                    if (rawData.HasValues)
-                    {
-                        var definitionString = rawData.Value<string>("DefinitionJson") ?? "{}";
-                        m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(definitionString);
-                    }
-                    m.DefinitionJson = null;
-
-                    if (m.Definition != null && m.DataQualityDefinition != null)
-                    {
-                        if (m.Definition.DataQuality != null)
-                        {
-                            m.Definition.DataQuality = m.DataQualityDefinition;
-                        }
-                    }
-                    m.DataQualityDefinition = null;
-                });
+                var models = MetricsRepository.GetMetricStructureByAllocation(allocationUid, states);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)
@@ -629,14 +599,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                List<MeasureVersionHistoryModel> models = null;
-
-                List<string> history = MetricsRepository.GetMetricVersionHistory(measureUid);
-
-                models = JsonConvert.DeserializeObject<List<MeasureVersionHistoryModel>>(string.Join("", history));
-                if (models == null)
-                    models = new List<MeasureVersionHistoryModel>();
-
+                var models = MetricsRepository.GetMetricVersionHistory(measureUid);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x=>x.Version)));
             }
             catch (Exception ex)

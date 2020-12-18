@@ -19,15 +19,17 @@ using d360.core.exceptions;
 using System.Runtime.CompilerServices;
 using Microsoft.SqlServer.Server;
 using System.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
     public class MetricsRepository : BaseRepository, IMetricsRepository
     {
+        #region Properties/Ctor
+
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
-
 
         public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
         {
@@ -35,6 +37,92 @@ namespace d360.model.DataAccessLayer
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
         }
+
+        #endregion
+
+        #region Common Sql Segments
+
+        string conditionGroupsJsonSql(string assetVersionAliasedUidColumn)
+        {
+            return $@"(
+                    	select		C.Uid,
+									C.Position,
+									C.Threshold,
+									C.Weight,
+									C.MatchType,
+									(
+										select	CI.Uid,
+												CI.ConditionType,
+												CI.ConditionFieldTypeID,
+                                                FT.Name as ConditionFieldTypeName,
+												CI.ConditionIntersectTypeID,
+                                                IT.Uid as ConditionIntersectTypeUid,
+												CI.Operator,
+												JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
+                                        from	metrics.AssetVersionConditionItem CI
+                                                left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
+                                                left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
+										where	CI.AssetVersionConditionUid = C.Uid
+										for json path
+									) as ConditionItems
+                    	from		metrics.AssetVersionCondition C
+                    	where		C.AssetVersionUid = {assetVersionAliasedUidColumn}
+						order by	C.Position
+                    	for		json path
+                    ) as ConditionGroups";
+        }
+
+        string dataQualityDefinitionSql(string assetVersionAliasedDefinitionColumn, string assetVersionAliasedUidColumn) {
+            return $@"JSON_QUERY((
+                        select	P.RollupPathUid as ResultPathUid,
+		                        P.FilterMatchType,
+                                JSON_VALUE({assetVersionAliasedDefinitionColumn}, '$.DataQuality.ResultOperation') as ResultOperation,
+		                        (
+		                        select	A.Uid as AssetTypeUid,
+				                        F.Name as FieldTypeName,
+				                        PF.Operator,
+				                        JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionRollupPathFilterValue where	AssetVersionRollupPathFilterUid = PF.Uid)) as [Values]
+                                from	metrics.AssetVersionRollupPathFilter PF
+				                        inner join AssetType A on A.ID = PF.AssetTypeID
+				                        inner join FieldType F on F.ID = PF.FieldTypeID
+		                        where	PF.AssetVersionRollupPathUid = P.Uid
+		                        for json path
+		                        ) as Filters
+                        from	metrics.AssetVersionRollupPath P
+                        where	AssetVersionUid = {assetVersionAliasedUidColumn}
+                        for json path, without_array_wrapper
+                )) as DataQualityDefinition";
+        }
+
+        string hasResultsSql(string assetVersionAliasedUidColumn)
+        {
+            return $@"cast(IIF({assetVersionAliasedUidColumn} = ANY(select AssetVersionUid from metrics.ScoreItem), 1, 0) as bit) as HasResults";
+        }
+
+        #endregion
+
+        #region Common Processing Of Measure Data
+
+        void processConditionGroup(IConditionGroupMeasure m)
+        {
+            m.ConditionGroups.RemoveAll(g => g.ConditionItems == null || g.ConditionItems.Count == 0);
+        }
+        void processDefinition(IDefinitionMeasure m)
+        {
+            m.Definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(m.DefinitionJson ?? "{}");
+            m.DefinitionJson = null;
+
+            if (m.Definition != null && m.DataQualityDefinition != null)
+            {
+                if (m.Definition.DataQuality != null)
+                {
+                    m.Definition.DataQuality = m.DataQualityDefinition;
+                }
+            }
+            m.DataQualityDefinition = null;
+        }
+
+        #endregion
 
         public void DeleteMetric(MetricAsset model)
         {
@@ -1589,14 +1677,14 @@ from    metrics.Allocation  ma
             return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
-        public List<string> GetMetricStructureFragments(Guid allocationUid, List<State> states = null)
+        public List<MetricAssetViewModel> GetMetricStructureByAllocation(Guid allocationUid, List<State> states = null)
         {
             if (states == null || states.Count == 0)
             {
                 states.Add(State.Active);
             }
             var endDateString = states.Contains(State.Deleted) ? ",V.EffectiveEndDate" : "";
-            return Company.Query<string>($@"
+            var fragments = Company.Query<string>($@"
                     select	A.Uid,
                     		A.ParentUid,
                             A.AllocationUid,
@@ -1609,52 +1697,9 @@ from    metrics.Allocation  ma
                     		V.Threshold,
 							V.UpdateFrequency,
 							V.MatchConditionsOnly,
-                            cast(IIF(V.Uid = ANY(select AssetVersionUid from metrics.ScoreItem), 1, 0) as bit) as HasResults,
-							(
-                    			select		C.Uid,
-											C.Position,
-											C.Threshold,
-											C.Weight,
-											C.MatchType,
-											(
-												select	CI.Uid,
-														CI.ConditionType,
-														CI.ConditionFieldTypeID,
-                                                        FT.Name as ConditionFieldTypeName,
-														CI.ConditionIntersectTypeID,
-                                                        IT.Uid as ConditionIntersectTypeUid,
-														CI.Operator,
-														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
-                                                from	metrics.AssetVersionConditionItem CI
-                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
-                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
-												where	CI.AssetVersionConditionUid = C.Uid
-												for json path
-											) as ConditionItems
-                    			from		metrics.AssetVersionCondition C
-                    			where		C.AssetVersionUid = V.Uid
-								order by	C.Position
-                    			for		json path
-                    		) as ConditionGroups,
-                            JSON_QUERY((
-                            select	P.RollupPathUid as ResultPathUid,
-		                            P.FilterMatchType,
-                                    JSON_VALUE(V.Definition, '$.DataQuality.ResultOperation') as ResultOperation,
-		                            (
-		                            select	A.Uid as AssetTypeUid,
-				                            F.Name as FieldTypeName,
-				                            PF.Operator,
-				                            JSON_QUERY((SELECT CONCAT('[""',STRING_AGG(STRING_ESCAPE([Value],'JSON'), '"",""'),'""]') FROM metrics.AssetVersionRollupPathFilterValue where	AssetVersionRollupPathFilterUid = PF.Uid)) as [Values]
-                                    from	metrics.AssetVersionRollupPathFilter PF
-				                            inner join AssetType A on A.ID = PF.AssetTypeID
-				                            inner join FieldType F on F.ID = PF.FieldTypeID
-		                            where	PF.AssetVersionRollupPathUid = P.Uid
-		                            for json path
-		                            ) as Filters
-                            from	metrics.AssetVersionRollupPath P
-                            where	AssetVersionUid = V.Uid
-                            for json path, without_array_wrapper
-                            )) as DataQualityDefinition,
+                            {hasResultsSql("V.Uid")},
+							{conditionGroupsJsonSql("V.Uid")},
+                            {dataQualityDefinitionSql("V.Definition", "V.Uid")},
                             VC.Count as [VersionCount],
                             A.[State],
                             V.Definition as [DefinitionJson]
@@ -1670,6 +1715,21 @@ from    metrics.Allocation  ma
                             cross apply (select count(1) as [Count] from metrics.AssetVersion where AssetUid = A.Uid) VC
                     order by A.ParentUid, V.Name
                     for		json path", new { allocationUid, states }, ApiTimeout).ToList();
+
+            var jsonString = string.Join("", fragments);
+            JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
+            var models = items.ToObject<List<MetricAssetViewModel>>();
+
+            if (models == null)
+                models = new List<MetricAssetViewModel>();
+
+            models.ForEach(m =>
+            {
+                processConditionGroup(m);
+                processDefinition(m);
+            });
+
+            return models;
         }
 
         public List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid)
@@ -2236,9 +2296,9 @@ from    metrics.ScoreItem I
         inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }, ApiTimeout).FirstOrDefault();
         }
 
-        public List<string> GetMetricVersionHistory(Guid measureUid)
+        public List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid)
         {
-            return Company.Query<string>($@"                    
+            var fragments = Company.Query<string>($@"                    
                     select ROW_NUMBER() over (Order by V.EffectiveDate asc, ISNULL(V.EffectiveEndDate, GETDATE()) asc) as version, 
                             A.Uid as MeasureUid,
                     		V.Name,
@@ -2247,33 +2307,9 @@ from    metrics.ScoreItem I
 							V.EffectiveEndDate,
 							V.Weight,
 							V.Uid as versionuid,
-                            cast(IIF(V.Uid = ANY(select AssetVersionUid from metrics.ScoreItem), 1, 0) as bit) as HasResults,
-							(
-                    			select		C.Uid,
-											C.Position,
-											C.Threshold,
-											C.Weight,
-											C.MatchType,
-											(
-												select	CI.Uid,
-														CI.ConditionType,
-														CI.ConditionFieldTypeID,
-                                                        FT.Name as ConditionFieldTypeName,
-														CI.ConditionIntersectTypeID,
-                                                        IT.Uid as ConditionIntersectTypeUid,
-														CI.Operator,
-														JSON_QUERY((SELECT CONCAT('[""',STRING_AGG([Value], '"",""'),'""]') FROM metrics.AssetVersionConditionItemValue where	Uid = CI.Uid)) as [Values]
-												from	metrics.AssetVersionConditionItem CI
-                                                        left join FieldType FT on FT.ID = CI.ConditionFieldTypeID
-                                                        left join IntersectType IT on IT.ID = CI.ConditionIntersectTypeID
-												where	CI.AssetVersionConditionUid = C.Uid
-												for json path
-											) as ConditionItems                                            
-                    			from		metrics.AssetVersionCondition C
-                    			where		C.AssetVersionUid = V.Uid
-								order by	C.Position
-                    			for		json path
-                    		) as ConditionGroups,
+                            {hasResultsSql("V.Uid")}, 
+							{conditionGroupsJsonSql("V.Uid")}, 
+                            {dataQualityDefinitionSql("V.Definition", "V.Uid")},
                             V.Definition as [DefinitionJson]
                     from	metrics.Asset A                    		
                             cross apply (
@@ -2282,9 +2318,24 @@ from    metrics.ScoreItem I
                     			where	AssetUid = A.Uid
                     		) MV
                     		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate
-					where A.Uid = @measureUid
-					Order by version
+					where   A.Uid = @measureUid
+				    order by version
                     for		json path", new { measureUid }, ApiTimeout).ToList();
+
+            var jsonString = string.Join("", fragments);
+            JArray items = JArray.Parse(string.IsNullOrEmpty(jsonString) ? "[]" : jsonString);
+            var models = items.ToObject<List<MeasureVersionHistoryModel>>();
+
+            if (models == null)
+                models = new List<MeasureVersionHistoryModel>();
+
+            models.ForEach(m =>
+            {
+                processConditionGroup(m);
+                processDefinition(m);
+            });
+
+            return models;
         }
     }
 }

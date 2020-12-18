@@ -575,10 +575,10 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<DateTime?>()))
                 .Returns(new List<RootMetricAssetHierarchyModel>());
             
-            mock.Setup(x => x.GetMetricStructureFragments(It.IsAny<Guid>(),It.IsAny<List<State>>()))
+            mock.Setup(x => x.GetMetricStructureByAllocation(It.IsAny<Guid>(),It.IsAny<List<State>>()))
                 .Returns(
-                new List<string>() {
-                    @"[{""ID"":420,""Name"":""Name"",""Type"":""Text"",""Uid"":""00000000-0000-0000-0000-000000000000""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date"",""Uid"":""00000000-0000-0000-0000-000000000000""}]"
+                new List<MetricAssetViewModel>() {
+                    new MetricAssetViewModel { Uid = Guid.Empty, Name = "Name" }
                 });
 
             return mock.Object;
