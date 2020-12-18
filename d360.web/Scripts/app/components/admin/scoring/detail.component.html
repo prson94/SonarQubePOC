@@ -128,6 +128,6 @@
         </div>
     </div>
 </div>
-<d3s-modal *ngIf="data" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
-    <allocation-editor [disabled]="allocation?.hasMeasure||allocation?.hasDisabledMeasure" [selection]="data" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
+<d3s-modal *ngIf="allocation" title="Edit Scoring Definition" additionalClasses="medium-dialog" [isVisible]="showEdit">
+    <allocation-editor [disabled]="allocation?.hasMeasure||allocation?.hasDisabledMeasure" [selection]="allocation" (onCancel)="showEdit=false;" (onSave)="save();"></allocation-editor>
 </d3s-modal>
