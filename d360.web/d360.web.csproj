@@ -1286,6 +1286,7 @@
     <Content Include="Scripts\app\components\shared\controls\color-picker\color-picker.less" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
+    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -47,7 +47,8 @@ declare var window: any;
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
     providers: [BrowserService, PermissionsService, PredicatesService, ProcessService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    styleUrls: ['./browser.component.less'],
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Input() readonly = true;
@@ -1202,6 +1203,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram = this.template_Diagram();
 
+
         let forelayer = this.diagram.findLayer("Foreground");
         this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
 
@@ -1241,7 +1243,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }            
+            }    
+
+            new go.Overview('asset-browser-overview').observed = this.diagram;
         });
     }
 
