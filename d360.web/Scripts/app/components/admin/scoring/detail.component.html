@@ -99,6 +99,16 @@
                     <div class="details-header">Grouping Measure</div>
                     <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                 </div>
+                <div *ngIf="!data?.isExternallyCalculated && showPassTest">
+                    <d3s-admin-metric-pass-test-details [definition]="selectedMetric?.Definition"
+                                                        [operators]="operators"
+                                                        [metricListFieldTypes]="fields"
+                                                        [responsibilityTypes]="responsibilityTypes"
+                                                        [relationshipTypes]="relationshipTypes"
+                                                        [assetTypeUid]="selectedAssetType.Uid"
+                                                        [paths]="ruleResultPaths">
+                    </d3s-admin-metric-pass-test-details>
+                </div>
                 <div *ngIf="showConditions" class="measure-details-item">
                     <div class="details-header">Asset Conditions</div>
                     <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
@@ -110,17 +120,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest">
-                    <d3s-admin-metric-pass-test-details 
-                                                        [definition]="selectedMetric?.Definition"
-                                                        [operators]="operators" 
-                                                        [metricListFieldTypes]="fields" 
-                                                        [responsibilityTypes]="responsibilityTypes" 
-                                                        [relationshipTypes]="relationshipTypes" 
-                                                        [assetTypeUid]="selectedAssetType.Uid"
-                                                        [paths]="ruleResultPaths">
-                    </d3s-admin-metric-pass-test-details>
                 </div>
                 <div class="measure-details-item">
                     <div class="details-header">UID</div>
