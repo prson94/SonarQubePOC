@@ -41,7 +41,7 @@ th.p-state-default {
     background-color: @ig-grey-t2;
 }
 
-.p-inputtext.p-component, .p-dropdown {
+.p-inputtext.p-component, .p-dropdown, .p-multiselect-trigger, .p-multiselect {
     border: @ig-field-border;
 }
 
@@ -1049,7 +1049,7 @@ th.p-state-default {
 }
 
 /* Tabview */
-.p-tabview.p-component-content {
+.p-tabview {
     border: 0px none;
     background: @ig-white;
     padding: 0;
@@ -1060,20 +1060,20 @@ th.p-state-default {
     border-bottom: @ig-field-border;
 }
 
-.p-tabview .p-tabview-nav > li.p-state-default {
+.p-tabview .p-tabview-nav > li {
     background: none;
     color: @ig-midblue-t2;
     border: none;
     cursor: pointer;
 }
 
-.p-tabview .p-tabview-nav > li.p-state-default.p-state-hover {
+.p-tabview .p-tabview-nav > li:hover {
     background: none;
     color: @ig-midblue-t2;
     border: none;
 }
 
-.p-tabview .p-tabview-nav > li.p-state-default.p-state-active {
+.p-tabview .p-tabview-nav > li.p-highlight {
     background: none;
     font-weight: bold;
     color: @ig-grey;
@@ -2193,7 +2193,7 @@ p-togglebutton.ng-dirty.ng-invalid .p-button {
     border-bottom: 1px solid #ccc;
 }
 
-.p-autocomplete-panel, .p-dropdown-panel, .p-multiselect {
+.p-autocomplete-panel, .p-dropdown-panel, .p-multiselect-panel {
     box-shadow: 0 1px 3px 0 rgba(0,0,0,.3);
 }
 
@@ -2457,7 +2457,7 @@ p-datatable .p-datatable .p-datatable-data > tr > td {
     height: auto;
 }
 
-.p-multiselect-item .p-highlight:not(.p-checkbox-box), .p-component .p-highlight, [class$="-header"] .p-highlight {
+.p-multiselect-item .p-highlight:not(.p-checkbox-box), [class$="-header"] .p-highlight {
     background: #ffef99;
 }
 /* paging controls on search tables*/
@@ -2642,4 +2642,9 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
 
 .p-datatable-scrollable-header {
     background-color: @ig-grey-s2;
+}
+
+.p-tabview-title {
+    color: @ig-black;
+    font-weight: bold;
 }
