@@ -61,13 +61,8 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                     const resultPathUid = dq.ResultPathUid;
                     const paths = this.paths.filter(x => { return x.value == resultPathUid; });
 
-                    console.log('dq: ' + JSON.stringify(dq));
-                    console.log('resultPathUid: ' + resultPathUid);
-                    console.log('paths.length: ' + paths.length);
                     if (paths.length > 0) {
                         this.ruleResultPathHtml = paths[0].label;
-
-                        console.log('ruleResultPathHtml: ' + this.ruleResultPathHtml);
 
                         if (dq.Filters &&
                             dq.Filters.length > 0) {
