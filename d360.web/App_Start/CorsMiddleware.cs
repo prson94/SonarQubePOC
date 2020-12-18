@@ -3,6 +3,7 @@ using d360.web.caching;
 using Dapper;
 using Microsoft.Owin;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -27,36 +28,40 @@ namespace d360.web
             var cache = new MemoryCachingProvider();
             bool isPreflight = false;
             int? companyID = context.Request.Get<int?>("CompanyID");
-
+            ConcurrentBag<CompanyOrigin> origins = cache.GetItem<ConcurrentBag<CompanyOrigin>>(OriginKey) ?? new ConcurrentBag<CompanyOrigin>();
 
             if (context.Request.Headers.ContainsKey("Origin"))
             {
                 var acceptOrigin = context.Request.Headers["Origin"];
+
                 if (companyID.HasValue)
                 {
                     isPreflight = context.Request.Method == "OPTIONS";
-                    string origins = string.Empty;
+                    CompanyOrigin companyOrigin = origins.FirstOrDefault(o => o.CompanyID == (int)companyID);
+                    string originsSetting = string.Empty;
 
-                    if (!cache.ItemExists<string>(OriginKey))
+                    if (companyOrigin == null)
                     {
                         using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                         {
                             cnn.Open();
-                            origins = cnn.Query<string>(@"select coalesce(CS.Value, S.DefaultValue) from Setting S 
+                            originsSetting = cnn.Query<string>(@"select coalesce(CS.Value, S.DefaultValue) from Setting S 
                                 left join CompanySetting CS on CS.SettingID = S.ID and CS.CompanyID = @companyID
                                 where S.ID = 76", new { companyID }).FirstOrDefault();
 
-                            cache.SetItem(OriginKey, origins);
+                            companyOrigin = new CompanyOrigin() { CompanyID = (int)companyID, Origins = originsSetting };
+                            origins.Add(companyOrigin);
                         }
                     }
                     else
                     {
-                        origins = cache.GetItem<string>(OriginKey);
+                        originsSetting = companyOrigin.Origins;
                     }
+                    cache.SetItem(OriginKey, origins);
 
-                    if (!string.IsNullOrEmpty(origins))
+                    if (!string.IsNullOrEmpty(originsSetting))
                     {
-                        var allowOrigin = origins
+                        var allowOrigin = originsSetting
                             .Split(',')
                             .ToList()
                             .Contains(acceptOrigin);
@@ -86,6 +91,12 @@ namespace d360.web
             }
 
             await _next.Invoke(environment);
+        }
+
+        private class CompanyOrigin
+        {
+            public int CompanyID { get; set; }
+            public string Origins { get; set; }
         }
     }
 }

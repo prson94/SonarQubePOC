@@ -184,7 +184,7 @@ order by RT.Name", new { id }).AsQueryable();
         {
             Permission permission = Permission.ReadAsset;
 
-            return await Database.Connection.QuerySingleAsync<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t)
+            return await Database.Connection.QuerySingleAsync<bool>($@"	if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = 0 and ua.AssetTypeID = @t and ua.AssetID = 0)
                                                                                         begin
                                                                                             select 0;
                                                                                         end				                                                                        

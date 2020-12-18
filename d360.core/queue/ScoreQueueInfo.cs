@@ -26,6 +26,7 @@ namespace d360.core.queue
     public class ScoreQueueInfo
     {
         public int CompanyID { get; set; }
+        public int? ResourceID { get; set; }
 
         public Guid ExecutionUid { get; set; }
 

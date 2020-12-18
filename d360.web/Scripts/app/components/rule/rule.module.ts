@@ -38,10 +38,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TreeTableModule } from 'primeng/treetable';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
-
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { CalendarModule } from 'primeng/calendar';
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 @NgModule({
     imports: [
@@ -78,7 +77,7 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
         SharedDeleteFormModule,        
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
-        SharedObjectGovernanceModule,
+        SharedAssetScoreModule,
         SharedAssetEditorsModule,
         AssetGridModule
     ],

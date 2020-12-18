@@ -103,6 +103,7 @@ namespace d360.web.Controllers
         private readonly static List<AssetTypeClass> assetTypeClasses = new List<AssetTypeClass> {
             AssetTypeClass.BusinessAsset,
             AssetTypeClass.TechnicalAsset,
+            AssetTypeClass.Diagram,
             AssetTypeClass.Model,
             AssetTypeClass.Policy,
             AssetTypeClass.Rule,
@@ -197,6 +198,8 @@ namespace d360.web.Controllers
                         return "fa-comments";
                     case "Attribute":
                         return "fa-pencil-square-o";
+                    case "Diagram":
+                        return "fa-share-alt";
                     case "Fusion":
                     case "FusionType":
                         siteNavName = "#Fusion";

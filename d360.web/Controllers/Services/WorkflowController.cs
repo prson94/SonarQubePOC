@@ -324,7 +324,7 @@ order by wi.StartedOn desc";
                 else
                 {
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, true);
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
                 }
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
@@ -1328,11 +1328,6 @@ order by wi.StartedOn desc";
 
             switch (changeType)
             {
-                case ChangeType.Loaded:
-                    types = types.Where(t => t.type == "Fusion")
-                        .OrderBy(t => t.name)
-                        .ToList();
-                    break;
                 case ChangeType.Schedule:
                     types = types.Where(t => t.type == "ArtifactType" 
                     || t.type == "TaxonomyType" 

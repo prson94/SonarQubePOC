@@ -31,8 +31,8 @@ import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 
 @NgModule({
@@ -64,8 +64,8 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
         
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,        
-        SharedDynamicGridEditorModule,   
-        SharedObjectGovernanceModule,
+        SharedDynamicGridEditorModule,
+        SharedAssetScoreModule,
         SharedAssetEditorsModule,
         TilesModule,
         WorkflowModule,

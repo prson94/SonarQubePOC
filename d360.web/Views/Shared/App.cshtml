@@ -63,16 +63,17 @@
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <script type="text/javascript" src="scripts/ai.0.22.9-build00167.min.js"></script>
-    @if (Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey != ""){
-	    <script type="text/javascript">
+    @if (Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey != "")
+    {
+        <script type="text/javascript">
             var sdkInstance="appInsightsSDK";window[sdkInstance]="appInsights";var aiName=window[sdkInstance],aisdk=window[aiName]||function(e){function n(e){t[e]=function(){var n=arguments;t.queue.push(function(){t[e].apply(t,n)})}}var t={config:e};t.initialize=!0;var i=document,a=window;setTimeout(function(){var n=i.createElement("script");n.src=e.url||"https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js",i.getElementsByTagName("script")[0].parentNode.appendChild(n)});try{t.cookie=i.cookie}catch(e){}t.queue=[],t.version=2;for(var r=["Event","PageView","Exception","Trace","DependencyData","Metric","PageViewPerformance"];r.length;)n("track"+r.pop());n("startTrackPage"),n("stopTrackPage");var s="Track"+r[0];if(n("start"+s),n("stop"+s),n("addTelemetryInitializer"),n("setAuthenticatedUserContext"),n("clearAuthenticatedUserContext"),n("flush"),t.SeverityLevel={Verbose:0,Information:1,Warning:2,Error:3,Critical:4},!(!0===e.disableExceptionTracking||e.extensionConfig&&e.extensionConfig.ApplicationInsightsAnalytics&&!0===e.extensionConfig.ApplicationInsightsAnalytics.disableExceptionTracking)){n("_"+(r="onerror"));var o=a[r];a[r]=function(e,n,i,a,s){var c=o&&o(e,n,i,a,s);return!0!==c&&t["_"+r]({message:e,url:n,lineNumber:i,columnNumber:a,error:s}),c},e.autoExceptionInstrumented=!0}return t}(
             {
                 instrumentationKey:"@Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey"
             }
             ); window[aiName] = aisdk;
-    </script>
-}
-<script type="text/javascript">
+        </script>
+    }
+    <script type="text/javascript">
         var EnvironmentSettings = @(Html.Raw(environmentSettingsJson));
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
@@ -81,17 +82,18 @@
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
         var VersionNumber = '@(VersionNumber)';
-</script>
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/primeng.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
-<link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/theme.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
-<style type="text/css">
+    </script>
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v10.0.3/primeng.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v10.0.3/default.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
+    <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v10.0.3/theme.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
+    <style type="text/css">
         nav.top{border-bottom:1px solid @(settings["HeaderBackgroundColor"]);}
         .header-search .search-child {
             border-bottom:1px solid @(settings["HeaderBackgroundColor"]);
@@ -101,11 +103,11 @@
         .ng-loading{position:fixed;height:100%;width:100%;top:0;left:0;background:white;}
         .ng-loading-wrap{position:fixed;top:45%;left:50%;color:#54a4da;}
         .ng-loading-image{background-image: url(@string.Format("{0}/content/images/govern-small.svg", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-65px;}
-</style>
-@if (!string.IsNullOrEmpty(customStylesheetURL))
-{
-    <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
-}
+    </style>
+    @if (!string.IsNullOrEmpty(customStylesheetURL))
+    {
+        <link rel="stylesheet" type="text/css" href="@customStylesheetURL" />
+    }
 </head>
 <body>
     <d3s-app><div class="ng-loading"><div class="ng-loading-wrap"><div class="ng-loading-image">&nbsp;</div>Loading...</div></div></d3s-app>

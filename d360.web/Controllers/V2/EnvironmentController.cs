@@ -400,7 +400,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list of operators that can be used as filters, conditions, and in other forms and APIs.
+        /// Retrieves a list of operators that can be used as values for the Operator property on certain endpoints within the Scoring and Metrics API.
         /// </summary>
         /// <returns></returns>
         [

@@ -12,11 +12,19 @@ export class PointBreakdown {
     Value: boolean;
     EffectiveDate: string;
     EndDate: string;
-    ScoreType: ScoreType; 
+    ScoreType: ScoreType;
     Conditions: PointBreakdownCondition[];
     Measures: PointBreakdown[];
-    expandable: boolean = true;
-    IsCollapsed: boolean = false;
+
+
+    //ui data
+    _finalScore: number = 0;
+    _isSelected: boolean = false;
+    _badgeStyle: string = 'default';
+    _isCollapsed: boolean = false;
+    _adjustedGroupWeight: number = 0;
+    _adjustedMeasureWeight: number = 0;
+    _measureSumWeight: number = 0;
 }
 
 export class PointBreakdownCondition {
@@ -33,7 +41,7 @@ export class ScorePoint {
     ScoreProgression: number;
 }
 
-export class AverageScore { 
+export class AverageScore {
     AverageScore: number;
     Object: string;
     ObjectID: number;

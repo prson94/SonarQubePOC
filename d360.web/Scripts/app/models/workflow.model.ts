@@ -460,7 +460,6 @@ export enum WorkflowChangeType {
     Delete = 3,
     Schedule = 4,
     ScoreUpdate = 5,
-    Loaded = 7,
     RequestCertification = 8,
 }
 
@@ -533,6 +532,13 @@ export enum EmailTaskRecipientType {
     SpecificUser,
     Followers,
     Group
+}
+
+export enum ConditionFieldType {
+    Field,
+    Form,
+    Contextual,
+    HttpRequest
 }
 
 //#endregion

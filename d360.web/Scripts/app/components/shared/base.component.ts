@@ -1168,4 +1168,36 @@ export class BaseComponent {
     private GetIDFromUrl(url: string) {
         return +url.split("/")[url.split.length - 1];
     }
+
+    public getAsPrecentage(val: number): string {
+        if (val == undefined || val == null)
+            return 'undefined';
+
+        if (val == 0)
+            return '0%';
+        if (!val)
+            return;
+        if (val == 1)
+            return '100%'
+
+        if (val > 1) {
+            var integerPart = Math.floor(val);
+            var fraction = val - integerPart;
+            var res = this.getAsPrecentage(fraction);
+            if (res.length == 2) {
+                return integerPart + '0' + res;
+            }
+            return integerPart + res;
+        }
+
+        let s = val + '0000';
+        s = s.replace('0.', '');
+        if (s.length > 6)
+            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+        else
+            s = (s.substr(0, 2)) + "%";
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
+        return s;
+    }
 }

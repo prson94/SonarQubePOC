@@ -32,8 +32,10 @@ namespace d360.extensions.search
                 SystemObjects.Artifact.ToString(),
                 SystemObjects.Resource.ToString(),
                 SystemObjects.Taxonomy.ToString(),
+                SystemObjects.Task.ToString(),
                 AssetTypeClass.BusinessAsset.ToString(),
                 AssetTypeClass.TechnicalAsset.ToString(),
+                AssetTypeClass.Diagram.ToString(),
                 AssetTypeClass.Model.ToString(),
                 AssetTypeClass.Policy.ToString(),
                 AssetTypeClass.Rule.ToString(),
@@ -111,10 +113,13 @@ namespace d360.extensions.search
 
         public void IndexAssetType(Guid AssetTypeUid)
         {
+            _source.ClearIndex(_companyID, AssetTypeUid);
             AssetClassAndName assettype = _context.QueryFirstOrDefault<AssetClassAndName>("SELECT [Class], [Name] FROM AssetType att WHERE att.uid = @AssetTypeUid", new { AssetTypeUid });
-            _source.ClearIndex(_companyID, assettype.Class.ToString(), assettype.Name);
-            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, assettype.Class, AssetTypeUid, null);
-            _source.AddToIndex(models);
+            if (assettype != null)
+            {
+                IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, assettype.Class, AssetTypeUid, null);
+                _source.AddToIndex(models);
+            }
         }
 
         public void IndexAssetClass(AssetTypeClass assetclass)
@@ -123,6 +128,7 @@ namespace d360.extensions.search
             IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, _source, assetclass, null, null);
             _source.AddToIndex(models);
         }
+
         public void IndexObjectType(string ObjectType, bool clearIndex = true)
         {
             if(clearIndex)
@@ -155,6 +161,7 @@ namespace d360.extensions.search
             {
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Diagram:
                 case AssetTypeClass.Model:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Rule:
