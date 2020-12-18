@@ -1,0 +1,100 @@
+﻿
+<d3s-loading [isLoading]="!isHistoryLoaded"></d3s-loading>
+<div class="score-chart-container" [hidden]="!isHistoryLoaded">
+    <div class="heading">
+        <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
+    </div>
+    <div class="score-chart">
+        <div id="healthChart"></div>
+
+        <p-checkbox *ngIf="!isExternallyCalculated" igCheckbox [(ngModel)]="showMeasurePoints" (click)="saveState();refreshGraph();" binary="true" label="Show scoring history of selected measure"></p-checkbox>
+        <div #scoreTable class="score-table">
+            <div class="col s12">
+                <div class="row score-tbl-header {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
+                    <div class="col s4 column">Date (UTC)</div>
+                    <div class="col s4 column">
+                        <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated">
+                            <div [style.background-color]="measureScoreGraphColor" class="round-circle"></div>
+                            Measure
+                        </ng-container>
+                    </div>
+                    <div class="col s4 column">
+                        <div [style.background-color]="mainScoreGraphColor" class="round-circle"></div>
+                        Score
+                    </div>
+                </div>
+                <div class="body {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
+                    <div *ngFor="let item of scoresPoints" class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)">
+                        <div class="col s4 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
+                        <div class="col s4 column measure-point">
+                            <ng-container *ngIf="showMeasurePoints && !getMeasurePoint(item)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;---</ng-container>
+                            <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated && getMeasurePoint(item)" [ngSwitch]="getMeasurePoint(item).ScoreProgression">
+                                <ng-container *ngSwitchCase="1">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-caret-up arrow-up"></i>
+                                    </span>
+                                    <span class="score-text">
+                                        {{getMeasurePoint(item).Score}}%
+                                    </span>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="-1">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-caret-down arrow-down"></i>
+                                    </span>
+                                    <span class="score-text">
+                                        {{getMeasurePoint(item).Score}}%
+                                    </span>
+                                </ng-container>
+                                <ng-container *ngSwitchCase="0">
+                                    <i class="fa fa-square turn"></i><span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                </ng-container>
+                                <ng-container *ngSwitchDefault>
+                                    <div>
+                                        <span class="icon-holder"></span>
+                                        <span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    </div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                        <div class="col s4 column score-point" [ngSwitch]="item.ScoreProgression">
+                            <ng-container *ngSwitchCase="1">
+                                <span class="icon-holder">
+                                    <i class="fa fa-caret-up arrow-up"></i>
+                                </span>
+                                <span class="score-text">{{item.Score}}%</span>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="-1">
+                                <span class="icon-holder">
+                                    <i class="fa fa-caret-down arrow-down"></i>
+                                </span>
+                                <span class="score-text">{{item.Score}}%</span>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="0">
+                                <div pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                     tooltipPosition="top"
+                                     tooltipStyleClass="ig-tooltip">
+                                    <span class="icon-holder">
+                                        <i class="fa fa-square turn"></i>
+                                    </span>
+
+                                    <span class="score-text">{{item.Score}}%</span>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>
+                                <div>
+                                    <span class="icon-holder"></span>
+
+                                    <span class="score-text">{{item.Score}}%</span>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

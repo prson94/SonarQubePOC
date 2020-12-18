@@ -33,8 +33,7 @@ import { TreeTableModule } from 'primeng/treetable';
 import { ToastModule } from 'primeng/toast';
 import { TreeModule } from 'primeng/tree';
 import { TableModule } from 'primeng/table';
-
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 
 @NgModule({
@@ -67,7 +66,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
 
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
-        SharedObjectGovernanceModule,
+        SharedAssetScoreModule,
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
         TilesModule,

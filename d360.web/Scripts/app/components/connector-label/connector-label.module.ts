@@ -16,16 +16,15 @@ import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/share
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
 import { TableModule } from 'primeng/table';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 import { ConnectorLabelRoutingModule } from './connector-label.routes';
 import { ConnectorLabelComponent } from './connector-label.component';
 import { ConnectorLabelItemComponent } from './connector-label-item.component';
-import { ConnectorLabelsFormComponent } from '../sidebar/connector-labels/connector-label-form.component';
 import { ConnectorLabelFormModule } from '../sidebar/connector-labels/connector-label-form.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { WhereUsedModule } from '../shared/where-used/where-used.module';
+import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
 
 @NgModule({
     imports: [
@@ -51,7 +50,7 @@ import { WhereUsedModule } from '../shared/where-used/where-used.module';
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
-        SharedObjectGovernanceModule,
+        SharedAssetScoreModule,
         ConnectorLabelFormModule,
         SiteModalModule,
         WhereUsedModule

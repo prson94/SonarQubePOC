@@ -27,7 +27,7 @@ namespace d360.model.DataAccessLayer
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
-               
+
 
         public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
         {
@@ -48,7 +48,7 @@ namespace d360.model.DataAccessLayer
             {
                 currentAssetVersion.EffectiveEndDate = (currentAssetVersion.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
             }
-            else 
+            else
             {
                 currentAssetVersion.EffectiveEndDate = lastUsedMetric;
             }
@@ -59,10 +59,11 @@ namespace d360.model.DataAccessLayer
             if (children.Count > 0)
             {
                 var childVersions = Company.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
-                childVersions.ForEach(v => {
+                childVersions.ForEach(v =>
+                {
                     v.EffectiveEndDate = (v.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
                 });
-                children.ForEach(c => c.State = State.Deleted );
+                children.ForEach(c => c.State = State.Deleted);
             }
 
             var olderVersions = Company.MetricAssetVersions.Where(x => x.Uid == currentAssetVersion.Uid).ToList();
@@ -77,10 +78,11 @@ namespace d360.model.DataAccessLayer
             Company.SendScoreEventWithPayload(
                 Guid.NewGuid(),
                 ScoreQueueChangeType.MeasureRemoved,
-                new MeasureRemovedModel { 
-                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value, 
-                    MetricAssetUid = currentAssetVersion.AssetUid, 
-                    MetricAssetVersionUid = currentAssetVersion.Uid 
+                new MeasureRemovedModel
+                {
+                    EffectiveEndDate = currentAssetVersion.EffectiveEndDate.Value,
+                    MetricAssetUid = currentAssetVersion.AssetUid,
+                    MetricAssetVersionUid = currentAssetVersion.Uid
                 }
              );
         }
@@ -105,8 +107,10 @@ namespace d360.model.DataAccessLayer
                         select new MetricAssetViewDetailModel
                         {
                             AllocationUid = a.AllocationUid,
-                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel {
-                                ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
+                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel
+                            {
+                                ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel
+                                {
                                     ConditionFieldTypeID = i.ConditionFieldTypeID,
                                     ConditionFieldTypeName = (i.ConditionFieldType != null) ? i.ConditionFieldType.Name : null,
                                     ConditionIntersectTypeID = i.ConditionIntersectTypeID,
@@ -124,7 +128,8 @@ namespace d360.model.DataAccessLayer
                             }).ToList(),
                             DefinitionJson = v.Definition,
                             RollupPaths = v.RollupPaths,
-                            Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
+                            Versions = a.Versions.Select(v => new MetricAssetVersionViewModel
+                            {
                                 ConditionAndOr = v.ConditionAndOr,
                                 Description = v.Description,
                                 EffectiveDate = v.EffectiveDate,
@@ -157,18 +162,19 @@ namespace d360.model.DataAccessLayer
                 {
                     var rollupPath = model.RollupPaths.FirstOrDefault();
                     if (rollupPath != null)
-                    { 
+                    {
                         model.Definition.DataQuality.FilterMatchType = rollupPath.FilterMatchType;
                         model.Definition.DataQuality.ResultPathUid = rollupPath.RollupPathUid;
                         if (rollupPath.Filters != null)
                         {
-                            model.Definition.DataQuality.Filters = rollupPath.Filters.Select(f => new MetricAssetDefinitionDataQualityFilterViewModel { 
-                             AssetTypeUid = f.AssetType.uid,
-                             FieldTypeName = f.FieldType.Name,
-                             Operator = f.Operator,
-                             Values = f.Values.Select(v => v.Value).ToList()
+                            model.Definition.DataQuality.Filters = rollupPath.Filters.Select(f => new MetricAssetDefinitionDataQualityFilterViewModel
+                            {
+                                AssetTypeUid = f.AssetType.uid,
+                                FieldTypeName = f.FieldType.Name,
+                                Operator = f.Operator,
+                                Values = f.Values.Select(v => v.Value).ToList()
                             }).ToList();
-                        }                    
+                        }
                     }
 
                 }
@@ -245,7 +251,8 @@ namespace d360.model.DataAccessLayer
                 {
                     definitionJsonToCheck = model.Definition.AsJson();
                 }
-                catch {
+                catch
+                {
                     model.Definition = new MetricAssetDefinitionViewModel();
                 }
                 if (definitionJsonToCheck.Length > 4000)
@@ -254,7 +261,7 @@ namespace d360.model.DataAccessLayer
                 }
                 definitionJsonToCheck = null;
             }
-            else 
+            else
             {
                 model.Definition = new MetricAssetDefinitionViewModel();
             }
@@ -285,7 +292,8 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            Func<List<string>, string, string, int?, bool> checkValidValuesByDataType = delegate(List<string> values, string dataType, string lookupObject, int? lookupObjectID) {
+            Func<List<string>, string, string, int?, bool> checkValidValuesByDataType = delegate (List<string> values, string dataType, string lookupObject, int? lookupObjectID)
+            {
                 var validForType = true;
                 for (int ix = 0; ix < values.Count; ix++)
                 {
@@ -347,9 +355,10 @@ namespace d360.model.DataAccessLayer
                 return validForType;
             };
 
-            Func<List<string>, OperatorInfo, string, string> checkValidValuesCount = delegate (List<string> values, OperatorInfo op, string checkType) {
+            Func<List<string>, OperatorInfo, string, string> checkValidValuesCount = delegate (List<string> values, OperatorInfo op, string checkType)
+            {
                 string error = null;
-                
+
                 var valueCount = values != null ? values.Count : 0;
                 if (valueCount < op.MinimumValueCount || valueCount > op.MaximumValueCount)
                 {
@@ -379,12 +388,12 @@ namespace d360.model.DataAccessLayer
                 {
                     status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
                 }
-                else 
+                else
                 {
                     if (!checkOperatorInfo.AllowedMeasureChecks.Any(t => t.ID == check))
                     {
                         status = new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"The Governance {check.GetDisplayName()} does not support the selected operator.");
-                    }                
+                    }
                 }
 
                 return status;
@@ -542,7 +551,7 @@ from	metrics.RollupPath P
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, checkObjectCorrespondsToCheckErrorMessage);
                         }
-                        
+
                         if (gov.External != null)
                         {
                             if (!string.IsNullOrEmpty(gov.External.Instructions) && gov.External.Instructions.Length > 500)
@@ -650,14 +659,14 @@ from	metrics.RollupPath P
 
                             var governanceRelationCheckValuesValidForType = true;
                             if (gov.Relation.Values != null)
-                            { 
+                            {
                                 gov.Relation.Values.ForEach(v =>
                                 {
                                     if (!Guid.TryParse(v, out _))
                                     {
                                         governanceRelationCheckValuesValidForType = false;
                                     }
-                                });                          
+                                });
                             }
 
                             if (!governanceRelationCheckValuesValidForType)
@@ -665,12 +674,12 @@ from	metrics.RollupPath P
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, errorTitle, $"One or more values used on your Governance Relation Check are not supported. All values must correspond to existing asset Uids.");
                             }
                         }
-                        
+
                         #endregion
                         break;
                 }
             }
-            
+
             // Remove any time component from the effective date.
             model.EffectiveDate = model.EffectiveDate.Date;
 
@@ -755,7 +764,7 @@ from	metrics.RollupPath P
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Error " + ((isNew) ? "adding" : "updating") + " metric", "Name cannot be longer than 250 characters.");
             }
-            
+
             int metricExistsCount = 0;
             var metricCountSql = $@"select count(1) from (
 select A.Uid, max(V.EffectiveDate) as EffectiveDate
@@ -797,20 +806,20 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         {
                             var parentExists = Company.Connection
                                 .Query<bool>(
-                                    "select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and Uid = @p", 
+                                    "select cast(iif(count(1) > 0, 1, 0) as bit) from metrics.Asset where AllocationUid = @a and Uid = @p",
                                     new { a = model.AllocationUid, p = model.ParentUid.Value }, transaction: trans)
                                 .Single();
-                            
+
                             if (!parentExists)
                             {
                                 throw new WorkStatusException(HttpStatusCode.NotFound, "Parent metric not found.");
                             }
-                            
+
                             metricAsset.ParentUid = model.ParentUid;
                         }
 
                         Company.Connection.Execute(
-                            "insert into metrics.Asset (Uid, ParentUid, IsGroup, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, AllocationUid) values (@Uid, @ParentUid, @IsGroup, @CreatedOn, @CreatedBy, @UpdatedOn, @UpdatedBy, @AllocationUid)", 
+                            "insert into metrics.Asset (Uid, ParentUid, IsGroup, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, AllocationUid) values (@Uid, @ParentUid, @IsGroup, @CreatedOn, @CreatedBy, @UpdatedOn, @UpdatedBy, @AllocationUid)",
                             metricAsset, transaction: trans
                         );
                     }
@@ -820,11 +829,11 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                         metricAsset.UpdatedOn = DateTime.Now;
 
                         var childMetricCount = Company.Connection.Query<int>(
-                            "select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", 
+                            "select count(1) from metrics.Asset where ParentUid = @Uid and State = 1",
                             new { model.Uid }, transaction: trans).Single();
-                        
+
                         var existingAllVersionsResultCount = Company.Connection.Query<int>(
-                            "select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid", 
+                            "select count(1) from metrics.ScoreItem I inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid and V.AssetUid = @Uid",
                             new { metricAsset.Uid }, transaction: trans).Single();
 
                         // If results, then you cannot change. 
@@ -907,10 +916,11 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         model.Definition.Governance = null;
                     }
 
-                    Action setVersionUpdateFrequency = () => {
+                    Action setVersionUpdateFrequency = () =>
+                    {
                         metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
 
-                         if (!model.Allocation.IsExternallyCalculated)
+                        if (!model.Allocation.IsExternallyCalculated)
                         {
                             if (!model.IsGroup && model.Definition.Governance != null)
                             {
@@ -922,19 +932,19 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                     }
                                 }
                             }
-                        }                   
+                        }
                     };
 
 
                     var definitionToSave = model.Definition.CloneThis();
-                    if (model.Allocation.ScoreType == ScoreType.DataQuality && definitionToSave.DataQuality != null && !model.Allocation.IsExternallyCalculated) 
+                    if (model.Allocation.ScoreType == ScoreType.DataQuality && definitionToSave.DataQuality != null && !model.Allocation.IsExternallyCalculated)
                     {
                         // These are saved in a table.
                         definitionToSave.DataQuality.FilterMatchType = null;
                         definitionToSave.DataQuality.Filters = null;
                         definitionToSave.DataQuality.ResultPathUid = null;
                     }
-                    
+
                     if (metricAssetVersion == null)
                     {
                         metricAssetVersion = new MetricAssetVersion
@@ -958,14 +968,14 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         setVersionUpdateFrequency();
 
                         Company.Connection.Execute(
-                            "insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)", 
+                            "insert into metrics.AssetVersion (AssetUid, EffectiveDate, Weight, ConditionAndOr, CreatedOn, CreatedBy, EffectiveEndDate, [State], Uid, Name, Description, Threshold, UpdateFrequency, MatchConditionsOnly, Definition) values (@AssetUid, @EffectiveDate, @Weight, @ConditionAndOr, @CreatedOn, @CreatedBy, @EffectiveEndDate, @State, @Uid, @Name, @Description, @Threshold, @UpdateFrequency, @MatchConditionsOnly, @Definition)",
                             metricAssetVersion, transaction: trans
                         );
 
                         // End-date the now previous version, if any.
                         var existingAssetVersions = Company.Connection.Query<MetricAssetVersion>(
-                            "select * from metrics.AssetVersion where AssetUid = @Uid and Uid <> @VersionUid and EffectiveEndDate is null order by EffectiveDate desc", 
-                            new { metricAsset.Uid, VersionUid = metricAssetVersion.Uid }, 
+                            "select * from metrics.AssetVersion where AssetUid = @Uid and Uid <> @VersionUid and EffectiveEndDate is null order by EffectiveDate desc",
+                            new { metricAsset.Uid, VersionUid = metricAssetVersion.Uid },
                             transaction: trans
                         ).ToList();
                         for (var i = 0; i < existingAssetVersions.Count; i++)
@@ -1035,7 +1045,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                         setVersionUpdateFrequency();
 
                         Company.Connection.Execute(
-                            "update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid", 
+                            "update metrics.AssetVersion set Name = @Name, Description = @Description, Definition = @Definition, UpdateFrequency = @UpdateFrequency, MatchConditionsOnly = @MatchConditionsOnly, Threshold = @threshold, Weight = @Weight where Uid = @Uid",
                             metricAssetVersion, transaction: trans);
                     }
 
@@ -1065,9 +1075,11 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
 
                             if (model.Definition.DataQuality.Filters.Count > 0)
                             {
-                                model.Definition.DataQuality.Filters.ForEach(f => {
-                                    var assetVersionRollupPathFilter = new MetricAssetVersionRollupPathFilter { 
-                                        AssetTypeID = f.AssetTypeID, 
+                                model.Definition.DataQuality.Filters.ForEach(f =>
+                                {
+                                    var assetVersionRollupPathFilter = new MetricAssetVersionRollupPathFilter
+                                    {
+                                        AssetTypeID = f.AssetTypeID,
                                         AssetVersionRollupPathUid = assetVersionRollupPath.Uid,
                                         FieldTypeID = f.FieldTypeID,
                                         Operator = f.Operator,
@@ -1078,7 +1090,8 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                                     f.Values.ForEach(v =>
                                     {
                                         assetVersionRollupPathFilterValues.Add(
-                                            new MetricAssetVersionRollupPathFilterValue {
+                                            new MetricAssetVersionRollupPathFilterValue
+                                            {
                                                 AssetVersionRollupPathFilterUid = assetVersionRollupPathFilter.Uid,
                                                 Value = v
                                             }
@@ -1098,7 +1111,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             {
                                 Company.Connection.Execute("insert into metrics.AssetVersionRollupPathFilterValue (AssetVersionRollupPathFilterUid, [Value]) values (@AssetVersionRollupPathFilterUid, @Value)", v, transaction: trans);
                             });
-                        }                    
+                        }
                     }
 
                     #endregion
@@ -1246,7 +1259,7 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                             });
 
                             if (groups.Rows.Count > 0)
-                            { 
+                            {
                                 Company.Connection.Execute(@"
 create table #Groups (AssetVersionUid uniqueidentifier not null, Uid uniqueidentifier not null, MatchType int not null, [Position] int not null, Threshold float null, Weight decimal(5,3) null);
 create table #Items (AssetVersionConditionUid uniqueidentifier not null, Uid uniqueidentifier not null, ConditionType int not null, ConditionFieldTypeID int not null, ConditionIntersectTypeID int null, Operator varchar(10) null );
@@ -1366,10 +1379,10 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
             }
 
             if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
-            { 
+            {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(), 
-                    ScoreQueueChangeType.MeasureChanged, 
+                    Guid.NewGuid(),
+                    ScoreQueueChangeType.MeasureChanged,
                     new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
                     );
             }
@@ -1469,7 +1482,7 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
                 effectiveDate = DateTime.UtcNow.Date;
             else
                 effectiveDate = effectiveDate.Value.ToUniversalTime().Date;
-            
+
             string sql = $@"
 drop table if exists #results;
 select	*
@@ -1564,19 +1577,21 @@ order by	R.[Name]";
             return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
         }
 
-        public List<int> GetScoreTypesForAsset(Guid assetUid)
+        public List<dynamic> GetScoreTypesForAsset(Guid assetUid)
         {
             var sql = $@"
 select  distinct 
-        ma.scoretype 
+        ma.scoretype,
+        ma.uid,
+        ma.isexternallycalculated
 from    metrics.Allocation  ma
-		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1";
-            return Company.Query<int>(sql, new { assetUid }, ApiTimeout).ToList();
+		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 order by ma.scoretype";
+            return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
         public List<string> GetMetricStructureFragments(Guid allocationUid, List<State> states = null)
         {
-            if(states == null || states.Count == 0)
+            if (states == null || states.Count == 0)
             {
                 states.Add(State.Active);
             }
@@ -1750,7 +1765,7 @@ order by P.[Path]";
             List<string> outerFilters = new List<string>();
             List<string> innerFilters = new List<string>();
             List<string> fieldJoins = new List<string>();
-            
+
             var dateStart = DateTime.MinValue;
             var dateEnd = DateTime.MinValue;
             Guid allocationUid = Guid.Empty;
@@ -1774,36 +1789,36 @@ order by P.[Path]";
                 {
                     case "_pagesize":
                         int pageSize = 0;
-                        
+
                         if (!int.TryParse(param.Value, out pageSize) || pageSize <= 0)
                             return (null, "Invalid '_pagesize' parameter value");
-                        
+
                         result.pageSize = pageSize;
                         break;
                     case "_pagenum":
                         int pageNum = 0;
-                        
+
                         if (!int.TryParse(param.Value, out pageNum) || pageNum <= 0)
                             return (null, "Invalid 'pageNum' parameter value");
-                        
+
                         result.pageNum = pageNum;
                         break;
                     case "_effectivedatestart":
                         DateTime.TryParse(param.Value, out dateStart);
-                        
+
                         if (dateStart == DateTime.MinValue)
                             return (null, "Invalid '_effectiveDateStart' parameter value");
-                        
+
                         parameters.Add("@dateStart", dateStart);
                         innerFilters.Add("IMS.EffectiveDate >= @dateStart");
                         outerFilters.Add("MS.EffectiveDate >= @dateStart");
                         break;
                     case "_effectivedateend":
                         DateTime.TryParse(param.Value, out dateEnd);
-                        
+
                         if (dateEnd == DateTime.MinValue)
                             return (null, "Invalid '_effectiveDateEnd' parameter value");
-                        
+
                         parameters.Add("@dateEnd", dateEnd);
                         innerFilters.Add("IMS.EffectiveDate <= @dateEnd");
                         outerFilters.Add("MS.EffectiveDate <= @dateEnd");
@@ -1814,10 +1829,10 @@ order by P.[Path]";
                             return (null, "Invalid '_assetUid' parameter value");
 
                         var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
-                        
+
                         if (assetTypeId != at.ID)
                             return (null, "Asset of given asset type Uid does not exists");
-                        
+
                         if (queryParams.Any(x => x.Key.ToLower() == "customfield"))
                             return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
 
@@ -1845,7 +1860,7 @@ order by P.[Path]";
                             return (null, "Invalid '_allocationUid' parameter value");
 
                         allocation = Company.GetByUid<MetricAllocation>(allocationUid);
-                        
+
                         if (allocation == null)
                             return (null, "Allocation does not exist");
 
@@ -1942,7 +1957,7 @@ for json path";
 
             result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
-            
+
             return (result, "");
         }
 
@@ -1972,13 +1987,13 @@ for json path";
 
             return results;
         }
-        
+
         public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false)
         {
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
 
-            string  cteSql = "",
+            string cteSql = "",
                     columnSql = "",
                     fromSql = "",
                     whereSql = "",
@@ -2005,7 +2020,7 @@ for json path";
 
             if (!string.IsNullOrWhiteSpace(sort))
             {
-                switch (sort.Trim()) 
+                switch (sort.Trim())
                 {
                     case "EffectiveDate":
                     case "EvaluatedAssetUid":
@@ -2033,7 +2048,7 @@ for json path";
                         break;
                 }
             }
-            orderSql = $"order by {orderSql} {direction??""}";
+            orderSql = $"order by {orderSql} {direction ?? ""}";
 
             columnSql = @" R.ResultUid, R.OwningAssetUid, E.EvaluatedAssetUid, E.EvaluatedAssetPath, E.EvaluatedAssetDisplayPath, E.EvaluatedAssetSegments, P.[Path] as EvaluatedAssetTypePath, E.EvaluatedAssetTypeClass, R.EffectiveDate, R.RunDate, R.PassCount, R.FailCount, R.TotalCount, R.PassFraction, R.Passed";
             if (includeDuplicateFlag)
@@ -2104,7 +2119,7 @@ for json path";
 
             result.total = Company.Query<int>($"{cteSql} select count(1) {fromSql} {whereSql}", parameters, ApiTimeout).FirstOrDefault();
             result.items = Company.Query<DataQualityGetResultItem>($"{cteSql} select {columnSql} {fromSql} {whereSql} {orderSql} {pagingSql}", parameters, ApiTimeout).ToList();
-            
+
             if (result.items == null)
             {
                 result.items = new List<DataQualityGetResultItem>();
@@ -2196,7 +2211,7 @@ for json path";
 
             // Save to storage container.
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
-                        
+
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;

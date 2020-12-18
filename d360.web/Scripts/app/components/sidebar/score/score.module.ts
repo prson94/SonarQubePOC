@@ -10,9 +10,9 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ScoreRoutingModule } from './score.routes';
 import { ScoreComponent } from './score.component';
-import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shared-object-governance.module';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { SharedAssetScoreModule } from '../../shared/asset-score/shared-asset-score.module';
 
 @NgModule({
     imports: [
@@ -28,8 +28,8 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
         //d3s        
         CoreModule,
-        TilesModule,        
-        SharedObjectGovernanceModule,
+        TilesModule,
+        SharedAssetScoreModule,
     ],
     declarations: [
         ScoreComponent
