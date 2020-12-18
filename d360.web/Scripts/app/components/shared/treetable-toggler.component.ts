@@ -5,7 +5,7 @@ import { TreeTable } from 'primeng/treetable';
     selector: 'd3s-treeTableToggler',
     template: `  
 <div style="display: inline-block">
-        <a href="#" class="ui-treetable-toggler" *ngIf="rowNode.node.leaf === false || rowNode.level !== 0 || rowNode.node.children && rowNode.node.children.length; else spacer" 
+        <a href="#" class="p-treetable-toggler" *ngIf="rowNode.node.leaf === false || rowNode.level !== 0 || rowNode.node.children && rowNode.node.children.length; else spacer" 
             (click)="onClick($event)" 
             [style.visibility]="rowNode.node.leaf === false || (rowNode.node.children && rowNode.node.children.length) ? 'visible' : 'hidden'" 
             [style.marginLeft]="rowNode.level * 16 + 'px'">

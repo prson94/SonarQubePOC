@@ -1,13 +1,13 @@
 ﻿<ng-template [ngIf]="node">
-    <li role="treeitem" [ngClass]="[node.styleClass||'', isLeaf() ? 'ui-treenode-leaf': '']">
+    <li role="treeitem" [ngClass]="[node.styleClass||'', isLeaf() ? 'p-treenode-leaf': '']">
         <div class="check-tree-node-row" (click)="onNodeClick($event)" (touchend)="onNodeTouchEnd()"
              tabIndex="0"
              (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()">
             <span class="tree-toggler" [ngClass]="'lv'+level" (click)="toggle($event)">
                 <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-caret-right':!node.expanded,'fa-caret-down':node.expanded}"></i>
-            </span><div class="ui-chkbox">
-                <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-disabled': node.selectable === false}">
-                    <span class="ui-chkbox-icon ui-clickable pi"
+            </span><div class="p-checkbox">
+                <div class="p-checkbox-box p-component p-corner-all p-state-default" [ngClass]="{'p-disabled': node.selectable === false}">
+                    <span class="p-checkbox-icon p-clickable pi"
                           [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
                 </div>
             </div>

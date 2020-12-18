@@ -55,7 +55,7 @@
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
-                        <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items" ngDefaultControl [defaultLabel]="multiselectLabel()">
+                        <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items" ngDefaultControl [placeholder]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
                                 <div *ngIf="items?.length > 3" class="d3s-color-multiSelect">
                                     <div class="ig-colorfield-item-selected">
@@ -76,7 +76,7 @@
                                 </div>
                             </ng-template>
                         </p-multiSelect>
-                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [placeholder]="multiselectLabel()"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">
@@ -161,7 +161,7 @@
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items | selectItemTextToLabel"
                                        [style]="{width: '100%'}"
-                                       ngDefaultControl [defaultLabel]="multiselectLabel()">
+                                       ngDefaultControl [placeholder]="multiselectLabel()">
                             <ng-template let-item pTemplate="item">
                                 <div class="selectlistinfoitem-wrapper-multiselect">
                                     <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>

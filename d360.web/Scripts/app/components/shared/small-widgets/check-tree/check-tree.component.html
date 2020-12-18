@@ -4,14 +4,14 @@
 <d3s-loading [isLoading]="loading"></d3s-loading>
 
 <div *ngIf="!loading" [ngStyle]="style" [class]="styleClass">
-    <div *ngIf="filter" class="ui-tree-filter-container">
-        <input #filter type="text" autocomplete="off" class="ui-tree-filter ui-inputtext ui-widget ui-state-default ui-corner-all" [attr.placeholder]="filterPlaceholder"
+    <div *ngIf="filter" class="p-tree-filter-container">
+        <input #filter type="text" autocomplete="off" class="p-tree-filter p-inputtext p-component p-state-default p-corner-all" [attr.placeholder]="filterPlaceholder"
                (keydown.enter)="$event.preventDefault()" (input)="onFilter($event)">
-        <span class="ui-tree-filter-icon pi pi-search"></span>
+        <span class="p-tree-filter-icon pi pi-search"></span>
     </div>
     <ul *ngIf="getRootNode()" role="tree" [attr.aria-label]="ariaLabel" [attr.aria-labelledby]="ariaLabelledBy">
         <d3s-check-treeNode *ngFor="let node of getRootNode(); let firstChild=first;let lastChild=last; let index=index; trackBy: nodeTrackBy" [node]="node"
                             [firstChild]="firstChild" [lastChild]="lastChild" [index]="index"></d3s-check-treeNode>
     </ul>
-    <div class="ui-tree-empty-message" *ngIf="value == null || value.length === 0">{{emptyMessage}}</div>
+    <div class="p-tree-empty-message" *ngIf="value == null || value.length === 0">{{emptyMessage}}</div>
 </div>

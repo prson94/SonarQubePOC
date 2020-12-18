@@ -16,7 +16,7 @@ import { ViewEncapsulation } from '@angular/core';
     encapsulation: ViewEncapsulation.None,
     styles: [
         `
-            .ui-dropdown-panel {
+            .p-dropdown-panel {
                 max-width: 300px;
             }
         `

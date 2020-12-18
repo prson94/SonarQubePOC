@@ -45,8 +45,8 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
     setEventTypeLabel() {
         let label = (document.getElementById('searchMultiSelect')
-            .getElementsByClassName('ui-multiselect-label-container')[0]
-            .getElementsByClassName('ui-multiselect-label')[0]);
+            .getElementsByClassName('p-multiselect-label-container')[0]
+            .getElementsByClassName('p-multiselect-label')[0]);
         if (this.searchTypes.length == 0) {
             label.textContent = 'Search All Categories';
         } else if (this.searchTypes.length == 1) {
