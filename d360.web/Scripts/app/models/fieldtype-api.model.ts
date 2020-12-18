@@ -510,7 +510,7 @@ export class FieldTypeHelper {
     }
 
     public static isFieldForOperator(field: FieldType): boolean {
-        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'json', 'jsonelement', 'lookup', 'number', 'text'];
+        let allowedFieldTypes = ['boolean', 'date', 'datetime', 'decimal', 'html', 'lookup', 'number', 'text'];
         return allowedFieldTypes.some(x => x === this.getFieldType(field).toLowerCase());
     }
 }

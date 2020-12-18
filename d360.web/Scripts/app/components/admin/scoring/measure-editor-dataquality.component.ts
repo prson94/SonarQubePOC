@@ -51,11 +51,11 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     ruleResultsTooltip: string = 'In order to collect scoring results from rules, you need '
         + 'to define at least one relationship type to associate the asset type you are scoring '
-        + 'with rule types, either directly or via relationships to other asset types. </br><a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Results.</a>';
+        + 'with rule types, either directly or via relationships to other asset types.';// </br><a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Results.</a>';
 
     ruleResultFiltersTooltip: string = 'Rule Result Filters allow you to target the scoring results you '
         + 'wish to collect more specifically, by filtering on the fields '
-        + 'supplied by rules and any intermediate asset types used to relate rules to your scoring asset type. </br> <a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Result Filters.</a>';
+        + 'supplied by rules and any intermediate asset types used to relate rules to your scoring asset type.';// </br> <a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Result Filters.</a>';
 
     //#endregion
 
