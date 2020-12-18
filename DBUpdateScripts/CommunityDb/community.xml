@@ -73,5 +73,4 @@
   <include file="scripts/GOV-12608.xml"/>  <!-- Drop fusion and event tables in plugin rename in GOV-12607-->
   <include file="scripts/GOV-12600.xml"/>  <!-- Remove FieldJsonPropertyLoadLimitToTopLevel settings-->
   <include file="scripts/GOV-8477.xml"/>  <!-- Drop DateLastLoggedIn column from Resource.-->
-  <include file="scripts/GOV-13154.xml"/>  <!-- Set Setting type GovernanceRoleReferenceListUid datatype Guid.-->
-  </databaseChangeLog>
+</databaseChangeLog>

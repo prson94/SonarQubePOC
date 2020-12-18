@@ -153,6 +153,7 @@ export module SettingsHelper {
         return [
             new SearchType(StringConstants.AssetTypeClass_Business + "s", "BusinessAsset"),
             new SearchType(StringConstants.AssetTypeClass_Technical + "s", "TechnicalAsset"),
+            new SearchType("Diagram Assets", "Diagram"),
             new SearchType("Models", "Model"),
             new SearchType("Policies", "Policy"),
             new SearchType("Rules", "Rule"),

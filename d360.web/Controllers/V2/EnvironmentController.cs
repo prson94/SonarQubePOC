@@ -220,7 +220,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
                 }
 
-                var response = settings.Select(s => new CompanySettingApiModel(s , companySettings[s.FieldName]));
+                var response = settings.Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
    
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
@@ -282,10 +282,22 @@ namespace d360.web.Controllers.V2
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
 
+                        if (model.SettingID == 73)
+                        {
+                            if (Guid.TryParse(model.StringSetting.Value, out Guid val))
+                            {
+                                value = val.ToString();
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid Guid");
+                            }
+                        }
+                        else
+                        {
                             value = model.StringSetting.Value;
-                        
+                        }
                         break;
-
                     case SettingType.Number:
                         if (model.NumberSetting == null)
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
@@ -413,7 +425,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list of operators that can be used as filters, conditions, and in other forms and APIs.
+        /// Retrieves a list of operators that can be used as values for the Operator property on certain endpoints within the Scoring and Metrics API.
         /// </summary>
         /// <returns></returns>
         [
