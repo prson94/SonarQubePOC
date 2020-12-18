@@ -1690,7 +1690,7 @@ from    metrics.Allocation  ma
                             
                             		) as ValuesJson
                             from	AssetType A
-                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Json','JsonElement', 'Lookup', 'Number', 'Text')", 
+                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'DateTime', 'Html', 'Lookup', 'Number', 'Text')", 
                                     new { assetTypeUid }, ApiTimeout).ToList();
         }
 
@@ -1722,7 +1722,7 @@ from        [metrics].[RollupPath] P
             inner join FieldType F on F.AssetTypeID = A.ID
 where       P.Uid = @ruleResultPathUid 
             and SE.[Position] > 1
-            and F.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'JsonElement', 'Lookup', 'Number', 'Text')
+            and F.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Lookup', 'Number', 'Text')
 order by    SE.[Position], F.FriendlyName";
             var results = await Company.QueryAsync<MetricFieldTypeViewModel>(sql, new { ruleResultPathUid }, ApiTimeout);
             return results.ToList();
