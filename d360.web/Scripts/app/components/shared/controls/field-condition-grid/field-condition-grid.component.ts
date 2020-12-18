@@ -1,5 +1,5 @@
 ﻿import { Component, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, ViewChild, OnChanges, SimpleChanges, OnInit, OnDestroy, Output, EventEmitter, AfterViewChecked } from '@angular/core';
-import { NgForm, FormGroup, FormBuilder, FormControl } from '@angular/forms';
+import { NgForm, FormGroup, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { SelectItem } from 'primeng/api';
 import { Operator } from '../../../../models/operator.model';
 import { FieldTypeAPIModelFieldCondition, FieldCondition } from '../../../../models/field-condition-grid.models';
@@ -197,11 +197,11 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new FormControl(''));
         this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new FormControl(''));
         if (type == "date" || type == "date") {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value)));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2)));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value), [Validators.maxLength(150)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2), [Validators.maxLength(150)]));
         } else {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(''));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(''));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl('', [Validators.maxLength(150)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl('', [Validators.maxLength(150)]));
         }
     }
 

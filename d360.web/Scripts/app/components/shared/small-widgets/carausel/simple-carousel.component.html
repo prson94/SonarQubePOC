@@ -1,7 +1,0 @@
-﻿<div class="simple-carousel">
-    <i (click)="moveLeft()" *ngIf="leftOffset != 0" class="fa fa-chevron-left navigate-left"></i>
-    <div class="carousel-content" [style.width.px]="maxContentWidth" [style.left.px]="leftOffset">
-        <ng-content></ng-content>
-    </div>
-    <i (click)="moveRight()" *ngIf="showGoRight" class="fa fa-chevron-right navigate-right"></i>
-</div>

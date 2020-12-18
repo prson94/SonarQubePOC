@@ -1,7 +1,30 @@
-﻿<div>
+﻿<div *ngIf="isDataQualityMeasure()">
+    <div class="measure-details-item">
+        <div class="details-header">Rule Results</div>
+        <div class="details-condition">
+            <div class="condition-content">
+                <div class="condition-items" [innerHtml]="ruleResultPathHtml"></div>
+            </div>
+        </div>
+    </div>
+    <div class="measure-details-item">
+        <div class="details-header">Rule Result Filters</div>
+        <div class="details-condition">
+            <div class="condition-content">
+                <div class="condition-items">
+                    <div *ngFor="let filter of ruleResultFilters" class="right-space">
+                        {{filter.assetTypeName}} &gt; {{filter.fieldTypeName}} {{filter.operator}} {{filter.value}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="isGovernanceMeasure()" class="measure-details-item">
     <div class="details-header">Pass Test</div>
     <div class="details-condition">
-        <div [ngSwitch]="selection.Definition.Governance.Check">
+        <div [ngSwitch]="definition.Governance.Check">
             <div *ngSwitchCase="'External'">
                 <div class="condition-content">
                     <div class="condition-items">

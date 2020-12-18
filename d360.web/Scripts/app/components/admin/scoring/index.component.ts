@@ -170,7 +170,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     private getClass(item): string {
         const listItem = this.getAllocationByUid(item.uid);
         if (this.selection.assetTypeUid === listItem.assetTypeUid && this.selection.scoreType === listItem.scoreType) {
-            return 'ui-state-highlight';
+            return 'p-highlight';
         }
         return '';
     }

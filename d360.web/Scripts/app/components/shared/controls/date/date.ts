@@ -142,8 +142,8 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
     @HostListener('keydown', ['$event']) onKeyDown(e: KeyboardEvent) {
         if (this.calendar.appendTo == 'body') {
             if (e.keyCode == 9 && this.calendar.overlay) {
-                var firstEl = (this.calendar.overlay as HTMLElement).getElementsByClassName('ui-datepicker-next')[0] as HTMLElement;
-                var secondLe = (this.calendar.overlay as HTMLElement).getElementsByClassName('ui-datepicker-prev')[0] as HTMLElement;
+                var firstEl = (this.calendar.overlay as HTMLElement).getElementsByClassName('p-datepicker-next')[0] as HTMLElement;
+                var secondLe = (this.calendar.overlay as HTMLElement).getElementsByClassName('p-datepicker-prev')[0] as HTMLElement;
                 setTimeout(() => { firstEl.click(); secondLe.click(); });
             }
         }

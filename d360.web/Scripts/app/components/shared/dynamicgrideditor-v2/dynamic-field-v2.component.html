@@ -34,7 +34,7 @@
                                        [options]="field.Items"
                                        [appendTo]="'body'"
                                        ngDefaultControl
-                                       [defaultLabel]="multiselectLabel()">
+                                       [placeholder]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
                                 <div class="d3s-color-multiSelect" *ngIf="items && items.length < 2">
                                     <div *ngFor="let item of items" class="ig-colorfield-item-selected">
@@ -57,7 +57,7 @@
                                        [style]="{width:'100%'}"
                                        [appendTo]="'body'"
                                        ngDefaultControl
-                                       [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                                       [placeholder]="multiselectLabel()"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">
@@ -140,7 +140,7 @@
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items | selectItemTextToLabel"
                                        [style]="{width: '100%'}"
-                                       ngDefaultControl [defaultLabel]="multiselectLabel()">
+                                       ngDefaultControl [placeholder]="multiselectLabel()">
                             <ng-template let-item pTemplate="item">
                                 <div class="selectlistinfoitem-wrapper-multiselect">
                                     <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>

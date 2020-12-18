@@ -131,7 +131,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (ac) {
             window.setTimeout(() => {
                 if (ac && ac.el && ac.el.nativeElement) {
-                    var inputs = ac.el.nativeElement.getElementsByClassName('ui-autocomplete-input');
+                    var inputs = ac.el.nativeElement.getElementsByClassName('p-autocomplete-input');
                     if (inputs && inputs.length > 0) {
                         inputs[0].blur();
                     }

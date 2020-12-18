@@ -21,8 +21,8 @@ namespace d360.model.DataAccessLayer
         List<MetricFieldTypeViewModel> GetMetricConditionsFields(Guid assetTypeUid);
         List<RootMetricAssetHierarchyModel> GetMetricHierarchyByAsset(Guid allocationUid, Guid assetUid, DateTime? effectiveDate);
         Task<IEnumerable<MetricPathOptionViewModel>> GetMetricPathOptionsBy(int assetTypeId, ScoreType scoreType);
-        List<int> GetScoreTypesForAsset(Guid assetUid);
-        List<string> GetMetricStructureFragments(Guid allocationUid, List<State> states);
+        List<dynamic> GetScoreTypesForAsset(Guid assetUid);
+        List<MetricAssetViewModel> GetMetricStructureByAllocation(Guid allocationUid, List<State> states);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
         DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd, bool includeDuplicateFlag = false);
         List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);
@@ -30,6 +30,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
         Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
-        List<string> GetMetricVersionHistory(Guid measureUid);
+        List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid);
     }
 }

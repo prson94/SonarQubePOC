@@ -3,7 +3,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { SiteMenuService } from '../../../services/site-menu.service';
 
 
 @Component({
@@ -12,10 +11,10 @@ import { SiteMenuService } from '../../../services/site-menu.service';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail score-tile-detail">
-                       <d3s-object-health-details *ngIf="showBoard"
+                    <div class="score-tile-detail">
+                       <d3s-asset-score *ngIf="showBoard"
                                        [uid]="uid"
-                                       [objectName]="objectName"></d3s-object-health-details>
+                                       [objectName]="objectName"></d3s-asset-score>
                     </div>
                 </div>
             </div>
@@ -23,7 +22,7 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 })
 
 export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
-    
+
     @Input() uid: string = "";
     @Input() objectName: string = "";
 
@@ -50,7 +49,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
         this.sub = this.route.params.subscribe(params => {
             this.uid = params['Uid'];
             this.objectName = params['objectName'];
-            
+
             this.isLoading = false;
             this.showBoard = true;
         });

@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetViewModel, MetricPathOptionViewModel } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
 import { OperatorModel, Operator } from '../../../models/operator.model';
@@ -19,6 +19,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     @Input() assetTypeFields: MetricFieldTypeViewModel[] = [];
     @Input() isExternallyCalculated: boolean = false;
     @Input() operators: OperatorModel[];    
+    @Input() paths: MetricPathOptionViewModel[] = [];
     @Input() responsibilityTypes: any[] = [];
     @Input() relationshipTypes: any[] = [];
 
@@ -180,7 +181,10 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     }
 
     private hasPassTest(item: MetricAssetHistoryViewModel) {
-        if (item && item.Definition && item.Definition.Governance && item.Definition.Governance.Check) {            
+        if (item &&
+            item.Definition &&
+            (item.Definition.DataQuality || (item.Definition.Governance && item.Definition.Governance.Check))
+        ) {
             return true;
         } else {
             return false;

@@ -34,6 +34,13 @@
     font-family: 'Source Sans Pro Bold';
 }
 
+.card-box {
+    background: white;
+    box-shadow: @ig-box-shadow;
+    border-radius: 4px;
+    padding: 16px;
+}
+
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -369,15 +376,15 @@ main {
 }
 
 .panel-section ul,
-.ui-table-tbody ul,
-.ui-treetable :not(.ql-editor):not(.ui-dropdown-items-wrapper) > ul {
+p-table .p-datatable-tbody ul,
+.p-treetable :not(.ql-editor):not(.p-dropdown-items-wrapper) > ul {
     list-style-type: disc;
     padding-left: 40px;
 }
 
 .panel-section ul li,
-.ui-table-tbody ul li,
-.ui-treetable :not(.ql-editor) > ul li {
+p-table .p-datatable-tbody ul li,
+.p-treetable :not(.ql-editor) > ul li {
     list-style-type: disc;
 }
 
@@ -771,7 +778,7 @@ div.child .empty-count {
         margin-top: -40px;
     }
 
-    .ui-overlaypanel-content {
+    .p-overlaypanel-content {
         padding: 0px;
     }
 }
@@ -1031,23 +1038,23 @@ a.breadcrumb {
     top: 5px;
     display: inline-block;
 
-    .ui-autocomplete-panel {
+    .p-autocomplete-panel {
         margin-left: 5px;
         min-width: 200px;
         max-width: 600px !important;
     }
 
-    .ui-autocomplete-panel .ui-state-highlight {
+    .p-autocomplete-panel .p-highlight {
         background-color: @igx-lightblue-xlight !important;
     }
 
-    .ui-autocomplete-panel .ui-autocomplete-list-item {
+    .p-autocomplete-panel .p-autocomplete-item {
         border-bottom: none !important;
         color: black;
     }
 }
 
-.ui-autocomplete .inputBox {
+.p-autocomplete .inputBox {
     margin-left: 5px;
     height: 32px;
     width: 110px;
@@ -1069,7 +1076,7 @@ a.breadcrumb {
     box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
 
     &.tags-results {
-        .ui-overlaypanel {
+        .p-overlaypanel {
             position: absolute !important;
             top: 33px !important;
             left: -131px !important;
@@ -1077,7 +1084,7 @@ a.breadcrumb {
         }
     }
 
-    .ui-overlaypanel-content {
+    .p-overlaypanel-content {
         padding: 0px;
         border-radius: 3px;
     }
@@ -1093,16 +1100,16 @@ a.breadcrumb {
         .breadcrumbTree {
             width: 100%;
 
-            .ui-tree-container {
+            .p-tree-container {
                 padding: 0px;
             }
 
-            .ui-treenode {
+            .p-treenode {
                 width: 100%;
                 padding: 0px;
             }
 
-            .ui-treenode-content {
+            .p-treenode-content {
                 padding: 5px;
                 text-overflow: ellipsis;
                 overflow: hidden;
@@ -1116,7 +1123,7 @@ a.breadcrumb {
                 }
             }
 
-            .ui-treenode-label {
+            .p-treenode-label {
                 display: inline;
             }
         }
@@ -1168,7 +1175,7 @@ a.breadcrumb {
     }
 
     .global-search-typeahead {
-        .ui-autocomplete-panel {
+        .p-autocomplete-panel {
             top: 40px !important;
         }
     }
@@ -1286,13 +1293,13 @@ a.breadcrumb {
 
 
 .global-search-typeahead {
-    .ui-autocomplete-panel {
+    .p-autocomplete-panel {
         top: 36px !important;
         width: 576px !important;
         transform: translateX(-10px) !important;
         z-index: 500 !important;
 
-        .ui-autocomplete-list {
+        .p-autocomplete-items {
             padding: 0px;
             border-bottom: 1px solid #d0d0d0;
         }
@@ -1359,22 +1366,18 @@ a.breadcrumb {
         }
     }
 
-    .ui-autocomplete {
-        top: 1px;
-    }
-
-    .ui-autocomplete-loader {
+    .p-autocomplete-loader {
         color: @ig-grey-s2;
     }
 
-    li.ui-autocomplete-list-item {
+    li.p-autocomplete-item {
 
-        &:not(.ui-state-highlight):nth-child(even) {
+        &:not(.p-highlight):nth-child(even) {
             background-color: #f7f7f7;
         }
     }
 
-    .ui-autocomplete-loader {
+    .p-autocomplete-loader {
         display: none;
     }
 
@@ -1685,16 +1688,16 @@ chart {
 }
 /* end quill editor */
 /* p-dataTable */
-.ui-dropdown-panel .ui-dropdown-item {
+.p-dropdown-panel .p-dropdown-item {
     white-space: nowrap;
 }
 
-.hide-datatable-header > p-dataTable > div > .ui-datatable-tablewrapper > table > thead {
+.hide-datatable-header > p-dataTable > div > .p-datatable-tablewrapper > table > thead {
     display: none !important;
 }
 /* end p-dataTable */
 /* added fix for IE when using primeNG in IE 11*/
-.ui-datatable-scrollable-body {
+.p-datatable-scrollable-body {
     padding-bottom: 20px !important;
 }
 
@@ -2258,8 +2261,8 @@ div.home-image-title-text {
             }
         }
 
-        .ui-chkbox {
-            .ui-chkbox-box.ui-state-active {
+        .p-checkbox {
+            .p-checkbox-box.p-highlight {
                 color: black;
                 background: white;
             }
@@ -3070,7 +3073,7 @@ button.tab-scroller {
         .col {
             padding: 0px;
 
-            .ui-autocomplete {
+            .p-autocomplete {
                 width: 100%;
 
                 input {
@@ -3102,7 +3105,7 @@ button.tab-scroller {
         }
     }
 
-    .ui-autocomplete {
+    .p-autocomplete {
         ul {
             margin: 0px;
             padding: 0px;
@@ -3114,7 +3117,7 @@ button.tab-scroller {
                 border: 0px;
                 padding: 10px;
 
-                &.ui-state-highlight {
+                &.p-highlight {
                     background-color: @igx-lightblue-xlight;
                 }
             }
@@ -3177,7 +3180,7 @@ button.tab-scroller {
         }
 
         p-dropdown:not(.ig-dropdown) {
-            .ui-dropdown {
+            .p-dropdown {
                 width: 400px;
                 min-height: 34px;
                 border-radius: 2px;
@@ -3185,18 +3188,18 @@ button.tab-scroller {
                 border: solid 1px @igx-grey-xlight;
                 background-color: @ig-white;
 
-                .ui-dropdown-label {
+                .p-dropdown-label {
                     line-height: 25px;
                     padding-left: 16px;
                     color: black;
                 }
 
-                .ui-dropdown-trigger {
+                .p-dropdown-trigger {
                     width: 32px;
                     height: 32px;
                     padding: 0 4px;
 
-                    .ui-dropdown-trigger-icon {
+                    .p-dropdown-trigger-icon {
                         top: 4px;
                         left: auto;
                         margin-top: auto;
@@ -3211,18 +3214,18 @@ button.tab-scroller {
                     }
                 }
 
-                .ui-dropdown-panel {
+                .p-dropdown-panel {
                     border-radius: 2px;
                     box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
                     border: solid 1px @igx-grey-xlight;
                     background-color: @ig-white;
 
-                    .ui-dropdown-filter {
+                    .p-dropdown-filter {
                         height: 32px;
                         border-radius: 2px;
                     }
 
-                    .ui-dropdown-filter-icon {
+                    .p-dropdown-filter-icon {
                         font-size: 16px;
                         background-color: #006fc0;
                         color: white;
@@ -3233,7 +3236,7 @@ button.tab-scroller {
                     }
                 }
 
-                .ui-dropdown-item {
+                .p-dropdown-item {
                     padding: 4px;
 
                     &:hover {
@@ -3250,7 +3253,7 @@ button.tab-scroller {
 
 
         p-checkbox {
-            .ui-chkbox-box.ui-state-active {
+            .p-checkbox-box.p-highlight {
                 border: 1px solid #0971b9;
                 background: @ig-white;
                 color: #0971b9;
@@ -3261,7 +3264,7 @@ button.tab-scroller {
                 font-weight: bold;
                 color: black;
 
-                &.ui-label-disabled {
+                &.p-disabled {
                     opacity: 0.2;
                 }
             }
@@ -3273,7 +3276,7 @@ button.tab-scroller {
             margin-bottom: 8px;
         }
 
-        input, span.ui-autocomplete {
+        input, span.p-autocomplete {
             width: 100%;
         }
 
@@ -3389,15 +3392,15 @@ button.tab-scroller {
         }
     }
 
-    &.ui-tooltip-right {
-        .ui-tooltip-arrow {
+    &.p-tooltip-right {
+        .p-tooltip-arrow {
             left: -3px;
             margin-top: -0.50em;
             border-width: 0.50em .50em .50em 0;
         }
     }
 
-    &.ui-tooltip {
+    &.p-tooltip {
         max-width: unset;
         max-width: none;
         pointer-events: all;
@@ -3411,7 +3414,7 @@ button.tab-scroller {
             }
         }
 
-        .ui-tooltip-text {
+        .p-tooltip-text {
             padding: .125em .5em;
             background-color: @ig-white;
             color: #000;
@@ -3454,7 +3457,7 @@ button.tab-scroller {
         }
 
 
-        .ui-tooltip-arrow {
+        .p-tooltip-arrow {
             border-right-color: @ig-white;
         }
     }
@@ -3513,21 +3516,21 @@ button.tab-scroller {
 
 .tile-detail {
     &.theme-new {
-        .ui-table {
+        .p-datatable {
 
             td {
                 color: black;
             }
 
-            .ui-chkbox {
+            .p-checkbox {
                 background-color: white;
 
-                .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+                .p-checkbox-box {
                     border-radius: 2px !important;
                     background-color: white;
                 }
 
-                .ui-chkbox-icon {
+                .p-checkbox-icon {
                     color: black;
                     font-weight: bold;
                     position: relative;
@@ -3788,7 +3791,7 @@ button.tab-scroller {
 
 
 .enable-pointer-events {
-    .ui-chkbox {
+    .p-checkbox {
         pointer-events: all;
     }
 }
@@ -3944,12 +3947,12 @@ button.tab-scroller {
     }
 }
 
-.ui-treetable-table {
+.p-treetable-wrapper {
     th {
         background-color: @ig-grey-s2 !important;
     }
 
-    tbody > tr:nth-child(odd):not(.ui-state-highlight) {
+    tbody > tr:nth-child(odd):not(.p-highlight) {
         background: #f7f7f7 !important;
     }
 }
@@ -4120,10 +4123,10 @@ button.tab-scroller {
                                     width: 40px;
                                 }
 
-                                .ui-chkbox {
+                                .p-checkbox {
                                     margin-right: 8px;
 
-                                    .ui-chkbox-box {
+                                    .p-checkbox-box {
                                         border-radius: 3px !important;
                                         background-color: white;
                                     }
@@ -4460,7 +4463,7 @@ button.tab-scroller {
     }
 }
 
-.kebabmenu li.ui-menuitem {
+.kebabmenu li.p-menuitem {
     &:hover {
         background-color: @igx-lightblue-xlight;
     }
@@ -4470,7 +4473,7 @@ button.tab-scroller {
     }
 }
 
-.kebabmenu.yellow-items li.ui-menuitem {
+.kebabmenu.yellow-items li.p-menuitem {
     &:hover {
         background-color: #fff8d0;
     }
@@ -4727,8 +4730,8 @@ a.mid-blue {
     color: #0971b9 !important;
 }
 
-.ui-table-scrollable-body {
-    .ui-table-tbody {
+p-table .p-datatable-scrollable-body {
+    .p-datatable-tbody {
         tr:first-child {
             .tooltip-wrapper {
                 position: fixed;
@@ -4746,8 +4749,8 @@ a.mid-blue {
     }
 }
 
-.ui-treetable-caption,
-.ui-treetable-summary {
+.p-treetable-caption,
+.p-treetable-summary {
     padding: .25em 0 .25em 0 !important;
 }
 
@@ -4779,22 +4782,22 @@ a.mid-blue {
         }
     }
 
-    .ui-multiselect.ui-state-focus .ui-multiselect-label {
+    .p-multiselect.p-focus .p-multiselect-label {
         background: @ig-grey-t5;
     }
 
-    .ui-multiselect {
+    .p-multiselect {
         background: @ig-grey-t5;
         width: 200px;
         height: 56px;
         border-radius: 4px 0px 0px 4px;
         background-color: @ig-grey-t5;
 
-        .ui-multiselect-panel {
+        .p-multiselect-panel {
             margin-top: -1px;
         }
 
-        .ui-multiselect-panel .ui-multiselect-item {
+        .p-multiselect-panel .p-multiselect-item {
             padding: 4px;
             height: 32px;
             font-size: 14px;
@@ -4815,29 +4818,29 @@ a.mid-blue {
             }
         }
 
-        .ui-widget-header {
+        .p-multiselect-header {
             border-bottom: 1px solid @ig-grey-t5;
         }
 
-        .ui-multiselect-label {
+        .p-multiselect-label {
             padding: 20px;
             margin-right: 8px;
         }
 
-        .ui-multiselect-trigger {
+        .p-multiselect-trigger {
             border-left: none;
             padding: 20px;
 
-            .ui-multiselect-trigger-icon {
+            .p-multiselect-trigger-icon {
                 padding-top: 2px;
             }
         }
 
-        .ui-state-highlight {
+        .p-highlight {
             background: none;
         }
 
-        .ui-chkbox-box {
+        .p-checkbox-box {
             border-radius: 2px !important;
             width: 16px;
             height: 16px;
@@ -4846,22 +4849,22 @@ a.mid-blue {
             border: solid 1px @igx-grey-xlight;
             background-image: linear-gradient(to bottom, @ig-white, #f9fafb);
 
-            .ui-chkbox-icon {
+            .p-checkbox-icon {
                 padding-left: 0px !important;
             }
         }
 
-        .ui-chkbox.ui-chkbox-icon {
+        .p-checkbox.p-checkbox-icon {
             display: inline-block;
         }
         //header in all
-        .ui-multiselect-header {
+        .p-multiselect-header {
             height: 40px;
             line-height: 28px;
 
-            .ui-chkbox-box::after {
-                content: 'Search All Catergories';
-                padding-left: 20px;
+            .p-checkbox-box::after {
+                content: 'Search All Categories';
+                padding-left: 10px;
                 font-size: 14px;
                 font-weight: normal;
                 font-style: normal;
@@ -4871,25 +4874,26 @@ a.mid-blue {
                 color: @ig-black;
             }
 
-            a.ui-multiselect-close {
+            button.p-multiselect-close {
                 display: none;
             }
 
-            .ui-chkbox-box {
+            .p-checkbox-box {
                 border-radius: 2px !important;
             }
 
-            .ui-chkbox-box.ui-state-active::after {
+            .p-checkkbox-box.p-highlight::after {
                 padding-left: 6px;
             }
 
-            .ui-chkbox .ui-chkbox-icon {
+            .p-checkbox .p-checkbox-icon {
                 display: inline-block;
                 line-height: 1px !important;
+                padding-left: 147px !important;
             }
         }
 
-        .ui-chkbox-box.ui-state-active {
+        .p-checkbox-box.p-highlight {
             border: 1px solid @ig-midblue;
             background: @ig-white;
             color: @ig-midblue;
@@ -5082,7 +5086,7 @@ a.mid-blue {
         width: 100%;
     }
 
-    .ui-autocomplete-panel {
+    .p-autocomplete-panel {
         left: -5px !important;
         top: 42px !important;
         width: 100% !important;
@@ -5109,7 +5113,7 @@ a.mid-blue {
         }
     }
 
-    .ui-autocomplete-panel {
+    .p-autocomplete-panel {
         top: 30px !important;
     }
 }
@@ -5362,7 +5366,7 @@ a.mid-blue {
                 &:nth-child(even) {
                     background-color: #f2f2f2;
 
-                    &.ui-state-highlight {
+                    &.p-highlight {
                         background-color: #ffef99;
                     }
                 }
@@ -5552,7 +5556,7 @@ a.mid-blue {
         &:nth-child(even) {
             background-color: #f2f2f2;
 
-            &.ui-state-highlight {
+            &.p-highlight {
                 background-color: #ffef99;
             }
         }
@@ -5739,387 +5743,6 @@ a.mid-blue {
     background: transparent;
     border: none;
     box-shadow: none !important;
-
-    .scoring {
-        display: inline-flex;
-        width: 100%;
-
-        .arrow-up {
-            color: #4ecc89;
-        }
-
-        .arrow-down {
-            color: #ed3765;
-        }
-
-
-        .carousel-item {
-            display: inline-block;
-            width: 103px;
-            padding: 5px 10px;
-            position: relative;
-            cursor: default;
-
-            .fa {
-                font-size: 26px;
-                position: absolute;
-                left: -7px;
-                top: 2px;
-            }
-
-            .turn {
-                color: @ig-slate;
-                transform: rotate(45deg);
-                font-size: 14px;
-                top: 7px;
-                left: -8px;
-            }
-
-            .value {
-                &:hover:not(.selected) {
-                    cursor: pointer;
-                    font-weight: bold;
-                }
-
-                &.selected {
-                    font-weight: bold;
-                }
-
-                &.selected:hover {
-                    cursor: default;
-                }
-            }
-        }
-
-        .heading {
-            color: @igx-grey-light;
-            padding: 8px 0 8px 0px !important;
-            height: 56px;
-
-            &.breakdown {
-                display: inline-flex;
-                flex-direction: row;
-                flex-grow: 1;
-                width: 100%;
-            }
-
-            .heading-text {
-                height: 32px;
-                line-height: 5;
-                padding-left: 16px;
-            }
-
-            .collapse-btn {
-                margin-left: auto;
-                line-height: 1.6;
-                padding: 8px 0px 8px 8px;
-                border-radius: 4px;
-                color: @ig-midblue;
-
-                &:hover {
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-            }
-
-            .button {
-                width: 145px;
-                height: 40px;
-                border-radius: 4px;
-                border: solid 2px @igx-grey-lightscoring;
-                background-color: @igx-grey-lightscoring;
-                color: @igx-blue-light;
-
-                &.selected {
-                    background-color: @ig-white;
-                    font-weight: 600;
-                }
-            }
-        }
-
-        .score-breakdown {
-            align-self: flex-start;
-            width: 65%;
-            padding-right: 24px;
-        }
-
-        .score-chart-container {
-            display: inline-flex;
-            width: 35%;
-            flex-direction: column;
-
-            .heading {
-                .heading-text {
-                    .inactive {
-                        color: @ig-coral;
-                    }
-                }
-            }
-
-            .score-chart {
-                align-self: flex-end;
-                width: 100%;
-                padding: 4px 8px 32px 8px;
-                background: @igx-grey-lightscoring;
-                border-radius: 4px;
-
-                .chart-header {
-                    height: 48px;
-                    line-height: 42px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    color: @ig-grey-s2;
-                    padding-left: 8px;
-                }
-
-                .highcharts-container {
-                    border-radius: 4px;
-                }
-
-                .table-caption {
-                    color: @igx-grey-light;
-                    position: relative;
-                    top: 10px;
-                }
-            }
-        }
-    }
-}
-
-.scorecard-item {
-    border-radius: 4px;
-    box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-    border: solid 1px rgba(185, 192, 197, 0.7);
-    background-color: @ig-white;
-    max-height: initial;
-    margin-bottom: 8px;
-
-    &.empty {
-        padding: 24px;
-        background: @igx-grey-lightscoring;
-        color: @igx-blue-light;
-        text-align: center;
-        font-weight: bold;
-    }
-
-    .scorecard-heading {
-        display: flex;
-        flex-direction: row;
-        flex-grow: 1;
-        line-height: 24px;
-        overflow: hidden;
-
-        .expander-gutter {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            width: 32px;
-            padding: 16px;
-            margin-top: 8px;
-
-            &.no-padding {
-                margin: 0px -16px 0px 16px;
-                margin-top: 0px;
-                display: inline-flex;
-                flex-direction: row;
-                align-items: center;
-            }
-
-            .expander {
-                height: 16px;
-                margin-top: -4px;
-                width: 16px;
-
-                &.sm-icon {
-                    padding-left: 4px;
-                    margin-top: 0px;
-                }
-            }
-
-            .icon-down {
-                transform: rotate(0deg);
-                transition: transform 200ms ease;
-            }
-
-            .icon-right {
-                transform: rotate(-90deg);
-                transition: transform 200ms ease;
-            }
-        }
-
-        .heading-content {
-            display: flex;
-            flex-direction: row;
-            flex-grow: 1;
-            color: @ig-black;
-
-            .heading-item {
-                padding: 8px 8px 8px 0px;
-                margin-left: 16px;
-
-                &.large {
-                    width: 48%;
-                    margin-left: 0px;
-                }
-
-                &.med-lg {
-                    width: 18%;
-
-                    &.lg {
-                        width: 46%;
-                    }
-                }
-
-                &.med {
-                    width: 13%;
-                    min-width: 100px;
-                }
-
-                &.sm {
-                    width: 8%;
-                    min-width: 60px;
-                }
-
-                &.desc {
-                    margin-left: 0px;
-                    width: 40%;
-                    margin-right: 6px;
-
-                    &.large {
-                        width: 46%;
-                    }
-                }
-
-                &.condition {
-                    display: inline-flex;
-                    width: 40%;
-
-                    .condition-name {
-                        width: 40%;
-                    }
-
-                    .condition-value {
-                        width: 40%;
-                    }
-                }
-
-                &.badge {
-                    min-width: 60px;
-                    margin-right: 16px;
-                    margin-left: 0px;
-                    display: inline-flex;
-                    margin-left: 16px;
-
-                    .d3s-badge {
-                        line-height: 24px;
-                        color: @ig-white;
-                        width: 47px;
-                        height: 24px;
-                        border-radius: 16px;
-                        margin-top: 0px;
-
-                        &.grn {
-                            background: #4ecc89;
-                        }
-
-                        &.rd {
-                            background: #ed3765;
-                        }
-                    }
-                }
-
-                .heading-title {
-                    font-weight: bold;
-                    height: 20px;
-                    overflow: hidden;
-                    word-break: break-all;
-                    min-width: 100px;
-
-                    &.no-height {
-                        height: 0px;
-                    }
-
-                    &.no-min {
-                        min-width: 0px;
-                    }
-
-                    &.condition {
-                        min-width: 350px;
-                    }
-                }
-
-                .heading-value {
-                    word-break: break-word;
-
-                    &.block-with-text {
-                        overflow: hidden;
-                        position: relative;
-                        line-height: 16px;
-                        text-align: justify;
-                        margin-right: 0em;
-                        padding-right: 1em;
-
-                        &.DQ {
-                            max-height: none;
-
-                            &.collapsed {
-                                max-height: 2.3em;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        &.collapsible-content {
-            overflow: hidden;
-            transition: all 0.2s ease-in-out;
-            max-height: 1000px;
-            flex-direction: column;
-
-            .description-line {
-                flex-grow: 1;
-                flex-direction: row;
-                display: inline-flex;
-            }
-
-            .card-groupings {
-                display: inline-flex;
-                flex-direction: column;
-            }
-
-            &.collapsed {
-                max-height: 0;
-                overflow: hidden;
-            }
-        }
-    }
-
-    .separator {
-        height: 1px;
-        background-color: @igx-grey-lightbadge;
-        margin: 0px 8px;
-    }
-
-    .condition-table {
-        thead {
-            font-weight: bold;
-        }
-
-        td {
-            width: 30%;
-            padding-left: 20px;
-        }
-
-        td:first-child {
-            width: 40%;
-            padding: 0px;
-        }
-
-        tr {
-            border-bottom: 1px solid #d0d0d0;
-        }
-    }
 }
 
 .gov-hr {
@@ -6150,7 +5773,7 @@ a.mid-blue {
         right: 0px;
     }
 
-    .ui-slider {
+    .p-slider {
         cursor: pointer;
         height: 16px !important;
         border-radius: 8px !important;
@@ -6159,11 +5782,11 @@ a.mid-blue {
         -moz-box-shadow: none;
     }
 
-    .ui-slider-range {
+    .p-slider-range {
         opacity: 0 !important;
     }
 
-    .ui-slider-handle {
+    .p-slider-handle {
         cursor: pointer !important;
         background: none !important;
         width: 16px !important;
@@ -6412,94 +6035,6 @@ a.mid-blue {
     }
 }
 
-.score-table {
-    background-color: white;
-    margin-top: 16px;
-    padding: 8px;
-    display: block;
-    border-radius: 4px;
-
-    .score-tbl-header {
-        font-weight: bold;
-
-        .column:last-child {
-            padding-right: 48px;
-        }
-    }
-
-    .row {
-        border-bottom: 1px solid @igx-grey-lightscoring;
-        line-height: 38px;
-    }
-
-    .column {
-        height: 38px;
-
-        i.fa {
-            font-size: 26px;
-            position: relative;
-            top: 4px;
-            right: 5px;
-
-            &.turn {
-                color: @ig-slate;
-                transform: rotate(45deg);
-                font-size: 14px;
-                top: 0px;
-            }
-        }
-
-        i.fa-circle {
-            font-size: 16px;
-        }
-    }
-
-    .column:first-child {
-        text-align: left;
-        padding-left: 16px;
-    }
-
-    .column:last-child {
-        text-align: right;
-        padding-right: 16px;
-    }
-
-    .body {
-        max-height: 378px;
-        display: block;
-        overflow-x: auto;
-
-        .row {
-            cursor: default;
-
-            &:hover {
-                background-color: @igx-lightblue-xlight;
-                font-weight: bold;
-                cursor: pointer;
-            }
-
-            &.selected {
-                background-color: @igx-lightblue-xlight;
-                font-weight: bold;
-            }
-
-            &.selected:hover {
-                cursor: default;
-            }
-        }
-
-        &::-webkit-scrollbar {
-            width: 1em;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background-color: @igx-grey-lightscoring;
-            outline: 1px solid @igx-grey-lightscoring;
-            border-radius: 10px;
-        }
-    }
-}
-
 table {
     .duplicate {
         opacity: 0.5;
@@ -6544,7 +6079,7 @@ table {
 }
 
 .d3s-color-picker.multi {
-    .ui-multiselect-label {
+    .p-multiselect-label {
         height: 32px !important;
         line-height: 26px !important;
     }
@@ -6681,7 +6216,7 @@ table {
 
 .icon-panel {
 
-    .ui-dropdown-item-group {
+    .p-dropdown-item-group {
         color: @ig-grey-t1;
         height: 32px;
         line-height: 32px;
@@ -6692,10 +6227,10 @@ table {
         border-radius: 0;
     }
 
-    .ui-dropdown-filter {
+    .p-dropdown-filter {
         border-radius: 4px;
 
-        &.ui-inputtext {
+        &.p-inputtext {
             font-family: "Source Sans Pro", sans-serif;
             font-size: 14px;
             color: @ig-black;
@@ -6705,29 +6240,29 @@ table {
             height: 32px;
             line-height: 30px;
 
-            &:enabled:focus:not(.ui-state-error) {
+            &:enabled:focus:not(.p-state-error) {
                 outline: 0 none;
                 outline-offset: 0;
                 box-shadow: 0 0 0 2px @ig-midblue-t3;
                 border-color: @ig-midblue;
             }
 
-            &:enabled:hover:not(.ui-state-error) {
+            &:enabled:hover:not(.p-state-error) {
                 border-color: #212121;
             }
         }
     }
 
-    .ui-dropdown-items {
+    .p-dropdown-items {
         padding: 0;
 
-        .ui-dropdown-item {
-            &:not(.ui-state-highlight):not(.ui-state-disabled):hover {
+        .p-dropdown-item {
+            &:not(.p-highlight):not(.p-disabled):hover {
                 color: @ig-black;
                 background-color: @ig-lightblue-t4;
             }
 
-            &.ui-state-highlight {
+            &.p-highlight {
                 color: @ig-black;
                 background-color: @ig-lightblue-t2;
             }
@@ -6742,7 +6277,7 @@ table {
         }
     }
 
-    .ui-dropdown-filter-container {
+    .p-dropdown-filter-container {
         position: relative;
         padding: 4px 4px 4px 4px;
         border-bottom: 1px solid @ig-grey-t5;
@@ -6750,13 +6285,13 @@ table {
         background-color: #ffffff;
         margin: 0;
 
-        .ui-dropdown-filter-icon {
+        .p-dropdown-filter-icon {
             width: 24px;
             height: 24px;
             line-height: 24px;
             text-align: center;
             color: @ig-black;
-            top: 9px;
+            top: 17px;
             right: 9px;
             font-size: 1.25em;
         }
@@ -6832,6 +6367,19 @@ table {
             .fa {
                 margin-right: 8px;
             }
+
+            .details-header {
+                font-weight: bold;
+            }
+
+            .details-content {
+                margin-top: 5px;
+                word-break: break-word;
+            }
+
+            .help-link {
+                margin-top: 10px;
+            }
         }
 
         .no-measure-message {
@@ -6871,8 +6419,8 @@ table {
                 }
             }
 
-            .details-content{
-                word-break:break-word;
+            .details-content {
+                word-break: break-word;
             }
         }
     }
@@ -6974,10 +6522,10 @@ table {
             background: inherit;
         }
 
-        .ui-calendar {
+        .p-calendar {
             background: inherit;
 
-            .ui-inputtext {
+            .p-inputtext {
                 border: none !important;
                 background: inherit;
             }
@@ -7002,14 +6550,14 @@ table {
             border-color: #212121;
         }
 
-        &:focus-within:not(.ui-state-error) {
+        &:focus-within:not(.p-state-error) {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 2px @ig-midblue-t3;
             border-color: @ig-midblue;
         }
 
-        &:hover:not(.ui-state-error) {
+        &:hover:not(.p-state-error) {
             border-color: #212121;
         }
     }
@@ -7119,7 +6667,7 @@ table {
                 margin-top: 1px;
             }
 
-            .ui-autocomplete {
+            .p-autocomplete {
                 width: 100%;
 
                 input {
@@ -7129,7 +6677,7 @@ table {
                     padding-right: 58px;
                 }
 
-                .ui-button {
+                .p-button {
                     position: absolute;
                     right: 4px;
                     height: 24px;
@@ -7139,10 +6687,10 @@ table {
                     border: none !important;
                 }
 
-                .ui-autocomplete-panel {
+                .p-autocomplete-panel {
                     max-height: none;
 
-                    .ui-autocomplete-list-item {
+                    .p-autocomplete-item {
                         border-bottom: none;
                         padding: 5px 4px;
                     }

@@ -43,7 +43,7 @@ import { SelectItem } from 'primeng/api';
     encapsulation: ViewEncapsulation.None,
     styles: [
         `
-            .ui-multiselect-panel,.ui-dropdown-panel {
+            .p-multiselect-panel,.p-dropdown-panel {
                 z-index: 10000 !important;
             }
         `
