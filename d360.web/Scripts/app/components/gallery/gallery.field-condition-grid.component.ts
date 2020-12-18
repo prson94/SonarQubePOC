@@ -49,7 +49,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
 
     ngOnInit(): void {
         this.properties = new Array();
-        this.properties.push({ Name: "fields", Type: "Array<FieldTypeAPIModelFieldCondition>", Description: "Array of field items", Default: "Empty []" });
+        this.properties.push({ Name: "fields", Type: "Array<FieldTypeAPIModelFieldCondition>", Description: "Array of field items. Field values are limited to 150 characters or less.", Default: "Empty []" });
         this.properties.push({ Name: "conditions", Type: "Array<any>", Description: "Selection Value", Default: "Empty []" });
         this.properties.push({ Name: "onChange", Type: "Event Array<any>", Description: "Triggers on every change in grid condition form. Returns value.", Default: "initial value" });
 

@@ -73,6 +73,8 @@ export class GalleryPropertyGroupComponent implements OnInit {
         this.properties = new Array();
         this.properties.push({ Name: "igformGroup", Type: "FormGroup", Description: "The angular FormGroup object that contains the inputs.", Default: "" });
         this.properties.push({ Name: "title", Type: "string", Description: "The text to display at the top of the form group.", Default: "" });
+        this.properties.push({ Name: "showMoreInfo", Type: "boolean", Description: "Turn on the option to display a help icon next to the title at the top of the form group.", Default: "" });
+        this.properties.push({ Name: "moreInfoHtml", Type: "string", Description: "The HTML text to show in a tooltip when hovering over the help icon next to the title at the top of the form group. Used in conjunction with showMoreInfo.", Default: "" });
     }
 
     wordsIDontLike(wordsIDontLikeArr: string[]): ValidatorFn {
