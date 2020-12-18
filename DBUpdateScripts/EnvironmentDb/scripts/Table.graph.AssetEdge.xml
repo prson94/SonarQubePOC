@@ -113,4 +113,23 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.graph.AssetEdge-v5">
+    <comment>GOV-13151</comment>
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Graph_AssetEdge_ID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Graph_AssetEdge_ID] ON [graph].[AssetEdge] ( ID ASC )
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_Graph_AssetEdge_ID')
+BEGIN
+	DROP INDEX [IX_Graph_AssetEdge_ID] ON [graph].[AssetEdge]
+END
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
