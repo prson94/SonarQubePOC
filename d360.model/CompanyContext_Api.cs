@@ -139,20 +139,15 @@ namespace d360.model
         {
             return Connection.Query<CurrentExecutionLocationModel>($@"
 select	E.ExecutionID,
-		coalesce(T.ItemNumber, 0) as HighestItemNumber,
-		coalesce(C.ItemNumber, 0) as HighestItemNumberProcessed
+		coalesce(T.HighestItemNumber, 0) as HighestItemNumber,
+		coalesce(T.HighestItemNumberProcessed, 0) as HighestItemNumberProcessed
 from	api.Execution E
 		outer apply (
-			select	max(ItemNumber) as ItemNumber
+			select	max(ItemNumber) as HighestItemNumber,
+                max(case when Success is not null then ItemNumber else 0 end) as HighestItemNumberProcessed
 			from	{targetTable} A
 			where	ExecutionID = E.ExecutionID
 		) T
-		outer apply (
-			select	max(ItemNumber) as ItemNumber
-			from	{targetTable} A
-			where	ExecutionID = E.ExecutionID
-					and Success is not null
-		) C
 where	E.ExecutionID = @executionID;",
          new { executionID }).SingleOrDefault();
         }
@@ -429,14 +424,25 @@ where	ExecutionID = @executionID
 
     if @hasAssetTypePermission = 0
     begin
+
+        drop table if exists #tempcheckpermission;
+
+        select usrper.AssetID
+        into #tempcheckpermission
+        from api.Execution E
+        cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
+        where E.ExecutionID = @executionID
+        and usrper.PermissionsBitMask & @p = @p;
+
+        create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
+
 	    update	T
 	    set		T.Success = 0,
 			    T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
 	    from    api.{apiTableName} T
-			    inner join api.Execution E on E.ExecutionID = T.ExecutionID 
-											    and E.ExecutionID = @executionID 
-											    and T.AssetID is not null
-											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
+        where   T.ExecutionID = @executionID
+                and T.AssetID is not null
+                and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
     end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = CurrentResourceID }, commandTimeout: timeout);
             }
         }
