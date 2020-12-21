@@ -550,7 +550,7 @@ namespace d360.web.Controllers.V2
                             $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                             $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
                         value = i.Uid
-                    });
+                    }).OrderBy(i => i.title);
 
                 var Field_CardinalRelationships = cardinalRelationships
                     .Select(i => new
