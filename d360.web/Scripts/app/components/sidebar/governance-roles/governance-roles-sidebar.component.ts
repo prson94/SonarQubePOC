@@ -9,7 +9,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { forkJoin } from 'rxjs';
-import { CompanySettingEnum, SettingsPutModel, StringSetting } from '../../../models/settings.model';
+import { CompanySettingEnum, SettingsPutModel, StringSetting, GuidSetting} from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
@@ -38,6 +38,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.breadcrumbsService = breadcrumbService;
     }
 
+    private datatype: number = 0;
     private model: GovernanceRole;
     private originalModel: GovernanceRole;
     private refListDDL: any[] = [];
@@ -67,8 +68,15 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid)
             .subscribe((r3) => {
                 this.originalModel = new GovernanceRole();
-
-                this.originalModel.RefListUid = r3[0].StringSetting.Value;
+                if (r3[0].StringSetting) {
+                    this.originalModel.RefListUid = r3[0].StringSetting.Value;
+                    this.datatype = 0;
+                }
+                else if (r3[0].GuidSetting)
+                {
+                    this.originalModel.RefListUid = r3[0].GuidSetting.Value;
+                    this.datatype = 4;
+                }
 
                 this.model = this.getInitialData();
                 this.isLoading = false;
@@ -96,10 +104,17 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.isSaving = true;
 
         var updateRefList = new SettingsPutModel();
-        updateRefList.StringSetting = new StringSetting();
         updateRefList.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
-        updateRefList.StringSetting.Value = this.model.RefListUid;
 
+        if (this.datatype == 4) {
+            updateRefList.GuidSetting = new GuidSetting();
+            updateRefList.GuidSetting.Value = this.model.RefListUid;
+        }
+        else
+        {
+            updateRefList.StringSetting = new StringSetting();
+            updateRefList.StringSetting.Value = this.model.RefListUid;
+        }
 
         this.settingsService.putSetting(updateRefList)
             .subscribe((res) => {

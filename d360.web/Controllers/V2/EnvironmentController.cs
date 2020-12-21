@@ -281,7 +281,22 @@ namespace d360.web.Controllers.V2
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
-                        value = model.StringSetting.Value;
+
+                        if (model.SettingID == 73)
+                        {
+                            if (Guid.TryParse(model.StringSetting.Value, out Guid val))
+                            {
+                                value = val.ToString();
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid Guid");
+                            }
+                        }
+                        else
+                        {
+                            value = model.StringSetting.Value;
+                        }
                         break;
                     case SettingType.Number:
                         if (model.NumberSetting == null)
@@ -351,6 +366,16 @@ namespace d360.web.Controllers.V2
 
                             value = xml.ToString();
                         }
+                        break;
+
+                    case SettingType.Guid:
+                        if (model.GuidSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.GuidSetting.Value == null)
+                            clearSetting = true;
+
+                        value = model.GuidSetting.Value.ToString();
+
                         break;
                 }
 

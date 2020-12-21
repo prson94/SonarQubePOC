@@ -214,9 +214,17 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
                 if (item.tag === 'GovernanceRoles') {
                     this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
-                        if (res[0] && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
-                            item.warningMessage = `GovRoleWarning`;
-                            this.ref.markForCheck();
+                        if (res) {
+                            if (res[0]) {
+                                if (res[0].StringSetting && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                                    item.warningMessage = `GovRoleWarning`;
+                                    this.ref.markForCheck();
+                                }
+                                else if (res[0].GuidSetting && res[0].GuidSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                                    item.warningMessage = `GovRoleWarning`;
+                                    this.ref.markForCheck();
+                                }
+                            }
                         }
                     });
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -53,6 +54,9 @@ namespace d360.core.entities
                 case SettingType.IPAddress:
                     IpAddressSetting = new CompanySettingApiIpAddressModel(setting, companyValue);
                     break;
+                case SettingType.Guid:
+                    GuidSetting = new CompanySettingApiGuidModel(setting, companyValue);
+                    break;
             }
 
         }
@@ -63,6 +67,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         public string Description { get; set; }
 
+        public CompanySettingApiGuidModel GuidSetting { get; set; }
         public CompanySettingApiIpAddressModel IpAddressSetting { get; set; }
         public CompanySettingApiBooleanModel BooleanSetting { get; set; }
         public CompanySettingApiNumberModel NumberSetting { get; set; }
@@ -137,6 +142,21 @@ namespace d360.core.entities
         public List<Ip> Addresses { get; set; }
     }
 
+    public class CompanySettingApiGuidModel
+    {
+        public CompanySettingApiGuidModel() { }
+
+        public CompanySettingApiGuidModel(Setting setting, string companyValue)
+        {
+            if (Guid.TryParse(setting.DefaultValue, out Guid d))
+                Default = d;
+            if (Guid.TryParse(companyValue, out Guid v))
+                Value = v;
+        }
+
+        public Guid Value { get; set; }
+        public Guid Default { get; set; }
+    }
 
     public class CompanySettingApiUpdateModel
     {
@@ -145,6 +165,7 @@ namespace d360.core.entities
         public CompanySettingApiUpdateNumberModel NumberSetting { get; set; }
         public CompanySettingApiUpdateBooleanModel BooleanSetting { get; set; }
         public CompanySettingApiUpdateIpAddressModel IpAddressSetting { get; set; }
+        public CompanySettingApiUpdateGuidModel GuidSetting { get; set; }
 
         [IgnoreDataMember]
         public bool HasExactlyOneValue
@@ -155,7 +176,8 @@ namespace d360.core.entities
                     ((StringSetting == null ? 0 : 1) +
                     (NumberSetting == null ? 0 : 1) +
                     (BooleanSetting == null ? 0 : 1) +
-                    (IpAddressSetting == null ? 0 : 1)) == 1;
+                    (IpAddressSetting == null ? 0 : 1) +
+                    (GuidSetting == null ? 0 : 1)) == 1;
             }
         }
 
@@ -179,6 +201,11 @@ namespace d360.core.entities
     public class CompanySettingApiUpdateIpAddressModel
     {
         public List<Ip> Value { get; set; }
+    }
+
+    public class CompanySettingApiUpdateGuidModel
+    {
+        public Guid Value { get; set; }
     }
     #endregion
 }
