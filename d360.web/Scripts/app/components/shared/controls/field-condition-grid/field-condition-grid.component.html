@@ -54,7 +54,7 @@
                             <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-date>
                         </ng-container>
                         <ng-container *ngSwitchDefault>
-                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" disabled="{{condition.disabled}}" required igSize="small" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value" />
+                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" disabled="{{condition.disabled}}" required igSize="small" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value" maxlength="150" />
                         </ng-container>
                     </ng-container>
                 </div>

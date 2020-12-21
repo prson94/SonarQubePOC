@@ -61,15 +61,10 @@
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <measure-list #metricList 
                           *ngIf="!isLoading"
-                          [fields]="fields"
-                          [operators]="operators"
-                          [predicates]="predicates"
-                          [responsibilities]="responsibilities"
-                          [relationships]="relationships"
                           [allocation]="allocation"
                           [assetType]="selectedAssetType"
-                          [paths]="ruleResultPaths"
                           [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                          [screenReferences]="screenReferences"
                           [(showDisabled)]="showDisabled"
                           (selectionChange)="selectionChanged($event)">
             </measure-list>
@@ -100,13 +95,9 @@
                     <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                 </div>
                 <div *ngIf="!data?.isExternallyCalculated && showPassTest">
-                    <d3s-admin-metric-pass-test-details [definition]="selectedMetric?.Definition"
-                                                        [operators]="operators"
-                                                        [metricListFieldTypes]="fields"
-                                                        [responsibilityTypes]="responsibilityTypes"
-                                                        [relationshipTypes]="relationshipTypes"
-                                                        [assetTypeUid]="selectedAssetType.Uid"
-                                                        [paths]="ruleResultPaths">
+                    <d3s-admin-metric-pass-test-details [assetTypeUid]="selectedAssetType.Uid"
+                                                        [definition]="selectedMetric?.Definition"
+                                                        [screenReferences]="screenReferences">
                     </d3s-admin-metric-pass-test-details>
                 </div>
                 <div *ngIf="showConditions" class="measure-details-item">

@@ -1,7 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { MetricFieldTypeViewModel, MetricPathOptionViewModel, MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
+import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { Operator } from '../../../models/operator.model';
 import { MetricsService } from '../../../services/metrics.service';
+import { CommonScreenReferencesModel } from './common-screen-references-model';
 
 @Component({
     selector: 'd3s-admin-metric-pass-test-details',
@@ -9,12 +10,8 @@ import { MetricsService } from '../../../services/metrics.service';
 })
 export class AdminMetricPassTestDetailsComponent implements OnChanges {
     @Input() definition: MetricAssetDefinitionViewModel;
-    @Input() operators: any[];
-    @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
-    @Input() responsibilityTypes: any;
-    @Input() relationshipTypes: any;
     @Input() assetTypeUid: any;
-    @Input() paths: MetricPathOptionViewModel[] = [];
+    @Input() screenReferences: CommonScreenReferencesModel;
 
     dateVal1: Date;
     dateVal2: Date;
@@ -55,11 +52,11 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
         if (this.showPassTest) {
 
             if (this.isDataQualityMeasure()) {
-                if (this.definition.DataQuality && this.paths) {
+                if (this.definition.DataQuality && this.screenReferences.paths) {
                     const dq = this.definition.DataQuality;
 
                     const resultPathUid = dq.ResultPathUid;
-                    const paths = this.paths.filter(x => { return x.value == resultPathUid; });
+                    const paths = this.screenReferences.paths.filter(x => { return x.value == resultPathUid; });
 
                     if (paths.length > 0) {
                         this.ruleResultPathHtml = paths[0].label;
@@ -76,7 +73,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                                         const matches = fields.filter(o => { return o.AssetTypeUid == f.AssetTypeUid && o.ApiName == f.FieldTypeName; });
                                         if (matches.length > 0) {
                                             const o = matches[0];
-                                            const operatorText = this.operators.find(o => o.ID === f.Operator).Name;
+                                            const operatorText = this.screenReferences.operators.find(o => o.ID === f.Operator).Name;
                                             const filterModel = {
                                                 assetTypeName: o.AssetTypeName,
                                                 fieldTypeName: o.Name,
@@ -125,10 +122,8 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                         this.formattedCheck = (gov.External.Instructions) ? ('External: Instruction string: ' + gov.External.Instructions) : 'External';
                         break;
                     case 'Field':
-                        let formattedoperator = this.operators.filter(x => x.ID == gov.Field.Operator).length > 0
-                            ? this.operators.filter(x => x.ID == gov.Field.Operator)[0].Name : gov.Field.Operator;
-                        let fieldType = this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName).length > 0
-                            ? this.metricListFieldTypes.filter(x => x.ApiName == gov.Field.FieldTypeName)[0] : null;
+                        let formattedoperator = this.screenReferences.operators.find(x => x.ID == gov.Field.Operator);
+                        let fieldType = this.screenReferences.fields.find(x => x.ApiName == gov.Field.FieldTypeName);
                         let formattedValue = gov.Field.Values.join(", ");
                         if (fieldType) {
                             if (fieldType.Type == "Lookup") {
@@ -145,7 +140,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                                 formattedValue = "";
 
                             }
-                            this.formattedCheck = fieldType.Name + " " + formattedoperator + " " + formattedValue;
+                            this.formattedCheck = fieldType.Name + " " + formattedoperator.Name + " " + formattedValue;
                         } else {
                             this.formattedCheck = "field not found";
                         }
@@ -153,8 +148,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
                         break;
                     case 'Owner':
-                        let responsibilitytype = this.responsibilityTypes.filter(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() }).length == 1
-                            ? this.responsibilityTypes.filter(x => { return x.uid == gov.Owner.ResponsibilityTypeUid })[0] : null;
+                        let responsibilitytype = this.screenReferences.responsibilities.find(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() });
                         let operatorString = "is assigned";
                         if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
                             operatorString = "is not assigned";
@@ -166,8 +160,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                         }
                         break;
                     case 'Predicate':
-                        let predicate = this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() }).length > 0
-                            ? this.relationshipTypes.filter(x => { return x.Predicate.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() })[0].Predicate : null;
+                        let predicate = this.screenReferences.predicates.find(x => { return x.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() });
                         let existsOperatorP = "exists";
                         if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
                             existsOperatorP = "does not exist";
@@ -178,8 +171,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                             this.formattedCheck = "";
                         break;
                     case 'Relation':
-                        let relationshipType = this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() }).length == 1
-                            ? this.relationshipTypes.filter(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() })[0] : null;
+                        let relationshipType = this.screenReferences.relationships.find(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() });
                         let existsOperator = "exists";
                         if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
                             existsOperator = "does not exist";

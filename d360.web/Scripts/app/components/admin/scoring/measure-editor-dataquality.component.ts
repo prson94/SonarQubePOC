@@ -43,7 +43,6 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 
 })
 export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
-    @Input() paths: MetricPathOptionViewModel[] = [];
 
     //#region Tooltip data
 
@@ -252,7 +251,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 Type: new FieldType(f.Type),
                 Values: []
             };
-            this.operators.forEach(op => {
+            this.screenReferences.operators.forEach(op => {
                 if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === f.Type.toLowerCase())) {
                     fieldOption.Operators.push({ label: op.Name, value: op.ID });
                 }
