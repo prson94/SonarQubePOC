@@ -1,0 +1,47 @@
+﻿@import "../../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+:host {
+    position: relative;
+
+    .overview {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        z-index: 10001;
+        width: 320px;
+        height: 170px;
+        background-color: white;
+        border: 2px solid @ig-grey-t5;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+
+        canvas {
+            outline: none;
+            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+        }
+    }
+
+    .overview-close-button {
+        position: absolute;
+        z-index: 10002; // one more than canvas
+        bottom: 160px;
+        left: 310px;
+        color: @ig-black;
+        border: none;
+        background-color: @ig-grey-t5;
+        cursor: pointer;
+    }
+
+    .overview-button {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        z-index: 10001;
+        background-color: @ig-grey-t5;
+        height: 40px;
+        border: none;
+        border-radius: 4px;
+        padding: 0 10px;
+    }
+}
+

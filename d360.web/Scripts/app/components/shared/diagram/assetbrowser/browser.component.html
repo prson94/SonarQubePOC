@@ -151,9 +151,7 @@
                         </div>
                     </div>
 
-                    <div id="asset-browser-overview" class="asset-browser-controls-bottom-left">
-                        
-                    </div>
+                    <d3s-assetbrowser-overview #overview [enabled]="showOverview"></d3s-assetbrowser-overview>
 
                     <div class="asset-browser-controls-bottom">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>

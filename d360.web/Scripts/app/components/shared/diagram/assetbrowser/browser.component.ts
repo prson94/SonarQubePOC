@@ -40,6 +40,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
+import { AssetBrowserOverviewComponent } from './tools/overview.component';
 
 declare var window: any;
 
@@ -63,6 +64,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
     @ViewChild('processDiagram', { static: false }) processDiagramRef: ProcessDiagramComponent;
+    @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
 
     private diagramData: AssetBrowserResponseModel;
 
@@ -80,6 +82,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     isFullScreen = false;
     loadingText = '';
 
+    showOverview: boolean = false;
+    
     isError: boolean = false;
     errorText = '';
 
@@ -1243,9 +1247,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }    
+            }  
 
-            new go.Overview('asset-browser-overview').observed = this.diagram;
+            this.overviewControlRef.initialize(this.diagram);
         });
     }
 
@@ -3176,6 +3180,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private zoom_Change(_scale: number) {
         this.helper_ScaleDiagram(_scale);
     }
+
 
     isProcessDiagramInEditMode: boolean = false;
     editProcess() {
