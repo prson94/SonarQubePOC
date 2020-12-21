@@ -42,11 +42,6 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 
 })
 export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
-    @Input() operators: OperatorModel[];
-    @Input() predicates: Predicate[];
-    @Input() relationships: RelationshipType[];
-    @Input() responsibilities: ResponsibilityType[];
-
     predicateTypes: any[] = [];
     relationshipTypes: any[] = [];
     responsibilityOperators: any[] = [];
@@ -174,8 +169,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             this.cdRef.markForCheck();
         });
 
-        if (this.responsibilities && this.responsibilities.length) {
-            this.responsibilityTypes = this.responsibilities.map(x => {
+        if (this.screenReferences.responsibilities && this.screenReferences.responsibilities.length) {
+            this.responsibilityTypes = this.screenReferences.responsibilities.map(x => {
                 return { label: x.Name, value: x.uid };
             });
             this.responsibilityOperators = [{ label: "is assigned", value: Operator.Populated }, { label: "is not assigned", value: Operator.NotPopulated }];
@@ -184,8 +179,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             }
         }
 
-        if (this.predicates && this.predicates.length) {
-            this.predicateTypes = this.predicates
+        if (this.screenReferences.predicates && this.screenReferences.predicates.length) {
+            this.predicateTypes = this.screenReferences.predicates
                 .filter(x => this.restrictedPredicateTypes.indexOf(x.Type) == -1)
                 .map((x, idx, self) => {
                     let label = x.Name + '/' + x.Inverse + ' (' + x.FriendlyTypeName + ')';
@@ -195,8 +190,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 .filter((x, pos, self) => (pos == self.findIndex((t) => (t.value == x.value))));
         }
 
-        if (this.relationships && this.relationships.length) {
-            let fusionFiltered = this.relationships
+        if (this.screenReferences.relationships && this.screenReferences.relationships.length) {
+            let fusionFiltered = this.screenReferences.relationships
                 .filter(x => this.restrictedTypes.indexOf(x.Subject.Class) == -1)
                 .filter(x => this.restrictedTypes.indexOf(x.Object.Class) == -1);
 
@@ -267,7 +262,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.assetTypeFields.filter(x => x.ApiName == condition.field)[0]
+                let field = this.screenReferences.fields.filter(x => x.ApiName == condition.field)[0]
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);

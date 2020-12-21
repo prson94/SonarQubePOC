@@ -13,6 +13,7 @@ import { RelationshipType } from '../../../models/relationship.model';
 import { Predicate } from '../../../models/predicate.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
+import { CommonScreenReferencesModel } from './common-screen-references-model';
 
 @Component({
     selector: 'measure-list',
@@ -43,12 +44,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     @Input() allocation: ScoreTypeAllocation;
     @Input() maxScoreEffectiveDate: Date;
 
-    @Input() fields: MetricFieldTypeViewModel[] = [];
-    @Input() operators: OperatorModel[];
-    @Input() predicates: Predicate[];
-    @Input() relationships: RelationshipType[];
-    @Input() responsibilities: ResponsibilityType[];
-    @Input() paths: MetricPathOptionViewModel[] = [];
+    @Input() screenReferences: CommonScreenReferencesModel;
 
     @Input() showDisabled: boolean = false;
 
@@ -301,14 +297,14 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     showRulePathsError() {
-        return this.isDataQualityScoreType() && this.paths.length == 0; 
+        return this.isDataQualityScoreType() && this.screenReferences.paths.length == 0; 
     }
 
     getSelectedRuleResultPath() {
         let html = ';'
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
         if (ruleResultPathUid) {
-            const matches = this.paths.filter(p => { return p.value == ruleResultPathUid; });
+            const matches = this.screenReferences.paths.filter(p => { return p.value == ruleResultPathUid; });
             if (matches.length > 0) {
                 html = matches[0].label;
             }

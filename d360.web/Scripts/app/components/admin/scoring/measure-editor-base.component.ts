@@ -1,11 +1,11 @@
 import { Input, EventEmitter, Output, HostListener, ChangeDetectorRef, ViewChildren, QueryList } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricAssetVersionConditionViewModel, MetricAssetVersionConditionItemViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { Operator, OperatorModel } from '../../../models/operator.model';
+import { Operator } from '../../../models/operator.model';
 import { FormGroup, ValidatorFn, AbstractControl } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
@@ -13,14 +13,14 @@ import * as _ from 'lodash';
 import { Observable } from 'rxjs';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
+import { CommonScreenReferencesModel } from './common-screen-references-model';
 
 export class BaseMeasureEditorComponent extends BaseComponent {
     @Input() model: MetricAssetViewModel = null;
     @Input() allocation: ScoreTypeAllocation;
     @Input() uid: string;
     @Input() parentUid: string;
-    @Input() assetTypeFields: MetricFieldTypeViewModel[] = [];
-    @Input() operators: OperatorModel[];
+    @Input() screenReferences: CommonScreenReferencesModel;
     @Input() maxScoreEffectiveDate: Date;
 
     @Output() onCancel = new EventEmitter();
@@ -127,14 +127,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 });
                 tempFields.forEach(f => {
                     f.Operators = [];
-                    this.operators.forEach(op => {
+                    this.screenReferences.operators.forEach(op => {
                         if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === FieldTypeHelper.getFieldType(f.Type).toLowerCase())) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
                         if (FieldTypeHelper.getFieldType(f.Type) === 'Lookup') {
 
-                            const options = this.assetTypeFields.find(x => x.ApiName === f.Name);
+                            const options = this.screenReferences.fields.find(x => x.ApiName === f.Name);
                             f.Values = [];
                             if (options && options.Values) {
                                 options.Values.forEach(val => {
@@ -272,7 +272,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                 fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                 fieldCondition.Operator = c.operator;
-                fieldCondition.FieldType = this.assetTypeFields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
+                fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
 
                 if (!fieldCondition.Values) {
                     fieldCondition.Values = [];

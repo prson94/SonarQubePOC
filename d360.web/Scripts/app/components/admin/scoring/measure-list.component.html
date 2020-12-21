@@ -57,9 +57,7 @@
     <d3s-modal [title]="'Create Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;">
         <dataquality-measure-editor *ngIf="isDataQualityScoreType()"
                                     [allocation]="allocation"
-                                    [assetTypeFields]="fields"
-                                    [operators]="operators"
-                                    [paths]="paths"
+                                    [screenReferences]="screenReferences"
                                     [parentUid]="selection?.Uid"
                                     [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                     (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
@@ -67,17 +65,14 @@
         </dataquality-measure-editor>
         <external-measure-editor *ngIf="isExternalScoreType()"
                                  [allocation]="allocation"
+                                 [screenReferences]="screenReferences"
                                  [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                  (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
                                  (onSave)="formMode = FormMode.Default; load($event); ">
         </external-measure-editor>
         <governance-measure-editor *ngIf="isGovernanceScoreType()"
                                    [allocation]="allocation"
-                                   [assetTypeFields]="fields"
-                                   [operators]="operators"
-                                   [predicates]="predicates"
-                                   [relationships]="relationships"
-                                   [responsibilities]="responsibilities"
+                                   [screenReferences]="screenReferences"
                                    [parentUid]="selection?.Uid"
                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                    (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
@@ -87,9 +82,7 @@
     <d3s-modal [title]="'Edit Measure'" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;">
         <dataquality-measure-editor *ngIf="isDataQualityScoreType() && formMode == FormMode.Editing"
                                     [allocation]="allocation"
-                                    [assetTypeFields]="fields"
-                                    [operators]="operators"
-                                    [paths]="paths"
+                                    [screenReferences]="screenReferences"
                                     [(model)]="selection"
                                     [uid]="selection?.Uid"
                                     [maxScoreEffectiveDate]="maxScoreEffectiveDate"
@@ -99,6 +92,7 @@
         <external-measure-editor *ngIf="isExternalScoreType() && formMode == FormMode.Editing"
                                  [allocation]="allocation"
                                  [(model)]="selection"
+                                 [screenReferences]="screenReferences"
                                  [uid]="selection?.Uid"
                                  [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                  (onCancel)="formMode = FormMode.Default; load($event)"
@@ -106,11 +100,7 @@
         </external-measure-editor>
         <governance-measure-editor *ngIf="isGovernanceScoreType() && formMode == FormMode.Editing"
                                    [allocation]="allocation"
-                                   [assetTypeFields]="fields"
-                                   [operators]="operators"
-                                   [predicates]="predicates"
-                                   [relationships]="relationships"
-                                   [responsibilities]="responsibilities"
+                                   [screenReferences]="screenReferences"
                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                    [(model)]="selection"
                                    [uid]="selection?.Uid"
@@ -121,14 +111,10 @@
     <d3s-modal [title]="'Version History'" additionalClasses="large-dialog modal-measure" (onClose)="showHistory(false)" [isVisible]="isHistoryModalVisible">
         <div style="max-height: calc(100% - 60px);">
             <measure-history *ngIf="!isLoading && isHistoryModalVisible && selection.Uid"
-                             [Measure]="selection"
-                             [operators]="operators"
-                             [responsibilityTypes]="responsibilityTypes"
-                             [relationshipTypes]="relationshipTypes"
                              [AssetType]="assetType"
                              [isExternallyCalculated]="allocation.isExternallyCalculated"
-                             [assetTypeFields]="fields"
-                             [paths]="paths"
+                             [Measure]="selection"
+                             [screenReferences]="screenReferences"
                              (onClose)="showHistory(false);load(selection?.Name);">
             </measure-history>
         </div>

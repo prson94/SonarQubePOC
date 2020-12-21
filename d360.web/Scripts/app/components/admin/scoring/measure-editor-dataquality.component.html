@@ -91,7 +91,7 @@
                         </label>
                         <p-dropdown igDropdown
                                     igSize="full"
-                                    [options]="paths"
+                                    [options]="screenReferences.paths"
                                     appendTo="body"
                                     (onChange)="onPathChange($event)"
                                     [(ngModel)]="model.Definition.DataQuality.ResultPathUid"

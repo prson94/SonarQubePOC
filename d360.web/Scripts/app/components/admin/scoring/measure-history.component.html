@@ -54,13 +54,7 @@
                         <div class="details-content">{{getAsPrecentage(selection?.Weight)}}</div>
                     </div>
                     <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
-                        <d3s-admin-metric-pass-test-details [definition]="selection?.Definition"
-                                                            [operators]="operators"
-                                                            [metricListFieldTypes]="assetTypeFields"
-                                                            [responsibilityTypes]="responsibilityTypes"
-                                                            [relationshipTypes]="relationshipTypes"
-                                                            [assetTypeUid]="Measure.Uid"
-                                                            [paths]="paths">
+                        <d3s-admin-metric-pass-test-details [assetTypeUid]="AssetType.Uid" [definition]="selection?.Definition" [screenReferences]="screenReferences">
                         </d3s-admin-metric-pass-test-details>
                     </div>
                     <div *ngIf="showConditions" class="measure-details-item">

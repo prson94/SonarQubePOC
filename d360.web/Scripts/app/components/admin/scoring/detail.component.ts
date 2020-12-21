@@ -21,6 +21,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { Predicate } from '../../../models/predicate.model';
+import { CommonScreenReferencesModel } from './common-screen-references-model';
 
 @Component({
     selector: 'd3s-allocation-detail',
@@ -41,15 +42,12 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
-    operators: OperatorModel[];
     formattedCheck: string = "";
 
     CheckType = MetricGovernanceCheckType;
 
-    fields: MetricFieldTypeViewModel[] = [];
-    predicates: Predicate[];
-    relationships: RelationshipType[];
-    responsibilities: ResponsibilityType[];
+    screenReferences: CommonScreenReferencesModel = new CommonScreenReferencesModel();
+
 
     @ViewChild('metricList', { static: false }) metricList: MeasureListComponent;
     showConditions: boolean;
@@ -57,7 +55,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     maxScoreEffectiveDate: Date;
     showDisabled: boolean = false;
     showPassTest: boolean = false;
-    ruleResultPaths: MetricPathOptionViewModel[] = [];
+    
 
     isMeasureListCommandBarDisabled: boolean = false;
 
@@ -104,7 +102,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             p.label = html;
                             p.value = p.Uid;
                         });
-                        this.ruleResultPaths = options;
+                        this.screenReferences.paths = options;
 
                         this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length == 0;
                     });
@@ -120,24 +118,25 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             });
 
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe(f => {
-                this.fields = f;
+                //this.fields = f;
+                this.screenReferences.fields = f;
             });
 
             this.settingsService.getOperators().subscribe(o => {
-                this.operators = o;
+                this.screenReferences.operators = o;
             });
 
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.responsibilities = data;
+                    this.screenReferences.responsibilities = data;
                 }
             });
 
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
 
-                    this.relationships = data;
-                    this.predicates = data.map(x => {
+                    this.screenReferences.relationships = data;
+                    this.screenReferences.predicates = data.map(x => {
                         return x.Predicate;
                     });
                 }
@@ -217,8 +216,8 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
+            const field = this.screenReferences.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
+            c.OperatorText = this.screenReferences.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
                 c.FieldTypeName = field.Name;

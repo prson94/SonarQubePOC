@@ -1,10 +1,10 @@
 ﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetViewModel, MetricPathOptionViewModel } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
-import { OperatorModel, Operator } from '../../../models/operator.model';
-import { AssetType, AssetTypeMetricModel } from '../../../models/asset.model';
+import { AssetTypeMetricModel } from '../../../models/asset.model';
+import { CommonScreenReferencesModel } from './common-screen-references-model';
 
 @Component({
     selector: 'measure-history',
@@ -16,15 +16,11 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
 
     @Input() Measure: MetricAssetViewModel;
     @Input() AssetType: AssetTypeMetricModel;
-    @Input() assetTypeFields: MetricFieldTypeViewModel[] = [];
     @Input() isExternallyCalculated: boolean = false;
-    @Input() operators: OperatorModel[];    
-    @Input() paths: MetricPathOptionViewModel[] = [];
-    @Input() responsibilityTypes: any[] = [];
-    @Input() relationshipTypes: any[] = [];
+    @Input() screenReferences: CommonScreenReferencesModel;
 
     @Output() onClose = new EventEmitter;
-    
+
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     private metricHistoryRecords: MetricAssetHistoryViewModel[] = [];
     private metricTree: TreeNode[] = [];
@@ -80,8 +76,8 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
 
     formatConditions() {
         this.conditions.forEach(c => {
-            const field = this.assetTypeFields.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
+            const field = this.screenReferences.fields.find(f => f.ApiName === c.ConditionFieldTypeName);
+            c.OperatorText = this.screenReferences.operators.find(o => o.ID === c.Operator).Name;
 
             if (field) {
                 c.FieldTypeName = field.Name;
