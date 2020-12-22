@@ -27,7 +27,7 @@ export class AssetBrowserOverviewComponent implements OnInit {
             this.overview = new go.Overview('assetBrowserOverview');
             const highlightBox = this.overview.box.elt(0) as (go.Shape);
 
-            if (highlightBox) highlightBox.stroke = 'black'; //color of the square in the overview panel
+            if (highlightBox) highlightBox.stroke = '#202020'; //color of the square in the overview panel
         }
 
         if (this.diagram && this.overview) this.overview.observed = this.diagram;
