@@ -9,18 +9,12 @@
                 <span [ngSwitch]="currentQuestion.DisplayStyle">
                     <span *ngSwitchCase="'Radio'">
                         <div *ngFor="let option of currentQuestion?.Options" style="padding:2px">
-                            <label>
-                                <input type="radio" name="options" (click)="option.IsChecked=$event.target.checked" [value]="option.Value" [checked]="option.IsChecked">
-                                {{option.Name}}
-                            </label>
+                            <p-radioButton igRadioButton name="options" [(ngModel)]="currentQuestion.Value" [value]="option.Value" [label]="option.Name"></p-radioButton>
                         </div>
                     </span>
                     <span *ngSwitchCase="'CheckList'">
                         <div *ngFor="let option of currentQuestion?.Options;index as i" style="padding:2px">
-                            <label>
-                                <input type="checkbox" name="options_{{i}}" [(ngModel)]="option.IsChecked" [value]="option.Value" [checked]="option.IsChecked">
-                                {{option.Name}}
-                            </label>
+                            <p-checkbox igCheckbox name="options_{{i}}" [(ngModel)]="currentQuestion.Value" [value]="option.Value" [label]="option.Name"></p-checkbox>
                         </div>
                     </span>
                 </span>

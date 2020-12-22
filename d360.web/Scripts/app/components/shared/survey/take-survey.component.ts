@@ -80,8 +80,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     private isValid(): boolean {
         this.errorMessage = '';
-        var item = this.currentQuestion.Options.find(x => x.IsChecked);
-        if (!item) {
+        if (this.currentQuestion.Value == undefined) {
             this.errorMessage = 'You must select at least one answer';
         }
 
@@ -115,7 +114,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.surveyDetails.Questions.forEach(x => {
             let q = new SurveyQuestionResponseApiModel();
             q.Comments = x.Comments;
-            q.Responses = x.Options.filter(x => { return x.IsChecked }).map(x => x.Value);
+            q.Responses = Array.isArray(x.Value) ? x.Value : [x.Value];
             q.SurveyQuestionUid = x.Uid;
             surveyResponse.Questions.push(q)
         });
