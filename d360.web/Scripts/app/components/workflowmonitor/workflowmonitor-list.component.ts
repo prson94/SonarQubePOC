@@ -195,7 +195,9 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         }
     }
 
-    
+    canExportRecords() {
+        return this.totalRecords <= this.maxExportRows;
+    }    
 }
 
 
