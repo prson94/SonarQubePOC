@@ -1216,6 +1216,7 @@
     <None Include="Content\redactor\redactor.min.css.gzip">
       <DependentUpon>redactor.min.css</DependentUpon>
     </None>
+    <Content Include="Content\styles\AssetBrowser.less" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
     <Content Include="Content\styles\img\alpha-horizontal.png" />
