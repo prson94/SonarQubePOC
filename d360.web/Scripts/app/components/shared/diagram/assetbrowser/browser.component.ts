@@ -48,8 +48,7 @@ declare var window: any;
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
     providers: [BrowserService, PermissionsService, PredicatesService, ProcessService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    styleUrls: ['./browser.component.less'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Input() readonly = true;

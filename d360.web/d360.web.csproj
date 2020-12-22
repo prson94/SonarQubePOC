@@ -1301,7 +1301,6 @@
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
-    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
