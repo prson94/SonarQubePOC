@@ -1182,7 +1182,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
      SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
      SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-     SwaggerParameter("_filter", "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+     SwaggerParameter("_filter", "The filter expression used to filter organisations by name and accepted users email. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerResponse(HttpStatusCode.OK, "Gets a list of Organizations.", typeof(List<OrganizationModel>)),
      SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Parameters provided"),
      SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
