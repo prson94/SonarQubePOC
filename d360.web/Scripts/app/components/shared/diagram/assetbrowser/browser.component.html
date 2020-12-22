@@ -151,7 +151,7 @@
                         </div>
                     </div>
 
-                    <d3s-assetbrowser-overview #overview [enabled]="showOverview"></d3s-assetbrowser-overview>
+                    <d3s-assetbrowser-overview #overview [enabled]="displayConfiguration.ShowOverview" (enabledChanged)="displayConfiguration.ShowOverview=$event;saveState(displayConfigurationKey, displayConfiguration);"></d3s-assetbrowser-overview>
 
                     <div class="asset-browser-controls-bottom">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>

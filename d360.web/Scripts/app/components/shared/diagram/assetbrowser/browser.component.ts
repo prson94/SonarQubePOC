@@ -81,9 +81,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     selectedDiagramAsset: AssetBrowserDiagramAsset;
     isFullScreen = false;
     loadingText = '';
-
-    showOverview: boolean = false;
-    
+        
     isError: boolean = false;
     errorText = '';
 

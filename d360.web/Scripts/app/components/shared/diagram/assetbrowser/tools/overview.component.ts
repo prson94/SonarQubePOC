@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit, HostBinding } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnInit, HostBinding } from '@angular/core';
 import * as go from 'gojs';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 
@@ -36,9 +36,8 @@ export class AssetBrowserOverviewComponent implements OnInit {
         this.enabledChanged.emit(this.enabled);                
     }
 
-
     public initialize(diagram: go.Diagram): void {
-        this.overview.observed = diagram;
+        this.overview.observed = diagram;        
     }
 
 } 

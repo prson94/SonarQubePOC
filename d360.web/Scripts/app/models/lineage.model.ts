@@ -626,6 +626,7 @@ export class AssetBrowserFilterModel {
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
+    ShowOverview: boolean = true;
 }
 
 export enum AssetBrowserFilterChangeEventType {
