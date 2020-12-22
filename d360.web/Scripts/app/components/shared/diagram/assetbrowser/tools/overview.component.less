@@ -6,19 +6,14 @@
     .overview {
         position: absolute;
         left: 20px;
-        bottom: 20px;
+        bottom: 25px;
         z-index: 101;
         width: 320px;
         height: 170px;
         background-color: white;
         border: 2px solid @ig-grey-t5;
         border-radius: 4px;
-        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
-
-        canvas {
-            outline: none;
-            -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
-        }
+        box-shadow: @ig-box-shadow;
     }
 
     .overview-close-button {
@@ -35,7 +30,7 @@
     .overview-button {
         position: absolute;
         left: 20px;
-        bottom: 20px;
+        bottom: 25px;
         z-index: 101;
         background-color: @ig-grey-t5;
         height: 40px;
@@ -44,4 +39,3 @@
         padding: 0 10px;
     }
 }
-
