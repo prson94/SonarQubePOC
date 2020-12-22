@@ -9,12 +9,17 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { TakeSurveyComponent } from './take-survey.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { CheckboxModule } from 'primeng/checkbox';
+
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         RouterModule,
+        RadioButtonModule,
+        CheckboxModule,
         
         //d3s        
         CoreModule,

@@ -37,6 +37,7 @@ export class Question {
     DisplayStyle: SurveyTypeDisplayStyle;
     Comments: string;
     Options: Option[];
+    Value: any;
 }
 
 export class Option {
