@@ -50,6 +50,7 @@ namespace d360.model
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
         public int SqlBulkAssetDeleteSize { get; set; } = 10000; // number of assets removed per transaction on type deletion
+        public int SqlBulkIntersectFieldDeleteSize { get; set; } = 50000; //Number of fields, intersects in bulk delete sql
         public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
 
         #region DbSets
@@ -138,20 +139,15 @@ namespace d360.model
         {
             return Connection.Query<CurrentExecutionLocationModel>($@"
 select	E.ExecutionID,
-		coalesce(T.ItemNumber, 0) as HighestItemNumber,
-		coalesce(C.ItemNumber, 0) as HighestItemNumberProcessed
+		coalesce(T.HighestItemNumber, 0) as HighestItemNumber,
+		coalesce(T.HighestItemNumberProcessed, 0) as HighestItemNumberProcessed
 from	api.Execution E
 		outer apply (
-			select	max(ItemNumber) as ItemNumber
+			select	max(ItemNumber) as HighestItemNumber,
+                max(case when Success is not null then ItemNumber else 0 end) as HighestItemNumberProcessed
 			from	{targetTable} A
 			where	ExecutionID = E.ExecutionID
 		) T
-		outer apply (
-			select	max(ItemNumber) as ItemNumber
-			from	{targetTable} A
-			where	ExecutionID = E.ExecutionID
-					and Success is not null
-		) C
 where	E.ExecutionID = @executionID;",
          new { executionID }).SingleOrDefault();
         }
@@ -428,14 +424,25 @@ where	ExecutionID = @executionID
 
     if @hasAssetTypePermission = 0
     begin
+
+        drop table if exists #tempcheckpermission;
+
+        select usrper.AssetID
+        into #tempcheckpermission
+        from api.Execution E
+        cross apply UserAssetPermissions(E.ResourceID, @assetTypeID) usrper
+        where E.ExecutionID = @executionID
+        and usrper.PermissionsBitMask & @p = @p;
+
+        create nonclustered index cix_tempcheckpermission on #tempcheckpermission(AssetID);
+
 	    update	T
 	    set		T.Success = 0,
 			    T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
 	    from    api.{apiTableName} T
-			    inner join api.Execution E on E.ExecutionID = T.ExecutionID 
-											    and E.ExecutionID = @executionID 
-											    and T.AssetID is not null
-											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
+        where   T.ExecutionID = @executionID
+                and T.AssetID is not null
+                and not exists (select 1 from #tempcheckpermission ua where ua.AssetID = T.AssetID);
     end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = CurrentResourceID }, commandTimeout: timeout);
             }
         }
@@ -1893,18 +1900,17 @@ from	IntersectType I
                         AddMeasurement(metrics, "Log lookup errors invalid asset uids or asset ids", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
 
+                        //Check if asset Results exist 
                         Connection.Execute($@"
-                        --Check if asset Results exist 
     update	T
     set		T.Success = 0,
 		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
     from    api.ExecutionDeletedAsset T
             inner join graph.AssetNode AN on AN.ID = T.AssetID
-			inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
-            cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+            cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id having count(1) > 0) ARE
     where	T.ExecutionID = @ExecutionID
             and T.[Cascade] = 0
-            and ARE.ResultCount > 0;",
+            and exists (select 1 from AssetType AT where AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule});",
             new { execution.ExecutionID }, commandTimeout: timeout);
 
                         AddMeasurement(metrics, "Log error asset result exists with not enabled cascade", sw.ElapsedMilliseconds, ++step);
@@ -1956,7 +1962,12 @@ from	IntersectType I
                                             var fusion = import.First();
                                             sw.Restart();
                                             var data = Connection.Query<dynamic>($@"
+                                                    drop table if exists
+
                                                     create table #forDelete (ID int, Type varchar(50))
+                                                    create nonclustered index cix_forDelete on #forDelete (Type, ID)
+                                                    create nonclustered index cix_forDeleteID on #forDelete (ID)
+
                                                     declare @result table (Status bit, Message varchar(255))
                                                                                                         
                                                     declare @fusionId int = (select ObjectID from api.ExecutionDeletedAsset
@@ -1966,23 +1977,23 @@ from	IntersectType I
                                                     
                                                     insert into #forDelete select ID,'Asset' as Type from Asset where Object = 'Fusion' and ObjectID = @fusionId
                                                     
-                                                    
-                                                    declare @fusionTypeId int = (select FusionTypeID from fusion where ID = @fusionId)
-                                                    
                                                     insert into #forDelete
                                                     select ID as ID,'FusionAttribute' as Type from FusionAttribute where FusionID = @fusionId
                                                     
                                                     insert into #forDelete
-                                                    	select ID, 'Intersect' as Type
-                                                    	from [Intersect] where [Object] = 'FusionAttribute' and [ObjectID] in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    	select I.ID, 'Intersect' as Type
+                                                    	from [Intersect] I where I.[Object] = 'FusionAttribute'
+                                                        and exist (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[ObjectID])
                                                     
                                                     insert into #forDelete
-                                                    	select ID, 'Intersect' as Type
-                                                        from [Intersect] where [Subject] = 'FusionAttribute' and [SubjectID] in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    	select I.ID, 'Intersect' as Type
+                                                        from [Intersect] I where I.[Subject] = 'FusionAttribute'
+                                                        and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = I.[SubjectID])
                                                     
                                                     insert into #forDelete
-                                                    	select ID, 'Field' as Type
-                                                        from Field where ObjectType = 'FusionAttribute' and ObjectID in (select id from #forDelete where Type = 'FusionAttribute')
+                                                    	select F.ID, 'Field' as Type
+                                                        from Field F where F.ObjectType = 'FusionAttribute'
+                                                        and exists (select 1 from #forDelete FD where FD.Type = 'FusionAttribute' and FD.ID = F.ObjectID)
                                                     
                                                     declare @itemCount int = (select count(*) from #forDelete)
                                                     
@@ -2065,14 +2076,18 @@ from	IntersectType I
             if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
                 truncate TABLE #ExecutionDeletedAsset
             else
-                create table #ExecutionDeletedAsset (
-                    ExecutionID	uniqueidentifier,
-                    [Root] uniqueidentifier,
-                    ItemNumber	int,
-                    Uid	uniqueidentifier,
-                    AssetID	bigint,
-                    FromHierarchy	bit
-                );
+                begin
+                    create table #ExecutionDeletedAsset (
+                        ExecutionID	uniqueidentifier,
+                        [Root] uniqueidentifier,
+                        ItemNumber	int,
+                        Uid	uniqueidentifier,
+                        AssetID	bigint,
+                        FromHierarchy	bit
+                    );
+
+                    create nonclustered index cix_tempExecutionDeletedAsset on #ExecutionDeletedAsset([Root], ExecutionID, ItemNumber)
+                end;
 
             with h as (
 	            select	D.ExecutionID,
@@ -2101,7 +2116,7 @@ from	IntersectType I
 	            from	PredicateIntersect I 
 			            inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = @predicateTypeValue and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			            inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-                where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
+                where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 1
             )
 
             insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[FromHierarchy],[Root])
@@ -2115,23 +2130,30 @@ from	IntersectType I
                 from    h 
                 where   IntersectID is not null 
                         and [Level] > 0 
-                        and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = h.ExecutionID and ItemNumber = h.ItemNumber )
+                        and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = h.ExecutionID and ed.ItemNumber = h.ItemNumber and ed.Uid = h.uid)
 			            and  ExecutionID = @ExecutionID;
+
+            drop table if exists #tempChildTable;
+
+            select [Root] as UID,
+                ExecutionID,
+                ItemNumber
+            into #tempChildTable
+            from #ExecutionDeletedAsset
+            group by [Root], ExecutionID, ItemNumber
+            having count(1) > 0;
+
+            create nonclustered index cix_tempchildtable on #tempChildTable (UID, ExecutionID, ItemNumber);
             
 			update  S 
             set     S.Success = 0 ,
 			        [Message] ='You have not enabled Cascade, yet there are child relationships for this asset.'
 			from    api.ExecutionDeletedAsset S 
-			        inner join  (
-                                select      [Root] as UID,
-                                            ExecutionID,
-                                            ItemNumber  
-                                from        #ExecutionDeletedAsset
-			                    group by    [Root], ExecutionID, ItemNumber 
-                                            having (count (*) > 0)
-                                ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
+			        inner join #tempChildTable E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+			        and S.[Cascade] = 0;
+
+            drop table if exists #tempChildTable;", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
                                             AddMeasurement(metrics, $"Log parent and child relationships assets without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -2143,14 +2165,18 @@ from	IntersectType I
             if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
                 truncate TABLE #ExecutionDeletedAsset
             else
-                create table #ExecutionDeletedAsset (
-                    ExecutionID	uniqueidentifier,
-                    [Root] uniqueidentifier,
-                    ItemNumber	int,
-                    Uid	uniqueidentifier,
-                    AssetID	bigint,
-                    FromHierarchy	bit
-                );
+                begin
+                    create table #ExecutionDeletedAsset (
+                        ExecutionID	uniqueidentifier,
+                        [Root] uniqueidentifier,
+                        ItemNumber	int,
+                        Uid	uniqueidentifier,
+                        AssetID	bigint,
+                        FromHierarchy	bit
+                    );
+
+                    create nonclustered index cix_tempExecutionDeletedAsset on #ExecutionDeletedAsset([Root], ExecutionID, ItemNumber)
+                end;
 
             insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root])
                 select distinct 
@@ -2173,21 +2199,28 @@ from	IntersectType I
 			            inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
 			            inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID 
                 where   {querySuffix} ;
+
+            drop table if exists #tempworkflow;
+
+            select [Root] as UID,
+                ExecutionID,
+                ItemNumber
+            into #tempworkflow
+            from #ExecutionDeletedAsset
+            group by [Root], ExecutionID, ItemNumber
+            having count(1) > 0;
+
+            create nonclustered index cix_tempworkflow on #tempworkflow (UID, ExecutionID, ItemNumber);
             
 			update  S 
             set     S.Success = 0 ,
 			        [Message] ='You have not enabled Cascade, yet there are workflows for this asset.'
 			from    api.ExecutionDeletedAsset S 
-			        inner join  (
-                                select      [Root] as UID,
-                                            ExecutionID,
-                                            ItemNumber  
-                                from        #ExecutionDeletedAsset
-			                    group by    [Root], ExecutionID, ItemNumber 
-                                            having (count (*) > 0)
-                                ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
+			        inner join #tempworkflow E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+			        and S.[Cascade] = 0;
+
+            drop table if exists #tempworkflow;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             AddMeasurement(metrics, $"Log workflow for assets exists without cascade enabled>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
@@ -2239,7 +2272,7 @@ from	IntersectType I
         from    h 
         where   IntersectID is not null 
                 and [Level] > 0 
-                and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
+                and not exists (select 1 from api.ExecutionDeletedAsset ed where ed.ExecutionID = @ExecutionID and ed.Uid = h.Uid)",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                                 AddMeasurement(metrics, $"Get the hierarchy items we also need to remove>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -2250,7 +2283,19 @@ from	IntersectType I
                                             #region Delete workflow items
 
                                             Connection.Execute($@"
+    declare @count bigint = 0;
+
     create table #w (ItemID int);
+    create nonclustered index cix_tempw on #w(ItemID);
+
+    drop table if exists #tempExecutionDeletedAsset;
+    
+    select S.[Object], S.[ObjectID]
+    into #tempExecutionDeletedAsset
+    from api.ExecutionDeletedAsset S
+    where {querySuffix};
+
+    create nonclustered index cix_tempExecutionDeletedAsset on #tempExecutionDeletedAsset([Object], [ObjectID]);
 
     insert into #w
 	    select	distinct 
@@ -2259,29 +2304,37 @@ from	IntersectType I
 			    inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
 			    inner join workflow.[Version] wv on wt.id = wv.typeId
 			    inner join workflow.Item wi on 	wv.id = wi.VersionID
-			    inner join api.ExecutionDeletedAsset S on S.Object = wi.Object and S.ObjectID = wi.ObjectID and {querySuffix};
+			    inner join #tempExecutionDeletedAsset S on S.Object = wi.Object and S.ObjectID = wi.ObjectID;
 
     insert into #w
 	    select	wi.id 
 	    from	workflow.Item wi
 			    inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			    inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID and {querySuffix};
+			    inner join #tempExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID;
 
-    delete	T
-    from	[workflow].[ItemAssignment] T
-		    inner join #w S on S.ItemID = T.ItemID;
+    drop table if exists #tempExecutionDeletedAsset;
 
-    delete  T
-    from	[workflow].[ItemStepTransition] T
-		    inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
-		    inner join #w S on S.ItemID = wis.ItemID;
+    select @count = count(1) from #w;
 
-    delete  workflow.itemstep 
-    where	ItemID in (Select ItemID from #w);
+    if(@count > 0)
+    begin
+        delete	T
+        from	[workflow].[ItemAssignment] T
+		        where exists(select 1 from #w S where S.ItemID = T.ItemID);
+
+        delete  T
+        from	[workflow].[ItemStepTransition] T
+		        inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+		        where exists (select 1 from #w S where S.ItemID = wis.ItemID);
+
+        delete  wis
+        from workflow.itemstep wis
+        where	exists (Select 1 from #w S where S.ItemID = wis.ItemID);
  
-    delete  [workflow].[Item] 
-    where	ID in (Select ItemID from #w);",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+        delete  wi
+        from [workflow].[Item] wi
+        where	exists (Select 1 from #w S where S.ItemID = wi.ID);
+    end;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             AddMeasurement(metrics, $"Delete workflow items>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
 
@@ -2381,7 +2434,46 @@ from	IntersectType I
                                             #region Asset table
 
                                             Connection.Execute(
-                                                $"delete Asset where Uid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                $@"
+    declare @totalcount bigint = 0,
+        @runcount bigint = 0,
+        @struncount bigint = 0,
+        @enruncount bigint = 0,
+        @batchsize int = {SqlBulkIntersectFieldDeleteSize};
+
+        drop table if exists #tempassetid;
+
+        create table #tempassetid (id [bigint] IDENTITY(1,1) NOT NULL, assetid [bigint]);
+
+        insert into #tempassetid (assetid)
+        select a.ID
+        from Asset a
+        where exists (
+            select 1
+            from api.ExecutionDeletedAsset S where s.Uid = A.Uid and {querySuffix}
+        );
+
+        create nonclustered index [cix_tempassetid] on #tempassetid (assetid, id);
+
+        select @totalcount = count(id) from #tempassetid;
+        while (@runcount <= @totalcount)
+        begin
+            set @struncount = @runcount + 1;
+            set @enruncount = @runcount + @batchsize;
+
+            delete a
+            from Asset a
+            where exists (
+                select 1
+                from #tempassetid S
+                where S.assetid = a.ID
+                and S.id between @struncount and @enruncount
+            );
+
+            set @runcount = @enruncount;
+        end;
+
+        drop table if exists #tempassetid;",
                                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             AddMeasurement(metrics, $"remove from asset table>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
@@ -2404,7 +2496,9 @@ from	IntersectType I
                                             if (!string.IsNullOrEmpty(legacyTable))
                                             {
                                                 Connection.Execute(
-                                                    $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
+                                                    $@"delete t
+                                                        from {legacyTable} t
+                                                        where exists (select 1 from api.ExecutionDeletedAsset S where t.ID = s.ObjectID and {querySuffix})",
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                                 AddMeasurement(metrics, $"remove from {legacyTable} table >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -2415,28 +2509,76 @@ from	IntersectType I
 
                                             #region Delete Intersects
 
-                                            if (predicateType.HasValue)
-                                            {
-                                                Connection.Execute($@"
-    delete	T
-    from	[Intersect] T 
-		    inner join api.ExecutionDeletedAsset S on S.IntersectID = T.ID and {querySuffix};",
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-                                                AddMeasurement(metrics, $"remove from Intersect table-IntersectID>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
-                                                sw.Restart();
-                                            }
-
                                             Connection.Execute($@"
-    delete	T
-    from	[Intersect] T
-            inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID and {querySuffix};
+    declare @totalcount bigint = 0,
+        @runcount bigint = 0,
+        @struncount bigint = 0,
+        @enruncount bigint = 0,
+        @batchsize int = {SqlBulkIntersectFieldDeleteSize};
 
-    delete	T
-    from	[Intersect] T
-            inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+        drop table if exists #tempexecdelass;
 
-                                            AddMeasurement(metrics, $"remove from Intersect-(subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+        select IntersectID, [Object], ObjectID
+        into #tempexecdelass
+        from api.ExecutionDeletedAsset S
+        where {querySuffix};
+
+        create nonclustered index [cix_tempexecdelass] on #tempexecdelass ([Object], ObjectID);
+        create nonclustered index [cix_tempexecdelass2] on #tempexecdelass (IntersectID);
+
+        drop table if exists #tempintersect;
+        create table #tempintersect(id [bigint] IDENTITY(1,1) NOT NULL, IntersectID int); 
+
+        if(@predicateType = 1)
+        begin
+            insert into #tempintersect (IntersectID)
+            select T.ID
+            from [Intersect] T 
+		    where exists (select 1 from #tempexecdelass S where S.IntersectID = T.ID and S.IntersectID is not null);
+        end;
+
+        insert into #tempintersect (IntersectID)
+        select T.ID
+        from [Intersect] T 
+		where exists (select 1 from #tempexecdelass S where S.Object = T.Subject and S.ObjectID = T.SubjectID);
+
+        insert into #tempintersect (IntersectID)
+        select T.ID
+        from [Intersect] T 
+		where exists (select 1 from #tempexecdelass S where S.Object = T.Object and S.ObjectID = T.ObjectID);
+
+        create nonclustered index [cix_tempintersect] on #tempintersect(IntersectID, id);
+
+        delete T
+        from #tempintersect T
+        where T.ID > (select min(t1.ID)
+            from #tempintersect t1
+            where t.IntersectID = t1.IntersectID
+            );
+
+        select @totalcount = count(id) from #tempintersect;
+        while (@runcount <= @totalcount)
+        begin
+            set @struncount = @runcount + 1;
+            set @enruncount = @runcount + @batchsize;
+
+            delete T
+            from [Intersect] T
+            where exists (
+                select 1
+                from #tempintersect S
+                where S.IntersectID = T.ID
+                and S.id between @struncount and @enruncount
+            );
+
+            set @runcount = @enruncount;
+        end;
+
+        drop table if exists #tempexecdelass;
+        drop table if exists #tempintersect;",
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, predicateType = predicateType.HasValue ? 1 : 0}, transaction: trans, commandTimeout: timeout);
+
+                                            AddMeasurement(metrics, $"remove from Intersect-(IntersectID, subject/subjectid and object/objectid) >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
                                             #endregion
 
@@ -2472,11 +2614,52 @@ from	IntersectType I
                                             #region Delete subsidiary tables
 
                                             Connection.Execute($@"
-    delete	T
-    from	Field T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
+    declare @totalcount bigint = 0,
+        @runcount bigint = 0,
+        @struncount bigint = 0,
+        @enruncount bigint = 0,
+        @batchsize int = {SqlBulkIntersectFieldDeleteSize};
 
-    delete	T
+        drop table if exists #tempfieldid;
+
+        create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, fieldid [bigint]);
+
+        insert into #tempfieldid (fieldid)
+        select T.ID
+        from Field T
+        where exists (
+            select 1
+            from api.ExecutionDeletedAsset S where s.[Object] = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix}
+        );
+
+        create nonclustered index [cix_tempfieldid] on #tempfieldid (fieldid, id);
+
+        select @totalcount = count(id) from #tempfieldid;
+        while (@runcount <= @totalcount)
+        begin
+            set @struncount = @runcount + 1;
+            set @enruncount = @runcount + @batchsize;
+
+            delete T
+            from Field T
+            where exists (
+                select 1
+                from #tempfieldid S
+                where S.FieldID = T.ID
+                and S.id between @struncount and @enruncount
+            );
+
+            set @runcount = @enruncount;
+        end;
+
+        drop table if exists #tempfieldid;",
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                            AddMeasurement(metrics, $"remove from subsidiary tables field>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            sw.Restart();
+
+                                            Connection.Execute($@"
+                                            delete	T
     from	Issue T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};
 
@@ -2485,20 +2668,52 @@ from	IntersectType I
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"remove from subsidiary tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+                                            AddMeasurement(metrics, $"remove from subsidiary tables issue/nym>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
                                             sw.Restart();
                                             #endregion
 
                                             #region Delete owner tables
 
                                             Connection.Execute($@"
-    delete	T
-    from	ResponsibilityTypeRelationOverrideItem T
-		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
+    declare @count bigint = 0;
 
-    delete	T
+    drop table if exists #temprestable;
+    create table #temprestable (id bigint);
+    create nonclustered index cix_temprestable on #temprestable ([ID] asc);
+
+    insert into #temprestable
+    select T.ID
+    from ResponsibilityTypeRelationOverrideItem T
+    where exists (select 1 from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix});
+
+    select @count = count(1) from #temprestable;
+
+    if(@count > 0)
+    begin
+        delete	T
+        from	ResponsibilityTypeRelationOverrideItem T
+		        where exists (select 1 from #temprestable S where S.ID = T.ID);
+    end;
+    drop table if exists #temprestable;
+
+    drop table if exists #temprestable2;
+    create table #temprestable2 (RuleID bigint, AssetID bigint);
+    create nonclustered index [ix_temprestable2] on #temprestable2 ([RuleID] asc, [AssetID] asc);
+
+    insert into #temprestable2
+    select T.RuleID, T.AssetID
     from	ResponsibilityRuleResultAsset T
-		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
+    where exists (select 1 from api.ExecutionDeletedAsset S where S.AssetID = T.AssetID and {querySuffix});
+
+    select @count = count(1) from #temprestable2;
+
+    if(@count > 0)
+    begin
+        delete	T
+        from	ResponsibilityRuleResultAsset T
+		        where exists (select 1 from #temprestable2 S where S.RuleID = T.RuleID and S.AssetID = T.AssetID);
+    end;
+    drop table if exists #temprestable2;",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
