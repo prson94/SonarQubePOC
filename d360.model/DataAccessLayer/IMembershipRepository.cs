@@ -20,5 +20,7 @@ namespace d360.model.DataAccessLayer
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
         List<GroupResponseResult> AddGroups(ApiExecution execution, List<UpdateGroupModel> groups);
+
+        Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

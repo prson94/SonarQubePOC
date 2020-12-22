@@ -13,6 +13,7 @@ using System.Data.SqlClient;
 using d360.core.entities;
 using d360.core;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1350,6 +1351,97 @@ order by	q.SortOrder";
             {
                 return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
             }
+        }
+
+        public async Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var dbArgs = new DynamicParameters();
+
+            int pageSize = 200;
+            int pageNum = 0;
+            string direction = "asc";
+            string order = "Name";            
+
+            string whereSQL = "";
+            
+            
+            dbArgs.Add("@organizationTypeUid", organizationTypeUid);
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res - 1;
+                }
+            }
+
+            dbArgs.Add("@pageNum", pageNum);
+            dbArgs.Add("@pageSize", pageSize);
+            dbArgs.Add("@offset", (pageSize * pageNum));
+            
+            if (queryParams.Any(q => q.Key == "_order"))
+            {   
+                order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                direction = queryParams.ToList().FirstOrDefault(q => q.Key == "_direction").Value;
+            }
+
+            var orderBySQL = $"Order by {order} {direction}";
+
+            if (queryParams.Any(q => q.Key == "_filter"))
+            {
+                var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                List<DefaultFilter> fieldList = new List<DefaultFilter>
+                {
+                new DefaultFilter("Name", "O.name", SqlFieldType.Text),
+                new DefaultFilter("Email", "R.Email", SqlFieldType.Text)
+                };
+
+                if (!string.IsNullOrEmpty(filterValue))
+                {
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, false, true);
+                    filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    List<int> filteredFieldIds = new List<int>();
+                    whereSQL = "Where " + filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds);
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+                }
+            }
+
+            string sql = $@"select 
+	                        A.uid,
+	                        O.Name,
+	                        R.uid as AcceptedBy,
+	                        R.FirstName + ' ' + R.LastName as AcceptedByUserName,
+	                        O.DateAccepted as AcceptedOn,
+	                        O.AdministratorEmail
+                        from 
+	                        Organization O 
+	                        inner join 
+	                        OrganizationType OT on O.OrganizationTypeID=OT.ID and O.AcceptedBy is not null
+	                        inner join AssetType AST on AST.Object = 'OrganizationType' and OT.ID=AST.ObjectID and AST.uid =  @organizationTypeUid
+	                        inner join Asset A on A.Object ='Organization' and A.ObjectID = O.ID
+	                        left join 
+	                        reporting.Global_REsource R on R.ResourceID = O.acceptedBy
+                        {whereSQL}
+                        {orderBySQL}
+                        OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+            return (await this.CompanyContext.QueryAsync<OrganizationModel>(sql, dbArgs, ApiTimeout)).ToList();
         }
     }
 }

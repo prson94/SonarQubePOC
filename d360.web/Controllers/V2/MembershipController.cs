@@ -1173,6 +1173,72 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
+        [
+     HttpGet,
+     MapToApiVersion("2.0"),
+     Route("organizations/{organizationTypeUid:Guid}"),
+     SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+     SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+     SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+     SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+     SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+     SwaggerParameter("_filter", "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+     SwaggerResponse(HttpStatusCode.OK, "Gets a list of Organizations.", typeof(List<OrganizationModel>)),
+     SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Parameters provided"),
+     SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
+     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+ ]
+        public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            var queryParams = Request.GetQueryNameValuePairs();            
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "acceptedbyusername", "acceptedon", "administratoremail" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
+                if (!allowedValues.Contains(order))
+                {
+                    isValid = $"{order} is not a valid _order field";
+                }
+            }
+            
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+                if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                {
+                    isValid = "Invalid _direction provided";
+                }
+            }            
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
+            try {
+                List<OrganizationModel> organizations = await membershipRepository.GetOrganizationsByType(organizationTypeUid, queryParams);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizations)));
+            }           
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }            
+        }
+
+
         private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
         {
             List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();
