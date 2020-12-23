@@ -111,13 +111,13 @@ namespace d360.core.entities.Membership
     {
         [DataMember]
         public int ItemNumber { get; set; }
-        [DataMember] 
+        [DataMember]
         public Guid? uid { get; set; }
-        [DataMember] 
+        [DataMember]
         public Guid? ExecutionItemUid { get; set; }
-        [DataMember] 
+        [DataMember]
         public string Message { get; set; }
-        [DataMember] 
+        [DataMember]
         public bool Success { get; set; }
     }
     public class DeleteGroupModel
@@ -127,5 +127,20 @@ namespace d360.core.entities.Membership
     public class DeleteUserModel
     {
         public Guid Uid { get; set; }
+    }
+
+    public class OrganizationModel
+    {
+        public Guid uid { get; set; }
+
+        public string Name { get; set; }
+
+        public Guid AcceptedBy { get; set; }
+
+        public string AcceptedByUserName { get; set; }
+
+        public DateTime AcceptedOn { get; set; }
+
+        public string AdministratorEmail { get; set; }
     }
 }
