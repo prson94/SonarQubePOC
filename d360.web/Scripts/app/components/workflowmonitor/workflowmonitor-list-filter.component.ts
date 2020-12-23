@@ -26,8 +26,8 @@ import { map } from 'rxjs/operators';
                                             <td>
                                                 <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
                                             </td>
-                                            <td *ngIf="showExport" style="width:32px">
-                                                <a style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i class="fa fa-download"></i></a>
+                                            <td [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="showExport" style="width:32px">
+                                                <a class="Action" style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i class="fa fa-download fa-fw"></i></a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -42,8 +42,8 @@ import { map } from 'rxjs/operators';
                 <ng-template #exportOnly>
                     <div class="row">
                         <div class="col s12" style="padding-right: 0px">
-                            <div *ngIf="showExport" style="width: 32px; float: right">
-                                <a style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i class="fa fa-download"></i></a>
+                            <div [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="showExport" style="width: 32px; float: right">
+                                <a class="Action" style="font-size:1.1em" (click)="isExportDisabled ? return : exportClick.emit()" [pTooltip]="isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i class="fa fa-download fa-fw"></i></a>
                             </div>
                         </div>
                     </div>
