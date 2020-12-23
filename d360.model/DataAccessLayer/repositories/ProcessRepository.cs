@@ -602,58 +602,64 @@ new
                 }
             }
 
-            if (addedAssets.Count > 0 || toDelete.Count > 0)
+            List<DatabaseBulkAssetResult> assetResults = new List<DatabaseBulkAssetResult>();
+            List<DatabaseBulkAssetResult> intersectResults = new List<DatabaseBulkAssetResult>();
+
+            //All added, updated and deleted nodes needs graph events
+            assetResults.AddRange(addedAssets.Select(uid => new DatabaseBulkAssetResult()
+            {
+                Success = true,
+                uid = uid,
+                Object = "Diagram"
+            }));
+
+            assetResults.AddRange(toUpdate.Select(a => new DatabaseBulkAssetResult()
+            {
+                Success = true,
+                uid = a.AssetUid,
+                Object = "Diagram"
+            }));
+
+            assetResults.AddRange(toDelete.Select(delAsset => new DatabaseBulkAssetResult()
+            {
+                Success = true,
+                uid = delAsset.AssetUid,
+                Object = "Diagram"
+            }));
+
+            if (isDiagramReplace && addedAssets.Count > 0)
+            {
+                var intersectUids = Company.Query<Guid>(@"
+                        select i.uid from [Intersect] I 
+                            inner join Asset A on A.Object = I.Object and A.ObjectId = I.ObjectId
+                        where A.uid in @assets
+                        union
+                        select i.uid from [Intersect] I 
+                            inner join Asset A on A.Object = I.Subject and A.ObjectId = I.SubjectId
+                        where A.uid in @assets
+                ", new { assets = addedAssets }).ToList();
+
+                intersectUids.ForEach(iuid =>
+                {
+                    intersectResults.Add(new DatabaseBulkAssetResult()
+                    {
+                        Success = true,
+                        uid = iuid,
+                        Object = "Intersect"
+                    });
+                });
+            }
+
+            try
+            {
+                if(assetResults.Any())
+                    Company.SendAssetGraphEvents(assetResults);
+                if(intersectResults.Any())
+                    Company.SendAssetGraphEvents(intersectResults, null, true);
+            }
+            catch
             {
 
-                List<DatabaseBulkAssetResult> assetResults = new List<DatabaseBulkAssetResult>();
-                List<DatabaseBulkAssetResult> intersectResults = new List<DatabaseBulkAssetResult>();
-
-                addedAssets.ForEach(uid => assetResults.Add(new DatabaseBulkAssetResult()
-                {
-                    Success = true,
-                    uid = uid,
-                    Object = "Diagram"
-                }));
-
-                if (isDiagramReplace && addedAssets.Count > 0)
-                {
-                    var intersectUids = Company.Query<Guid>(@"
-                            select i.uid from [Intersect] I 
-                                inner join Asset A on A.Object = I.Object and A.ObjectId = I.ObjectId
-                            where A.uid in @assets
-                            union
-                            select i.uid from [Intersect] I 
-                                inner join Asset A on A.Object = I.Subject and A.ObjectId = I.SubjectId
-                            where A.uid in @assets
-                    ", new { assets = addedAssets }).ToList();
-
-                    intersectUids.ForEach(iuid =>
-                    {
-                        intersectResults.Add(new DatabaseBulkAssetResult()
-                        {
-                            Success = true,
-                            uid = iuid,
-                            Object = "Intersect"
-                        });
-                    });
-                }
-
-                toDelete.ForEach(delAsset => assetResults.Add(new DatabaseBulkAssetResult()
-                {
-                    Success = true,
-                    uid = delAsset.AssetUid,
-                    Object = "Diagram"
-                }));
-
-                try
-                {
-                    Company.SendAssetGraphEvents(assetResults);
-                    Company.SendAssetGraphEvents(intersectResults, null, true);
-                }
-                catch
-                {
-
-                }
             }
 
             return validationRes;
