@@ -1510,6 +1510,8 @@ namespace d360.extensions.search
                     return CommonNames.AssetTypeClass_Technical;
                 case "TAXONOMY":
                     return CommonNames.AssetTypeClass_Model;
+                case "DIAGRAM":
+                    return "Diagram Asset";
                 case "DOMAIN":
                     return "Reference";
                 case "SYNONYM":
