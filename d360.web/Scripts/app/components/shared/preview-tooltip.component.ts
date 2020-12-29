@@ -28,6 +28,7 @@ export class PreviewTooltipComponent {
     @Input() class: string;
     @Input() innerHtmlContent: string;
     @Input() uid: string;
+    @Input() align: string;
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
@@ -150,6 +151,10 @@ export class PreviewTooltipComponent {
 
             if (maxWidth > windowWidth) {
                 var leftOffset = windowWidth - dims.width - 30;
+                if (this.isRightAligned()) {
+                    leftOffset += 30;
+                    element.style.width = dims.width + 'px';
+                }
                 element.style.left = leftOffset + 'px';
             }
         }
@@ -160,10 +165,15 @@ export class PreviewTooltipComponent {
             this.active = true;
             panel.style.zIndex = 1000;
             panel.style.top = item.getBoundingClientRect().bottom + 'px';
-            panel.style.left = item.getBoundingClientRect().left + 'px';
+            if (this.isRightAligned()) {
+                let minwidth = getComputedStyle(panel).minWidth;
+                let panelWidth = parseInt(minwidth.substr(0, minwidth.length - 2)) || 400;
+                panel.style.left = (item.getBoundingClientRect().right - panelWidth) + 'px';
+            } else
+                panel.style.left = item.getBoundingClientRect().left + 'px';
 
             window.setTimeout(() => {
-                this.repositionMenuToFit(window.innerHeight, window.innerWidth, panel);
+                this.repositionMenuToFit(window.innerHeight, this.isRightAligned() ? item.getBoundingClientRect().right : window.innerWidth, panel);
             }, 50);
         }
     }
@@ -190,5 +200,9 @@ export class PreviewTooltipComponent {
         this.pending = false;
         this.active = false;
         this.ref.markForCheck();
+    }
+
+    isRightAligned(): boolean {
+        return this.align == 'right';
     }
 }
