@@ -68,7 +68,7 @@
                                 </ng-template>
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>
-                            <ig-color-picker *ngIf="field.UseColorControl" [colors]="field.Items" [placeholder]="multiselectLabel()" (selectedColorChange)="onColorSelect($event)" [selectedColor]="field.Value"></ig-color-picker>
+                            <ig-color-picker *ngIf="field.UseColorControl" [colors]="field.Items" [placeholder]="multiselectLabel()" [filterplaceholder]="getfilterplaceholder()" (selectedColorChange)="onColorSelect($event)" [selectedColor]="field.Value"></ig-color-picker>
                         </ng-container>
                         <ng-container *ngIf="!field.UseNativeLookupControl">
                             <ng-container *ngIf="field.UseTypeahead && !field.UseColorControl else autocompleteColor">
