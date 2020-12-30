@@ -168,7 +168,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
                         this.model.Event.IssueObject = '';
                         if (this.objectType == 'IssueType') {
-                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType' && w.type != 'ReferenceItemType');
 
                             let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
                             let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
@@ -276,7 +276,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             }
 
             if (this.objectType == 'IssueType') {
-                this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType');
+                this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType' && w.type != 'ReferenceItemType');
             }
 
             this.loadContextualFields();
