@@ -15,7 +15,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     selector: 'ig-color-picker',
     template: `
                 <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass">
-                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors" [disabled]="disabled">
+                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -45,6 +45,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = 'Optional';
+    @Input() filterplaceholder: string = 'Search colors';
     @Input() selectedColor: string;
     @Input() invalidOptions: string[] = [];
     @Input() disabled: boolean = false;

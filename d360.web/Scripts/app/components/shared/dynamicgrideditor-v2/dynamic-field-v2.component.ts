@@ -823,4 +823,16 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             return 'Value required';
         else return 'Optional';
     }
+
+    getfilterplaceholder() {
+        var strfiltePH = 'Search colors';
+        if (this.field) {
+            if (this.field.Name != null) {
+                if (this.selectedObject == 'TaskType' && this.field.FieldName == 'GovernanceRole') {
+                    strfiltePH = 'Search roles';
+                }
+            }
+        }
+        return strfiltePH;
+    }
 }
