@@ -71,6 +71,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     showDelete: boolean;
     selectedLevel: number = 0;
     filterColumns: string[] = ['DisplayValue'];
+    totalRecords: number = 0;
+    totalRecordsf: number = 0;
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
@@ -223,7 +225,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.modelsService.getModelHierarchy(this.objectTypeId, true, true).subscribe(
                     result => {
                         this.hierarchy = result;
-
+                        this.totalRecords = result.length;
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
                         this.isLoading = false;
@@ -235,6 +237,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
+                        this.totalRecords = result.length;
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
                         this.isLoading = false;
@@ -421,6 +424,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private expandNodes() {        
         if (this.treeTable.filters["global"]) { // only expand if global filter populated.
+            this.totalRecordsf = 0;
+            this.totalRecordsf = this.treeTable.filteredNodes.length;
             this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
         }
     }
@@ -432,10 +437,46 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             if (!match) { // if we haven't found a match expand the node and check children.
                 node.expanded = true;
                 if (node.children && node.children.length > 0) {
+                    this.totalRecordsf = this.totalRecordsf + node.children.length;
                     this.expandChildNodes(node.children, fields, search);
                 }
-            }            
+            }
+            else { // if matched then count number of child and futher child
+                if (node.children && node.children.length > 0) {
+                    this.totalRecordsf = this.totalRecordsf + node.children.length;
+                    this.expandChildNodesCount(node.children);
+                }
+            }
         }
         );
+    }
+
+    private expandChildNodesCount(nodes: TreeNode[]) {
+        nodes.forEach((node) => {
+            if (node.children && node.children.length > 0) {
+                this.totalRecordsf = this.totalRecordsf + node.children.length;
+                this.expandChildNodesCount(node.children);
+            }
+        }
+        );
+    }
+
+    canExportRecords() {
+        var isfilter = false;
+
+        if (this.treeTable != null) {
+            if (this.treeTable.filters != null) {
+                if (this.treeTable.filters["global"]) {
+                    isfilter = true;
+                }
+            }
+        }
+
+        if (isfilter) {
+            return this.totalRecordsf <= this.maxExportRows;
+        }
+        else {
+            return this.totalRecords <= this.maxExportRows;
+        }
     }
 }
