@@ -1671,7 +1671,9 @@ order by	R.[Name]";
 select  distinct 
         ma.scoretype,
         ma.uid,
-        ma.isexternallycalculated
+        ma.isexternallycalculated,
+		ma.lowerThreshold,
+		ma.upperThreshold
 from    metrics.Allocation  ma
 		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 order by ma.scoretype";
             return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();
