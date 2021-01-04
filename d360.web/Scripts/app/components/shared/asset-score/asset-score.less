@@ -2,8 +2,20 @@
 @import "../../../../../Content/styles/_Variables.less";
 
 .scoring-v2 {
-    display: inline-flex;
+    display: flex;
     width: 100%;
+    overflow-x: auto;
+
+    .score-left-content {
+        flex-grow: 1;
+        min-width: 600px;
+    }
+
+    .score-right-content {
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 400px;
+    }
 
     .right-padding-16 {
         padding-right: 16px !important;
@@ -104,6 +116,11 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
+
+                .score-date {
+                    position: relative;
+                    top: -6px;
+                }
             }
 
 
@@ -119,7 +136,7 @@
         float: right;
         border-top: 2px solid @ig-black;
         margin-right: 16px;
-        padding-top: 6px;
+        padding: 2px;
     }
 
     .score-badges {
@@ -144,7 +161,7 @@
     }
 
     .scoring-picker-dropdown {
-        .ui-dropdown-filter-container {
+        .p-dropdown-filter-container {
             display: none;
         }
 
@@ -262,6 +279,10 @@
                     }
                 }
             }
+        }
+
+        .p-dropdown-label {
+            border-radius: 4px;
         }
     }
 

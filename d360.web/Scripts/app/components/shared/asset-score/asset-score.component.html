@@ -1,128 +1,125 @@
 ﻿<div class="scoring-v2">
-    <div class="row col s12 no-margin no-padding">
-        <div class="col s8 no-margin no-padding right-padding-16">
-            <div class="card-box" [style.height.px]="panelHeight">
-                <div class="row">
-                    <div class="col s12">
-                        <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
-                    </div>
+    <div class="score-left-content right-padding-16 flex">
+        <div class="card-box" [style.height.px]="panelHeight">
+            <div class="row">
+                <div class="col s12 no-padding">
+                    <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
                 </div>
-                <d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
-                <ng-container *ngIf="isDataLoaded">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
-                                <ng-container *ngFor="let item of pointBreakdown">
-                                    <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
-                                        <div class="expander" *ngIf="!isExternallyCalculated">
-                                            <ng-container *ngIf="item.Measures && item.Measures.length > 0">
-                                                <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
-                                                <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
-                                            </ng-container>
-                                        </div>
+            </div>
+            <d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
+            <ng-container *ngIf="isDataLoaded">
+                <div class="row">
+                    <div class="col s12 no-padding">
+                        <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
+                            <ng-container *ngFor="let item of pointBreakdown">
+                                <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
+                                    <div class="expander" *ngIf="!isExternallyCalculated">
+                                        <ng-container *ngIf="item.Measures && item.Measures.length > 0">
+                                            <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
+                                            <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
+                                        </ng-container>
+                                    </div>
 
-                                        <div class="score-name">
-                                            <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
-                                            <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
-                                            <div>
-                                                Effective
-                                                {{item.EffectiveDate | utcDate | date:'shortDate'}} to
-                                                <ng-container *ngIf="item.EndDate">
-                                                    {{item.EndDate | utcDate | date:'shortDate'}}
-                                                </ng-container>
-                                                <ng-container *ngIf="!item.EndDate">present</ng-container>
-                                            </div>
-                                        </div>
-                                        <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
-                                            <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                            </span>
-                                            <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
-                                            </span>
-                                        </div>
-                                        <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
-                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsDQBadgeText(item)"></ig-badge>
+                                    <div class="score-name">
+                                        <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
+                                        <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
+                                        <div class="score-date">
+                                            Effective
+                                            {{item.EffectiveDate | utcDate | date:'shortDate'}} to
+                                            <ng-container *ngIf="item.EndDate">
+                                                {{item.EndDate | utcDate | date:'shortDate'}}
+                                            </ng-container>
+                                            <ng-container *ngIf="!item.EndDate">present</ng-container>
                                         </div>
                                     </div>
-                                    <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">
-                                        <ng-container *ngFor="let subItem of item.Measures">
-                                            <div class="score-item {{subItem._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(subItem)">
-                                                <div class="expander"></div>
-                                                <div class="expander"></div>
-                                                <div class="score-name">
-                                                    <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
-                                                    <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
-                                                    <div>
-                                                        Effective
-                                                        {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
-                                                        <ng-container *ngIf="subItem.EndDate">
-                                                            {{subItem.EndDate | utcDate | date:'shortDate'}}
-                                                        </ng-container>
-                                                        <ng-container *ngIf="!subItem.EndDate">present</ng-container>
-                                                    </div>
-                                                </div>
-                                                <div class="score-badges">
-                                                    <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                        <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                                    </span>
-                                                    <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                        <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
-                                                    </span>
+                                    <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
+                                        <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                        </span>
+                                        <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                            <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
+                                        </span>
+                                    </div>
+                                    <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
+                                        <ig-badge [variant]="item._badgeStyle" [text]="getAsDQBadgeText(item)"></ig-badge>
+                                    </div>
+                                </div>
+                                <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">
+                                    <ng-container *ngFor="let subItem of item.Measures">
+                                        <div class="score-item {{subItem._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(subItem)">
+                                            <div class="expander"></div>
+                                            <div class="expander"></div>
+                                            <div class="score-name">
+                                                <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
+                                                <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
+                                                <div class="score-date">
+                                                    Effective
+                                                    {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
+                                                    <ng-container *ngIf="subItem.EndDate">
+                                                        {{subItem.EndDate | utcDate | date:'shortDate'}}
+                                                    </ng-container>
+                                                    <ng-container *ngIf="!subItem.EndDate">present</ng-container>
                                                 </div>
                                             </div>
-                                        </ng-container>
+                                            <div class="score-badges">
+                                                <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                    <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                </span>
+                                                <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
+                                                </span>
+                                            </div>
+                                        </div>
                                     </ng-container>
                                 </ng-container>
-                            </div>
-
-                            <div *ngIf="!isExternallyCalculated" class="total-score-data">
-                                <div class="score-badges big-badges">
-                                    <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
-                                </div>
-                            </div>
-
-                            <ng-template #emptyMessage>
-                                <div class="scorecards-container">
-                                    <div class="scorecard-item empty">
-                                        This score was calculated and sent in from an external source. No measures have been defined.
-                                    </div>
-                                </div>
-                            </ng-template>
+                            </ng-container>
                         </div>
-                    </div>
-                </ng-container>
-            </div>
 
+                        <div *ngIf="!isExternallyCalculated" class="total-score-data">
+                            <div class="score-badges big-badges">
+                                <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
+                            </div>
+                        </div>
+
+                        <ng-template #emptyMessage>
+                            <div class="scorecards-container">
+                                <div class="scorecard-item empty">
+                                    This score was calculated and sent in from an external source. No measures have been defined.
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </ng-container>
         </div>
-        <div class="col s4 no-margin no-padding">
-            <div class="card-box" [style.height.px]="panelHeight">
-                <div class="button-group show-multiple">
-                    <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
-                    <button *ngIf="!isExternallyCalculated" igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
-                    <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
-                </div>
-                <div [hidden]="!(activeTab=='History')">
-                    <score-history #scoreHistory
-                                   [selectedPoint]="selectedPoint"
-                                   [assetUid]="uid"
-                                   [scoreType]="selectedScoreType"
-                                   [scoreDate]="scoreDate"
-                                   [isExternallyCalculated]="isExternallyCalculated"
-                                   (datePointChanged)="dateChanged($event)"
-                                   (measurePointsChanged)="measurePoints=$event"></score-history>
-                </div>
-                <div [hidden]="!(activeTab=='Calculation')">
-                    <score-calculation [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
-                </div>
-                <div [hidden]="!(activeTab=='Definition')">
-                    <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
-                </div>
+
+    </div>
+    <div class="score-right-content">
+        <div class="card-box" [style.height.px]="panelHeight">
+            <div class="button-group show-multiple">
+                <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
+                <button *ngIf="!isExternallyCalculated" igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
+                <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
+            </div>
+            <div [hidden]="!(activeTab=='History')">
+                <score-history #scoreHistory
+                               [selectedPoint]="selectedPoint"
+                               [assetUid]="uid"
+                               [scoreType]="selectedScoreType"
+                               [scoreDate]="scoreDate"
+                               [isExternallyCalculated]="isExternallyCalculated"
+                               (datePointChanged)="dateChanged($event)"
+                               (measurePointsChanged)="measurePoints=$event"></score-history>
+            </div>
+            <div [hidden]="!(activeTab=='Calculation')">
+                <score-calculation [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
+            </div>
+            <div [hidden]="!(activeTab=='Definition')">
+                <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
             </div>
         </div>
     </div>
-
 </div>
 
 <ng-template #score_list_header>
