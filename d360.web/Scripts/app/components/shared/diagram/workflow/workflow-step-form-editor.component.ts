@@ -116,6 +116,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                             return;
                         else if (e.ID == EmailTaskRecipientType.Initiator && this.workflowChangeType == WorkflowChangeType.ScoreUpdate)
                             return;
+                        else if (e.ID == EmailTaskRecipientType.Initiator && this.workflowChangeType == WorkflowChangeType.Schedule)
+                            return;
                         this.destination.push({
                             value: EmailTaskRecipientType[e.ID],
                             label: e.Name
