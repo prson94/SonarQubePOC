@@ -3137,7 +3137,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 if (!node.data['autoCollapsed']) {
                                     var topLevel = target.part.findTopLevelPart();
                                     var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
-                                    if (obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) {
+                                    if ((obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) || self.diagramTypeSpecifiedInPath == DiagramType.Impact) {
                                         (node as any).collapseSubGraph();
                                         node.data['autoCollapsed'] = true;
                                     }
