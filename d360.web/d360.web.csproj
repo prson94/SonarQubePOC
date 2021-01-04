@@ -849,6 +849,7 @@
     <Content Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.html" />
     <None Include="Scripts\app\components\shared\controls\switch\switch.less" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\zoom.component.html" />
@@ -1020,6 +1021,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\property-group\property-group.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\search-field\search-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\tag-picker\tag-picker.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-list-view.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-http.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\directives\delayed-input.directive.ts" />
@@ -1300,6 +1302,7 @@
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.less" />
     <Content Include="Scripts\app\components\shared\asset-score\asset-score.less" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.less" />
+    <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\overview.component.less" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

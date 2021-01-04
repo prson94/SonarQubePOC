@@ -47,6 +47,7 @@ import { AssetBrowserInfoPanelComponent } from './assetbrowser/panels/infopanel.
 import { AssetBrowserOwnerPanelComponent } from './assetbrowser/panels/ownerpanel.component';
 import { AssetBrowserSettingsPanelComponent } from './assetbrowser/panels/settingspanel.component';
 
+import { AssetBrowserOverviewComponent } from './assetbrowser/tools/overview.component';
 import { AssetBrowserPanelsComponent } from './assetbrowser/tools/panels.component';
 import { AssetBrowserSavedFilterComponent } from './assetbrowser/tools/savedfilter.component';
 import { AssetBrowserSearchComponent } from './assetbrowser/tools/search.component';
@@ -145,12 +146,13 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
         AssetBrowserOwnerPanelComponent,
         AssetBrowserSettingsPanelComponent,
 
+        AssetBrowserOverviewComponent,
         AssetBrowserPanelsComponent,
         AssetBrowserSavedFilterComponent,
         AssetBrowserSearchComponent,
         AssetBrowserViewChangeComponent,
         AssetBrowserZoomComponent,
-
+        
         AssetBrowserComponent,
 
         ImpactComponent,        

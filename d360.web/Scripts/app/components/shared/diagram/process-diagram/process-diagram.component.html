@@ -342,6 +342,9 @@
                          [objectType]="'Task'">
 </d3s-relationships-modal>
 
+<d3s-assetbrowser-overview *ngIf="viewType == 'diagram' && isDiagramLoaded" #overview [diagram]="myDiagram" ></d3s-assetbrowser-overview>
+
+
 <div *ngIf="viewType == 'diagram'" class="asset-browser-controls-bottom {{isInfoPanelOpened ? 'info-panel-opened' : ''}}">
     <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="true"></d3s-assetbrowser-zoom>
 </div>
