@@ -198,7 +198,7 @@ namespace d360.web.Controllers
                         return "fa-comments";
                     case "Attribute":
                         return "fa-pencil-square-o";
-                    case "Diagram":
+                    case "Diagram Asset":
                         return "fa-share-alt";
                     case "Fusion":
                     case "FusionType":

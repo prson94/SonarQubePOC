@@ -151,7 +151,9 @@
                         </div>
                     </div>
 
-                    <div class="asset-browser-controls-bottom">
+                    <d3s-assetbrowser-overview [hidden]="isLoading" #overview></d3s-assetbrowser-overview>
+
+                    <div class="asset-browser-controls-bottom" [hidden]="isLoading">
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)" [enabled]="!isError"></d3s-assetbrowser-zoom>
                     </div>
 
