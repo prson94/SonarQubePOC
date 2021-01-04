@@ -48,6 +48,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     showExpandAndCollapse: boolean = true;
     totalScore: number;
     totalScoreBadgeStyle: string = 'positive';
+    lowerThreshold: number = 0;
+    upperThreshold: number = 0;
     activeTab: string = 'History';
     isDataLoaded: boolean = false;
 
@@ -211,6 +213,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         var selected = this.allocationData.filter(x => x.scoreType == this.selectedScoreType);
                         if (selected.length > 0) {
                             this.isExternallyCalculated = selected[0]['isexternallycalculated'];
+                            this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
+                            this.upperThreshold = +selected[0]['upperThreshold'] / 100;
                         }
                     }
                 });
@@ -284,7 +288,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.totalScore += pb._adjustedWeight;
                     });
 
-                    //this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
                     this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore);
 
                     var preselected: PointBreakdown;
