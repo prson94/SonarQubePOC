@@ -23,7 +23,8 @@ export class PointBreakdown {
     _badgeStyle: string = 'default';
     _isCollapsed: boolean = false;
     _adjustedGroupWeight: number = 0;
-    _adjustedMeasureWeight: number = 0;
+    _adjustedWeight: number = 0;
+    _adjustedMaxWeight: number = 0;
     _measureSumWeight: number = 0;
 }
 

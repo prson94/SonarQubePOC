@@ -268,6 +268,7 @@ select	Al.AllocationUid,
 		V.MatchConditionsOnly,
 		V.[Definition],
         V.EffectiveEndDate,
+        V.UpdateFrequency,
 		(
 			select	C.Uid as ConditionUid,
 					C.MatchType,
@@ -403,6 +404,7 @@ from	metrics.Asset A
                     }
                 };
 
+                var dqMeasureQueryLibrary = new List<DataQualityMeasureQueryModel>();
                 var scoreResults = new List<Score>();
                 var scoreItemResults = new List<ScoreItem>();
                 var uniqueAssetCombinations = models
@@ -427,7 +429,7 @@ from	metrics.Asset A
                     var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList(); //company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
 
-                    providedMeasureResults.ForEach(async n =>
+                    providedMeasureResults.ForEach(n =>
                     {
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
                         if (measure != null)
@@ -457,17 +459,16 @@ from	metrics.Asset A
                                             #region
                                             var dqDefinition = definition.DataQuality;
                                             // Do something with rollups here.
-                                            if (measure.RollupPath == null)
+                                            if (measure.RollupPath == null || dqDefinition == null)
                                             {
+                                                var error = "";
+                                                error += (measure.RollupPath == null) ? "Rollup Path is invalid. An asset type or relationship type may have been removed. " : "";
+                                                error += (dqDefinition == null) ? "Measure definition is invalid. Please check and re-save the measure definition, and try again." : "";
                                                 scoreItem.Value = false;
-                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path is invalid. An asset type or relationship type may have been removed." });
+                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = error });
                                             }
                                             else
                                             {
-                                                var columnSql = "select ROW_NUMBER() over (partition by RE2.$from_id, RE1.$from_id order by R.UpdatedOn desc) as RowNumber, R.Uid, R.PassFraction ";
-                                                var tableSql = "from ";
-                                                var whereSql = "";
-                                                var matchQuery = "";
                                                 if (measure.RollupPath.SegmentLinks == null)
                                                 {
                                                     scoreItem.Value = false;
@@ -475,63 +476,66 @@ from	metrics.Asset A
                                                 }
                                                 else
                                                 {
-                                                    int whereAssetTypePosition = 0;
-                                                    measure.RollupPath.SegmentLinks.ForEach(s =>
+                                                    var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == measure.RollupPath.AssetVersionRollupPathUid);
+                                                    if (dqQueryDetail == null)
                                                     {
-                                                        var tIntersect = $"E{s.IntersectTypeID}_{s.StartPosition}_{s.EndPosition}";
-                                                        var tStart = $"N{s.StartAssetTypeID}_{s.StartPosition}";
-                                                        var tEnd = $"N{s.EndAssetTypeID}_{s.EndPosition}";
-                                                        if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
-                                                        {
-                                                            matchQuery += $"<-({tIntersect})-{tEnd} AND  {tStart}-(RE2)->R<-(RE1)-{tEnd}";
-                                                            tableSql += $"graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
-                                                            whereSql += $" and {tEnd}.AssetTypeID = {s.EndAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tIntersect}.PredicateType = {(int)s.PredicateType} ";
-                                                        }
-                                                        else
-                                                        {
-                                                            matchQuery = matchQuery.Replace($"{tStart}", "") +
-                                                                         $"{tStart}-({tIntersect})->{tEnd}";
-
-                                                            tableSql = tableSql.Replace($"graph.AssetNode {tStart}, ", "") +
-                                                                       $"graph.AssetNode {tStart}, graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, ";
-
-                                                            whereSql = whereSql.Replace($"and {tStart}.AssetTypeID = {s.StartAssetTypeID}", "") +
-                                                                       $"and {tStart}.AssetTypeID = {s.StartAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tEnd}.AssetTypeID = {s.EndAssetTypeID}";
-                                                        }
-
-                                                        if (assetEffectiveDate.AssetTypeId == s.StartAssetTypeID && whereAssetTypePosition == 0)
-                                                        {
-                                                            whereAssetTypePosition = s.StartPosition;
-                                                        }
-                                                        else if (assetEffectiveDate.AssetTypeId == s.EndAssetTypeID && whereAssetTypePosition == 0)
-                                                        {
-                                                            whereAssetTypePosition = s.EndPosition;
-                                                        }
-                                                    });
-                                                    whereSql += $"and N{assetEffectiveDate.AssetTypeId}_{whereAssetTypePosition}.Uid = @AssetUid";
-                                                    if (measure.EffectiveEndDate.HasValue)
-                                                    {
-                                                        whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                        dqQueryDetail = BuildDataQualityMeasureQueryModel(measure.AllocationUid, measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                     }
 
-                                                    var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
                                                     try
                                                     {
-                                                        var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
+                                                        DateTime minimumDate = measure.EffectiveDate;
+                                                        switch (measure.UpdateFrequency)
+                                                        {
+                                                            case MetricUpdateFrequency.Annually:
+                                                                minimumDate = minimumDate.AddYears(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Daily:
+                                                                minimumDate = minimumDate.AddDays(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Hourly:
+                                                                minimumDate = minimumDate.AddHours(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Monthly:
+                                                                minimumDate = minimumDate.AddMonths(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Quarterly:
+                                                                minimumDate = minimumDate.AddMonths(-3);
+                                                                break;
+                                                            case MetricUpdateFrequency.None:
+                                                            case MetricUpdateFrequency.Weekly:
+                                                                minimumDate = minimumDate.AddDays(-7);
+                                                                break;
+                                                        }
+                                                        var rollupPathResults = GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
+                                                            rollupPathResults.ForEach(o =>
+                                                            {
+                                                                if (o.StructuredResults.Count > 0)
+                                                                {
+                                                                    // We should only be getting one result back for each row anyway. This is just in case.
+                                                                    o.ResultScoreValue = o.StructuredResults.Select(r => r.PassFraction).Average();
+                                                                }
+                                                                else 
+                                                                {
+                                                                    o.ResultScoreValue = 0;
+                                                                }
+                                                            });
+
                                                             float resultOperationValue = 0;
                                                             switch (dqDefinition.ResultOperation)
                                                             {
                                                                 case MetricRuleResultOperation.Average:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Average();
                                                                     break;
                                                                 case MetricRuleResultOperation.Maximum:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Max();
                                                                     break;
                                                                 case MetricRuleResultOperation.Minimum:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Min();
                                                                     break;
                                                             }
 
@@ -550,7 +554,15 @@ from	metrics.Asset A
                                                             scoreItem.Value = true;
                                                         }
 
-                                                        scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
+                                                        var evidence = rollupPathResults.Select(rp => new DataQualityEvidenceModel
+                                                        {
+                                                            ErrorMessage = null,
+                                                            IsError = false,
+                                                            ResultResultUids = rp.StructuredResults.Select(r => r.Uid).ToList(),
+                                                            RollupPath = rp.StructuredPath
+                                                        });
+
+                                                        scoreItem.Evidence = JsonConvert.SerializeObject(evidence);
                                                     }
                                                     catch (Exception ex)
                                                     {

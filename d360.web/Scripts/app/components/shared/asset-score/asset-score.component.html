@@ -35,10 +35,10 @@
                                         </div>
                                         <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
                                             <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._adjustedWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                             </span>
                                             <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
+                                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item._adjustedMaxWeight)"></ig-badge>
                                             </span>
                                         </div>
                                         <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
@@ -64,10 +64,10 @@
                                                 </div>
                                                 <div class="score-badges">
                                                     <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                        <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                        <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._adjustedWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                                     </span>
                                                     <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                        <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
+                                                        <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem._adjustedMaxWeight)"></ig-badge>
                                                     </span>
                                                 </div>
                                             </div>
@@ -78,7 +78,7 @@
 
                             <div *ngIf="!isExternallyCalculated" class="total-score-data">
                                 <div class="score-badges big-badges">
-                                    <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                    <ig-badge [variant]="totalScoreBadgeStyle" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                     <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@
                                    (measurePointsChanged)="measurePoints=$event"></score-history>
                 </div>
                 <div [hidden]="!(activeTab=='Calculation')">
-                    <score-calculation [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
+                    <score-calculation [scoreType]="selectedScoreType" [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
                 </div>
                 <div [hidden]="!(activeTab=='Definition')">
                     <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>

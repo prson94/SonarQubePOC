@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
-import { ScoreType } from '../../../models/metrics.model';
+import { ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { Observable, Subject } from 'rxjs';
 import { SelectItem } from 'primeng/api';
 import { MetricsService } from '../../../services/metrics.service';
@@ -42,11 +42,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes: number[] = [];
-    private allocationData: any[] = [];
+    private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
 
     showExpandAndCollapse: boolean = true;
     totalScore: number;
+    totalScoreBadgeStyle: string = 'positive';
     activeTab: string = 'History';
     isDataLoaded: boolean = false;
 
@@ -139,17 +140,17 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private loadTypesAndLatestScore() {
         if (this.uid) {
+
             this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
                 this.assetTypeUid = res.AssetTypeUid;
-            })
+            });
 
-            this.scoreService.getScoreTypes(this.uid).subscribe(x => {
-                this.scoreTypes = x.map(x => x.scoretype as ScoreType);
+            this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {
+                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType] );
                 this.allocationData = x;
                 if (x.length > 0) {
                     this.setSelectedButton(this.scoreTypes[0])
                 }
-
                 this.allocationData.forEach(alloc => {
                     this.metricService.getMetricsByAllocation(alloc.uid, true)
                         .subscribe(res => {
@@ -158,7 +159,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         });
 
                 });
-
             });
 
         }
@@ -208,7 +208,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     subject.next(true);
 
                     if (this.allocationData) {
-                        var selected = this.allocationData.filter(x => x.scoretype == this.selectedScoreType);
+                        var selected = this.allocationData.filter(x => x.scoreType == this.selectedScoreType);
                         if (selected.length > 0) {
                             this.isExternallyCalculated = selected[0]['isexternallycalculated'];
                         }
@@ -226,6 +226,19 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         this.loadPoints();
     }
 
+    private calculateBadgeStyle(alloc: ScoreTypeAllocation, actualRatio: number) {
+        let style = 'positive';
+
+        if (actualRatio > (alloc.lowerThreshold / 100) && actualRatio <= (alloc.upperThreshold / 100)) {
+            style = 'warning';
+        }
+        else if (actualRatio <= (alloc.lowerThreshold / 100)) {
+            style = 'negative';
+        }
+
+        return style;
+    }
+
     private loadPoints(isTabChange: boolean = false) {
         this.isDataLoaded = false;
         if (this.uid) {
@@ -234,6 +247,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             }
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
                 .subscribe(res => {
+
+                    let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
+
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
 
@@ -241,75 +257,35 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.scoreDate = new Date().toDateString();
                     }
 
-                    //Set data for UI
+                    // Set data for UI
                     this.totalScore = 0;
+
                     this.pointBreakdown.forEach(pb => {
                         //set adjusted weights
                         pb._adjustedGroupWeight = null;
+
                         if (pb.Measures) {
-                            pb._measureSumWeight = 0;
+
+                            pb._measureSumWeight = pb.AdjustedWeight;
+
                             pb.Measures.forEach(m => {
+                                m._measureSumWeight = pb.AdjustedWeight;
                                 m._adjustedGroupWeight = pb.AdjustedMaxWeight;
-                                pb._measureSumWeight += m.Weight;
-                            });
-
-                            pb.Measures.forEach(m => {
-                                m._measureSumWeight = pb._measureSumWeight;
-                                m._adjustedMeasureWeight = m.Weight / pb._measureSumWeight;
+                                m._adjustedWeight = Math.round(m.AdjustedWeight * pb.AdjustedMaxWeight * 1000) / 1000;
+                                m._adjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
+                                m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
                             });
                         }
 
-                        if (!pb.IsGroup) {
-                            if (pb.Value) {
-                                pb._badgeStyle = 'positive';
-                                pb._finalScore = pb.AdjustedWeight;
-                            }
-                            else {
-                                pb._badgeStyle = 'negative';
-                                pb._finalScore = 0;
-                            }
-                        }
-                        else {
-                            if (pb.Measures) {
-                                pb.Measures.forEach(m => {
-                                    if (m.Value) {
-                                        m._badgeStyle = 'positive';
-                                        m._finalScore = m.AdjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
-                                    }
-                                    else {
-                                        m._badgeStyle = 'negative';
-                                        m.AdjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
-                                        m._finalScore = 0;
-                                    }
-                                });
+                        pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
+                        pb._adjustedMaxWeight = pb.AdjustedMaxWeight;
+                        pb._adjustedWeight = pb.AdjustedWeight;
 
-                                var positive = pb.Measures.filter(x => x.Value);
-                                if (positive.length == 0) {
-                                    pb._badgeStyle = 'negative';
-                                    pb._finalScore = 0;
-                                }
-                                else if (positive.length == pb.Measures.length) {
-                                    pb._badgeStyle = 'positive';
-                                    pb._finalScore = pb.AdjustedMaxWeight;
-                                }
-                                else {
-                                    pb._badgeStyle = 'warning';
-                                    var sum = 0;
-                                    positive.forEach(x => {
-                                        sum += x._finalScore;
-                                    });
+                        this.totalScore += pb._adjustedWeight;
+                    });
 
-                                    pb._finalScore = sum;;
-                                }
-
-
-
-                            }
-                        }
-
-                        this.totalScore += pb._finalScore;
-                    })
-                    this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
+                    //this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
+                    this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore);
 
                     var preselected: PointBreakdown;
                     if (this.selectedMeasureUid && this.pointBreakdown) {
@@ -325,7 +301,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                 })
                             }
                         });
-
                     }
 
                     if (preselected) {
@@ -334,7 +309,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     else if (this.pointBreakdown.length > 0) {
                         this.selectScoreItem(this.pointBreakdown[0]);
                     }
-
 
                     this.isDataLoaded = true;
                     this.loadState();
@@ -438,6 +412,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         }
 
     }
+
     private setCollapsed(val: boolean) {
         this.pointBreakdown.forEach(p => {
             p._isCollapsed = !val;
@@ -451,8 +426,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     hasAnyScoreType(scoreType: ScoreType) {
-        if (this.scoreTypes && this.scoreTypes.length > 0)
+        if (this.scoreTypes && this.scoreTypes.length > 0) {
             return this.scoreTypes.indexOf(scoreType) !== -1;
+        }
     }
 
     getAsPrecentage(val: number) {
