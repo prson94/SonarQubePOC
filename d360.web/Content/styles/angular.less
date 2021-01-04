@@ -1798,6 +1798,11 @@ div.home-image-title-text {
 /* tooltips */
 .d3s-tooltip {
     position: relative;
+
+    &.rightaligned {
+        display: inline-block;
+        width: 100%;
+    }
 }
 
 .tooltip-child {
@@ -4400,6 +4405,10 @@ button.tab-scroller {
                         &.button {
                             text-align: right;
                         }
+
+                        .p-dialog {
+                            padding: 10px;
+                        }
                     }
                 }
 
@@ -4464,6 +4473,7 @@ button.tab-scroller {
 }
 
 .kebabmenu li.p-menuitem {
+    padding: 8px;
     &:hover {
         background-color: @igx-lightblue-xlight;
     }

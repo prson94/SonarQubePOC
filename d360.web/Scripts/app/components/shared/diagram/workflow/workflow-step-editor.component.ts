@@ -87,7 +87,6 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.filterHttpFields();
         });
 
-
         this.workflowService.getEmailTaskRecipientType()
             .subscribe(r => {
                 r.forEach(e => {
@@ -128,6 +127,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                         if (this.ChangeType == WorkflowChangeType.ScoreUpdate)
                             return;
                     }
+
+                    if (e.ID == EmailTaskRecipientType.Initiator && this.ChangeType == WorkflowChangeType.Schedule)
+                        return;
+
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],
                         label: e.Name

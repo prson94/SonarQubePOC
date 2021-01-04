@@ -16,6 +16,7 @@ import { HeaderActionsService } from '../../../../services/header-actions.servic
 import { HeaderActions } from '../../../../models/header.model';
 import { Location } from '@angular/common';
 import { ProcessDiagramListViewComponent } from './process-diagram-list-view.component';
+import { AssetBrowserOverviewComponent } from '../assetbrowser/tools/overview.component';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -39,7 +40,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private assetDetail: any;
 
     isPalleteLoaded: boolean = false;
-
+    
     eventPalleteHeight: number = 300;
     myEventPalette: go.Diagram;
 
@@ -104,6 +105,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @ViewChild('listView', { static: false }) listView: ProcessDiagramListViewComponent;
     @ViewChild('importTable', { static: false }) importTable: any;
+    @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
+
 
     public popupMenuItems = [
         {
@@ -561,7 +564,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             }
             else {
                 this.breadcrumbsService.setCurrentObjectState('');
-            }
+            }           
         }
 
         this.cdRef.detectChanges();
@@ -691,7 +694,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                 this.cdRef.detectChanges();
                 this.loadAssetsForImport();
-
             });
     }
 

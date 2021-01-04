@@ -40,6 +40,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
+import { AssetBrowserOverviewComponent } from './tools/overview.component';
 
 declare var window: any;
 
@@ -62,6 +63,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
     @ViewChild('processDiagram', { static: false }) processDiagramRef: ProcessDiagramComponent;
+    @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
 
     private diagramData: AssetBrowserResponseModel;
 
@@ -78,7 +80,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     selectedDiagramAsset: AssetBrowserDiagramAsset;
     isFullScreen = false;
     loadingText = '';
-
+        
     isError: boolean = false;
     errorText = '';
 
@@ -1202,6 +1204,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram = this.template_Diagram();
 
+
         let forelayer = this.diagram.findLayer("Foreground");
         this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
 
@@ -1241,7 +1244,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }            
+            }  
+
+            this.overviewControlRef.initialize(this.diagram);
         });
     }
 
@@ -3132,7 +3137,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 if (!node.data['autoCollapsed']) {
                                     var topLevel = target.part.findTopLevelPart();
                                     var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
-                                    if (obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) {
+                                    if ((obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) || self.diagramTypeSpecifiedInPath == DiagramType.Impact) {
                                         (node as any).collapseSubGraph();
                                         node.data['autoCollapsed'] = true;
                                     }
@@ -3172,6 +3177,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private zoom_Change(_scale: number) {
         this.helper_ScaleDiagram(_scale);
     }
+
 
     isProcessDiagramInEditMode: boolean = false;
     editProcess() {

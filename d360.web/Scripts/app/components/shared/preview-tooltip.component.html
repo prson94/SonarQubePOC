@@ -2,7 +2,7 @@
       (click)="click.emit()"
       (mouseenter)="show(item, tip)"
       (mouseleave)="hideDebounce.next(); mouseIn = false"
-      [ngClass]="{ 'd3s-tooltip-active': active }"
+      [ngClass]="{ 'd3s-tooltip-active': active, 'rightaligned': isRightAligned() }"
       class="d3s-tooltip">
     <i *ngIf="icon && icon != ''"
        [ngClass]="['fa-' + this.icon, class ? class : '']"
