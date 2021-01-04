@@ -1031,6 +1031,11 @@ namespace d360.web.Controllers
                     {
                         responseModel.Items.HasProcessDiagram = true;
                     }
+
+                    if (responseModel.Object == SystemObjects.ReferenceItemType.ToString())
+                    {
+                        responseModel.Items.HasImpact = responseModel.Items.HasLineage = responseModel.Items.HasProcessDiagram = false;
+                    }
                 }
             }
             if (responseModel != null && !Company.CurrentResourceIsAdmin)
