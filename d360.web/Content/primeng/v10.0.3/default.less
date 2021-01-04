@@ -800,3 +800,29 @@ p-dropdown-items {
 a {
     cursor: pointer;
 }
+
+.p-calendar .p-button {
+    height: 100%;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    width: 2em;
+    border-left: 0 none;
+}
+
+.p-button-icon-only {
+    .p-button-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -.5em;
+        margin-left: -.5em;
+        width: 1em;
+        height: 1em;
+    }
+
+    .p-button-label {
+        padding: .25em !important;
+        text-indent: -9999999px;
+        visibility: hidden;
+    }
+}
