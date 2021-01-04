@@ -70,7 +70,7 @@
                     <td *ngFor="let column of columns">
                         <d3s-dynamic-field-value *ngIf="column.text != 'Name';else nameField" [column]="column" [fields]="fields" [item]="item"></d3s-dynamic-field-value>
                         <ng-template #nameField>
-                            <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)">{{item.Name}}</d3s-preview-tooltip>
+                            <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID" (click)="selectObject(item)" [align]="'right'">{{item.Name}}</d3s-preview-tooltip>
                         </ng-template>
                     </td>
                 </tr>
