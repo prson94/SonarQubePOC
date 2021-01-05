@@ -541,12 +541,13 @@ from	metrics.Asset A
 
                                                             if (measure.IsThresholdBased)
                                                             {
+                                                                scoreItem.DecimalValue = resultOperationValue;
                                                                 scoreItem.Value = (measure.Threshold <= resultOperationValue);
                                                             }
                                                             else
                                                             {
                                                                 // This will be used when adjusting max and actual weights.
-                                                                scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                                scoreItem.DecimalValue = resultOperationValue;
                                                             }
                                                         }
                                                         else
@@ -747,7 +748,7 @@ from	metrics.Asset A
                                         Guid scoreItemUid = Guid.NewGuid();
                                         if (previousScoreItem != null)
                                         {
-                                            if (previousScoreItem.Value == scoreItem.Value)
+                                            if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
                                             {
                                                 // Since value is the same, just link the existing score item to score.
                                                 scoreItemUid = previousScoreItem.ScoreItemUid;
@@ -953,6 +954,7 @@ from	metrics.Asset A
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                            scoreItems.Columns.Add("DecimalValue", typeof(float));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
                             var scoreItemLinks = new DataTable();
@@ -985,6 +987,8 @@ from	metrics.Asset A
                                 scoreItemRow["Uid"] = s.Uid;
                                 scoreItemRow["UpdatedOn"] = s.UpdatedOn;
                                 scoreItemRow["Value"] = s.Value;
+                                if (s.DecimalValue.HasValue)
+                                    scoreItemRow["DecimalValue"] = s.DecimalValue;
                                 if (s.AdjustedWeight.HasValue)
                                     scoreItemRow["AdjustedWeight"] = s.AdjustedWeight.Value;
                                 scoreItemRow["RunDate"] = s.RunDate;
@@ -1047,7 +1051,8 @@ from	metrics.Asset A
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
-	                                AdjustedMaxWeight decimal(5, 3) NULL
+	                                AdjustedMaxWeight decimal(5, 3) NULL,
+                                    DecimalValue float NULL
                                 );
                                 create table #ScoreItemLinks (
                                     ScoreUid uniqueidentifier NOT NULL,
@@ -1080,6 +1085,7 @@ from	metrics.Asset A
                                 bulkCopy.ColumnMappings.Add("Uid", "Uid");
                                 bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
                                 bulkCopy.ColumnMappings.Add("Value", "Value");
+                                bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
                                 bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
                                 bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
                                 bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
@@ -1183,11 +1189,11 @@ where   N.ActualUid is null;", transaction: trans);
                                 "when matched then " +
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
-                                "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.Evidence = S.Evidence, " +
+                                "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
                                 "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (UpdatedOn, Value, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
                             await company.ExecuteAsync(

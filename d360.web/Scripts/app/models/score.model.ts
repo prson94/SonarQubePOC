@@ -10,6 +10,7 @@ export class PointBreakdown {
     AdjustedWeight: number;
     AdjustedMaxWeight: number;
     Value: boolean;
+    DecimalValue: number;
     EffectiveDate: string;
     EndDate: string;
     ScoreType: ScoreType;

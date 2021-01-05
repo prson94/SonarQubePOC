@@ -248,10 +248,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     {
                         c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
                         c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 3, MidpointRounding.AwayFromZero);
-                        if (c.OverrideAdjustmentPercentage.HasValue)
+                        if (c.DecimalValue.HasValue)
                         {
                             // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
-                            c.AdjustedWeight = (c.AdjustedMaxWeight ?? 0) * (decimal)c.OverrideAdjustmentPercentage.Value;
+                            c.AdjustedWeight = (c.AdjustedMaxWeight ?? 0) * (decimal)c.DecimalValue.Value;
                         }
                         else 
                         {
@@ -269,14 +269,15 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 }
                 else
                 {
-                    if (o.OverrideAdjustmentPercentage.HasValue)
+                    if (o.DecimalValue.HasValue)
                     {
                         // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
-                        o.AdjustedWeight = (o.AdjustedMaxWeight ?? 0) * (decimal)o.OverrideAdjustmentPercentage.Value;
+                        o.AdjustedWeight = (o.AdjustedMaxWeight ?? 0) * (decimal)o.DecimalValue.Value;
                     }
                     else
                     {
                         o.AdjustedWeight = o.Value ? (o.AdjustedMaxWeight ?? 0) : 0;
+                        o.DecimalValue = (float)o.AdjustedWeight;
                     }
                 }
                 o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 3, MidpointRounding.AwayFromZero);

@@ -1594,6 +1594,7 @@ from	(
 				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
 				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
+                SI.DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType
 		from    metrics.Score S 
