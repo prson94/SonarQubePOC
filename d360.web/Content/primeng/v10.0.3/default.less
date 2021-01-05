@@ -826,3 +826,7 @@ a {
         visibility: hidden;
     }
 }
+
+.p-dropdown-item:not([aria-label]) span, .p-dropdown-item[aria-label=""] span {
+    visibility: hidden !important;
+}
