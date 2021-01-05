@@ -4,6 +4,8 @@
             <header *ngIf="!showDelete && !showEditor">
                 &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
                                          [hasExport]="true"
+                                         [isExportDisabled]="!canExportRecords()"
+                                         [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
                                          (addClick)="showAdd(0)"
                                          (exportClick)="exportExcel(0)"></d3s-tile-actions>
             </header>
