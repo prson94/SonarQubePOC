@@ -75,12 +75,12 @@
                             </ng-container>
                         </div>
 
-                        <div *ngIf="!isExternallyCalculated" class="total-score-data">
-                            <div class="score-badges big-badges">
-                                <ig-badge [variant]="'positive'" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
+                            <div *ngIf="!isExternallyCalculated" class="total-score-data">
+                                <div class="score-badges big-badges">
+                                    <ig-badge [variant]="this.totalScoreStyle" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
+                                </div>
                             </div>
-                        </div>
 
                         <ng-template #emptyMessage>
                             <div class="scorecards-container">
