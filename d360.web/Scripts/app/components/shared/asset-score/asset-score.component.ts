@@ -358,7 +358,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         var panel = dropdown.getElementsByClassName('p-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('p-dropdown-panel')[0] : null;
         if (panel) {
             if (panel.getElementsByClassName('score-dropdown-header').length == 0) {
-                console.log("adding element");
+
                 var div = document.createElement('div');
                 div.className = 'score-dropdown-header';
                 this.dropdownClassName = 'scoring-picker-dropdown';
