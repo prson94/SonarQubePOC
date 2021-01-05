@@ -1171,4 +1171,29 @@ from	[metrics].[AssetVersionConditionItemValue] V
 ]]>
     </sql>
 	</changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-13242">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+BEGIN
+	DECLARE @typeId int
+	DECLARE TypeCursor CURSOR
+	FOR SELECT ID
+	FROM dbo.assettype
+	WHERE class = 15;
+
+	OPEN TypeCursor
+
+	FETCH NEXT FROM TypeCursor INTO @typeId
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		EXEC graph.UpdateGraphTableHierarchyBy null, @typeId, null
+		FETCH NEXT FROM TypeCursor INTO @typeId
+	END
+
+	CLOSE TypeCursor
+	DEALLOCATE TypeCursor
+END
+]]>
+		</sql>
+	</changeSet>
 </databaseChangeLog>
