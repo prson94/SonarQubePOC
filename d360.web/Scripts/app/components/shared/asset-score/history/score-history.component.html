@@ -46,7 +46,12 @@
                                     </span>
                                 </ng-container>
                                 <ng-container *ngSwitchCase="0">
-                                    <i class="fa fa-square turn"></i><span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    <div>
+                                        <span class="icon-holder">
+                                            <i class="fa fa-square turn"></i>
+                                        </span>
+                                        <span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    </div>
                                 </ng-container>
                                 <ng-container *ngSwitchDefault>
                                     <div>

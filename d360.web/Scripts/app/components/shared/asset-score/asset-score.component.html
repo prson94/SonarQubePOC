@@ -180,7 +180,9 @@
                             <div *ngSwitchCase="-1">
                                 <i class="fa fa-caret-down arrow-down"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
-                            <div *ngSwitchCase="0">
+                            <div *ngSwitchCase="0"  pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                     tooltipPosition="top"
+                                     tooltipStyleClass="ig-tooltip">
                                 <i class="fa fa-square square"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
                             <span *ngSwitchDefault class="value-text">

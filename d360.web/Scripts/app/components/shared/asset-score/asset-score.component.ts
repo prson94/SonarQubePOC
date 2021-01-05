@@ -342,7 +342,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private setDropdownHeader() {
         var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
-        var panel = dropdown.getElementsByClassName('ui-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('ui-dropdown-panel')[0] : null;
+        var panel = dropdown.getElementsByClassName('p-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('p-dropdown-panel')[0] : null;
         if (panel) {
             if (panel.getElementsByClassName('score-dropdown-header').length == 0) {
                 console.log("adding element");
