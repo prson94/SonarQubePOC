@@ -20,11 +20,21 @@ export class ApplicationInsightsService {
     }
 
     setUserId(userId: string) {
-        if (aisdk) aisdk.setAuthenticatedUserContext(userId);
+        try {
+            if (aisdk) aisdk.setAuthenticatedUserContext(userId);
+        }
+        catch (e) {
+            console.warn("Exception setting authenticated user with Application Insights.",e);
+        }
     }
 
     clearUserId() {
-        if (aisdk) aisdk.clearAuthenticatedUserContext();
+        try {
+            if (aisdk) aisdk.clearAuthenticatedUserContext();
+        }
+        catch (e) {
+            console.warn("Exception clearing authenticated user with Application Insights.", e);
+        }
     }
 
     logPageView(name?: string, uri?: string) {
@@ -53,14 +63,24 @@ export class ApplicationInsightsService {
     }
 
     startNavigationEvent(url: string) {
-        if (aisdk) {
-            aisdk.startTrackPage();
+        try {
+            if (aisdk) {
+                aisdk.startTrackPage();
+            }
+        }
+        catch (e) {
+            console.warn("Exception starting page tracking with Application Insights.",e);
         }
     }
 
-    endNavigationEvent(url: string) {        
-        if (aisdk) {
-            aisdk.stopTrackPage({ url: url });
+    endNavigationEvent(url: string) {    
+        try {
+            if (aisdk) {
+                aisdk.stopTrackPage({ url: url });
+            }
+        }
+        catch (e) {
+            console.warn("Exception ending page tracking with Application Insights.",e);
         }
     }
 }

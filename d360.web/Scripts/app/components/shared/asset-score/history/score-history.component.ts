@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter, ViewEncapsulation } from '@angular/core';
+﻿import { Component, Input, OnChanges, ChangeDetectorRef, ViewChild, ElementRef, Output, SimpleChanges, EventEmitter, ViewEncapsulation, Inject, LOCALE_ID } from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 import { ObjectStatisticsService } from '../../../../services/object-statistics.service';
@@ -6,6 +6,7 @@ import { ScoreService } from '../../../../services/score.service';
 import { ScoreType } from '../../../../models/metrics.model';
 import { BaseComponent } from '../../base.component';
 import { PointBreakdown, ScorePoint } from '../../../../models/score.model';
+import { DatePipe } from '@angular/common';
 
 
 @Component({
@@ -49,7 +50,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     constructor(protected scoreService: ScoreService,
         protected objectStatisticsService: ObjectStatisticsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private datePipe: DatePipe,
+        @Inject(LOCALE_ID) private locale: string
     ) {
         super();
     }
@@ -191,7 +194,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             this.measurePointsChanged.emit(this.measurePoints);
         }
 
-
+        var historicalTempData = this.historicalData;
+        var datePipeRef = this.datePipe;
+        var locale = this.locale;
 
         this.scoreHistory = {
             chart: {
@@ -246,12 +251,30 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             },
             tooltip: {
                 shared: true,
-                pointFormatter: function () {
+                headerFormat: '',
+                footerFormat: '',
+                formatter: function () {
+                    var tooltipString = '';
+                    var startIdx = historicalTempData.findIndex(x => x.x == this.points[0].x);
+                    this.points.forEach(point => {
+                        tooltipString += `<div><span>${point.series.userOptions.name}<span style="padding-left: 4px;">${point.y}%</span></span></div>`;
+                    });
 
-                    var additionalValue = this.series.userOptions.name;
-                    return '<div><span>' + additionalValue + '<span style="padding-left: 4px;">' + this.y + '%</span></span></div>';
+
+
+                    var startDate = datePipeRef.transform(new Date(historicalTempData[startIdx].x), 'shortDate', locale);
+                    var endDate = '';
+                    if (startIdx == 0) {
+                        endDate = 'present';
+                    }
+                    else {
+                        endDate = datePipeRef.transform(new Date(historicalTempData[startIdx - 1].x), 'shortDate', locale);
+                    }
+
+                    tooltipString += `<div><span>Effective ${startDate} to ${endDate}</span></div>`;
+
+                    return tooltipString;
                 },
-                headerFormat: '<span>{point.key}</span><br/>',
                 useHTML: true,
                 shape: 'square',
                 backgroundColor: 'white',

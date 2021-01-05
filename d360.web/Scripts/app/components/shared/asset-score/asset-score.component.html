@@ -1,25 +1,24 @@
 ﻿<div class="scoring-v2">
-    <div class="row col s12 no-margin no-padding">
-        <div class="col s8 no-margin no-padding right-padding-16">
-            <div class="card-box" [style.height.px]="panelHeight">
-                <div class="row">
-                    <div class="col s12">
-                        <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
-                    </div>
+    <div class="score-left-content right-padding-16 flex">
+        <div class="card-box" [style.height.px]="panelHeight">
+            <div class="row">
+                <div class="col s12 no-padding">
+                    <ng-container *ngTemplateOutlet="score_list_header"></ng-container>
                 </div>
-                <d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
-                <ng-container *ngIf="isDataLoaded">
-                    <div class="row">
-                        <div class="col s12">
-                            <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
-                                <ng-container *ngFor="let item of pointBreakdown">
-                                    <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
-                                        <div class="expander" *ngIf="!isExternallyCalculated">
-                                            <ng-container *ngIf="item.Measures && item.Measures.length > 0">
-                                                <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
-                                                <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
-                                            </ng-container>
-                                        </div>
+            </div>
+            <d3s-loading [isLoading]="!isDataLoaded"></d3s-loading>
+            <ng-container *ngIf="isDataLoaded">
+                <div class="row">
+                    <div class="col s12 no-padding">
+                        <div class="score-data" *ngIf="!showEmptyMessage; else emptyMessage" [style.max-height.px]="scorePointsMaxHeight">
+                            <ng-container *ngFor="let item of pointBreakdown">
+                                <div class="score-item {{item._isSelected ? 'selected' : ''}}" (click)="selectScoreItem(item)">
+                                    <div class="expander" *ngIf="!isExternallyCalculated">
+                                        <ng-container *ngIf="item.Measures && item.Measures.length > 0">
+                                            <i *ngIf="!item._isCollapsed" class="fa fa-chevron-circle-right" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
+                                            <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
+                                        </ng-container>
+                                    </div>
 
                                         <div class="score-name">
                                             <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
@@ -83,17 +82,17 @@
                                 </div>
                             </div>
 
-                            <ng-template #emptyMessage>
-                                <div class="scorecards-container">
-                                    <div class="scorecard-item empty">
-                                        This score was calculated and sent in from an external source. No measures have been defined.
-                                    </div>
+                        <ng-template #emptyMessage>
+                            <div class="scorecards-container">
+                                <div class="scorecard-item empty">
+                                    This score was calculated and sent in from an external source. No measures have been defined.
                                 </div>
-                            </ng-template>
-                        </div>
+                            </div>
+                        </ng-template>
                     </div>
-                </ng-container>
-            </div>
+                </div>
+            </ng-container>
+        </div>
 
         </div>
         <div class="col s4 no-margin no-padding">
@@ -183,7 +182,9 @@
                             <div *ngSwitchCase="-1">
                                 <i class="fa fa-caret-down arrow-down"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
-                            <div *ngSwitchCase="0">
+                            <div *ngSwitchCase="0"  pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                     tooltipPosition="top"
+                                     tooltipStyleClass="ig-tooltip">
                                 <i class="fa fa-square square"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
                             <span *ngSwitchDefault class="value-text">

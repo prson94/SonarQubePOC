@@ -9,7 +9,7 @@
 
         <p-checkbox *ngIf="!isExternallyCalculated" igCheckbox [(ngModel)]="showMeasurePoints" (click)="saveState();refreshGraph();" binary="true" label="Show scoring history of selected measure"></p-checkbox>
         <div #scoreTable class="score-table">
-            <div class="col s12">
+            <div class="col s12 no-padding">
                 <div class="row score-tbl-header {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
                     <div class="col s4 column">Date (UTC)</div>
                     <div class="col s4 column">
@@ -46,7 +46,12 @@
                                     </span>
                                 </ng-container>
                                 <ng-container *ngSwitchCase="0">
-                                    <i class="fa fa-square turn"></i><span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    <div>
+                                        <span class="icon-holder">
+                                            <i class="fa fa-square turn"></i>
+                                        </span>
+                                        <span class="score-text">{{getMeasurePoint(item).Score}}%</span>
+                                    </div>
                                 </ng-container>
                                 <ng-container *ngSwitchDefault>
                                     <div>

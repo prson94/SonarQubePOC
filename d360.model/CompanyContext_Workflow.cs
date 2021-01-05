@@ -684,6 +684,8 @@ namespace d360.model
             if (transition == null) throw new Exception("ERROR - UNABLE TO LOCATE THE SPECIFIED WORKFLOW TRANSITION STEP");
 
             bool transitionPassed = false;
+            WorkflowItem item = null;
+            Asset issueObject = null;
             // check the transition type.  Always always goes to next step, condition we need
             // to evaulate the condition to determine if we go to next step
             // timer we dont worry about here some job will keep track of that
@@ -694,12 +696,22 @@ namespace d360.model
                     break;
                 case TransitionType.Condition:
                     //get the object for this conditoin
-                    var item = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+                    item = WorkflowItems.FirstOrDefault(x => x.ID == itemID);
 
-                    if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
+                    if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");                    
+
+                    if (item.Object == "Issue")
+                    {
+                        var issue = Issues.Find(item.ObjectID);
+                        if (issue != null)
+                        {
+                            issueObject = Assets.FirstOrDefault(a => a.Object == issue.Object && a.ObjectID == issue.ObjectID);
+                        }
+                    }
+
                     //evaluate the condition then determine if we move to next step
                     client.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
-                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, objectInfo.ChangedFieldIds);
+                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, objectInfo.ChangedFieldIds, issueObject?.Object ?? "", issueObject?.ObjectID ?? -1);
                     client.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
                     break;
                 case TransitionType.Timer:
@@ -712,9 +724,18 @@ namespace d360.model
 
                         if (root != null && root.Element("Condition") != null)
                         {
-                            var transItem = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
+                            item = WorkflowItems.FirstOrDefault(x => x.ID == itemID);
 
-                            transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, transItem.Object, transItem.ObjectID, root.Element("Condition").Value, itemID, objectInfo.ChangedFieldIds);
+                            if (item?.Object == "Issue")
+                            {
+                                var issue = Issues.Find(item.ObjectID);
+                                if (issue != null)
+                                {
+                                    issueObject = Assets.FirstOrDefault(a => a.Object == issue.Object && a.ObjectID == issue.ObjectID);
+                                }
+                            }
+
+                            transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, root.Element("Condition").Value, itemID, objectInfo.ChangedFieldIds, issueObject?.Object ?? "", issueObject?.ObjectID ?? -1);
                         }
                     }
 
