@@ -12,10 +12,10 @@
             </div>
         </div>
         <div class="row">
-            <div class="col s12">
+            <div class="col s12" class="d3s-type-dropdown">
                 <div id='TypeTip' class="FieldNameRequired">Asset Type</div>
                 <div *ngIf="inEditModel">{{selectedAllocation.Path}}</div>
-                <p-dropdown required *ngIf="!inEditModel" name="assettype" [options]="commonFormData.AllocationOptions | responsibilityallocationFilter" placeholder="Select asset type..." [(ngModel)]="selectedAllocation" (onChange)="updateAssetType($event.value)" optionLabel="Path" dataKey="ID" filter="true" [style]="{'width':'98%', 'display' : 'block'}"></p-dropdown>
+                <p-dropdown required *ngIf="!inEditModel" name="assettype" [options]="commonFormData.AllocationOptions | responsibilityallocationFilter" placeholder="Select asset type..." [(ngModel)]="selectedAllocation" (onChange)="updateAssetType($event.value)" optionLabel="Path" dataKey="ID" filter="true" [style]="{'width':'98%', 'display' : 'block', white-space: pre-wrap}" class="d3s-type-dropdown"></p-dropdown>
             </div>
         </div>
 
