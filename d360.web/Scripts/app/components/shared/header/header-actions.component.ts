@@ -95,7 +95,17 @@ export class HeaderActionsComponent {
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
                 let isSearchUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEARCH_ROOT.toUpperCase());
-                let isReferenceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_REFERENCE_ROOT.toUpperCase());
+
+                let isReferenceUrl = false
+                isReferenceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_REFERENCE_ROOT.toUpperCase());
+
+                if (!isReferenceUrl)
+                {
+                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
+                    {
+                        isReferenceUrl = true;
+                    }
+                }
 
                 if (this.previousUrl) {
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
@@ -103,8 +113,9 @@ export class HeaderActionsComponent {
                 }
 
                 this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !isHomeUrl && !isSearchUrl &&
-                    !this.isAdminUrl && !isResourceUrl && !this.isAdminSidebarUrl && !isReferenceUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
-                setTimeout(() => { this.calculateControlWidth();}, 250);
+                    !this.isAdminUrl && !isReferenceUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
+
+                setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
         });
 
