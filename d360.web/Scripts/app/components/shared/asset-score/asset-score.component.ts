@@ -313,7 +313,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         }
 
                     })
-                    this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
+                    this.totalScore = +this.scoresPointSelected['Score'] / 100;
 
                     this.totalScoreStyle = 'negative';
                     if (this.totalScore > this.lowerThreshold)
