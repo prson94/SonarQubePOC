@@ -419,7 +419,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves all the usage info for users in govern.
+        /// Retrieves usage information for assets and asset types a user or users has viewed.
         /// </summary>
         /// <returns></returns>
         [
@@ -428,14 +428,14 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), 
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by eventDate.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeTotal", "Allows you to disle including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to include the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_startDate", "Start date for events to return", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_endDate", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_resourceUid", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_assetTypeUid", "End date for events to return", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_resourceUid", "Filter by the provided resource uid", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "Filter by the provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetTypeUid", "Filter by the provided asset type uid", DataType = "string", ParameterType = "query", Required = false),
 
         ]
         public async Task<IHttpActionResult> GetUsageDetails()
@@ -444,7 +444,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin."));
 
 
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -487,6 +487,8 @@ namespace d360.web.Controllers.V2
                 {
                     string[] allowedDirections = new string[] { "asc", "desc" };
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                    if (!allowedDirections.Contains(order.Trim().ToLower()))
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), $"Invalid _direction provided!"));
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
                 }
@@ -638,16 +640,17 @@ namespace d360.web.Controllers.V2
 
                 string sql = $@"
                 select 
-                    act.value as 'Action', 
-                    ua.Value as 'User Agent',
-                    h.Value as 'Host',
-                    bl.Value as 'Browser Language', 
-		            stat.Timestamp, 
-                    att.Name as 'AssetTypeName', 
-                    COALESCE(att.uid,  att2.uid) as 'AssetTypeUid', 
-                    a.uid as 'AssetUid', 
-                    adv.DisplayValue as 'AssetDisplayValue', 
-                    COALESCE(att.class,  att2.class) as 'class'
+                    act.value as 'action', 
+                    ua.Value as 'userAgent',
+                    h.Value as 'host',
+                    bl.Value as 'language', 
+		            stat.Timestamp as 'eventDate', 
+                    att.Name as 'assetTypeName', 
+                    COALESCE(att.uid,  att2.uid) as 'assetTypeUid', 
+                    a.uid as 'assetUid', 
+                    adv.DisplayValue as 'assetDisplayValue', 
+                    COALESCE(att.class,  att2.class) as 'assetClass',
+                    gr.uid as 'resourceUid'
                 from analytics.Statistic stat
 	                inner join reporting.global_resource gr on stat.resourceid = gr.resourceid
 	                inner join analytics.BrowserLanguage bl on bl.ID = stat.BrowserLanguageID
