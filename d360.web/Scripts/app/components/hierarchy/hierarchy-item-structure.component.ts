@@ -72,7 +72,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     selectedLevel: number = 0;
     filterColumns: string[] = ['DisplayValue'];
     totalRecords: number = 0;
-    totalRecordsf: number = 0;
+    totalRecordsFiltered: number = 0;
 
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
@@ -424,8 +424,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private expandNodes() {        
         if (this.treeTable.filters["global"]) { // only expand if global filter populated.
-            this.totalRecordsf = 0;
-            this.totalRecordsf = this.treeTable.filteredNodes.length;
+            this.totalRecordsFiltered = 0;
+            this.totalRecordsFiltered = this.treeTable.filteredNodes.length;
             this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
         }
     }
@@ -437,13 +437,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             if (!match) { // if we haven't found a match expand the node and check children.
                 node.expanded = true;
                 if (node.children && node.children.length > 0) {
-                    this.totalRecordsf = this.totalRecordsf + node.children.length;
+                    this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
                     this.expandChildNodes(node.children, fields, search);
                 }
             }
             else { // if matched then count number of child and futher child
                 if (node.children && node.children.length > 0) {
-                    this.totalRecordsf = this.totalRecordsf + node.children.length;
+                    this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
                     this.expandChildNodesCount(node.children);
                 }
             }
@@ -454,7 +454,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private expandChildNodesCount(nodes: TreeNode[]) {
         nodes.forEach((node) => {
             if (node.children && node.children.length > 0) {
-                this.totalRecordsf = this.totalRecordsf + node.children.length;
+                this.totalRecordsFiltered = this.totalRecordsFiltered + node.children.length;
                 this.expandChildNodesCount(node.children);
             }
         }
@@ -473,7 +473,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
 
         if (isfilter) {
-            return this.totalRecordsf <= this.maxExportRows;
+            return this.totalRecordsFiltered <= this.maxExportRows;
         }
         else {
             return this.totalRecords <= this.maxExportRows;
