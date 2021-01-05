@@ -103,7 +103,22 @@ export class HeaderActionsComponent {
                 {
                     if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
                     {
-                        isReferenceUrl = true;
+                        if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESPONSIBILITIES_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_WORKFLOW_MONITOR_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_AUDIT_ROOT.toUpperCase()))
+                        )
+                        {
+                            isReferenceUrl = true;
+                        }
+                        
                     }
                 }
 
