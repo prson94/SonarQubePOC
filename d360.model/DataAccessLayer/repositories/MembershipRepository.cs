@@ -826,6 +826,16 @@ namespace d360.model.DataAccessLayer
 
                                 if (companyResource != null)
                                 {
+                                    //disallow changing the admin flag if the current user is not an admin
+                                    if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator != companyResource.IsAdministrator)
+                                    {
+                                        result.Success = false;
+                                        result.uid = user.uid;
+                                        result.Message += "Non-administrator users cannot update the administrator flag. ";
+                                        results.Add(result);
+                                        continue;
+                                    }
+
                                     companyResource.IsAdministrator = user.IsAdministrator;
                                     companyResource.State = user.State ?? companyResource.State;
 
@@ -834,6 +844,16 @@ namespace d360.model.DataAccessLayer
                             }
                             else
                             {
+                                //disallow creating admin users if the current user is not an admin
+                                if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator == true)
+                                {
+                                    result.Success = false;
+                                    result.uid = user.uid;
+                                    result.Message += "Non-administrator users cannot update the administrator flag. ";
+                                    results.Add(result);
+                                    continue;
+                                }
+
                                 companyResource = new CompanyResource()
                                 {
                                     ResourceID = (int)user.ResourceID,
