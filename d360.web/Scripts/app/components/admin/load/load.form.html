@@ -12,7 +12,7 @@
             <div *ngIf="isLoadingTypes">
                 <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
             </div>
-            <div *ngIf="!isLoadingTypes">
+            <div *ngIf="!isLoadingTypes" class="d3s-type-dropdown">
                 <p-dropdown [filter]="true" [options]="types" [(ngModel)]="selectedType" [style]="{'width':'98%'}" (onChange)="loadColumns()" name="Type"></p-dropdown>
             </div>
         </div>
