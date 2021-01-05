@@ -9,6 +9,7 @@ import { PipesModule } from '../../../../pipes/pipes.module';
 import { ScoreHistoryComponent } from './score-history.component';
 import { CoreModule } from '../../core.module';
 import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from "primeng/tooltip";
 
 @NgModule({
     imports: [
@@ -20,7 +21,8 @@ import { CheckboxModule } from 'primeng/checkbox';
         PipesModule,
         CoreModule,
 
-        CheckboxModule
+        CheckboxModule,
+        TooltipModule
     ],
     declarations: [
         ScoreHistoryComponent
