@@ -979,7 +979,7 @@ namespace d360.model.DataAccessLayer
         public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
-                        
+
             int pageSize = 5000;
             int pageNum = 0;
             bool includeTotal = true;
@@ -1012,7 +1012,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
             dbArgs.Add("@offset", (pageSize * pageNum));
-                                    
+
             var sql = $@"
                 select	P.[uid],
 		                P.[keypath] as [path]  
@@ -1020,7 +1020,7 @@ namespace d360.model.DataAccessLayer
                 where P.assetTypeId = @assetTypeId
                 order by P.ID
                 OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
-            
+
             int? total = null;
             if (includeTotal)
             {
@@ -2853,7 +2853,7 @@ where	O.RowNum = 1";
             return results;
         }
 
-        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true)
+        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false)
         {
             List<ValidationError> errors = new List<ValidationError>();
             foreach (var item in model)
@@ -2871,6 +2871,17 @@ where	O.RowNum = 1";
                         bool success = true;
                         string error = "";
                         var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+
+                        if (nullifyEmptyFields)
+                        {
+                            var keys = asset.Fields.Keys.ToList();
+                            foreach (string key in keys)
+                            {
+                                if (string.IsNullOrEmpty(asset.Fields[key]))
+                                    asset.Fields[key] = null;
+                            }
+                        }
+
                         CompanyContext.ValidateFields(assetType.Object,
                             assetType.ObjectID,
                             true,
@@ -3154,7 +3165,7 @@ where   A.[uid] = @assetUid";
 
                     template.IncludeFieldTypes = (await CompanyContext.QueryAsync<string>(templateFieldTypesSQL, new { templateId = template.ID }, timeout: ApiTimeout)).ToArray();
 
-                    if(template.AssetTypeExportTemplateStyleJson!= null)
+                    if (template.AssetTypeExportTemplateStyleJson != null)
                     {
                         var styles = JsonConvert.DeserializeObject<ICollection<AssetTypeExportTemplateStyle>>(template.AssetTypeExportTemplateStyleJson ?? "[]");
                         foreach (var style in styles)
