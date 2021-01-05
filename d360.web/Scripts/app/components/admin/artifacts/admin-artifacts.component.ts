@@ -87,6 +87,11 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.clearSidebar();
     }
 
+    onPageEvent(evt) {
+        this.selectedRow = this.artifactTypes[evt.first];
+        this.selectedItemChange();
+    }
+
     load(uid: string = '') {
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
             .subscribe(data => {
@@ -190,6 +195,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     private loadDataAndExecuteAction(action: Function) {
+        this.isLoading = true;
         if (this.selectedRow) {
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
                 .subscribe(res => {
@@ -197,6 +203,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                     this.selectedRow.data.AssetTypeID = res.AssetTypeID;
                     if (action) {
                         action();
+
                     }
                 });
         }
