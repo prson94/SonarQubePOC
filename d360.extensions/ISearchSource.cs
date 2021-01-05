@@ -170,6 +170,11 @@ namespace d360.extensions
         public Guid? Uid { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public List<IndexTag> Tags { get; set; }
+
+        public bool MissingIcon()
+        {
+            return string.IsNullOrEmpty(Icon) && string.IsNullOrEmpty(ImageUrl);
+        }
     }
 
     public class IndexResult : TypeaheadResult

@@ -2602,58 +2602,79 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
-        public async Task<List<PathComponent>> GetAssetPath(Guid assetUid)
+        public async Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids)
         {
-            var dbArgs = new DynamicParameters();
-            dbArgs.Add("@assetUid", assetUid.ToString());
+            Dictionary<Guid, List<PathComponent>> paths = new Dictionary<Guid, List<PathComponent>>();
 
-            var sql = $@"SELECT	Segments FROM graph.AssetNode WHERE Uid = @assetUid";
-            string segments = await CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
+            var sql = @"SELECT an.Uid, an.Segments
+                FROM  graph.AssetNode an
+                inner join @uids U on U.Uid = an.Uid";
 
-            List<PathComponent> returnlist = new List<PathComponent>();
-
-            if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
+            var nodes = await CompanyContext.QueryAsync<(Guid Uid, string Segments)>(sql, new
             {
-                XElement segmentXML = XElement.Parse(segments);
-                List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
-                int currentlevel = 1;
-                int level = 0;
-                int position = 0;
-                int assetTypeId = -1;
-                List<string> elementPath = new List<string>();
+                uids = assetUids.Distinct().AsTableValuedParameter(
+                        "dbo.UidTable",
+                        new List<string>() { "Uid" })
+            });
 
-                foreach (XElement element in segmentList)
+            foreach(var node in nodes)
+            {
+                List<PathComponent> returnlist = new List<PathComponent>();
+
+                if (!string.IsNullOrWhiteSpace(node.Segments) && node.Segments.IndexOf('<') >= 0)
                 {
-                    if (int.TryParse(element.Attribute("level").Value, out level))
+                    XElement segmentXML = XElement.Parse(node.Segments);
+                    List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
+                    int currentlevel = 1;
+                    int level = 0;
+                    int position = 0;
+                    int assetTypeId = -1;
+                    List<string> elementPath = new List<string>();
+
+                    foreach (XElement element in segmentList)
                     {
-                        if (int.TryParse(element.Attribute("position").Value, out position))
+                        if (int.TryParse(element.Attribute("level").Value, out level))
                         {
-                            if (level != currentlevel)
+                            if (int.TryParse(element.Attribute("position").Value, out position))
                             {
-                                returnlist.Add(new PathComponent
+                                if (level != currentlevel)
                                 {
-                                    Key = elementPath.ToArray(),
-                                    AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
-                                });
-                                currentlevel = level;
-                                elementPath = new List<string>();
+                                    returnlist.Add(new PathComponent
+                                    {
+                                        Key = elementPath.ToArray(),
+                                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                                    });
+                                    currentlevel = level;
+                                    elementPath = new List<string>();
+                                }
+                                elementPath.Add(element.Value);
+                                int.TryParse(element.Attribute("assetTypeId").Value, out assetTypeId);
                             }
-                            elementPath.Add(element.Value);
-                            int.TryParse(element.Attribute("assetTypeId").Value, out assetTypeId);
                         }
                     }
-                }
-                //capture the last element path
-                if (elementPath.Any())
-                {
-                    returnlist.Add(new PathComponent
+                    //capture the last element path
+                    if (elementPath.Any())
                     {
-                        Key = elementPath.ToArray(),
-                        AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
-                    });
+                        returnlist.Add(new PathComponent
+                        {
+                            Key = elementPath.ToArray(),
+                            AssetType = CompanyContext.Filter<AssetType>(i => i.ID == assetTypeId).SingleOrDefault().Name
+                        });
+                    }
                 }
+
+                paths.Add(node.Uid, returnlist);
             }
-            return returnlist;
+            return paths;
+        }
+
+        public async Task<List<PathComponent>> GetAssetPath(Guid assetUid)
+        {
+            var paths = await GetAssetPathComponents(new List<Guid>() { assetUid });
+            if (paths.ContainsKey(assetUid))
+                return paths[assetUid];
+            else
+                return new List<PathComponent>();
         }
 
         public async Task<dynamic> GetAssetTypeDetails(AssetType type)
