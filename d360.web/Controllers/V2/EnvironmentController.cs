@@ -440,18 +440,17 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetUsageDetails()
         {
-            var prefix = "Environment.GetUsageDetails => ";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin.")).ConfigureAwait(false);
 
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 string isValid = isPageSizeAndNumValid(queryParams);
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
 
@@ -467,7 +466,7 @@ namespace d360.web.Controllers.V2
                 
                 List<string> whereClauseItems = new List<string>();
 
-                var columns = new string[] 
+                string[] columns = 
                 { 
                     "action", 
                     "user agent", 
@@ -485,10 +484,12 @@ namespace d360.web.Controllers.V2
                 #region handle queryparams
                 if (queryParams.Any(x => x.Key == "_direction"))
                 {
-                    string[] allowedDirections = new string[] { "asc", "desc" };
+                    string[] allowedDirections = { "asc", "desc" };
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                     if (!allowedDirections.Contains(order.Trim().ToLower()))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), $"Invalid _direction provided!"));
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), $"Invalid _direction provided!")).ConfigureAwait(false);
+                    }
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
                 }
@@ -523,14 +524,14 @@ namespace d360.web.Controllers.V2
                         {
                             if (int.TryParse(q.Value, out pageNum))
                             {
-                                if (pageNum < 1) pageNum = 1;
+                                if (pageNum < 1) { pageNum = 1; }
                             }
                         }
                         else if (key == "_pagesize")
                         {
                             if (int.TryParse(q.Value, out pageSize))
                             {
-                                if (pageSize < 1) pageSize = 1;
+                                if (pageSize < 1) { pageSize = 1; }
                             }
                         }
                         else if(key == "_includetotal")
@@ -617,13 +618,13 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    return await Task.FromResult(errorMessageResponse(code, code.ToString(), errorMessage));
+                    return await Task.FromResult(errorMessageResponse(code, code.ToString(), errorMessage)).ConfigureAwait(false);
                 }
 
                 if (pageSize > 0 || pageNum > 0)
                 {
-                    if (pageSize < 1) pageSize = 1;
-                    if (pageNum < 1) pageNum = 1;
+                    if (pageSize < 1) { pageSize = 1; }
+                    if (pageNum < 1) { pageNum = 1; }
 
                     offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
@@ -689,11 +690,11 @@ namespace d360.web.Controllers.V2
                 {
                     var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
                     var model = new { pageSize, pageNum, total = count, items = response };
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -701,7 +702,7 @@ namespace d360.web.Controllers.V2
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", prefix } });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
         }
     }
