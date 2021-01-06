@@ -135,11 +135,11 @@ namespace d360.core.entities.Membership
 
         public string Name { get; set; }
 
-        public Guid AcceptedBy { get; set; }
+        public Guid? AcceptedBy { get; set; }
 
         public string AcceptedByUserName { get; set; }
 
-        public DateTime AcceptedOn { get; set; }
+        public DateTime? AcceptedOn { get; set; }
 
         public string AdministratorEmail { get; set; }
     }

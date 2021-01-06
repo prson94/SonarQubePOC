@@ -1452,7 +1452,7 @@ order by	q.SortOrder";
                         from 
 	                        Organization O 
 	                        inner join 
-	                        OrganizationType OT on O.OrganizationTypeID=OT.ID and O.AcceptedBy is not null
+	                        OrganizationType OT on O.OrganizationTypeID=OT.ID and O.state = 1
 	                        inner join AssetType AST on AST.Object = 'OrganizationType' and OT.ID=AST.ObjectID and AST.uid =  @organizationTypeUid
 	                        inner join Asset A on A.Object ='Organization' and A.ObjectID = O.ID
 	                        left join 
