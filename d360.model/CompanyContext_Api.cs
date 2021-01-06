@@ -8986,104 +8986,84 @@ where	match(Ea-(E)->Re)
                     var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
 	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
 
+                    string ruleResultWhereClause = $@"from AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR 
+where 
+    DAR.ExecutionID = @executionID 
+	and DAR.Success is null 
+
+    and Match (AN -(ARE)-> AR) 
+	and (
+        (DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') 
+        or AR.Uid = DAR.Uid
+        )
+	and (
+            (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') 
+            or AR.Uid in    (
+                            select  AR1.Uid
+                            from    AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
+			                where   Match (AN1 -(ARE1)-> AR1)
+				                    and AN1.Uid = DAR.owningAssetUid
+				                    and ARE1.Class = {(int)ResultRelationClass.Owns}
+		                    )
+	    ) 
+    and (
+            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  
+            or AR.Uid in    (
+			                select  AR2.Uid
+			                from    AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
+			                where   Match (AN2 -(ARE2)-> AR2)
+				                    and AN2.Uid = DAR.evaluatedAssetUid
+				                    and ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
+		                    )
+        ) 
+    and (
+            (
+                (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
+			)
+		    or  (DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy})
+	    ) 
+    and (DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate) 
+    and (DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate) 
+    and (DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart) 
+    and (DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd) ";
+
                     string deleteAssetResultSQL = $@"
 create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
 CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
 
-                                                merge into AssetResultEdge DARE
-                                                using 
-                                                (select 
-	                                                ARE.$from_id as from_id,ARE.$to_id as to_id, AR.Uid, ARE.Class, DAR.itemnumber, DAR.ExecutionItemUid
-	                                                --AR.Uid, ARE.[Class], AR.RunDate, AR.EffectiveDate
-                                                from 
-	                                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR
-                                                where 
-	                                                DAR.ExecutionID = @executionID
-	                                                and
-                                                    DAR.Success is null
-                                                    and DAR.ItemNumber between @beginItemNumber and @endItemNumber
-                                                    AND
-	                                                Match (AN -(ARE)-> AR)
-	                                                and 
-	                                                ((DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') or AR.Uid = DAR.Uid)
-	                                                and
-	                                                (
-		                                                (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') or AR.Uid in 
-		                                                (	
-			                                                select 
-				                                                AR1.Uid
-			                                                from 
-				                                                AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
-			                                                where 
-				                                                Match (AN1 -(ARE1)-> AR1)
-				                                                and 
-				                                                AN1.Uid = DAR.owningAssetUid
-				                                                and
-				                                                ARE1.Class = {(int)ResultRelationClass.Owns}	
-		                                                )
-	                                                )
-	                                                and 
-	                                                (	
-		                                                (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  or AR.Uid in 
-		                                                (
-			                                                select 
-				                                                AR2.Uid
-			                                                from 
-				                                                AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
-			                                                where 
-				                                                Match (AN2 -(ARE2)-> AR2)
-				                                                and 
-				                                                AN2.Uid = DAR.evaluatedAssetUid
-				                                                and
-				                                                ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
-		                                                )
-	                                                )
-	                                                and 
-	                                                (
-		                                                (
-                                                            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
-			                                                
-		                                                )
-		                                                or
-		                                                (
-			                                               DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy}
-		                                                )
-	                                                )
-	                                                and
-	                                                (
-		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate
-	                                                )
-	                                                and
-	                                                (
-		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate
-	                                                )
-	                                                and
-	                                                (
-		                                                DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart
-	                                                )
-	                                                and
-	                                                (
-		                                                DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd 
-												  
-	                                                )
-                                                ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
-                                                WHEN MATCHED THEN DELETE
-                                                output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
+merge into AssetResultEdge DARE 
+using   (
+        select  ARE.$from_id as from_id,
+                ARE.$to_id as to_id, 
+                AR.Uid, 
+                ARE.Class, 
+                DAR.itemnumber, 
+                DAR.ExecutionItemUid
+        {ruleResultWhereClause} 
+                and DAR.ItemNumber between @beginItemNumber and @endItemNumber  
+        ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
+WHEN MATCHED THEN DELETE 
+output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
 
-                                                merge into AssetResult AR
-                                                using (
-	                                                select AR1.uid
-	                                                FROM AssetResult AR1
-	                                                INNER JOIN #ObjectDeleteAssetEdge MAE
-	                                                  ON AR1.UID=MAE.Uid
-	                                                left join 
-	                                                assetResultEdge ARE on ARE.$to_id = AR1.$node_id
-	                                                Where ARE.$to_id is null
-	                                                ) R on R.Uid = AR.Uid
-                                                WHEN MATCHED THEN DELETE;
+merge into AssetResult AR
+using   (
+	    select  AR1.uid
+	    from    AssetResult AR1
+	            INNER JOIN #ObjectDeleteAssetEdge MAE ON AR1.UID=MAE.Uid
+	            left join assetResultEdge ARE on ARE.$to_id = AR1.$node_id
+	    where   ARE.$to_id is null
+	    ) R on R.Uid = AR.Uid
+WHEN MATCHED THEN DELETE;
 
-                                                {updateOnSuccess}
-                                                    ";
+{updateOnSuccess}";
+
+                    // Find out which items we need to update scores for.
+                    var ruleResultUids = Query<Guid>($@"select AR.Uid {ruleResultWhereClause}", new { execution.ExecutionID }).ToList();
+                    List<AssetMeasureModel> assetMeasures = null;
+                    if (ruleResultUids.Count > 0)
+                    {
+                        assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
+                    }
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
@@ -9133,6 +9113,12 @@ CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge 
 
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
+                    }
+
+                    // Now that results are deleted, send the score events to re-process scores for impacted assets.
+                    if (assetMeasures.Count > 0)
+                    {
+                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
                     }
                 }
             }
