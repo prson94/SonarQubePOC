@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
@@ -33,9 +34,11 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         IStorageProvider _storage;
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage) : base(community, company)
+        IAssetRepository _assetRepository;
+        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository) : base(community, company)
         {
             _storage = storage;
+            _assetRepository = assetRepository;
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -726,6 +729,64 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() { {"Endpoint Method", "Environment.GetUsageDetails => "} });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves environment licensing info. 
+        /// Only non infogix user are included in these counts.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("licensing"),
+            SwaggerConsumes("application/json"),
+        ]
+        public async Task<IHttpActionResult> GetLicensingDetails()
+        {
+            try
+            {
+                
+                AssetsCountModel assetCount = await _assetRepository.GetAssetsCounts().ConfigureAwait(false);
+                var allusers = Company.GlobalReportingResources.Where(x => x.State == CompanyResourceState.Active && (!x.Email.Contains("@data3sixty.com") && !x.Email.Contains("@infogix.com"))).Count();
+                var allAdminUsers = Company.GlobalReportingResources.Where(x => x.IsAdministrator && x.State == CompanyResourceState.Active && (!x.Email.Contains("@data3sixty.com") && !x.Email.Contains("@infogix.com"))).Count();
+                var contributorSql = @"
+                SELECT count(distinct GR.resourceid)
+                from Asset A
+	                left join reporting.global_resource GR on 1=1
+	                outer apply (
+                            select top 1 * from
+				                 (select PermissionsBitMask from UserAssetPermissions(GR.ResourceID,A.assetTypeID) 
+					                where AssetID = A.ID 
+			                union all 	
+					                select PermissionsBitMask from UserAssetPermissions(GR.ResourceID,A.assetTypeID)
+					                where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
+				                   )Permission(mask)
+                WHERE gr.Email not like '%@infogix.com' 
+	                and gr.Email not like '%@data3sixty.com'  
+	                and gr.State = 1
+	                and	1 = Case 
+		                   when Permission.mask is null then gr.IsAdministrator
+		                   when Permission.mask is not null and Permission.mask & 2 = 2 then 1
+		                   when Permission.mask is null then gr.IsAdministrator
+		                   when Permission.mask is not null and Permission.mask & 4 = 4 then 1
+		                 else 0
+		        end ";
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+
+                var model = new { assets = new { count = assetCount.totalNumberOfAssets }, users = new { total = allusers, contributors = contibutorCount, administrators = allAdminUsers } };
+
+
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }
