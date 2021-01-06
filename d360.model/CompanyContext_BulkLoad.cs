@@ -679,6 +679,7 @@ from	[Load] L
                 int? intersectTypeId = null;
                 PredicateType? predicateType = null;
                 bool calculateParentHashByUid = false;
+                int maxLevel = 1;
 
                 switch (assetType.Class)
                 {
@@ -711,6 +712,15 @@ from	[Load] L
                     try
                     {
                         var executionID = Guid.NewGuid();
+
+                        if (assetType.Class == AssetTypeClass.Model)
+                        {
+                            maxLevel = (await Connection.QuerySingleAsync<int>(@"
+                            select coalesce(max(L.[Level]), 1) from LoadColumn LC
+                            inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
+                            inner join AssetTypeLevel L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+                            where LC.Loadid = @ID;", new { load.ID, atID = assetType.ID }, transaction: trans));
+                        }
 
                         await Connection.ExecuteAsync(@"
                         drop table if exists #BulkExecutionAsset;
@@ -763,12 +773,6 @@ from	[Load] L
                         --handle model levels
                         if @class = 2
                         begin
-                            declare @maxLevel int = 1;
-
-                            select @maxLevel = coalesce(max(L.[Level]), 1) from LoadColumn LC
-                            inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
-                            inner join AssetTypeLevel L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-                            where LC.Loadid = @ID;
 
                             update  F
                             set     F.FieldName = FT.Name,
@@ -782,7 +786,7 @@ from	[Load] L
                             delete from #BulkExecutionField where FieldTypeID is null;
                         end
                         "
-                            , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class }, transaction: trans, commandTimeout: timeout);
+                            , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
 
                         if (intersectTypeId.HasValue && calculateParentHashByUid)
                         {
@@ -816,11 +820,11 @@ from	[Load] L
                         {
                             await Connection.ExecuteAsync(@"
                                 drop table if exists #AssetActiveKey;
-                                
+
                                select  A.Uid,                                                
                                     utility.GetHash(cast(@atID as nvarchar) + '|' + A.Code)  as ActiveKey
                                     into #AssetActiveKey
-                                        from  Asset A                                   
+                                        from  Asset A    
                                         where A.AssetTypeID = @atID
                                     group by A.Uid, Code
 
@@ -855,7 +859,7 @@ from	[Load] L
 			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
                                 where	    A.AssetTypeID = @atID
                                 group by    A.Uid, P.Uid
-
+ 
                                 Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
 
                                 update T                                  
@@ -875,15 +879,17 @@ from	[Load] L
                             else
                             {
                                 await Connection.ExecuteAsync(@"
+
                                 drop table if exists #AssetActiveKey;
 
                                 select		A.Uid,
-			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, F.FormattedValue, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
                                 Into		#AssetActiveKey
-                                from		Asset A 
+                                from		Asset A
+                                            outer apply dbo.getassetlevelbyid(A.ID) L
 			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-                                where	    A.AssetTypeID = @atID
+                                where	    A.AssetTypeID = @atID and coalesce(L.[Level], 1) = @maxLevel
                                 group by    A.Uid
 
                                 Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
@@ -894,13 +900,12 @@ from	[Load] L
                                 inner join  #AssetActiveKey K
                                 on K.ActiveKey = T.ProposedKey;
 
-
                                 update L
                                 set L.AssetUid = T.AssetUid
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
+                            ", new { atID = assetType.ID, load.ID, maxLevel }, transaction: trans, commandTimeout: timeout);
                             }
 
                         }
