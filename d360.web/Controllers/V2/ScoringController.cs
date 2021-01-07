@@ -244,11 +244,6 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update a scores Asset Type, Score Type or Externally calculated flag if score has active measures defined.");
                 }
 
-                if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Data Quality Score Allocation cannot have isExternallyCalculated flag set to False.");
-                }
-
                 if (model.lowerThreshold == null)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Lower threshold must be set.");

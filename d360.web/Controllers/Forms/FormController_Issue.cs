@@ -37,7 +37,9 @@ namespace d360.web.Controllers
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
-            
+
+            ignoreObjects.Add(SystemObjects.ReferenceItemType.ToString());
+
             if (ignoreObjects.Count > 0)
                 ignoreObjectTypeSQL = $" AND T.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";           
 

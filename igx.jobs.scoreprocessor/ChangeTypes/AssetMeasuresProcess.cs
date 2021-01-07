@@ -968,7 +968,7 @@ from	metrics.Asset A
                 if (scoresToAdd.Count > 0)
                 {
                     using (var trans = company.BeginTransaction())
-                    {
+                    { 
                         try
                         {
                             var scores = new DataTable();
@@ -1234,7 +1234,7 @@ where   N.ActualUid is null;", transaction: trans);
                             // Merge score Item Links.
                             await company.ExecuteAsync(
                                 "merge metrics.ScoreItemLink as T " +
-                                "using #ScoreItemLinks as S " +
+                                "using (select distinct ScoreUid, ScoreItemUid from #ScoreItemLinks) as S " +
                                 "on (S.ScoreUid = T.ScoreUid and T.ScoreItemUid = S.ScoreItemUid) " +
                                 "when not matched then " +
                                 "insert (ScoreUid, ScoreItemUid) " +

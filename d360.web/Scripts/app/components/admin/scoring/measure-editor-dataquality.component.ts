@@ -110,8 +110,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             effectiveDate: null,
             weight: ['', [this.isValidWeight()]],
             isGroup: null,
-            ruleResultPath: null,
-            ruleResultOperation: null,
+            ruleResultPath: ['', [Validators.required]],
+            ruleResultOperation: ['', [Validators.required]],
             ruleResultMatchType: null,
             matchType: null
         });
@@ -199,7 +199,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (!this.model.Definition) {
                 this.model.Definition = new MetricAssetDefinitionViewModel();
                 this.model.Definition.DataQuality = new MetricAssetDefinitionDataQualityViewModel();
-                this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation.Average;
+                //this.model.Definition.DataQuality.ResultOperation = MetricRuleResultOperation.Average;
             }
             this.isLoading = false;
         }
@@ -221,8 +221,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
                 this.metricForm.removeControl("matchType");
                 this.conditions = [];
             } else {
-                this.metricForm.addControl("ruleResultPath", new FormControl(''));
-                this.metricForm.addControl("ruleResultOperation", new FormControl(''));
+                this.metricForm.addControl("ruleResultPath", new FormControl('', [Validators.required]));
+                this.metricForm.addControl("ruleResultOperation", new FormControl('', [Validators.required]));
                 this.metricForm.addControl("ruleResultMatchType", new FormControl(''));
                 this.metricForm.addControl("matchType", new FormControl(''));
             }

@@ -1124,22 +1124,34 @@ namespace d360.model
                         if (!string.IsNullOrEmpty(rel))
                         {
                             var parts = rel.Split('|');
-
+                            var obj = objectInfo.Object.ToString();
+                            var objId = objectInfo.ObjectID;
                             var intersect = new Intersect();
 
                             intersect.IntersectTypeID = intersectType.ID;
 
+
+                            if (obj == "Issue")
+                            {
+                                var issue = Issues.FirstOrDefault(i => i.ID == objId);
+                                if (issue == null)
+                                    throw new Exception($"ERROR - ASSET FOR ACTION ID [{objId}] NOT FOUND");
+
+                                obj = issue.Object.ToString();
+                                objId = issue.ObjectID;
+                            }
+
                             if (isSubject)
                             {
-                                intersect.Subject = objectInfo.Object.ToString();
-                                intersect.SubjectID = objectInfo.ObjectID;
+                                intersect.Subject = obj;
+                                intersect.SubjectID = objId;
                                 intersect.Object = (parts[0] ?? "").Replace("Type", "");
                                 intersect.ObjectID = int.Parse(parts[1]);
                             }
                             else
                             {
-                                intersect.Object = objectInfo.Object.ToString();
-                                intersect.ObjectID = objectInfo.ObjectID;
+                                intersect.Object = obj;
+                                intersect.ObjectID = objId;
                                 intersect.Subject = (parts[0] ?? "").Replace("Type", "");
                                 intersect.SubjectID = int.Parse(parts[1]);
                             }
