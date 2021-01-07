@@ -1171,4 +1171,83 @@ from	[metrics].[AssetVersionConditionItemValue] V
 ]]>
     </sql>
 	</changeSet>
+
+	<changeSet author="Pappas" id="Data.Corrections.GOV-13300">
+    <sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+drop table if exists #adjustments;
+
+select	L.*,
+		W.NewGroupAdjustedWeight,
+		newid() as NewScoreItemUid
+into	#adjustments
+from	metrics.ScoreItem I
+		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid 
+		inner join metrics.Score S on S.Uid = L.ScoreUid
+		inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+		inner join metrics.Asset A on A.Uid = V.AssetUid and A.IsGroup = 1
+		cross apply (
+			select	sum(II.AdjustedWeight) as AdjustedWeight,
+					sum(II.AdjustedMaxWeight) as AdjustedMaxWeight,
+					coalesce(
+						round(
+							(
+								case
+									when sum(II.AdjustedMaxWeight) = 0 then 0
+									else sum(II.AdjustedWeight) / sum(II.AdjustedMaxWeight)
+								end
+							) * I.AdjustedMaxWeight, 
+						3), 
+					0) as NewGroupAdjustedWeight
+			from	metrics.Asset IA 
+					inner join metrics.AssetVersion IV on IV.AssetUid = IA.Uid 
+					cross apply (
+						select	max(EffectiveDate) as MaxEffectiveDate
+						from	metrics.AssetVersion
+						where	AssetUid = IA.Uid
+								and EffectiveDate <= S.EffectiveDate
+					) MIV 
+					inner join metrics.ScoreItem II on II.AssetVersionUid = IV.Uid
+					inner join metrics.ScoreItemLink IL on II.Uid = IL.ScoreItemUid and IL.ScoreUid = L.ScoreUid
+			where	IA.ParentUid = V.AssetUid
+					and IV.EffectiveDate = MIV.MaxEffectiveDate
+		) W;
+
+INSERT INTO metrics.ScoreItem ([UpdatedOn], [Value], [AdjustedWeight], [RunDate], [Uid], [AssetVersionUid], [Evidence], [ConditionUid], [AdjustedMaxWeight], [DecimalValue])
+	select	I.UpdatedOn,
+			I.Value,
+			A.NewGroupAdjustedWeight,
+			I.RunDate,
+			A.NewScoreItemUid,
+			I.AssetVersionUid,
+			I.Evidence,
+			I.ConditionUid,
+			I.AdjustedMaxWeight,
+			I.DecimalValue
+	from	#adjustments A
+			inner join metrics.ScoreItem I on I.Uid = A.ScoreItemUid;
+
+insert into metrics.ScoreItemLink (ScoreUid, ScoreItemUid)
+	select	ScoreUid,
+			NewScoreItemUid
+	from	#adjustments;
+
+delete	T
+from	metrics.ScoreItemLink T
+		inner join #adjustments A on A.ScoreUid = T.ScoreUid and A.ScoreItemUid = T.ScoreItemUid;
+
+--set the score end dates correctly.
+update 	P 
+set 	P.EndDate = dateadd(dd, -1, N.EffectiveDate)
+from	metrics.Score P
+		outer apply (
+			select	min(EffectiveDate) as EffectiveDate 
+			from	metrics.Score 
+			where	AllocationUid = P.AllocationUid 
+					and AssetUid = P.Assetuid 
+					and EffectiveDate > P.EffectiveDate
+		) N;
+]]>
+    </sql>
+	</changeSet>
 </databaseChangeLog>

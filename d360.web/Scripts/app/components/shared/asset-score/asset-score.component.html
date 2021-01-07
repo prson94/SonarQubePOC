@@ -40,7 +40,7 @@
                                         </span>
                                     </div>
                                     <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
-                                        <ig-badge [variant]="item._badgeStyle" [text]="getAsDQBadgeText(item)"></ig-badge>
+                                        <ig-badge [variant]="getAsExternalBadgeStyle(item)" [text]="getAsExternalBadgeText(item)"></ig-badge>
                                     </div>
                                 </div>
                                 <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">

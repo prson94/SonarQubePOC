@@ -815,13 +815,14 @@ from	metrics.Asset A
                                     {
                                         // Look up to see if there is an existing score item for this measure, and use that value.
                                         var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
-                                        var scoreItemUid = Guid.NewGuid();
+                                        var scoreItemUid = Guid.Empty;//.NewGuid();
                                         bool scoreItemValue = false;
                                         if (previousScoreItem != null) 
                                         {
-                                            if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                            // If a different measure version, then automatically generate a new guid.
+                                            if (previousScoreItem.MetricAssetVersionUid != aM.MetricAssetVersionUid)
                                             {
-                                                scoreItemUid = previousScoreItem.ScoreItemUid;
+                                                scoreItemUid = Guid.NewGuid();
                                             }
                                             scoreItemValue = previousScoreItem.Value;
                                         }
@@ -837,14 +838,50 @@ from	metrics.Asset A
                                             Value = scoreItemValue,
                                             Uid = scoreItemUid
                                         };
+                                        
                                         assetScoreItems.Add(scoreItem);
-                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                        
+                                        if (scoreItemUid != Guid.Empty) 
+                                        {
+                                            assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                        }
                                     }                                
                                 }
                             }
                         });
 
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
+
+                        var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
+
+                        // Now figure out whether to switch out the Uids for any score items that are currently marked as empty guid.
+                        assetScoreItems.ForEach(scoreItem =>
+                        {
+                            if (scoreItem.Uid == Guid.Empty)
+                            {
+                                var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == scoreItem.MetricAssetUid);
+                                var scoreItemUid = Guid.NewGuid();
+                                if (previousScoreItem != null)
+                                {
+                                    if ((previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight) && (previousScoreItem.AdjustedMaxWeight == scoreItem.AdjustedMaxWeight))
+                                    {
+                                        scoreItem.Uid = previousScoreItem.ScoreItemUid;
+                                    }
+                                    else 
+                                    {
+                                        // Check to see if this is for the same effective date as the most recent existing score.
+                                        scoreItem.Uid = (matchingScore != null && matchingScore.EffectiveDate == assetEffectiveDate.EffectiveDate) 
+                                            ? previousScoreItem.ScoreItemUid 
+                                            : Guid.NewGuid();
+                                    }
+                                }
+                                else 
+                                {
+                                    scoreItem.Uid = Guid.NewGuid();
+                                }
+                                assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                            }
+                        });
 
                         // Helps to determine if we should create a new score record.
                         var scoreItemHash = string.Join(";", assetScoreItems.OrderBy(i => i.AssetVersionUid).Select(i => $"{i.AssetVersionUid}:{String.Format("{0:#,0.000}", i.AdjustedWeight ?? 0)}"));
@@ -862,7 +899,6 @@ from	metrics.Asset A
 
                         // If there is a matching score in the system, update the Uid 
                         var scoreUid = Guid.NewGuid();
-                        var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
                         if (matchingScore != null)
                         {
                             if (matchingScore.EffectiveDate == assetEffectiveDate.EffectiveDate)

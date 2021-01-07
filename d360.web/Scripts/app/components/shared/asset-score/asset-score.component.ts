@@ -278,7 +278,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                 m._adjustedGroupWeight = pb.AdjustedMaxWeight;
                                 m._adjustedWeight = Math.round(m.AdjustedWeight * pb.AdjustedMaxWeight * 1000) / 1000;
                                 m._adjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
-                                m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
+                                m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.AdjustedWeight / m.AdjustedMaxWeight);
                             });
                         }
 
@@ -475,8 +475,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     }
 
-    getAsDQBadgeText(item: PointBreakdown) {
+    getAsExternalBadgeText(item: PointBreakdown) {
         return item.Value ? 'Pass' : 'Fail';
+    }
+
+    getAsExternalBadgeStyle(item: PointBreakdown) {
+        return item.Value ? 'positive' : 'negative';
     }
 
     private getStorageKey() {
