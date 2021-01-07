@@ -96,7 +96,7 @@ export class HeaderActionsComponent {
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
                 let isSearchUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEARCH_ROOT.toUpperCase());
 
-                let isReferenceUrl = false
+                let isReferenceUrl = false;
                 isReferenceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_REFERENCE_ROOT.toUpperCase());
 
                 if (!isReferenceUrl)
