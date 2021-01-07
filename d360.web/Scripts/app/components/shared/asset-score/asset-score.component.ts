@@ -210,9 +210,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     subject.next(true);
 
                     if (this.allocationData) {
-                        var selected = this.allocationData.filter(x => x.scoreType == this.selectedScoreType);
+                        let stype = ScoreType[this.selectedScoreType];
+                        let selected = this.allocationData.filter(x => x.scoreType.toString() == stype.toString());
                         if (selected.length > 0) {
-                            this.isExternallyCalculated = selected[0]['isexternallycalculated'];
+                            this.isExternallyCalculated = selected[0]['isExternallyCalculated'];
                             this.lowerThreshold = +selected[0]['lowerThreshold'] / 100;
                             this.upperThreshold = +selected[0]['upperThreshold'] / 100;
                         }
