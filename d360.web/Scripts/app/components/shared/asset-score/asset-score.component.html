@@ -139,9 +139,6 @@
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
                         (onChange)="onScorePointChange($event)">
-                <ng-template let-score pTemplate="header">
-                    adadsas
-                </ng-template>
                 <ng-template let-score pTemplate="selectedItem">
                     {{score.value.EffectiveDate | utcDate | date:'shortDate'}} to
                     <ng-container *ngIf="score.value.EndDate">
