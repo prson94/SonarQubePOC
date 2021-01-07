@@ -248,7 +248,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     }
 
                     //Set data for UI
-                    this.totalScore = 0;
                     this.pointBreakdown.forEach(pb => {
                         //set adjusted weights
                         pb._adjustedGroupWeight = null;
@@ -313,9 +312,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             }
                         }
 
-                        this.totalScore += pb._finalScore;
                     })
-                    this.totalScore = Math.ceil(this.totalScore * 1000) / 1000;
+                    this.totalScore = +this.scoresPointSelected['Score'] / 100;
 
                     this.totalScoreStyle = 'negative';
                     if (this.totalScore > this.lowerThreshold)
@@ -357,10 +355,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private setDropdownHeader() {
         var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
-        var panel = dropdown.getElementsByClassName('ui-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('ui-dropdown-panel')[0] : null;
+        var panel = dropdown.getElementsByClassName('p-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('p-dropdown-panel')[0] : null;
         if (panel) {
             if (panel.getElementsByClassName('score-dropdown-header').length == 0) {
-                console.log("adding element");
+
                 var div = document.createElement('div');
                 div.className = 'score-dropdown-header';
                 this.dropdownClassName = 'scoring-picker-dropdown';
@@ -448,7 +446,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 break;
             default:
         }
-
     }
     private setCollapsed(val: boolean) {
         this.pointBreakdown.forEach(p => {
@@ -499,7 +496,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         //height - to top of the screen - to bottom of the screen - padding
         this.panelHeight = window.innerHeight - 180;
-        this.scorePointsMaxHeight = this.panelHeight - 100 - 16;
+        this.scorePointsMaxHeight = this.panelHeight - 100 - 18;
         if (this.scorePointsMaxHeight < 100)
             this.scorePointsMaxHeight = 100;
 

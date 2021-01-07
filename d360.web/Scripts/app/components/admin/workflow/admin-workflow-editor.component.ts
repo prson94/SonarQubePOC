@@ -45,6 +45,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private issueObjectTypes: any[] = [];
     private scoreTypes: any[] = [];
     private resSub: Subscription;
+    private defaultWorkflowObject = new WorkflowObjectType();
 
     private showAddCondition: boolean = false;
 
@@ -161,7 +162,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
-                        this.workflowObjectTypes = r;
+                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
                         if (this.hideShoppingCart) {
                             this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                         }
@@ -238,7 +239,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map(r => this.workflowObjectTypes = r),
+                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
                 map(() => {
                     if (this.hideShoppingCart) {
                         this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');

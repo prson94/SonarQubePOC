@@ -1,4 +1,4 @@
-﻿using d360.core.entities;
+﻿using d360.core;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
@@ -7,7 +7,6 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -46,10 +45,7 @@ namespace d360.web.Controllers
             {
                 queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
                 o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
-                foreach(var r in o.Result.Results)
-                {
-                    await AugmentResult(r);
-                }
+                await AugmentResults(o.Result.Results);
             }
             return Json(o);
         }
@@ -76,14 +72,9 @@ namespace d360.web.Controllers
                 if (!string.IsNullOrEmpty(q))
                 {
                     IList<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
-                    foreach(TypeaheadResult result in res)
-                    {
-                        await AugmentResult(result);
-                    }
-
+                    await AugmentResults(res);
                     return new JsonNetResult { Data = res, Formatting = Newtonsoft.Json.Formatting.None };
                 }
-
                 return new JsonNetResult { Data = null };
             }
             catch (System.Exception ex)
@@ -141,139 +132,158 @@ namespace d360.web.Controllers
 
 #endregion
 
-        private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
+        //Icons set based on Category/Class directly
+        private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string>() {
+            { "User", "fa-user" },
+            { "Group", "fa-users" },
+            { "Grammatic Type", "fa-comments" },
+            { "Attribute", "fa-pencil-square-o" },
+            { "Diagram Asset", "fa-share-alt" }
+        };
+
+        //Icons set based on main Nav item for category
+        private static readonly Dictionary<string, string> siteNavMap = new Dictionary<string, string>() {
+            { "Fusion", "#Fusion" },
+            { "FusionType", "#Fusion" },
+            { "Business Asset", "#Business" },
+            { "Technical Asset", "#Technical" },
+            { "Model", "#Models" },
+            { "Reference", "#Reference" },
+            { "Rule", "#Data Quality" },
+            { "Policy", "#Policy" }
+        };
+
+        private async Task AppendIcons(IEnumerable<TypeaheadResult> results)
         {
-            if (AssetTypeUid.HasValue && AssetTypeUid != Guid.Empty)
+            //Assign icons by Asset Type style
+            if (results.Where(r => r.MissingIcon() && r.AssetTypeUid != null).Any())
             {
-                var style = Company.GetAssetTypeStyle(AssetTypeUid.Value);
-                return style;
+                var sql = @"select AT.Uid, S.Icon
+                from assettypestyle S
+                inner join assettype AT on s.id = at.id
+                inner join @uids U on U.Uid = AT.Uid
+                where S.icon is not null";
+                var styles = await Company.QueryAsync<(Guid uid, string icon)>(sql, new
+                {
+                    uids = results.Where(r => r.MissingIcon() && r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                            "dbo.UidTable",
+                            new List<string>() { "Uid" })
+                });
+                foreach (var s in styles)
+                {
+                    foreach (var r in results.Where(r => r.AssetTypeUid == s.uid))
+                    {
+                        r.Icon = s.icon;
+                    }
+                }
             }
-            return null;
-        }
-        private string GetIcon(Guid? AssetTypeUid, string type)
-        {
-            var style = this.GetAssetTypeStyle(AssetTypeUid);
-            if (style != null && !string.IsNullOrEmpty(style.Icon))
-                return style.Icon;
 
-            TopNavigationItem menuItem = null;
-
-            if (AssetTypeUid != null)
+            //Assign icons by lower level navmenu
+            if (results.Where(r => r.MissingIcon() && r.AssetTypeUid != null).Any())
             {
-                //CTE query to get lower levels of children unioned with a query to get first level
-                menuItem = Company.Query<TopNavigationItem>($@"WITH cteParents(Object, ObjectID, Subject, SubjectID, Level)
-                    AS (SELECT it.Object, it.ObjectID, it.Subject, it.SubjectID, 1
+                var sql = $@"WITH cteParents(AssetTypeUid, Object, ObjectID, Subject, SubjectID, Level)
+                    AS (SELECT at.Uid as AssetTypeUid, it.Object, it.ObjectID, it.Subject, it.SubjectID, 1
                         FROM [dbo].[IntersectType] it 
                         INNER JOIN [dbo].[Predicate] p ON p.ID = it.PredicateID AND p.Type = 3
                         INNER JOIN [dbo].[AssetType] at ON at.Object = it.Object AND at.ObjectID = it.ObjectID
-                        AND at.uid = '{AssetTypeUid.ToString()}'
+                        inner join @uids U on U.Uid = AT.Uid
                         UNION ALL
-                        SELECT cteParents.Object, cteParents.ObjectID, it.Subject, it.SubjectID, cteParents.Level+1
+                        SELECT cteParents.AssetTypeUid, cteParents.Object, cteParents.ObjectID, it.Subject, it.SubjectID, cteParents.Level+1
                             FROM cteParents
                             INNER JOIN [dbo].[IntersectType] it ON it.Object = cteParents.Subject and it.ObjectID = cteParents.SubjectID
                             INNER JOIN [dbo].[Predicate] p ON P.ID = it.PredicateID and p.Type = 3)
-                    SELECT nav.Icon, nav.ImageIconUrl
+                    SELECT cteParents.AssetTypeUid, nav.Icon, nav.ImageIconUrl
                     FROM cteParents
                     INNER JOIN SiteNav nav1 on cteParents.Subject = nav1.Object and cteParents.SubjectID = nav1.ObjectID
                     INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
                     UNION ALL
-                    SELECT nav.Icon, nav.ImageIconUrl
+                    SELECT at.Uid as AssetTypeUid, nav.Icon, nav.ImageIconUrl
                     FROM [dbo].[AssetType] at
                     INNER JOIN SiteNav nav1 on at.Object = nav1.Object and at.ObjectID = nav1.ObjectID
                     INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
-                    WHERE at.uid = '{AssetTypeUid.ToString()}';").FirstOrDefault();
-            }
+                    inner join @uids U on U.Uid = AT.Uid;";
 
-            if (menuItem == null) {
-                string siteNavName = null;
-
-                switch (type)
+                var menuItems = Company.Query<dynamic>(sql, new
                 {
-                    case "Resource":
-                    case "User":
-                        return "fa-user";
-                    case "Group":
-                        return "fa-users";
-                    case "Grammatic Type":
-                        return "fa-comments";
-                    case "Attribute":
-                        return "fa-pencil-square-o";
-                    case "Diagram Asset":
-                        return "fa-share-alt";
-                    case "Fusion":
-                    case "FusionType":
-                        siteNavName = "#Fusion";
-                        break;
-                    case "Business Asset":
-                        siteNavName = "#Business";
-                        break;
-                    case "Technical Asset":
-                        siteNavName = "#Technical";
-                        break;
-                    case "Model":
-                        siteNavName = "#Models";
-                        break;
-                    case "Reference":
-                        siteNavName = "#Reference";
-                        break;
-                    case "Rule":
-                        siteNavName = "#Data Quality";
-                        break;
-                    case "Policy":
-                        siteNavName = "#Policy";
-                        break;
-                }
+                    uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                            "dbo.UidTable",
+                            new List<string>() { "Uid" })
+                });
 
-                if (siteNavName != null)
+                foreach (var m in menuItems)
                 {
-                    menuItem = Company.Query<TopNavigationItem>($@" select Icon FROM [dbo].[SiteNav] WHERE Name = '{siteNavName}';").FirstOrDefault();
+                    foreach (var r in results.Where(r => r.AssetTypeUid == m.AssetTypeUid))
+                    {
+                        if (!string.IsNullOrEmpty(m.ImageIconUrl))
+                            r.ImageUrl = constants.COMPANY_RESOURCES_URL + m.ImageIconUrl;
+                        else if(!string.IsNullOrEmpty(m.Icon))
+                            r.Icon = m.Icon;
+                    }
                 }
             }
 
-            if (menuItem != null)
+            //Assign icons based on category
+            foreach (var r in results.Where(res => res.MissingIcon() && categoryMap.Keys.Contains(res.Group)))
             {
-                if (menuItem.FullURL != null)
-                    return menuItem.FullURL;
-                else if (menuItem.Icon != null)
-                    return menuItem.Icon;
+                r.Icon = categoryMap[r.Group];
             }
 
-            return "fa-circle-o";
+            //Assign icons from sitenav based on category
+            if (results.Any(r => r.MissingIcon() && siteNavMap.Keys.Contains(r.Group)))
+            {
+                var sql = "select Name, Icon FROM [dbo].[SiteNav] WHERE Name in @names";
+                var names = siteNavMap.Values.ToList();
+                Dictionary<string, string> iconMap = Company.Query<(string Name, string Icon)>(sql, new { names }).ToDictionary(t => t.Name, t => t.Icon);
+
+                foreach (var r in results.Where(res => res.MissingIcon() && iconMap.ContainsKey(siteNavMap[res.Group])))
+                {
+                    r.Icon = iconMap[siteNavMap[r.Group]];
+                }
+            }
+
+            //Assign default icon to any result missing at this point
+            foreach (var r in results.Where(res => res.MissingIcon()))
+            {
+                r.Icon = "fa-circle-o";
+            }
         }
 
-        private async Task AugmentResult(TypeaheadResult result)
+        private async Task AppendPaths(IEnumerable<TypeaheadResult> results)
         {
-            AddIcon(result);
-            await AddAssetPath(result);
+            Dictionary<Guid, List<PathComponent>> paths = await AssetRepository.GetAssetPathComponents(results.Select(r => r.Uid ?? Guid.Empty).ToList());
+            foreach(var r in results.Where(r => r.Uid.HasValue))
+            {
+                Guid uid = r.Uid ?? Guid.Empty;
+                if (paths.ContainsKey(uid))
+                    r.AssetPath = paths[uid];
+            }
         }
 
-        private async Task AugmentResult(IndexResult result)
+        private async Task AugmentResults(IEnumerable<TypeaheadResult> results)
         {
-            await AugmentResult(result as TypeaheadResult);
-            if (result.Uid.HasValue && result.Uid.Value != Guid.Empty)
+            await AppendIcons(results);
+            await AppendPaths(results);
+        }
+
+        private async Task AugmentResults(IEnumerable<IndexResult> results)
+        {
+            await AugmentResults(results as IEnumerable<TypeaheadResult>);
+
+            //Only get search fields for asset types that have any
+            var sql = @"Select at.uid
+            FROM assettype at
+            INNER JOIN @uids U on U.Uid = AT.Uid
+            WHERE exists (select 1 from fieldtype ft where ft.AssetTypeID = at.id and ft.SearchAddToResult = 1)";
+            List<Guid> assetTypeUidWithFields = Company.Query<Guid>(sql, new
+            {
+                uids = results.Where(r => r.AssetTypeUid != null).Select(r => r.AssetTypeUid.ToString()).Distinct().AsTableValuedParameter(
+                        "dbo.UidTable",
+                        new List<string>() { "Uid" })
+            }).ToList();
+
+            foreach (var result in results.Where(r => r.Uid.HasValue && r.Uid.Value != Guid.Empty && assetTypeUidWithFields.Contains(r.AssetTypeUid ?? Guid.Empty)))
             {
                 result.Fields = await AssetRepository.GetAssetSearchFields(result.Uid ?? Guid.Empty);
-            }
-        }
-
-        private void AddIcon(TypeaheadResult result)
-        {
-            string icon = GetIcon(result.AssetTypeUid, result.Group);
-            if(icon.Substring(0, 3) == "fa-")
-            {
-                result.Icon = icon;
-            } else
-            {
-                result.Icon = null;
-                result.ImageUrl = icon;
-            }
-        }
-
-        private async Task AddAssetPath(TypeaheadResult result)
-        {
-            if(result.Uid.HasValue && result.Uid.Value != Guid.Empty)
-            {
-                result.AssetPath = await AssetRepository.GetAssetPath(result.Uid ?? Guid.Empty);
             }
         }
 

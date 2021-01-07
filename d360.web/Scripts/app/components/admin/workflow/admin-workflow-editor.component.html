@@ -37,7 +37,7 @@
             <div class="FieldName">
                 Object Type
             </div>
-            <div>
+            <div class="d3s-type-dropdown">
                 <p-dropdown [options]="workflowObjectTypes"
                             [ngModel]="selectedObjectType"
                             (ngModelChange)="selectObjectType($event)"
@@ -51,11 +51,11 @@
                 <div class="FieldName">
                     Issue Object Type
                 </div>
-                <div>
+                <div class="d3s-type-dropdown">
                     <p-dropdown [options]="issueObjectTypes"
                                 [ngModel]="model.Event.IssueObject"
                                 (ngModelChange)="selectIssueObjectType($event)"
-                                [style]="{'width': '95%'}"
+                                [style]="{'width': '95%'}"                                
                                 filterPlaceholder="Choose a value"
                                 [filter]="true">
                     </p-dropdown>
@@ -65,7 +65,7 @@
                 <div class="FieldName">
                     Score Type
                 </div>
-                <div>
+                <div class="d3s-type-dropdown">
                     <p-dropdown [options]="scoreTypes"
                                 [ngModel]="model.Event.ScoreType"
                                 (ngModelChange)="model.Event.ScoreType = $event; validate();"

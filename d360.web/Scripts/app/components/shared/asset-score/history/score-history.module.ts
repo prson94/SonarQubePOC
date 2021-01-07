@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -9,6 +9,7 @@ import { PipesModule } from '../../../../pipes/pipes.module';
 import { ScoreHistoryComponent } from './score-history.component';
 import { CoreModule } from '../../core.module';
 import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from "primeng/tooltip";
 
 @NgModule({
     imports: [
@@ -20,7 +21,8 @@ import { CheckboxModule } from 'primeng/checkbox';
         PipesModule,
         CoreModule,
 
-        CheckboxModule
+        CheckboxModule,
+        TooltipModule
     ],
     declarations: [
         ScoreHistoryComponent
@@ -33,7 +35,8 @@ import { CheckboxModule } from 'primeng/checkbox';
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
             multi: true
-        }
+        },
+        DatePipe
     ]
 })
 export class ScoreHistoryModule { }

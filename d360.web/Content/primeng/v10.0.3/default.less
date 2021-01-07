@@ -405,6 +405,8 @@ p-table .p-paginator {
 .p-dropdown-panel {
     position: absolute;
     height: auto;
+    min-width: 100%;
+    max-width: 50vw;
 }
 
 .p-dropdown-panel .p-dropdown-filter-container {
@@ -825,4 +827,8 @@ a {
         text-indent: -9999999px;
         visibility: hidden;
     }
+}
+
+.p-dropdown-item:not([aria-label]) span, .p-dropdown-item[aria-label=""] span {
+    visibility: hidden !important;
 }

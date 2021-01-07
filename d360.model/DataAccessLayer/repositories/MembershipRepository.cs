@@ -826,6 +826,16 @@ namespace d360.model.DataAccessLayer
 
                                 if (companyResource != null)
                                 {
+                                    //disallow changing the admin flag if the current user is not an admin
+                                    if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator != companyResource.IsAdministrator)
+                                    {
+                                        result.Success = false;
+                                        result.uid = user.uid;
+                                        result.Message += "Non-administrator users cannot update the administrator flag. ";
+                                        results.Add(result);
+                                        continue;
+                                    }
+
                                     companyResource.IsAdministrator = user.IsAdministrator;
                                     companyResource.State = user.State ?? companyResource.State;
 
@@ -834,6 +844,16 @@ namespace d360.model.DataAccessLayer
                             }
                             else
                             {
+                                //disallow creating admin users if the current user is not an admin
+                                if (CompanyContext.CurrentResourceIsAdmin == false && user.IsAdministrator == true)
+                                {
+                                    result.Success = false;
+                                    result.uid = user.uid;
+                                    result.Message += "Non-administrator users cannot update the administrator flag. ";
+                                    results.Add(result);
+                                    continue;
+                                }
+
                                 companyResource = new CompanyResource()
                                 {
                                     ResourceID = (int)user.ResourceID,
@@ -1432,7 +1452,7 @@ order by	q.SortOrder";
                         from 
 	                        Organization O 
 	                        inner join 
-	                        OrganizationType OT on O.OrganizationTypeID=OT.ID and O.AcceptedBy is not null
+	                        OrganizationType OT on O.OrganizationTypeID=OT.ID and O.state = 1
 	                        inner join AssetType AST on AST.Object = 'OrganizationType' and OT.ID=AST.ObjectID and AST.uid =  @organizationTypeUid
 	                        inner join Asset A on A.Object ='Organization' and A.ObjectID = O.ID
 	                        left join 
