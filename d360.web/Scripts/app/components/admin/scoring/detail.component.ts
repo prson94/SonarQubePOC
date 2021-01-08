@@ -108,12 +108,15 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             p.value = p.Uid;
                         });
                         this.screenReferences.paths = options;
+                        this.screenReferences = { ...this.screenReferences };
 
                         this.isMeasureListCommandBarDisabled = !this.allocation.isExternallyCalculated && options.length == 0;
                     });
                 }
                 else {
                     this.isMeasureListCommandBarDisabled = false;
+                    this.screenReferences.paths = [];
+                    this.screenReferences = { ...this.screenReferences };
                 }
             });
 
@@ -347,6 +350,17 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         else
             this.showPassTest = false;
 
+    }
+
+    screenReferencedStillLoading(): boolean {
+        return (
+            !this.screenReferences.fields ||
+            !this.screenReferences.operators ||
+            !this.screenReferences.paths ||
+            !this.screenReferences.predicates ||
+            !this.screenReferences.relationships ||
+            !this.screenReferences.responsibilities
+            );
     }
 
     private save() {
