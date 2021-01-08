@@ -855,4 +855,12 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
         public bool Success { get; set; } = true;
     }
+
+    public class LicenceDetailsModel
+    {
+        public int total { get; set; }
+        public int contributors { get; set; }
+        public int administrators { get; set; }
+
+    }
 }

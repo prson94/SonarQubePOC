@@ -12,6 +12,7 @@ using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -85,7 +86,7 @@ namespace d360.web.Controllers.V2
                             Company.RebuildIndexRequest();
                             break;
                     }
-                    
+
                     return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
                 }
                 else
@@ -227,7 +228,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var response = settings.Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
-   
+
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
@@ -348,7 +349,7 @@ namespace d360.web.Controllers.V2
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
                             clearSetting = true;
-                        
+
                         if (model.IpAddressSetting.Value?.Any() ?? false)
                         {
                             value = "<ips />";
@@ -453,6 +454,10 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("usage"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerConsumes("application/json"), 
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -744,40 +749,89 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("licensing"),
             SwaggerConsumes("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(LicenceDetailsModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+
         ]
         public async Task<IHttpActionResult> GetLicensingDetails()
         {
             try
             {
-                
-                AssetsCountModel assetCount = await _assetRepository.GetAssetsCounts().ConfigureAwait(false);
-                var allusers = Company.GlobalReportingResources.Where(x => x.State == CompanyResourceState.Active && (!x.Email.Contains("@data3sixty.com") && !x.Email.Contains("@infogix.com"))).Count();
-                var allAdminUsers = Company.GlobalReportingResources.Where(x => x.IsAdministrator && x.State == CompanyResourceState.Active && (!x.Email.Contains("@data3sixty.com") && !x.Email.Contains("@infogix.com"))).Count();
-                var contributorSql = @"
-                SELECT count(distinct GR.resourceid)
-                from Asset A
-	                left join reporting.global_resource GR on 1=1
-	                outer apply (
-                            select top 1 * from
-				                 (select PermissionsBitMask from UserAssetPermissions(GR.ResourceID,A.assetTypeID) 
-					                where AssetID = A.ID 
-			                union all 	
-					                select PermissionsBitMask from UserAssetPermissions(GR.ResourceID,A.assetTypeID)
-					                where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
-				                   )Permission(mask)
-                WHERE gr.Email not like '%@infogix.com' 
-	                and gr.Email not like '%@data3sixty.com'  
-	                and gr.State = 1
-	                and	1 = Case 
-		                   when Permission.mask is null then gr.IsAdministrator
-		                   when Permission.mask is not null and Permission.mask & 2 = 2 then 1
-		                   when Permission.mask is null then gr.IsAdministrator
-		                   when Permission.mask is not null and Permission.mask & 4 = 4 then 1
-		                 else 0
-		        end ";
-                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var includedAssetClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.Diagram,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionAttribute,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.Group,
+                    AssetTypeClass.Model,
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Policy,
+                    AssetTypeClass.Reference,
+                    AssetTypeClass.Rule,
+                    AssetTypeClass.TechnicalAsset
+                };
+                var allAssets = await Company.QueryFirstOrDefaultAsync<int>(@"select count(1) from asset a 
+                                                                                inner join assettype att on a.assetTypeId = att.id 
+                                                                                where att.class in @includedClassTypes",
+                                                                            new { includedClassTypes = includedAssetClasses }).ConfigureAwait(false);
+              
+                var allusers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
+                                                                            WHERE gr.Email not like '%@infogix.com'
+                                                                            and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.State = 1").ConfigureAwait(false);
+            
 
-                var model = new { assets = new { count = assetCount.totalNumberOfAssets }, users = new { total = allusers, contributors = contibutorCount, administrators = allAdminUsers } };
+              
+                var allAdminUsers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
+                                                                            WHERE gr.Email not like '%@infogix.com'
+                                                                            and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.State = 1 
+                                                                            and gr.IsAdministrator = 1").ConfigureAwait(false);
+              
+                
+                var contributorSql = @"
+                    DROP TABLE if exists #AssetTypesWithResponsibilities
+                    CREATE TABLE #AssetTypesWithResponsibilities
+                    (
+	                    AssetTypeID int
+                    )
+                    insert into #AssetTypesWithResponsibilities 
+                    SELECT AT.ID from AssetType AT 
+                    left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
+                    left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
+                    left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
+                    inner join Asset A on A.AssetTypeID = AT.ID 
+                    left join [dbo].[ResponsibilityTypeRelationOverrideItem] RTOR on a.Id = RTOR.AssetID
+                    WHERE A.ID = RTOR.AssetID
+
+
+                    SELECT count(*) from reporting.global_resource GR
+	                    where exists (
+		                    SELECT 
+		                    AT.AssetTypeID,
+		                    GR.resourceid,
+		                    Case 
+		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END as Permissionsfound 
+		                    from #AssetTypesWithResponsibilities AT
+			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
+			                    where 1 = Case 
+		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END
+
+                    )   
+                    and gr.Email not like '%@infogix.com' 
+                    and gr.Email not like '%@data3sixty.com'  
+                    and gr.State = 1
+                ";
+              
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = contibutorCount, administrators = allAdminUsers } };
 
 
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
