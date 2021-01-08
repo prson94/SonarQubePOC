@@ -56,6 +56,20 @@ namespace d360.model.DataAccessLayer
                         whereStatements.Add("AL.Uid = @allocationUid");
                         dbArgs.Add("@allocationUid", allocationUid);
                         break;
+                    case "assetuid":
+                        Guid assetUid = Guid.Empty;
+                        Guid.TryParse(kp.Value, out assetUid);
+
+                        if (assetUid == Guid.Empty)
+                        {
+                            error = "Invalid Asset UID specified.";
+                            return null;
+                        }
+
+                        whereStatements.Add("AL.Uid in (select distinct AllocationUid from metrics.score where AssetUid = @assetUid)");
+                        dbArgs.Add("@assetUid", assetUid);
+                        break;
+
                     case "assettypeuid":
                         Guid assetTypeUid = Guid.Empty;
                         Guid.TryParse(kp.Value, out assetTypeUid);

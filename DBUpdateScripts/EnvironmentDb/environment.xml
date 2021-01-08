@@ -53,7 +53,7 @@
 	<include file="scripts/Function.utility.OrderedSplit.xml"/>
 	<include file="scripts/Function.utility.GetObjectObjectIdByUID.xml"/>
 	
-  <!-- Tables (object-based naming) -->
+	<!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
 	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
 	<include file="scripts/Table.analytics.Host.xml"/>
@@ -274,9 +274,7 @@
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
-	
-
-  
+	  
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValue.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetDisplayValueById.xml"/>			<!--Function used for computed column-->
@@ -415,7 +413,7 @@
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetType.xml"/>
-  <include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
+	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.bulkload.BusinessLineage.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
@@ -467,7 +465,7 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
-  <include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
@@ -477,6 +475,7 @@
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
 	<include file="scripts/Procedure.lineage.GetByObject.xml"/>
+	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>

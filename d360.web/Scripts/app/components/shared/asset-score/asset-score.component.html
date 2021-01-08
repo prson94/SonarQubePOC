@@ -19,11 +19,10 @@
                                             <i *ngIf="item._isCollapsed" class="fa fa-chevron-circle-down" (click)="item._isCollapsed = !item._isCollapsed;saveState();"></i>
                                         </ng-container>
                                     </div>
-
                                     <div class="score-name">
                                         <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
                                         <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
-                                        <div class="score-date">
+                                        <div>
                                             Effective
                                             {{item.EffectiveDate | utcDate | date:'shortDate'}} to
                                             <ng-container *ngIf="item.EndDate">
@@ -33,15 +32,15 @@
                                         </div>
                                     </div>
                                     <div *ngIf="!isExternallyCalculated" class="score-badges big-badges">
-                                        <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                        <span pTooltip="{{'Measure Score = ' + getAsPrecentage(item._adjustedWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                            <ig-badge [variant]="item._badgeStyle" [text]="getAsPrecentage(item._adjustedWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                         </span>
-                                        <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                            <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item.AdjustedMaxWeight)"></ig-badge>
+                                        <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(item._adjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                            <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(item._adjustedMaxWeight)"></ig-badge>
                                         </span>
                                     </div>
                                     <div *ngIf="isExternallyCalculated" class="score-badges big-badges">
-                                        <ig-badge [variant]="item._badgeStyle" [text]="getAsDQBadgeText(item)"></ig-badge>
+                                        <ig-badge [variant]="getAsExternalBadgeStyle(item)" [text]="getAsExternalBadgeText(item)"></ig-badge>
                                     </div>
                                 </div>
                                 <ng-container *ngIf="item._isCollapsed && item.Measures && item.Measures.length > 0">
@@ -52,7 +51,7 @@
                                             <div class="score-name">
                                                 <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
                                                 <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
-                                                <div class="score-date">
+                                                <div>
                                                     Effective
                                                     {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
                                                     <ng-container *ngIf="subItem.EndDate">
@@ -62,11 +61,11 @@
                                                 </div>
                                             </div>
                                             <div class="score-badges">
-                                                <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._finalScore)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                    <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._finalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                                <span pTooltip="{{'Measure Score = ' + getAsPrecentage(subItem._adjustedWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                    <ig-badge [variant]="subItem._badgeStyle" [text]="getAsPrecentage(subItem._adjustedWeight)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
                                                 </span>
-                                                <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem.AdjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
-                                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem.AdjustedMaxWeight)"></ig-badge>
+                                                <span pTooltip="{{'Maximum possible score for measure = measure weight = ' + getAsPrecentage(subItem._adjustedMaxWeight)}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">
+                                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(subItem._adjustedMaxWeight)"></ig-badge>
                                                 </span>
                                             </div>
                                         </div>
@@ -75,12 +74,12 @@
                             </ng-container>
                         </div>
 
-                            <div *ngIf="!isExternallyCalculated" class="total-score-data">
-                                <div class="score-badges big-badges">
-                                    <ig-badge [variant]="this.totalScoreStyle" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
-                                    <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
-                                </div>
+                        <div *ngIf="!isExternallyCalculated" class="total-score-data">
+                            <div class="score-badges big-badges">
+                                <ig-badge [variant]="totalScoreBadgeStyle" [text]="getAsPrecentage(this.totalScore)"></ig-badge>&nbsp;&nbsp;/&nbsp;&nbsp;
+                                <ig-badge [variant]="'emphasis'" [text]="getAsPrecentage(1)"></ig-badge>
                             </div>
+                        </div>
 
                         <ng-template #emptyMessage>
                             <div class="scorecards-container">
@@ -93,9 +92,8 @@
                 </div>
             </ng-container>
         </div>
-
     </div>
-    <div class="score-right-content">
+    <div class="col s4 no-margin no-padding">
         <div class="card-box" [style.height.px]="panelHeight">
             <div class="button-group show-multiple">
                 <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
@@ -104,16 +102,16 @@
             </div>
             <div [hidden]="!(activeTab=='History')">
                 <score-history #scoreHistory
-                               [selectedPoint]="selectedPoint"
-                               [assetUid]="uid"
-                               [scoreType]="selectedScoreType"
-                               [scoreDate]="scoreDate"
-                               [isExternallyCalculated]="isExternallyCalculated"
-                               (datePointChanged)="dateChanged($event)"
-                               (measurePointsChanged)="measurePoints=$event"></score-history>
+                                [selectedPoint]="selectedPoint"
+                                [assetUid]="uid"
+                                [scoreType]="selectedScoreType"
+                                [scoreDate]="scoreDate"
+                                [isExternallyCalculated]="isExternallyCalculated"
+                                (datePointChanged)="dateChanged($event)"
+                                (measurePointsChanged)="measurePoints=$event"></score-history>
             </div>
             <div [hidden]="!(activeTab=='Calculation')">
-                <score-calculation [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
+                <score-calculation [scoreType]="selectedScoreType" [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
                 <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
@@ -139,9 +137,6 @@
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
                         (onChange)="onScorePointChange($event)">
-                <ng-template let-score pTemplate="header">
-                    adadsas
-                </ng-template>
                 <ng-template let-score pTemplate="selectedItem">
                     {{score.value.EffectiveDate | utcDate | date:'shortDate'}} to
                     <ng-container *ngIf="score.value.EndDate">

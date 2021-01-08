@@ -43,9 +43,9 @@ namespace d360.core.entities.Metric
         /// <summary>
         /// Used for data quality measures when the score allocation is not threshold-based. 
         /// We use this value to apply to the adjustedmaxweight in order to get a percentage 
-        /// of that to then contirubute towards the score.
+        /// of that to then contribute towards the score.
         /// </summary>
-        [IgnoreDataMember, NotMapped]
-        public float? OverrideAdjustmentPercentage { get; set; }
+        [IgnoreDataMember]
+        public float? DecimalValue { get; set; }
     }
 }
