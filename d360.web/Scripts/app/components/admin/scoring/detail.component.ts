@@ -123,27 +123,30 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             });
 
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe(f => {
-                //spread operator is used for change detection as assing value wont trigger they change detection we need to format the pass test section
-                this.screenReferences.fields = [...f];
+                //spread operator is used for change detection as adding value wont trigger the change detection we need to format the pass test section.
+                this.screenReferences.fields = f;
+                this.screenReferences = { ...this.screenReferences };
             });
 
             this.settingsService.getOperators().subscribe(o => {
-                this.screenReferences.operators = [...o];
+                this.screenReferences.operators = o;
+                this.screenReferences = { ...this.screenReferences };
             });
 
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-                    this.screenReferences.responsibilities = [...data];
+                    this.screenReferences.responsibilities = data;
+                    this.screenReferences = { ...this.screenReferences };
                 }
             });
 
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
-
                     this.screenReferences.relationships = [...data];
                     this.screenReferences.predicates = data.map(x => {
                         return x.Predicate;
                     });
+                    this.screenReferences = { ...this.screenReferences };
                 }
             });
         });
@@ -343,6 +346,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             this.showPassTest = true
         else
             this.showPassTest = false;
+
     }
 
     private save() {
