@@ -14,6 +14,7 @@ using d360.core.entities;
 using d360.core;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1462,6 +1463,65 @@ order by	q.SortOrder";
                         OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
             return (await this.CompanyContext.QueryAsync<OrganizationModel>(sql, dbArgs, ApiTimeout)).ToList();
+        }
+
+        public async Task<OrganizationDetailModel> GetOrganizationsDetails(Guid organizationUid)
+        {
+            var dbArgs = new DynamicParameters();
+
+            dbArgs.Add("@organizationUid", organizationUid);
+
+            string @sql = $@"Select 
+                                A.uid, 
+                                O.Name, 
+                                R.uid as AcceptedBy, 
+                                OD.AcceptedByName as AcceptedByUserName, 
+                                O.DateAccepted as AcceptedOn,
+                                O.AdministratorEmail,
+                                JSON_QUERY((
+                                    select 
+		                                CONCAT('[""',STRING_AGG(STRING_ESCAPE(cast([uid] as nvarchar(36)),'JSON'), '"",""'),'""]')  
+                                    from 
+		                                reporting.Global_resource U 
+		                                inner join OrganizationResource ORes on U.ResourceID=ORes.ResourceID and ORes.OrganizationID = O.ID
+                                )) as Users,
+                                JSON_QUERY((
+                                    select 
+                                        CONCAT('[""',STRING_AGG(STRING_ESCAPE([Domain],'JSON'), '"",""'),'""]')  		                                 
+	                                from 
+		                                OrganizationDomain D 
+	                                where 
+		                                D.OrganizationID = O.ID						
+                                )) as [Domains],
+                                JSON_QUERY((
+                                    select 
+                                        CONCAT('[""',STRING_AGG(STRING_ESCAPE([Email],'JSON'), '"",""'),'""]')  			                                 
+	                                from 
+		                                OrganizationInvitation I 
+	                                where 
+		                                I.OrganizationID = O.ID						
+                                )) as Invitations
+                                from 
+                                Asset A 
+                                inner join Organization O on A.UID = @organizationUid and A.Object ='{SystemObjects.Organization.ToString()}' and A.ObjectID = O.ID and O.state = 1
+                                inner join OrganizationDetail OD on O.ID = OD.ID 
+                                left join 
+	                            reporting.Global_Resource R on R.ResourceID = O.acceptedBy
+                        for Json Path, WITHOUT_ARRAY_WRAPPER";
+
+            var jsonString = await this.CompanyContext.QueryFirstOrDefaultAsync<string>(sql, dbArgs, ApiTimeout);
+            
+            if(string.IsNullOrEmpty(jsonString))
+            {
+                return null;
+            }
+
+            var models = JObject.Parse(jsonString).ToObject<OrganizationDetailModel>();
+
+            models.Domains = models.Domains.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            models.Users = models.Users.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            models.Invitations = models.Invitations.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            return models;
         }
     }
 }
