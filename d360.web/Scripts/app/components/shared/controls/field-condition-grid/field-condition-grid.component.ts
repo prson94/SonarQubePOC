@@ -197,11 +197,11 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         this.formGroup.addControl(this.conditionPrefix + 'option_' + hash.hash, new FormControl(''));
         this.formGroup.addControl(this.conditionPrefix + 'condition_' + hash.hash, new FormControl(''));
         if (type == "date" || type == "date") {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value), [Validators.maxLength(150)]));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2), [Validators.maxLength(150)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl(new Date(hash.value), [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl(new Date(hash.value2), [Validators.maxLength(250)]));
         } else {
-            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl('', [Validators.maxLength(150)]));
-            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl('', [Validators.maxLength(150)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_1_' + hash.hash, new FormControl('', [Validators.maxLength(250)]));
+            this.formGroup.addControl(this.conditionPrefix + 'value_2_' + hash.hash, new FormControl('', [Validators.maxLength(250)]));
         }
     }
 
