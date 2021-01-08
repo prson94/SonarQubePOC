@@ -1239,6 +1239,41 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
 
+        /// <summary>
+        /// Gets details about a single organization.
+        /// </summary>
+        /// <param name="organizationUid">Uid of the organization</param>
+        [
+             HttpGet,
+             MapToApiVersion("2.0"),
+             Route("organization/{organizationUid:Guid}"),
+             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+             SwaggerResponse(HttpStatusCode.OK, "Gets details about a single organization.", typeof(List<OrganizationDetailModel>)),
+             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid"),
+             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
+             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetOrganizationsDetails(Guid organizationUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                        
+            try
+            {
+                OrganizationDetailModel organizationDetails = await membershipRepository.GetOrganizationsDetails(organizationUid);
+                if (organizationDetails == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid", "Invalid Organization Uid provided"));
+                }
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizationDetails)));
+            }            
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
         {
             List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();

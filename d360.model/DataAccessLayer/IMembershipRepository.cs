@@ -22,5 +22,6 @@ namespace d360.model.DataAccessLayer
         List<GroupResponseResult> AddGroups(ApiExecution execution, List<UpdateGroupModel> groups);
 
         Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<OrganizationDetailModel> GetOrganizationsDetails(Guid organizationUid);
     }
 }
