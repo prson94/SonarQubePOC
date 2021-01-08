@@ -62,7 +62,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                     this.fields = r.filter(x => x.Type != "JsonElement");//Exclude Json Element Fields
                 }),
                 map(() => {
-
                     if (_.isEmpty(this.fieldUpdate.Field)) {
                         this.fieldUpdate.Field = [];
                     } else if (this.fieldUpdate.Field.length == null) {
@@ -125,6 +124,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return 'date';
             case 'Html':
                 return 'html';
+            case 'Link':
+                return 'link';
             case 'Text':
             default:
                 return 'text';
@@ -527,7 +528,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
 
         var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
-
         switch (fieldType) {
             case 'Lookup':
                 var lookupField = field.LookupObjectType + '|' + field.LookupObjectID;
@@ -572,6 +572,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
             case 'Html':
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'html' || f['@type'] == 'text');
+            case 'Link':
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'link');
             default:
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
         }

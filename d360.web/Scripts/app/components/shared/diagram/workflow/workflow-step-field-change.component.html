@@ -76,6 +76,12 @@
                             <p-editor [(ngModel)]="selectedField['@Value']" #ed>
                             </p-editor>
                         </div>
+                        <div *ngIf="field.Type == 'Link'">
+                            <input [(ngModel)]="selectedField['@Value']" style="width: 95%;" type="text">
+                            <div>(Link Name)</div>
+                            <input [(ngModel)]="selectedField['@Value']" style="width: 95%;" type="text">
+                            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                        </div>
                         <div *ngIf="field.Type == 'Text'">
                             <input type="text" style="width: 95%" [(ngModel)]="selectedField['@Value']" />
                         </div>
