@@ -18,7 +18,11 @@
 
 export class GalleryDropDownComponent implements OnInit {
     properties: Array<any>;
-    sampleUsage: string = '<input igInput type="text" name="name" />';
+    sampleUsage: string = `<p-dropdown igDropdown
+                                igSize="small"
+                                [appendTo]="'body'"
+                                [(ngModel)]="modelVar"
+                                [options]="optionsVar"></p-dropdown>`;
 
     ngOnInit(): void {
         this.properties = new Array();
