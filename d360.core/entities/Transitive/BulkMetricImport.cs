@@ -88,6 +88,9 @@ namespace d360.core.entities
         public bool? Value { get; set; }
 
         [DataMember]
+        public float? DecimalValue { get; set; }
+
+        [DataMember]
         public ScoreType ScoreType { get; set; }
 
         [DataMember]

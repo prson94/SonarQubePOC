@@ -873,25 +873,6 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 
-
-        /// <summary>
-        /// Get the score history.
-        /// </summary>
-        /// <param name="assetUid">The public identifier for the asset.</param>
-        /// <returns>The score types for a given an asset Uid.</returns>
-        [
-            HttpGet,
-            Route("ScoreTypes/{assetUid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the score types given an asset Uid.", typeof(ConfirmResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public IHttpActionResult GetScoreTypes(Guid assetUid)
-        {
-            var model = MetricsRepository.GetScoreTypesForAsset(assetUid);
-            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
-        }
-
         /// <summary>
         /// Gets the data quality results for a rule
         /// </summary>
@@ -1570,12 +1551,20 @@ namespace d360.web.Controllers.V2
                   string.IsNullOrEmpty(al.OverrideName)
                   ).FirstOrDefault();
 
-                var results = Company.Query<GraphPoints>(@"select [EffectiveDate]
+                List<GraphPoints> results;
+
+                if (allocation == null) 
+                {
+                    results = new List<GraphPoints>();
+                }
+                else
+                {
+                    results = Company.Query<GraphPoints>(@"select [EffectiveDate]
       ,[Value]
   from [metrics].[Score]
   where assetuid = @assetUid and AllocationUid = @allocationUid
   order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
-
+                }
 
                 List<GraphPoints> allPoints = new List<GraphPoints>();
                 foreach (var item in results)
@@ -1590,37 +1579,37 @@ namespace d360.web.Controllers.V2
                             var point = new GraphPoints();
                             point.key = measure.Uid.ToString();
                             point.EffectiveDate = item.EffectiveDate;
-                            point.Value = measure.AdjustedWeight * (measure.Value.HasValue && measure.Value.Value ? 1 : 0);
+                            point.Value = measure.AdjustedWeight;// * (measure.Value.HasValue && measure.Value.Value ? 1 : 0);
                             allPoints.Add(point);
                         }
                         else
                         {
-                            var maxWeight = measure.AdjustedMaxWeight;
-                            decimal result = 0;
+                            //var maxWeight = measure.AdjustedMaxWeight;
+                            //decimal result = 0;
                             foreach (var m in measure.Measures)
                             {
                                 var point = new GraphPoints();
                                 point.key = m.Uid.ToString();
                                 point.EffectiveDate = item.EffectiveDate;
-                                point.Value = maxWeight * m.AdjustedWeight * (m.Value.HasValue && m.Value.Value ? 1 : 0);
-                                result += point.Value;
+                                point.Value = m.AdjustedWeight;// maxWeight * m.AdjustedWeight * (m.Value.HasValue && m.Value.Value ? 1 : 0);
+                                //result += point.Value;
                                 allPoints.Add(point);
                             }
 
                             var measurePoint = new GraphPoints();
                             measurePoint.key = measure.Uid.ToString();
                             measurePoint.EffectiveDate = item.EffectiveDate;
-                            measurePoint.Value = result;
+                            measurePoint.Value = measure.AdjustedWeight;// result;
                             allPoints.Add(measurePoint);
                         }
                     }
                 }
                 allPoints.AddRange(results);
 
-                allPoints.ForEach(point =>
-                {
-                    point.Value = Math.Round(point.Value, 3);
-                });
+                //allPoints.ForEach(point =>
+                //{
+                //    point.Value = Math.Round(point.Value, 3);
+                //});
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
             }

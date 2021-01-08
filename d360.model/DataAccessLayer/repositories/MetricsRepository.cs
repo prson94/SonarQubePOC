@@ -1008,9 +1008,13 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { model.Uid, effectiveDate }, transac
                     {
                         metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.None;
 
-                        if (!model.Allocation.IsExternallyCalculated)
+                        if (!model.Allocation.IsExternallyCalculated && !model.IsGroup)
                         {
-                            if (!model.IsGroup && model.Definition.Governance != null)
+                            if (model.Definition.DataQuality != null)
+                            {
+                                metricAssetVersion.UpdateFrequency = MetricUpdateFrequency.Weekly;
+                            }
+                            else if (model.Definition.Governance != null)
                             {
                                 if (model.Definition.Governance.Check == MetricGovernanceCheckType.External)
                                 {
@@ -1590,6 +1594,7 @@ from	(
 				SI.AdjustedWeight,
 				SI.AdjustedMaxWeight,
 				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
+                SI.DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType
 		from    metrics.Score S 
@@ -1663,20 +1668,6 @@ order by	R.[Name]";
                 cnn.Open();
 
             return cnn.Query<RootMetricAssetHierarchyModel>(sql, new { allocationUid, assetUid, effectiveDate = effectiveDate.Value }, commandTimeout: ApiTimeout).ToList();
-        }
-
-        public List<dynamic> GetScoreTypesForAsset(Guid assetUid)
-        {
-            var sql = $@"
-select  distinct 
-        ma.scoretype,
-        ma.uid,
-        ma.isexternallycalculated,
-		ma.lowerThreshold,
-		ma.upperThreshold
-from    metrics.Allocation  ma
-		inner join metrics.score ms on ms.AssetUid = @assetUid and ma.Uid = ms.AllocationUid and ma.[state] = 1 order by ma.scoretype";
-            return Company.Query<dynamic>(sql, new { assetUid }, ApiTimeout).ToList();
         }
 
         public List<MetricAssetViewModel> GetMetricStructureByAllocation(Guid allocationUid, List<State> states = null)

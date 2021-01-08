@@ -84,12 +84,16 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     private getDataForKey(key: string): any[] {
         let arr: ScorePoint[] = [];
         try {
+            let measureAdjustmentRatio = 1;
+            if (this.selectedPoint && this.selectedPoint._adjustedGroupWeight) {
+                measureAdjustmentRatio = this.selectedPoint._adjustedGroupWeight;
+            }
             this.allLoadedPoints.forEach(dataSet => {
                 if (dataSet['key'] == key) {
                     (dataSet.data as []).forEach(pt => {
                         var sp = new ScorePoint();
                         sp.EffectiveDate = pt['EffectiveDate'];
-                        var score = Math.ceil(+pt['Value'] * 1000) / 1000;
+                        var score = Math.ceil(+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
                         sp.Score = Math.round(score * 100 * 10) / 10;
                         arr.push(sp);
                     })
