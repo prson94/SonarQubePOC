@@ -856,11 +856,26 @@ namespace d360.core.entities
         public bool Success { get; set; } = true;
     }
 
+    [DataContract]
     public class LicenceDetailsModel
     {
-        public int total { get; set; }
-        public int contributors { get; set; }
-        public int administrators { get; set; }
-
+        [DataMember]
+        public AssetCountsModel Assets { get; set; }
+        [DataMember]
+        public UserCountModel Users { get; set; }
+    }
+    public class AssetCountsModel
+    {
+        [DataMember]
+        public int Count { get; set; }
+    }
+    public class UserCountModel
+    {
+        [DataMember]
+        public int Total { get; set; }
+        [DataMember]
+        public int Contributors { get; set; }
+        [DataMember]
+        public int Administrators { get; set; }
     }
 }

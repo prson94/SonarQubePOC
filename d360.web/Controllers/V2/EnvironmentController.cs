@@ -742,14 +742,14 @@ namespace d360.web.Controllers.V2
 
         /// <summary>
         /// Retrieves environment licensing info. 
-        /// Only non infogix user are included in these counts.
+        /// Infogix users are excluded from user counts.
         /// </summary>
         /// <returns></returns>
         [
             HttpGet,
             Route("licensing"),
             SwaggerConsumes("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(LicenceDetailsModel)),
+            SwaggerResponse(HttpStatusCode.OK, "License info", typeof(LicenceDetailsModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
@@ -828,10 +828,11 @@ namespace d360.web.Controllers.V2
                     and gr.Email not like '%@infogix.com' 
                     and gr.Email not like '%@data3sixty.com'  
                     and gr.State = 1
+                    and gr.IsAdministrator = 0
                 ";
               
                 var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
-                var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = contibutorCount, administrators = allAdminUsers } };
+                var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
 
 
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
