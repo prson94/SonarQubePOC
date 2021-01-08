@@ -1173,6 +1173,11 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
+
+        /// <summary>
+        /// Retrive a summary of organizations for a given organization type
+        /// </summary>
+        /// <param name="organizationTypeUid">The uid of the organization type</param>
         [
      HttpGet,
      MapToApiVersion("2.0"),
@@ -1191,7 +1196,12 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));                     
+
+            if (!Company.Any<AssetType>(x => x.uid == organizationTypeUid && x.Object == core.SystemObjects.OrganizationType.ToString()))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid organizationTypeUid provided"));
+            }
 
             var queryParams = Request.GetQueryNameValuePairs();            
 
@@ -1224,6 +1234,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             }
             try {
                 List<OrganizationModel> organizations = await membershipRepository.GetOrganizationsByType(organizationTypeUid, queryParams);
+                
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizations)));
             }           
             catch (FilterExpressionParserException ex)
