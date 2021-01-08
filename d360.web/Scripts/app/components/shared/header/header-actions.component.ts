@@ -120,6 +120,11 @@ export class HeaderActionsComponent {
                         }
                         
                     }
+                    else if (this.currentObject == null) {
+                        if ((this.uri || '').toUpperCase().startsWith('SIDEBAR/') && (this.previousUrl || '').toUpperCase().startsWith('/REFERENCE;REFERENCELISTID')) {
+                            isReferenceUrl = true;
+                        }
+                    }
                 }
 
                 if (this.previousUrl) {
