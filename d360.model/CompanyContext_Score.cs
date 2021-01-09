@@ -230,7 +230,9 @@ from    #InternalMeasures T
 
     update  #InternalMeasures
     set     Message = coalesce(Message, '') + 'Measure does not have a Test Type of External; '
-    where   IsValidCheck = 0;
+    where   IsValidCheck = 0 
+            and IsValidEffectiveDate = 1 
+            and EffectiveDate <= getutcdate();
 
     update  #InternalMeasures
     set     Message = coalesce(Message, '') + 'Invalid measure specified for the date provided; '
