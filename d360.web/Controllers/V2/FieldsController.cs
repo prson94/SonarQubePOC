@@ -67,7 +67,7 @@ namespace d360.web.Controllers.V2
         /// <param name="Name">The API Name to search for.</param>
         /// <param name="FriendlyName">The Friendly Name to search for.</param>
         /// <param name="Type">The data type to search for.</param>
-        /// <param name="_pageSize">The number of results to return per page. The default value is 200.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default value is 250.</param>
         /// <param name="_pageNum">The page number to return results for.</param>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
