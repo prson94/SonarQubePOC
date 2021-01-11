@@ -233,10 +233,13 @@
                             <th>Name</th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-item>
+                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                         <tr [pSelectableRow]="item">
                             <td>
-                                <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
+                                <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
+                                    <input type="radio" [attr.name]="name"
+                                           [checked]="rowIndex == selectedRelationRowIndex" (click)="selectRelationItems(item)">
+                                </div>                               
                                 <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
                             </td>
                             <td>{{item.Text}}</td>

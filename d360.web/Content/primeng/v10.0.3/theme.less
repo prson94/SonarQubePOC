@@ -2652,3 +2652,15 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
     color: @ig-black;
     font-weight: bold;
 }
+.relationTableRadioButton {
+    width: 100%;
+    height: 1.5em;
+
+    [type="radio"]:not(:checked) {
+        color: @ig-grey-t3
+    }
+
+    [type="radio"]:checked {
+        color: #006fc0
+    }
+}
