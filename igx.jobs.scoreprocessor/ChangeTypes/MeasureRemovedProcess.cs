@@ -117,7 +117,7 @@ select ScoreUid from #Scores;", new { measureChangedModel.MetricAssetVersionUid 
 
                     if (list.Count > 0)
                     {
-                        Db.SendScoreEventWithPayload(Info.ExecutionUid, ScoreQueueChangeType.AssetMeasures, list, Info.StartedOn);
+                        Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid);
                     }
                 }
             }

@@ -1711,10 +1711,8 @@ from	IntersectType I
             if (impactedMeasureVersions.Count > 0)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                    createApiExecution: true
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                 );
             }
         }

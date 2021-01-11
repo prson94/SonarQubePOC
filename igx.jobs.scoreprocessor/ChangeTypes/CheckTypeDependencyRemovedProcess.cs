@@ -83,7 +83,7 @@ where   V.Uid in @VersionUids;";
 
                 if (list.Count > 0)
                 {
-                    Db.SendScoreEventWithPayload(Info.ExecutionUid, ScoreQueueChangeType.AssetMeasures, list, Info.StartedOn);
+                    Db.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid);
                 }
             }
         }

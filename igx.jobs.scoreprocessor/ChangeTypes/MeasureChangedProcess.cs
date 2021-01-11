@@ -67,9 +67,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                                 
                                 if (list.Count > 0)
                                 {
-                                    Db.SendScoreEventWithPayload(Info.ExecutionUid, ScoreQueueChangeType.AssetMeasures, list, Info.StartedOn);
+                                    Db.SendContinuingScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, list, Info.ExecutionUid, Info.StartedOn);
                                 }
-
                             }
                         }
                     }

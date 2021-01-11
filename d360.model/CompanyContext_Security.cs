@@ -385,7 +385,7 @@ order by RT.Name", new { id }).AsQueryable();
 
             if (structuredMeasures.Count > 0)
             {
-                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
             }
 
             if (!string.IsNullOrEmpty(ruleExceptionMessages))

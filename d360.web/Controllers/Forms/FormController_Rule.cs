@@ -156,7 +156,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == a.ID).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
                     assetType = null;
                 }
 
@@ -190,7 +190,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == id).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
                     assetType = null;
                 }
 
@@ -234,7 +234,7 @@ namespace d360.web.Controllers
                 var assetType = Company.Filter<AssetType>(i => i.Object == "RuleType" && i.ObjectID == model.ID).FirstOrDefault();
                 if (assetType != null)
                 {
-                    Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
+                    Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { AssetTypeId = assetType.ID });
                     assetType = null;
                 }
 
