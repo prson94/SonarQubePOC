@@ -244,6 +244,10 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         return style;
     }
 
+    round(value: number) {
+        return Math.round(value * 1000) / 1000;
+    }
+
     private loadPoints(isTabChange: boolean = false) {
         this.isDataLoaded = false;
         if (this.uid) {
@@ -276,18 +280,22 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             pb.Measures.forEach(m => {
                                 m._measureSumWeight = pb.AdjustedWeight;
                                 m._adjustedGroupWeight = pb.AdjustedMaxWeight;
-                                m._adjustedWeight = Math.round(m.AdjustedWeight * pb.AdjustedMaxWeight * 1000) / 1000;
-                                m._adjustedMaxWeight = m.AdjustedMaxWeight * pb.AdjustedMaxWeight;
+                                m._adjustedWeight = this.round(m.AdjustedWeight * pb.AdjustedMaxWeight);
+                                m._adjustedMaxWeight = this.round(m.AdjustedMaxWeight * pb.AdjustedMaxWeight);
                                 m._badgeStyle = this.calculateBadgeStyle(selectedAllocation, m.AdjustedWeight / m.AdjustedMaxWeight);
                             });
                         }
 
                         pb._badgeStyle = this.calculateBadgeStyle(selectedAllocation, pb.AdjustedWeight / pb.AdjustedMaxWeight);
-                        pb._adjustedMaxWeight = pb.AdjustedMaxWeight;
-                        pb._adjustedWeight = pb.AdjustedWeight;
+                        pb._adjustedMaxWeight = this.round(pb.AdjustedMaxWeight);
+                        pb._adjustedWeight = this.round(pb.AdjustedWeight);
 
                         this.totalScore += pb._adjustedWeight;
                     });
+
+                    if (this.totalScore >= 0.999) {
+                        this.totalScore = 1;
+                    }
 
                     this.totalScoreBadgeStyle = this.calculateBadgeStyle(selectedAllocation, this.totalScore);
 
