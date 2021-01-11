@@ -79,7 +79,7 @@
                         <div *ngIf="field.Type == 'Link'">
                             <input [(ngModel)]="selectedField['@Value']" style="width: 95%;" type="text">
                             <div>(Link Name)</div>
-                            <input [(ngModel)]="selectedField['@Value']" style="width: 95%;" type="text">
+                            <input [(ngModel)]="selectedField['@Url']" style="width: 95%;" type="text">
                             <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                         </div>
                         <div *ngIf="field.Type == 'Text'">

@@ -132,7 +132,14 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
            return false;
         } 
         for (var i = 0; i < this.fields.length; i++) {
-            if (Array.isArray(this.fields[i].Value)) {
+            var isLink = this.fields[i].FieldType == WorkflowFormFieldType.Link;
+            if (isLink) {
+                let name = this.workflowFormGroup.controls[`inputName_${i}`].value;
+                let url = this.workflowFormGroup.controls[`inputUrl_${i}`].value;
+                var linkString = name + '|' + url;
+                this.fields[i].Value = linkString;
+            }
+            else if (Array.isArray(this.fields[i].Value)) {
                 this.fields[i].Value = this.fields[i].Value.join();
             }
         }

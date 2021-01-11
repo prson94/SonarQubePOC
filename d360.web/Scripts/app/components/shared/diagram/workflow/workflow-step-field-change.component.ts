@@ -6,6 +6,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 import { FormMode } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
+import { FormGroup, FormGroupDirective } from '@angular/forms';
 
 @Component({
     selector: 'd3s-workflow-step-field-change',
@@ -265,7 +266,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 field['@ValueLabel'] = valueLabel == null ? field['@Value'] : valueLabel.label;
             }
 
-        } else {
+        }
+        else if (this.field.Type.toLowerCase() == 'link') {
+            field['@Value'] = field['@Value'] + '|' + field['@Url'];
+        }
+        else {
             delete field['@AppendValue'];
         }
 
