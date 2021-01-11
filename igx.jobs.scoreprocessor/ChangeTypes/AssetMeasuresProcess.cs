@@ -427,6 +427,7 @@ from	metrics.Asset A
                 uniqueAssetCombinations.ForEach(assetEffectiveDate =>
                 {
                     // The local lists below keep track of score items and links to add for a specific score (asset / effective date / allocation combination).
+                    var ignoredAssetScoreItems = new List<ScoreItem>();
                     var assetScoreItems = new List<ScoreItem>();
                     var assetScoreItemLinks = new List<ScoreItemLink>();
                     var assetScoreItemLinksToDelete = new List<ScoreItemLink>();
@@ -560,6 +561,7 @@ from	metrics.Asset A
                                                         else
                                                         {
                                                             scoreItem.Value = true;
+                                                            conditionValidator.ConditionMet = false; // GOV-13324 - Since no rules are linked via path, then this is not really a qualifying measure.
                                                         }
 
                                                         var evidence = rollupPathResults.Select(rp => new DataQualityEvidenceModel
@@ -571,6 +573,12 @@ from	metrics.Asset A
                                                         });
 
                                                         scoreItem.Evidence = JsonConvert.SerializeObject(evidence);
+
+                                                        // GOV-13324 - Keep track of this so we do not add a default below.
+                                                        if (!conditionValidator.ConditionMet)
+                                                        {
+                                                            ignoredAssetScoreItems.Add(scoreItem);
+                                                        }
                                                     }
                                                     catch (Exception ex)
                                                     {
@@ -748,7 +756,7 @@ from	metrics.Asset A
                                             #endregion
                                     }
 
-                                    if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
+                                    if (conditionValidator.ConditionMet && assetVersionCheckObjectTypes.ShouldContinueAnalysis(measure.MetricAssetVersionUid))
                                     { 
                                         // Check to see if we have an existing scoreItem for this recalculated measure result.
                                         var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetVersionUid == measure.MetricAssetVersionUid);
@@ -794,7 +802,10 @@ from	metrics.Asset A
                         allMeasures.ForEach(aM =>
                         {
                             // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
-                            if (!assetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid))
+                            if (
+                                !assetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid)
+                                && !ignoredAssetScoreItems.Any(nI => nI.AssetVersionUid == aM.MetricAssetVersionUid)
+                                )
                             {
                                 if (assetVersionCheckObjectTypes.OkToAddToList(aM.MetricAssetVersionUid))
                                 {
