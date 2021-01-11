@@ -260,7 +260,7 @@
             <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
             <div *ngSwitchCase="'Date'">
                 <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
-            </div>formControlName
+            </div>
             <div *ngSwitchCase="'DateTime'">
                 <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
