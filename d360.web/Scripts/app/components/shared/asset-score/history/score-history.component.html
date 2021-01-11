@@ -75,11 +75,13 @@
                                 <span class="score-text">{{item.Score}}%</span>
                             </ng-container>
                             <ng-container *ngSwitchCase="0">
-                                <div pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
-                                     tooltipPosition="top"
-                                     tooltipStyleClass="ig-tooltip">
+                                <div>
                                     <span class="icon-holder">
                                         <i class="fa fa-square turn"></i>
+                                        <!--Square icon is rotated by 45deg, causing tooltip to appear at wrong position. Adding invisible element to serve as a hitbox element for mouse hover-->
+                                        <span class="score-table-tooltip-hitbox" pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                              tooltipPosition="top"
+                                              tooltipStyleClass="ig-tooltip"></span>
                                     </span>
 
                                     <span class="score-text">{{item.Score}}%</span>

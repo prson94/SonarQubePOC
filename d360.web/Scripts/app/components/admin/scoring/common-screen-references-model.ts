@@ -5,12 +5,12 @@ import { RelationshipType } from "../../../models/relationship.model";
 import { ResponsibilityType } from "../../../models/responsibility-type.model";
 
 export class CommonScreenReferencesModel {
-    fields: MetricFieldTypeViewModel[];
-    operators: OperatorModel[];
+    fields: MetricFieldTypeViewModel[] = [];
+    operators: OperatorModel[] = [];
     paths: MetricPathOptionViewModel[];
-    predicates: Predicate[];
-    relationships: RelationshipType[];
-    responsibilities: ResponsibilityType[];
+    predicates: Predicate[] = [];
+    relationships: RelationshipType[] = [];
+    responsibilities: ResponsibilityType[] = [];
 
     constructor() {
 

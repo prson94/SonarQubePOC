@@ -608,10 +608,10 @@ namespace d360.core.enums
                     result = !fieldValuesNotIn.Intersect(values, new LowercaseStringEqualityComparer()).Any();
                     break;
                 case Operator.NotPopulated:
-                    result = (valueToCompare == null);
+                    result = (string.IsNullOrEmpty(valueToCompare));
                     break;
                 case Operator.Populated:
-                    result = (valueToCompare != null);
+                    result = (!string.IsNullOrEmpty(valueToCompare));
                     break;
                 case Operator.StartsWith:
                     result = (valueToCompare ?? "").StartsWith(values[0], StringComparison.OrdinalIgnoreCase);

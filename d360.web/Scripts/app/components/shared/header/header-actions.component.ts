@@ -96,14 +96,46 @@ export class HeaderActionsComponent {
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
                 let isSearchUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_SEARCH_ROOT.toUpperCase());
 
+                let isReferenceUrl = false;
+                isReferenceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_REFERENCE_ROOT.toUpperCase());
+
+                if (!isReferenceUrl)
+                {
+                    if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
+                    {
+                        if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESPONSIBILITIES_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_WORKFLOW_MONITOR_ROOT.toUpperCase()))
+                            ||
+                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_AUDIT_ROOT.toUpperCase()))
+                        )
+                        {
+                            isReferenceUrl = true;
+                        }
+                        
+                    }
+                    else if (this.currentObject == null) {
+                        if ((this.uri || '').toUpperCase().startsWith('SIDEBAR/') && (this.previousUrl || '').toUpperCase().startsWith('/REFERENCE;REFERENCELISTID')) {
+                            isReferenceUrl = true;
+                        }
+                    }
+                }
+
                 if (this.previousUrl) {
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 
                 this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !isHomeUrl && !isSearchUrl &&
-                    !this.isAdminUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
-                setTimeout(() => { this.calculateControlWidth();}, 250);
+                    !this.isAdminUrl && !isReferenceUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
+
+                setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
         });
 

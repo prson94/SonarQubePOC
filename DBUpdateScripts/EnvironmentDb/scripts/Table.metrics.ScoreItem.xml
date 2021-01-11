@@ -119,4 +119,26 @@ end
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.ScoreItem-v3.0">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'DecimalValue')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] ADD [DecimalValue] float null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'DecimalValue')
+BEGIN
+	ALTER TABLE [metrics].[ScoreItem] DROP COLUMN [DecimalValue]
+END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

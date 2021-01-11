@@ -8059,11 +8059,22 @@ insert into #Keys WITH(TABLOCK)
                         bulkCopy.WriteToServer(ruleResults);
                     }
 
-                    rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
-select	A.Uid as AssetUid,
-		Re.EffectiveDate,
+                rawMeasures = Connection.Query<RuleResultChangedRawModel>(@"
+drop table if exists #Combos;
+select	distinct
+		Ma.AllocationUid,
+		A.Uid as AssetUid,
+		cast(Re.EffectiveDate as date) as EffectiveDate,
 		Ma.Uid as MetricAssetUid,
-		Mver.Uid as MetricAssetVersionUid
+		Mver.Uid as MetricAssetVersionUid,
+		case Mver.UpdateFrequency
+			when 2 then dateadd(d, 2, Re.EffectiveDate)
+			when 4 then dateadd(d, 1, dateadd(m, 1, Re.EffectiveDate))
+			when 5 then dateadd(d, 1, dateadd(q, 1, Re.EffectiveDate))
+			when 6 then dateadd(d, 1, dateadd(yy, 1, Re.EffectiveDate))
+			else dateadd(d, 8, Re.EffectiveDate)
+		end ResultsValidUntil
+into	#Combos
 from	AssetResult Re,
 		AssetResultEdge E,
 		graph.AssetNode Ea,
@@ -8077,18 +8088,37 @@ from	AssetResult Re,
 		Asset A
 where	match(Ea-(E)->Re)
 		and E.Class = 2
+		and Ma.IsGroup = 0
 		and Seg.AssetTypeID = Ea.AssetTypeID
 		and Rol.Uid = Seg.RollupPathUid
 		and VerRol.RollupPathUid = Rol.Uid
 		and Mver.Uid = VerRol.AssetVersionUid
+and (
+		(Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate >= Re.EffectiveDate)
+		or (Mver.EffectiveDate <= Re.EffectiveDate and Mver.EffectiveEndDate is null)
+	)
 		and Ma.Uid = Mver.AssetUid
 		and Mal.Uid = Ma.AllocationUid
 		and Mal.ScoreType = 2
 		and Mal.IsExternallyCalculated = 0
 		and T.Uid = Mal.AssetTypeUid
 		and A.AssetTypeID = T.ID
-        and Re.Uid in (select RuleResultUid from #RuleResults)", transaction: trans).ToList();
-                }
+        and Re.Uid in (select RuleResultUid from #RuleResults);
+
+select	AssetUid,
+		EffectiveDate,
+		MetricAssetUid,
+		MetricAssetVersionUid
+from	#Combos
+union
+select	C.AssetUid,
+		S.EffectiveDate,
+		C.MetricAssetUid,
+		C.MetricAssetVersionUid
+from	#Combos C
+		inner join metrics.Score S on S.AssetUid = C.AssetUid and S.AllocationUid = C.AllocationUid and S.EffectiveDate > C.EffectiveDate and S.EffectiveDate <= C.ResultsValidUntil", 
+        transaction: trans).ToList();
+            }
 
                 var structuredMeasures = rawMeasures
                     .GroupBy(m => new { m.AssetUid, m.EffectiveDate })

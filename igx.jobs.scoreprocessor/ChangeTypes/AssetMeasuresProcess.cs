@@ -268,6 +268,7 @@ select	Al.AllocationUid,
 		V.MatchConditionsOnly,
 		V.[Definition],
         V.EffectiveEndDate,
+        V.UpdateFrequency,
 		(
 			select	C.Uid as ConditionUid,
 					C.MatchType,
@@ -403,6 +404,7 @@ from	metrics.Asset A
                     }
                 };
 
+                var dqMeasureQueryLibrary = new List<DataQualityMeasureQueryModel>();
                 var scoreResults = new List<Score>();
                 var scoreItemResults = new List<ScoreItem>();
                 var uniqueAssetCombinations = models
@@ -427,7 +429,7 @@ from	metrics.Asset A
                     var assetFields = fields.Where(f => f.Assetuid == assetEffectiveDate.AssetUid).ToList(); //company.Query<FieldDetail>("select F.* from FieldDetail F inner join Asset A on A.ID = F.AssetID and A.Uid = @AssetUid", new { assetEffectiveDate.AssetUid }).ToList();
                     var previousScoreItems = allPreviousScoreItems.Where(p => p.AssetUid == assetEffectiveDate.AssetUid && p.EffectiveDate.Date <= assetEffectiveDate.EffectiveDate.Date).ToList();
 
-                    providedMeasureResults.ForEach(async n =>
+                    providedMeasureResults.ForEach(n =>
                     {
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
                         if (measure != null)
@@ -457,17 +459,16 @@ from	metrics.Asset A
                                             #region
                                             var dqDefinition = definition.DataQuality;
                                             // Do something with rollups here.
-                                            if (measure.RollupPath == null)
+                                            if (measure.RollupPath == null || dqDefinition == null)
                                             {
+                                                var error = "";
+                                                error += (measure.RollupPath == null) ? "Rollup Path is invalid. An asset type or relationship type may have been removed. " : "";
+                                                error += (dqDefinition == null) ? "Measure definition is invalid. Please check and re-save the measure definition, and try again." : "";
                                                 scoreItem.Value = false;
-                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = "Rollup Path is invalid. An asset type or relationship type may have been removed." });
+                                                scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = true, ErrorMessage = error });
                                             }
                                             else
                                             {
-                                                var columnSql = "select ROW_NUMBER() over (partition by RE2.$from_id, RE1.$from_id order by R.UpdatedOn desc) as RowNumber, R.Uid, R.PassFraction ";
-                                                var tableSql = "from ";
-                                                var whereSql = "";
-                                                var matchQuery = "";
                                                 if (measure.RollupPath.SegmentLinks == null)
                                                 {
                                                     scoreItem.Value = false;
@@ -475,74 +476,78 @@ from	metrics.Asset A
                                                 }
                                                 else
                                                 {
-                                                    int whereAssetTypePosition = 0;
-                                                    measure.RollupPath.SegmentLinks.ForEach(s =>
+                                                    var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == measure.RollupPath.AssetVersionRollupPathUid);
+                                                    if (dqQueryDetail == null)
                                                     {
-                                                        var tIntersect = $"E{s.IntersectTypeID}_{s.StartPosition}_{s.EndPosition}";
-                                                        var tStart = $"N{s.StartAssetTypeID}_{s.StartPosition}";
-                                                        var tEnd = $"N{s.EndAssetTypeID}_{s.EndPosition}";
-                                                        if (s.PredicateType == PredicateType.Evaluation)    // This is the last relationship in the chain.
-                                                        {
-                                                            matchQuery += $"<-({tIntersect})-{tEnd} AND  {tStart}-(RE2)->R<-(RE1)-{tEnd}";
-                                                            tableSql += $"graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, dbo.AssetResultEdge RE1, dbo.AssetResultEdge RE2, dbo.AssetResult R ";
-                                                            whereSql += $" and {tEnd}.AssetTypeID = {s.EndAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tIntersect}.PredicateType = {(int)s.PredicateType} ";
-                                                        }
-                                                        else
-                                                        {
-                                                            matchQuery = matchQuery.Replace($"{tStart}", "") +
-                                                                         $"{tStart}-({tIntersect})->{tEnd}";
-
-                                                            tableSql = tableSql.Replace($"graph.AssetNode {tStart}, ", "") +
-                                                                       $"graph.AssetNode {tStart}, graph.AssetEdge {tIntersect}, graph.AssetNode {tEnd}, ";
-
-                                                            whereSql = whereSql.Replace($"and {tStart}.AssetTypeID = {s.StartAssetTypeID}", "") +
-                                                                       $"and {tStart}.AssetTypeID = {s.StartAssetTypeID} and {tIntersect}.IntersectTypeID = {s.IntersectTypeID} and {tEnd}.AssetTypeID = {s.EndAssetTypeID}";
-                                                        }
-
-                                                        if (assetEffectiveDate.AssetTypeId == s.StartAssetTypeID && whereAssetTypePosition == 0)
-                                                        {
-                                                            whereAssetTypePosition = s.StartPosition;
-                                                        }
-                                                        else if (assetEffectiveDate.AssetTypeId == s.EndAssetTypeID && whereAssetTypePosition == 0)
-                                                        {
-                                                            whereAssetTypePosition = s.EndPosition;
-                                                        }
-                                                    });
-                                                    whereSql += $"and N{assetEffectiveDate.AssetTypeId}_{whereAssetTypePosition}.Uid = @AssetUid";
-                                                    if (measure.EffectiveEndDate.HasValue)
-                                                    {
-                                                        whereSql += $"and R.EffectiveDate <= @EffectiveEndDate";
+                                                        dqQueryDetail = BuildDataQualityMeasureQueryModel(measure.AllocationUid, measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                     }
 
-                                                    var sql = $"select	Uid, PassFraction from({ columnSql} {tableSql} where match({matchQuery}) {whereSql}) O where RowNumber = 1";
                                                     try
                                                     {
-                                                        var rollupPathResults = company.Query<RollupPathRuleResult>(sql, new { assetEffectiveDate.AssetUid, measure.EffectiveEndDate }).ToList();
+                                                        DateTime minimumDate = measure.EffectiveDate;
+                                                        switch (measure.UpdateFrequency)
+                                                        {
+                                                            case MetricUpdateFrequency.Annually:
+                                                                minimumDate = minimumDate.AddYears(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Daily:
+                                                                minimumDate = minimumDate.AddDays(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Hourly:
+                                                                minimumDate = minimumDate.AddHours(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Monthly:
+                                                                minimumDate = minimumDate.AddMonths(-1);
+                                                                break;
+                                                            case MetricUpdateFrequency.Quarterly:
+                                                                minimumDate = minimumDate.AddMonths(-3);
+                                                                break;
+                                                            case MetricUpdateFrequency.None:
+                                                            case MetricUpdateFrequency.Weekly:
+                                                                minimumDate = minimumDate.AddDays(-7);
+                                                                break;
+                                                        }
+                                                        var rollupPathResults = GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {
+                                                            rollupPathResults.ForEach(o =>
+                                                            {
+                                                                if (o.StructuredResults.Count > 0)
+                                                                {
+                                                                    // We should only be getting one result back for each row anyway. This is just in case.
+                                                                    o.ResultScoreValue = o.StructuredResults.Select(r => r.PassFraction).Average();
+                                                                }
+                                                                else 
+                                                                {
+                                                                    o.ResultScoreValue = 0;
+                                                                }
+                                                            });
+
                                                             float resultOperationValue = 0;
                                                             switch (dqDefinition.ResultOperation)
                                                             {
                                                                 case MetricRuleResultOperation.Average:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Average();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Average();
                                                                     break;
                                                                 case MetricRuleResultOperation.Maximum:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Max();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Max();
                                                                     break;
                                                                 case MetricRuleResultOperation.Minimum:
-                                                                    resultOperationValue = rollupPathResults.Select(r => r.PassFraction).Min();
+                                                                    resultOperationValue = rollupPathResults.Select(r => r.ResultScoreValue).Min();
                                                                     break;
                                                             }
 
                                                             if (measure.IsThresholdBased)
                                                             {
+                                                                scoreItem.DecimalValue = resultOperationValue;
                                                                 scoreItem.Value = (measure.Threshold <= resultOperationValue);
                                                             }
                                                             else
                                                             {
                                                                 // This will be used when adjusting max and actual weights.
-                                                                scoreItem.OverrideAdjustmentPercentage = resultOperationValue;
+                                                                scoreItem.DecimalValue = resultOperationValue;
                                                             }
                                                         }
                                                         else
@@ -550,7 +555,15 @@ from	metrics.Asset A
                                                             scoreItem.Value = true;
                                                         }
 
-                                                        scoreItem.Evidence = JsonConvert.SerializeObject(new { IsError = false, RuleResults = rollupPathResults.Select(r => r.Uid) });
+                                                        var evidence = rollupPathResults.Select(rp => new DataQualityEvidenceModel
+                                                        {
+                                                            ErrorMessage = null,
+                                                            IsError = false,
+                                                            ResultResultUids = rp.StructuredResults.Select(r => r.Uid).ToList(),
+                                                            RollupPath = rp.StructuredPath
+                                                        });
+
+                                                        scoreItem.Evidence = JsonConvert.SerializeObject(evidence);
                                                     }
                                                     catch (Exception ex)
                                                     {
@@ -735,7 +748,7 @@ from	metrics.Asset A
                                         Guid scoreItemUid = Guid.NewGuid();
                                         if (previousScoreItem != null)
                                         {
-                                            if (previousScoreItem.Value == scoreItem.Value)
+                                            if (previousScoreItem.Value == scoreItem.Value && previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight)
                                             {
                                                 // Since value is the same, just link the existing score item to score.
                                                 scoreItemUid = previousScoreItem.ScoreItemUid;
@@ -802,13 +815,14 @@ from	metrics.Asset A
                                     {
                                         // Look up to see if there is an existing score item for this measure, and use that value.
                                         var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
-                                        var scoreItemUid = Guid.NewGuid();
+                                        var scoreItemUid = Guid.Empty;//.NewGuid();
                                         bool scoreItemValue = false;
                                         if (previousScoreItem != null) 
                                         {
-                                            if (previousScoreItem.MetricAssetVersionUid == aM.MetricAssetVersionUid)
+                                            // If a different measure version, then automatically generate a new guid.
+                                            if (previousScoreItem.MetricAssetVersionUid != aM.MetricAssetVersionUid)
                                             {
-                                                scoreItemUid = previousScoreItem.ScoreItemUid;
+                                                scoreItemUid = Guid.NewGuid();
                                             }
                                             scoreItemValue = previousScoreItem.Value;
                                         }
@@ -824,14 +838,50 @@ from	metrics.Asset A
                                             Value = scoreItemValue,
                                             Uid = scoreItemUid
                                         };
+                                        
                                         assetScoreItems.Add(scoreItem);
-                                        assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                        
+                                        if (scoreItemUid != Guid.Empty) 
+                                        {
+                                            assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                                        }
                                     }                                
                                 }
                             }
                         });
 
                         var score = AdjustScoreItemWeights(allMeasures, assetScoreItems);
+
+                        var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
+
+                        // Now figure out whether to switch out the Uids for any score items that are currently marked as empty guid.
+                        assetScoreItems.ForEach(scoreItem =>
+                        {
+                            if (scoreItem.Uid == Guid.Empty)
+                            {
+                                var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == scoreItem.MetricAssetUid);
+                                var scoreItemUid = Guid.NewGuid();
+                                if (previousScoreItem != null)
+                                {
+                                    if ((previousScoreItem.AdjustedWeight == scoreItem.AdjustedWeight) && (previousScoreItem.AdjustedMaxWeight == scoreItem.AdjustedMaxWeight))
+                                    {
+                                        scoreItem.Uid = previousScoreItem.ScoreItemUid;
+                                    }
+                                    else 
+                                    {
+                                        // Check to see if this is for the same effective date as the most recent existing score.
+                                        scoreItem.Uid = (matchingScore != null && matchingScore.EffectiveDate == assetEffectiveDate.EffectiveDate) 
+                                            ? previousScoreItem.ScoreItemUid 
+                                            : Guid.NewGuid();
+                                    }
+                                }
+                                else 
+                                {
+                                    scoreItem.Uid = Guid.NewGuid();
+                                }
+                                assetScoreItemLinks.Add(new ScoreItemLink { ScoreItemUid = scoreItem.Uid });
+                            }
+                        });
 
                         // Helps to determine if we should create a new score record.
                         var scoreItemHash = string.Join(";", assetScoreItems.OrderBy(i => i.AssetVersionUid).Select(i => $"{i.AssetVersionUid}:{String.Format("{0:#,0.000}", i.AdjustedWeight ?? 0)}"));
@@ -849,7 +899,6 @@ from	metrics.Asset A
 
                         // If there is a matching score in the system, update the Uid 
                         var scoreUid = Guid.NewGuid();
-                        var matchingScore = matchingScores.FirstOrDefault(s => s.AllocationUid == assetEffectiveDate.AllocationUid && s.AssetUid == assetEffectiveDate.AssetUid);
                         if (matchingScore != null)
                         {
                             if (matchingScore.EffectiveDate == assetEffectiveDate.EffectiveDate)
@@ -941,6 +990,7 @@ from	metrics.Asset A
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                            scoreItems.Columns.Add("DecimalValue", typeof(float));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
                             var scoreItemLinks = new DataTable();
@@ -973,6 +1023,8 @@ from	metrics.Asset A
                                 scoreItemRow["Uid"] = s.Uid;
                                 scoreItemRow["UpdatedOn"] = s.UpdatedOn;
                                 scoreItemRow["Value"] = s.Value;
+                                if (s.DecimalValue.HasValue)
+                                    scoreItemRow["DecimalValue"] = s.DecimalValue;
                                 if (s.AdjustedWeight.HasValue)
                                     scoreItemRow["AdjustedWeight"] = s.AdjustedWeight.Value;
                                 scoreItemRow["RunDate"] = s.RunDate;
@@ -1035,7 +1087,8 @@ from	metrics.Asset A
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
-	                                AdjustedMaxWeight decimal(5, 3) NULL
+	                                AdjustedMaxWeight decimal(5, 3) NULL,
+                                    DecimalValue float NULL
                                 );
                                 create table #ScoreItemLinks (
                                     ScoreUid uniqueidentifier NOT NULL,
@@ -1068,6 +1121,7 @@ from	metrics.Asset A
                                 bulkCopy.ColumnMappings.Add("Uid", "Uid");
                                 bulkCopy.ColumnMappings.Add("UpdatedOn", "UpdatedOn");
                                 bulkCopy.ColumnMappings.Add("Value", "Value");
+                                bulkCopy.ColumnMappings.Add("DecimalValue", "DecimalValue");
                                 bulkCopy.ColumnMappings.Add("AdjustedWeight", "AdjustedWeight");
                                 bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
                                 bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
@@ -1171,11 +1225,11 @@ where   N.ActualUid is null;", transaction: trans);
                                 "when matched then " +
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
-                                "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.Evidence = S.Evidence, " +
+                                "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
                                 "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (UpdatedOn, Value, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
                             await company.ExecuteAsync(

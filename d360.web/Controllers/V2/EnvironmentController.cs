@@ -434,7 +434,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("operators"),
-            SwaggerConsumes("application/json")
+            SwaggerConsumes("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Gets a list of operators.", typeof(List<OperatorInfo>))
         ]
         public async Task<IHttpActionResult> GetOperators()
         {
