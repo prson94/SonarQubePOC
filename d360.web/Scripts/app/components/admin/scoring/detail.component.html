@@ -50,7 +50,7 @@
     <div class="measure-actions" *ngIf="!isLoading">
         <div class="action-box">
             <p-checkbox igCheckbox [(ngModel)]="showDisabled" [binary]="true" label="Show disabled measures" *ngIf="!isMeasureListCommandBarDisabled"></p-checkbox>
-            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure" [disabled]="isMeasureListCommandBarDisabled"></button>
+            <button igButton icon="fa-plus" (click)="add()" class="ig-button-primary" label="Add Measure" [disabled]="isMeasureListCommandBarDisabled || screenReferencedStillLoading()"></button>
         </div>
     </div>
     <div class="measure-heading measure-list">
