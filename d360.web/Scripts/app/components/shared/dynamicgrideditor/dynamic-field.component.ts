@@ -85,7 +85,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private useColorMultiSelect: boolean = false;
     private currentRelationshipLoadedFilter;
-
+    private selectedRelationRowIndex: number = null;
 
     private component_uid: string = '';
     defaultColorOptions: SelectItem[] = [];
@@ -701,6 +701,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                 if (x > -1) {
                     this.relationItems[i] = this.field.Items[x];
+                    this.selectedRelationRowIndex = x;
                 }
             }
 
