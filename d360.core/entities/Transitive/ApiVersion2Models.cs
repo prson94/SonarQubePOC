@@ -860,22 +860,22 @@ namespace d360.core.entities
     public class LicenceDetailsModel
     {
         [DataMember]
-        public AssetCountsModel Assets { get; set; }
+        public AssetCountsModel assets { get; set; }
         [DataMember]
-        public UserCountModel Users { get; set; }
+        public UserCountModel users { get; set; }
     }
     public class AssetCountsModel
     {
         [DataMember]
-        public int Count { get; set; }
+        public int count { get; set; }
     }
     public class UserCountModel
     {
         [DataMember]
-        public int Total { get; set; }
+        public int total { get; set; }
         [DataMember]
-        public int Contributors { get; set; }
+        public int contributors { get; set; }
         [DataMember]
-        public int Administrators { get; set; }
+        public int administrators { get; set; }
     }
 }
