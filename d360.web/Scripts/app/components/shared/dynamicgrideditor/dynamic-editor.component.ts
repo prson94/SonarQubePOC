@@ -543,6 +543,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
 
         }
+
+        //Replace empty string value with null to properly delete field from database and avoid validation parsing errors
+        Object.keys(values).forEach(key => {
+            if (values[key] === '')
+                values[key] = null;
+        })
+
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {
             this.modelChanged.emit({ values: values, fields: this.fields });

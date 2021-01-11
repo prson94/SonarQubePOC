@@ -52,7 +52,7 @@ namespace d360.model.DataAccessLayer
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         Task<dynamic> GetExecutionStatusModel(Guid executionUid, bool includeResults = true);
         List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
-        List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true);
+        List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model, bool validateFields = true, bool nullifyEmptyFields = false);
         Task<SLDocument> GetHierarchyExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool stripHtml);
         Task<dynamic> GetAssetSingle(Guid assetUid);
         Task<List<extensions.IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid);

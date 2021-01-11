@@ -419,7 +419,7 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields);
+                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels, validateFields, true);
                 if (validationRes.Count > 0)
                 {
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
