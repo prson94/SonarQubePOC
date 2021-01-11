@@ -335,7 +335,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
 
     selectionChanged(event:MetricAssetViewModel) {
-        this.selectedMetric = event;
+        this.selectedMetric = { ...event };
 
         if (this.hasConditions(this.selectedMetric))
             this.showConditions = true;
