@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Procedure.graph.AssetBrowser_Initial-v18">
-    <comment>GOV-13177</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Initial-v19">
+    <comment>GOV-13214</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER procedure [graph].[AssetBrowser_Initial]
+create or alter procedure [graph].[AssetBrowser_Initial]
 	@ancestry int, -- 1 = all, 2 = direct-parent, 3 = type-only
 	@uid uniqueidentifier,
 	@resourceId int,
@@ -53,6 +53,7 @@ begin
 	else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 	begin	-- This is lineage
 		-- Get descendants (if any) of the current asset.
+		drop table if exists #directParentAncestryLinks
 		create table #directParentAncestryLinks (ID bigint, lvl int);
 		create clustered index IX_TempdirectParentAncestryLinks_lvl on #directParentAncestryLinks (id,lvl);
 
@@ -88,8 +89,8 @@ begin
 		from		#directParentAncestryLinks 
 		where		lvl > 1;
 
-		--too many descendants to reasonably display on the diagram
-    --set flag and return empty dataset
+		-- too many descendants to reasonably display on the diagram
+		-- set flag and return empty dataset
 		if @descendantCount > @maxLineageDescendants 
 		begin
 			select null;
@@ -102,7 +103,6 @@ begin
 
 		if @ancestry = 2
 		begin
-			
 			declare @directParentLevel int
 			select @directParentLevel = max(lvl)-1 from #directParentAncestryLinks;
 			insert into #ids (ID)
@@ -294,7 +294,48 @@ begin
 		)
 
 		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
-			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h
+			select distinct Salt, Hop, Uid, ID, ParentID, AssetTypeID, 0 from h;
+
+		-- GOV-13214 - Get children that may not be involved in lineage --------------------------------------
+		with h as (
+			select	L.Salt,
+					L.Hop,
+					C.Uid,
+					C.ID,
+					C.AssetTypeID,
+					I.Object,
+					I.ObjectID,
+					A.ID ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	Asset A
+					inner join #hopAssets L on L.ID = A.ID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			union all
+			select	h.Salt,
+					h.Hop,
+					C.Uid,
+					C.ID,
+					C.AssetTypeID,
+					C.Object,
+					C.ObjectID,
+					A.ID as ParentID,
+					I.Subject as ParentObject,
+					I.SubjectID as ParentObjectID
+			from	h
+					inner join Asset A on h.Object = A.Object and h.ObjectID = A.ObjectID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+		)
+
+		insert into #hierarchies (Salt, Hop, Uid, ID, ParentID, AssetTypeID, focal)
+			select	distinct 
+					h.Salt, h.Hop, h.Uid, h.ID, h.ParentID, h.AssetTypeID, 0 
+			from	h
+					left join #hierarchies e on e.Uid = h.Uid and e.Salt = h.Salt
+			where	e.Uid is null--Uid not in (select Uid from #hierarchies)
+		------------------------------------------------------------------------------------------------------
 
 		if not exists (select 1 from #hierarchies)
 		begin
@@ -1526,7 +1567,7 @@ begin
 					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
 					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id ) 
-               ) as a for json path
+               )  as a order by a.responsibilityType for json path
 			) as ownersJson,
 			(
 			select	[predicate], 
@@ -1616,7 +1657,6 @@ begin
 	
 	select @dataLimitReached;
 end
-
 ]]>
 	</rollback>
   </changeSet>
