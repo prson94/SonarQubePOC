@@ -1258,7 +1258,7 @@ namespace d360.model
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
                     asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
-                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);
+                    ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);                    
                     isAssetEdited = true;
                 }
 
@@ -1327,9 +1327,14 @@ namespace d360.model
                     }
                     this.UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
                 }
-
-
             }
+
+            if (asset != null)
+            {
+                asset.UpdatedBy = CurrentResourceID;
+                asset.UpdatedOn = DateTime.UtcNow;
+            }
+
             SaveChanges();
 
             //update asset table to trigger audit                    
