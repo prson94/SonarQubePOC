@@ -779,11 +779,111 @@ from	[Load] L
                                     F.FieldTypeID = FT.ID
                             from    #BulkExecutionField F
                                     inner join AssetType T on T.ID = @atID
-                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] = @maxLevel
+                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] <= @maxLevel
                                     inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                             where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
 
                             delete from #BulkExecutionField where FieldTypeID is null;
+
+
+                            --build model text path from sheet to find existing assets and parent assets
+
+                            drop table if exists #PathFields;
+                            create table #PathFields 
+                            (
+                            ItemNumber int,
+                            ColumnIndex int,
+                            DisplayValue nvarchar(max)
+                            );
+
+                            drop table if exists #PathValues;
+                            create table #PathValues
+                            (
+	                            ItemNumber int,
+	                            FullPath nvarchar(max),
+	                            ParentPath nvarchar(max),
+	                            [Uid] uniqueidentifier,
+	                            ParentUid uniqueidentifier
+                            );
+
+                            insert into #PathFields
+                            select		A.ItemNumber,
+			                            D.ColumnIndex,
+			                            string_agg(coalesce(D.FormattedValue, D.value), '') as DisplayValue
+                            from		#BulkExecutionAsset A
+			                            inner join AssetType T on T.ID = @atID
+			                            outer apply (
+						                            select	TL.value,
+								                            F.FieldValue as FormattedValue,
+								                            F.ColumnIndex,
+								                            F.ItemNumber
+						                            from	string_split(replace(T.DisplayFormat, '{{', ' | '), '|') TF
+								                            cross apply string_split(replace(TF.[value], '}}', '|'), '|') TL
+								                            left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TRIM(TL.Value)
+								                            left join #BulkExecutionField F on F.FieldTypeID = FT.ID
+						                            where	RTRIM(TF.value) <> ''
+								                            and RTRIM(TL.value) <> ''
+						                            ) D
+                            where		A.ItemNumber = D.ItemNumber
+                            group by	A.ItemNumber,
+			                            D.ColumnIndex
+
+                            insert into #PathValues
+                            select		F.ItemNumber, 
+			                            string_agg(F.DisplayValue,'/')  within group (order by F.ColumnIndex asc) as FullPath,
+			                            null as ParentPath,
+			                            null as [Uid],
+			                            null as [ParentUid]
+                            from		#PathFields F
+                            group by	F.ItemNumber;
+
+
+                            update V
+                            set V.ParentPath = P.ParentPath
+                            from #PathValues V
+                            cross apply (
+	                            select	F.ItemNumber, 
+			                            string_agg(F.DisplayValue,'/') within group (order by F.ColumnIndex asc) as ParentPath
+	                            from	#PathFields F
+	                            where	F.ColumnIndex < (select max(ColumnIndex) from #PathFields)
+	                            group by F.ItemNumber
+                            ) P
+                            where P.ItemNumber = V.ItemNumber;
+
+                            update V
+                            set V.Uid = A.UId
+                            from #PathValues V 
+                            inner join Asset A on A.AssetTypeID = @atID
+                            cross apply dbo.GetAssetTextPathById(A.ID, '/') T
+                            where V.FullPath = T.TextPath;
+
+                            update V
+                            set V.ParentUid = A.Uid
+                            from #PathValues V 
+                            inner join Asset A on A.AssetTypeID = @atID
+                            cross apply dbo.GetAssetTextPathById(A.ID, '/') T
+                            where V.ParentPath = T.TextPath;
+
+
+                            update A
+                            set A.AssetUid = P.Uid,
+                            A.ParentUid = P.ParentUid
+                            from #BulkExecutionAsset A
+                            inner join #PathValues P on P.ItemNumber = A.ItemNumber;
+                            
+                            update B
+                            set B.AssetID = A.ID
+                            from #BulkExecutionAsset B
+                            inner join Asset A on A.[uid] = B.AssetUid;
+
+                            --update LoadItem with correct parent uid for API
+						    update L
+							set L.ParentAssetUid = A.ParentUid
+							from LoadItem L
+							inner join #BulkExecutionAsset A on A.ItemNumber = L.RowIndex
+							where L.LoadID = @ID;
+
+
                         end
                         "
                             , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
@@ -830,6 +930,8 @@ from	[Load] L
 
                                 Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
 
+                                
+
                                 update T set T.AssetUid = K.Uid                                  
                                 from #BulkExecutionAsset T                                   
                                 inner join  #AssetActiveKey K on K.ActiveKey = T.ProposedKey; 
@@ -844,7 +946,7 @@ from	[Load] L
                         else
                         {
 
-                            if (intersectTypeId.HasValue && calculateParentHashByUid)
+                            if ((intersectTypeId.HasValue || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
                             {
                                 await Connection.ExecuteAsync(@"
                                 drop table if exists #AssetActiveKey;
@@ -1035,7 +1137,7 @@ from	[Load] L
                         var update = new AssetUpdate();
                         update.ExecutionItemUid = item.ExecutionItemUid;
 
-                        if (parentAssetType != null && item.ParentAssetUid.HasValue)
+                        if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
                             update.ParentUid = item.ParentAssetUid;
 
                         update.Uid = ((Guid)item.AssetUid);
