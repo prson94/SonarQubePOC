@@ -156,4 +156,10 @@ namespace d360.core.entities.Membership
         public List<string> Users { get; set; }
         public List<string> Invitations { get; set; }
     }
+
+    public class ApiKeyDetailModel
+    {
+        public string apikey { get; set; }
+        public string apiSecret { get; set; }
+    }
 }

@@ -1331,5 +1331,65 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             var result = stream.ToArray();
             return result;
         }
+
+        /// <summary>
+        /// Retrieve the current users API credentials
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/apikey"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ApiKeyDetailModel>)),
+        SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetApikey()
+        {
+            var prefix = "Membership.GetApikey => ";
+
+            var showAllUsersAPIKey = false;
+            var settings = Community.GetCompanySettings();
+            if (settings.Any(i => i.Key == "ShowAllUsersAPIKey"))
+            {
+                showAllUsersAPIKey = bool.Parse(settings["ShowAllUsersAPIKey"]);
+            }
+
+
+            if (!Company.CurrentResourceIsAdmin && !showAllUsersAPIKey)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+            }
+
+            try
+            {
+                var resource = Community.GetById<Resource>(_company.CurrentResourceID);
+
+                if (resource is null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information"));
+                };
+
+                var apikeydetail = new ApiKeyDetailModel
+                {
+                    apikey = resource.APIPublicKey, //publickey
+                    apiSecret = resource.APIPrivateKey //privatekey
+                };
+
+                if (apikeydetail.apikey == null || apikeydetail.apiSecret == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information"));
+                }
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apikeydetail)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
     }
 }
