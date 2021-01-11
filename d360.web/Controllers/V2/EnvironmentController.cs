@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
@@ -11,6 +12,7 @@ using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -33,9 +35,11 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         IStorageProvider _storage;
-        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage) : base(community, company)
+        IAssetRepository _assetRepository;
+        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IAssetRepository assetRepository) : base(community, company)
         {
             _storage = storage;
+            _assetRepository = assetRepository;
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
@@ -82,7 +86,7 @@ namespace d360.web.Controllers.V2
                             Company.RebuildIndexRequest();
                             break;
                     }
-                    
+
                     return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
                 }
                 else
@@ -224,7 +228,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var response = settings.Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
-   
+
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
             }
@@ -345,7 +349,7 @@ namespace d360.web.Controllers.V2
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
                             clearSetting = true;
-                        
+
                         if (model.IpAddressSetting.Value?.Any() ?? false)
                         {
                             value = "<ips />";
@@ -451,6 +455,10 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("usage"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerConsumes("application/json"), 
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -727,6 +735,114 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() { {"Endpoint Method", "Environment.GetUsageDetails => "} });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves environment licensing info. 
+        /// Infogix users are excluded from user counts.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("licensing"),
+            SwaggerConsumes("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "License info", typeof(LicenceDetailsModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this information is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+
+        ]
+        public async Task<IHttpActionResult> GetLicensingDetails()
+        {
+            try
+            {
+                var includedAssetClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.Diagram,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionAttribute,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.Group,
+                    AssetTypeClass.Model,
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Policy,
+                    AssetTypeClass.Reference,
+                    AssetTypeClass.Rule,
+                    AssetTypeClass.TechnicalAsset
+                };
+                var allAssets = await Company.QueryFirstOrDefaultAsync<int>(@"select count(1) from asset a 
+                                                                                inner join assettype att on a.assetTypeId = att.id 
+                                                                                where att.class in @includedClassTypes",
+                                                                            new { includedClassTypes = includedAssetClasses }).ConfigureAwait(false);
+              
+                var allusers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
+                                                                            WHERE gr.Email not like '%@infogix.com'
+                                                                            and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.State = 1").ConfigureAwait(false);
+            
+
+              
+                var allAdminUsers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
+                                                                            WHERE gr.Email not like '%@infogix.com'
+                                                                            and gr.Email not like '%@data3sixty.com'
+                                                                            and gr.State = 1 
+                                                                            and gr.IsAdministrator = 1").ConfigureAwait(false);
+              
+                
+                var contributorSql = @"
+                    DROP TABLE if exists #AssetTypesWithResponsibilities
+                    CREATE TABLE #AssetTypesWithResponsibilities
+                    (
+	                    AssetTypeID int
+                    )
+                    insert into #AssetTypesWithResponsibilities 
+                    SELECT AT.ID from AssetType AT 
+                    left join [dbo].[ResponsibilityTypeRelation] RT on AT.Object = RT.ObjectType and RT.ObjectID = AT.ObjectID
+                    left join [dbo].[ResponsibilityTypeRelationRule] RTR on AT.Object = RTR.Object and RTR.ObjectID = AT.ObjectID
+                    left join [dbo].[ResponsibilityRuleResultAsset] RRA on RRA.AssetTypeID = AT.ID
+                    inner join Asset A on A.AssetTypeID = AT.ID 
+                    left join [dbo].[ResponsibilityTypeRelationOverrideItem] RTOR on a.Id = RTOR.AssetID
+                    WHERE A.ID = RTOR.AssetID
+
+
+                    SELECT count(*) from reporting.global_resource GR
+	                    where exists (
+		                    SELECT 
+		                    AT.AssetTypeID,
+		                    GR.resourceid,
+		                    Case 
+		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END as Permissionsfound 
+		                    from #AssetTypesWithResponsibilities AT
+			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
+			                    where 1 = Case 
+		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END
+
+                    )   
+                    and gr.Email not like '%@infogix.com' 
+                    and gr.Email not like '%@data3sixty.com'  
+                    and gr.State = 1
+                    and gr.IsAdministrator = 0
+                ";
+              
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
+
+
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetLicensingDetails => " } });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage)).ConfigureAwait(false);
             }

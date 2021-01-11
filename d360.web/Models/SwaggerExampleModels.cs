@@ -1,7 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.entities.Membership;
-using d360.core.entities.Workflow;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -382,5 +381,4 @@ namespace d360.web.Models
     }
 
     #endregion
-
 }
