@@ -459,6 +459,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.model.setDataProperty(relation, 'disabled', false);
                     this.diagram.model.setDataProperty(relation, 'showLoading', false);
                     this.helper_UpdateDiagramLayout();
+                    this.helper_HighlightPath(null, lastHighlightedPart);
                 }
                 else {
                     relation.disabled = true;
@@ -525,6 +526,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
 
             this.diagram.model.setDataProperty(owner, 'showLoading', true);
+            let lastHighlightedPart = this.highlightedPart;
+
             if (owner.expanded) {
                 this.badge_RemoveDependentNodes(badgeIdentifier, AssetBrowserApiHopDirection.Forward);
                 this.diagram.model.removeArrayItem(node.owners, ix);
@@ -532,6 +535,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(owner, 'expanded', false);
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
                 this.helper_UpdateDiagramLayout();
+                this.helper_HighlightPath(null, lastHighlightedPart);
+
             }
             else {
 
@@ -577,6 +582,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                         this.helper_ParseTranslatedData(response, true, badgeIdentifier);
                         this.helper_SetFilterWindow();
+                        this.helper_HighlightPath(null, lastHighlightedPart);
+
                     });
             }
         }
@@ -1172,6 +1179,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
         try {
+            if (obj == null)
+                return;
+
             this.highlightedPart = obj;
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
