@@ -94,4 +94,26 @@ alter table api.ExecutionAsset DROP COLUMN IF EXISTS UpdateGraph
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet gupta" id="Table.api.ExecutionAsset-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Uid')
+BEGIN
+	create nonclustered index IX_ApiExecutionAsset_Uid on api.ExecutionAsset (Uid asc)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_Uid')
+BEGIN
+drop index if exists IX_ApiExecutionAsset_Uid on api.ExecutionAsset
+END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
