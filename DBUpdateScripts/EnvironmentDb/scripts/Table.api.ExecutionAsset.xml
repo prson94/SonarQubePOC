@@ -94,7 +94,7 @@ alter table api.ExecutionAsset DROP COLUMN IF EXISTS UpdateGraph
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet gupta" id="Table.api.ExecutionAsset-v3">
+  <changeSet author="Puneet gupta" id="Table.api.ExecutionAsset-IX_ApiExecutionAsset_Uid-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
