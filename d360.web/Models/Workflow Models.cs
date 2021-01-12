@@ -14,6 +14,7 @@ namespace d360.web.Models
         list,
         relationshipType,
         html,
+        link,
     }
 
     public class WorkflowFormModelField

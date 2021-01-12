@@ -104,7 +104,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         let assignValidation: boolean = false;
         this.isSetValidatior = true;
         this.fields.forEach(x => {
-            if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
+            if (x.Required && x.FieldType == WorkflowFormFieldType.Link) {
+                assignValidation = true;
+                this.workflowFormGroup.controls[`inputUrl_${count}`].setValidators([Validators.required]);
+                this.workflowFormGroup.controls[`inputUrl_${count}`].updateValueAndValidity();
+            }
+            else if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
                 assignValidation = true;
                 this.workflowFormGroup.controls[`input_${count}`].setValidators([Validators.required]);
                 this.workflowFormGroup.controls[`input_${count}`].updateValueAndValidity();
@@ -132,7 +137,14 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
            return false;
         } 
         for (var i = 0; i < this.fields.length; i++) {
-            if (Array.isArray(this.fields[i].Value)) {
+            var isLink = this.fields[i].FieldType == WorkflowFormFieldType.Link;
+            if (isLink) {
+                let name = this.workflowFormGroup.controls[`inputName_${i}`].value;
+                let url = this.workflowFormGroup.controls[`inputUrl_${i}`].value;
+                var linkString = name + '|' + url;
+                this.fields[i].Value = linkString;
+            }
+            else if (Array.isArray(this.fields[i].Value)) {
                 this.fields[i].Value = this.fields[i].Value.join();
             }
         }

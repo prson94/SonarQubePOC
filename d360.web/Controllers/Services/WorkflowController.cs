@@ -1406,6 +1406,7 @@ order by wi.StartedOn desc";
                 excludedTypes.Add("Html");
 
             excludedTypes.Remove(DataType.JsonElement.ToString());
+            excludedTypes.Remove(DataType.Link.ToString());
 
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
