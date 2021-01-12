@@ -104,7 +104,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         let assignValidation: boolean = false;
         this.isSetValidatior = true;
         this.fields.forEach(x => {
-            if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
+            if (x.Required && x.FieldType == WorkflowFormFieldType.Link) {
+                assignValidation = true;
+                this.workflowFormGroup.controls[`inputUrl_${count}`].setValidators([Validators.required]);
+                this.workflowFormGroup.controls[`inputUrl_${count}`].updateValueAndValidity();
+            }
+            else if (x.Required && x.FieldType != WorkflowFormFieldType.Boolean) {
                 assignValidation = true;
                 this.workflowFormGroup.controls[`input_${count}`].setValidators([Validators.required]);
                 this.workflowFormGroup.controls[`input_${count}`].updateValueAndValidity();
