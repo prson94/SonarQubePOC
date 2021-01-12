@@ -538,7 +538,8 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
+                var governanceRoleReferenceListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), governanceRoleReferenceListUid);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -567,6 +568,18 @@ namespace d360.web.Controllers.V2
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
+
+
+                AssetType governanceRoleRefList = null;
+                if (model.Class == AssetTypeClass.Diagram)
+                {
+                    governanceRoleRefList = Company.AssetTypes.FirstOrDefault(x => x.uid == governanceRoleReferenceListUid);
+                    if (governanceRoleRefList == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"Governance Role Reference List with UID '{governanceRoleReferenceListUid}' does not exist"));
+                    }
+                }
+
 
                 AssetType assetType = null;
                 var nameFriendlyName = "Name";
@@ -610,8 +623,6 @@ namespace d360.web.Controllers.V2
 
                     if (model.Class == AssetTypeClass.Diagram)
                     {
-                        var refListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
-                        var refList = Company.AssetTypes.FirstOrDefault(x => x.uid == refListUid);
                         Company.Add(new FieldType
                         {
                             ObjectID = model.ObjectID,
@@ -625,7 +636,7 @@ namespace d360.web.Controllers.V2
                             Type = DataType.Lookup.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
-                            LookupObjectID = refList.ObjectID,
+                            LookupObjectID = governanceRoleRefList.ObjectID,
                             LookupObjectType = SystemObjects.ReferenceItem.ToString(),
                             UpdatedBy = Company.CurrentResourceID,
                             ShowIfEmpty = true,
