@@ -1443,23 +1443,27 @@ where T.ExecutionId = @executionid;
                             }
                             if (isValueEmptyString)
                             {
-                                success = false;
                                 switch (fieldType.Type)
                                 {
                                     case "Boolean":
                                         errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
+                                        success = false;
                                         break;
                                     case "Date":
                                         errorMessages.Add($"{fieldName} must be a valid date");
+                                        success = false;
                                         break;
                                     case "DateTime":
                                         errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                        success = false;
                                         break;
                                     case "Decimal":
                                         errorMessages.Add($"{fieldName} must be a valid decimal");
+                                        success = false;
                                         break;
                                     case "Number":
                                         errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
+                                        success = false;
                                         break;
                                 }
                             }
