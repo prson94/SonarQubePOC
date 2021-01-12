@@ -42,13 +42,13 @@ ig-date {
 }
 
 
-.ig-date {
+.ig-date, p-calendar .ig-date {
     &.ng-trigger-overlayAnimation {
         z-index: 25000 !important;
     }
 
     .ig-input {
-        width: 150px !important;
+        width: 150px;
         max-width: 100%;
         background: @ig-white;
         height: 32px;
@@ -235,15 +235,15 @@ ig-date {
     }
 
 
-    button.p-button {
+    button.p-button, button.p-button.p-button-icon-only {
         color: @ig-black;
         background: rgba(0,0,0,0.07);
         border-radius: 2px;
         position: absolute;
         right: 3px;
         top: 3px;
-        height: 24px !important;
-        width: 24px !important;
+        height: 24px;
+        width: 24px;
 
         &.p-button-icon-only .p-button-icon-left {
             font-weight: normal !important;
