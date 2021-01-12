@@ -48,7 +48,7 @@ ig-date {
     }
 
     .ig-input {
-        width: 150px;
+        width: 150px !important;
         max-width: 100%;
         background: @ig-white;
         height: 32px;
@@ -160,6 +160,7 @@ ig-date {
 
                     td {
                         border: none;
+                        background: @ig-white;
 
                         &.p-datepicker-today span {
                             border: none !important;
@@ -226,7 +227,6 @@ ig-date {
                                 background: @ig-grey-t4;
                                 border-radius: 2px;
                             }
-                            
                         }
                     }
                 }
@@ -242,8 +242,8 @@ ig-date {
         position: absolute;
         right: 3px;
         top: 3px;
-        height: 24px;
-        width: 24px;
+        height: 24px !important;
+        width: 24px !important;
 
         &.p-button-icon-only .p-button-icon-left {
             font-weight: normal !important;
