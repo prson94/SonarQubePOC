@@ -334,7 +334,7 @@ for json path";
         }
 
         /// <summary>
-        /// Returns all actions types that are defined in Govern.  
+        /// Returns all defined actions types.  
         /// 
         /// </summary>
         /// <returns>A list of actions types</returns>
