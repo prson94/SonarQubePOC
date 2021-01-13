@@ -3090,7 +3090,7 @@ from	IntersectType I
                                             AddMeasurement(metrics, "Building Deletion Tree", sw.ElapsedMilliseconds, 1);
                                             sw.Restart();
                                         }
-                                        catch (Exception ex)
+                                        catch (Exception)
                                         {
                                             if (trans != null)
                                                 trans.Rollback();

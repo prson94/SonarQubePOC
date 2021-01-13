@@ -1184,29 +1184,6 @@
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.woff" />
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
-    <None Include="Content\redactor\redactor-iframe.css">
-      <DependentUpon>redactor-iframe.less</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.min.css">
-      <DependentUpon>redactor-iframe.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.css.map">
-      <DependentUpon>redactor-iframe.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor-iframe.less" />
-    <None Include="Content\redactor\redactor.css.map">
-      <DependentUpon>redactor.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.less" />
-    <None Include="Content\redactor\redactor.css">
-      <DependentUpon>redactor.less</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.min.css">
-      <DependentUpon>redactor.css</DependentUpon>
-    </None>
-    <None Include="Content\redactor\redactor.min.css.gzip">
-      <DependentUpon>redactor.min.css</DependentUpon>
-    </None>
     <Content Include="Content\styles\AssetBrowser.less" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
