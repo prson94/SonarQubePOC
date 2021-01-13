@@ -999,7 +999,7 @@ where   Success is null", transaction: trans);
 
                     trans.Commit();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     trans.Rollback();
                 }   
