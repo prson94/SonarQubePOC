@@ -506,7 +506,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
                     }
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
-                    if (this.form.value[p] != null) {
+                    if (this.form.value[p] != null && this.form.value[p].Value) {
                         this.form.value[p] = this.form.value[p].Value;
                     }
                 }
