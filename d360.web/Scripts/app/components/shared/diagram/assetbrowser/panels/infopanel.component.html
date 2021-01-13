@@ -2,7 +2,7 @@
     <tr class="filter-row" *ngIf="this.asset.AssetTypeClass!='User'">
         <td class="filter-row-label">Path</td>
         <td class="filter-row-control" style="word-break:break-word">
-            {{asset?.Path}}
+            <span [innerHTML]="asset?.Path"></span>
         </td>
     </tr>
     <tr class="filter-row">
