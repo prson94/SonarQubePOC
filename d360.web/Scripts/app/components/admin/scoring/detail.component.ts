@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -66,6 +66,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
         private router: Router,
+        private cdRef: ChangeDetectorRef,
         protected messagesService: MessagesObservableService,
         private metricsService: MetricsService,
         private allocationService: AllocationService,
@@ -117,6 +118,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.isMeasureListCommandBarDisabled = false;
                     this.screenReferences.paths = [];
                     this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
 
@@ -129,17 +131,20 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 //spread operator is used for change detection as adding value wont trigger the change detection we need to format the pass test section.
                 this.screenReferences.fields = f;
                 this.screenReferences = { ...this.screenReferences };
+                this.cdRef.markForCheck();
             });
 
             this.settingsService.getOperators().subscribe(o => {
                 this.screenReferences.operators = o;
                 this.screenReferences = { ...this.screenReferences };
+                this.cdRef.markForCheck();
             });
 
             this.responsibilityService.getAdminResponsibilityTypes(this.assetTypeUid).subscribe((data) => {
                 if (data && data.length) {
                     this.screenReferences.responsibilities = data;
                     this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
 
@@ -150,6 +155,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         return x.Predicate;
                     });
                     this.screenReferences = { ...this.screenReferences };
+                    this.cdRef.markForCheck();
                 }
             });
         });
@@ -166,59 +172,63 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);
-        this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
-            .subscribe(r => {
-                var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
-                r.forEach(x => {
-                    const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
-                    const searchRes: SearchResult = new SearchResult();
-                    searchRes.Name = x.assetTypePath;
-                    searchRes.Url = url;
-                    searchRes.Uid = x.assetTypeUid;
-                    crumb.preLoadedTypeAhead.push(searchRes);
+        if (this.selectedAssetType && this.allocation) {
+            this.setCommonItems(true, this.selectedAssetType.Name);
+            this.setCommonSecondaryNavTabs(false);
+            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
+                .subscribe(r => {
+                    var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
+                    r.forEach(x => {
+                        const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
+                        const searchRes: SearchResult = new SearchResult();
+                        searchRes.Name = x.assetTypePath;
+                        searchRes.Url = url;
+                        searchRes.Uid = x.assetTypeUid;
+                        crumb.preLoadedTypeAhead.push(searchRes);
 
-                    x.icon = 'fa-drivers-license-o';
-                });
+                        x.icon = 'fa-drivers-license-o';
+                    });
 
-                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, r);
+                    this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, r);
 
-                this.headerBreadcrumbService.showBreadcrumb(crumb);
-                this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
-                    if (res && res.length > 0) {
-                        const items = res.filter(x => { return x.uid == this.allocation.uid });
+                    this.headerBreadcrumbService.showBreadcrumb(crumb);
+                    this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
+                        if (res && res.length > 0) {
+                            const items = res.filter(x => { return x.uid == this.allocation.uid });
 
-                        if (items.length > 0) {
-                            this.allocation = items[0];
-                            this.formatScoreCalc();
-                            this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
-                                .subscribe(f => {
-                                    if (f && f.items && f.items.length > 0) {
-                                        let maxDates: any[] = [];
-                                        f.items.forEach(x => {
-                                            if (x.Scores && x.Scores.length > 0) {
-                                                let scores = x.Scores.sort((x, y) => {
-                                                    let datex = new Date(x.EffectiveDate);
-                                                    let datey = new Date(y.EffectiveDate);
-                                                    return datey.getTime() - datex.getTime();
-                                                });
-                                                maxDates.push(new Date(scores[0].EffectiveDate));
-                                            }
-                                        });
-                                        maxDates.sort((x, y) => {
-                                            return y.getTime() - x.getTime();
-                                        });
-                                        this.maxScoreEffectiveDate = maxDates[0];
-                                    }
-                                });
-                            this.isLoading = false;
+                            if (items.length > 0) {
+                                this.allocation = items[0];
+                                this.formatScoreCalc();
+                                this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
+                                    .subscribe(f => {
+                                        if (f && f.items && f.items.length > 0) {
+                                            let maxDates: any[] = [];
+                                            f.items.forEach(x => {
+                                                if (x.Scores && x.Scores.length > 0) {
+                                                    let scores = x.Scores.sort((x, y) => {
+                                                        let datex = new Date(x.EffectiveDate);
+                                                        let datey = new Date(y.EffectiveDate);
+                                                        return datey.getTime() - datex.getTime();
+                                                    });
+                                                    maxDates.push(new Date(scores[0].EffectiveDate));
+                                                }
+                                            });
+                                            maxDates.sort((x, y) => {
+                                                return y.getTime() - x.getTime();
+                                            });
+                                            this.maxScoreEffectiveDate = maxDates[0];
+                                        }
+                                    });
+                                this.isLoading = false;
+                            }
                         }
-                    }
+                    });
                 });
-            });
+        }
+        else {
+            this.isLoading = false;
+        }
     }
-
     private formatScoreCalc() {
         if (this.allocation) {
             this.formattedScoreCalc = (this.allocation.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
@@ -337,19 +347,24 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         return s;
     }
 
-    selectionChanged(event:MetricAssetViewModel) {
-        this.selectedMetric = { ...event };
+    selectionChanged(event: MetricAssetViewModel) {
+        if (event) {
+            this.selectedMetric = { ...event };
 
-        if (this.hasConditions(this.selectedMetric))
-            this.showConditions = true;
-        else
+            if (this.hasConditions(this.selectedMetric))
+                this.showConditions = true;
+            else
+                this.showConditions = false;
+
+            if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
+                this.showPassTest = true
+            else
+                this.showPassTest = false;
+        }
+        else {
             this.showConditions = false;
-
-        if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
-            this.showPassTest = true
-        else
             this.showPassTest = false;
-
+        }
     }
 
     screenReferencedStillLoading(): boolean {
