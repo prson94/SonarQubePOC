@@ -334,8 +334,7 @@ for json path";
         }
 
         /// <summary>
-        /// Returns all defined actions types.  
-        /// 
+        /// Returns all defined actions types.
         /// </summary>
         /// <returns>A list of actions types</returns>
         [
