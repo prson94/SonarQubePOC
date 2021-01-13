@@ -212,7 +212,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         if (e == null)
             return;
         this.selectedNode = e;
-        this.selection = e === null ? null : e.data;
+        this.selection = e === null ? null : { ...e.data };
         this.selectionChange.emit(this.selection);
         this.updateSelectionMenuLabel();
     }
