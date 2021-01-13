@@ -4240,10 +4240,9 @@ where   ExecutionID = @ExecutionID
                         if (impactedMeasureVersions.Count > 0)
                         {
                             SendScoreEventWithPayload(
-                                Guid.NewGuid(),
                                 ScoreQueueChangeType.CheckTypeDependencyRemoved,
                                 new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                                createApiExecution: true
+                                execution.ExecutionID
                             );
                         }
                     }
@@ -5409,7 +5408,7 @@ delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
                                                    Result = false
                                                }
                                                ).ToList();
-                                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measures);
+                                SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measures, execution.ExecutionID);
                                 AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                             }
                         }
@@ -6139,7 +6138,7 @@ where   T.ID = @ID", new { rt.ID }).Single();
 
                             if (measureAssets.Count > 0)
                             {
-                                SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                                SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
                                 AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                             }
                         }
@@ -6534,7 +6533,7 @@ from    [Intersect] T
 
                     if (measureAssets.Count > 0)
                     {
-                        SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureAssets, execution.ExecutionID);
                     }
                 }
 
@@ -8714,7 +8713,7 @@ from	#Combos C
                     var assetMeasures = GetAssetMeasuresFromRuleResults(ruleResultUids);
                     if (assetMeasures.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }
                 }
 
@@ -9178,7 +9177,7 @@ WHEN MATCHED THEN DELETE;
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
                     if (assetMeasures.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.AssetMeasures, assetMeasures);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }
                 }
             }

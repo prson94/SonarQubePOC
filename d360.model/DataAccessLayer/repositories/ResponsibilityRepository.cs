@@ -528,10 +528,8 @@ where 1=1
             if (impactedMeasureVersions.Count > 0)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                    createApiExecution: true
+                    new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                 );
             }
 
@@ -669,7 +667,7 @@ where 1=1
 
                         if (structuredMeasures.Count > 0)
                         {
-                            Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                            Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
                         }
 
                         #endregion
@@ -800,7 +798,7 @@ where 1=1
 
             if (structuredMeasures.Count > 0)
             {
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
             }
         }
 
@@ -996,7 +994,7 @@ where   Success is null", transaction: trans);
 
                     if (structuredMeasures.Count > 0)
                     {
-                        Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.AssetMeasures, structuredMeasures);
+                        Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
                     }
 
                     trans.Commit();

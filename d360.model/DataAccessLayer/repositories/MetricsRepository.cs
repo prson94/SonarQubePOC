@@ -164,7 +164,6 @@ namespace d360.model.DataAccessLayer
 
             // Send queue event to scoring engine.
             Company.SendScoreEventWithPayload(
-                Guid.NewGuid(),
                 ScoreQueueChangeType.MeasureRemoved,
                 new MeasureRemovedModel
                 {
@@ -1473,10 +1472,9 @@ delete metrics.AssetVersionCondition where AssetVersionUid = @Uid", new { metric
             if (metricAsset != null && metricAssetVersion != null && changeWillEffectScore)
             {
                 Company.SendScoreEventWithPayload(
-                    Guid.NewGuid(),
                     ScoreQueueChangeType.MeasureChanged,
                     new MeasureChangedModel { EffectiveDate = model.EffectiveDate, MetricAssetUid = metricAsset.Uid, MetricAssetVersionUid = metricAssetVersion.Uid }
-                    );
+                );
             }
 
             return new WorkHttpStatus(isNew ? HttpStatusCode.Created : HttpStatusCode.OK, "", "");

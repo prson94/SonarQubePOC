@@ -52,6 +52,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                 if (executionRecord != null)
                 {
+                    if (executionRecord.Total != assetMeasures.Count)
+                    {
+                        executionRecord.Total = assetMeasures.Count;
+                        company.Execute("update api.Execution set Total = @Total where ExecutionID = @id", new { executionRecord.Total, id = executionRecord.ExecutionID });
+                    }
+
                     // This means that the original execution came in via one of the external measure/score endpoints.
                     // We need to check whether any other execution is running.
 
@@ -1289,11 +1295,11 @@ from	metrics.ScoreItemLink T
 					) S on (S.ScoreUid = T.ScoreUid and S.ScoreItemUid = T.ScoreItemUid);", transaction: trans);
 
                             trans.Commit();
-
-                            Db.SendScoreEventWithPayload(
-                                Info.ExecutionUid,
+                            
+                            Db.SendContinuingScoreEventWithPayload(
                                 ScoreQueueChangeType.WorkflowCheck,
                                 scoresToAdd.Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList(),
+                                Info.ExecutionUid, 
                                 Info.StartedOn
                                 );
                         }

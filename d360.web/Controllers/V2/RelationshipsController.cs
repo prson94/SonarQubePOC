@@ -708,7 +708,7 @@ namespace d360.web.Controllers.V2
 
                 var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -758,7 +758,7 @@ namespace d360.web.Controllers.V2
 
                 var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -808,7 +808,7 @@ namespace d360.web.Controllers.V2
 
                 var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = 0 });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

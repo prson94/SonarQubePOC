@@ -271,7 +271,7 @@ from    #InternalMeasures T
 
                     if (queueResults.Count > 0)
                     {
-                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.StartedOn);
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults, execution.ExecutionID);
                     }
                 }
                 catch (Exception ex)
@@ -673,7 +673,7 @@ where   E.ExecutionID = @ExecutionID
                 var scores = results.Where(i => i.IsSuccess).Select(i => new ScoreCreatedModel { AllocationUid = i.AllocationUid, AssetUid = i.AssetUid, EffectiveDate = i.EffectiveDate }).ToList();
                 if (scores.Count > 0)
                 {
-                    SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalScoresCreated, scores);
+                    SendScoreEventWithPayload(ScoreQueueChangeType.ExternalScoresCreated, scores, execution.ExecutionID);
                 }
 
                 execution.Error = results.Count(i => !i.IsSuccess);
@@ -740,35 +740,46 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item, DateTime? startedOn = null, bool createApiExecution = false)
+        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null)
         {
-            if (!startedOn.HasValue)
+            var fields = new { 
+                originalExecutionUid = fromExecutionUid ?? Guid.Empty
+            };
+            var apiExecution = new ApiExecution
             {
-                startedOn = DateTime.UtcNow;
-            }
-
-            if (createApiExecution)
-            {
-                var apiExecution = new ApiExecution
-                {
-                    ExecutionID = executionUid,
-                    StartedOn = startedOn.Value,
-                    ResourceID = CurrentResourceID,
-                    Method = "SCORE",
-                    State = State.Unknown,
-                    Route = "ScoreEngine", 
-                    Total = 0
-                };
-                Add(apiExecution);
-            }
+                ExecutionID = Guid.NewGuid(),
+                Fields = JsonConvert.SerializeObject(fields),
+                StartedOn = DateTime.UtcNow,
+                ResourceID = CurrentResourceID,
+                Method = "SCORE",
+                State = State.Unknown,
+                Route = "ScoreEngine", 
+                Total = 0
+            };
+            Add(apiExecution);
 
             var info = new ScoreQueueInfo
             {
                 CompanyID = CurrentCompanyID,
                 ResourceID = CurrentResourceID,
                 ChangeType = changeType,
+                ExecutionUid = apiExecution.ExecutionID,
+                StartedOn = apiExecution.StartedOn,
+                Location = ScoreQueueExecutionDataLocation.File
+            };
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
+            QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+        }
+
+        public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)
+        {
+            var info = new ScoreQueueInfo
+            {
+                CompanyID = CurrentCompanyID,
+                ResourceID = CurrentResourceID,
+                ChangeType = changeType,
                 ExecutionUid = executionUid,
-                StartedOn = startedOn.Value,
+                StartedOn = startedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
             Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);

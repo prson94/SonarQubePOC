@@ -775,7 +775,7 @@ order by r.Name";
                 Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
@@ -832,14 +832,12 @@ order by r.Name";
                 if (impactedMeasureVersions.Count > 0)
                 {
                     Company.SendScoreEventWithPayload(
-                        Guid.NewGuid(),
                         ScoreQueueChangeType.CheckTypeDependencyRemoved,
-                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions },
-                        createApiExecution: true
+                        new CheckTypeDependencyRemovedModel { VersionUids = impactedMeasureVersions }
                     );
                 }
 
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
@@ -895,7 +893,7 @@ order by r.Name";
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 Company.UpsertIntersectType(model, lineageVersion);
-                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
+                Company.SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel { IntersectTypeId = id });
 
                 return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }

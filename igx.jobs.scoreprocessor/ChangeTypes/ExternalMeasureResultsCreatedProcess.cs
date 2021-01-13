@@ -96,10 +96,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             }).ToList()
                         }).ToList();
 
-                    Db.SendScoreEventWithPayload(
-                        Info.ExecutionUid, 
+                    Db.SendContinuingScoreEventWithPayload(
                         ScoreQueueChangeType.AssetMeasures, 
                         assetMeasureModels,
+                        Info.ExecutionUid,
                         Info.StartedOn
                     );
                 }
