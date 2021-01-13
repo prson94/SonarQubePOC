@@ -1,21 +1,15 @@
 ﻿import { Component, Input, Output, EventEmitter, NgModule, forwardRef, ViewEncapsulation, } from '@angular/core';
-import { BaseComponent } from '../../base.component';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
 import { DropdownModule } from 'primeng/dropdown';
-
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
-
 
 export const ICON_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => IconPickerComponent),
     multi: true
 };
-
-
 
 @Component({
     selector: 'ig-icon-picker',
@@ -25,11 +19,11 @@ export const ICON_VALUE_ACCESSOR: any = {
     encapsulation: ViewEncapsulation.None,
 })
 
-export class IconPickerComponent extends BaseComponent implements ControlValueAccessor {
+export class IconPickerComponent implements ControlValueAccessor {
     @Input() ngModel: string;
     @Input() tabindex: number = 0;
     @Input() disabled: boolean = false;
-    @Input() showGovIcons : boolean = false;
+    @Input() showGovIcons: boolean = false;
     @Input() required;
     @Input() style: any;
 
@@ -40,10 +34,9 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
 
     protected isRequired = false;
     protected categories: any = [];
+    private isLoading: boolean = true;
 
     constructor(private iconService: IconService) {
-        super();
-        this.isLoading = true;
     }
 
     ngOnInit() {
@@ -60,10 +53,10 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
                             this.categories.push({
                                 label: i.categories[0],
                                 value: i.categories[0],
-                                items: [{ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img }]
+                                items: [{ label: i.name, value: 'fa-' + i.id }]
                             });
                         } else {
-                            this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id, path: i.path, img: i.img });
+                            this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id });
                         }
                     }
                     else {
@@ -78,13 +71,11 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
                         }
                     }
                 });
+
+                this.categories.forEach(c => c.items.sort((a, b) => this.sortByName(a, b)));
+                this.categories.sort((a, b) => this.sortByName(a, b));
+                this.isLoading = false;
             })
-            
-
-            this.categories.forEach(c => c.items.sort((a, b) => this.sortByName(a, b)));
-            this.categories.sort((a, b) => this.sortByName(a, b));
-
-            this.isLoading = false;
         });
     }
 
