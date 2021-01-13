@@ -53,10 +53,10 @@ export class IconPickerComponent implements ControlValueAccessor {
                             this.categories.push({
                                 label: i.categories[0],
                                 value: i.categories[0],
-                                items: [{ label: i.name, value: 'fa-' + i.id }]
+                                items: [{ label: i.name, value: "fa-" + i.id }]
                             });
                         } else {
-                            this.categories[parseInt(index)].items.push({ label: i.name, value: 'fa-' + i.id });
+                            this.categories[parseInt(index)].items.push({ label: i.name, value: "fa-" + i.id });
                         }
                     }
                     else {
