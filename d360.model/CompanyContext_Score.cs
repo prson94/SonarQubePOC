@@ -767,7 +767,7 @@ where   E.ExecutionID = @ExecutionID
                 StartedOn = apiExecution.StartedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
@@ -782,7 +782,7 @@ where   E.ExecutionID = @ExecutionID
                 StartedOn = startedOn,
                 Location = ScoreQueueExecutionDataLocation.File
             };
-            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item);
+            Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
             QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
         }
 
