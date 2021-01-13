@@ -838,6 +838,11 @@ for json path";
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
                 }
 
+                if (asset.Object == SystemObjects.ReferenceItem.ToString())
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetUidIsNotValid, model.AssetUid.Value));
+                }
+
                 assetTypeID = asset.AssetTypeID;
 
                 assetTypeName = asset.AssetType.Name;
@@ -860,6 +865,11 @@ for json path";
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ReadAsset))
                 {
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetTypeAddActionPermissionsDenied);
+                }
+
+                if (assetType.Class == AssetTypeClass.Reference)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, model.AssetTypeUid.Value));
                 }
 
                 assetTypeID = assetType.ID;
@@ -1105,7 +1115,7 @@ for json path";
 
                     var assetType = Company.AssetTypes.FirstOrDefault(i => i.uid == uid);
 
-                    if (assetType == null || assetType.Class == AssetTypeClass.Diagram)
+                    if (assetType == null || assetType.Class == AssetTypeClass.Diagram || assetType.Class == AssetTypeClass.Reference)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeUidIsNotValid, assetTypeUid)));
                     }

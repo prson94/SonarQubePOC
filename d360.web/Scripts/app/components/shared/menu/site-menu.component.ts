@@ -123,11 +123,13 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             }
             //need to delay until the scolling has finished for numbers to be correct
             window.setTimeout(() => {
-                if (Math.ceil(elem.scrollTop) >= ((elem.scrollHeight - elem.offsetHeight)) && elem.scrollTop != 0) {
+                let top = Math.floor(elem.scrollTop);
+                let max = Math.floor(this.menuOpen ? (elem.scrollHeight - elem.offsetHeight) - 5 : (elem.scrollHeight - elem.offsetHeight) - 45);
+                if (top >= (max) && top != 0) {
                     this.scrollingUp = true;
                     this.scrollTitle = "Scroll up";
                     this.ref.markForCheck();
-                } else if (elem.scrollTop <= 0) {
+                } else if (top <= 0) {
                     this.scrollingUp = false;
                     this.scrollTitle = "Scroll down";
                     this.ref.markForCheck();

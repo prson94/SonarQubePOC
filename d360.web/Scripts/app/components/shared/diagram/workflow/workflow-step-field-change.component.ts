@@ -6,6 +6,7 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
 import { FormMode } from '../../../../models/form.model';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
+import { FormGroup, FormGroupDirective } from '@angular/forms';
 
 @Component({
     selector: 'd3s-workflow-step-field-change',
@@ -62,7 +63,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                     this.fields = r.filter(x => x.Type != "JsonElement");//Exclude Json Element Fields
                 }),
                 map(() => {
-
                     if (_.isEmpty(this.fieldUpdate.Field)) {
                         this.fieldUpdate.Field = [];
                     } else if (this.fieldUpdate.Field.length == null) {
@@ -125,6 +125,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return 'date';
             case 'Html':
                 return 'html';
+            case 'Link':
+                return 'link';
             case 'Text':
             default:
                 return 'text';
@@ -264,7 +266,11 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 field['@ValueLabel'] = valueLabel == null ? field['@Value'] : valueLabel.label;
             }
 
-        } else {
+        }
+        else if (this.field.Type.toLowerCase() == 'link') {
+            field['@Value'] = field['@Value'] + '|' + field['@Url'];
+        }
+        else {
             delete field['@AppendValue'];
         }
 
@@ -527,7 +533,6 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
 
         var formFieldsWithAction = this.formFields.filter(f => f["@isActionType"] == true);
-
         switch (fieldType) {
             case 'Lookup':
                 var lookupField = field.LookupObjectType + '|' + field.LookupObjectID;
@@ -572,6 +577,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
             case 'Html':
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'html' || f['@type'] == 'text');
+            case 'Link':
+                return formFieldsWithoutAction.filter(f => f['@type'] == 'link');
             default:
                 return formFieldsWithoutAction.filter(f => f['@type'] == 'text');
         }
