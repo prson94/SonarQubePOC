@@ -78,9 +78,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     isDiagramTypeSpecifiedInPath = false;
 
     selectedDiagramAsset: AssetBrowserDiagramAsset;
+    highlightedPart: go.Part;
     isFullScreen = false;
     loadingText = '';
-        
+
     isError: boolean = false;
     errorText = '';
 
@@ -447,6 +448,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             this.diagram.model.setDataProperty(relation, 'showLoading', true);
 
+            let lastHighlightedPart = this.highlightedPart;
             if (!relation.disabled) {
                 if (relation.expanded) {
                     this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
@@ -457,6 +459,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.model.setDataProperty(relation, 'disabled', false);
                     this.diagram.model.setDataProperty(relation, 'showLoading', false);
                     this.helper_UpdateDiagramLayout();
+                    this.helper_HighlightPath(null, lastHighlightedPart);
                 }
                 else {
                     relation.disabled = true;
@@ -507,6 +510,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.helper_HideDeselectedAssetTypes();
                             this.helper_HideDeselectedPredicates();
                             this.helper_HideDeselectedResponsibilityTypes();
+                            this.helper_HighlightPath(null, lastHighlightedPart);
                         });
                 }
             }
@@ -522,6 +526,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
 
             this.diagram.model.setDataProperty(owner, 'showLoading', true);
+            let lastHighlightedPart = this.highlightedPart;
+
             if (owner.expanded) {
                 this.badge_RemoveDependentNodes(badgeIdentifier, AssetBrowserApiHopDirection.Forward);
                 this.diagram.model.removeArrayItem(node.owners, ix);
@@ -529,6 +535,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.setDataProperty(owner, 'expanded', false);
                 this.diagram.model.setDataProperty(owner, 'showLoading', false);
                 this.helper_UpdateDiagramLayout();
+                this.helper_HighlightPath(null, lastHighlightedPart);
+
             }
             else {
 
@@ -574,6 +582,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                         this.helper_ParseTranslatedData(response, true, badgeIdentifier);
                         this.helper_SetFilterWindow();
+                        this.helper_HighlightPath(null, lastHighlightedPart);
+
                     });
             }
         }
@@ -1169,6 +1179,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
         try {
+            if (obj == null)
+                return;
+
+            if (e == null) {
+                this.helper_ShowDetail(obj.data['assetUid']);
+                this.panel_InformationDisabled = false;
+            }
+
+            this.highlightedPart = obj;
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
                 n.isHighlighted = false;
@@ -1244,7 +1263,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedResponsibilityTypes();
             if (this.searchText !== '') {
                 this.search_Execute(this.searchText);
-            }  
+            }
 
             this.overviewControlRef.initialize(this.diagram);
         });
@@ -1329,11 +1348,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     // Used to load the counts for the owner badges
-    private loadOwnerCounts() {     
+    private loadOwnerCounts() {
         let isLineage: boolean = this.helper_LineageDiagramApplies();
-        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, isLineage ? this.displayConfiguration.AncestryMode : FilterAncestryMode.NoAncestor).subscribe(res => {            
+        this.browserService.getOwnerCounts(this.assetUid, this.helper_NumberOfHops(), this.displayConfiguration.IncludeNonLeaf, isLineage ? this.displayConfiguration.AncestryMode : FilterAncestryMode.NoAncestor).subscribe(res => {
             for (let item of res) { // each owner count                  
-                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });                
+                let nd = this.diagram.model.nodeDataArray.filter(n => { return n.predictableId === item.predictableId });
                 if (nd.length > 0) {
                     for (let owner of item.owners) { // each responsibility on that node                                                       
                         var badge = nd[0].owners.filter(n => { return n.responsibilityTypeId == owner.responsibilityTypeId });
@@ -1424,7 +1443,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedAssetTypes();
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
-            this.helper_CalculateAlertCount();            
+            this.helper_CalculateAlertCount();
         });
     }
 
@@ -2434,6 +2453,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             alignmentFocus: go.Spot.Bottom,
             padding: 0,
             cursor: "pointer",
+            name: "badge",
             click: (e, obj) => this.badge_ClickImpact(e, obj),
         },
             this.g(go.Panel, "Horizontal",
@@ -2486,9 +2506,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor,                            
+                            stroke: this.fontRelationBadgeCountForeColor,
                         },
-                        new go.Binding("text", "count")                        
+                        new go.Binding("text", "count")
                     ),
                 )
             )
@@ -2718,13 +2738,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_OwnerBadges(): go.Panel {        
+    private template_OwnerBadges(): go.Panel {
         return this.g(go.Panel, "TableRow", {
             alignment: go.Spot.TopCenter,
             alignmentFocus: go.Spot.Bottom,
             padding: 0,
             cursor: "pointer",
-            click: (e, obj) => this.badge_ClickOwner(e, obj)            
+            click: (e, obj) => this.badge_ClickOwner(e, obj)
         },
             this.g(go.Panel, "Horizontal",
                 new go.Binding("visible", "showBadge"),
@@ -2780,9 +2800,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             stroke: this.fontOwnerBadgeCountForeColor,
                             text: this.loadingIcon
                         },
-                        new go.Binding("text", "count", (h) => (h ? h: this.loadingIcon)),
+                        new go.Binding("text", "count", (h) => (h ? h : this.loadingIcon)),
                         new go.Binding("font", "count", (h) => (h ? this.fontOwnerBadge : this.fontLoadingIcon))
-                    ),                                      
+                    ),
                 )
             )
         );
@@ -3137,10 +3157,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 if (!node.data['autoCollapsed']) {
                                     var topLevel = target.part.findTopLevelPart();
                                     var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
-                                    if ((obj.diagram && obj.diagram['objectsWidthMap'] && obj.diagram['objectsWidthMap'][key]) || self.displayConfiguration.DiagramType == DiagramType.Impact) {
-                                        (node as any).collapseSubGraph();
-                                        node.data['autoCollapsed'] = true;
-                                    }
+                                    (node as any).collapseSubGraph();
+                                    node.data['autoCollapsed'] = true;
                                 }
                             }
                         }
