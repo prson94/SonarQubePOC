@@ -56,7 +56,7 @@ export class IconPickerComponent implements ControlValueAccessor {
                                 items: [{ label: i.name, value: 'fa-' + i.id }]
                             });
                         } else {
-                            this.categories[index].items.push({ label: i.name, value: 'fa-' + i.id });
+                            this.categories[parseInt(index)].items.push({ label: i.name, value: 'fa-' + i.id });
                         }
                     }
                     else {
@@ -67,7 +67,7 @@ export class IconPickerComponent implements ControlValueAccessor {
                                 items: [{ label: i.name, value: i.path, path: i.path, img: i.img }]
                             });
                         } else {
-                            this.categories[index].items.push({ label: i.name, value: i.path, path: i.path, img: i.img });
+                            this.categories[parseInt(index)].items.push({ label: i.name, value: i.path, path: i.path, img: i.img });
                         }
                     }
                 });
