@@ -1462,7 +1462,7 @@ where T.ExecutionId = @executionid;
                                         success = false;
                                         break;
                                     case "Number":
-                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
+                                        errorMessages.Add($"{fieldName} must be a valid number");
                                         success = false;
                                         break;
                                 }
