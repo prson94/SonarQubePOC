@@ -1182,6 +1182,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (obj == null)
                 return;
 
+            if (e == null) {
+                this.helper_ShowDetail(obj.data['assetUid']);
+                this.panel_InformationDisabled = false;
+            }
+
             this.highlightedPart = obj;
             //Set all to not highlighted.
             obj.diagram.nodes.each(n => {
