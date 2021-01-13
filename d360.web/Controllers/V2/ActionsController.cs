@@ -838,7 +838,7 @@ for json path";
                     return new WorkHttpStatus(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ActionApiMessages.AssetAddActionPermissionsDenied);
                 }
 
-                if (asset.Object == "ReferenceItem")
+                if (asset.Object == SystemObjects.ReferenceItem.ToString())
                 {
                     return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetUidIsNotValid, model.AssetUid.Value));
                 }
