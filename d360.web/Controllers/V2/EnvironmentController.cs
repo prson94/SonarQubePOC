@@ -610,8 +610,16 @@ namespace d360.web.Controllers.V2
                             Guid ruid = Guid.Empty;
                             if (Guid.TryParse(q.Value,out ruid))
                             {
-                                whereClauseItems.Add("gr.uid = @resourceUid");
-                                dbArgs.Add("resourceUid", ruid);
+                                if(Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
+                                {
+                                    whereClauseItems.Add("gr.uid = @resourceUid");
+                                    dbArgs.Add("resourceUid", ruid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _resourceuid provided!";
+                                }
                             }
                             else
                             {
@@ -624,8 +632,16 @@ namespace d360.web.Controllers.V2
                             Guid auid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out auid))
                             {
-                                whereClauseItems.Add("a.uid = @assetuid");
-                                dbArgs.Add("assetuid", auid);
+                                if(Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty) 
+                                {
+                                    whereClauseItems.Add("a.uid = @assetuid");
+                                    dbArgs.Add("assetuid", auid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _assetuid provided!";
+                                }
                             }
                             else
                             {
@@ -638,8 +654,16 @@ namespace d360.web.Controllers.V2
                             Guid atuid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out atuid))
                             {
-                                whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
-                                dbArgs.Add("assettypeuid", atuid);
+                                if(Company.Assets.Any(x => x.uid == atuid) && atuid != Guid.Empty)
+                                {
+                                    whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
+                                    dbArgs.Add("assettypeuid", atuid);
+                                }
+                                else
+                                {
+                                    code = HttpStatusCode.BadRequest;
+                                    errorMessage = $"Invalid _assettypeuid provided!";
+                                }
                             }
                             else
                             {
