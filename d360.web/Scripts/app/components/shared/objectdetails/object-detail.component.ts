@@ -153,16 +153,6 @@ export class ObjectDetailComponent implements OnChanges {
         row.FirstColumnFields.forEach(f => {
             this.setDetailFieldType(f);
 
-            if (f.Type == DetailFieldType.Lookup) {
-                this.assetService.getAssetsComplexFieldValue(this.objectUID, f.FieldName)
-                    .subscribe(i => {
-                        f.Data = i;
-                        if ((!f.Data || !f.Data.Values || f.Data.Values.length == 0) && (!f.ShowIfEmpty)) {
-                            f.Type = DetailFieldType.None;
-                            row.FirstColumnFields.splice(row.FirstColumnFields.indexOf(f), 1);
-                        }
-                    });
-            }
             if ((f.FieldName || "").toUpperCase() == 'ASSETUID') {
                 this.assetUID = f.Value;
             }

@@ -25,6 +25,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
     isComplex = false;
     showSimpleFilter = true;
+    isColumnsLoaded = false;
 
     visibleColumns: GridFilterColumn[] = [];
     private loadSubscription: Subscription;
@@ -48,6 +49,12 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
     }
 
     ngOnInit() {
+
+        
+    }
+
+    private loadInitialInfo(): void {
+        if (this.isColumnsLoaded) return;
 
         this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
 
@@ -77,7 +84,8 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
         this.visibleColumns = this.data.Columns.filter(c => c.type != 'hidden');
 
-        this.isLoading = false;
+        this.isColumnsLoaded = true;
+
     }
 
     private formatAsNumber(val): string {
@@ -167,6 +175,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
         this.loadSubscription = this.assetService.getAssetsComplexFieldValue(this.assetUid, this.field.FieldName, params)
             .subscribe(result => {
                 this.data = result;
+                this.loadInitialInfo();
                 this.isLoading = false;
                 this.cdRef.markForCheck();
             }, null, () => {
