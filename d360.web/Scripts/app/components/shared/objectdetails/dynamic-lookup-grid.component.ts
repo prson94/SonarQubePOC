@@ -1,21 +1,20 @@
-﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
-import { LookupGrid, GridFilterColumn } from '../../../models/grid-definition.model';
-import { Router } from '@angular/router';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { BaseComponent } from '../base.component';
-import { DetailField } from '../../../models/object-detail.model';
-import { AssetService } from '../../../services/asset.service';
-import { Subscription } from 'rxjs';
-
+﻿import { Component, Input, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from "@angular/core";
+import { LookupGrid, GridFilterColumn } from "../../../models/grid-definition.model";
+import { Router } from "@angular/router";
+import { SiteUrlHelpers } from "../../../static/site-url-helpers";
+import { BaseComponent } from "../base.component";
+import { DetailField } from "../../../models/object-detail.model";
+import { AssetService } from "../../../services/asset.service";
+import { Subscription } from "rxjs";
 
 @Component({
-    selector: 'd3s-dynamic-lookup-grid',
-    templateUrl: './dynamic-lookup-grid.component.html',
+    selector: "d3s-dynamic-lookup-grid",
+    templateUrl: "./dynamic-lookup-grid.component.html",
     providers: [AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DynamicLookupGridComponent extends BaseComponent implements OnInit, OnDestroy {
+export class DynamicLookupGridComponent extends BaseComponent implements OnDestroy {
     @Input() data: LookupGrid;
     @Input() field: DetailField;
     @Input() hideFooter = false;
@@ -46,11 +45,6 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
         if (this.loadSubscription) {
             this.loadSubscription.unsubscribe();
         }
-    }
-
-    ngOnInit() {
-
-        
     }
 
     private loadInitialInfo(): void {
@@ -90,11 +84,6 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit,
 
     private formatAsNumber(val): string {
         return val != '' && val != null ? Number(val).toLocaleString() : "";
-    }
-
-    private getHeaderStyle(): string {
-        if (this.hideHeader) return "hidenHeader";
-        return "";
     }
 
     private columnDataType(column: GridFilterColumn): string {
