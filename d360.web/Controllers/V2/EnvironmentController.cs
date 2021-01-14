@@ -654,7 +654,7 @@ namespace d360.web.Controllers.V2
                             Guid atuid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out atuid))
                             {
-                                if(Company.Assets.Any(x => x.uid == atuid) && atuid != Guid.Empty)
+                                if(Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
                                 {
                                     whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
                                     dbArgs.Add("assettypeuid", atuid);
