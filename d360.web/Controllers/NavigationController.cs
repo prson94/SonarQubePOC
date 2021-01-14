@@ -1043,12 +1043,12 @@ namespace d360.web.Controllers
                 if (model.AssetUid != null)
                 {
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }
 
-                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
                     {
                         responseModel.Items.HasRelationship = true;
                     }
@@ -1057,7 +1057,7 @@ namespace d360.web.Controllers
                 if (model.AssetId == null && model.AssetTypeUid != null)
                 {
                     var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
-                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset) || permissions.Count == 0)
                     {
                         responseModel.Items.HasOwnership = true;
                     }
@@ -1066,7 +1066,7 @@ namespace d360.web.Controllers
                         responseModel.Items.HasOwnership = false;
                     }
 
-                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
                     {
                         responseModel.Items.HasRelationship = true;
                     }
