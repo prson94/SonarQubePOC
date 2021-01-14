@@ -238,7 +238,7 @@
                             <td>
                                 <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
                                     <input type="radio" [attr.name]="name"
-                                           [checked]="rowIndex == selectedRelationRowIndex" (click)="selectRelationItems(item)">
+                                           [checked]="rowIndex == selectedRelationRowIndex" (click)="selectRelationItems(item)" value="{{item.Value}}" >
                                 </div>                               
                                 <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
                             </td>
