@@ -1,15 +1,12 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel, MetricAssetDefinitionGovernanceViewModel, MetricAssetDefinitionGovernanceExternalViewModel, MetricUpdateFrequency, MetricGovernanceCheckType, MetricAssetDefinitionGovernanceFieldViewModel, MetricAssetDefinitionGovernanceOwnerViewModel, MetricAssetDefinitionGovernanceRelationViewModel, MetricAssetDefinitionGovernancePredicateViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { OperatorModel, Operator } from '../../../models/operator.model';
+import { Operator } from '../../../models/operator.model';
 import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
-import { ResponsibilityType } from '../../../models/responsibility-type.model';
-import { RelationshipType } from '../../../models/relationship.model';
-import { Predicate } from '../../../models/predicate.model';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 
 @Component({
@@ -42,6 +39,7 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 
 })
 export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent implements OnInit, OnChanges {
+
     predicateTypes: any[] = [];
     relationshipTypes: any[] = [];
     responsibilityOperators: any[] = [];
@@ -83,6 +81,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
     delayedReload = _.debounce(() => {
         this.load();
+        this.loadFieldData();
     }, 200);
 
     constructor(protected metricsService: MetricsService,
@@ -150,7 +149,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         this.checkModelChanged();
         this.cdRef.markForCheck();
     }
-    
+
     loadFieldData() {
         this.loadConditionFieldOptions().subscribe(result => {
             if (this.uid && !this.model.IsGroup) {

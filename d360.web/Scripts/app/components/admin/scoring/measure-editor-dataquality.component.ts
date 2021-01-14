@@ -76,6 +76,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     delayedReload = _.debounce(() => {
         this.load();
+        this.loadFieldData();
     }, 200);
 
     constructor(protected metricsService: MetricsService,
