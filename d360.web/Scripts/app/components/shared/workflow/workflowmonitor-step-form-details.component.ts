@@ -27,6 +27,9 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             <ng-container *ngSwitchCase="'html'">
                                 <strong>{{f['@label']}}</strong>: <div [innerHtml]="f['@value'] | safeHtml"></div>
                             </ng-container>
+                            <ng-container *ngSwitchCase="'link'">
+                                <strong>{{f['@label']}}</strong>: <a href="{{getUrl(f['@value'])}}" target="_blank" style="font-weight:bold">{{getName(f['@value'])}}</a>
+                            </ng-container>
                             <ng-container *ngSwitchDefault>
                                 <strong>{{f['@label']}}</strong>: {{(f['@displayvalue'] == null ? f['@value'] : f['@displayvalue'])}}
                             </ng-container>
@@ -91,6 +94,16 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
             return new Date(val).toLocaleDateString();
         else
             return "";
+    }
+
+    getUrl(val: string): string {
+        var url = val.split('|');
+        return url[1];
+    }
+
+    getName(val: string): string {
+        var name = val.split('|');
+        return name[0];
     }
 
     doSelect() {
