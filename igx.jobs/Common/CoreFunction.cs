@@ -8,6 +8,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -250,6 +251,33 @@ namespace igx.jobs
             config.UseCore();
 
             return config;
+        }
+
+        public static void JobHostConfig()
+        {
+            var builder = new HostBuilder();
+
+            builder.ConfigureWebJobs(b =>
+            {
+                b.AddAzureStorageCoreServices();
+            });
+            builder.ConfigureLogging((context, b) =>
+            {
+                // Add logging providers.
+                b.AddConsole();
+
+                // If this key exists in any config, use it to enable Application Insights.
+                string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                if (!string.IsNullOrEmpty(appInsightsKey))
+                {
+                    // This uses the options callback to explicitly set the instrumentation key.
+                    b.AddApplicationInsights(o => o.InstrumentationKey = appInsightsKey);
+                }
+            });
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
+            });
         }
     }
 }

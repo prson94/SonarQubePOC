@@ -24,6 +24,7 @@ using d360.extensions.storage;
 using d360.core;
 using System.Text;
 
+
 namespace igx.jobs.bulkloadprocessor
 {
     class Program
@@ -35,8 +36,8 @@ namespace igx.jobs.bulkloadprocessor
             config.UseDevelopmentSettings();
 #endif
             System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            var host = new JobHost();
+            host.StartAsync().Wait();
         }
     }
 
