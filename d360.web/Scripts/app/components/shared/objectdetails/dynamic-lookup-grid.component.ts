@@ -48,7 +48,9 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnDestr
     }
 
     private loadInitialInfo(): void {
-        if (this.isColumnsLoaded) return;
+        if (this.isColumnsLoaded) {
+            return;
+        }
 
         this.isComplex = (this.data.Fields.find(f => f.name == 'Url') == null);
 
