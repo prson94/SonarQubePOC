@@ -83,6 +83,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 {
                     timespan = new TimeSpan(1, 0, 0, 0);
                 }
+                var minutesToAdd = new Random().Next(5, 25);
+                timespan = timespan.Add(new TimeSpan(0, minutesToAdd, 0));
                 await queue.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), Info, timespan);
             }
         }
