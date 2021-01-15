@@ -98,12 +98,15 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+
     doesTagExist(tag: TagType): Observable<any> {
-        let url = `api/v2/tags/exists`;
-        return this.http.post(url, tag)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+        let url = `api/v2/tags/exists?value=${tag.Value}`;
+        return this.http.get(url, { observe: "response" })
+            .pipe(map((data) => {
+                return data.status;
+            }));
     }
+
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
