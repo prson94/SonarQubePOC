@@ -21,7 +21,7 @@
         </div>
         <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Weight</div>
-            <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
+            <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} (adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</div>
         </div>
         <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Grouping Measure</div>
