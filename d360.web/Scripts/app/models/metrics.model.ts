@@ -13,6 +13,7 @@ export class MetricAssetViewModel {
     Description: string;
     EffectiveDate: Date;
     Weight: number;
+    AdjustedWeight: number;
     Threshold: number;
     MatchConditionsOnly: boolean;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];

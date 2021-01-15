@@ -116,6 +116,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         var selectedDate = new Date(this.scoreDate);
                         if (effDate < selectedDate) {
                             this.selectedMetric = metric;
+                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
                         }
                         else {
                             var isMetricSet: boolean = false;
@@ -127,6 +128,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                             this.selectedMetric = item;
                                             this.selectedMetric['Uid'] = this.selectedMetric['MeasureUid'];
                                             this.selectedMetric['State'] = 3;
+                                            this.selectedMetric.AdjustedWeight = this.selectedPoint._adjustedMaxWeight;
                                             isMetricSet = true;
                                             this.cdRef.markForCheck();
                                         }
@@ -148,7 +150,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             });
 
             this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {
-                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType] );
+                this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
                     this.setSelectedButton(this.scoreTypes[0])
