@@ -2,11 +2,10 @@ import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagType, TagApiModel, TagPermissionItem } from '../models/tag.model';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { JsonResult } from '../models/jsonresult.model';
-import { throwError } from 'rxjs';
 
 @Injectable()
 export class TagService extends BaseObservableService {
@@ -102,7 +101,7 @@ export class TagService extends BaseObservableService {
 
     doesTagExist(tag: TagType): Observable<any> {
         let url = `api/v2/tags/exists?value=${tag.Value}`;
-        return this.http.get(url, { observe: 'response' })
+        return this.http.get(url, { observe: "response" })
             .pipe(map(data => {
                 return data.status
             }));
