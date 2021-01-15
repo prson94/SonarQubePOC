@@ -62,11 +62,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     // We need to check whether any other execution is running.
 
                     // Wait a moment in case there are multiple queue messages
-                    Thread.Sleep(new Random().Next(3000, 7000));
+                    Thread.Sleep(new Random().Next(2000, 7000));
 
                     var currentlyRunningExecutions = company.Query<bool>(@"
 select  cast(iif(count(1) > 0, 1, 0) as bit) 
-from    api.Execution 
+from    api.Execution
 where   ExecutionID <> @id 
         and [Route] = 'ScoreEngine'
         and MarkedForProcessing = 1 
