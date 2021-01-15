@@ -31,6 +31,8 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     dateVal2: Date;
     dateShowType: string;
 
+    isDataLoaded: boolean = false;
+
     constructor(
         private settingsService: CompanySettingsService,
         private metricsService: MetricsService,
@@ -76,6 +78,8 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             else
                 this.showPassTest = false;
 
+            this.isDataLoaded = true;
+
         })
 
     }
@@ -90,6 +94,9 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     private formatDefinition() {
+        if (!this.isDataLoaded)
+            return;
+
         if (this.showPassTest && !this.selectedMetric.IsGroup) {
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
             this.dateVal1 = null;
