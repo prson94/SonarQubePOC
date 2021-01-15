@@ -8,7 +8,10 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Azure.Storage;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -233,51 +236,89 @@ namespace igx.jobs
             }
         }
 
-        public static JobHostConfiguration GetJobHostConfiguration()
+        public static dynamic GetJobHostConfiguration()
         {
-            var config = new JobHostConfiguration
-            {
-                DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
-                NameResolver = new QueueNameResolver()
-            };
+            //var config = new JobHostConfiguration
+            //{
+            //    DashboardConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
+            //    StorageConnectionString = CoreFunction.GetConfigValueByKey("WebJobsAccount"),
+            //    NameResolver = new QueueNameResolver()
+            //};
 
-            if (config.IsDevelopment)
-            {
-                config.UseDevelopmentSettings();
-            }
+            //if (config.IsDevelopment)
+            //{
+            //    config.UseDevelopmentSettings();
+            //}
 
-            config.UseApplicationInsights();
-            config.UseCore();
+            //config.UseApplicationInsights();
+            //config.UseCore();
 
-            return config;
+            return new { };
         }
 
-        public static void JobHostConfig()
+        public class ConfigNameResolver : INameResolver
+        {
+            public string Resolve(string name)
+            {
+                return ConfigurationManager.AppSettings[name];
+            }
+        }
+
+        public static IHost JobHostConfig()
         {
             var builder = new HostBuilder();
+            var env = GetConfigValueByKey("Environment");
 
-            builder.ConfigureWebJobs(b =>
+            builder
+                .UseEnvironment(env)
+            .ConfigureWebJobs(c =>
             {
-                b.AddAzureStorageCoreServices();
-            });
-            builder.ConfigureLogging((context, b) =>
+                c.AddAzureStorageCoreServices();
+                c.AddAzureStorage();
+            })
+            .ConfigureLogging((context, b) =>
             {
-                // Add logging providers.
                 b.AddConsole();
-
-                // If this key exists in any config, use it to enable Application Insights.
-                string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
-                if (!string.IsNullOrEmpty(appInsightsKey))
-                {
-                    // This uses the options callback to explicitly set the instrumentation key.
-                    b.AddApplicationInsights(o => o.InstrumentationKey = appInsightsKey);
-                }
-            });
-            builder.ConfigureServices(services =>
+            })
+            .ConfigureServices(s =>
             {
-                services.AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
+                s.AddSingleton(new ConfigNameResolver());
             });
+
+            builder.ConfigureAppConfiguration((context, b) =>
+            {
+                var a = context.Configuration;
+                var bb = b.Sources;
+
+            });
+
+            return builder.Build();
+
+            //builder.ConfigureAppConfiguration((context, b) =>
+            //{
+            //    b.Sources.Add(context.Configuration.Source)
+            //});
+            //builder.ConfigureWebJobs(b =>
+            //{
+            //    b.AddAzureStorageCoreServices();
+            //});
+            //builder.ConfigureLogging((context, b) =>
+            //{
+            //    // Add logging providers.
+            //    b.AddConsole();
+
+            //    // If this key exists in any config, use it to enable Application Insights.
+            //    string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+            //    if (!string.IsNullOrEmpty(appInsightsKey))
+            //    {
+            //        // This uses the options callback to explicitly set the instrumentation key.
+            //        b.AddApplicationInsights(o => o.InstrumentationKey = appInsightsKey);
+            //    }
+            //});
+            //builder.ConfigureServices(services =>
+            //{
+            //    services.AddSingleton<ITelemetryInitializer, CustomTelemetryInitializer>();
+            //});
         }
     }
 }

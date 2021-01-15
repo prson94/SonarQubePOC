@@ -23,19 +23,22 @@ namespace igx.jobs.apiexecutionprocessor
 {
     class Program
     {
-        static void Main()
+        static async Task  Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-#if DEBUG
-            config.UseTimers();
-            config.UseDevelopmentSettings();
-#endif
-            config.Queues.BatchSize = 2;
-            config.Queues.VisibilityTimeout = TimeSpan.FromHours(6);
+//            var config = CoreFunction.GetJobHostConfiguration();
+//#if DEBUG
+//            config.UseTimers();
+//            config.UseDevelopmentSettings();
+//#endif
+//            config.Queues.BatchSize = 2;
+//            config.Queues.VisibilityTimeout = TimeSpan.FromHours(6);
 
-            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+//            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+//            var host = new JobHost(config);
+//            host.RunAndBlock();
+
+            var host = CoreFunction.JobHostConfig();
+            await host.StartAsync();
         }
     }
 
@@ -44,7 +47,7 @@ namespace igx.jobs.apiexecutionprocessor
         //#if DEBUG
         //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         //#else
-        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("ApiExecutionQueue"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         //#endif
         {
             ApiExecutionInfo info = null;
