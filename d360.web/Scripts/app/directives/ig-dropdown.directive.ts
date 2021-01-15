@@ -22,6 +22,16 @@ export class DropdownDirective implements AfterContentInit {
 
     ngAfterContentInit(): void {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
+        if (this.required != null && this.required != undefined && this.required.toString() !== '') {
+            //If required was set by Angular binding via [required] input parameter
+            if (this.required) {
+                (this.el.nativeElement as HTMLElement).setAttribute("required", "true");
+            }
+            else {
+                (this.el.nativeElement as HTMLElement).removeAttribute("required");
+            }
+        }
+
         this.required = this.el.nativeElement.getAttribute("required");
         this.disabled = this.el.nativeElement.getAttribute("disabled");
         var tabIndex = this.el.nativeElement.getAttribute("tabIndex");
@@ -29,7 +39,6 @@ export class DropdownDirective implements AfterContentInit {
         var placeholder = this.el.nativeElement.getAttribute("placeholder");
         this.el.nativeElement.tabIndex = -1;
         this.dropdownRef.tabindex = tabIndex;
-
         let isPlaceholderSet = !(placeholder == undefined || placeholder == null || placeholder == '');
 
         if (!isPlaceholderSet) {

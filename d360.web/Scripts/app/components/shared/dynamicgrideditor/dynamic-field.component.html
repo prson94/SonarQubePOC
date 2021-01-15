@@ -39,14 +39,22 @@
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">
-                            <select *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" style="height:auto;width:100%;">
-                                <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
-                                <ng-template #blankOption>
-                                    <option value=""></option>
-                                </ng-template>
-                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                            </select>
-                            <ig-color-picker *ngIf="field.UseColorControl" [colors]="field.Items" [placeholder]="multiselectLabel()" (selectedColorChange)="onColorSelect($event)" [selectedColor]="field.Value"></ig-color-picker>
+                            <ng-container *ngIf="!field.UseColorControl">
+                                <p-dropdown igDropdown igSize="medium"
+                                            [formControlName]="field.FieldName"
+                                            [appendTo]="'body'"
+                                            [options]="field.Items | selectItemTextToLabel"
+                                            [virtualScroll]="field.VirtualScroll"
+                                            [required]="isRequired()">
+                                </p-dropdown>
+                            </ng-container>
+                            <ng-container *ngIf="field.UseColorControl">
+                                <ig-color-picker [colors]="field.Items"
+                                                 [placeholder]="multiselectLabel()"
+                                                 (selectedColorChange)="onColorSelect($event)"
+                                                 [selectedColor]="field.Value">
+                                </ig-color-picker>
+                            </ng-container>
                         </ng-container>
                         <ng-container *ngIf="!field.UseNativeLookupControl">
                             <ng-container *ngIf="field.UseTypeahead else noTypeahead">
@@ -98,14 +106,12 @@
                                 </ng-template>
                             </ng-container>
                             <ng-template #noTypeahead>
-                                <p-dropdown igDropdown igSize="medium" 
+                                <p-dropdown igDropdown igSize="medium"
                                             [formControlName]="field.FieldName"
+                                            [appendTo]="'body'"
                                             [options]="field.Items | selectItemTextToLabel"
                                             [virtualScroll]="field.VirtualScroll"
-                                            [required]="isRequired()"
-                                            [itemSize]="field.ItemSize"
-                                            [filter]="true"
-                                            [placeholder]="multiselectLabel()">
+                                            [required]="isRequired()">
                                 </p-dropdown>
                             </ng-template>
                         </ng-container>
@@ -210,8 +216,8 @@
                     </ng-template>
                 </p-table>
             </div>
-            <ig-number-input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" [min]="Min" [max]="Max"></ig-number-input>
-            <ig-number-input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" (keyup)="toDecimalPlaces($event,Precision)"></ig-number-input>
+            <ig-number-input *ngSwitchCase="'Number'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment"></ig-number-input>
+            <ig-number-input *ngSwitchCase="'Decimal'" [formControlName]="field.FieldName" [min]="Min" [max]="Max" [step]="Increment" (keyup)="toDecimalPlaces($event,Precision)"></ig-number-input>
             <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">
             <div *ngSwitchCase="'Color'">
                 <ig-color-picker [colors]="defaultColorOptions" [formControlName]="field.FieldName" [invalidOptions]="['Custom']"></ig-color-picker>
