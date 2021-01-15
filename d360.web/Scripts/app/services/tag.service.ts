@@ -2,10 +2,11 @@ import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagType, TagApiModel, TagPermissionItem } from '../models/tag.model';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { JsonResult } from '../models/jsonresult.model';
+import { throwError } from 'rxjs';
 
 @Injectable()
 export class TagService extends BaseObservableService {
@@ -98,12 +99,15 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+
     doesTagExist(tag: TagType): Observable<any> {
-        let url = `api/v2/tags/exists`;
-        return this.http.post(url, tag)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+        let url = `api/v2/tags/exists?value=${tag.Value}`;
+        return this.http.get(url, { observe: 'response' })
+            .pipe(map(data => {
+                return data.status
+            }));
     }
+
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)

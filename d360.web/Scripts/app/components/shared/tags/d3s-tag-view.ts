@@ -184,36 +184,8 @@ export class TagView extends BaseComponent implements OnInit {
         }
         if (!this.existingTag) {
             this.tagService.doesTagExist(event)
-                .subscribe(result => {
-                    if (result == null) {
-                        this.tagService.saveTag(event)
-                            .subscribe(result => {
-                                let msg: string = '';
-                                if (event.uid == undefined) {
-                                    msg = `${event.Value} succesfully created`;
-                                }
-                                this.showMessageForResult(this.messagesService, result, msg);
-                                this.tagService.createAssetTag(tags)
-                                    .subscribe(result => {
-                                        let msg: string = '';
-                                        if (event.uid == undefined) {
-                                            msg = `${event.Value} succesfully added to Asset`;
-                                        }
-                                        this.showMessageForResult(this.messagesService, result, msg);
-                                        if (event.uid == undefined) {
-                                            event.uid = result[0].Uid;
-                                            this.tags.push(event);
-                                        }
-                                        this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-                                        event.UseCount = 0;
-                                        this.searchResults = [];
-                                        this.inputValue = "";
-                                        this.savingTag = false;
-                                        this.ref.markForCheck();
-                                    });
-                            });
-                    }
-                    else {
+                .subscribe((result) => {
+                    if (result == 200) {
                         this.tagService.createAssetTag(tags)
                             .subscribe(result => {
                                 let msg: string = '';
@@ -232,7 +204,40 @@ export class TagView extends BaseComponent implements OnInit {
 
                             });
                     }
-                });
+                },
+                    (error) => {
+                        if (error.status == 404) {
+                            this.tagService.saveTag(event)
+                                .subscribe(result => {
+                                    let msg: string = '';
+                                    if (event.uid == undefined) {
+                                        msg = `${event.Value} succesfully created`;
+                                    }
+                                    this.showMessageForResult(this.messagesService, result, msg);
+                                    this.tagService.createAssetTag(tags)
+                                        .subscribe(result => {
+                                            let msg: string = '';
+                                            if (event.uid == undefined) {
+                                                msg = `${event.Value} succesfully added to Asset`;
+                                            }
+                                            this.showMessageForResult(this.messagesService, result, msg);
+                                            if (event.uid == undefined) {
+                                                event.uid = result[0].Uid;
+                                                this.tags.push(event);
+                                            }
+                                            this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+                                            event.UseCount = 0;
+                                            this.searchResults = [];
+                                            this.inputValue = "";
+                                            this.savingTag = false;
+                                            this.ref.markForCheck();
+                                        });
+                                });
+                        }
+                    },
+                    () => {
+                    }
+                );
         }
         this.showEditor = false;
     }
