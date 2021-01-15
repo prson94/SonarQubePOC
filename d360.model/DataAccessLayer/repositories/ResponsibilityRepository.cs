@@ -992,12 +992,12 @@ where   Success is null", transaction: trans);
                                 }).Distinct().ToList()
                             }).ToList();
 
+                    trans.Commit();
+
                     if (structuredMeasures.Count > 0)
                     {
                         Company.SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, structuredMeasures);
                     }
-
-                    trans.Commit();
                 }
                 catch (Exception)
                 {
