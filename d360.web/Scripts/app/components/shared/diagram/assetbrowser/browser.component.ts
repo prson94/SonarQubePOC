@@ -1985,8 +1985,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("minSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
                     var topLevel = obj.part.findTopLevelPart();
                     var dia = obj.diagram;
-                    var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
+                    var key = target.part.data['key'].toString();
                     var size = new go.Size(NaN, NaN);
+
+                    var data = obj.diagram.nodes.filter(x =>
+                        x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
+                    );
+                    var maxCharCount = 0;
+                    data.each(d => {
+                        if (d.data['text'].length > maxCharCount)
+                            maxCharCount = d.data['text'].length;
+                    });
+
 
                     if (topLevel['__gohashid'] == obj.part['__gohashid'] || isNaN(topLevel.getDocumentBounds().x)) {
                         return;
@@ -1995,9 +2005,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (!dia['objectsWidthMap']) {
                         dia['objectsWidthMap'] = {};
                     }
-                    var topWidth = topLevel.getDocumentBounds().width;
 
-                    var levelPadding = target.getDocumentBounds().x * 2;
+                    //set max top width depending on max character count withing hierarchy
+                    var topWidth = 70 + maxCharCount * 6;
+
+                    var levelPadding = target.actualBounds.x * 2;
                     var parentWidth = topWidth - levelPadding;
 
                     if (parentWidth > 0 && parentWidth != NaN) {
@@ -2008,7 +2020,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         dia['objectsWidthMap'][key] = { width: parentWidth };
                     }
 
-                    if (dia['objectsWidthMap'] && dia['objectsWidthMap'][key]) {
+                    if (dia['objectsWidthMap'][key]) {
                         size.width = dia['objectsWidthMap'][key]['width'];
                         target.minSize = size;
                     }
@@ -3158,7 +3170,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 //If already happened dont do it again, otherwise its not possible to expand 
                                 if (!node.data['autoCollapsed']) {
                                     var topLevel = target.part.findTopLevelPart();
-                                    var key = target.part.data['key'].toString() + target.part['isSubGraphExpanded'] + topLevel.part['isSubGraphExpanded'];
                                     (node as any).collapseSubGraph();
                                     node.data['autoCollapsed'] = true;
                                 }
