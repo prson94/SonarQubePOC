@@ -92,9 +92,9 @@ export class CompanySettingsService extends BaseObservableService implements ICo
             .pipe(catchError(err => this.handleError(err)));
     }
 
-    public GetLicensingDetails(): Observable<any> {
+    public getLicensingDetails(): Observable<any> {
         return this.http
-            .get<any>(`/api/v2/environment/licensing`)
+            .get<any>("/api/v2/environment/licensing")
             .pipe(catchError(err => this.handleError(err)));
     }
 }

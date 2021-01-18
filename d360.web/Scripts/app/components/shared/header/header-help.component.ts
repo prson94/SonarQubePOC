@@ -87,7 +87,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     ) { }
 
     ngAfterViewInit(): void {
-        this.settingService.GetLicensingDetails().subscribe(x => {
+        this.settingService.getLicensingDetails().subscribe((x) => {
             this.licenceData = x;
         });
     }
