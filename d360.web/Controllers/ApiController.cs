@@ -507,7 +507,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).ConfigureAwait(false)).Sin
 
                 dynamicSql += $"[object] = @obj{indx} and [objectid] = @objId{indx}";
                                 
-                dbParams.Add($"obj{indx}", item.ObjectName,System.Data.DbType.AnsiString, size:20);
+                dbParams.Add($"obj{indx}", item.ObjectName,System.Data.DbType.AnsiString, size:50);
                 dbParams.Add($"objId{indx}", item.ObjectID);
 
                 indx++;
