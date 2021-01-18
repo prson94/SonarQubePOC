@@ -1,6 +1,6 @@
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
-import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
-import { CompanySettingsService } from '../../../services/settings.service';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener } from "@angular/core";
+import { CurrentEnvironmentSettings } from "../../../static/environment-settings";
+import { CompanySettingsService } from "../../../services/settings.service";
 declare var __BUILD_DATE: string;
 declare var VersionNumber: string;
 
@@ -110,7 +110,7 @@ export class HeaderHelpComponent implements AfterViewInit{
         }
     }
     numberWithCommas(x) {
-        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return x.toLocaleString();
     }
     showAbout() {
         this.isModalVisible = true;
