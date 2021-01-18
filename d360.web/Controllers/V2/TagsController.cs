@@ -597,27 +597,6 @@ namespace d360.web.Controllers.V2
 
         }
 
-        /// <param name="tag">The tag to be created.</param>
-        [HttpPost,
-        Route("exists"),
-        ApiExplorerSettings(IgnoreApi = true)]
-        public IHttpActionResult DoesTagExist(TagApiModel tag)
-        {
-            try
-            {
-                var result = tagRepository.GetTagByName(tag.Value);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
-
-            }
-            catch (Exception e)
-            {
-
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
-            }
-
-        }
-
         /// <summary>
         /// A check to see if a tag already exists or not.
         /// </summary>

@@ -5,7 +5,7 @@
 </div>
 <input type="text" [hidden]="!showSimpleFilter || hideFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
 <p-table #dt 
-         [value]="data.Values" 
+         [value]="data?.Values" 
          selectionMode="single" 
          [metaKeySelection]="true" 
          [globalFilterFields]="globalFilterFields" 
@@ -13,7 +13,7 @@
          [paginator]="!hideFooter" 
          [rows]="defaultInitialItemsPerPage" 
          [rowsPerPageOptions]="defaultPagingOptions" 
-         [totalRecords]="data.total"
+         [totalRecords]="data?.total"
          [loading]="isLoading"
          [loadingIcon]="'fa fa-spinner fa-spin'"
          [lazy]="true"
@@ -65,7 +65,7 @@
             </td>
         </tr>
     </ng-template>
-    <ng-template *ngIf="data.total && !hideFooter" pTemplate="summary">
-        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="data.total"></d3s-grid-paging-info>
+    <ng-template *ngIf="!hideFooter" pTemplate="summary">
+        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="data?.total"></d3s-grid-paging-info>
     </ng-template>
 </p-table>

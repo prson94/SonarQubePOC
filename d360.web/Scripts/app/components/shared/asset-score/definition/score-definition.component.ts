@@ -58,6 +58,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     loadData() {
+        this.isDataLoaded = false;
         forkJoin(
             this.settingsService.getOperators(),
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid),
@@ -79,7 +80,6 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
                 this.showPassTest = false;
 
             this.isDataLoaded = true;
-
         })
 
     }
@@ -94,10 +94,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     private formatDefinition() {
-        if (!this.isDataLoaded)
-            return;
-
-        if (this.showPassTest && !this.selectedMetric.IsGroup) {
+        if (this.isDataLoaded && this.showPassTest && !this.selectedMetric.IsGroup) {
             let gov = <MetricAssetDefinitionGovernanceViewModel>this.selectedMetric.Definition.Governance;
             this.dateVal1 = null;
             this.dateVal2 = null;
