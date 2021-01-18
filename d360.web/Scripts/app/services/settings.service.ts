@@ -91,4 +91,10 @@ export class CompanySettingsService extends BaseObservableService implements ICo
             .get<OperatorModel[]>(`/api/v2/environment/operators`)
             .pipe(catchError(err => this.handleError(err)));
     }
+
+    public GetLicensingDetails(): Observable<any> {
+        return this.http
+            .get<any>(`/api/v2/environment/licensing`)
+            .pipe(catchError(err => this.handleError(err)));
+    }
 }

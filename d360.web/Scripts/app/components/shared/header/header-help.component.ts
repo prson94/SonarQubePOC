@@ -1,5 +1,6 @@
 import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
 import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
+import { CompanySettingsService } from '../../../services/settings.service';
 declare var __BUILD_DATE: string;
 declare var VersionNumber: string;
 
@@ -30,6 +31,13 @@ declare var VersionNumber: string;
                                         <li><b>Build Version:</b> {{this.versionNumber}}</li>
                                         <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                                        <li><b>Usage information:</b> <br/></li>
+                                        <ul class="licence-info" *ngIf="licenceData">
+                                            <li>Asset count: {{numberWithCommas(licenceData.assets.count)}}</li>
+                                            <li>User count: {{numberWithCommas(licenceData.users.total)}}</li>
+                                            <li>Contributor count: {{numberWithCommas(licenceData.users.contributors)}}</li>
+                                            <li>Administrator count: {{numberWithCommas(licenceData.users.administrators)}}</li>
+                                        </ul>
                                     </ul>
                                     <p>© 2005-{{this.buildDate | date:'yyyy'}} Infogix. All rights reserved.</p>
                                     <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
@@ -42,7 +50,19 @@ declare var VersionNumber: string;
                         </div>
                     </d3s-modal>
                 </span>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [CompanySettingsService],
+    styles: [`
+        .licence-info{
+            list-style: disc;
+            padding-left:18px;
+            line-height: 14px;
+        }
+        .licence-info li{
+            list-style: disc;
+
+        }
+        `]
 })
 
 export class HeaderHelpComponent implements AfterViewInit{
@@ -57,14 +77,19 @@ export class HeaderHelpComponent implements AfterViewInit{
     buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
     isModalVisible: boolean = false;
-    @ViewChild("popupBox", {static:false}) popupBox: ElementRef;
+    @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
+
+    licenceData: any;
 
     constructor(
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private settingService: CompanySettingsService
     ) { }
 
     ngAfterViewInit(): void {
-       
+        this.settingService.GetLicensingDetails().subscribe(x => {
+            this.licenceData = x;
+        });
     }
 
 
@@ -84,7 +109,9 @@ export class HeaderHelpComponent implements AfterViewInit{
             panel.style.right = '0px';
         }
     }
-
+    numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
     showAbout() {
         this.isModalVisible = true;
     }
