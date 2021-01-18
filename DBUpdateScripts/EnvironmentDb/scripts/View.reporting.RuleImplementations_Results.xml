@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="Puneet Gupta" id="View.reporting.RuleImplementations_Results-Drop-v3">
+  <comment>GOV-12938</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
