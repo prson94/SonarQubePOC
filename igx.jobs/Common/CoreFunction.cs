@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Storage;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Microsoft.ApplicationInsights.Channel;
 
 namespace igx.jobs
 {
@@ -256,6 +259,8 @@ namespace igx.jobs
             return new { };
         }
 
+
+
         public class ConfigNameResolver : INameResolver
         {
             public string Resolve(string name)
@@ -264,32 +269,55 @@ namespace igx.jobs
             }
         }
 
+        public class ConnectionNameResolver : INameResolver
+        {
+            public string Resolve(string name)
+            {
+                return ConfigurationManager.ConnectionStrings[name].ConnectionString;
+            }
+        }
+
         public static IHost JobHostConfig()
         {
             var builder = new HostBuilder();
             var env = GetConfigValueByKey("Environment");
-
+            var configResolver = new ConfigNameResolver();
             builder
-                .UseEnvironment(env)
+            .UseEnvironment(env)
+
+            .ConfigureServices(s =>
+            {
+                //s.AddSingleton(configResolver);
+                //var a = ConfigurationManager.AppSettings;
+                //var b = ConfigurationManager.ConnectionStrings;
+
+                //s.AddSingleton(new ConnectionNameResolver());
+            })
+            .ConfigureAppConfiguration((context, b) =>
+            {
+                b.AddConfiguration(context.Configuration)
+                .AddJsonFile("commonAppSettings.json")
+                .AddJsonFile("commonConnectionSettings.json")
+                .AddEnvironmentVariables()
+                .Build();
+
+            })
             .ConfigureWebJobs(c =>
             {
                 c.AddAzureStorageCoreServices();
                 c.AddAzureStorage();
+                c.AddServiceBus();
+                c.AddTimers();
             })
             .ConfigureLogging((context, b) =>
             {
                 b.AddConsole();
-            })
-            .ConfigureServices(s =>
-            {
-                s.AddSingleton(new ConfigNameResolver());
-            });
 
-            builder.ConfigureAppConfiguration((context, b) =>
-            {
-                var a = context.Configuration;
-                var bb = b.Sources;
-
+                string appInsightsKey = context.Configuration["APPINSIGHTS_INSTRUMENTATIONKEY"];
+                if (!string.IsNullOrEmpty(appInsightsKey))
+                {
+                    b.AddApplicationInsights(appInsightsKey);
+                }
             });
 
             return builder.Build();

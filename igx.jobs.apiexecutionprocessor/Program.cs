@@ -16,8 +16,9 @@ using d360.extensions.storage;
 using System.Text;
 using d360.core;
 using d360.core.entities.Metric;
-using System.Net.Http;
+
 using System.Threading;
+using System.Net.Http;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -38,6 +39,7 @@ namespace igx.jobs.apiexecutionprocessor
 //            host.RunAndBlock();
 
             var host = CoreFunction.JobHostConfig();
+            
             await host.StartAsync();
         }
     }
@@ -47,7 +49,7 @@ namespace igx.jobs.apiexecutionprocessor
         //#if DEBUG
         //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         //#else
-        public async static Task Run([QueueTrigger("ApiExecutionQueue"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         //#endif
         {
             ApiExecutionInfo info = null;

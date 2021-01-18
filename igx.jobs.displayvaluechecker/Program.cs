@@ -17,16 +17,19 @@ namespace igx.jobs.displayvaluechecker
 {
     class Program
     {
-        static void Main()
+        static async Task Main()
         {
-            var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
+            //var config = CoreFunction.GetJobHostConfiguration();
+            //config.UseTimers();
 #if DEBUG
-            config.UseDevelopmentSettings();
+            //config.UseDevelopmentSettings();
 #endif
             System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
-            var host = new JobHost(config);
-            host.RunAndBlock();
+            //var host = new JobHost(config);
+            //host.RunAndBlock();
+
+            var host = CoreFunction.JobHostConfig();
+            await host.StartAsync();
         }
     }
 
