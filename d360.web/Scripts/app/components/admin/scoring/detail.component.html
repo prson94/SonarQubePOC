@@ -86,15 +86,15 @@
                         <span *ngIf="selectedMetric.State == 3">{{selectedMetric?.EffectiveEndDate | utcDate  | date:'shortDate'}}</span>
                     </div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+                <div *ngIf="!allocation?.isExternallyCalculated" class="measure-details-item">
                     <div class="details-header">Weight</div>
                     <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}}</div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+                <div *ngIf="!allocation?.isExternallyCalculated" class="measure-details-item">
                     <div class="details-header">Grouping Measure</div>
                     <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                 </div>
-                <div *ngIf="!data?.isExternallyCalculated && showPassTest">
+                <div *ngIf="!allocation?.isExternallyCalculated && showPassTest">
                     <d3s-admin-metric-pass-test-details [assetTypeUid]="selectedAssetType.Uid"
                                                         [definition]="selectedMetric?.Definition"
                                                         [screenReferences]="screenReferences">
