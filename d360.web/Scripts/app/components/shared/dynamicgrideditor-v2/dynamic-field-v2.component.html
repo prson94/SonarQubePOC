@@ -104,11 +104,10 @@
                                 </p-autoComplete>
                             </ng-container>
                             <ng-template #autocompleteColor>
-                                <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                <p-autoComplete igAutocomplete [placeholder]="'Start typing to select an item'"
+                                                igSize="medium"
                                                 [delay]="350"
                                                 [field]="'Text'"
-                                                [style]="{'width':'100%'}"
-                                                [inputStyle]="{'width':'100%' }"
                                                 [inputId]="field.FieldName + '_input_' + component_uid"
                                                 [formControlName]="field.FieldName"
                                                 (onSelect)="onSelect($event)"
