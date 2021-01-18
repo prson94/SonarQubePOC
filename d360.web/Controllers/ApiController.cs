@@ -493,7 +493,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).ConfigureAwait(false)).Sin
             return tagsFields;
         }
 
-        private List<AssetWithoutReadPermission> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)
+        private async Task<IEnumerable<AssetWithoutReadPermission>> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)
         {
             if (objectsToCheckAccesFor == null || objectsToCheckAccesFor.Count == 0) return new List<AssetWithoutReadPermission>();
 
@@ -506,8 +506,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).ConfigureAwait(false)).Sin
                 if (indx != 0) dynamicSql += " or ";
 
                 dynamicSql += $"[object] = @obj{indx} and [objectid] = @objId{indx}";
-
-                dbParams.Add($"obj{indx}", item.ObjectName);
+                                
+                dbParams.Add($"obj{indx}", item.ObjectName,System.Data.DbType.AnsiString, size:50);
                 dbParams.Add($"objId{indx}", item.ObjectID);
 
                 indx++;
@@ -517,7 +517,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).ConfigureAwait(false)).Sin
 
             dbParams.Add("resId", Company.CurrentResourceID);
 
-            return Company.Query<AssetWithoutReadPermission>(sql, dbParams).ToList();
+            return (await Company.QueryAsync<AssetWithoutReadPermission>(sql, dbParams)).ToList();
         }
 
         #endregion
@@ -1801,7 +1801,7 @@ order by    rnk, [Name]";
                 objectsToCheckAccesFor.Add(new BasicAsset { ObjectID = objID, ObjectName = obj });
             }
 
-            var objectsWithoutReadAccess = GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
+            var objectsWithoutReadAccess = await GetObjectsWithoutReadAccess(objectsToCheckAccesFor);
 
             foreach (var intersect in intersects)
             {
@@ -1817,13 +1817,9 @@ order by    rnk, [Name]";
                     intersectDisplayValue = det;
                 }
 
-
-                if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Count > 0)
-                {
-                    if (objectsWithoutReadAccess.Any(x => (x.Object == obj && x.ObjectID == objID)))
-                    {
-                        url = null;
-                    }
+                if (objectsWithoutReadAccess != null && objectsWithoutReadAccess.Any(x => (x.Object == obj && x.ObjectID == objID)))
+                {                    
+                        url = null;                 
                 }
 
                 values.Add(new ReadOnlyFieldValue { Value = intersectDisplayValue, TooltipContext = "Preview", TooltipID = objID, TooltipType = obj, TooltipUrl = url });
