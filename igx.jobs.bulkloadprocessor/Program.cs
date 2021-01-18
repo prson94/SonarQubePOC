@@ -1051,15 +1051,15 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                 //loop throw rows until there are no more indexes start at 2
                 int currentRowIndex = 2;
                 var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-                int assetIdIndex = -1;
+                int assetUidIndex = -1;
                 int responsibilityIndex = -1;
                 int resourceIndex = -1;
 
                 foreach (var column in columns)
                 {
-                    if (string.Compare(column.Name, "Asset ID") == 0)
+                    if (string.Compare(column.Name, "Asset UID") == 0)
                     {
-                        assetIdIndex = column.ColumnIndex;
+                        assetUidIndex = column.ColumnIndex;
                     }
                     else if (string.Compare(column.Name, "Resource") == 0)
                     {
@@ -1076,7 +1076,7 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     //add a row to [ResponsibilityTypeRelationOverrideItem] table for the responsibility
                     var responsibilityCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == responsibilityIndex).FirstOrDefault();
                     var resourceCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == resourceIndex).FirstOrDefault();
-                    var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetIdIndex).FirstOrDefault();
+                    var assetCol = rowData.Where(x => x.RowIndex == currentRowIndex && x.ColumnIndex == assetUidIndex).FirstOrDefault();
                     var msg = "";
                     var status = 0;
                     if ((responsibilityCol == null) || (resourceCol == null) || (assetCol == null))
@@ -1093,14 +1093,23 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                         var responsiblityOverride = new ResponsibilityTypeRelationOverrideItem();
                         responsiblityOverride.UpdatedBy = load.UpdatedBy.GetValueOrDefault();
                         
-                        if (!int.TryParse(assetCol.Value, out int assetId))
+                        if (!Guid.TryParse(assetCol.Value, out Guid assetUid))
                         {
-                            msg = $"Bulk load responsibilities asset ID value {assetCol.Value} is not a valid asset id.  Asset ID values must be an integer.";
+                            msg = $"Bulk load responsibilities asset UID value {assetCol.Value} is not a valid asset Uid.  Asset UID values must be an unique identifier.";
                             CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
                         }
                         else
                         {
-                            responsiblityOverride.AssetID = assetId;
+                            var asset = company.Assets.Where(x => x.uid == assetUid).FirstOrDefault();
+                            if (asset == null)
+                            {
+                                msg = $"Bulk load responsibilities asset UID value {assetCol.Value} is not a valid asset Uid.  Asset cannot be found.";
+                                CoreFunction.AITrackTrace(functionName, msg, companyId: company.CurrentCompanyID);
+                            }
+                            else
+                            {
+                                responsiblityOverride.AssetID = asset.ID;
+                            }
                         }
 
                         var resource = resourceCol.Value;

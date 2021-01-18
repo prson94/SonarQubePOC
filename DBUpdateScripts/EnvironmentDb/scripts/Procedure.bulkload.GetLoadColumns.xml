@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.bulkload.GetLoadColumns-v4">
-    <comment>GOV-13317</comment>
+  <changeSet author="TKlok" id="Procedure.bulkload.GetLoadColumns-v5">
+    <comment>GOV-13107</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -69,7 +69,7 @@ begin
 				where	A.Object = 'Group'
 				order by DisplayValue
 			
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Asset ID', 1, 1, 0, 0, 1);
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Asset UID', 1, 1, 0, 0, 1);
 	end
 
 	if @action = 'P'
@@ -662,7 +662,7 @@ begin
 						and ObjectID = @id 
 						and Type not in ('ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'RefListRelationship', 'Tag', 'Relationship')
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
-						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON'))						
+						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1))						
 			order by	ColumnOrder;
 		
 			insert into @lookups (FieldTypeID, [Label])
