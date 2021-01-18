@@ -80,11 +80,9 @@
                         </ng-container>
                         <ng-container *ngIf="!field.UseNativeLookupControl">
                             <ng-container *ngIf="field.UseTypeahead && !field.UseColorControl else autocompleteColor">
-                                <p-autoComplete [placeholder]="'Start typing to select an item'"
-                                                [delay]="350"
+                                <p-autoComplete igAutocomplete [placeholder]="'Start typing to select an item'"
+                                                igSize="medium"
                                                 [field]="'Text'"
-                                                [style]="{'width':'100%'}"
-                                                [inputStyle]="{'width':'100%' }"
                                                 [inputId]="field.FieldName + '_input_' + component_uid"
                                                 [formControlName]="field.FieldName"
                                                 (onSelect)="onSelect($event)"
@@ -104,10 +102,11 @@
                                 </p-autoComplete>
                             </ng-container>
                             <ng-template #autocompleteColor>
-                                <p-autoComplete igAutocomplete [placeholder]="'Start typing to select an item'"
-                                                igSize="medium"
+                                <p-autoComplete [placeholder]="'Start typing to select an item'"
                                                 [delay]="350"
                                                 [field]="'Text'"
+                                                [style]="{'width':'100%'}"
+                                                [inputStyle]="{'width':'100%' }"
                                                 [inputId]="field.FieldName + '_input_' + component_uid"
                                                 [formControlName]="field.FieldName"
                                                 (onSelect)="onSelect($event)"
