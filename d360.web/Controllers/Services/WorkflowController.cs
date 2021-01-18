@@ -770,11 +770,23 @@ order by wi.StartedOn desc";
 
                     if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
+                    var obj = reg.Object;
+                    var objId = reg.ObjectID;
+
+                    if (reg.Object == "IssueType")
+                    {
+                        var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+                        if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+
+                        obj = issue.ObjectType;
+                        objId = issue.ObjectTypeID;
+                    }
+
                     var itemSql = "select A.DisplayValue as [Text], A.Object + '|' + cast(A.ObjectID as varchar) as [Value] from AssetDetail A where A.Type = @objectType and A.TypeID = @objectTypeId order by 1";
 
                     item.Values = new List<System.Web.Mvc.SelectListItem>();
 
-                    if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                    if (obj == intersectType.Subject && objId == intersectType.SubjectID)
                     {
                         // load the object items into the values array                        
                         item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
