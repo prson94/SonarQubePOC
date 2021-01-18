@@ -201,11 +201,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         var responsibilityOverridePostModel: ResponsibilityOverridePostModel = new ResponsibilityOverridePostModel();
         responsibilityOverridePostModel.ResourceUid = [this.itemToSave.ResourceUid];
         responsibilityOverridePostModel.Description = this.itemToSave.Description;
-        
+
         this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
             .subscribe(data => {                
                 this.isLoading = false;
-                data.message = this.item.ResponsibilityUid ? "Responsibility successfully Updated" : "Responsibility successfully Created";
+                data.message = this.item.ResponsibilityUid ? "Responsibility successfully updated" : "Responsibility successfully created";
                 this.showMessageForResult(this.messagesService, data);
                 this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
             });
