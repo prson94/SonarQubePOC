@@ -8,6 +8,7 @@ import { NG_VALIDATORS, AbstractControl } from '@angular/forms';
 
 })
 export class AutocompleteDirective implements AfterViewInit, OnDestroy {
+    public _size: string;
 
     constructor(public el: ElementRef) { }
 
@@ -25,10 +26,28 @@ export class AutocompleteDirective implements AfterViewInit, OnDestroy {
 
         //remove z index from autocomplete so input within takes advantage
         htmlEl.tabIndex = -1;
+
+        //set igSize
+        if (this._size && this._size == "small") {
+            DomHandler.addMultipleClasses(input, "ig-input-small");
+        } else if (this._size && this._size == "medium") {
+            DomHandler.addMultipleClasses(input, "ig-input-medium");
+        } else if (this._size && this._size == "large") {
+            DomHandler.addMultipleClasses(input, "ig-input-large");
+        } else if (this._size && this._size == "full") {
+            DomHandler.addMultipleClasses(input, "ig-input-full");
+        }
     }
 
     getStyleClass(): string {
         return 'ig-autocomplete';
+    }
+
+    @Input() get igSize(): string {
+        return this._size;
+    }
+    set igSize(val: string) {
+        this._size = val;
     }
 
     ngOnDestroy() {
