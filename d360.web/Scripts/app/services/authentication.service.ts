@@ -22,9 +22,9 @@ export class AuthenticationService {
     }
 
     checkCurrentUserAdmin(): Observable<boolean> {
-        return this.http.get(`/api/v2/membership/users/me/roles`)
-            .pipe(map(res => {
-                this._isAdmin = (res as string[]).some(x => x === "Administrator");
+        return this.http.get("/api/v2/membership/users/me/roles")
+            .pipe(map((res) => {
+                this._isAdmin = (res as string[]).some((x) => x === "Administrator");
                 return this._isAdmin;
             }));
     }
