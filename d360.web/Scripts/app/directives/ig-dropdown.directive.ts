@@ -22,7 +22,7 @@ export class DropdownDirective implements AfterContentInit {
 
     ngAfterContentInit(): void {
         DomHandler.addMultipleClasses(this.el.nativeElement, this.getStyleClass());
-        if (this.required !== null && this.required !== undefined && this.required.toString() !== '') {
+        if (this.required !== null && (typeof this.required !== undefined) && this.required.toString() !== '') {
             //If required was set by Angular binding via [required] input parameter
             if (this.required) {
                 (this.el.nativeElement as HTMLElement).setAttribute("required", "true");
