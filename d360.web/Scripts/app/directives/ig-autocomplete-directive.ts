@@ -1,7 +1,6 @@
-﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input, forwardRef, Provider } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
-import { NG_VALIDATORS, AbstractControl } from '@angular/forms';
 
 @Directive({
     selector: '[igAutocomplete]'
@@ -28,13 +27,13 @@ export class AutocompleteDirective implements AfterViewInit, OnDestroy {
         htmlEl.tabIndex = -1;
 
         //set igSize
-        if (this._size && this._size == "small") {
+        if (this._size && this._size === "small") {
             DomHandler.addMultipleClasses(input, "ig-input-small");
-        } else if (this._size && this._size == "medium") {
+        } else if (this._size && this._size === "medium") {
             DomHandler.addMultipleClasses(input, "ig-input-medium");
-        } else if (this._size && this._size == "large") {
+        } else if (this._size && this._size === "large") {
             DomHandler.addMultipleClasses(input, "ig-input-large");
-        } else if (this._size && this._size == "full") {
+        } else if (this._size && this._size === "full") {
             DomHandler.addMultipleClasses(input, "ig-input-full");
         }
     }
