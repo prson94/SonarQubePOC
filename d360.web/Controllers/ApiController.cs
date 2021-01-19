@@ -1749,7 +1749,7 @@ order by    rnk, [Name]";
             try
             {
                 any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly",
-                    new { @object = type, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true }
+                    new { @object = new DbString { Value = type, IsAnsi= true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true }
                 );
             }
             catch (Exception ex)
