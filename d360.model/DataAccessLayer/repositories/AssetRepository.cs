@@ -365,11 +365,14 @@ namespace d360.model.DataAccessLayer
             {
                 var subjectAlias = "B";
                 var objectAlias = "A";
+                var ATsubjectAlias = "TB";
+                var ATobjectAlias = "T";
                 string relatedAssetUIDString = "";
                 Guid relatedAssetUID;
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
+                var intersecTypeJoin = "";
                 var IntersectTypeIDField = "";
                 var reverseIntersectJoin = "";
                 var relatedAssetSql = " 1=1 ";
@@ -386,7 +389,7 @@ namespace d360.model.DataAccessLayer
                         relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
-
+                    intersecTypeJoin = $"IT.[Subject] = {ATobjectAlias}.[Object] and IT.SubjectID = {ATobjectAlias}.ObjectID and IT.[Object] = {ATsubjectAlias}.[Object] and abs(IT.ObjectID) = {ATsubjectAlias}.ObjectID";
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
                 {
@@ -397,6 +400,7 @@ namespace d360.model.DataAccessLayer
                         relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    intersecTypeJoin = $"IT.[Subject] = {ATsubjectAlias}.[Object] and abs(IT.SubjectID) = {ATsubjectAlias}.ObjectID and IT.[Object] = {ATobjectAlias}.[Object] and IT.ObjectID = {ATobjectAlias}.ObjectID";
                 }
                 else
                 {
@@ -427,7 +431,8 @@ namespace d360.model.DataAccessLayer
                     where { relatedAssetSql }
                     and exists (select 1 from IntersectType IT 
 	                inner join [Predicate] P on P.ID = IT.PredicateID 
-	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
+	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid
+                    and {intersecTypeJoin})";
                 }
 
                 var innerCountSql = $@"
@@ -437,8 +442,7 @@ namespace d360.model.DataAccessLayer
 						and exists (select 1 from [Intersect] I
 							inner join IntersectType IT on IT.ID = I.IntersectTypeID
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-							where {intersectJoin})    
-";
+							where {intersectJoin})";
 
                 if (includeBoth)
                 {
