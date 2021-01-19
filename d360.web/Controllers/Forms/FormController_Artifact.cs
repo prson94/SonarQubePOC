@@ -79,7 +79,7 @@ namespace d360.web.Controllers
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
 
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 2);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
