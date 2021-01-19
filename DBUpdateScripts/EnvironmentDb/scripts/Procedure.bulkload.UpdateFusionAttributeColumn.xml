@@ -11,6 +11,11 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+    DROP PROCEDURE IF EXISTS [bulkload].[UpdateFusionAttributeColumn]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateFusionAttributeColumn]
 	@id int,
 	@fusionConfigColumn int,
@@ -38,10 +43,6 @@ begin
 									inner join FusionAttribute A on A.FusionID = C.FusionID and lower(A.TextPath) = lower(C.TextPath)
 						) S on S.FusionID = TC.LookupObjectID and S.TextPath = TA.Value
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>

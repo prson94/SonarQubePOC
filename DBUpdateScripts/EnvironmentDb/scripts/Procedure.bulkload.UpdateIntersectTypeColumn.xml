@@ -11,6 +11,11 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+    DROP PROCEDURE IF EXISTS [bulkload].[UpdateIntersectTypeColumn]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateIntersectTypeColumn]
 	@id int,
 	@column int
@@ -24,10 +29,6 @@ begin
 			inner join IntersectTypeDetail S on coalesce(S.SubjectName,'') + ' ' + coalesce(S.PredicateName,'/') + ' ' + coalesce(S.ObjectName,'') = lower(T.Value) 
 				and T.ColumnIndex = @column and T.LoadID = @id and S.PredicateType not in (3,4)
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>

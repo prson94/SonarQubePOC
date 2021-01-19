@@ -383,10 +383,6 @@ namespace igx.jobs.bulkloadprocessor
                         case "U":   // Unrelate
                             await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
                             break;
-                        case "B":
-                        case "BL":  // Business Lineage
-                            executeWithTry(companyConnection, $@"EXEC bulkload.BusinessLineage {load.ID}", loadInfo.CompanyID, 2400);
-                            break;
                     }
 
                     companyConnection.Close();

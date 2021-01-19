@@ -11,6 +11,11 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP PROCEDURE IF EXISTS [bulkload].[BusinessLineage]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[BusinessLineage]
 	@id int
 as
@@ -614,11 +619,6 @@ begin
 		where	ID = @id;
 	END CATCH
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

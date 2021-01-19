@@ -11,6 +11,11 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+    DROP PROCEDURE IF EXISTS [bulkload].[UpdateFusionConfigurationColumn]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateFusionConfigurationColumn]
 	@id int,
 	@fusionConfigColumn int
@@ -23,10 +28,6 @@ begin
 	from	LoadItemColumn T
 			inner join Fusion S on lower(S.Name) = lower(T.Value) and T.ColumnIndex = @fusionConfigColumn and T.LoadID = @id
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>
