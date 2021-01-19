@@ -92,9 +92,9 @@ namespace d360.web.Controllers.V2
 
                 string finalSql = "";
                 string joinsSql = $@" outer apply (select object,objectid from Asset A1 where A1.Object = 'Resource' and A1.ObjectID = gr.ResourceID) A 
-                                        {(_includeOrganization ? 
+                                        {(_includeOrganization ?
                                                     @" left join dbo.OrganizationResource org on org.ResourceID = GR.ResourceID 
-                                                    left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID " 
+                                                    left join dbo.asset ao on ao.Object like 'Organization' and ao.ObjectID = org.OrganizationID "
                                     : "")}";
                 string whereSql = "";
                 string selectSql = $@"select
@@ -340,9 +340,9 @@ namespace d360.web.Controllers.V2
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
 
-            if(groupUid == Guid.Empty)
+            if (groupUid == Guid.Empty)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid passed in is empty. Please provided a valid group"));
-            
+
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
 
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
@@ -848,7 +848,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             try
             {
                 var execution = getApiExecution(users.Count);
-                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false , IsChangePasswordReqeust);
+                var results = await membershipRepository.UpsertUsers(execution, users, lookupFieldsPassedByValue, false, IsChangePasswordReqeust);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -1010,7 +1010,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     string message = "Name is required.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
-                } else
+                }
+                else
                 {
                     favorite.Name = favorite.Name.Trim();
                 }
@@ -1018,7 +1019,8 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
-                } else
+                }
+                else
                 {
                     favorite.Route = favorite.Route.Trim();
                 }
@@ -1061,7 +1063,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            if(groups.Count() < 1)
+            if (groups.Count() < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No Groups provided in request"));
 
             var execution = getApiExecution(groups.Count);
@@ -1196,14 +1198,14 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
         {
             if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));                     
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (!Company.Any<AssetType>(x => x.uid == organizationTypeUid && x.Object == core.SystemObjects.OrganizationType.ToString()))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid organizationTypeUid provided"));
             }
 
-            var queryParams = Request.GetQueryNameValuePairs();            
+            var queryParams = Request.GetQueryNameValuePairs();
 
             string isValid = isPageSizeAndNumValid(queryParams);
 
@@ -1216,7 +1218,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     isValid = $"{order} is not a valid _order field";
                 }
             }
-            
+
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
             {
                 string[] allowedValues = new string[] { "asc", "desc" };
@@ -1226,17 +1228,18 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 {
                     isValid = "Invalid _direction provided";
                 }
-            }            
+            }
 
             if (!string.IsNullOrEmpty(isValid))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
             }
-            try {
+            try
+            {
                 List<OrganizationModel> organizations = await membershipRepository.GetOrganizationsByType(organizationTypeUid, queryParams);
-                
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizations)));
-            }           
+            }
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -1246,7 +1249,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
-            }            
+            }
         }
 
 
@@ -1268,7 +1271,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-                        
+
             try
             {
                 OrganizationDetailModel organizationDetails = await membershipRepository.GetOrganizationsDetails(organizationUid);
@@ -1277,7 +1280,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid", "Invalid Organization Uid provided"));
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, organizationDetails)));
-            }            
+            }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -1380,6 +1383,47 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid user information", "Invalid user information"));
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apikeydetail)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Retrieve the roles of current user (Administrator/User)
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/roles"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<string>)),
+        SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetUserRoles()
+        {
+            var prefix = "Membership.GetUserRoles => ";
+
+            try
+            {
+                List<string> roles = new List<string>();
+
+                if (Company.CurrentResourceIsAdmin)
+                {
+                    roles.Add("Administrator");
+                }
+                else
+                {
+                    roles.Add("User");
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, roles)));
             }
             catch (Exception ex)
             {

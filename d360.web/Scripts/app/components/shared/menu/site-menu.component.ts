@@ -199,9 +199,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
             this.siteMenuService.getMenu().subscribe(
                 result => {                                        
-
-                        // used to enable guard that allows access to administrative routes                                
-                        this.authenticationService.isAdmin = result.IsAdmin;
                         this.isAdmin = result.IsAdmin;
 
                         result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
