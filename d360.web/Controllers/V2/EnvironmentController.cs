@@ -704,7 +704,7 @@ namespace d360.web.Controllers.V2
                     h.Value as 'host',
                     bl.Value as 'language', 
 		            stat.Timestamp as 'eventDate', 
-                    att.Name as 'assetTypeName', 
+                    COALESCE(att.Name, att2.Name) as 'assetTypeName', 
                     COALESCE(att.uid,  att2.uid) as 'assetTypeUid', 
                     a.uid as 'assetUid', 
                     adv.DisplayValue as 'assetDisplayValue', 
