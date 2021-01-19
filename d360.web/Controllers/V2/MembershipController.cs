@@ -1405,7 +1405,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<string>)),
         SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
         SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-        ]
+        ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IHttpActionResult> GetUserRoles()
         {
             var prefix = "Membership.GetUserRoles => ";
