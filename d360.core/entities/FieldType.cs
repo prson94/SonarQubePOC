@@ -742,7 +742,7 @@ namespace d360.core.entities
         [DataMember]
         [Required(AllowEmptyStrings = false, ErrorMessage = "{0} is a required field")]
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
-        [RegularExpression("^[a-zA-Z][a-zA-Z0-9_]+$", ErrorMessage = "{0} can only have uppercase letters, lowercase letters, numbers, or underscore. It must also begin with a letter.")]
+        [RegularExpression("^[a-zA-Z][a-zA-Z0-9_]+$", ErrorMessage = "{0} can only have uppercase letters, lowercase letters, numbers, or underscore. It must also be greater than 1 character in length and start with a letter.")]
         public string Name { get; set; }
         [DataMember]        
         [Required(AllowEmptyStrings = false, ErrorMessage = "{0} is a required field")]
