@@ -261,7 +261,6 @@ namespace d360.model
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
-        bool IsValidReportingQuery(string statement);
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
         bool ObjectHasChildren(SystemObjects type, int id);
         bool ObjectHasParent(SystemObjects type, int id);
@@ -284,7 +283,6 @@ namespace d360.model
         int SaveChanges();
         bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject;
         bool SaveOrUpdateAsset(Asset asset, List<Field> fields, int parentId = -1);
-        List<string> SelectQueryColumns(string statement);
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, core.enums.Workflow.ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null, ScoreType? scoreType = null);
         bool TypeHasChildren(SystemObjects type, int id);
