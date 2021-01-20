@@ -30,50 +30,11 @@ declare var CompanySettings;
              *ngIf="!isLoading">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <header>Take Action</header>
+                    <header>Take Action on {{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</header>
                     <div class="row">
-                        <div class="col s12">
-                            <div class="FieldName">{{actionMessage}}</div>
-                            <div *ngIf="objectDetail"
-                                 style="padding-left:20px"><label><input name="selObject"
-                                                                         type="radio"
-                                                                         [(ngModel)]="selectedOption"
-                                                                         (click)="selectCurrent()"
-                                                                         value="current">{{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}
-                            </label></div>
-                            <div>
-                                <label style="padding-left:20px"><input name="selObject"
-                                                                        type="radio"
-                                                                        value="other"
-                                                                        [(ngModel)]="selectedOption"
-                                                                        (click)="selectOther()">Other item</label>
-                                <div *ngIf="selectedOption=='other'"
-                                     style="padding-left:40px">
-                                    <p-autoComplete size="100"
-                                                    scrollHeight="400px"
-                                                    name="other"
-                                                    [inputStyle]="{width:'100%'}"
-                                                    [(ngModel)]="term"
-                                                    [suggestions]="terms"
-                                                    (completeMethod)="search($event)"
-                                                    placeholder="Select an item"
-                                                    field="TextPath"
-                                                    (onSelect)="selectItem()">
-                                        <ng-template let-item
-                                                     pTemplate="item">
-                                            <span style="color:#999999;">{{userFriendlyObjectName(item.Displayobject)}}
-                                                - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}}
-                                                    -</span></span> {{item.TextPath}}
-                                            <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>
-                                        </ng-template>
-                                    </p-autoComplete>
-                                </div>
-                            </div>
-                        </div>
                         <div class="col s12"
                              *ngIf="selectedObjectId != null && selectedObjectType != null">
-                            <div>&nbsp;</div>
-                            <div class="FieldName">What are you reporting?</div>
+                            <div class="FieldName">What action would you like to take?</div>
                         </div>
                         <div class="col s12"
                              *ngIf="selectedObjectId != null && selectedObjectType != null">
