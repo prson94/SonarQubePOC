@@ -99,31 +99,6 @@ export class NymType {
     Name: string;
 }
 
-export class AttributeHeirarchyItem {
-
-    Items: AttributeHeirarchyItem[];
-    ID: string;
-    ParentID: string;
-    TypeID: number;
-    ObjectTypeName: string;
-    ObjectType: string;
-    ObjectID: number;
-    ParentObjectType: string;
-    ParentObjectID: number;
-    TargetObjectType: string
-    TargetObjectID: number;
-    Name: string;
-    AttributeTypeCategory: string;
-    ShowNameInTree: boolean;
-    IsTechnical: boolean;
-    IsCategory: boolean = false;
-    expanded: boolean = true;
-
-    UID: string;
-    ParentUID: string;
-}
-
-
 export class ToolbarItem {
     Context: string;
     Icon: string;

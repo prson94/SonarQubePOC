@@ -816,15 +816,12 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
         public ObjectDetail GetObjectDetail(string type, long id)
         {
-            string query = string.Format("SELECT * FROM utility.ObjectDetail('{0}', {1})", type, id);
-            var model = Database.SqlQuery<ObjectDetail>(query).SingleOrDefault();
-            var neutralCulture = Thread.CurrentThread.CurrentCulture.Parent.Name;
+            var model = Database.Connection.QuerySingle<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
 
             if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
-                pluralize = null;
+                model.PluralizedName = pluralize.Pluralize(model.Name ?? "");                
             }
             return model;
         }
@@ -887,98 +884,12 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             return GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
         }
 
-        public bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
-        {
-            var intersectType = Filter<IntersectTypeDetail>(i =>
-                        i.Object == type.ToString() &&
-                        i.ObjectID == typeId &&
-                        i.PredicateType.Value == predicateType
-                    ).SingleOrDefault();
-
-            if (intersectType != null)
-            {
-                var intersect = Intersects.FirstOrDefault(x => x.IntersectTypeID == intersectType.ID && x.Object == objectType.ToString() && x.ObjectID == objectID);
-
-                if (intersect == null)
-                    return AddObjectParentRelationship(type, typeId, objectType, parentID, objectID, predicateType);
-
-                var parentExists = Any<Asset>(i =>
-                    i.ObjectID == parentID &&
-                    i.AssetType.Object == type.ToString() &&
-                    i.AssetType.ObjectID == intersectType.SubjectID
-                    );
-
-                if (!parentExists)
-                {
-                    return false;
-                }
-
-                intersect.Subject = type.ToString().Replace("Type", "");
-                intersect.SubjectID = parentID;
-
-                return SaveOrUpdate<Intersect>(intersect) > 0;
-
-            }
-
-            return true;
-        }
-
-        public bool AddObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy)
-        {
-            var intersectType = Filter<IntersectTypeDetail>(i =>
-                        i.Object == type.ToString() &&
-                        i.ObjectID == typeId &&
-                        i.PredicateType.Value == predicateType
-                    ).SingleOrDefault();
-
-            if (intersectType != null)
-            {
-                var intersect = new Intersect
-                {
-                    Subject = objectType.ToString(),
-                    SubjectID = parentID,
-                    Object = objectType.ToString(),
-                    ObjectID = objectID,
-                    IntersectTypeID = intersectType.ID
-                };
-
-                var parentExists = Any<Asset>(i =>
-                    i.ObjectID == intersect.SubjectID &&
-                    i.AssetType.Object == type.ToString() &&
-                    i.AssetType.ObjectID == intersectType.SubjectID
-                    );
-
-                if (!parentExists)
-                {
-                    return false;
-                }
-
-                return Add(intersect);
-            }
-
-            return true;
-        }
-
         public string GetIntersectTypeName(IntersectType intersectType)
         {
             string @sql = "SELECT * FROM [dbo].[GetIntersectTypeNames] (@id)";
             var itName = Query<string>(sql, new { id = intersectType.ID }).FirstOrDefault();
 
             return itName != null ? itName : "Name";
-        }
-
-        public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj)
-        {
-            var sql = @"select AT.ID from IntersectType I
-                    inner join [Predicate] P on P.ID = I.PredicateID
-                    inner join AssetType AT on AT.Object = I.Object and AT.ObjectID = I.ObjectID
-                    where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
-            var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = obj.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id });
-
-            if (!childIds.Any())
-                return new List<AssetType>();
-
-            return childIds.Select(t => GetById<AssetType>(t));
         }
 
         public bool TypeHasParent(SystemObjects type, int id)
@@ -997,24 +908,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             var sql = @"select 1 from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
-
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
-        }
-
-        public bool ObjectHasParent(SystemObjects type, int id)
-        {
-            var sql = @"select 1 from PredicateIntersect I
-                    inner join IntersectType T on T.ID = I.IntersectTypeID
-                    where I.PredicateType = @type and I.[Object] = @object and I.ObjectID = @objectId";
-
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
-        }
-
-        public bool ObjectHasChildren(SystemObjects type, int id)
-        {
-            var sql = @"select 1 from PredicateIntersect I
-                    inner join IntersectType T on T.ID = I.IntersectTypeID
-                    where I.PredicateType = @type and I.[Subject] = @object and I.SubjectID = @objectId";
 
             return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
@@ -2692,18 +2585,7 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key)
-        {
-            string xml = $@"<fields><Action>{actionName}</Action>
-                            <ActionObject>{key}</ActionObject>     
-                            <ActionObjectID>{companySetting.SettingID}</ActionObjectID>  
-                            <ActionObjectValue>{companySetting.Value}</ActionObjectValue>
-                            <ResourceID>{CurrentResourceID}</ResourceID>
-                        </fields>";
-            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-                         VALUES ('{actionName}','CompanySettings',{companySetting.SettingID},'{xml}')";
-            Query<int>(sql).FirstOrDefault();
-        }
+        
         #endregion
 
         #region Dynamic Field Methods
