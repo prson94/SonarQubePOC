@@ -435,7 +435,6 @@ namespace d360.model.validators
 
                     }
                 }
-            
             }
             if (fieldsHaveErrors)
             {
