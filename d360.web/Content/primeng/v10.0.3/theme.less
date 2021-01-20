@@ -1982,8 +1982,8 @@ p-table .p-datatable-tbody > tr > td {
 }
 
 /* ButtonSet */
-.p-togglebutton.p-button.p-state-default,
-.p-selectbutton .p-button.p-state-default {
+.p-togglebutton.p-button,
+.p-selectbutton .p-button {
     border: @ig-field-border;
     background: @ig-white;
     font-weight: normal;
@@ -2003,11 +2003,28 @@ p-table .p-datatable-tbody > tr > td {
     color: @ig-black;
 }
 
-.p-togglebutton.p-button.p-state-active,
-.p-selectbutton .p-button.p-state-active {
+.p-togglebutton.p-button.p-highlight,
+.p-selectbutton .p-button.p-highlight {
     border: 1px solid @ig-midblue;
     background: @ig-midblue-s1;
     color: @ig-white;
+    outline:none;
+}
+
+.p-buttonset .p-button,
+.p-buttonset.p-component .p-button
+{
+    margin: 1px;
+}
+
+.p-buttonset.p-component .p-button:not(:last-child) {
+    border-right-width: 1px;
+    border-right-style: solid;
+    border-right-color: @ig-grey-t3;
+
+    &.p-highlight {
+        border-right-color: @ig-midblue;
+    }
 }
 
 /* SelectOneMenu */
@@ -2431,7 +2448,7 @@ p-table .p-column-filter {
     background: @ig-midblue-t2;
 }
 
-.p-button:hover, button.p-button.p-state-default:hover, .p-button.p-state-default:hover {
+.p-button:hover, button.p-button.p-state-default:hover, .p-button.p-state-default:hover, .p-selectbutton .p-button:hover {
     background: #40b9f5;
 }
 
