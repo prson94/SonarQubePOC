@@ -9,7 +9,6 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using d360.core.resources;
-using System.Text.RegularExpressions;
 
 namespace d360.model.validators
 {
@@ -434,18 +433,6 @@ namespace d360.model.validators
                         if (editableViewModel.IsPrimaryFilter == true)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPrimaryFilter' set to true!");
 
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(field.Type?.Text?.Validation?.Pattern))
-                {
-                    try
-                    {
-                        Regex rx = new Regex(field.Type.Text.Validation.Pattern);
-                    }
-                    catch(Exception ex)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field validation error", $"Validation Regex Pattern is not formatted correctly!");
                     }
                 }
             
