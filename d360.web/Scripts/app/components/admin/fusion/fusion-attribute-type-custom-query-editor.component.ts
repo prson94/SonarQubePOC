@@ -47,9 +47,6 @@ import * as _ from 'lodash';
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
                     <button pButton
-                            type="submit"
-                            label="Save"></button>
-                    <button pButton
                             type="button"
                             (click)="closeClick.emit();"
                             label="Close"></button>
