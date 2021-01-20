@@ -28,7 +28,7 @@ export class MetricsService extends BaseObservableService {
     public getActiveAllocationsByAssetUid(uid: string): Observable<ScoreTypeAllocation[]> {
 
         return this.http
-            .get<ScoreTypeAllocation[]>(`/api/v2/scoring/allocations/?assetUid=${uid}&state=1`)
+            .get<ScoreTypeAllocation[]>(`/api/v2/scoring/allocations/?assetUid=${uid}&state=1&_order=scoretype&_direction=asc`)
             .pipe(
                 map((res: ScoreTypeAllocation[]) => {
                     return res;

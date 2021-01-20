@@ -36,8 +36,21 @@ namespace d360.model.DataAccessLayer
         {
             error = string.Empty;
             List<string> whereStatements = new List<string>();
+            string orderBy = "P.[Path]";
+            string orderDirection = "asc";
 
             var dbArgs = new DynamicParameters();
+
+            Dictionary<string, string> fieldMapping = new Dictionary<string, string>()
+            {
+                { "assetclassname","AT.class" },
+                { "assettypepath","P.[Path]"},
+                { "scoretype", "AL.scoreType" },
+                { "state", "AL.[state]"},
+                { "isexternallycalculated", "AL.isExternallyCalculated"},
+                { "lowerthreshold","AL.lowerThreshold" },
+                { "upperthreshold","AL.upperThreshold"}
+            };
 
             foreach (var kp in queryParams)
             {
@@ -74,7 +87,7 @@ namespace d360.model.DataAccessLayer
                         Guid assetTypeUid = Guid.Empty;
                         Guid.TryParse(kp.Value, out assetTypeUid);
 
-                        if(assetTypeUid == Guid.Empty)
+                        if (assetTypeUid == Guid.Empty)
                         {
                             error = "Invalid Asset Type UID specified.";
                             return null;
@@ -169,8 +182,26 @@ namespace d360.model.DataAccessLayer
 
                         whereStatements.Add($"({string.Join(" or ", globalFilters)})");
                         break;
-
+                    case "_direction":
+                        string val = kp.Value.ToLower();
+                        if (!(new string[] { "asc", "desc" }.Contains(val)))
+                        {
+                            error = "Invalid _direction specified. Allowed values are 'asc' and 'desc'.";
+                            return null;
+                        }
+                        orderDirection = val;
+                        break;
+                    case "_order":
+                        string order = kp.Value.ToLower();
+                        if (!fieldMapping.ContainsKey(order))
+                        {
+                            error = "Invalid _order specified.";
+                            return null;
+                        }
+                        orderBy = fieldMapping[order];
+                        break;
                     default: break;
+
                 }
             }
 
@@ -182,6 +213,8 @@ namespace d360.model.DataAccessLayer
             }
 
             string sqlWhere = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
+            string sqlOrderClause = $"order by {orderBy} {orderDirection}";
+
             var sql = $@"select 
 	                        AL.uid,
 	                        AT.class as assetClassName,
@@ -211,7 +244,7 @@ namespace d360.model.DataAccessLayer
                             cross apply (select count(*) from metrics.Asset where State <> 1 and AllocationUid = AL.Uid) DisabledMeasures(F)
                             cross apply (select count(*) from FieldType where AssetTypeID = AT.ID and [Type] = 'Score' and ScoreType = AL.ScoreType) Fields(F)
                         {sqlWhere}
-                        order by P.[Path]
+                        {sqlOrderClause}
                         ";
 
             List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs, ApiTimeout).ToList();
