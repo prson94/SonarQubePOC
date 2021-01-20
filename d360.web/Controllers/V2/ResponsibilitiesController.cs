@@ -165,11 +165,15 @@ namespace d360.web.Controllers.V2
             var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
             var errorMessage = "";
 
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
             try
             {
+                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+                if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                }
+
                 IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
