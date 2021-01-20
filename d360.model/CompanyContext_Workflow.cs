@@ -1090,12 +1090,40 @@ namespace d360.model
                 if (intersectType == null)
                     throw new Exception($"ERROR - INVALID INTERSECT TYPE ID SPECIFIED.  PLEASE CHECK THE SETTINGS ASSOCIATED WITH THE RELATIONSHIP UPDATE ACTION OF THE CURRENT WORKFLOW. INTERSECT TYPE ID IS [{intersectTypeId}]");
 
-                var isSubject = intersectType.SubjectID == objectInfo.ObjectTypeID && intersectType.Subject == objectInfo.ObjectType.ToString();
+
+                EventObjectInfo assetInfo;
+                //get underlying asset if this is an action
+                if (objectInfo.ObjectType == SystemObjects.IssueType)
+                {
+                    var issue = Issues.FirstOrDefault(i => i.ID == objectInfo.ObjectID);
+                    if (issue == null)
+                        throw new Exception($"ERROR - ASSET FOR ACTION ID [{objectInfo.ObjectID}] NOT FOUND");
+
+                    assetInfo = new EventObjectInfo()
+                    {
+                        Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.Object),
+                        ObjectID = issue.ObjectID,
+                        ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), issue.ObjectType),
+                        ObjectTypeID = issue.ObjectTypeID
+                    };
+                }
+                else
+                {
+                    assetInfo = new EventObjectInfo()
+                    {
+                        Object = objectInfo.Object,
+                        ObjectID = objectInfo.ObjectID,
+                        ObjectType = objectInfo.ObjectType,
+                        ObjectTypeID = objectInfo.ObjectTypeID
+                    };
+                }
+
+                var isSubject = intersectType.SubjectID == assetInfo.ObjectTypeID && intersectType.Subject == assetInfo.ObjectType.ToString();
 
                 if (item.ClearValue)
                 {
                     //delete intersects with the given intersect type id for the current object
-                    DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
+                    DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
                 }
                 else
                 {
@@ -1105,7 +1133,7 @@ namespace d360.model
 
                     if (!item.AppendValue || supportsJustOne)
                     {
-                        DeleteIntersects(objectInfo.Object, objectInfo.ObjectID, intersectTypeId, isSubject);
+                        DeleteIntersects(assetInfo.Object, assetInfo.ObjectID, intersectTypeId, isSubject);
                     }
 
                     //split the value on , 
@@ -1124,34 +1152,23 @@ namespace d360.model
                         if (!string.IsNullOrEmpty(rel))
                         {
                             var parts = rel.Split('|');
-                            var obj = objectInfo.Object.ToString();
-                            var objId = objectInfo.ObjectID;
+
                             var intersect = new Intersect();
 
                             intersect.IntersectTypeID = intersectType.ID;
 
 
-                            if (obj == "Issue")
-                            {
-                                var issue = Issues.FirstOrDefault(i => i.ID == objId);
-                                if (issue == null)
-                                    throw new Exception($"ERROR - ASSET FOR ACTION ID [{objId}] NOT FOUND");
-
-                                obj = issue.Object.ToString();
-                                objId = issue.ObjectID;
-                            }
-
                             if (isSubject)
                             {
-                                intersect.Subject = obj;
-                                intersect.SubjectID = objId;
+                                intersect.Subject = assetInfo.Object.ToString();
+                                intersect.SubjectID = assetInfo.ObjectID;
                                 intersect.Object = (parts[0] ?? "").Replace("Type", "");
                                 intersect.ObjectID = int.Parse(parts[1]);
                             }
                             else
                             {
-                                intersect.Object = obj;
-                                intersect.ObjectID = objId;
+                                intersect.Object = assetInfo.Object.ToString();
+                                intersect.ObjectID = assetInfo.ObjectID;
                                 intersect.Subject = (parts[0] ?? "").Replace("Type", "");
                                 intersect.SubjectID = int.Parse(parts[1]);
                             }

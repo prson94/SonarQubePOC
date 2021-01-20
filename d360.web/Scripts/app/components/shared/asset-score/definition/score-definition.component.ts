@@ -5,7 +5,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { MetricsService } from '../../../../services/metrics.service';
 import { ResponsibilityTypeService } from '../../../../services/responsibility-type.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel, MetricGovernanceCheckType } from '../../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricAssetDefinitionGovernanceViewModel, MetricGovernanceCheckType, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../../models/metrics.model';
 import { OperatorModel, Operator } from '../../../../models/operator.model';
 
 @Component({
@@ -33,6 +33,9 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
 
     isDataLoaded: boolean = false;
 
+    showConditions: boolean;
+    private conditions: MetricAssetVersionConditionItemViewModel[] = [];
+
     constructor(
         private settingsService: CompanySettingsService,
         private metricsService: MetricsService,
@@ -49,6 +52,11 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
         }
         else if (changes && changes.selectedMetric && this.assetTypeUid) {
             this.showPassTest = true
+
+            if (this.hasConditions(this.selectedMetric))
+                this.showConditions = true;
+            else
+                this.showConditions = false;
 
             if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
                 this.showPassTest = true
@@ -224,5 +232,75 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             default: ' default';
         }
         return prefix + this.formattedCheck;
+    }
+
+    private hasConditions(item: MetricAssetViewModel) {
+
+        if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
+            this.conditions = item.ConditionGroups[0].ConditionItems;
+            if (this.conditions && this.conditions.length > 0) {
+                this.formatConditions();
+                return true;
+            } else
+                return false;
+        } else {
+            this.conditions = [];
+            return false;
+        }
+    }
+
+    formatConditions() {
+        this.conditions.forEach(c => {
+            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
+            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
+
+            if (field) {
+                c.FieldTypeName = field.Name;
+                c.FieldType = field;
+
+                switch (field.Type) {
+                    case 'Lookup':
+                        if (field.Values) {
+                            if (field.Values.length > 0) {
+                                if (c.Values) {
+                                    if (c.Values[0]) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
+                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
+                                        if (valueModel) {
+                                            c.SingleValue = c.Values[0];
+                                            c.ValuesText = valueModel.Text;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 'Date':
+                        if (c.Values) {
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
+                            }
+                        }
+                        break;
+                    case 'DateTime':
+                        if (c.Values) {
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
+                            }
+                        }
+                        break;
+                    default:
+                        if (c.Values) {
+                            if (c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
+                            }
+                        }
+                        break;
+                }
+            }
+        });
     }
 }

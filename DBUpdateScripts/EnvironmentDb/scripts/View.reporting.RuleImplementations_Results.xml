@@ -5,18 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.reporting.RuleImplementations_Results-Drop-v3">
-  <comment>GOV-12938</comment>
+  <changeSet author="TDuric" id="View.reporting.RuleImplementations_Results-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-				drop view if exists [reporting].[RuleImplementations_Results];
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
    with results as (select 
      AR.Uid resultUid, 
@@ -57,6 +51,27 @@ select
 from results RR
 inner join Asset A on A.uid = RR.RuleUid
 inner join [Rule] R on R.Id = A.ObjectId
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
+        select	RI.RuleID,
+		        R.Threshold,
+		        RI.ID as RuleImplementationID,
+		        coalesce(RI.Name, 'Implementation ' + cast(RI.ID as nvarchar)) as RuleImplementation,
+		        RR.ID as RuleResultID,
+		        RR.EffectiveDate,
+		        RR.CreatedOn,
+		        RR.RunDate,
+		        RR.RowsPassed,
+		        RR.RowsFailed,
+		        RR.PassFraction,
+		        RR.FailFraction,
+		        RR.Passed
+        from	RuleResult RR
+		        inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+		        inner join [Rule] R on R.ID = RI.RuleID       
 		]]>
 	</rollback>
   </changeSet>

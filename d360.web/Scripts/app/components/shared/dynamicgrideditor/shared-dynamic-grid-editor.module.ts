@@ -37,6 +37,8 @@ import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { IgColorPickerModule } from '../controls/color-picker/color-picker.module';
 import { SwitchModule } from '../controls/switch/switch';
+import { IgDateModule } from '../controls/date/date';
+import { IgNumberFieldModule } from '../controls/number-picker/number-input.component';
 
 @NgModule({
     imports: [
@@ -58,6 +60,8 @@ import { SwitchModule } from '../controls/switch/switch';
         TagViewModule,
         IgColorPickerModule,
         SwitchModule,
+        IgDateModule,
+        IgNumberFieldModule,
         //prime        
         CalendarModule,
         DropdownModule,

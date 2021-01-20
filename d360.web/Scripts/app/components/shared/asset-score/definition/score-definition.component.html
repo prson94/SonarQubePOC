@@ -1,8 +1,8 @@
 ﻿<div class="score-definition-container" *ngIf="selectedMetric">
     <div #scoreDefinitionPanel class="definition-wrapper">
         <!--<div class="panel-heading">
-            {{selectedMetric?.Name}}
-        </div>-->
+        {{selectedMetric?.Name}}
+    </div>-->
         <div class="measure-details-item">
             <div class="details-header">Name</div>
             <div class="details-content">{{selectedMetric?.Name ? selectedMetric?.Name :'---'}}</div>
@@ -19,11 +19,11 @@
                 <span *ngIf="selectedMetric.State == 3">{{selectedMetric?.EffectiveEndDate | utcDate  | date:'shortDate'}}</span>
             </div>
         </div>
-        <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+        <div *ngIf="!isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Weight</div>
             <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} (adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</div>
         </div>
-        <div *ngIf="!data?.isExternallyCalculated" class="measure-details-item">
+        <div *ngIf="!isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Grouping Measure</div>
             <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
         </div>

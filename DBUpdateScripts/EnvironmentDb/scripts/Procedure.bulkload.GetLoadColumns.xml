@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="BHoward" id="Procedure.bulkload.GetLoadColumns-v6">
+  <changeSet author="BHoward" id="Procedure.bulkload.GetLoadColumns-v7">
     <comment>GOV-13107</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -303,7 +303,8 @@ begin
 				select		F.FieldTypeID,
 							V.[Text]
 				from		@fields F 
-							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1
+							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
+							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1 and V.LookupObjectType = FT.LookupObjectType and V.LookupObjectID = FT.LookupObjectID
 				order by	F.FieldTypeID, V.[Text];
 	end
 	
@@ -328,7 +329,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE or ALTER procedure [bulkload].[GetLoadColumns]
+CREATE or ALTER   procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,

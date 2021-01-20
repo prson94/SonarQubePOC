@@ -545,10 +545,6 @@ namespace d360.web.Controllers
                     return EditFusion(form);
                 case "FUSIONATTRIBUTE":
                     return EditFusionAttribute(form);
-                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
-                    return EditFusionAttributeTypeCustomQuery(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return EditFusionQueryAttribute(form);
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
@@ -664,10 +660,6 @@ namespace d360.web.Controllers
                     return AddServiceEndpoint(form);
                 case "FUSION":
                     return AddFusion(form);
-                case "FUSIONQUERYATTRIBUTE":
-                    return AddFusionQueryAttribute(form);
-                case "FUSIONATTRIBUTETYPECUSTOMQUERY":
-                    return AddFusionAttributeTypeCustomQuery(form);
                 case "INTERSECT":
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
