@@ -68,7 +68,8 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                         this.setPowerBiFilters(report, filters);
                     });
             });
-        
+
+            console.info("DEV: RENDERING POWER BI REPORT");
             this.logAction("open", "Report", this.dashboard.ID);
         }
     }
@@ -124,7 +125,7 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
     loadTokens() {
         this.isLoading = true;
         this.dashboardService.getPowerBIReportTokens(this.dashboard.PowerBIReportID).subscribe(
-            (result) => {
+            result => {
                 this.shouldRender = true; /* make sure only one call to power bi per load of this. */
                 this.powerBIDetails = result;
                 this.showReport();
