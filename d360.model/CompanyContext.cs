@@ -300,7 +300,9 @@ namespace d360.model
         {
             var jsonRows = Database.Connection.Query<string>("exec GetPageInformation @o, @oid, @rid", new { o = o.ToString(), oid, rid = CurrentResourceID });
             if (jsonRows.Count() == 0)
+            {
                 return null;
+            }                
 
             var json = string.Concat(jsonRows);
             return JObject.Parse(json);
@@ -359,7 +361,7 @@ where	T.[Class] in ({classList})").ToList();
                 .QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID",
                 new
                 {
-                    SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 },
+                    SourceType = new Dapper.DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
                     SourceTypeID = id
                 });
         }
@@ -517,13 +519,19 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (intersectType.SubjectCardinality == Cardinality.One)
             {
                 if (isSubject)
+                {
                     hasCardinalityOne = true;
+                }
+                    
                 cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
             }
             if (intersectType.ObjectCardinality == Cardinality.One)
             {
                 if (!isSubject)
+                {
                     hasCardinalityOne = true;
+                }
+                    
                 cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
             }
 
@@ -691,14 +699,21 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             }
 
             if (offset == 0 || query != null)
+            {
                 count = Database.Connection.QueryFirstOrDefault<int>(countSql, new { obj, objID, query, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID });
+            }
 
             List<dynamic> selected = null, items = null;
 
             if (includeSelection)
+            {
                 selected = Query<dynamic>(selectedSql, new { obj = @object, objID = objectID, intersectTypeID = intersectType.ID }).ToList();
+            }
+                
             if (!includeSelection)
+            {
                 items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
+            }                
 
             var dict = new Dictionary<string, object>();
 
@@ -1018,11 +1033,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                         case SystemObjects.ResourceType:
                         case SystemObjects.TaxonomyType:
                             followType = FollowType.Parent;
-                            break;
-                        case SystemObjects.Artifact:
-                        case SystemObjects.Taxonomy:
-                        case SystemObjects.Group:
-                        case SystemObjects.Resource:
+                            break;                        
                         default:
                             followType = FollowType.Single;
                             break;
@@ -1131,15 +1142,21 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             var objectDetail = GetObjectDetail(@object.ToString(), objectID);
 
             if (subjectDetail == null)
+            {
                 throw new NotFoundException("Subject");
+            }
 
             if (objectDetail == null)
+            {
                 throw new NotFoundException("Object");
+            }
 
             var intersectType = GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null)
+            {
                 throw new NotFoundException("Intersect Type");
+            }
 
             if (
                 (intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
@@ -1191,7 +1208,10 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
         public bool DeleteRelationship(int id)
         {
             var item = GetById<Intersect>(id);
-            if (item == null) throw new NotFoundException("Relationship");
+            if (item == null)
+            {
+                throw new NotFoundException("Relationship");
+            }
             var res = Database.ExecuteSqlCommand("DeleteIntersect {0}, {1}", id, CurrentResourceID) > 0;
 
             // add record to queue indication of delete relationship
