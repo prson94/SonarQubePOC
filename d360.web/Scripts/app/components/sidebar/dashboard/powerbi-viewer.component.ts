@@ -82,38 +82,42 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                             }
                         }
 
-                        if (objectTable && objectIdTable) {
-                            report.removeFilters();
-
-                            const newFilters: pbi.models.IBasicFilter[] = [
-                                {
-                                    $schema: "http://powerbi.com/product/schema#basic",
-                                    target: {
-                                        table: objectIdTable,
-                                        column: "ObjectID"
-                                    },
-                                    operator: "In",
-                                    values: [this.dashboard.ObjectID],
-                                    filterType: 1
-                                },
-                                {
-                                    $schema: "http://powerbi.com/product/schema#basic",
-                                    target: {
-                                        table: objectTable,
-                                        column: "Object"
-                                    },
-                                    operator: "In",
-                                    values: [this.dashboard.ObjectType],
-                                    filterType: 1
-                                }
-                            ];
-
-                            report.setFilters(newFilters);
-                        }        
+                        this.setPowerBiFilters(report, objectIdTable, objectTable)
                     });
             });
 
             this.logAction("open", "Report", this.dashboard.ID);
+        }
+    }
+
+    setPowerBiFilters(report: pbi.Report, objectIdTable: string, objectTable: string) {
+        if (objectTable && objectIdTable) {
+            report.removeFilters();
+
+            const newFilters: pbi.models.IBasicFilter[] = [
+                {
+                    $schema: "http://powerbi.com/product/schema#basic",
+                    target: {
+                        table: objectIdTable,
+                        column: "ObjectID"
+                    },
+                    operator: "In",
+                    values: [this.dashboard.ObjectID],
+                    filterType: 1
+                },
+                {
+                    $schema: "http://powerbi.com/product/schema#basic",
+                    target: {
+                        table: objectTable,
+                        column: "Object"
+                    },
+                    operator: "In",
+                    values: [this.dashboard.ObjectType],
+                    filterType: 1
+                }
+            ];
+
+            report.setFilters(newFilters);
         }
     }
 
