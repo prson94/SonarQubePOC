@@ -2301,26 +2301,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             this.g(go.Panel,
                 "Auto",
-
-                this.g(
-                    go.Shape,
-                    "Border",
-                    { strokeWidth: 2, isPanelMain: true, spot1: go.Spot.TopLeft, spot2: go.Spot.BottomRight },
-                    new go.Binding("fill", "", (v) => go.Brush.mix("#ebebeb", this.lightenBoxColor, 0.7)),
-                    new go.Binding("stroke", "", (v) => this.linkBackColor)
-                ),
-
                 this.g(go.Panel, "Table",
-                    this.g(go.RowColumnDefinition, { width: 10 }),
-                    this.template_FocalPositioningHelper(go.Spot.Top, 0, 1, "topNodeText", "hasTop"),
-                    this.template_FocalPositioningHelper(go.Spot.Left, 2, 0, "leftNodeText", "hasLeft"),
                     this.g(go.Panel,
                         "Auto",
                         { row: 2, column: 1 },
                         this.template_RootNodeContent()
-                    ),
-                    this.template_FocalPositioningHelper(go.Spot.Right, 2, 2, "rightNodeText", "hasRight"),
-                    this.template_FocalPositioningHelper(go.Spot.Bottom, 3, 1, "bottomNodeText", "hasBottom")
+                    )
                 )
             )
         );
