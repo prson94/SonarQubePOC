@@ -26,10 +26,13 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                 <th>Asset Path</th>
                             </tr>
                         </ng-template>
-                        <ng-template pTemplate="body" let-item>
+                        <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
                             <tr [pSelectableRow]="item">
-                                <td class="front-elide">
-                                        <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
+                                <td class="front-elide">                                        
+                                        <div *ngIf="!field?.MultiSelect" class="relationTableRadioButton">
+                                            <input type="radio" [attr.name]="name"
+                                           [checked]="rowIndex == selectedRelationRowIndex" (click)="handleItemSelection(item);" value="{{item.Value}}">
+                                        </div> 
                                         <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                                 </td>
                                 <td class="front-elide">
@@ -58,6 +61,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
 
     items: any[];
     selectedItems: any;
+    private selectedRelationRowIndex: number = null;
 
     public onModelChange: Function = () => { };
 
@@ -103,13 +107,16 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
             this.onModelChange(this.value);
         }
         else {
-            var items = [];
-            items.push(event.Value);
-            var sel = [];
-            sel.push(event);
-            this.selectedItems = sel;
-            this.value = _.cloneDeep(items);
-            this.onModelChange(this.value);
+            if (event) {
+                var items = [];
+                items.push(event.Value);
+                var sel = [];
+                sel.push(event);
+                this.selectedItems = sel;
+                this.value = _.cloneDeep(items);
+                this.onModelChange(this.value);                
+                this.selectedRelationRowIndex = this.items.findIndex(i => i.Value == this.value);
+            }
         }
     }
 
