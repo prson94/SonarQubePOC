@@ -60,7 +60,7 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
             const powerbi = new pbi.service.Service(pbi.factories.hpmFactory, pbi.factories.wpmpFactory, pbi.factories.routerFactory);
             this.report = powerbi.embed(reportContainer, config) as pbi.Report;
 
-            let report = this.report;
+            const report = this.report;
             
             report.on("loaded", () => {
                 report.getFilters()
