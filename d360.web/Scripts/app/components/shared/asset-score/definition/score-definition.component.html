@@ -21,7 +21,6 @@
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Weight</div>
-            {{fcn(selectedMetric)}}
             <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} <span *ngIf="selectedMetric?.AdjustedWeight != selectedMetric?.Weight">(adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</span></div>
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
