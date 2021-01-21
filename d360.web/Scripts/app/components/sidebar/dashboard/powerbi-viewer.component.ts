@@ -82,7 +82,7 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                             }
                         }
 
-                        this.setPowerBiFilters(report, objectIdTable, objectTable)
+                        this.setPowerBiFilters(report, objectIdTable, objectTable);
                     });
             });
 
