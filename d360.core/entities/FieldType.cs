@@ -690,7 +690,6 @@ namespace d360.core.entities
             if (DateTime != null) partOfKey = DateTime.IsPartOfKey;
             if (Decimal != null) partOfKey = Decimal.IsPartOfKey;
             if (Html != null) partOfKey = Html.IsPartOfKey;
-            if (Link != null) partOfKey = Link.IsPartOfKey;
             if (Lookup != null) partOfKey = Lookup.IsPartOfKey;
             if (Number != null) partOfKey = Number.IsPartOfKey;
             if (Text != null) partOfKey = Text.IsPartOfKey;
