@@ -985,11 +985,23 @@ order by wi.StartedOn desc";
 
                         if (reg == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY WORKFLOW EVENT REGISTRATION");
 
+                        var obj = reg.Object;
+                        var objId = reg.ObjectID;
+
+                        if (reg.Object == "IssueType")
+                        {
+                            var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+                            if (issue == null) throw new Exception("RELATIONSHIP INPUT CANNOT IDENTIFY ISSUE OBJECT");
+
+                            obj = issue.ObjectType;
+                            objId = issue.ObjectTypeID;
+                        }
+
                         var itemSql = "select i.Name as Text, i.Object + '|' + cast(i.ObjectID as varchar) as Value from AssetType i where i.object = @objectType and i.objectid = @objectTypeId order by 1";
 
                         item.Values = new List<System.Web.Mvc.SelectListItem>();
 
-                        if (reg.Object == intersectType.Subject && reg.ObjectID == intersectType.SubjectID)
+                        if (obj == intersectType.Subject && objId == intersectType.SubjectID)
                         {
                             // load the object items into the values array                        
                             item.AllowMultipleValues = !(intersectType.ObjectCardinality == core.enums.Cardinality.One);
@@ -2573,15 +2585,30 @@ order by wi.StartedOn desc";
         }
 
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
+        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
         {
+            bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
+
             var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
-                 order by ft.FriendlyName";
+                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
 
-            var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
+            if (hasIssueObject)
+            {
+                sql += @" union all
+                select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+                 FieldType ft
+                 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+                 where ft.Object = @issueObject and ft.ObjectID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
+                order by 2";
+            }
+            else
+            {
+                sql += " order by ft.FriendlyName";
+            }
+
+            var results = Company.Query<dynamic>(sql, new { objectType,  objectId, issueObject, issueObjectId });
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }

@@ -7,10 +7,13 @@ import { SiteUrlHelpers } from '../static/site-url-helpers';
 
 @Injectable()
 export class AdminUserGuard implements CanActivate {
-    _isAdmin: boolean = false;
     constructor(protected authenticationService: AuthenticationService, protected router: Router) { }
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {                
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
+        if (this.authenticationService.isAdmin == null) {
+            return this.authenticationService.checkCurrentUserAdmin();
+        }
+
         if (this.authenticationService.isAdmin) {
             //
             console.log('auth');
@@ -19,6 +22,6 @@ export class AdminUserGuard implements CanActivate {
         else {
             this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
             return false;
-        }        
-    }    
+        }
+    }
 }

@@ -374,6 +374,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
             }
 
+            if (this.field.FieldType == 'Lookup' && this.field.Value == null) {
+                setTimeout(() => {
+                    this.form.controls[this.field.FieldName].setValue(null);
+                });
+            }
+
             window.setTimeout(() => {
 
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
@@ -393,7 +399,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field.UseColorControl) {
             this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
         }
-
     }
 
     ngOnChanges() {
