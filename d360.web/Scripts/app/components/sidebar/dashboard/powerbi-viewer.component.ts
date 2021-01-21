@@ -65,26 +65,7 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
             report.on("loaded", () => {
                 report.getFilters()
                     .then((filters) => {
-                        let objectIdTable = "";
-                        let objectTable = "";
-                        for (const filter of filters) {
-                            const target = filter.target as pbi.models.IFilterColumnTarget;
-
-                            if (!target) {
-                                continue;
-                            }
-
-                            if (target.column === "ObjectID") {
-                                objectIdTable = target.table;
-                            }
-                            else if (target.column === "Object") {
-                                objectTable = target.table;
-                            }
-                        }
-
-                        if (objectTable && objectIdTable) {
-                            this.setPowerBiFilters(report, objectIdTable, objectTable);
-                        }
+                        this.setPowerBiFilters(report, filters);
                     });
             });
         
@@ -92,34 +73,52 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
         }
     }
 
-    setPowerBiFilters(report: pbi.Report, objectIdTable: string, objectTable: string): void {
+    setPowerBiFilters(report: pbi.Report, filters: pbi.models.IFilter[]): void {
+        let objectIdTable = "";
+        let objectTable = "";
+        for (const filter of filters) {
+            const target = filter.target as pbi.models.IFilterColumnTarget;
 
-        report.removeFilters();
-
-        const newFilters: pbi.models.IBasicFilter[] = [
-            {
-                $schema: "http://powerbi.com/product/schema#basic",
-                target: {
-                    table: objectIdTable,
-                    column: "ObjectID"
-                },
-                operator: "In",
-                values: [this.dashboard.ObjectID],
-                filterType: 1
-            },
-            {
-                $schema: "http://powerbi.com/product/schema#basic",
-                target: {
-                    table: objectTable,
-                    column: "Object"
-                },
-                operator: "In",
-                values: [this.dashboard.ObjectType],
-                filterType: 1
+            if (!target) {
+                continue;
             }
-        ];
 
-        report.setFilters(newFilters);
+            if (target.column === "ObjectID") {
+                objectIdTable = target.table;
+            }
+            else if (target.column === "Object") {
+                objectTable = target.table;
+            }
+        }
+
+        if (objectTable && objectIdTable) {
+            report.removeFilters();
+
+            const newFilters: pbi.models.IBasicFilter[] = [
+                {
+                    $schema: "http://powerbi.com/product/schema#basic",
+                    target: {
+                        table: objectIdTable,
+                        column: "ObjectID"
+                    },
+                    operator: "In",
+                    values: [this.dashboard.ObjectID],
+                    filterType: 1
+                },
+                {
+                    $schema: "http://powerbi.com/product/schema#basic",
+                    target: {
+                        table: objectTable,
+                        column: "Object"
+                    },
+                    operator: "In",
+                    values: [this.dashboard.ObjectType],
+                    filterType: 1
+                }
+            ];
+
+            report.setFilters(newFilters);
+        }        
     }
 
     loadTokens() {
