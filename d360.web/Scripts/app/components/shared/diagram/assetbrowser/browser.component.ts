@@ -2515,6 +2515,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+
     private template_ImpactLink(): go.Link {
         return this.g(
             go.Link,
@@ -2979,20 +2980,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(
             go.Panel,
             "Vertical",
-            this.g(go.Panel, "Table",
-                new go.Binding("itemArray", "relations"),
-                new go.Binding("visible", "showBadges"),
-                {
-                    itemTemplate: this.template_ImpactBadges()
-                }
-            ),
-            this.g(go.Panel, "Table",
-                new go.Binding("itemArray", "owners"),
-                new go.Binding("visible", "showBadges"),
-                {
-                    itemTemplate: this.template_OwnerBadges()
-                }
-            ),
+            this.template_badgeHolder("relations"),
+            //this.template_badgeHolder("owners"),
             this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
@@ -3232,5 +3221,192 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         }
         return 'diagram';
+    }
+
+
+    private template_badgeHolder(propertyName: string): go.Panel {
+        return this.g(go.Panel, "Spot",
+            this.g(go.Shape, { strokeWidth: 4, fill: 'lime' }),
+            // Instead of aligning this Panel, we want to align the shape inside of it, to the corner of the main shape
+            this.g(go.Panel, "Horizontal",
+                {
+                    background: 'rgba(255,0,0,0.1)',
+                    alignmentFocusName: 'shape',
+                    alignment: go.Spot.BottomLeft,
+                    alignmentFocus: go.Spot.TopRight,
+                    margin: new go.Margin(0, 0, -50, 0)
+                },
+                new go.Binding("layerName", "Foreground"),
+                this.g(go.TextBlock, "some\nlong label", { margin: 8 }),
+                this.g(go.Shape, "RoundedRectangle", { width: 20, height: 20, name: 'shape', strokeWidth: 0, fill: 'red' },
+                    new go.Binding("fill", "color"))
+            ));
+        return this.g(go.Panel, "Spot",
+            //this.template_row(),
+            this.g(go.Shape, { strokeWidth: 4, fill: 'lime', name: 'shape' }),
+            this.g(go.Panel, "Vertical",
+                {
+                    alignmentFocusName: 'shape',
+                    alignment: go.Spot.TopRight,
+                    alignmentFocus: go.Spot.BottomLeft
+                },
+                new go.Binding("itemArray", propertyName),
+                new go.Binding("visible", "", function (part) {
+                    return true;
+                    return part.data['relExpanded'] == true;
+                }).ofObject(),
+                {
+                    itemTemplate: this.template_ImpactBadges2()
+                }
+            ));
+    }
+
+    private template_row() {
+        return this.g(go.Panel, "Auto",
+            {
+                click: (e, obj) => {
+                    console.log("clicked");
+                    obj.part.data['relExpanded'] = true;
+                },
+
+            },
+            this.g(go.Shape,
+                {
+                    figure: "RoundedRectLeft",
+                    parameter1: 2,
+                    strokeWidth: 0.5,
+                    stretch: go.GraphObject.Fill,
+                    background: "red"
+                },
+                new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
+                new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
+            ),
+            this.g(
+                go.TextBlock,
+                {
+                    margin: 2,
+                    alignment: go.Spot.Left,
+                    stretch: go.GraphObject.Fill,
+                    editable: false,
+                    font: this.fontRelationBadge,
+                    stroke: this.fontRelationBadgeLabelForeColor
+                },
+                new go.Binding("text", "predicate"),
+                new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
+            ),
+            this.g(
+                go.TextBlock,
+                {
+                    margin: 2,
+                    alignment: go.Spot.Right,
+                    editable: false,
+                    font: this.fontLoadingIcon,
+                    stroke: this.fontOwnerBadgeLabelForeColor,
+                    text: this.loadingIcon,
+                    visible: false
+                },
+                new go.Binding("visible", "showLoading")
+            ),
+            this.g(go.Shape, "RoundedRectRight",
+                {
+                    parameter1: 2,
+                    stroke: this.fontRelationBadgeCountForeColor,
+                    strokeWidth: 1,
+                    maxSize: new go.Size(16, 16)
+                },
+                new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
+            ),
+            this.g(
+                go.TextBlock,
+                {
+                    margin: 2,
+                    alignment: go.Spot.Center,
+                    editable: false,
+                    font: this.fontRelationBadge,
+                    stroke: this.fontRelationBadgeCountForeColor,
+                    text: "text"
+                }
+            )
+        )
+    }
+
+
+    private template_ImpactBadges2(): go.Panel {
+        return this.g(go.Panel, "Auto", {
+            alignment: go.Spot.Left,
+            alignmentFocus: go.Spot.Bottom,
+            stretch: go.GraphObject.Fill,
+            padding: 0,
+            cursor: "pointer",
+            name: "badge",
+            click: (e, obj) => this.badge_ClickImpact(e, obj),
+        },
+            this.g(go.Panel, "Auto",
+                new go.Binding("visible", "", function (data: go.Part) {
+                    return data.part['showBadge'];
+                }).ofObject()
+                ,
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape,
+                        {
+                            figure: "RoundedRectLeft",
+                            parameter1: 2,
+                            strokeWidth: 0.5,
+                            stretch: go.GraphObject.Fill,
+                            background: "red",
+                        },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: 2,
+                            alignment: go.Spot.Left,
+                            stretch: go.GraphObject.Fill,
+                            editable: false,
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeLabelForeColor
+                        },
+                        new go.Binding("text", "predicate"),
+                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: 2,
+                            alignment: go.Spot.Right,
+                            editable: false,
+                            font: this.fontLoadingIcon,
+                            stroke: this.fontOwnerBadgeLabelForeColor,
+                            text: this.loadingIcon,
+                            visible: false
+                        },
+                        new go.Binding("visible", "showLoading")
+                    ),
+                    this.g(go.Shape, "RoundedRectRight",
+                        {
+                            parameter1: 2,
+                            stroke: this.fontRelationBadgeCountForeColor,
+                            strokeWidth: 1,
+                            maxSize: new go.Size(16, 16)
+                        },
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: 2,
+                            alignment: go.Spot.Center,
+                            editable: false,
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeCountForeColor,
+                        },
+                        new go.Binding("text", "count")
+                    )
+                ),
+
+            )
+        );
     }
 }
