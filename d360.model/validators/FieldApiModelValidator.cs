@@ -279,6 +279,14 @@ namespace d360.model.validators
                     }
                 }
 
+                if (field.Type.Link != null)
+                {
+                    if (field.Type.Link.IsPartOfKey == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Link Types cannot have field property IsPartOfKey on field {field.FriendlyName} set to true.");
+                    }
+                }
+
                 #region Type Min/Max
 
                 if (field?.Type?.Text != null)
