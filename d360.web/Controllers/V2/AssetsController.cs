@@ -1406,7 +1406,7 @@ namespace d360.web.Controllers.V2
 
                 var dbArgs = new DynamicParameters();
 
-                dbArgs.Add("object", asset.Object);
+                dbArgs.Add("object", asset.Object,DbType.AnsiString,size:50);
                 dbArgs.Add("objectId", asset.ObjectID);
                 dbArgs.Add("fieldTypeId", fieldType.ID);
                 dbArgs.Add("resourceId", Company.CurrentResourceID);
@@ -1468,7 +1468,7 @@ namespace d360.web.Controllers.V2
 
                 var dbArgsCount = new DynamicParameters();
 
-                dbArgsCount.Add("object", asset.Object);
+                dbArgsCount.Add("object", asset.Object,DbType.AnsiString, size: 50);
                 dbArgsCount.Add("objectId", asset.ObjectID);
                 dbArgsCount.Add("fieldTypeId", fieldType.ID);
                 dbArgsCount.Add("resourceId", Company.CurrentResourceID);

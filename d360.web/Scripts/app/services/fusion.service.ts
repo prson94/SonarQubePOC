@@ -175,16 +175,6 @@ export class FusionService extends BaseObservableService {
         return this.deleteDynamicWithResult(this.http, 'fusionattributetypecustomquery', id);
     }
 
-    saveFusionAttributeTypeCustomQuery(override: any): Observable<JsonResult> {
-        let methodName = "putDynamic";
-
-        if (override.ID == undefined || !override.ID) {
-            methodName = "postDynamic";
-        }
-
-        return this[methodName](this.http, 'fusionattributetypecustomquery', override);
-    }
-
     deleteFusionConfiguration(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionconfiguration', id);
     }
@@ -512,16 +502,6 @@ export class FusionService extends BaseObservableService {
 
     deleteFusionQuery(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
-    }
-
-    saveQueryAttributeType(query: FusionQueryAttributeType) {
-        let methodName = "putDynamic";
-
-        if (query.ID == undefined || !query.ID) {
-            methodName = "postDynamic";
-        }
-
-        return this[methodName](this.http, 'fusionqueryattribute', query);
     }
 
     postRunMarkitLineage(id: number) {

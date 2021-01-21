@@ -126,20 +126,11 @@ namespace d360.model.DataAccessLayer
 
         public void DeleteMetric(MetricAsset model)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow.Date;
 
             var currentAssetVersion = model.Versions.OrderByDescending(x => x.EffectiveDate).FirstOrDefault();
             currentAssetVersion.State = State.Deleted;
-
-            var lastUsedMetric = GetMetricsLastUsedEffectiveDate(currentAssetVersion.Uid);
-            if (lastUsedMetric == null)
-            {
-                currentAssetVersion.EffectiveEndDate = (currentAssetVersion.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
-            }
-            else
-            {
-                currentAssetVersion.EffectiveEndDate = lastUsedMetric;
-            }
+            currentAssetVersion.EffectiveEndDate = now.AddDays(-1);
 
             model.State = State.Deleted;
             model.UpdatedOn = now;
@@ -149,7 +140,7 @@ namespace d360.model.DataAccessLayer
                 var childVersions = Company.Filter<MetricAssetVersion>(x => x.Asset.ParentUid != null && x.Asset.ParentUid == model.Uid && x.EffectiveEndDate == null).ToList();
                 childVersions.ForEach(v =>
                 {
-                    v.EffectiveEndDate = (v.EffectiveDate.Date == now.Date) ? now.Date.AddDays(-1) : now.Date;
+                    v.EffectiveEndDate = now.AddDays(-1);
                 });
                 children.ForEach(c => c.State = State.Deleted);
             }
@@ -2276,15 +2267,6 @@ for json path";
             }
 
             return executionInfo;
-        }
-
-        private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
-        {
-            return Company.Query<DateTime?>(@"
-select  max(S.EffectiveDate) as EffectiveDate 
-from    metrics.ScoreItem I 
-        inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid and I.AssetVersionUid = @metricVersionUid 
-        inner join metrics.Score S on S.Uid = L.ScoreUid", new { metricVersionUid = uid }, ApiTimeout).FirstOrDefault();
         }
 
         public List<MeasureVersionHistoryModel> GetMetricVersionHistory(Guid measureUid)

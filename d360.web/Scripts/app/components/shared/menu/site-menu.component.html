@@ -1,4 +1,6 @@
-<ul #menu [class.left-side-nav-open]="menuOpen"
+<ul #menu 
+    (scroll)="onElementScroll($event)"
+    [class.left-side-nav-open]="menuOpen"
     [class.left-side-nav]='!menuOpen'>
     <d3s-site-menu-category [expanded]="menuOpen"
                             [title]="'Home'"

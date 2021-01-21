@@ -76,16 +76,32 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult GetAllocations()
+        public async Task<IHttpActionResult> GetAllocations()
         {
             try
             {
+                var queryParams = Request.GetQueryNameValuePairs();
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving allocations", "You are not authorized to perform this action.");
+                    //if assetUid filter is specifiand and user has an access let skip admin check
+                    //we can assume this request probably comes from UI
+                    bool assetUidSpecified = queryParams.Any(x => x.Key == "assetUid");
+                    if (assetUidSpecified)
+                    {
+                        var assetUid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key == "assetUid").Value);
+                        var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).Select(x => x.AssetTypeID).FirstOrDefault();
+                        if (!(await Company.HasAssetTypeReadPermission(assetTypeId)))
+                        {
+                            return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving allocations", "You are not authorized to perform this action.");
+                        }
+                    }
+                    else
+                    {
+                        return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving allocations", "You are not authorized to perform this action.");
+                    }
                 }
 
-                var queryParams = Request.GetQueryNameValuePairs();
 
                 string errorMessage = string.Empty;
 
@@ -232,7 +248,7 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Score Allocation already exists.");
                 }
-                
+
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 bool canBeEdited = (model.assetTypeUid == alloc.AssetTypeUid
                                    && model.scoreType == alloc.ScoreType
@@ -408,9 +424,6 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));
-
             var prefix = "Metrics.GetMetricStructureByAssetType => ";
 
             try
@@ -582,7 +595,7 @@ namespace d360.web.Controllers.V2
             Route("history/measure/{measureUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the version history the given measure.", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
@@ -596,7 +609,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var models = MetricsRepository.GetMetricVersionHistory(measureUid);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x=>x.Version)));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x => x.Version)));
             }
             catch (Exception ex)
             {
@@ -653,9 +666,9 @@ namespace d360.web.Controllers.V2
 			null as [EndDate],
 			cast(S.Value * 100 as decimal(18,1)) as Score
 	from	metrics.Score S
-			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null", 
+			inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.Uid = @allocationUid and S.AssetUid = @assetUid and S.EffectiveDate <= @date and S.EndDate is null",
             new { allocationUid = _allocationUid, assetUid = _assetUid }, ApiTimeout);
-            
+
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
     }

@@ -5,49 +5,30 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.MapGraph-v1">
+  <changeSet author="Puneet Gupta" id="Table.dbo.MapGraph-DropTable-v3">
+  <comment>GOV-12929</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph_backup')
 BEGIN
-	CREATE TABLE [dbo].[MapGraph](
+	drop table [dbo].[MapGraph_backup];
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph_backup')
+BEGIN
+	CREATE TABLE [dbo].[MapGraph_backup](
 		[Subject] [varchar](50) NOT NULL,
 		[Predicate] [varchar](50) NOT NULL,
 		[Object] [varchar](50) NOT NULL,
 		[Sequence] [smallint] NOT NULL
 	)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Puneet Gupta" id="Table.dbo.MapGraph-v2">
-  <comment>GOV-12928</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph')
-			BEGIN
-				exec sp_rename 'dbo.MapGraph', 'MapGraph_backup';
-			END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'MapGraph_backup')
-			BEGIN
-				exec sp_rename 'dbo.MapGraph_backup', 'MapGraph'
-			END
 		]]>
 	</rollback>
   </changeSet>

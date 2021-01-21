@@ -560,8 +560,14 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    getWorkflowVersionStepFormLookups(object: string, objectId: number):Observable<any> {
-        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}`)
+    getWorkflowVersionStepFormLookups(object: string, objectId: number, issueObject: string = null, issueObjectId: number = null): Observable<any> {
+        let query = ``;
+
+        if (issueObject != null) {
+            query = `?issueObject=${issueObject}&issueObjectId=${issueObjectId}`;
+        }
+
+        return this.http.get(`services/workflow/versionstep/form/lookups/${object}/${objectId}${query}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

@@ -42,7 +42,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetResponsibilityTypesByAssetId()
         {
-            var result = await responsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.NewGuid());
+            var result = await responsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
             var str = await result.Content.ReadAsStringAsync();
 
             Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);

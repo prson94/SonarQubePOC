@@ -26,15 +26,6 @@ p-table .p-paginator {
     margin-left: -.5em;
 }
 
-.p-multiselect {
-    display: -ms-inline-flexbox;
-    display: inline-flex;
-    position: relative;
-    width: auto;
-    cursor: pointer;
-    border: 1px solid #bdbfc6
-}
-
 .p-dropdown .p-dropdown-trigger {
     border-right: none;
     border-top: none;
@@ -120,61 +111,6 @@ p-table .p-paginator {
     font-size: 1em;
     height: 1em;
     margin-top: -.5em;
-}
-
-.p-multiselect-header .p-checkbox {
-    display: inline-block;
-    vertical-align: middle;
-    cursor: pointer;
-}
-
-.p-multiselect-panel .p-multiselect-items-wrapper {
-    overflow: auto;
-    position: relative;
-    padding: .2em 0;
-}
-
-.p-multiselect-panel {
-    padding: .2em;
-    position: absolute;
-    min-width: 12em;
-}
-
-.p-multiselect .p-multiselect-label-container {
-    overflow: hidden;
-}
-
-.p-multiselect .p-multiselect-label {
-    display: block;
-    padding: .25em 2em .25em .25em;
-    width: auto;
-    border: none;
-    cursor: pointer;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    font-weight: normal;
-    white-space: nowrap;
-}
-
-.p-multiselect .p-multiselect-trigger .p-multiselect-trigger-icon {
-    top: 50%;
-    left: 50%;
-    margin-top: -.5em;
-    margin-left: -.5em;
-    position: absolute;
-}
-
-.p-multiselect .p-multiselect-trigger {
-    border-right: none;
-    border-top: none;
-    border-bottom: none;
-    cursor: pointer;
-    width: 1.5em;
-    height: 100%;
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 0 .25em;
 }
 
 .p-tabview {
@@ -831,4 +767,172 @@ a {
 
 .p-dropdown-item:not([aria-label]) span, .p-dropdown-item[aria-label=""] span {
     visibility: hidden !important;
+}
+
+.p-autocomplete-loader {
+    position: absolute;
+    right: .25em;
+    top: 50%;
+    margin-top: -.5em;
+}
+
+.p-multiselect {
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    position: relative;
+    width: auto;
+    cursor: pointer;
+    border: @ig-field-border
+}
+
+.p-multiselect .p-multiselect-trigger {
+    border-right: none;
+    border-top: none;
+    border-bottom: none;
+    cursor: pointer;
+    width: 1.5em;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0 .25em;
+}
+
+.p-multiselect .p-multiselect-trigger .p-multiselect-trigger-icon {
+    top: 50%;
+    left: 50%;
+    margin-top: -.5em;
+    margin-left: -.5em;
+    position: absolute;
+}
+
+.p-multiselect .p-multiselect-label-container {
+    overflow: hidden;
+}
+
+.p-multiselect .p-multiselect-label {
+    display: block;
+    padding: .25em 2em .25em .25em;
+    width: auto;
+    border: none;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.p-multiselect.p-state-disabled .p-multiselect-trigger,
+.p-multiselect.p-state-disabled .p-multiselect-label {
+    cursor: auto
+}
+
+.p-multiselect-panel {
+    padding: 0.2em;
+    position: absolute;
+    min-width: 12em;
+}
+
+.p-multiselect .p-multiselect-panel {
+    min-width: 100%;
+}
+
+.p-multiselect-panel .p-multiselect-items-wrapper {
+    overflow: auto;
+    position: relative;
+    padding: 0.2em 0;
+}
+
+.p-multiselect-panel .p-multiselect-list {
+    border: 0 none;
+}
+
+.p-multiselect-panel .p-multiselect-item {
+    border: 0 none;
+    cursor: pointer;
+    font-weight: normal;
+    margin: 1px 0;
+    padding: .125em .25em;
+    text-align: left;
+    white-space: nowrap;
+    display: block;
+    position: relative;
+}
+
+.p-multiselect-panel .p-multiselect-empty-message {
+    padding: .5em;
+}
+
+.p-multiselect-panel .p-multiselect-item .p-checkbox {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.p-multiselect-panel .p-multiselect-item span {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.p-multiselect-header {
+    margin-bottom: 0.3em;
+    padding: .25em;
+    position: relative;
+    text-align: left;
+    min-height: 2em;
+}
+
+.p-multiselect-header .p-checkbox {
+    display: inline-block;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.p-multiselect-header .p-multiselect-filter-container {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: 65%;
+}
+
+.p-multiselect-header.p-multiselect-header-no-toggleall .p-multiselect-filter-container {
+    width: 85%;
+}
+
+.p-multiselect-header .p-multiselect-filter-container .p-multiselect-filter-icon {
+    position: absolute;
+    left: .125em;
+}
+
+.p-multiselect-header .p-inputtext {
+    padding: .125em .125em .125em 1.25em;
+    width: 100%;
+}
+
+.p-multiselect-header .p-multiselect-close {
+    position: absolute;
+    right: .375em;
+    top: .375em;
+    display: block;
+    border: 0 none;
+    cursor: pointer;
+}
+
+.p-multiselect-header a.p-multiselect-all,
+.p-multiselect-header a.p-multiselect-none {
+    float: left;
+    margin-right: 10px;
+    display: block;
+}
+
+.p-multiselect-footer {
+    padding: .25em;
+}
+
+.p-fluid .p-multiselect {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.p-datatable.p-component .p-datatable-loading-overlay {
+    z-index: 1;
 }

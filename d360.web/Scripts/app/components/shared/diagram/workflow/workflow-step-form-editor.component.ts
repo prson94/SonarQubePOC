@@ -378,8 +378,10 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         let type = this.objectType;
         let id = this.objectId;
+        let hasIssueObject = false;
 
         if (this.issueObject.indexOf('|') > -1) {
+            hasIssueObject = true;
             type = this.issueObject.split('|')[0];
             id = +this.issueObject.split('|')[1];
         }
@@ -392,7 +394,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 });
         }
         if (e == 'list' && this.lookups == null) {
-            this.workflowService.getWorkflowVersionStepFormLookups(type, id)
+            this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId, (hasIssueObject ? type : null), (hasIssueObject ? id : null))
                 .subscribe(r => {
                     this.lookups = r;
                 });

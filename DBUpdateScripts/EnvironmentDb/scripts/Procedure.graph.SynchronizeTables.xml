@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.SynchronizeTables-v7">
+  <changeSet author="Pappas" id="Procedure.graph.SynchronizeTables-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,7 +28,7 @@ begin
 		select	N.ID
 		from	graph.AssetNode N
 		where	N.ID not in (select ID from Asset where State <> 3)
-				or N.Class in (3,5,10,11,12,13);
+				or N.Class in (3,5,10,13);
 
 	delete	E
 	from	graph.AssetEdge E
@@ -81,7 +81,7 @@ begin
 					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()) as UpdatedOn,
 					T.[Class]
 			from	Asset A
-					inner join AssetType T on T.ID = A.AssetTypeID and T.Class not in (3,5,10,11,12,13)
+					inner join AssetType T on T.ID = A.AssetTypeID and T.Class not in (3,5,10,13)
 					where A.State <> 3
 			) S on (S.ID = T.ID)
 	when	matched and (T.UpdatedOn < S.UpdatedOn OR T.[Class] <> S.[Class]) then 
@@ -145,7 +145,7 @@ begin
 			from	AssetType A
 					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 			where	I.ID is null
-					and A.Class not in (3,5,10,11,12,13)
+					and A.Class not in (3,5,10,13)
 			union all
 			select	A.Object,
 					A.ObjectID,
@@ -153,7 +153,7 @@ begin
 					P.ID as ParentID,
 					P.[Level]+1 as [Level]
 			from	AssetType A
-					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3 and A.Class not in (3,5,10,11,12,13)
+					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3 and A.Class not in (3,5,10,13)
 					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 		)
 		
@@ -183,7 +183,7 @@ begin
             select  AssetTypeID,
                     ID
             from    graph.AssetNode
-            where   Class not in (3,5,10,11,12,13)
+            where   Class not in (3,5,10,13)
 					and Segments is null;
 
 		while ((select count(*) from #assets) > 0)
@@ -200,7 +200,7 @@ begin
 		-- Catch-all
 		update	graph.AssetNode
 		set		Segments = '<path><segment level="1" assetTypeId="' + cast(AssetTypeID as varchar) + '" assetId="' + cast(ID as varchar) + '">{INVALID}</segment></path>'
-		where   Class not in (3,5,10,11,12,13)
+		where   Class not in (3,5,10,13)
 				and Segments is null;
 	end
 

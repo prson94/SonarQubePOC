@@ -519,8 +519,21 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     })
                 }
             }
-
         }
+    }
+
+    getTooltipForScoreBadge(item: PointBreakdown) {
+        if (item.IsGroup)
+            return "Measure Score = sum of sub-measures " + this.getAsPrecentage(item._adjustedWeight);;
+
+        return "Measure Score = " + this.getAsPrecentage(item._adjustedWeight);
+    }
+
+    getTooltipForWeightBadge(item: PointBreakdown) {
+        if (item.IsGroup)
+            return "Maximum possible score = adjusted measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
+
+        return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item._adjustedMaxWeight);
     }
 
 }

@@ -5,12 +5,51 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Function.dbo.GetAssetDisplayValueById-v5">
+  <changeSet author="Puneet Gupta" id="Function.dbo.GetAssetDisplayValueById-v6">
+    <comment>GOV-7824</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValueById]
+(
+	@Id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+		select 
+			string_agg(results.[value],'') as DisplayValue
+		from
+			(select	top 100
+					coalesce(D.FormattedValue, D.value) as [value]
+			from	dbo.Asset A
+					inner join dbo.AssetType T on T.ID = A.AssetTypeID 					
+					outer apply (
+								select	TL.value,
+										coalesce(case when TL.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name, G.Name) as FormattedValue,
+					  TF.[index] as [TokenIndex]
+								from	[utility].[OrderedSplit](replace(T.DisplayFormat, '{', '|'), '|') TF
+										cross apply [utility].[OrderedSplit](replace(TF.[value], '}', '|'), '|') TL
+										left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+										left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object AND F.ObjectID = A.ObjectID
+										left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
+										left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+										left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
+										left join [Group] G on TL.Value = 'Name' and A.Object = 'Group' and G.ID = A.ObjectID
+										left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+								where	RTRIM(TF.value) <> ''
+										and RTRIM(TL.value) <> ''
+								) D
+			where 	A.ID = @Id order by D.TokenIndex) results
+					
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetAssetDisplayValueById]
 (
 	@Id bigint
@@ -43,13 +82,8 @@ RETURN
 										and RTRIM(TL.value) <> ''
 								) D
 			where 	A.ID = @Id order by D.TokenIndex) results
-					
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
+)
 		]]>
 	</rollback>
   </changeSet>

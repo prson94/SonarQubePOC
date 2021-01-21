@@ -312,12 +312,12 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetMetricFieldsByAssetType()
         {
-            var actionResult = metricsController.GetMetricFieldsByAssetType(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
-
-            var str = await actionResult.Content.ReadAsStringAsync();
+            var actionResult = await metricsController.GetMetricFieldsByAssetType(Guid.Parse(DataConstants.ValidGUID));
+            var result = actionResult.ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var str = await result.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+            Assert.True(result.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
             Assert.True(Helpers.IsTypeOf(typeof(MetricFieldTypeViewModel), data), XMsg.InvalidJSON);
 
         }

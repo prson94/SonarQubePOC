@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.bulkload.UpdateItemColumnByIntersectType-v1">
+  <changeSet author="Core" id="Procedure.bulkload.UpdateItemColumnByIntersectType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP PROCEDURE IF EXISTS [bulkload].[UpdateItemColumnByIntersectType]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateItemColumnByIntersectType]
 	@id int,
 	@intersectTypeColumn int, 
@@ -31,10 +36,6 @@ begin
 				and P.[Object] = case when @isSubject = 1 then IT.[Subject] else IT.[Object] end			
 	where	T.LoadID = @id and A.ID is not null
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>
