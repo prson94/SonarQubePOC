@@ -65,67 +65,62 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
             report.on("loaded", () => {
                 report.getFilters()
                     .then((filters) => {
-                        this.setPowerBiFilters(report, filters);
+                        let objectIdTable = "";
+                        let objectTable = "";
+                        for (const filter of filters) {
+                            const target = filter.target as pbi.models.IFilterColumnTarget;
+
+                            if (!target) {
+                                continue;
+                            }
+
+                            if (target.column === "ObjectID") {
+                                objectIdTable = target.table;
+                            }
+                            else if (target.column === "Object") {
+                                objectTable = target.table;
+                            }
+                        }
+
+                        if (objectTable && objectIdTable) {
+                            report.removeFilters();
+
+                            const newFilters: pbi.models.IBasicFilter[] = [
+                                {
+                                    $schema: "http://powerbi.com/product/schema#basic",
+                                    target: {
+                                        table: objectIdTable,
+                                        column: "ObjectID"
+                                    },
+                                    operator: "In",
+                                    values: [this.dashboard.ObjectID],
+                                    filterType: 1
+                                },
+                                {
+                                    $schema: "http://powerbi.com/product/schema#basic",
+                                    target: {
+                                        table: objectTable,
+                                        column: "Object"
+                                    },
+                                    operator: "In",
+                                    values: [this.dashboard.ObjectType],
+                                    filterType: 1
+                                }
+                            ];
+
+                            report.setFilters(newFilters);
+                        }        
                     });
             });
 
-            console.info("DEV: RENDERING POWER BI REPORT");
             this.logAction("open", "Report", this.dashboard.ID);
         }
-    }
-
-    setPowerBiFilters(report: pbi.Report, filters: pbi.models.IFilter[]): void {
-        let objectIdTable = "";
-        let objectTable = "";
-        for (const filter of filters) {
-            const target = filter.target as pbi.models.IFilterColumnTarget;
-
-            if (!target) {
-                continue;
-            }
-
-            if (target.column === "ObjectID") {
-                objectIdTable = target.table;
-            }
-            else if (target.column === "Object") {
-                objectTable = target.table;
-            }
-        }
-
-        if (objectTable && objectIdTable) {
-            report.removeFilters();
-
-            const newFilters: pbi.models.IBasicFilter[] = [
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectIdTable,
-                        column: "ObjectID"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectID],
-                    filterType: 1
-                },
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectTable,
-                        column: "Object"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectType],
-                    filterType: 1
-                }
-            ];
-
-            report.setFilters(newFilters);
-        }        
     }
 
     loadTokens() {
         this.isLoading = true;
         this.dashboardService.getPowerBIReportTokens(this.dashboard.PowerBIReportID).subscribe(
-            result => {
+            (result) => {
                 this.shouldRender = true; /* make sure only one call to power bi per load of this. */
                 this.powerBIDetails = result;
                 this.showReport();
