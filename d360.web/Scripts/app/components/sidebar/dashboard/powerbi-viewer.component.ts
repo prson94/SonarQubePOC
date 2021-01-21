@@ -70,11 +70,16 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                         for (const filter of filters) {
                             const target = filter.target as pbi.models.IFilterColumnTarget;
 
-                            if (!target) continue;
-                            if (target.column === "ObjectID")
+                            if (!target) {
+                                continue;
+                            }
+
+                            if (target.column === "ObjectID") {
                                 objectIdTable = target.table;
-                            else if (target.column === "Object")
+                            }
+                            else if (target.column === "Object") {
                                 objectTable = target.table;
+                            }
                         }
 
                         if (objectTable && objectIdTable) {
