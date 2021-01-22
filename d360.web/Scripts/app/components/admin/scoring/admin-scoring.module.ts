@@ -55,6 +55,7 @@ import { FieldConditionGridModule } from '../../shared/controls/field-condition-
 import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
+import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.module';
 
 
 @NgModule({
@@ -105,7 +106,9 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         FieldConditionGridModule,
         IgMessageBoxModule,
         PopupMenuModule,
-        IgBadgeModule
+        IgBadgeModule,
+
+        MetricPassTestDetailsModule
 
     ],
     declarations: [
@@ -118,8 +121,7 @@ import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
         GovernanceMeasureEditorComponent,
 
         MeasureListComponent,
-        AdminMetricPassTestDetailsComponent,
-        AdminMeasureHistoryComponent
+        AdminMeasureHistoryComponent,
     ],
     providers: [
         {
