@@ -817,6 +817,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 valid = false;
         }
 
+        if (!this.isValidationPatternValid()) {
+            valid = false;
+        }
+
         return valid;
     }
 
@@ -1440,5 +1444,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type[this.currentType].Search.Suffix = null;
             this.model.FieldType.Type[this.currentType].Search.DisplayOrder = null;
         }
+    }
+
+    private isValidationPatternValid() {
+        if (this.currentType == 'Text') {
+            var pattern = this.model.FieldType.Type[this.currentType].Validation.Pattern;
+
+            if (((typeof pattern) != "undefined") && pattern !== null && pattern.length > 0) {
+                try {
+                    new RegExp(pattern);
+                }
+                catch (e) {
+                    return false
+                }
+            }
+        }
+
+        return true;
     }
 }

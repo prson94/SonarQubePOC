@@ -327,7 +327,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
-                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : '';
+                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : 'Value does not match the required pattern.';
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
                 } else if (validation.rule && validation.rule.startsWith('min')) {
