@@ -5,7 +5,6 @@ export class RuleType {
     Name: string;
     Description: string;
     HasDashboards: boolean;
-    AllowAttributes: boolean;
     AutoDisplayDescription: boolean;
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;

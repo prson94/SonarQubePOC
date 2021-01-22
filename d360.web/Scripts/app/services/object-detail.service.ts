@@ -1,25 +1,19 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
-import { TreeNode } from 'primeng/api';
-
-import { FormHelper } from '../models/form.model';
-import { JsonResult } from '../models/jsonresult.model';
+import { JsonResult } from "../models/jsonresult.model";
 import {
     Classification,
     AssetDetail,
     NymType,
     Synonym,
     SynonymItem,
-    AttributeHeirarchyItem,
-    ToolbarItemNg,
     ObjectDetail
-} from '../models/object-detail.model';
-import { LookupGrid } from '../models/grid-definition.model';
+} from "../models/object-detail.model";
 
 import { BaseObservableService } from "./baseObservable.service";
-import { MessagesObservableService } from './messages-observable.service';
+import { MessagesObservableService } from "./messages-observable.service";
 
 @Injectable()
 export class ObjectDetailService extends BaseObservableService {

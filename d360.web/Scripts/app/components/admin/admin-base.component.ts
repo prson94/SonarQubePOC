@@ -30,7 +30,7 @@ export class AdminBaseComponent extends BaseComponent {
 
     setCommonItems(showAreaAsType: boolean = false, headerOverride: string = null) {
 
-        this.area = ['Business Assets','Technical Assets','Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+        this.area = ['Business Assets','Technical Assets','Artifacts', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
             .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
 
         this.headerBreadcrumbService.clearBreadcrumbs();
