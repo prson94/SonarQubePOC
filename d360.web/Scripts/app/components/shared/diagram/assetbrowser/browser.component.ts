@@ -2983,6 +2983,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.template_badgeHolder("relations"),
             //this.template_badgeHolder("owners"),
             this.g(go.Panel, "Auto",
+                this.template_expandedRelPanel("relations"),
                 this.g(
                     go.Shape,
                     "Rectangle",
@@ -3226,47 +3227,31 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_badgeHolder(propertyName: string): go.Panel {
         return this.g(go.Panel, "Spot",
-            this.g(go.Shape, { strokeWidth: 4, fill: 'lime' }),
-            // Instead of aligning this Panel, we want to align the shape inside of it, to the corner of the main shape
-            this.g(go.Panel, "Horizontal",
-                {
-                    background: 'rgba(255,0,0,0.1)',
-                    alignmentFocusName: 'shape',
-                    alignment: go.Spot.BottomLeft,
-                    alignmentFocus: go.Spot.TopRight,
-                    margin: new go.Margin(0, 0, -50, 0)
-                },
-                new go.Binding("layerName", "Foreground"),
-                this.g(go.TextBlock, "some\nlong label", { margin: 8 }),
-                this.g(go.Shape, "RoundedRectangle", { width: 20, height: 20, name: 'shape', strokeWidth: 0, fill: 'red' },
-                    new go.Binding("fill", "color"))
-            ));
-        return this.g(go.Panel, "Spot",
-            //this.template_row(),
-            this.g(go.Shape, { strokeWidth: 4, fill: 'lime', name: 'shape' }),
-            this.g(go.Panel, "Vertical",
-                {
-                    alignmentFocusName: 'shape',
-                    alignment: go.Spot.TopRight,
-                    alignmentFocus: go.Spot.BottomLeft
-                },
-                new go.Binding("itemArray", propertyName),
-                new go.Binding("visible", "", function (part) {
-                    return true;
-                    return part.data['relExpanded'] == true;
-                }).ofObject(),
-                {
-                    itemTemplate: this.template_ImpactBadges2()
-                }
-            ));
+            this.template_row()
+        );
+    }
+
+    private template_expandedRelPanel(propertyName: string): go.Panel {
+        return this.g(go.Panel, "Vertical",
+            {
+                alignmentFocusName: 'shape',
+                alignment: go.Spot.TopRight,
+                alignmentFocus: go.Spot.BottomLeft
+            },
+            new go.Binding("itemArray", propertyName),
+            new go.Binding("visible", "", function (part) {
+                return part.data['relExpanded'] == true;
+            }).ofObject(),
+            {
+                itemTemplate: this.template_ImpactBadges2()
+            });
     }
 
     private template_row() {
         return this.g(go.Panel, "Auto",
             {
                 click: (e, obj) => {
-                    console.log("clicked");
-                    obj.part.data['relExpanded'] = true;
+                    obj.part.data['relExpanded'] = !obj.part.data['relExpanded'];
                 },
 
             },
