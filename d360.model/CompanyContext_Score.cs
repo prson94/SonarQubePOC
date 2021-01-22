@@ -125,14 +125,22 @@ namespace d360.model
                     row["MetricAssetUid"] = item.metricAssetUid;
 
                     if (item.scoreType.HasValue)
+                    {
                         row["ScoreType"] = (int)item.scoreType.Value;
+                    }
                     else
+                    {
                         row["ScoreType"] = DBNull.Value;
+                    }
 
                     if (item.allocationUid.HasValue)
+                    {
                         row["AllocationUid"] = item.allocationUid.Value;
+                    }
                     else
+                    {
                         row["AllocationUid"] = DBNull.Value;
+                    }
 
                     row["EffectiveDate"] = item.effectiveDate.Value;
                     row["Result"] = item.result;
@@ -403,23 +411,35 @@ from    #InternalMeasures T
                 row["ItemNumber"] = itemNumber;
                 row["AssetUid"] = item.assetUid;
                 row["EffectiveDate"] = item.effectiveDate;
-                
+
                 if (item.scoreType.HasValue)
+                {
                     row["ScoreType"] = (int)item.scoreType.Value;
+                }
                 else
+                {
                     row["ScoreType"] = DBNull.Value;
+                }
 
                 if (item.allocationUid.HasValue)
+                {
                     row["AllocationUid"] = item.allocationUid.Value;
+                }
                 else
+                {
                     row["AllocationUid"] = DBNull.Value;
+                }
 
                 row["Score"] = item.score;
-                
+
                 if (item.runDate.HasValue)
+                {
                     row["RunDate"] = item.runDate;
+                }
                 else
+                {
                     row["RunDate"] = DBNull.Value;
+                }
 
                 scoreTable.Rows.Add(row);
 
