@@ -123,7 +123,6 @@ export class AdminRelationshipsEditor {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .subscribe(result => {
                 this.predicates = [];
-                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false, type: 'none' });
                 for (let item of result) {
                     this.predicates.push({
                         label: item.label,
@@ -142,7 +141,6 @@ export class AdminRelationshipsEditor {
         this.isLoading = true;
         this.relationshipsService.getSubjectOptions().subscribe(result => {
             this.subjectOptions = [];
-            this.subjectOptions.push({ label: 'Select Subject', value: null });
             for (let item of result) {
                 this.subjectOptions.push({
                     value: item.value,
@@ -157,7 +155,6 @@ export class AdminRelationshipsEditor {
         this.isLoadingObject = true;
         this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe(result => {
             this.objectOptions = [];
-            this.objectOptions.push({ label: 'Select Object', value: null });
             for (let item of result) {
                 this.objectOptions.push({
                     value: item.value,
@@ -172,7 +169,6 @@ export class AdminRelationshipsEditor {
         this.isLoadingCardinality = true;
         this.relationshipsService.getCardinalityOptions().subscribe(result => {
             this.cardinalityOptions = [];
-            this.cardinalityOptions.push({ label: 'Select Cardinality', value: null });
             for (let item of result) {
                 this.cardinalityOptions.push({
                     value: item.value.toString(),

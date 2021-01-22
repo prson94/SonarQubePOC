@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.bulkload.UpdateIntersectTypeColumn-v1">
+  <changeSet author="Core" id="Procedure.bulkload.UpdateIntersectTypeColumn-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+    DROP PROCEDURE IF EXISTS [bulkload].[UpdateIntersectTypeColumn]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [bulkload].[UpdateIntersectTypeColumn]
 	@id int,
 	@column int
@@ -24,10 +29,6 @@ begin
 			inner join IntersectTypeDetail S on coalesce(S.SubjectName,'') + ' ' + coalesce(S.PredicateName,'/') + ' ' + coalesce(S.ObjectName,'') = lower(T.Value) 
 				and T.ColumnIndex = @column and T.LoadID = @id and S.PredicateType not in (3,4)
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
 		]]>
 	</rollback>

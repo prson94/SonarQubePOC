@@ -682,13 +682,16 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
+        public async Task<IHttpActionResult> GetMetricFieldsByAssetType(Guid assetTypeUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the fields for this asset type."));
-
             try
             {
+                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+                if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
+                {
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the fields for this asset type."));
+                }
+
                 var models = MetricsRepository.GetMetricConditionsFields(assetTypeUid);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models ?? new List<MetricFieldTypeViewModel>()));
             }
