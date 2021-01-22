@@ -879,7 +879,9 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
+                    UA.uid as UpdatedByUid,
                     A.UpdatedOn,
+                    CA.uid as CreatedByUid,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
@@ -892,6 +894,8 @@ namespace d360.model.DataAccessLayer
                     {(includePermissionDetails ? includePermissionFields : "")}
                     {hierarchyParentUidCol}
                 from Asset A
+                inner join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				inner join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
