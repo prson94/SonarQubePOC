@@ -88,6 +88,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error adding score results.
+        /// </summary>
+        internal static string ErrorAddingScoreResultsHeading {
+            get {
+                return ResourceManager.GetString("ErrorAddingScoreResultsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have submitted an invalid or empty data set. Please check your request and submit again..
+        /// </summary>
+        internal static string ErrorInvalidDatasetMessage {
+            get {
+                return ResourceManager.GetString("ErrorInvalidDatasetMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Forbidden.
         /// </summary>
         internal static string Forbidden {
@@ -129,6 +147,15 @@ namespace Resources {
         internal static string UnknownError {
             get {
                 return ResourceManager.GetString("UnknownError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unknown error occurred and has been logged for further investigation. Please try your request again later..
+        /// </summary>
+        internal static string UnknownErrorInvestigatingMessage {
+            get {
+                return ResourceManager.GetString("UnknownErrorInvestigatingMessage", resourceCulture);
             }
         }
     }

@@ -38,7 +38,7 @@ namespace d360.web.Controllers.V2
             Route("FollowingBreakdownByResource"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of FollowingBreakdown.", typeof(List<dynamic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public async Task<HttpResponseMessage> FollowingBreakdownByResource(int id)
@@ -76,7 +76,7 @@ namespace d360.web.Controllers.V2
             Route("ResponsibilityBreakdownByResource"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of ResponsibilityBreakdown.", typeof(List<dynamic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<HttpResponseMessage> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID = null)
         {
@@ -120,7 +120,7 @@ namespace d360.web.Controllers.V2
             Route("ResponsibilityBreakdownByGroup"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of ResponsibilityBreakdown.", typeof(List<dynamic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters]
         public async Task<HttpResponseMessage> ResponsibilityBreakdownByGroup(int id)
         {
@@ -163,7 +163,7 @@ namespace d360.web.Controllers.V2
             Route("edit"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(Object)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public dynamic EditComment(CommentData comment)
@@ -218,7 +218,7 @@ namespace d360.web.Controllers.V2
             Route("comment"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(Object)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public dynamic AddComment(CommentData comment)
@@ -278,7 +278,7 @@ namespace d360.web.Controllers.V2
             Route("counts"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets comments count.", typeof(List<CommentCount>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public List<CommentCount> GetCommentCounts(CommentRequestData pageData)
@@ -304,7 +304,7 @@ namespace d360.web.Controllers.V2
             Route("vote"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Stores the up/down vote of a comment.", typeof(List<CommentVote>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public List<CommentVote> VoteComment(CommentVote vote)
@@ -329,7 +329,7 @@ namespace d360.web.Controllers.V2
             Route("comments"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets comments.", typeof(List<CommentDetail>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public List<CommentDetail> GetComments(CommentRequestData pageData)
@@ -376,7 +376,7 @@ namespace d360.web.Controllers.V2
             Route("count/{id}/{days}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CountModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             NonNullableParameters
         ]
         public IEnumerable<CountModel> GetTheCounts(int days, int id = -1)

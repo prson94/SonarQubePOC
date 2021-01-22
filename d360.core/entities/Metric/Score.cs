@@ -37,17 +37,30 @@ namespace d360.core.entities.Metric
 
     #region API Models
 
-    public class ExternalScoreResultsApiPostModel
+    public abstract class BaseScoreResultApiRequestModel
     {
-
         [DataMember]
         public Guid assetUid { get; set; }
 
         [DataMember]
+        public DateTime? effectiveDate { get; set; }
+
+        #region Populated internally
+
+        [IgnoreDataMember]
+        public Guid? allocationUid { get; set; } = null;
+
+        [IgnoreDataMember]
+        public ScoreType? scoreType { get; set; } = null;
+
+        #endregion
+    }
+
+    public class ExternalScoreResultApiRequestModel: BaseScoreResultApiRequestModel 
+    {
+        [DataMember]
         public decimal score { get; set; }
 
-        [DataMember]
-        public DateTime? effectiveDate { get; set; }
         [DataMember]
         public DateTime? runDate { get; set; }
 
@@ -62,7 +75,7 @@ namespace d360.core.entities.Metric
         public bool passed { get; set; }
     }
 
-    public class ExternalScoreResultsApiResultsModel
+    public class ExternalScoreResultApiResponseModel
     {
         [JsonIgnore]
         public Guid ScoreUid { get; set; }
@@ -78,19 +91,30 @@ namespace d360.core.entities.Metric
         public string measuresJson { get; set; }
     }
 
-    public class ScoreResultApiPostModel
+    public class InternalScoreResultApiRequestModel : BaseScoreResultApiRequestModel
     {
         [DataMember]
         public Guid metricAssetUid { get; set; }
 
         [DataMember]
-        public Guid assetUid { get; set; }
-
-        [DataMember]
-        public DateTime? effectiveDate { get; set; }
-
-        [DataMember]
         public bool result { get; set; }
+    }
+
+    [DataContract(Name = "metric")]
+    public class InternalScoreResultApiResponseModel : BaseObject
+    {
+        [DataMember]
+        public Guid AssetUid { get; set; }
+        [DataMember]
+        public Guid MetricAssetUid { get; set; }
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+        [DataMember]
+        public bool Result { get; set; }
+        [DataMember]
+        public bool IsSuccess { get; set; }
+        [DataMember]
+        public string ErrorMessage { get; set; }
     }
 
     #endregion
