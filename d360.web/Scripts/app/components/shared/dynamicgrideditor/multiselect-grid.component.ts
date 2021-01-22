@@ -115,7 +115,7 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
                 this.selectedItems = sel;
                 this.value = _.cloneDeep(items);
                 this.onModelChange(this.value);                
-                this.selectedRelationRowIndex = this.items.findIndex(i => (i.Value === this.value[0]));
+                this.selectedRelationRowIndex = this.items.findIndex((i) => (i.Value === this.value[0]));
             }
         }
     }
