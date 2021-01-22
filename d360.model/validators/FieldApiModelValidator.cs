@@ -281,7 +281,7 @@ namespace d360.model.validators
                 {
                     try
                     {
-                        Regex regex = new Regex(field.Type.Text.Validation.Pattern);
+                        new Regex(field.Type.Text.Validation.Pattern);
                     }
                     catch (Exception ex)
                     {
