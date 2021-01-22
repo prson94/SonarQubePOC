@@ -311,11 +311,16 @@
                         Validation Pattern
                     </div>
                     <input name="validationPattern"
+                           autocomplete="off"
                            pInputText
                            type="text"
+                           #validationPattern="ngModel"
                            [(ngModel)]="model.FieldType.Type[currentType].Validation.Pattern"
                            (change)="validatePattern(); model.FieldType.Type[currentType].Validation.MinimumValue=0;"
-                           style="width: 98%; display: block;" />
+                           style="width: 98%; display: block;" 
+                           class="{{(isValidationPatternValid() ? '' :'ng-dirty ng-invalid')}}"
+                           />
+                    <div [hidden]="isValidationPatternValid() || validationPattern.pristine">Validation pattern is not valid Regex expression!</div>
                 </div>
                 <div *ngIf="currentType == 'Text'"
                      class="col s3">
@@ -326,6 +331,7 @@
                     <p-dropdown name="validationPattersOpt"
                                 [options]="lookups.Patterns"
                                 (onChange)="model.FieldType.Type[currentType].Validation.Pattern = $event.value; validatePattern()"
+                                (keydown)="validatePattern()"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -399,7 +405,7 @@
                            pInputText
                            type="text"
                            [(ngModel)]="testPattern"
-                           (change)="validatePattern()"
+                           (keydown)="validatePattern()"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">

@@ -402,7 +402,7 @@ begin
 	from	FieldDetail
 	where	FieldTypeID = @fieldTypeID and [Object] = @obj and ObjectID = @objID
 end
-select @fieldValue", new { fieldTypeID, obj, objID }).ConfigureAwait(false)).SingleOrDefault();
+select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAnsi = true, Length= 50 }, objID }).ConfigureAwait(false)).SingleOrDefault();
 
                     if (rfld != null)
                     {

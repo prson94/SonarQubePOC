@@ -1145,6 +1145,8 @@ namespace d360.model
                         rels = new string[] { rels.First() };
                     }
 
+                    List<DatabaseBulkRelationshipResult> graphEvents = new List<DatabaseBulkRelationshipResult>();
+
                     foreach (var rel in rels)
                     {
                         // split by | for type id
@@ -1186,10 +1188,21 @@ namespace d360.model
 
                                 Intersects.Add(intersect);
 
+                                graphEvents.Add(new DatabaseBulkRelationshipResult()
+                                {
+                                    Object = "Intersect",
+                                    uid = intersect.uid
+                                });
+
                                 SaveChanges();
                             }
                         }
 
+                    }
+
+                    if (graphEvents.Any())
+                    {
+                        SendAssetGraphEvents(graphEvents);
                     }
                 }
             }
@@ -1197,13 +1210,31 @@ namespace d360.model
 
         private void DeleteIntersects(SystemObjects @object, int objectID, int intersectTypeId, bool isSubject)
         {
-            var sql = "";
+            string sql;
+            List<DatabaseBulkRelationshipResult> graphEvents;
 
             if (isSubject)
-                sql = "delete [intersect] where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+            {
+                sql = "delete from [intersect] output deleted.uid into #deletedIntersects where subject = @obj and subjectid = @objectid and intersecttypeid = @intersectTypeId";
+            }
             else
-                sql = "delete [intersect] where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-            Database.Connection.Execute(sql, new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId });
+            {
+                sql = "delete from [intersect] output deleted.uid into #deletedIntersects where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
+            }
+
+
+            graphEvents = Database.Connection.Query<DatabaseBulkRelationshipResult>($@"
+                drop table if exists #deletedIntersects;
+                create table #deletedIntersects (uid uniqueidentifier);
+                {sql}
+                select uid, 'Intersect' as [Object] from #deletedIntersects"
+                , new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId })
+                .ToList();
+
+            if (graphEvents.Any())
+            {
+                SendAssetGraphEvents(graphEvents);
+            }
         }
 
         private void UpdateField(int objectId, string objectType, FieldType fieldType, WorkflowFieldUpdateSettings item, string val, bool isAssetEdited = false, Asset asset = null)

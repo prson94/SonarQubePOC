@@ -796,7 +796,6 @@
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
     <Content Include="Scripts\app\components\rule\rule-results-grid.component.html" />

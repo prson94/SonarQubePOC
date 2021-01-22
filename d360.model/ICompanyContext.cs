@@ -163,8 +163,7 @@ namespace d360.model
         new bool Add<T>(T item) where T : BaseObject;
         IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations);
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
-        IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);
-        bool AddObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);        
         void AddOrUpdateFields(List<Field> items);
         int AddWebStatistic(SystemObjects @object, int objectID, string ip, string userAgent, string host, string browserLanguage, string action, int resourceID, DateTime timestamp);
         bool AssignActivityWorkflowToNewObject(WorkflowEventRegistration reg, int itemId, int workflowId, int objectId, string @object);
@@ -198,8 +197,7 @@ namespace d360.model
         AssetDetail GetAssetDetail(string objectType, long objectId);
         string GetAssetTypeNoReadSqlStatement(string identifier = null);
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
-        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);
-        IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj);
+        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);        
         IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "");
         IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "");
         IQueryable<CommentDetail> GetCommentDetail(int id);
@@ -263,9 +261,7 @@ namespace d360.model
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
-        Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
-        bool ObjectHasChildren(SystemObjects type, int id);
-        bool ObjectHasParent(SystemObjects type, int id);
+        Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);                
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
@@ -290,8 +286,7 @@ namespace d360.model
         bool TypeHasChildren(SystemObjects type, int id);
         bool TypeHasParent(SystemObjects type, int id);
         new bool Update<T>(T item) where T : BaseObject;
-        bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
-        bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
         IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote);
         Database Database { get; }
@@ -307,8 +302,6 @@ namespace d360.model
         Task BulkLoadAssets(Load load, IAssetRepository repository);
 
         void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
-
-        void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key);
 
         int GetObjectId(Guid uid, SystemObjects objectType);
 
