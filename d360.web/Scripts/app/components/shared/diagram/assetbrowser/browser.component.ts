@@ -41,6 +41,7 @@ import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
 import { AssetBrowserOverviewComponent } from './tools/overview.component';
+import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 
 declare var window: any;
 
@@ -171,6 +172,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly leafBackColor: string = 'transparent';
 
     private readonly maxDescendantCount: number = 500;
+
+
+    private readonly fontBadgeNew: string = "14px 'Source Sans Pro'";
 
     //#endregion
 
@@ -1130,7 +1134,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         // check if we already encountered this key it would already be in the Set if we have.
         if (visitedNodes.has(key)) {
-            console.log('warning:cycle detected ending node highlighting of this path.')
+            console.warn('warning:cycle detected ending node highlighting of this path.')
             return;
         }
 
@@ -2288,6 +2292,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 click: (e, obj) => this.helper_HighlightPath(e, obj as any),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
+                alignment: go.Spot.Right,
                 layout:
                     this.g(
                         go.GridLayout,
@@ -2977,108 +2982,115 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private template_RootNodeContent(): go.Panel {
-        return this.g(
-            go.Panel,
-            "Vertical",
-            this.template_badgeHolder("relations"),
-            //this.template_badgeHolder("owners"),
-            this.g(go.Panel, "Auto",
-                this.template_expandedRelPanel("relations"),
+        return this.g(go.Panel, "Horizontal",
+            this.template_expandedRelPanel("relations"),
+            this.g(
+                go.Panel,
+                "Vertical",
+                this.template_FixedBadge("Relationships"),
+                this.g(go.Shape, "Horizontal"),
+                //this.template_badgeHolder("owners"),
+                this.template_NodeContent()
+            ) //end Vertical Panel
+        );
+    }
+
+    private template_NodeContent(): go.Panel {
+        return this.g(go.Panel, "Auto",
+            this.g(
+                go.Shape,
+                "Rectangle",
+                { strokeWidth: 2, isPanelMain: true },
+                new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+            ),
+            this.g(go.Panel, "Vertical",
+                {
+                    name: 'header-panel'
+                },
                 this.g(
-                    go.Shape,
-                    "Rectangle",
-                    { strokeWidth: 2, isPanelMain: true },
-                    new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
-                    new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
-                ),
-                this.g(go.Panel, "Vertical",
+                    go.Panel,
+                    "Table",
+                    // button next to TextBlock
                     {
-                        name: 'header-panel'
+                        stretch: go.GraphObject.Horizontal,
                     },
+                    new go.Binding("background", "", v => (v.isHighlighted) ?
+                        go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                        go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                    ).ofObject(),
                     this.g(
-                        go.Panel,
-                        "Table",
-                        // button next to TextBlock
+                        "SubGraphExpanderButton",
                         {
-                            stretch: go.GraphObject.Horizontal,
-                        },
-                        new go.Binding("background", "", v => (v.isHighlighted) ?
-                            go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
-                            go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
-                        ).ofObject(),
-                        this.g(
-                            "SubGraphExpanderButton",
-                            {
-                                row: 1,
-                                column: 1,
-                                margin: new go.Margin(0, 5, 0, 3)
-                            }
-                        ),
-                        //icon
-                        this.g(
-                            go.TextBlock,
-                            {
-                                editable: false,
-                                font: this.fontLabelIcon,
-                                row: 1,
-                                column: 2
-                            },
-                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                            new go.Binding("text", "icon"),
-                            new go.Binding("visible", "showIcon")
-                        ),
-                        //This TextBlock is placeholder for highlighted text
-                        this.g(
-                            go.TextBlock,
-                            {
-                                editable: false,
-                                font: this.fontLabel,
-                                stroke: this.fontLabelColor,
-                                visible: false,
-                                maxLines: this.textMaxLines,
-                                overflow: this.textOverflowStyle,
-                                margin: new go.Margin(0, 0, 0, 4),
-                                row: 1,
-                                column: 3
-                            },
-                            new go.Binding("text", "highlight").makeTwoWay(),
-                            new go.Binding("visible", "highlight_visible").makeTwoWay(),
-                            new go.Binding("background", "highlight_background").makeTwoWay()
-                        ),
-                        this.g(
-                            go.TextBlock,
-                            {
-                                editable: false,
-                                margin: 5,
-                                font: this.fontLabel,
-                                maxLines: this.textMaxLines,
-                                maxSize: this.textMaxSize,
-                                overflow: this.textOverflowStyle,
-                                toolTip: this.template_Tooltip(),
-                                row: 1,
-                                column: 4,
-                                stretch: go.GraphObject.Horizontal
-                            },
-                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                            new go.Binding("text", "text").makeTwoWay()
-                        ),
-                        this.template_nodeCount()
+                            row: 1,
+                            column: 1,
+                            margin: new go.Margin(0, 5, 0, 3)
+                        }
                     ),
-                    // end Horizontal Panel
+                    //icon
                     this.g(
-                        go.Panel,
-                        "Horizontal",
-                        // button next to TextBlock
-                        { stretch: go.GraphObject.Horizontal },
-                        this.g(
-                            go.Placeholder,
-                            { padding: 2, alignment: go.Spot.TopLeft },
-                        )
+                        go.TextBlock,
+                        {
+                            editable: false,
+                            font: this.fontLabelIcon,
+                            row: 1,
+                            column: 2
+                        },
+                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                        new go.Binding("text", "icon"),
+                        new go.Binding("visible", "showIcon")
+                    ),
+                    //This TextBlock is placeholder for highlighted text
+                    this.g(
+                        go.TextBlock,
+                        {
+                            editable: false,
+                            font: this.fontLabel,
+                            stroke: this.fontLabelColor,
+                            visible: false,
+                            maxLines: this.textMaxLines,
+                            overflow: this.textOverflowStyle,
+                            margin: new go.Margin(0, 0, 0, 4),
+                            row: 1,
+                            column: 3
+                        },
+                        new go.Binding("text", "highlight").makeTwoWay(),
+                        new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                        new go.Binding("background", "highlight_background").makeTwoWay()
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            editable: false,
+                            margin: 5,
+                            font: this.fontLabel,
+                            maxLines: this.textMaxLines,
+                            maxSize: this.textMaxSize,
+                            overflow: this.textOverflowStyle,
+                            toolTip: this.template_Tooltip(),
+                            row: 1,
+                            column: 4,
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                        new go.Binding("text", "text").makeTwoWay()
+                    ),
+                    this.template_nodeCount()
+                ),
+                // end Horizontal Panel
+                this.g(
+                    go.Panel,
+                    "Horizontal",
+                    // button next to TextBlock
+                    { stretch: go.GraphObject.Horizontal },
+                    this.g(
+                        go.Placeholder,
+                        { padding: 2, alignment: go.Spot.TopLeft },
                     )
-                    //end Horizontal Panel
-                ) //end Vertical Panel,
-            ) //end Auto Panel (main group Panel),
-        ); //end Vertical Panel
+                )
+                //end Horizontal Panel
+            ) //end Vertical Panel,
+        ); //end Auto Panel (main group Panel)
     }
 
     private template_Tooltip(): go.Adornment {
@@ -3224,20 +3236,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return 'diagram';
     }
 
-
-    private template_badgeHolder(propertyName: string): go.Panel {
-        return this.g(go.Panel, "Spot",
-            this.template_row()
-        );
-    }
-
     private template_expandedRelPanel(propertyName: string): go.Panel {
         return this.g(go.Panel, "Vertical",
-            {
-                alignmentFocusName: 'shape',
-                alignment: go.Spot.TopRight,
-                alignmentFocus: go.Spot.BottomLeft
-            },
             new go.Binding("itemArray", propertyName),
             new go.Binding("visible", "", function (part) {
                 return part.data['relExpanded'] == true;
@@ -3247,150 +3247,171 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
     }
 
-    private template_row() {
-        return this.g(go.Panel, "Auto",
-            {
-                click: (e, obj) => {
-                    obj.part.data['relExpanded'] = !obj.part.data['relExpanded'];
-                },
-
-            },
-            this.g(go.Shape,
-                {
-                    figure: "RoundedRectLeft",
-                    parameter1: 2,
-                    strokeWidth: 0.5,
-                    stretch: go.GraphObject.Fill,
-                    background: "red"
-                },
-                new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
-                new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
-            ),
-            this.g(
-                go.TextBlock,
-                {
-                    margin: 2,
-                    alignment: go.Spot.Left,
-                    stretch: go.GraphObject.Fill,
-                    editable: false,
-                    font: this.fontRelationBadge,
-                    stroke: this.fontRelationBadgeLabelForeColor
-                },
-                new go.Binding("text", "predicate"),
-                new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
-            ),
-            this.g(
-                go.TextBlock,
-                {
-                    margin: 2,
-                    alignment: go.Spot.Right,
-                    editable: false,
-                    font: this.fontLoadingIcon,
-                    stroke: this.fontOwnerBadgeLabelForeColor,
-                    text: this.loadingIcon,
-                    visible: false
-                },
-                new go.Binding("visible", "showLoading")
-            ),
-            this.g(go.Shape, "RoundedRectRight",
-                {
-                    parameter1: 2,
-                    stroke: this.fontRelationBadgeCountForeColor,
-                    strokeWidth: 1,
-                    maxSize: new go.Size(16, 16)
-                },
-                new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
-            ),
-            this.g(
-                go.TextBlock,
-                {
-                    margin: 2,
-                    alignment: go.Spot.Center,
-                    editable: false,
-                    font: this.fontRelationBadge,
-                    stroke: this.fontRelationBadgeCountForeColor,
-                    text: "text"
-                }
-            )
-        )
-    }
-
-
     private template_ImpactBadges2(): go.Panel {
         return this.g(go.Panel, "Auto", {
-            alignment: go.Spot.Left,
-            alignmentFocus: go.Spot.Bottom,
-            stretch: go.GraphObject.Fill,
-            padding: 0,
+            stretch: go.GraphObject.Horizontal,
             cursor: "pointer",
             name: "badge",
             click: (e, obj) => this.badge_ClickImpact(e, obj),
         },
             this.g(go.Panel, "Auto",
-                new go.Binding("visible", "", function (data: go.Part) {
-                    return data.part['showBadge'];
-                }).ofObject()
-                ,
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape,
-                        {
-                            figure: "RoundedRectLeft",
-                            parameter1: 2,
-                            strokeWidth: 0.5,
-                            stretch: go.GraphObject.Fill,
-                            background: "red",
-                        },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            stretch: go.GraphObject.Fill,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeLabelForeColor
-                        },
-                        new go.Binding("text", "predicate"),
-                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: 2,
-                            alignment: go.Spot.Right,
-                            editable: false,
-                            font: this.fontLoadingIcon,
-                            stroke: this.fontOwnerBadgeLabelForeColor,
-                            text: this.loadingIcon,
-                            visible: false
-                        },
-                        new go.Binding("visible", "showLoading")
-                    ),
-                    this.g(go.Shape, "RoundedRectRight",
-                        {
-                            parameter1: 2,
-                            stroke: this.fontRelationBadgeCountForeColor,
-                            strokeWidth: 1,
-                            maxSize: new go.Size(16, 16)
-                        },
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor,
-                        },
-                        new go.Binding("text", "count")
-                    )
+                this.g(go.Shape,
+                    {
+                        figure: "RoundedRectangle",
+                        parameter1: 2,
+                        strokeWidth: 1.5,
+                        fill: "white",
+                        stroke: "#d6d5d5",
+                        margin: new go.Margin(0, 0, -1, 0)
+                    }
                 ),
+                new go.Binding("visible", "", function (part: go.Part) {
+                    return part.data['showBadge'];
+                }).ofObject(),
+                this.g(go.Panel, "Horizontal",
+                    {
+                        alignment: go.Spot.Left,
+                        padding: 2
+                    },
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: new go.Margin(2, 4, 0, 4),
+                            editable: false,
+                            font: '14px FontAwesome',
+                            stroke: "#006fc0",
+                            minSize: new go.Size(16, 16)
+                        },
+                        new go.Binding("text", "", function (obj: go.Part) {
+                            if (obj.data['showLoading'] == true)
+                                return FontAwesomeHelper.GetHtmlCode("fa-spinner");
 
+                            if (obj.data['expanded'] == true)
+                                return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                            else
+                                return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+
+                        }).ofObject()
+
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: new go.Margin(2, 4, 0, 0),
+                            editable: false,
+                            font: this.fontBadgeNew,
+                            stroke: "#006fc0",
+                        },
+                        new go.Binding("text", "predicate")
+                    ),
+                    this.g(go.Panel, "Auto",
+                        {
+                            alignment: go.Spot.Right,
+                        },
+                        this.g(go.Shape, "RoundedRectangle",
+                            {
+                                strokeWidth: 0,
+                                parameter1: 2,
+                                minSize: new go.Size(32, 16),
+                                margin: new go.Margin(0, 4, 0, 4),
+                                fill: "#006fc0"
+                            },
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                margin: new go.Margin(1, 0, 0, 0),
+                                editable: false,
+                                font: this.fontBadgeNew,
+                                stroke: "white",
+                            },
+                            new go.Binding("text", "count")
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    private template_FixedBadge(text: string): go.Panel {
+        return this.g(go.Panel, "Auto", {
+            stretch: go.GraphObject.Horizontal,
+            cursor: "pointer",
+            click: (e, obj) => {
+                obj.part.data['relExpanded'] = !obj.part.data['relExpanded'];
+            },
+        },
+            this.g(go.Panel, "Auto",
+                this.g(go.Shape,
+                    {
+                        figure: "RoundedRectangle",
+                        parameter1: 2,
+                        strokeWidth: 1.5,
+                        fill: "white",
+                        stroke: "#d6d5d5",
+                        margin: new go.Margin(0, 0, -1, 0)
+                    }
+                ),
+                new go.Binding("visible", "", function (part: go.Part) {
+                    return true;
+                }).ofObject(),
+                this.g(go.Panel, "Horizontal",
+                    {
+                        alignment: go.Spot.Left,
+                        padding: 2
+                    },
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: new go.Margin(2, 4, 0, 4),
+                            editable: false,
+                            font: '14px FontAwesome',
+                            stroke: "#006fc0",
+                            minSize: new go.Size(16, 16),
+                        },
+                        new go.Binding("text", "", function (obj: go.Part) {
+                            if (obj.data['relExpanded'] == true)
+                                return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                            else
+                                return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+
+                        }).ofObject()
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            margin: new go.Margin(2, 4, 0, 0),
+                            editable: false,
+                            font: this.fontBadgeNew,
+                            stroke: "#006fc0",
+                            text: text
+                        }
+                    ),
+                    this.g(go.Panel, "Auto",
+                        {
+                            alignment: go.Spot.Right,
+                        },
+                        this.g(go.Shape, "RoundedRectangle",
+                            {
+                                strokeWidth: 0,
+                                parameter1: 2,
+                                minSize: new go.Size(32, 16),
+                                margin: new go.Margin(0, 4, 0, 4),
+                                fill: "#006fc0"
+                            },
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                margin: new go.Margin(1, 0, 0, 0),
+                                editable: false,
+                                font: this.fontBadgeNew,
+                                stroke: "white",
+                                text: "20"
+                            }
+                        )
+                    )
+                )
             )
         );
     }
