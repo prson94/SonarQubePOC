@@ -1188,13 +1188,16 @@ namespace d360.model
 
                                 Intersects.Add(intersect);
 
+                                SaveChanges();
+
                                 graphEvents.Add(new DatabaseBulkRelationshipResult()
                                 {
                                     Object = "Intersect",
-                                    uid = intersect.uid
+                                    uid = intersect.uid,
+                                    Success = true
                                 });
 
-                                SaveChanges();
+
                             }
                         }
 
@@ -1227,7 +1230,7 @@ namespace d360.model
                 drop table if exists #deletedIntersects;
                 create table #deletedIntersects (uid uniqueidentifier);
                 {sql}
-                select uid, 'Intersect' as [Object] from #deletedIntersects"
+                select uid, 'Intersect' as [Object], cast(1 as bit) as Success from #deletedIntersects"
                 , new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId })
                 .ToList();
 
