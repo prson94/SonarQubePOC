@@ -41,7 +41,7 @@
   <include file="scripts/GOV-8159.xml"/> <!--change default types for search to none (all)--> 
   <include file="scripts/GOV-8308.xml"/> <!--added setting for FusionEnabled--> 
   <include file="scripts/GOV-8104.xml"/>  <!--change default homepage title size -->
-  <include file="scripts/GOV-8396.xml"/> <!--rename Artifact search type in system settings to BusinessAsset --> 
+  <include file="scripts/GOV-8396.xml"/> <!--rename Artifact search type in system settings to BusinessAsset -->
   <include file="scripts/GOV-8641.xml"/> <!-- Community Package schema and tables -->
   <include file="scripts/GOV-8900.xml"/> <!-- Updating system setting to Data360 Workflow -->
   <include file="scripts/GOV-9109.xml"/> <!-- set UseAsTransformationLimit default to 6 -->
@@ -73,4 +73,5 @@
   <include file="scripts/GOV-12608.xml"/>  <!-- Drop fusion and event tables in plugin rename in GOV-12607-->
   <include file="scripts/GOV-12600.xml"/>  <!-- Remove FieldJsonPropertyLoadLimitToTopLevel settings-->
   <include file="scripts/GOV-8477.xml"/>  <!-- Drop DateLastLoggedIn column from Resource.-->
+  <include file="scripts/GOV-13225.xml"/>  <!--Change setting type from string to GUID of Governance Role Reference List Uid(73).-->
 </databaseChangeLog>
