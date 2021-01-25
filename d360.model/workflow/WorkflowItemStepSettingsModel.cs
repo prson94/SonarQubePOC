@@ -18,6 +18,7 @@ namespace d360.model.workflow
         private static string EMAIL_MESSAGE_BODY = "MessageBodyTemplate";
         private static string EMAIL_MESSAGE_SUBJECT = "MessageSubjectTemplate";
         private static string EMAIL_INCLUDE_RESPONSES = "IncludePreviousFormResponses";
+        private static string EMAIL_SEND_DEFAULT = "SendToDefaultUsers";
         private static string MISSING_SUBJECT_VALUE = "Data360 - Workflow Email notification (missing subject)";
         private static string MISSING_BODY_VALUE = "Data360 - Workflow Email (missing body).  You are receiving this email due to a Data360 workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
         private static string FIELD_UPDATE_SETTINGS = "FieldUpdate";
@@ -30,6 +31,7 @@ namespace d360.model.workflow
         public string BodyTemplate { get; set; }
 
         public bool ShouldIncludeFormResponses { get; set; }
+        public bool SendToDefaultUsers { get; set; } = true;
 
         public bool FormShouldSendEmail { get; set; }
 
@@ -73,6 +75,7 @@ namespace d360.model.workflow
             var specificUser = "";
             Guid recipientGroup = Guid.Empty;
             var includeFormResponses = false;
+            var sendToDefaultUsers = true;
             var messageSubject = "";
             var messageBody = "";
             List<WorkflowFieldUpdateSettings> fieldUpdateSettings = new List<WorkflowFieldUpdateSettings>();
@@ -137,6 +140,11 @@ namespace d360.model.workflow
                     includeFormResponses = (root.Element(EMAIL_INCLUDE_RESPONSES).Value ?? "").ToUpper() == "TRUE";
                 }
 
+                if (root.Element(EMAIL_SEND_DEFAULT) != null)
+                {
+                    sendToDefaultUsers = (root.Element(EMAIL_SEND_DEFAULT).Value ?? "TRUE").ToUpper() == "TRUE";
+                }
+
                 if (root.Element(FIELD_UPDATE_SETTINGS) != null)
                 {
                     foreach(var field in root.Element(FIELD_UPDATE_SETTINGS).Elements(FIELD_SETTINGS))
@@ -170,6 +178,7 @@ namespace d360.model.workflow
                 RecipientGroup = recipientGroup,
                 RecipientType = messageRecipientType,
                 ShouldIncludeFormResponses = includeFormResponses,
+                SendToDefaultUsers = sendToDefaultUsers,
                 SubjectTemplate = messageSubject ?? MISSING_SUBJECT_VALUE,
                 BodyTemplate = messageBody ?? MISSING_BODY_VALUE,
                 FieldUpdateSettings = fieldUpdateSettings,
