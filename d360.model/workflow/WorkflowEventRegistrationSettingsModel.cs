@@ -14,19 +14,38 @@ namespace d360.model.workflow
         public string EmailHeader { get; set; }
         public string EmailMessageTemplate { get; set; }
         public int ScheduleInterval { get; set; }
+        public int ScheduleDays { get; set; }
+        public ScheduleRunType ScheduleType { get; set; }
         public EmailTaskRecipientType RecipientType { get; set; }
         public string SpecificUser { get; set; }
+
+        public enum ScheduleRunType
+        {
+            Daily = 'd',
+            Hourly = 'h'
+        }
 
         public static WorkflowEventRegistrationSettingsModel Parse(string xml)
         {
             var settingsXml = XElement.Parse(xml);
             var messageRecipientType = EmailTaskRecipientType.Initiator;
 
-            var scheduledDays = 1;
+            var scheduledInterval = 1;
             if (settingsXml.Element("ScheduleInterval") != null)
             {
-                int.TryParse(settingsXml.Element("ScheduleInterval").Value, out scheduledDays);
+                int.TryParse(settingsXml.Element("ScheduleInterval").Value, out scheduledInterval);
             }
+            int scheduledDays = 127; //All days
+            if (settingsXml.Element("ScheduleDays") != null)
+            {
+                int.TryParse(settingsXml.Element("ScheduleDays").Value, out scheduledDays);
+            }
+
+            ScheduleRunType scheduledType = (settingsXml.Element("ScheduleType") != null &&
+                settingsXml.Element("ScheduleType").Value.ToLower() == ((char)ScheduleRunType.Hourly).ToString())
+                    ? ScheduleRunType.Hourly
+                    : ScheduleRunType.Daily; //default
+
 
             bool shouldSendAggregateEmail = false;
             if (settingsXml.Element("SendAggregateEmail") != null)
@@ -58,13 +77,44 @@ namespace d360.model.workflow
 
             return new WorkflowEventRegistrationSettingsModel
             {
-                ScheduleInterval = scheduledDays,
+                ScheduleInterval = scheduledInterval,
+                ScheduleDays = scheduledDays,
+                ScheduleType = scheduledType,
                 EmailHeader = emailHeader,
                 EmailMessageTemplate = emailTemplate,
                 SendAggregateEmail = shouldSendAggregateEmail,
                 RecipientType = messageRecipientType,
                 SpecificUser = specificUser
             };
+        }
+
+        public DateTime GetNextExecution(DateTime? lastExecuted)
+        {
+            DateTime nextRun;
+            if(!lastExecuted.HasValue)
+            {
+                nextRun = DateTime.UtcNow;
+            } else
+            {
+                if (ScheduleType == ScheduleRunType.Hourly)
+                    nextRun = lastExecuted.GetValueOrDefault().AddHours(ScheduleInterval);
+                else
+                    nextRun = lastExecuted.GetValueOrDefault().AddDays(ScheduleInterval);
+            }
+            //If nextRun is not a valid day, add/hours days until it is
+            if( ((int)Math.Pow(2, (int)nextRun.DayOfWeek) & ScheduleDays) == 0)
+            {
+                if(ScheduleType == ScheduleRunType.Hourly)
+                {
+                    //Add hours to push past midnight, if that does not resolve to a valid day, we can move in 1 day increments
+                    int hourOffset = 24 - nextRun.Hour;
+                    nextRun = nextRun.AddHours(hourOffset);
+                }
+                while (((int)Math.Pow(2, (int)nextRun.DayOfWeek) & ScheduleDays) == 0) {
+                    nextRun = nextRun.AddDays(1);
+                }
+            }
+            return nextRun;
         }
     }
 }

@@ -430,8 +430,7 @@ namespace d360.model
             int matchingItems = 0;
             List<string> items = new List<string>();
 
-
-            if (!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow))
+            if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow)
             {
                 var sql = @"select 
                                         ad.ObjectID as ID,
