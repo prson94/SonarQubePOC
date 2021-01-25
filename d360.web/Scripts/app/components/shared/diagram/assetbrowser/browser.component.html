@@ -73,7 +73,27 @@
                 </div>
             </div>
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType != 3">
-                <div class="col s12" style="padding: 0">
+                <div class="col s12" style="padding: 0; position:relative;">
+                    <div #relationshipBadges
+                         style="transform: scale({{scale}})"
+                         [hidden]="!isRelSeletorAvailable"
+                         class="relationship-badges-overlay">
+                        <ng-container *ngIf="followPart && followPart.data.relations">
+                            <div class="relation-item" *ngFor="let rel of followPart.data.relations;let i = index" (click)="newBadgeClick(i)">
+                                <div class="item-icon">
+                                    <i *ngIf="!rel.expanded && !rel.showLoading" class="fa fa-plus-square"></i>
+                                    <i *ngIf="rel.expanded && !rel.showLoading" class="fa fa-minus-square"></i>
+                                    <i *ngIf="rel.showLoading" class="fa fa-spinner fa-spin"></i>
+                                </div>
+                                <div class="item-name">
+                                    {{rel.predicate}}
+                                </div>
+                                <div class="count-badge">
+                                    {{rel.count}}
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
 
                     <div *ngIf="isWindowVisible()" class="asset-browser-window">

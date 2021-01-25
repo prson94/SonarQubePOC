@@ -66,6 +66,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('processDiagram', { static: false }) processDiagramRef: ProcessDiagramComponent;
     @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
 
+    @ViewChild('relationshipBadges', { static: false }) relationshipBadgesRef: ElementRef;
+
     private diagramData: AssetBrowserResponseModel;
 
     private originalAssetUid: string;
@@ -148,7 +150,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLabelIcon: string = "12px FontAwesome";
     private readonly fontLoadingIcon: string = "10px FontAwesome";
     private readonly fontLabelAlertColor: string = "#FF0000";
-    private readonly fontLabel: string = "12px 'Source Sans Pro'";
+    private readonly fontLabel: string = "14px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
     private readonly fontLinkColor: string = "#fff";
@@ -288,7 +290,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.ownerDetailPanelRef.nativeElement.style.height = innerPanelHeight;
             }
         });
-
+        this.updatePredicateSelectorPosition();
     }
 
     public ngOnDestroy() {
@@ -2983,12 +2985,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_RootNodeContent(): go.Panel {
         return this.g(go.Panel, "Horizontal",
-            this.template_expandedRelPanel("relations"),
+            //this.template_expandedRelPanel("relations"),
             this.g(
                 go.Panel,
                 "Vertical",
                 this.template_FixedBadge("Relationships"),
-                this.g(go.Shape, "Horizontal"),
                 //this.template_badgeHolder("owners"),
                 this.template_NodeContent()
             ) //end Vertical Panel
@@ -3238,6 +3239,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_expandedRelPanel(propertyName: string): go.Panel {
         return this.g(go.Panel, "Vertical",
+            {
+                alignment: go.Spot.Top,
+                width: 200
+            },
             new go.Binding("itemArray", propertyName),
             new go.Binding("visible", "", function (part) {
                 return part.data['relExpanded'] == true;
@@ -3333,12 +3338,42 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private isRelSeletorAvailable: boolean = false;
+    private followPart: go.Part = null;
+
+    private updatePredicateSelectorPosition() {
+        if (this.isRelSeletorAvailable && this.relationshipBadgesRef) {
+            var refHtmlElement = this.relationshipBadgesRef.nativeElement as HTMLElement;
+            let showOnSide: string = 'left';
+            var position = this.diagram.transformDocToView(this.followPart.position);
+            refHtmlElement.style.top = position.y + "px";
+            var posX = position.x;
+
+            var paddingSize = 4 * this.scale;
+            var diff = (refHtmlElement.offsetWidth * (1 / this.scale));
+            console.log(diff);
+
+            if (showOnSide == 'left') {
+                refHtmlElement.style.left = (posX - refHtmlElement. - paddingSize) + "px";
+            }
+            else {
+                refHtmlElement.style.left = (posX + this.followPart.getDocumentBounds().width + paddingSize) + "px";
+            }
+        }
+    }
+    private groupedBadgeClick(obj: go.GraphObject) {
+        this.followPart = obj.part;
+        this.isRelSeletorAvailable = obj.part.data['relExpanded'];
+        this.cdRef.markForCheck();
+    }
+
     private template_FixedBadge(text: string): go.Panel {
         return this.g(go.Panel, "Auto", {
             stretch: go.GraphObject.Horizontal,
             cursor: "pointer",
             click: (e, obj) => {
                 obj.part.data['relExpanded'] = !obj.part.data['relExpanded'];
+                this.groupedBadgeClick(obj);
             },
         },
             this.g(go.Panel, "Auto",
@@ -3414,5 +3449,84 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 )
             )
         );
+    }
+
+    private newBadgeClick(idx: number) {
+        let obj = this.followPart.part;
+        if (obj !== null && obj.part !== null && obj.part.data !== null) {
+            let ix = idx;
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
+            let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
+
+            this.diagram.model.setDataProperty(relation, 'showLoading', true);
+
+            let lastHighlightedPart = this.highlightedPart;
+            if (!relation.disabled) {
+                if (relation.expanded) {
+                    this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
+                    this.diagram.model.removeArrayItem(node.relations, ix);
+                    this.diagram.model.insertArrayItem(node.relations, ix, relation);
+                    this.helper_CalculateAlertCount();
+                    this.diagram.model.setDataProperty(relation, 'expanded', false);
+                    this.diagram.model.setDataProperty(relation, 'disabled', false);
+                    this.diagram.model.setDataProperty(relation, 'showLoading', false);
+                    this.helper_UpdateDiagramLayout();
+                    this.helper_HighlightPath(null, lastHighlightedPart);
+                }
+                else {
+                    relation.disabled = true;
+
+                    let assets: AssetBrowserApiHopAssetRequestModel[] = [];
+                    let hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === node.hierarchyKey; });
+                    hierarchyNodes.forEach(n => {
+                        if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) {
+                            if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
+                                assets.push({
+                                    Uid: n.assetUid,
+                                    Key: n.key
+                                });
+                            }
+                        }
+                    });
+
+                    let preloadedIntersects = this.helper_GetDiagramIntersectIds(relation.predicateId);
+                    let direction = relation.direction;
+
+                    let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
+                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
+                        .subscribe((response: AssetBrowserResponseModel) => {
+
+                            // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
+                            response.hierarchy.forEach(o => {
+                                this.diagramData.hierarchy.push(o);
+                            });
+                            response.links.forEach(o => {
+                                this.diagramData.links.push(o);
+                            });
+                            response.nodes.forEach(o => {
+                                this.diagramData.nodes.push(o);
+                            });
+                            if (response.reveals) {
+                                response.reveals.forEach(o => {
+                                    this.diagramData.reveals.push(o);
+                                });
+                            }
+                            this.diagram.model.setDataProperty(relation, 'expanded', true);
+                            this.diagram.model.setDataProperty(relation, 'disabled', false);
+                            this.diagram.model.setDataProperty(relation, 'showLoading', false);
+
+                            this.helper_ParseTranslatedData(response, true, badgeIdentifier);
+
+                            this.helper_SetFilterWindow();
+
+                            this.helper_HideDeselectedAssetTypes();
+                            this.helper_HideDeselectedPredicates();
+                            this.helper_HideDeselectedResponsibilityTypes();
+                            this.helper_HighlightPath(null, lastHighlightedPart);
+                        });
+                }
+            }
+        }
     }
 }
