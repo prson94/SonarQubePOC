@@ -8,6 +8,8 @@ import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-r
 import { ScoreDefinitionComponent } from './score-definition.component';
 import { CoreModule } from '../../core.module';
 import { PipesModule } from '../../../../pipes/pipes.module';
+import { AdminMetricPassTestDetailsComponent } from '../../../admin/scoring/admin-metric-pass-test-details.component';
+import { MetricPassTestDetailsModule } from '../../../admin/scoring/admin-metric-pass-test-details.module';
 
 @NgModule({
     imports: [
@@ -16,7 +18,9 @@ import { PipesModule } from '../../../../pipes/pipes.module';
         RouterModule,
         HttpClientModule,
         DirectivesModule,
-        PipesModule
+        PipesModule,
+
+        MetricPassTestDetailsModule
 
     ],
     declarations: [
