@@ -1,14 +1,12 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.validators;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using d360.core.resources;
+using System.Text.RegularExpressions;
 
 namespace d360.model.validators
 {
@@ -78,7 +76,7 @@ namespace d360.model.validators
                     }
                 }
 
-                if(!isJsonAttributeFieldTypeEnabled && field.Type.JsonElement != null)
+                if (!isJsonAttributeFieldTypeEnabled && field.Type.JsonElement != null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement field types are not enabled in this environment.  In order to use JsonElement field type you must enable system setting 75.");
                 }
@@ -142,8 +140,8 @@ namespace d360.model.validators
                 if (field.Type.ComputedOwnershipLookup != null)
                 {
                     if (field.Type.ComputedOwnershipLookup.IsDisplayable == false)
-                    { 
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Ownership Lookup.");
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsDisplayable parameter value must be true for type Ownership Lookup.");
                     }
                 }
 
@@ -276,6 +274,26 @@ namespace d360.model.validators
                     if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Field {field.FriendlyName}. IsPrimaryFilter(Show As Top Level Filter) parameter value must be false for boolean type field defined for action type!");
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(field?.Type?.Text?.Validation?.Pattern))
+                {
+                    try
+                    {
+                        new Regex(field.Type.Text.Validation.Pattern);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Validation pattern is not valid Regex expression!");
+                    }
+                }
+
+                if (field.Type.Link != null)
+                {
+                    if (field.Type.Link.IsPartOfKey == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Link Types cannot have field property IsPartOfKey on field {field.FriendlyName} set to true.");
                     }
                 }
 
@@ -571,16 +589,16 @@ namespace d360.model.validators
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
-        private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false, TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null )
+        private static bool IsFieldNameAllowed(string fieldApiName, bool isRelationshipType = false, TypeIdentifierInfoModel assetTypeIdentifierInfoModel = null)
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
             if (isRelationshipType)
                 disallowedFieldNames.Add("source");
 
-            if(assetTypeIdentifierInfoModel != null)
+            if (assetTypeIdentifierInfoModel != null)
             {
-                if(assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
+                if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
                 {
                     disallowedFieldNames.AddRange(new List<string> { "firstname", "lastname", "email", "status", "state", "resourceid", "resourceuri", "datelastloggedin", "lastloggedinon", "isadministrator" });
                 }

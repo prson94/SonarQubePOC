@@ -33,15 +33,15 @@
     ]
   },
   {
-    "outputFileName": "Content/primeng/v10.0.3/theme.min.css",
+    "outputFileName": "Content/primeng/v11.1.0/theme.min.css",
     "inputFiles": [
-      "Content/primeng/v10.0.3/theme.css"
+      "Content/primeng/v11.1.0/theme.css"
     ]
   },
   {
-    "outputFileName": "Content/primeng/v10.0.3/primeng.min.css",
+    "outputFileName": "Content/primeng/v11.1.0/primeng.min.css",
     "inputFiles": [
-      "Content/primeng/v10.0.3/primeng.css"
+      "Content/primeng/v11.1.0/primeng.css"
     ]
   },
   {
@@ -51,9 +51,9 @@
     ]
   },
   {
-    "outputFileName": "Content/primeng/v10.0.3/default.min.css",
+    "outputFileName": "Content/primeng/v11.1.0/default.min.css",
     "inputFiles": [
-      "Content/primeng/v10.0.3/default.css"
+      "Content/primeng/v11.1.0/default.css"
     ]
   }
 ]

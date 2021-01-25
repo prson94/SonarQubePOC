@@ -76,10 +76,6 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="gudusoft.gsqlparser, Version=2.4.9.22298, Culture=neutral, PublicKeyToken=1e1734490a0fe9ed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\gudusoft.gsqlparser.dll</HintPath>
-    </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.11.24.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.11.24\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
@@ -652,19 +648,18 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\wifi.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
-    <Content Include="Content\primeng\v10.0.3\default.min.css" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="Content\primeng\v10.0.3\images\color.png" />
-    <Content Include="Content\primeng\v10.0.3\images\hue.png" />
-    <Content Include="Content\primeng\v10.0.3\images\line.gif" />
-    <Content Include="Content\primeng\v10.0.3\images\loading.gif" />
-    <Content Include="Content\primeng\v10.0.3\images\password-meter.png" />
-    <Content Include="Content\primeng\v10.0.3\primeng.css" />
-    <Content Include="Content\primeng\v10.0.3\primeng.min.css" />
-    <Content Include="Content\primeng\v10.0.3\theme.css" />
-    <Content Include="Content\primeng\v10.0.3\theme.min.css">
-      <DependentUpon>theme.css</DependentUpon>
-    </Content>
+    <Content Include="Content\primeng\v11.1.0\default.css" />
+    <Content Include="Content\primeng\v11.1.0\default.min.css" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v11.1.0\images\color.png" />
+    <Content Include="Content\primeng\v11.1.0\images\hue.png" />
+    <Content Include="Content\primeng\v11.1.0\images\line.gif" />
+    <Content Include="Content\primeng\v11.1.0\images\loading.gif" />
+    <Content Include="Content\primeng\v11.1.0\images\password-meter.png" />
+    <Content Include="Content\primeng\v11.1.0\primeng.css" />
+    <Content Include="Content\primeng\v11.1.0\primeng.min.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.min.css" />
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />
@@ -800,7 +795,6 @@
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
     <Content Include="Scripts\app\components\rule\rule-results-grid.component.html" />
@@ -827,12 +821,12 @@
     <Content Include="Content\json\governanceIcons.json" />
     <Content Include="Scripts\app\components\shared\asset-score\definition\score-definition.less" />
     <Content Include="Scripts\app\components\shared\asset-score\history\score-history.less" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="Content\primeng\v10.0.3\fonts\roboto-v15-latin-regular.woff2" />
-    <Content Include="Content\primeng\v10.0.3\theme.less" />
-    <Content Include="Content\primeng\v10.0.3\default.less" />
+    <Content Include="Content\primeng\v11.1.0\default.less" />
+    <Content Include="Content\primeng\v11.1.0\theme.less" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />

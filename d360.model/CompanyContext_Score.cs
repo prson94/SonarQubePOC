@@ -740,7 +740,7 @@ where   E.ExecutionID = @ExecutionID
             return model;
         }
 
-        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null)
+        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null)
         {
             var fields = new { 
                 originalExecutionUid = fromExecutionUid ?? Guid.Empty
@@ -768,7 +768,14 @@ where   E.ExecutionID = @ExecutionID
                 Location = ScoreQueueExecutionDataLocation.File
             };
             Storage.SerializeJsonObjectToBlobAsync(info.StorageFolder, info.StorageFile, item).Wait();
-            QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+            if (timespan.HasValue)
+            {
+                QueueSource.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), info, timespan.Value).Wait();
+            }
+            else 
+            {
+                QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+            }
         }
 
         public void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn)

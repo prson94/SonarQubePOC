@@ -2677,5 +2677,85 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
+
+        /// <summary>
+        /// Retrieves a list of watchers for a given asset.
+        /// </summary>
+        /// <returns>Returns a list of watchers</returns>
+        [
+            HttpGet,
+            Route("asset/{assetUid}/watchers"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceUid, resourceId, or name. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(AssetWatchers)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetWatchers(Guid assetUid)
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "resourceuid", "resourceid"};
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
+                if (!allowedValues.Contains(order))
+                {
+                    isValid = $"{order} is not a valid _order field";
+                }
+            }
+
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+                if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                {
+                    isValid = "Invalid _direction provided";
+                }
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_includetotal");
+
+                if (!bool.TryParse(val.Value, out _))
+                {
+                    isValid = "Invalid _includeTotal value passed in the request";
+                }                    
+            }
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+            {
+                isValid = "The asset with uid specified does not exist.";
+            }
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
+
+            try
+            {
+                var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
     }
 }

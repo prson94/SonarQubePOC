@@ -5,12 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetPageInformation-v2">
+  <changeSet author="kmcnamee" id="Procedure.dbo.GetPageInformation-v3">
+    <comment>GOV-13402</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+		<![CDATA[    
 CREATE OR ALTER PROCEDURE [dbo].[GetPageInformation]
 	@o varchar(50),
 	@oid int,
@@ -83,7 +84,6 @@ begin
 				when Child.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
 			end as HasChildArtifacts,
-			cast(0 as bit) as AllowAttributes,
 			case 
 				when Hier.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
@@ -219,10 +219,7 @@ begin
 				when Child.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
 			end as HasChildArtifacts,
-			case 
-				when Attr.[Count] > 0 then cast(1 as bit)
-				else cast(0 as bit)
-			end as AllowAttributes,
+			cast(0 as bit) as AllowAttributes,
 			case 
 				when Hier.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
@@ -272,11 +269,6 @@ begin
 								and SubjectID = O.ObjectID
 								and PredicateType = 3
 						) Child
-			cross apply (
-						select	count(1) as [Count]
-						from	AttributeTypeRelation
-						where	ObjectType = T.Object and ObjectID = T.ObjectID
-						) Attr
 			cross apply (
 						select	count(1) as [Count]
 						from	IntersectType IT

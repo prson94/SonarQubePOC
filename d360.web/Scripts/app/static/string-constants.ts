@@ -2,8 +2,7 @@
     //object types
     static ObjectArtifact = "Artifact";
     static ObjectArtifactType = "ArtifactType";
-    static ObjectRelationship = "Relationship";
-    static ObjectAttribute = "Attribute";
+    static ObjectRelationship = "Relationship";    
     static ObjectGovernance = "Governance";
     static ObjectRoot = "Root";
     static ObjectTaxonomy = "Taxonomy";

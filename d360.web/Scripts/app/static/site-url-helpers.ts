@@ -68,8 +68,7 @@ export class SiteUrlHelpers {
 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
-    static SITE_URL_ADMIN_FUSION = `fusion`;
-    static SITE_URL_ADMIN_ATTRIBUTES = `attributes`;
+    static SITE_URL_ADMIN_FUSION = `fusion`;    
     static SITE_URL_ADMIN_ASSET = `assets`;
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
@@ -128,10 +127,7 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() == "issuetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`;
-        }
-        if (objectType.toLowerCase() == "attributetype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`;
-        }
+        }        
         if (objectType.toLowerCase() == "responsibilitytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
         }

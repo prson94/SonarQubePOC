@@ -2585,15 +2585,30 @@ order by wi.StartedOn desc";
         }
 
         [Route("versionstep/form/lookups/{objectType}/{objectId:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId)
+        public HttpResponseMessage GetWorkflowVersionStepFormLookups(string objectType, int objectId, string issueObject = null, int? issueObjectId = null)
         {
+            bool hasIssueObject = !string.IsNullOrEmpty(issueObject);
+
             var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
-                 order by ft.FriendlyName";
+                 where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0";
 
-            var results = Company.Query<dynamic>(sql, new { objectType = objectType, objectId = objectId });
+            if (hasIssueObject)
+            {
+                sql += @" union all
+                select ft.ID as value, 'Action Field :: ' + ft.FriendlyName + ' (' + coalesce( ri.Name, ft.LookupObjectType) + ')' as [label] from 
+                 FieldType ft
+                 left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
+                 where ft.Object = @issueObject and ft.ObjectID = @issueObjectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
+                order by 2";
+            }
+            else
+            {
+                sql += " order by ft.FriendlyName";
+            }
+
+            var results = Company.Query<dynamic>(sql, new { objectType,  objectId, issueObject, issueObjectId });
 
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }

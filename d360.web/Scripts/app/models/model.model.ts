@@ -7,7 +7,6 @@ export class Model {
     HierarchyMaximumDepth: number;
     TaxonomyTypeClass: string;    
     HasDashboards: boolean;
-    AllowAttributes: boolean;
     AllowSynonyms: boolean;
     ID: number;
     NymTypes: NymType[];
