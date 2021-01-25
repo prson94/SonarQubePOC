@@ -878,4 +878,17 @@ namespace d360.core.entities
         [DataMember]
         public int administrators { get; set; }
     }
+
+    public class AssetWatchers
+    {        
+        public int? total { get; set; }
+        public IEnumerable<AssetWatcher> items { get; set; }
+    }
+
+    public class AssetWatcher
+    {
+        public Guid resourceUid { get; set; }
+        public int resourceId { get; set; }
+        public string name { get; set; }
+    }
 }
