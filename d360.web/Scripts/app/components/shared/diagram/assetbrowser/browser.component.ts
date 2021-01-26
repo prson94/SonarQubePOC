@@ -109,7 +109,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showNodeCount: boolean = true;
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
-    autoCollapseRelationshipCount: number = 1; 
+    autoCollapseRelationshipCount: number = 2;
 
     popupMenuItems = [
         {
@@ -447,9 +447,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
-    private badge_ClickImpact(e, obj) {
+    private badge_ClickImpact(e, obj, overrideItemIndex: number = NaN) {
         if (obj !== null && obj.part !== null && obj.part.data !== null) {
             let ix = obj.itemIndex;
+            if (!isNaN(overrideItemIndex)) {
+                ix = overrideItemIndex;
+            }
             let node: AssetBrowserTranslationNode = obj.part.data;
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
             let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
@@ -525,10 +528,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-
-    private badge_ClickOwner(e, obj) {
+    private badge_ClickOwner(e, obj, overrideItemIndex: number = NaN) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
+
+            if (!isNaN(overrideItemIndex)) {
+                ix = overrideItemIndex;
+            }
+
             let node: AssetBrowserTranslationNode = obj.part.data;
             let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
             let badgeIdentifier: string = node.hierarchyKey + "|O|" + ix;
@@ -2751,76 +2758,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_OwnerBadges(): go.Panel {
-        return this.g(go.Panel, "Vertical", {
-            alignment: go.Spot.TopCenter,
-            alignmentFocus: go.Spot.Bottom,
-            padding: 0,
-            cursor: "pointer",
-            click: (e, obj) => this.badge_ClickOwner(e, obj)
-        },
-            this.g(go.Panel, "Horizontal",
-                new go.Binding("visible", "showBadge"),
-                { alignment: go.Spot.Center },
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBorderColor_Disabled : this.fontOwnerBadgeLabelBorderColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBackColor_Disabled : this.fontOwnerBadgeLabelBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            editable: false,
-                            font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeLabelForeColor
-                        },
-                        new go.Binding("text", "responsibilityType"),
-                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Right,
-                            editable: false,
-                            font: this.fontLoadingIcon,
-                            stroke: this.fontOwnerBadgeLabelForeColor,
-                            text: this.loadingIcon,
-                            visible: false
-                        },
-                        new go.Binding("visible", "showLoading")
-                    )
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, strokeWidth: 1 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: this.fontLoadingIcon,
-                            stroke: this.fontOwnerBadgeCountForeColor,
-                            text: this.loadingIcon
-                        },
-                        new go.Binding("text", "count", (h) => (h ? h : this.loadingIcon)),
-                        new go.Binding("font", "count", (h) => (h ? this.fontOwnerBadge : this.fontLoadingIcon))
-                    ),
-                )
-            )
-        );
-    }
-
     private template_OwnersRootNode(): go.Group {
         return this.g(
             go.Group,
@@ -2991,7 +2928,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private template_RootNodeContent(): go.Panel {
         return this.g(go.Panel, "Vertical",
             this.template_relationshipTopPanel("relations"),
-            //this.template_ownersTopPanel("owners"),
+            this.template_ownersTopPanel("owners"),
             new go.Binding("", "", (obj: go.GraphObject) => {
                 let longestPredicate: string = "";
                 if (obj.part.data && obj.part.data["relations"]) {
@@ -3003,8 +2940,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 if (obj.part.data && obj.part.data["owners"]) {
                     (obj.part.data["owners"] as Array<any>).forEach(rel => {
-                        if (rel["predicate"].length > longestPredicate.length) {
-                            longestPredicate = rel["predicate"];
+                        if (rel["responsibilityType"].length > longestPredicate.length) {
+                            longestPredicate = rel["responsibilityType"];
                         }
                     });
                 }
@@ -3019,7 +2956,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     stretch: go.GraphObject.Horizontal,
                 },
                 this.template_fixedBadge("relations"),
-                //this.template_fixedBadge("owners"),
+                this.template_fixedBadge("owners"),
                 this.template_NodeContent()
             ) //end Vertical Panel
         );
@@ -3360,7 +3297,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             font: this.fontBadgeNew,
                             stroke: "#006fc0",
                         },
-                        new go.Binding("text", "predicate")
+                        new go.Binding("text", "predicate"),
+                        new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
+                            if (obj.part.data["predicateWidth"]) {
+                                var predicateWidth = +obj.part.data["predicateWidth"]
+                                var width = this.calculateBadgeTextWidth(predicateWidth);
+                                return new go.Size(width, NaN);
+                            }
+                        }).ofObject()
                     ),
                     this.g(go.Panel, "Auto",
                         {
@@ -3371,7 +3315,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 strokeWidth: 0,
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
-                                margin: new go.Margin(0, 4, 0, 4),
+                                margin: new go.Margin(0, 0, 0, 4),
                                 fill: "#006fc0"
                             },
                         ),
@@ -3446,7 +3390,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             font: this.fontBadgeNew,
                             stroke: "#006fc0",
                         },
-                        new go.Binding("text", "responsibilityType")
+                        new go.Binding("text", "responsibilityType"),
+                        new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
+                            if (obj.part.data["predicateWidth"]) {
+                                var predicateWidth = +obj.part.data["predicateWidth"]
+                                var width = this.calculateBadgeTextWidth(predicateWidth);
+                                return new go.Size(width, NaN);
+                            }
+                        }).ofObject()
                     ),
                     this.g(go.Panel, "Auto",
                         {
@@ -3457,7 +3408,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 strokeWidth: 0,
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
-                                margin: new go.Margin(0, 4, 0, 4),
+                                margin: new go.Margin(0, 0, 0, 4),
                                 fill: "#006fc0"
                             },
                         ),
@@ -3477,12 +3428,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-
-    private isRelSeletorAvailable: boolean = false;
+    //relationship panel
+    private isRelationshipSelectorAvailable: boolean = false;
+    private relationshipSelectorType: string = '';
     private followPart: go.Part = null;
+    private relationshipData: any[];
 
     private updatePredicateSelectorPosition() {
-        if (this.isRelSeletorAvailable && this.relationshipBadgesRef) {
+        if (this.isRelationshipSelectorAvailable && this.relationshipBadgesRef) {
             var refHtmlElement = this.relationshipBadgesRef.nativeElement as HTMLElement;
             let showOnSide: string = 'left';
             var position = this.diagram.transformDocToView(this.followPart.position);
@@ -3499,7 +3452,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
     private groupedBadgeClick(obj: go.GraphObject, propName: string) {
         this.followPart = obj.part;
-        this.isRelSeletorAvailable = obj.part.data['relExpanded' + propName];
+        this.isRelationshipSelectorAvailable = obj.part.data['relExpanded' + propName];
+        this.relationshipData = obj.part.data[propName] as Array<any>;
+        this.relationshipSelectorType = propName;
+        if (propName === "relations") {
+            this.relationshipData.forEach(rel => {
+                rel.text = rel.predicate;
+            })
+        }
+        else {
+            this.relationshipData.forEach(rel => {
+                rel.text = rel.responsibilityType;
+            })
+        }
         this.cdRef.markForCheck();
     }
 
@@ -3558,9 +3523,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
                             font: this.fontBadgeNew,
-                            stroke: "#006fc0",
-                            text: propertyName
-                        }
+                            stroke: "#006fc0"
+                        },
+                        new go.Binding("text", "", (obj) => {
+                            return propertyName === "relations" ? "Relationships" : "Responsibilities";
+                        }),
+                        new go.Binding("minSize", "", (obj: go.GraphObject) => {
+                            var currentWidth = +obj.getDocumentBounds().width;
+                            var predicateWidth = +obj.part.data["predicateWidth"]
+                            if (predicateWidth > currentWidth) {
+                                return new go.Size(predicateWidth, NaN);
+                            }
+                        }).ofObject(),
                     ),
                     this.g(go.Panel, "Auto",
                         {
@@ -3593,86 +3567,21 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private newBadgeClick(idx: number) {
-        let obj = this.followPart.part;
-        if (obj !== null && obj.part !== null && obj.part.data !== null) {
-            let ix = idx;
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
-            let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
 
-            this.diagram.model.setDataProperty(relation, 'showLoading', true);
-
-            let lastHighlightedPart = this.highlightedPart;
-            if (!relation.disabled) {
-                if (relation.expanded) {
-                    this.badge_RemoveDependentNodes(badgeIdentifier, relation.direction);
-                    this.diagram.model.removeArrayItem(node.relations, ix);
-                    this.diagram.model.insertArrayItem(node.relations, ix, relation);
-                    this.helper_CalculateAlertCount();
-                    this.diagram.model.setDataProperty(relation, 'expanded', false);
-                    this.diagram.model.setDataProperty(relation, 'disabled', false);
-                    this.diagram.model.setDataProperty(relation, 'showLoading', false);
-                    this.helper_UpdateDiagramLayout();
-                    this.helper_HighlightPath(null, lastHighlightedPart);
-                }
-                else {
-                    relation.disabled = true;
-
-                    let assets: AssetBrowserApiHopAssetRequestModel[] = [];
-                    let hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === node.hierarchyKey; });
-                    hierarchyNodes.forEach(n => {
-                        if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) {
-                            if (this.displayConfiguration.IncludeNonLeaf || n.leaf) {
-                                assets.push({
-                                    Uid: n.assetUid,
-                                    Key: n.key
-                                });
-                            }
-                        }
-                    });
-
-                    let preloadedIntersects = this.helper_GetDiagramIntersectIds(relation.predicateId);
-                    let direction = relation.direction;
-
-                    let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
-                    this.browserService.getImpactHop(ancestryMode, node.hierarchyKey, relation.predicateUid, direction, this.displayConfiguration.IncludeNonLeaf, assets, preloadedIntersects)
-                        .subscribe((response: AssetBrowserResponseModel) => {
-
-                            // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
-                            response.hierarchy.forEach(o => {
-                                this.diagramData.hierarchy.push(o);
-                            });
-                            response.links.forEach(o => {
-                                this.diagramData.links.push(o);
-                            });
-                            response.nodes.forEach(o => {
-                                this.diagramData.nodes.push(o);
-                            });
-                            if (response.reveals) {
-                                response.reveals.forEach(o => {
-                                    this.diagramData.reveals.push(o);
-                                });
-                            }
-                            this.diagram.model.setDataProperty(relation, 'expanded', true);
-                            this.diagram.model.setDataProperty(relation, 'disabled', false);
-                            this.diagram.model.setDataProperty(relation, 'showLoading', false);
-
-                            this.helper_ParseTranslatedData(response, true, badgeIdentifier);
-
-                            this.helper_SetFilterWindow();
-
-                            this.helper_HideDeselectedAssetTypes();
-                            this.helper_HideDeselectedPredicates();
-                            this.helper_HideDeselectedResponsibilityTypes();
-                            this.helper_HighlightPath(null, lastHighlightedPart);
-                        });
-                }
-            }
+    private htmlBadgeClick(idx: number) {
+        if (this.relationshipSelectorType === "relations") {
+            this.badge_ClickImpact(null, this.followPart.part, idx);
         }
+        else {
+            this.badge_ClickOwner(null, this.followPart.part, idx);
+        }
+
     }
 
     private calculateBadgeWidthByText(txt: string): number {
-        return 76 + txt.length * 6.5;
+        return 72 + txt.length * 6;
+    }
+    private calculateBadgeTextWidth(width: number): number {
+        return width - 72;
     }
 }

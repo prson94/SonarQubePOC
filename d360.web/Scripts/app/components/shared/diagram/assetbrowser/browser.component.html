@@ -75,18 +75,18 @@
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType != 3">
                 <div class="col s12" style="padding: 0; position:relative;">
                     <div #relationshipBadges
-                         [hidden]="!isRelSeletorAvailable"
+                         [hidden]="!isRelationshipSelectorAvailable"
                          class="relationship-badges-overlay">
                         <ng-container *ngIf="followPart && followPart.data.relations">
                             <div class="relationships" style="transform: scale({{scale}});transform-origin: 100% 0;">
-                                <div class="relation-item" *ngFor="let rel of followPart.data.relations;let i = index" (click)="newBadgeClick(i)">
+                                <div class="relation-item" *ngFor="let rel of relationshipData;let i = index" (click)="htmlBadgeClick(i)">
                                     <div class="item-icon">
                                         <i *ngIf="!rel.expanded && !rel.showLoading" class="fa fa-plus-square"></i>
                                         <i *ngIf="rel.expanded && !rel.showLoading" class="fa fa-minus-square"></i>
                                         <i *ngIf="rel.showLoading" class="fa fa-spinner fa-spin"></i>
                                     </div>
                                     <div class="item-name">
-                                        {{rel.predicate}}
+                                        {{rel.text}}
                                     </div>
                                     <div class="count-badge">
                                         {{rel.count}}
