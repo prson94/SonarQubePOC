@@ -54,7 +54,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Assets of this Type do not support permissions.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset permissions.", typeof(PermissionsResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetAssetPermissionsByUid(Guid assetUid)
         {
@@ -97,7 +97,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "AssetType not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "AssetType does not support permissions.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of assettype permissions.", typeof(PermissionsResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {

@@ -48,7 +48,7 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> Get()
         {
@@ -139,9 +139,9 @@ namespace d360.web.Controllers.V2
             Route("{templateUid}"),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Template succesfully deleted.", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Template not found matching Uid Provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteTemplateByUid(Guid templateUid)
         {
@@ -172,10 +172,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(AssetTypeExportTemplateUpsertRequest), typeof(ExportTemplateUpsertExample)),
             SwaggerResponse(HttpStatusCode.OK, "Template Created Successfully", typeof(AssetTypeSuccess)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Item already exists", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))            
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))            
         ]
         public async Task<IHttpActionResult> AddTemplate(AssetTypeExportTemplateUpsertRequest model)
         {            
@@ -212,7 +212,7 @@ namespace d360.web.Controllers.V2
             
             if (res <= 0)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template",  "An unknown error occurred while processing this request.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Creating Template",  INTERNAL_ERROR_MESSAGE);
             }
             
             var templateUid = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == templateId).Uid;
@@ -421,10 +421,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(AssetTypeExportTemplateUpsertRequest), typeof(ExportTemplateUpsertExample)),
             SwaggerResponse(HttpStatusCode.OK, "Template Updated Successfully", typeof(AssetTypeSuccess)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Export Template not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> UpdateTemplate(Guid templateUid, AssetTypeExportTemplateUpsertRequest model)
         {
@@ -485,10 +485,10 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Updating Template", "An unknown error occurred while processing this request.");                
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error Updating Template", INTERNAL_ERROR_MESSAGE);                
             }            
         }
-
+        
         /// <summary>
         /// Check if the asset has custom exports.
         /// </summary>
@@ -500,8 +500,8 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom export templates.", typeof(bool)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult HasCustomExport(Guid uid)
         {

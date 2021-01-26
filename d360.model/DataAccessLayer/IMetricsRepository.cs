@@ -11,7 +11,6 @@ namespace d360.model.DataAccessLayer
     public interface IMetricsRepository
     {
         WorkHttpStatus AddOrUpdateMetrics(MetricAssetEditModel model);
-        List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution);
         void DeleteMetric(MetricAsset model);
         MetricAsset GetActiveMetric(Guid uid);
         Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid);
