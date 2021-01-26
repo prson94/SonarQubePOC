@@ -77,13 +77,40 @@
             </div>
             <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
                 <div class="FieldName">
-                    Run Frequency (Days)
+                    Run Interval
+                </div>
+                <div>
+                    <div>
+                        <select style="width:95%;"
+                                [ngModel]="model.Event.SettingsObject.Settings.ScheduleType"
+                                (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleType = $event; validate(); checkScheduleInterval();">
+                            <option *ngFor="let i of scheduleTypes"
+                                    [value]="i.value">
+                                {{i.label}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="FieldName">
+                    Run Frequency
                 </div>
                 <div>
                     <input type="number"
+                           min="1"
+                           [max]="runFrequencyMax()"
+                           step="1"
                            [ngModel]="model.Event.SettingsObject.Settings.ScheduleInterval"
-                           (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event;  validate();"
+                           (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event; validate();"
                            style="width: 95%" />
+                </div>
+                <div class="FieldName">
+                    Run Days
+                </div>
+                <div style="width: 95%">
+                    <d3s-dayofweek-input 
+                        [ngModel]="model.Event.SettingsObject.Settings.ScheduleDays"
+                        (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleDays = $event; validate();"
+                        label="Every"></d3s-dayofweek-input>
                 </div>
             </div>
         </div>
