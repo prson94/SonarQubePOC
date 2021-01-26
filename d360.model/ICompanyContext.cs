@@ -238,7 +238,7 @@ namespace d360.model
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
         Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null);
-        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
+        IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true);
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnGroup(int groupId);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
         bool HasAssetPermission(long id, Permission permission);

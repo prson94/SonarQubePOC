@@ -155,7 +155,11 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
 
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
-
+            if (this.step.settings.SendToDefaultUsers == null) {
+                this.step.settings.SendToDefaultUsers = true;                   
+            } else {
+                this.step.settings.SendToDefaultUsers = this.step.settings.SendToDefaultUsers.toString().toLowerCase() === 'true' ? true : false;
+            } 
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
                 .subscribe(r => {
