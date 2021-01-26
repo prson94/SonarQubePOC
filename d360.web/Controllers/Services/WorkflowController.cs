@@ -313,8 +313,8 @@ order by wi.StartedOn desc";
             };
         }
 
-        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}")]
-        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId)
+        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
+        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId, bool clearAssignments)
         {
             try
             {
@@ -323,8 +323,9 @@ order by wi.StartedOn desc";
                     throw new Exception("item step id not found");
                 else
                 {
+                    Console.WriteLine(clearAssignments);
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, clearAssignments);
                 }
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
@@ -882,6 +883,13 @@ order by wi.StartedOn desc";
 
             // check if the user has access
             var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+            //See if there are more than one user and the response type is first response if so we can give option to reassign to a sigle user and clear other assignments.
+          
+            
+            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
+            var IsClearAssignementsAllowed = (itemFields.TotalResources > 1)
+                && (formSettings.ResponseType == FormResponseType.FirstResponse);
+
 
 
             //replace any tokens in hte description            
@@ -907,7 +915,8 @@ order by wi.StartedOn desc";
                 IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
                 IssueTypeName = issueTypeName,
                 AllowReassignObject = allowReassignObject,
-                AllowReassignResource = allowReassignResource
+                AllowReassignResource = allowReassignResource,
+                IsClearAssignementsAllowed
             });
         }
 
@@ -3069,6 +3078,20 @@ order by wi.StartedOn desc";
                                 userList.Add((int)reassigned["@byResourceId"]);
                             }
                         }
+                        else if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] != null)
+                        {
+                            hasBulkReassignments = true;
+                            userList.Add((int)reassigned["@toResourceId"]);
+
+                            if (reassigned["@fromResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@fromResourceId"]);
+                            }
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@byResourceId"]);
+                            }
+                        }
                     }
                 }
 
@@ -3081,7 +3104,7 @@ order by wi.StartedOn desc";
                     {
                         var reassigned = detail.ItemFields.Reassigned[i];
 
-                        if (reassigned["@reassignType"] == "Resource")
+                        if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] == null)
                         {
                             if (reassigned["@byResourceId"] != null)
                             {
@@ -3099,6 +3122,42 @@ order by wi.StartedOn desc";
                             {
                                 var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@fromResourceId"]);
                                 reassigned["@fromResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+                        }
+                        else
+                        {
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@byResourceId"]);
+                                reassigned["@byResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@toResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@toResourceId"]);
+                                reassigned["@toResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@objectType"] != null)
+                            {
+                                int objectId = (int)reassigned["@objectId"];
+                                var objectType = (string)reassigned["@objectType"];
+                                var previousObjectName = "";
+                                if (objectType == "ResponsibilityType")
+                                {
+                                    var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
+                                    previousObjectName = resp != null ? resp.Name : "[unknown]";
+                                }
+                                else
+                                {
+                                    var sql = @"Select D.DisplayValue as ObjectName
+                                                From
+                                                Asset A
+                                                cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                                                where   A.Object = @obj and A.ObjectID = @objId";
+                                    previousObjectName = Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
+                                }
+                                reassigned["@fromResourceName"] = string.IsNullOrEmpty(previousObjectName) ? "[unknown]" : $"{objectType} - {previousObjectName}";
                             }
                         }
                     }
@@ -3550,53 +3609,53 @@ order by wi.StartedOn desc";
                         }
                     }
 
-                    foreach (var form in itemFields.Forms)
-                    {
-                        if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
-                            resourceIds.Add(form.ResourceID);
-                    }
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form.field != null)
+                        foreach (var form in itemFields.Forms)
                         {
-                            if (form.field.GetType() != typeof(JArray))
+                            if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
+                                resourceIds.Add(form.ResourceID);
+                        }
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                        {
+                            var form = detail.ItemFields.form[i];
+
+                            if (form.field != null)
                             {
-                                form.field = new JArray(form.field);
+                                if (form.field.GetType() != typeof(JArray))
+                                {
+                                    form.field = new JArray(form.field);
+                                }
+                            }
+                            else
+                            {
+                                form.field = new JArray();
+                            }
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                if (!resourceIds.Any(r => r == resId))
+                                    resourceIds.Add(resId);
                             }
                         }
-                        else
+
+
+                        //get all relevant resource info
+                        var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
                         {
-                            form.field = new JArray();
+                            var form = detail.ItemFields.form[i];
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
+                                if (res != null)
+                                    form.resourceName = res.FullName;
+                            }
+                            SetWorkFlowStepRelationshipAssets(form);
                         }
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            if (!resourceIds.Any(r => r == resId))
-                                resourceIds.Add(resId);
-                        }
-                    }
-
-
-                    //get all relevant resource info
-                    var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
-                            if (res != null)
-                                form.resourceName = res.FullName;
-                        }
-                        SetWorkFlowStepRelationshipAssets(form);
                     }
                 }
-            }
             catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
