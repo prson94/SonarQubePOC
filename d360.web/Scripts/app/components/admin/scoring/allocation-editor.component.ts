@@ -84,10 +84,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         if (this.selection.scoreType) {
             this.populateAssetTypesDDL();
 
-            //if (this.selection.scoreType.toString() == 'DataQuality')
-            //    this.selection.isExternallyCalculated = true;
-
-            if (!this.selection.uid) {// && this.selection.scoreType.toString() == 'Governance') {
+            if (!this.selection.uid) {
                 this.selection.isExternallyCalculated = false;
             }
             this.hasModelChanged();
