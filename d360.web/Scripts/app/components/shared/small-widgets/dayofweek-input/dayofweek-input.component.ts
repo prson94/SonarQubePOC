@@ -14,7 +14,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 		        <div class="dayofweek-input">
                     <div *ngIf="label.length > 0" class="dayofweek-label">{{label}}</div>
                     <ul class="dayofweek-days">
-                        <li><p-checkbox *ngFor="let i of week"
+                        <li *ngFor="let i of week"><p-checkbox
                             igCheckbox
                             [disabled]="disabled"
                             [(ngModel)]="days[i]"
