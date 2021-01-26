@@ -220,7 +220,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
             return '';
 
         switch (check) {
-            case 'External': prefix = 'External: '; break;
+            case 'External': prefix = ''; break;
             case 'Field': prefix = 'Field: '; break;
             case 'Owner': prefix = 'Ownership: '; break;
             case 'Predicate': prefix = 'Predicate: '; break;
