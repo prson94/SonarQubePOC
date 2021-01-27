@@ -109,7 +109,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showNodeCount: boolean = true;
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
-    autoCollapseRelationshipCount: number = 2;
+    autoCollapseRelationshipCount: number = 20;
 
     popupMenuItems = [
         {
@@ -379,6 +379,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.isFullScreen = false;
             this.helper_ResizeDiagram();
             this.cdRef.markForCheck();
+        }
+    }
+
+    @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
+        if (this.isRelationshipSelectorAvailable) {
+            if (!this.relationshipBadgesRef.nativeElement.contains(event.target)) {
+                this.isRelationshipSelectorAvailable = false;
+                this.diagram.model.setDataProperty(this.followPart.data, "relExpanded" + this.relationshipSelectorType, false);
+            }
         }
     }
 
@@ -2296,41 +2305,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private template_FocalRootNode(): go.Group {
-        return this.g(
-            go.Group,
-            "Auto",
-            {
-                background: "transparent",
-                contextMenu: this.template_ContextMenu(),
-                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
-                computesBoundsAfterDrag: true,
-                handlesDragDropForMembers: true,
-                alignment: go.Spot.Right,
-                layout:
-                    this.g(
-                        go.GridLayout,
-                        {
-                            wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
-                            sorting: go.GridLayout.Ascending,
-                            comparer: (a, b) => this.helper_SortParts(a, b)
-                        }
-                    )
-            },
-            this.g(go.Panel,
-                "Auto",
-                this.g(go.Panel, "Table",
-                    this.g(go.Panel,
-                        "Auto",
-                        { row: 2, column: 1 },
-                        this.template_RootNodeContent()
-                    )
-                )
-            )
-        );
-    }
-
     private template_HiddenDisabledNode(): go.Group {
         return this.g(go.Group, "Auto",
             new go.Binding("visible", "visible"),
@@ -2465,75 +2439,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             new go.Binding("opacity", "opacity")
         );
     }
-
-    private template_ImpactBadges(): go.Panel {
-        return this.g(go.Panel, "TableRow", {
-            alignment: go.Spot.TopCenter,
-            alignmentFocus: go.Spot.Bottom,
-            padding: 0,
-            cursor: "pointer",
-            name: "badge",
-            click: (e, obj) => this.badge_ClickImpact(e, obj),
-        },
-            this.g(go.Panel, "Horizontal",
-                new go.Binding("visible", "showBadge"),
-                { alignment: go.Spot.Center },
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeLabelForeColor
-                        },
-                        new go.Binding("text", "predicate"),
-                        new go.Binding("margin", "showLoading", (h) => (h ? new go.Margin(2, 18, 2, 2) : new go.Margin(2, 2, 2, 2)))
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Right,
-                            editable: false,
-                            font: this.fontLoadingIcon,
-                            stroke: this.fontOwnerBadgeLabelForeColor,
-                            text: this.loadingIcon,
-                            visible: false
-                        },
-                        new go.Binding("visible", "showLoading")
-                    )
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, stroke: this.fontRelationBadgeCountForeColor, strokeWidth: 1 },
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor,
-                        },
-                        new go.Binding("text", "count")
-                    ),
-                )
-            )
-        );
-    }
-
 
     private template_ImpactLink(): go.Link {
         return this.g(
@@ -2781,13 +2686,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",
-                this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "relations"),
-                    new go.Binding("visible", "showBadges"),
-                    {
-                        itemTemplate: this.template_ImpactBadges()
-                    }
-                ),
                 this.g(
                     go.Shape,  // the "top" port
                     { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }
@@ -2901,6 +2799,55 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private template_FocalRootNode(): go.Group {
+        return this.g(
+            go.Group,
+            "Auto",
+            {
+                background: "transparent",
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.helper_SortParts(a, b)
+                        }
+                    )
+            },
+            this.g(go.Panel,
+                "Auto",
+
+                this.g(
+                    go.Shape,
+                    "Border",
+                    { strokeWidth: 2, isPanelMain: true, spot1: go.Spot.TopLeft, spot2: go.Spot.BottomRight },
+                    new go.Binding("fill", "", (v) => go.Brush.mix("#ebebeb", this.lightenBoxColor, 0.7)),
+                    new go.Binding("stroke", "", (v) => this.linkBackColor)
+                ),
+
+                this.g(go.Panel, "Table",
+                    this.g(go.RowColumnDefinition, { width: 10 }),
+                    this.template_FocalPositioningHelper(go.Spot.Top, 0, 1, "topNodeText", "hasTop"),
+                    this.template_FocalPositioningHelper(go.Spot.Left, 2, 0, "leftNodeText", "hasLeft"),
+                    this.g(go.Panel,
+                        "Auto",
+                        { row: 2, column: 1 },
+                        this.template_RootNodeContent()
+                    ),
+                    this.template_FocalPositioningHelper(go.Spot.Right, 2, 2, "rightNodeText", "hasRight"),
+                    this.template_FocalPositioningHelper(go.Spot.Bottom, 3, 1, "bottomNodeText", "hasBottom")
+                )
+            )
+        );
+    }
+
+
     private template_RootNode(): go.Group {
         return this.g(
             go.Group,
@@ -2932,21 +2879,43 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             new go.Binding("", "", (obj: go.GraphObject) => {
                 let longestPredicate: string = "";
                 if (obj.part.data && obj.part.data["relations"]) {
-                    (obj.part.data["relations"] as Array<any>).forEach(rel => {
-                        if (rel["predicate"].length > longestPredicate.length) {
-                            longestPredicate = rel["predicate"];
-                        }
-                    });
+                    var arr = obj.part.data["relations"] as Array<any>;
+                    if (arr.length < this.autoCollapseNodeCount) {
+                        arr.forEach(rel => {
+                            if (rel["predicate"].length > longestPredicate.length) {
+                                longestPredicate = rel["predicate"];
+                            }
+                        });
+                    }
+                    else if (longestPredicate.length > "Relationships".length) {
+                        longestPredicate = "Relationships";
+                    }
                 }
                 if (obj.part.data && obj.part.data["owners"]) {
-                    (obj.part.data["owners"] as Array<any>).forEach(rel => {
-                        if (rel["responsibilityType"].length > longestPredicate.length) {
-                            longestPredicate = rel["responsibilityType"];
-                        }
-                    });
+                    var arr = obj.part.data["owners"] as Array<any>;
+                    if (arr.length < this.autoCollapseNodeCount) {
+                        arr.forEach(rel => {
+                            if (rel["responsibilityType"].length > longestPredicate.length) {
+                                longestPredicate = rel["responsibilityType"];
+                            }
+                        });
+                    }
+                    else if (longestPredicate.length > "Responsibilities".length) {
+                        longestPredicate = "Responsibilities";
+                    }
                 }
                 if (longestPredicate !== "") {
-                    obj.part.data["predicateWidth"] = this.calculateBadgeWidthByText(longestPredicate);
+                    if (!obj.part.data["predicateWidth"]) {
+                        obj.part.data["predicateWidth"] = this.calculateBadgeWidthByText(longestPredicate);
+                    }
+                    var partWidth = obj.part.getDocumentBounds().width;
+                    if (obj.part.data["template"] === "FocalPortGroup") {
+                        partWidth -= 42;
+                    }
+                    var diff = partWidth - (+obj.part.data["predicateWidth"]);
+                    if (diff > 5) {
+                        obj.part.data["predicateWidth"] = partWidth;
+                    }
                 }
             }).ofObject(),
             this.g(
@@ -2964,12 +2933,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_NodeContent(): go.Panel {
         return this.g(go.Panel, "Auto",
+            {
+                name: "node-content"
+            },
             this.g(
                 go.Shape,
                 "Rectangle",
                 {
                     strokeWidth: 2,
-                    isPanelMain: true
+                    isPanelMain: true,
+                    margin: new go.Margin(2, 0, 0, 0)
                 },
                 new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
                 new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
@@ -2978,13 +2951,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 {
                     name: 'header-panel'
                 },
-                new go.Binding("minSize", "", (obj: go.GraphObject) => {
-                    var currentWidth = +obj.getDocumentBounds().width;
-                    var predicateWidth = +obj.part.data["predicateWidth"]
-                    if (predicateWidth > currentWidth) {
-                        return new go.Size(predicateWidth, NaN);
-                    }
-                }).ofObject(),
                 this.g(
                     go.Panel,
                     "Table",
@@ -3018,40 +2984,48 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("visible", "showIcon")
                     ),
                     //This TextBlock is placeholder for highlighted text
-                    this.g(
-                        go.TextBlock,
-                        {
-                            editable: false,
-                            font: this.fontLabel,
-                            stroke: this.fontLabelColor,
-                            visible: false,
-                            maxLines: this.textMaxLines,
-                            overflow: this.textOverflowStyle,
-                            margin: new go.Margin(0, 0, 0, 4),
-                            row: 1,
-                            column: 3
-                        },
-                        new go.Binding("text", "highlight").makeTwoWay(),
-                        new go.Binding("visible", "highlight_visible").makeTwoWay(),
-                        new go.Binding("background", "highlight_background").makeTwoWay()
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            editable: false,
-                            margin: 5,
-                            font: this.fontLabel,
-                            maxLines: this.textMaxLines,
-                            maxSize: this.textMaxSize,
-                            overflow: this.textOverflowStyle,
-                            toolTip: this.template_Tooltip(),
-                            row: 1,
-                            column: 4,
-                            stretch: go.GraphObject.Horizontal
-                        },
-                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                        new go.Binding("text", "text").makeTwoWay()
-                    ),
+                    this.g(go.Panel, "Horizontal", {
+                        row: 1,
+                        column: 3
+                    },
+                        new go.Binding("minSize", "", (obj: go.GraphObject) => {
+                            return new go.Size(this.calculateBadgeTextWidthForGroupNode(+obj.part.data["predicateWidth"]), NaN);
+                        }).ofObject(),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                editable: false,
+                                font: this.fontLabel,
+                                stroke: this.fontLabelColor,
+                                visible: false,
+                                maxLines: this.textMaxLines,
+                                overflow: this.textOverflowStyle,
+                                margin: new go.Margin(5, 0, 5, 5),
+                            },
+                            new go.Binding("text", "highlight").makeTwoWay(),
+                            new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                            new go.Binding("background", "highlight_background").makeTwoWay()
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                editable: false,
+                                margin: new go.Margin(5, 5, 5, 0),
+                                font: this.fontLabel,
+                                maxLines: this.textMaxLines,
+                                maxSize: this.textMaxSize,
+                                overflow: this.textOverflowStyle,
+                                toolTip: this.template_Tooltip(),
+                                stretch: go.GraphObject.Horizontal
+                            },
+                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                            new go.Binding("text", "text").makeTwoWay(),
+                            new go.Binding("margin", "", (obj: go.GraphObject) => {
+                                return obj.part.data["highlight_visible"] ? new go.Margin(5, 5, 5, 0) : 5;
+                            }).ofObject()
+                        )
+                    )// end of Title containing Panel (higlighted + normal text)
+                    ,
                     this.template_nodeCount()
                 ),
                 // end Horizontal Panel
@@ -3437,35 +3411,47 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private updatePredicateSelectorPosition() {
         if (this.isRelationshipSelectorAvailable && this.relationshipBadgesRef) {
             var refHtmlElement = this.relationshipBadgesRef.nativeElement as HTMLElement;
-            let showOnSide: string = 'left';
+            let showOnSide: string = 'right';
             var position = this.diagram.transformDocToView(this.followPart.position);
-            refHtmlElement.style.top = position.y + "px";
             var posX = position.x;
 
+            var correctionX = 0;
+            var correctionY = 0;
+
+            if (this.followPart.data["template"] === "FocalPortGroup") {
+                correctionX = -23;
+                correctionY = -12;
+            }
+
             if (showOnSide == 'left') {
-                refHtmlElement.style.left = (posX - refHtmlElement.offsetWidth - 2) + "px";
+                refHtmlElement.style.left = (posX - refHtmlElement.offsetWidth - correctionX - 2) + "px";
+                refHtmlElement.style.top = (position.y - correctionY) + "px";
             }
             else {
-                refHtmlElement.style.left = (posX + this.followPart.getDocumentBounds().width + 2) + "px";
+                refHtmlElement.style.left = (posX + this.followPart.getDocumentBounds().width + 2 + correctionX) + "px";
+                refHtmlElement.style.top = (position.y - correctionY) + "px";
             }
         }
     }
     private groupedBadgeClick(obj: go.GraphObject, propName: string) {
-        this.followPart = obj.part;
-        this.isRelationshipSelectorAvailable = obj.part.data['relExpanded' + propName];
-        this.relationshipData = obj.part.data[propName] as Array<any>;
-        this.relationshipSelectorType = propName;
-        if (propName === "relations") {
-            this.relationshipData.forEach(rel => {
-                rel.text = rel.predicate;
-            })
-        }
-        else {
-            this.relationshipData.forEach(rel => {
-                rel.text = rel.responsibilityType;
-            })
-        }
-        this.cdRef.markForCheck();
+        setTimeout(() => {
+            this.followPart = obj.part;
+            this.isRelationshipSelectorAvailable = obj.part.data["relExpanded" + propName];
+            this.relationshipData = obj.part.data[propName] as Array<any>;
+            this.relationshipSelectorType = propName;
+            if (propName === "relations") {
+                this.relationshipData.forEach(rel => {
+                    rel.text = rel.predicate;
+                })
+            }
+            else {
+                this.relationshipData.forEach(rel => {
+                    rel.text = rel.responsibilityType;
+                })
+            }
+
+            this.cdRef.markForCheck();
+        }, 10);
     }
 
     private template_fixedBadge(propertyName: string): go.Panel {
@@ -3528,13 +3514,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("text", "", (obj) => {
                             return propertyName === "relations" ? "Relationships" : "Responsibilities";
                         }),
-                        new go.Binding("minSize", "", (obj: go.GraphObject) => {
-                            var currentWidth = +obj.getDocumentBounds().width;
-                            var predicateWidth = +obj.part.data["predicateWidth"]
-                            if (predicateWidth > currentWidth) {
-                                return new go.Size(predicateWidth, NaN);
+                        new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
+                            if (obj.part.data["predicateWidth"]) {
+                                var predicateWidth = +obj.part.data["predicateWidth"]
+                                var width = this.calculateBadgeTextWidth(predicateWidth);
+                                return new go.Size(width, NaN);
                             }
-                        }).ofObject(),
+                        }).ofObject()
                     ),
                     this.g(go.Panel, "Auto",
                         {
@@ -3583,5 +3569,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
     private calculateBadgeTextWidth(width: number): number {
         return width - 72;
+    }
+    private calculateBadgeTextWidthForGroupNode(width: number): number {
+        return width - 60;
     }
 }
