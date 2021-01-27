@@ -58,5 +58,6 @@ namespace d360.model.DataAccessLayer
         Task<List<extensions.IndexFieldDisplay>> GetAssetSearchFields(Guid assetUid);
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
         Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
+        Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

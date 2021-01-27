@@ -107,4 +107,40 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.api.ExecutionScore-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionScore_AllocationUid')
+BEGIN
+	DROP INDEX [IX_ApiExecutionScore_AllocationUid] ON [api].[ExecutionScore]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionScore_ExecutionID_AllocationUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionScore_ExecutionID_AllocationUid] ON [api].[ExecutionScore] ( ExecutionID, [AllocationUid] )
+END
+
+alter table [api].[ExecutionScore] alter column ScoreType int null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionScore_ExecutionID_AllocationUid')
+BEGIN
+	DROP INDEX [IX_ApiExecutionScore_ExecutionID_AllocationUid] ON [api].[ExecutionScore]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionScore_AllocationUid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionScore_AllocationUid] ON [api].[ExecutionScore] ( [AllocationUid] )
+END
+
+alter table [api].[ExecutionScore] alter column ScoreType int not null
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

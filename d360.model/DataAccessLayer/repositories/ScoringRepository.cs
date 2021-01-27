@@ -353,27 +353,24 @@ namespace d360.model.DataAccessLayer
 
         }
 
-        public List<ExternalScoreResultsApiResultsModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultsApiPostModel> model, ApiExecution execution)
+        public List<ExternalScoreResultApiResponseModel> PostExternalResults(MetricAllocation allocation, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution)
+        {
+            return companyContext.BulkExternalResultsImport(model, execution, allocation);
+        }
+
+        public List<ExternalScoreResultApiResponseModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultApiRequestModel> model, ApiExecution execution)
         {
             return companyContext.BulkExternalResultsImport(model, execution, scoreType);
         }
 
-        public List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results)
+        public List<InternalScoreResultApiResponseModel> PostScoreResults(MetricAllocation allocation, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
         {
+            return companyContext.BulkMetricsImport(results, execution, allocation);
+        }
 
-            BulkMetricsImport bulkModel = new BulkMetricsImport();
-            bulkModel.AddRange(results.Select(m =>
-                new BulkMetricImport()
-                {
-                    AssetUid = m.assetUid,
-                    MetricAssetUid = m.metricAssetUid,
-                    EffectiveDate = m.effectiveDate,
-                    Result = m.result
-                }
-            ).ToList());
-
-            return companyContext.BulkMetricsImport(bulkModel, execution, scoreType, true);
-
+        public List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
+        {
+            return companyContext.BulkMetricsImport(results, execution, scoreType);
         }
     }
 }

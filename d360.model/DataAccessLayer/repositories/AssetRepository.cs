@@ -883,7 +883,9 @@ namespace d360.model.DataAccessLayer
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
+                    UA.uid as UpdatedByUid,
                     A.UpdatedOn,
+                    CA.uid as CreatedByUid,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
@@ -896,6 +898,8 @@ namespace d360.model.DataAccessLayer
                     {(includePermissionDetails ? includePermissionFields : "")}
                     {hierarchyParentUidCol}
                 from Asset A
+                left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -3206,6 +3210,100 @@ where   A.[uid] = @assetUid";
             }
 
             return templateList;
+        }
+
+        public async Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageNum = 0;
+            int pageSize = 200;
+            string orderBy = "name";
+            string orderDirection = "asc";
+            string offsetSQL = "OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            string joinSQL = $@"
+                            from FollowDetail F
+                            inner join reporting.Global_Resource R on
+                            R.ResourceID = F.ResourceID
+						    inner join Asset A on F.ObjectID = A.ObjectID and F.ObjectType=A.[Object]
+						    where A.[uid]=@assetUid
+                            ";            
+
+            bool includeTotal = true;
+
+            int? count = 0;
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res > 0 ? res - 1 : 0;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    includeTotal = res;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "resourceuid", "resourceid" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.Trim().ToLower();
+                if (allowedValues.Contains(order))
+                {
+                    orderBy = order;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            var orderBySQL = $"order by {orderBy} {orderDirection}";
+
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid);
+            dbArgs.Add("@pageSize", pageSize);
+            dbArgs.Add("@offset", (pageSize * pageNum));
+            
+            var itemsSQL = $@"
+                            select R.Uid as resourceUid, R.resourceId, F.FollowerName as 'name'
+                            {joinSQL}
+                            {orderBySQL}
+                            {offsetSQL}
+                            ";
+
+            var items = (await CompanyContext.QueryAsync<AssetWatcher>(itemsSQL, dbArgs, timeout: ApiTimeout));
+
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                                SELECT count(*)
+                                    {joinSQL}
+                                ";
+                count = (await CompanyContext.QueryAsync<int>(countSQL, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+            }
+
+            count = includeTotal ? count : null;
+            
+            return new AssetWatchers { total = count, items = items};
         }
     }
 }

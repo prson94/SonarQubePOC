@@ -6,42 +6,6 @@ using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
-    [JsonArray]
-    [DataContract(Name = "metrics")]
-    public class BulkMetricsImport : List<BulkMetricImport>
-    {
-
-    }
-
-    [DataContract(Name = "metric")]
-    public class BulkMetricImport : BaseObject
-    {
-        [DataMember]
-        public Guid AssetUid { get; set; }
-        [DataMember]
-        public Guid MetricAssetUid { get; set; }
-        [DataMember]
-        public DateTime? EffectiveDate { get; set; }
-        [DataMember]
-        public bool Result { get; set; }
-    }
-
-    [DataContract(Name = "metricItemResult")]
-    public class BulkMetricTemporaryTableModel
-    {
-        [DataMember]
-        public Guid AssetUid { get; set; }
-        [DataMember]
-        public Guid MetricAssetUid { get; set; }
-        [DataMember]
-        public DateTime EffectiveDate { get; set; }
-        [DataMember]
-        public bool Result { get; set; }
-        [DataMember]
-        public bool IsSuccess { get; set; }
-        [DataMember]
-        public string ErrorMessage { get; set; }
-    }
 
     #region Used in Metrics API to display the metric results by asset.
 

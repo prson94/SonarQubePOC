@@ -130,11 +130,13 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IAssetRepository AssetRepository;
         IMetricsRepository MetricsRepository;
+        IScoringRepository ScoringRepository;
 
-        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
+        public MetricsController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
+            this.ScoringRepository = scoringRepository;
             this.MetricsRepository = metricsRepository;
             this.AssetRepository = assetRepository;
         }
@@ -153,7 +155,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAssetViewDetailModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult GetAssetById(Guid uid)
         {
@@ -170,7 +172,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving metric", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving metric", ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
 
@@ -442,7 +444,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset type based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metrics and conditions.", typeof(MetricAssetTypeHierarchyModels)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
         {
@@ -483,7 +485,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<MetricPathOptionViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetMetricPathOptionsBy(Guid assetTypeUid, ScoreType scoreType)
         {
@@ -523,7 +525,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<MetricPathOptionViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
         {
@@ -557,7 +559,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false),
             ApiExplorerSettings(IgnoreApi = true)
         ]
@@ -619,7 +621,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(List<RootMetricAssetHierarchyModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("effectiveDate", "The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.", DataType = "string", ParameterType = "query", Required = false)
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetAndAllocationAsync(string allocationUid, string assetUid)
@@ -714,39 +716,36 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route("results"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiRequestModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult PostBulkMetricsToStagingAsync(BulkMetricsImport model)
+        public IHttpActionResult PostBulkMetricsToStagingAsync(List<InternalScoreResultApiRequestModel> model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type."));
-
-            if (model == null)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty data set. Please check your request and submit again."));
-
-            var prefix = "Metrics.PostBulkMetricsToStagingAsync => ";
-            var errorMessage = "";
-
             try
             {
-                var execution = getApiExecution(model.Count);
-                List<BulkMetricTemporaryTableModel> results = MetricsRepository.BulkMetricsImport(model, execution);
+                if (!Company.CurrentResourceIsAdmin)
+                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", ApiMessages.EndpointNotAuthorizedMessage);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+                if (model == null || model.Count < 1)
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+
+                var execution = getApiExecution(model.Count);
+                return ResponseMessage(
+                    Request.CreateResponse(
+                        HttpStatusCode.OK, 
+                        ScoringRepository.PostScoreResults(ScoreType.Governance, execution, model)
+                    )
+                );
             }
             catch (GenericException ex)
             {
                 return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
             }
-            catch (Exception ex)
+            catch
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
 
@@ -766,7 +765,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding calculated scores.", typeof(MetricScoreApiModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric score is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
@@ -905,7 +904,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityGetResultModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetDataQualityResults()
         {
@@ -1101,7 +1100,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
 
@@ -1137,7 +1136,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
@@ -1261,7 +1260,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the status of the request", typeof(DataQualityResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteDataQualityResultsAsync(DataQualityDeleteModel model)
         {
@@ -1443,7 +1442,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
         {
@@ -1485,7 +1484,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostBulkDataQualityResultAsync(List<DataQualityInsertModel> request, bool triggersWorkflow = true)
         {
@@ -1538,7 +1537,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetGraphDataPoints(ScoreType scoreType, Guid assetUid)
         {

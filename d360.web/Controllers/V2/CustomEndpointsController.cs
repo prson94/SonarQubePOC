@@ -44,7 +44,7 @@ namespace d360.web.Controllers.V2
               SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
               SwaggerResponse(HttpStatusCode.OK, "A list of Field types"),
               SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-              SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+              SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
           ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetFieldTypes(int versionId)
         {
@@ -74,7 +74,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of lookup fields.", typeof(List<System.Web.Mvc.SelectListItem>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
         {
@@ -114,7 +114,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Model for field editor."),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_EditModel(int id)
         {
@@ -167,7 +167,7 @@ namespace d360.web.Controllers.V2
     SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
    SwaggerResponse(HttpStatusCode.OK, "API Entity Field Type", typeof(ApiEntityFieldType)),
     SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+    SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 ]
 
         public async Task<IHttpActionResult> AddCustomAPIVersionField(ApiEntityFieldType model)

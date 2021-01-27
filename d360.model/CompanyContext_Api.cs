@@ -9175,7 +9175,7 @@ WHEN MATCHED THEN DELETE;
                     }
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures.Count > 0)
+                    if (assetMeasures != null && assetMeasures.Count > 0)
                     {
                         SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }

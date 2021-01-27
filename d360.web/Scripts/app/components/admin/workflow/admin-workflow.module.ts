@@ -13,7 +13,7 @@ import { WorkflowDiagramModule } from '../../shared/diagram/workflow/workflow-di
 import { D3SEditorHeaderModule } from '../../shared/editor-header.component';
 import { D3SSortIconModule } from '../../shared/turbotable-sorticon.component';
 import { D3SColumnFilterModule } from '../../shared/turbotable-column-filter.component';
-
+import { DayOfWeekInputModule } from '../../shared/small-widgets/dayofweek-input/dayofweek-input.component';
 
 
 import { AdminWorkflowComponent } from './admin-workflow.component';
@@ -63,7 +63,7 @@ import { TableModule } from 'primeng/table';
         DirectivesModule,
         D3SSortIconModule,
         D3SColumnFilterModule,
-
+        DayOfWeekInputModule,
     ],
     declarations: [        
         AdminWorkflowComponent,

@@ -114,7 +114,7 @@
                 <score-calculation [scoreType]="selectedScoreType" [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown"></score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
-                <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid"></score-definition>
+                <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid" [allocationUid]="allocationUid"></score-definition>
             </div>
         </div>
     </div>

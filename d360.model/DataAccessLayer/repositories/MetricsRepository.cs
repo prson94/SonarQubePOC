@@ -1736,11 +1736,6 @@ order by	R.[Name]";
                                     new { assetTypeUid }, ApiTimeout).ToList();
         }
 
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
-        {
-            return Company.BulkMetricsImport(model, execution);
-        }
-
         public async Task<List<MetricFieldTypeViewModel>> GetFieldsByRuleResultPath(Guid ruleResultPathUid)
         {
             var sql = @"

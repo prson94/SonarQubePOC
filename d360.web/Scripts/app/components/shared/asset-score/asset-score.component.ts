@@ -41,6 +41,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
+    private allocationUid: string = "";
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
@@ -260,6 +261,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 .subscribe(res => {
 
                     let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
+                    this.allocationUid = selectedAllocation.uid;
 
                     this.pointBreakdown = res;
                     this.isDQAndNoItems();
@@ -409,6 +411,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     this.loadPoints(true);
                     this.isDQAndNoItems();
                 });
+
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;

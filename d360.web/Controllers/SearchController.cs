@@ -231,13 +231,16 @@ namespace d360.web.Controllers
             //Assign icons from sitenav based on category
             if (results.Any(r => r.MissingIcon() && siteNavMap.Keys.Contains(r.Group)))
             {
-                var sql = "select Name, Icon FROM [dbo].[SiteNav] WHERE Name in @names";
+                var sql = "select Name, Icon, ImageIconUrl FROM [dbo].[SiteNav] WHERE Name in @names";
                 var names = siteNavMap.Values.ToList();
-                Dictionary<string, string> iconMap = Company.Query<(string Name, string Icon)>(sql, new { names }).ToDictionary(t => t.Name, t => t.Icon);
+                Dictionary<string, (string, string)> iconMap = Company.Query<(string Name, string Icon, string ImageIconUrl)>(sql, new { names }).ToDictionary(t => t.Name, t => (t.Icon, t.ImageIconUrl));
 
                 foreach (var r in results.Where(res => res.MissingIcon() && iconMap.ContainsKey(siteNavMap[res.Group])))
                 {
-                    r.Icon = iconMap[siteNavMap[r.Group]];
+                    if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item2))
+                        r.ImageUrl = constants.COMPANY_RESOURCES_URL + iconMap[siteNavMap[r.Group]].Item2;
+                    else if (!string.IsNullOrEmpty(iconMap[siteNavMap[r.Group]].Item1))
+                        r.Icon = iconMap[siteNavMap[r.Group]].Item1;
                 }
             }
 

@@ -430,8 +430,7 @@ namespace d360.model
             int matchingItems = 0;
             List<string> items = new List<string>();
 
-
-            if (!registration.LastExecuted.HasValue || (registration.LastExecuted.HasValue && registration.LastExecuted.GetValueOrDefault().AddDays(settings.ScheduleInterval) <= DateTime.UtcNow))
+            if (settings.GetNextExecution(registration.LastExecuted) <= DateTime.UtcNow)
             {
                 var sql = @"select 
                                         ad.ObjectID as ID,
@@ -1188,13 +1187,16 @@ namespace d360.model
 
                                 Intersects.Add(intersect);
 
+                                SaveChanges();
+
                                 graphEvents.Add(new DatabaseBulkRelationshipResult()
                                 {
                                     Object = "Intersect",
-                                    uid = intersect.uid
+                                    uid = intersect.uid,
+                                    Success = true
                                 });
 
-                                SaveChanges();
+
                             }
                         }
 
@@ -1227,7 +1229,7 @@ namespace d360.model
                 drop table if exists #deletedIntersects;
                 create table #deletedIntersects (uid uniqueidentifier);
                 {sql}
-                select uid, 'Intersect' as [Object] from #deletedIntersects"
+                select uid, 'Intersect' as [Object], cast(1 as bit) as Success from #deletedIntersects"
                 , new { obj = @object.ToString(), objectid = objectID, intersectTypeId = intersectTypeId })
                 .ToList();
 
@@ -1921,7 +1923,7 @@ namespace d360.model
             }
             else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
             {
-                var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID);
+                var users = GetWorkflowUsersBasedOnResponsibility(item.Step.Version.TypeID, item.Step.ID, item.ItemID, settings.SendToDefaultUsers);
 
                 foreach (var user in users)
                 {
@@ -2130,12 +2132,17 @@ namespace d360.model
             return defaultWorkflowUserGroup;
         }
 
-        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID)
+        public IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID, bool sendToDefaultUsers = true)
         {
             var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWorkflow] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
 
             if (users == null || users.Count() == 0)
             {
+                if (sendToDefaultUsers == false)
+                {
+                    return new List<GlobalReportingResource>();
+                }
+
                 //check if there is a system setting that says to use a group.
                 var defaultWorkflowUserGroup = GetWorkflowAdminGroup();
 
