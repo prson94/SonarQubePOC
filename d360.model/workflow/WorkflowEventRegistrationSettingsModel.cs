@@ -114,6 +114,8 @@ namespace d360.model.workflow
                     nextRun = nextRun.AddDays(1);
                 }
             }
+            //Subtract a minute to prevent drifting
+            nextRun = nextRun.AddMinutes(-1);
             return nextRun;
         }
     }

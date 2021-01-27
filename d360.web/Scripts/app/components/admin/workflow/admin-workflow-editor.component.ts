@@ -509,15 +509,15 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 this.isValid = false;
                 return;
             } else if (!Number.isInteger(+this.model.Event.SettingsObject.Settings.ScheduleInterval)) {
-                this.errorMessage = "Run frequency must be an integer.";
+                this.errorMessage = "Frequency must be an integer.";
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval < 1) {
-                this.errorMessage = "Run frequency must be greater than or equal to 1.";
+                this.errorMessage = "Frequency must be greater than or equal to 1.";
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax()) {
-                this.errorMessage = "Run frequency must be less or equal to " + this.runFrequencyMax() + ".";
+                this.errorMessage = "Frequency must be less than or equal to " + this.runFrequencyMax() + ".";
                 this.isValid = false;
                 return;
             }
