@@ -887,7 +887,8 @@ order by wi.StartedOn desc";
           
             
             var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
-            var IsClearAssignementsAllowed = (itemFields.TotalResources > 1)
+            var assignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).Count();
+            var IsClearAssignementsAllowed = (assignments > 1)
                 && (formSettings.ResponseType == FormResponseType.FirstResponse);
 
 
@@ -3146,7 +3147,10 @@ order by wi.StartedOn desc";
                                 if (objectType == "ResponsibilityType")
                                 {
                                     var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
-                                    previousObjectName = resp != null ? resp.Name : "[unknown]";
+                                    previousObjectName = resp != null ? (" - " + resp.Name) : "[unknown]";
+                                }else if(objectType == "Specific Users")
+                                {
+                                    previousObjectName = "";
                                 }
                                 else
                                 {
@@ -3155,9 +3159,10 @@ order by wi.StartedOn desc";
                                                 Asset A
                                                 cross apply dbo.GetAssetDisplayValueById(A.ID) D
                                                 where   A.Object = @obj and A.ObjectID = @objId";
-                                    previousObjectName = Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
+                                    previousObjectName = (" - ") + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
+
                                 }
-                                reassigned["@fromResourceName"] = string.IsNullOrEmpty(previousObjectName) ? "[unknown]" : $"{objectType} - {previousObjectName}";
+                                reassigned["@fromResourceName"] = string.IsNullOrEmpty(previousObjectName) ? "[unknown]" : $"{objectType}{previousObjectName}";
                             }
                         }
                     }

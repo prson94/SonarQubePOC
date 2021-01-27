@@ -1581,12 +1581,12 @@ namespace d360.model
                 {
 
                     isResourceReassignment = false;
-                    if (stepSettings.ResponsibilityTypeID > 0)
+                    if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
                     {
                         objectType = SystemObjects.ResponsibilityType.ToString();
                         objectId = stepSettings.ResponsibilityTypeID;
                     }
-                    else if(stepSettings.RecipientGroup != null)
+                    else if(stepSettings.RecipientType == EmailTaskRecipientType.Group)
                     {
                         var group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
                         if(group != null)
@@ -1594,6 +1594,10 @@ namespace d360.model
                             objectType = SystemObjects.Group.ToString();
                             objectId = group.ObjectID;
                         }
+                    }else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+                    {
+                        objectType = "Specific Users";
+                        objectId = -1;
                     }
                 }
 
