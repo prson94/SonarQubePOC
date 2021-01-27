@@ -131,7 +131,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                         if (e.ID < 1 || e.ID === EmailTaskRecipientType.Followers) {
                             return;
                         }
-                        else if (e.ID == EmailTaskRecipientType.Initiator) {
+                        else if (e.ID === EmailTaskRecipientType.Initiator) {
                             if (this.workflowChangeType === WorkflowChangeType.ScoreUpdate || this.workflowChangeType === WorkflowChangeType.Schedule) {
                                 return;
                             }
@@ -201,15 +201,19 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         }
 
         //parse bool fields
-        if (this.step.settings.SendFormEmail == null)
+        if (this.step.settings.SendFormEmail == null) {
             this.step.settings.SendFormEmail = false;
-        else
+        }
+        else {
             this.step.settings.SendFormEmail = this.step.settings.SendFormEmail.toString().toLowerCase() === "true" ? true : false;
+        }
 
-        if (this.step.settings.IncludePreviousFormResponses == null)
+        if (this.step.settings.IncludePreviousFormResponses == null) {
             this.step.settings.IncludePreviousFormResponses = false;
-        else
+        }
+        else {
             this.step.settings.IncludePreviousFormResponses = this.step.settings.IncludePreviousFormResponses.toString().toLowerCase() === "true" ? true : false;
+        }
 
         if (this.step.fields.form["@allowReassignObject"] != null) {
             this.allowReassignObject = this.step.fields.form["@allowReassignObject"].toString().toLowerCase() === "true" ? true : false;
@@ -329,7 +333,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     save() {
         //calculate the next id # based on existing fields
         let len = this.step.fields.form.field.filter((f) => f["@type"] === this.newField["@type"]).length;
-        let count = len == 0 ? 1 : this.step.fields.form.field
+        let count = len === 0 ? 1 : this.step.fields.form.field
             .filter((f) => f["@type"] === this.newField["@type"])
             .map((f) => +(f["@id"].replace(this.newField["@type"], "")))
             .sort()[len - 1] + 1;
