@@ -33,7 +33,7 @@ import { WorkflowTemplateToolComponent } from "./workflow-template-tool.componen
 import { WorkflowHistoryComponent } from "./workflow-history.component";
 import { WorkflowFormHistoryComponent } from "./workflow-form-history.component";
 import { WorkflowStepFieldChangeComponent } from "./workflow-step-field-change.component";
-import { WorkflowStepSummaryComponent } from "./workflow-step-summary.component"
+import { WorkflowStepSummaryComponent } from "./workflow-step-summary.component";
 import { WorkflowTransitionSummaryComponent } from "./workflow-transition-summary.component";
 import { WorkflowResponsibilitySelectorComponent } from "./workflow-responsibility-selector.component";
 import { WorkflowStepHttpComponent } from "./workflow-step-http.component";

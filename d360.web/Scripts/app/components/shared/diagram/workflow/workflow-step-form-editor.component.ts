@@ -127,14 +127,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                     ]
                 ) => {
                     EmailTaskRecipientList.forEach((e) => {
-                        if (e.ID < 1)
+
+                        if (e.ID < 1 || e.ID == EmailTaskRecipientType.Followers)
                             return;
-                        else if (e.ID == EmailTaskRecipientType.Followers)
+                        else if (e.ID == EmailTaskRecipientType.Initiator && (this.workflowChangeType == WorkflowChangeType.ScoreUpdate || this.workflowChangeType == WorkflowChangeType.Schedule))
                             return;
-                        else if (e.ID == EmailTaskRecipientType.Initiator && this.workflowChangeType == WorkflowChangeType.ScoreUpdate)
-                            return;
-                        else if (e.ID == EmailTaskRecipientType.Initiator && this.workflowChangeType == WorkflowChangeType.Schedule)
-                            return;
+
                         this.destination.push({
                             value: EmailTaskRecipientType[e.ID],
                             label: e.Name
@@ -144,7 +142,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
                     /* GroupList */
                     this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
-                    if (this.step.settings.MessageToGroup !== undefined) {
+                    if (this.step.settings.MessageToGroup != null) {
                         if (!this.groups.find((g) => g.value === this.step.settings.MessageToGroup)) {
                             this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: "<invalid group>" });
                         }
@@ -209,11 +207,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         else
             this.step.settings.IncludePreviousFormResponses = this.step.settings.IncludePreviousFormResponses.toString().toLowerCase() === "true" ? true : false;
 
-        if (this.step.fields.form["@allowReassignObject"] != null)
+        if (this.step.fields.form["@allowReassignObject"] != null) {
             this.allowReassignObject = this.step.fields.form["@allowReassignObject"].toString().toLowerCase() === "true" ? true : false;
+        }
 
-        if (this.step.fields.form["@allowReassignResource"] != null)
+        if (this.step.fields.form["@allowReassignResource"] != null) {
             this.allowReassignResource = this.step.fields.form["@allowReassignResource"].toString().toLowerCase() === "true" ? true : false;
+        }
 
         this.usedFields = this.workflowFieldsService.getUsedFields();
 
@@ -231,7 +231,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.deletingField = item;
 
         this.usedIn = [];
-        this.usedIn = this.usedFields.filter((u) => u.stepId == this.step.key && u.fieldId == item["@id"]);
+        this.usedIn = this.usedFields.filter((u) => u.stepId === this.step.key && u.fieldId === item["@id"]);
 
         this.formMode = FormMode.Deleting;
     }
@@ -239,11 +239,11 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     edit() {
         let item = this.step.fields.form.field[this.selectedIndex];
         this.usedIn = [];
-        this.usedIn = this.usedFields.filter((u) => u.stepId == this.step.key && u.fieldId == item["@id"]);
+        this.usedIn = this.usedFields.filter((u) => u.stepId === this.step.key && u.fieldId === item["@id"]);
 
         let i = this.step.fields.form.field.find((f) => f["@id"] == item["@id"]);
         this.newField = i;
-        if ((item["@required"] == "true" || item["@required"] == true || (item["@type"] == "boolean")))
+        if ((item["@required"] == "true" || item["@required"] == true || (item["@type"] === "boolean")))
             this.newField["@required"] = true;
         else
             this.newField["@required"] = false;
@@ -288,7 +288,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     confirmDelete() {
-        let i = this.step.fields.form.field.findIndex((f) => f["@id"] == this.deletingField["@id"]);
+        let i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.deletingField["@id"]);
 
         if (i >= 0) {
             this.step.fields.form.field.splice(i, 1);
@@ -301,7 +301,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             //another prime issue. prime adds _$visited property sometimes, fix pending release
             //but we need to remove it to avoid polluting the XML
             this.step.fields.form.field.forEach((f) => {
-                if (f["_$visited"]) delete f["_$visited"];
+                if (f["_$visited"]) {
+                    delete f["_$visited"];
+                }
             });
 
             this.stepChange.emit(this.step);
@@ -320,9 +322,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     save() {
         //calculate the next id # based on existing fields
-        let len = this.step.fields.form.field.filter((f) => f["@type"] == this.newField["@type"]).length;
+        let len = this.step.fields.form.field.filter((f) => f["@type"] === this.newField["@type"]).length;
         let count = len == 0 ? 1 : this.step.fields.form.field
-            .filter((f) => f["@type"] == this.newField["@type"])
+            .filter((f) => f["@type"] === this.newField["@type"])
             .map((f) => +(f["@id"].replace(this.newField["@type"], "")))
             .sort()[len - 1] + 1;
 
@@ -332,7 +334,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         if (this.newField["@oldId"] != null) {
             if (typeChanged) {
-                let i = this.step.fields.form.field.findIndex((f) => f["@id"] == this.newField["@oldId"]);
+                let i = this.step.fields.form.field.findIndex((f) => f["@id"] === this.newField["@oldId"]);
 
                 if (i >= 0) {
                     existing = _.cloneDeep(this.step.fields.form.field[i]);
@@ -341,7 +343,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
                 this.newField["@id"] = this.newField["@type"].toString().toLowerCase() + count.toString();
             } else {
-                existing = this.step.fields.form.field.find((e) => e["@id"] == this.newField["@id"]);
+                existing = this.step.fields.form.field.find((e) => e["@id"] === this.newField["@id"]);
             }
 
             delete this.newField["@oldType"];
@@ -366,10 +368,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
         f["@stepId"] = this.step.key;
 
-        if (existing == null || typeChanged)
+        if (existing == null || typeChanged) {
             this.step.fields.form.field.push(_.cloneDeep(this.newField));
-        else
+        }
+        else {
             this.workflowFieldsService.forceFormFieldUpdate();
+        }
 
         this.newField = {};
         this.formMode = FormMode.Default;
@@ -401,8 +405,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     appendField(e: string) {
-        if (this.ed != null && this.ed.quill != null)
+        if (this.ed != null && this.ed.quill != null) {
             this.quill = this.ed.quill;
+        }
 
         if (this.quill != null) {
             let pos = this.quill.getSelection(true);
@@ -435,7 +440,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             id = +this.issueObject.split("|")[1];
         }
 
-        if (e == "boolean") this.newField["@required"] = true;
+        if (e == "boolean") {
+            this.newField["@required"] = true;
+        }
         if (e == "relationshipType" && this.intersectTypes == null) {
             this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe((r) => {
@@ -451,22 +458,26 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     private mapHTMLToFormProperty(html: string, prop: string) {
-        if (html == null)
+        if (html == null) {
             delete this.step.fields.form[prop];
-        else
+        }
+        else {
             this.step.fields.form[prop] = html;
+        }
     }
 
     private getTypeLabel(i: any) {
         switch (i["@type"]) {
             case "list":
-                if (this.lookups == null)
+                if (this.lookups == null) {
                     return "List";
-                let list = this.lookups.find((l) => l.value.toString() == i["@referenceFieldId"]);
+                }
+                let list = this.lookups.find((l) => l.value.toString() === i["@referenceFieldId"]);
                 return "List" + (list == null ? "" : " :: " + list.label);
             case "relationshipType":
-                if (this.intersectTypes == null)
+                if (this.intersectTypes == null) {
                     return "Relationship";
+                }
                 let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i["@intersectTypeId"]);
                 return "Relationship" + (rel == null ? "" : ( " :: " + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : " ") + rel.TargetName));
             default:
@@ -475,14 +486,17 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     validateField() {
-        if (this.newField["@label"] == null || this.newField["@label"].length < 1 || this.newField["@type"] == null || this.newField["@type"] == "")
-           return false;
-
-        if (this.newField["@type"] == "list" && this.newField["@referenceFieldId"] == null)
+        if (this.newField["@label"] == null || this.newField["@label"].length < 1 || this.newField["@type"] == null || this.newField["@type"] == "") {
             return false;
+        }
 
-        if (this.newField["@type"] == "relationshipType" && (this.newField["@intersectTypeId"] == null || this.newField["@intersectTypeId"] == ""))
+        if (this.newField["@type"] === "list" && this.newField["@referenceFieldId"] == null) {
             return false;
+        }
+
+        if (this.newField["@type"] === "relationshipType" && (this.newField["@intersectTypeId"] == null || this.newField["@intersectTypeId"] == "")) {
+            return false;
+        }
 
         return true;
     }
