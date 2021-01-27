@@ -128,10 +128,14 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 ) => {
                     EmailTaskRecipientList.forEach((e) => {
 
-                        if (e.ID < 1 || e.ID == EmailTaskRecipientType.Followers)
+                        if (e.ID < 1 || e.ID === EmailTaskRecipientType.Followers) {
                             return;
-                        else if (e.ID == EmailTaskRecipientType.Initiator && (this.workflowChangeType == WorkflowChangeType.ScoreUpdate || this.workflowChangeType == WorkflowChangeType.Schedule))
-                            return;
+                        }
+                        else if (e.ID == EmailTaskRecipientType.Initiator) {
+                            if (this.workflowChangeType === WorkflowChangeType.ScoreUpdate || this.workflowChangeType === WorkflowChangeType.Schedule) {
+                                return;
+                            }
+                        }
 
                         this.destination.push({
                             value: EmailTaskRecipientType[e.ID],
@@ -241,12 +245,14 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.usedIn = [];
         this.usedIn = this.usedFields.filter((u) => u.stepId === this.step.key && u.fieldId === item["@id"]);
 
-        let i = this.step.fields.form.field.find((f) => f["@id"] == item["@id"]);
+        let i = this.step.fields.form.field.find((f) => f["@id"] === item["@id"]);
         this.newField = i;
-        if ((item["@required"] == "true" || item["@required"] == true || (item["@type"] === "boolean")))
+        if ((item["@required"] === "true" || item["@required"] === true || (item["@type"] === "boolean"))) {
             this.newField["@required"] = true;
-        else
+        }
+        else {
             this.newField["@required"] = false;
+        }
         this.newField["@oldId"] = this.newField["@id"];
         this.newField["@oldType"] = this.newField["@type"];
 
@@ -328,7 +334,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             .map((f) => +(f["@id"].replace(this.newField["@type"], "")))
             .sort()[len - 1] + 1;
 
-        let typeChanged = (this.newField["@oldType"] != this.newField["@type"]);
+        let typeChanged = (this.newField["@oldType"] !== this.newField["@type"]);
         let existing = null;
         let f = {};
 
@@ -361,10 +367,12 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         f["@label"] = this.newField["@label"];
         f["@type"] = this.newField["@type"];
         f["@required"] = this.newField["@required"];
-        if (this.newField["@type"] == "list")
+        if (this.newField["@type"] === "list") {
             f["@referenceFieldId"] = this.newField["@referenceFieldId"];
-        else
+        }
+        else {
             delete f["@referenceFieldId"];
+        }
 
         f["@stepId"] = this.step.key;
 
@@ -384,8 +392,9 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     appendFieldDescription(e: string) {
-        if (this.fed != null && this.fed.quill != null)
+        if (this.fed != null && this.fed.quill != null) {
             this.quill = this.fed.quill;
+        }
 
         if (this.quill != null) {
             let pos = this.quill.getSelection(true);
@@ -440,16 +449,16 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             id = +this.issueObject.split("|")[1];
         }
 
-        if (e == "boolean") {
+        if (e === "boolean") {
             this.newField["@required"] = true;
         }
-        if (e == "relationshipType" && this.intersectTypes == null) {
+        if (e === "relationshipType" && this.intersectTypes == null) {
             this.workflowService.getAllowIntersectTypes(type, id)
                 .subscribe((r) => {
                     this.intersectTypes = r;
                 });
         }
-        if (e == "list" && this.lookups == null) {
+        if (e === "list" && this.lookups == null) {
             this.workflowService.getWorkflowVersionStepFormLookups(this.objectType, this.objectId, (hasIssueObject ? type : null), (hasIssueObject ? id : null))
                 .subscribe((r) => {
                     this.lookups = r;
@@ -478,7 +487,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                 if (this.intersectTypes == null) {
                     return "Relationship";
                 }
-                let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() == i["@intersectTypeId"]);
+                let rel = this.intersectTypes.find((l) => l.IntersectTypeID.toString() === i["@intersectTypeId"]);
                 return "Relationship" + (rel == null ? "" : ( " :: " + ((rel.PredicateName != null && rel.PredicateName.length > 0) ? `[${rel.PredicateName}] ` : " ") + rel.TargetName));
             default:
                 return (i["@type"].charAt(0).toUpperCase() + i["@type"].substr(1));
@@ -486,7 +495,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     }
 
     validateField() {
-        if (this.newField["@label"] == null || this.newField["@label"].length < 1 || this.newField["@type"] == null || this.newField["@type"] == "") {
+        if (this.newField["@label"] == null || this.newField["@label"].length < 1 || this.newField["@type"] == null || this.newField["@type"] === "") {
             return false;
         }
 
@@ -494,7 +503,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             return false;
         }
 
-        if (this.newField["@type"] === "relationshipType" && (this.newField["@intersectTypeId"] == null || this.newField["@intersectTypeId"] == "")) {
+        if (this.newField["@type"] === "relationshipType" && (this.newField["@intersectTypeId"] == null || this.newField["@intersectTypeId"] === "")) {
             return false;
         }
 
@@ -506,18 +515,13 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             return this.baseMenuItems
                 .concat(this.upMenuItems)
                 .concat(this.downMenuItems);
-        }
-
-        if (includeUp) {
+        } else if (includeUp) {
             return this.baseMenuItems.concat(this.upMenuItems);
-        }
-
-        if (includeDown) {
+        } else if (includeDown) {
             return this.baseMenuItems.concat(this.downMenuItems);
+        } else {
+            return this.baseMenuItems;
         }
-
-        return this.baseMenuItems;
-    
     }
 
     clickMenu(e: any) {
