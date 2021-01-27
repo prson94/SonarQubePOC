@@ -47,6 +47,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private formMode = FormMode.Default;
     private usedIn: any[] = [];
     private deletingField;
+    private selectedIndex: number = 0;
 
     private usedFields: any[] = [];
     private showHelp = false;
@@ -61,6 +62,21 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     private allowReassignResource = false;
     private allowReassignObject = false;
+
+    private baseMenuItems: any[] = [
+        { title: "Edit" },
+        { title: "Delete" },
+    ];
+
+    private upMenuItems: any[] = [
+        { title: "Move to Top" },
+        { title: "Move Up" }
+    ];
+
+    private downMenuItems: any[] = [
+        { title: "Move Down" },
+        { title: "Move to Bottom" }
+    ];
 
     private types = [
         { value: WorkflowFormFieldType.Boolean, label: 'boolean' },
@@ -86,7 +102,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private groupService: GroupService ) {
+        private groupService: GroupService) {
         super();
     }
 
@@ -210,7 +226,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.formMode = FormMode.Adding;
     }
 
-    remove(item: any) {
+    remove() {
+        let item = this.step.fields.form.field[this.selectedIndex];
         this.deletingField = item;
 
         this.usedIn = [];
@@ -219,7 +236,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.formMode = FormMode.Deleting;
     }
 
-    edit(item: any) {
+    edit() {
+        let item = this.step.fields.form.field[this.selectedIndex];
         this.usedIn = [];
         this.usedIn = this.usedFields.filter(u => u.stepId == this.step.key && u.fieldId == item['@id']);
 
@@ -236,6 +254,37 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.changeType(this.newField['@type']);
 
         this.formMode = FormMode.Editing;
+    }
+
+    move(offset) {
+        let item = this.step.fields.form.field[this.selectedIndex];
+        let nextItem = this.step.fields.form.field[this.selectedIndex + offset];
+
+        this.step.fields.form.field[this.selectedIndex] = nextItem;
+        this.step.fields.form.field[this.selectedIndex + offset] = item;
+
+        this.selectedIndex += offset;
+    }
+
+    moveTop() {
+        let first = this.step.fields.form.field.splice(0, 1)[0];
+        let item = this.step.fields.form.field.splice(this.selectedIndex - 1, 1)[0];
+
+        this.step.fields.form.field.unshift(first);
+        this.step.fields.form.field.unshift(item);
+
+        this.selectedIndex = 0;
+    }
+
+    moveBottom() {
+        let lastIndex = this.step.fields.form.field.length - 1;
+        let last = this.step.fields.form.field.splice(lastIndex, 1)[0];
+        let item = this.step.fields.form.field.splice(this.selectedIndex - 1, 1)[0];
+
+        this.step.fields.form.field.unshift(last);
+        this.step.fields.form.field.unshift(item);
+
+        this.selectedIndex = lastIndex;
     }
 
     confirmDelete() {
@@ -436,5 +485,51 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
             return false;
 
         return true;
+    }
+
+    menuItems(includeUp: boolean, includeDown: boolean): any[] {
+        if (includeUp && includeDown) {
+            return this.baseMenuItems
+                .concat(this.upMenuItems)
+                .concat(this.downMenuItems);
+        }
+
+        if (includeUp) {
+            return this.baseMenuItems.concat(this.upMenuItems);
+        }
+
+        if (includeDown) {
+            return this.baseMenuItems.concat(this.downMenuItems);
+        }
+
+        return this.baseMenuItems;
+    
+    }
+
+    clickMenu(e: any) {
+        switch (e.value.toLowerCase()) {
+            case "edit":
+                this.edit();
+                break;
+            case "delete":
+                this.remove();
+                break;
+            case "move up":
+                this.move(-1);
+                break;
+            case "move to top":
+                this.moveTop();
+                break;
+            case "move down":
+                this.move(1);
+                break;
+            case "move to bottom":
+                this.moveBottom();
+                break;
+        }
+    }
+
+    select(index: number) {
+        this.selectedIndex = index;
     }
 }

@@ -21,6 +21,7 @@ import { TilesModule } from '../../tiles/tiles.module';
 import { D3SOverlayWindowModule } from '../../overlay-window.component';
 import { D3SEditorHeaderModule } from '../../editor-header.component';
 import { SharedGridPagingInfoModule } from '../../grid-paging-info.component';
+import { PopupMenuModule } from '../../controls/popup-menu/popup-menu.component';
 
 import { WorkflowDiagramComponent } from './workflow-diagram.component';
 import { WorkflowStepEditorComponent } from './workflow-step-editor.component';
@@ -58,6 +59,7 @@ import { DirectivesModule } from '../../../../directives/directives.module';
         SharedGridPagingInfoModule,
         ToggleButtonModule,
         DirectivesModule,
+        PopupMenuModule,
 
         //prime        
         EditorModule,
