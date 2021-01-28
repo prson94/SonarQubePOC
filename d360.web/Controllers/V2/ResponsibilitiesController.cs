@@ -158,6 +158,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
@@ -165,15 +166,20 @@ namespace d360.web.Controllers.V2
             var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
             var errorMessage = "";
 
+            var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetType == null)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Asset Type with Uid {assetTypeUid.ToString()} could not be found."));
+            }
+
+            if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
+
             try
             {
-                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
-
-                if (!(await Company.HasAssetTypeReadPermission(assetType.ID)))
-                {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-                }
-
                 IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
