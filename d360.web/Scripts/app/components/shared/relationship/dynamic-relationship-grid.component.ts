@@ -1,18 +1,18 @@
-﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { GridColumn, GridField } from '../../../models/grid-definition.model';
-import { GridDefinitionService } from '../../../services/grid-definition.service';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { BaseComponent } from '../base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetService } from '../../../services/asset.service';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild, OnDestroy } from "@angular/core";
+import { Router } from "@angular/router";
+import { GridColumn, GridField } from "../../../models/grid-definition.model";
+import { GridDefinitionService } from "../../../services/grid-definition.service";
+import { RelationshipsService } from "../../../services/relationships.service";
+import { BaseComponent } from "../base.component";
+import { SiteUrlHelpers } from "../../../static/site-url-helpers";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { AssetService } from "../../../services/asset.service";
 
 
 @Component({
-    selector: 'd3s-dynamic-relationship-grid',
+    selector: "d3s-dynamic-relationship-grid",
     providers: [GridDefinitionService, RelationshipsService, AssetService],
-    templateUrl: './dynamic-relationship-grid.component.html'
+    templateUrl: "./dynamic-relationship-grid.component.html"
 })
 
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges, OnDestroy {
@@ -43,7 +43,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     private fields: GridField[] = [];
 
     get globalFilterFields(): string[] {
-        return this.columns.map(c => c.datafield);
+        return this.columns.map((c) => c.datafield);
     }
 
     relations: any[] = [];
@@ -58,7 +58,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     private showTechnical: boolean = false;
 
-    @ViewChild('dt', { static: false }) datatable;
+    @ViewChild("dt", { static: false }) datatable;
 
     constructor(private router: Router,
         private gridDefinitionService: GridDefinitionService,
@@ -75,11 +75,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['objectID']
-            || changes['objectType']
-            || changes['intersectTypeID']
-            || changes['targetTypeID']
-            || changes['isSubject'])
+        if ((changes["objectID"]
+            || changes["objectType"]
+            || changes["intersectTypeID"]
+            || changes["targetTypeID"]
+            || changes["isSubject"])
 
             && (this.objectID != null
                 && this.objectType != null
@@ -99,8 +99,8 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     getFieldsDefinition() {
         this.isGridLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, 'IntersectType', this.targetTypeID, this.targetType).subscribe(
-            result => {
+        this.gridDefinitionService.getGridDefinition(this.intersectTypeID, "IntersectType", this.targetTypeID, this.targetType).subscribe(
+            (result) => {
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
@@ -121,16 +121,20 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             this.intersectTypeID,
             false,
             !this.isSubject)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.relations = result;
-                if (this.relations.length > 0) this.selected = this.relations[0];
+                if (this.relations.length > 0) {
+                    this.selected = this.relations[0];
+                }
                 this.relationshipAdded.emit({ count: result.length });
-                if (this.shouldShowEditor() && !forceEditorOpen) this.closeEditor();
+                if (this.shouldShowEditor() && !forceEditorOpen) {
+                    this.closeEditor();
+                }
                 this.isDataLoading = false;
 
                 //Update name fields to contain full path for table filtering
-                if (this.columns.some(x => x['apiName'] == 'Name')) {
-                    var nameField = this.columns.filter(x => x['apiName'] == 'Name')[0];
+                if (this.columns.some((x) => x["apiName"] == "Name")) {
+                    var nameField = this.columns.filter((x) => x["apiName"] == "Name")[0];
 
                     this.relations.forEach(rel => {
                         rel[nameField.datafield] = rel.Name;
@@ -161,13 +165,13 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         let model: any[] = [];
         let fields: any = {};
         for (var prop in event.item) {
-            if (prop != 'IntersectTypeID' && prop != 'Source' && prop != 'SourceID' && prop != 'Items' && prop != 'ID' && prop != 'Uid') {
+            if (prop != "IntersectTypeID" && prop != "Source" && prop != "SourceID" && prop != "Items" && prop != "ID" && prop != "Uid") {
                 fields[prop] = event.item[prop];
             }
         }
 
-        if (event.action == 'new') {
-            var assets = event.item.Items.split(',');
+        if (event.action == "new") {
+            const assets = event.item.Items.split(',');
             assets.forEach(a => {
                 let newRel: any = {};
                 if (this.isSubject)
@@ -191,11 +195,11 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         this.relationshipsService.saveRelationships(this.intersectTypeID, model)
             .subscribe(res => {
 
-                if (event.action == 'new') {
-                    this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully added!');
+                if (event.action == "new") {
+                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully added!");
                 }
                 else {
-                    this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully updated!');
+                    this.showMessageForApiResults(this.messagesService, res, " Relationships succesfully updated!");
                 }
 
                 if (!res.some(x => x.Success != true)) {
@@ -213,16 +217,16 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         let model: any[] = [];
         let deleteItem: any = {};
 
-        deleteItem['Cascade'] = true;
-        deleteItem['uid'] = item;
+        deleteItem["Cascade"] = true;
+        deleteItem["uid"] = item;
         model.push(deleteItem);
 
         this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
             .subscribe(res => {
 
-                this.showMessageForApiResults(this.messagesService, res, ' Relationship succesfully deleted!');
-                if (!res.some(x => x.Success != true)) {
-                    this.relations = this.relations.filter(x => x.Uid != item);
+                this.showMessageForApiResults(this.messagesService, res, " Relationship succesfully deleted!");
+                if (!res.some((x) => x.Success != true)) {
+                    this.relations = this.relations.filter((x) => x.Uid != item);
                     this.relationshipRemoved.emit();
                 }
                 this.showDelete = false;
@@ -242,12 +246,12 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     selectObject(item) {
-        if (item.Object != 'Task') {
+        if (item.Object != "Task") {
             this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
         }
         else {
             this.assetService.getProcessDiagramUrl(item.ObjectUid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.router.navigateByUrl(res);
                 })
 
@@ -264,9 +268,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
             count++;
         }
-        qstring += '&filterscount=' + count;
+        qstring += "&filterscount=" + count;
         this.onFilterChange.emit(qstring);
-
     }
-
 }
