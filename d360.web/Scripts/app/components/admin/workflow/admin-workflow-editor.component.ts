@@ -499,31 +499,31 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
             if (this.scheduleTypes.map(s => s.value).indexOf(this.model.Event.SettingsObject.Settings.ScheduleType) == -1) {
-                this.errorMessage = "Please select a run interval.";
+                this.errorMessage = "Please select a Run Interval.";
                 this.isValid = false;
                 return;
             }
 
             if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
-                this.errorMessage = "Please enter a run frequency.";
+                this.errorMessage = "Please enter a Run Frequency.";
                 this.isValid = false;
                 return;
             } else if (!Number.isInteger(+this.model.Event.SettingsObject.Settings.ScheduleInterval)) {
-                this.errorMessage = "Frequency must be an integer.";
+                this.errorMessage = "Run Frequency must be an integer.";
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval < 1) {
-                this.errorMessage = "Frequency must be greater than or equal to 1.";
+                this.errorMessage = "Run Frequency must be greater than or equal to 1.";
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax()) {
-                this.errorMessage = "Frequency must be less than or equal to " + this.runFrequencyMax() + ".";
+                this.errorMessage = "Run Frequency must be less than or equal to " + this.runFrequencyMax() + ".";
                 this.isValid = false;
                 return;
             }
 
             if (+this.model.Event.SettingsObject.Settings.ScheduleDays == 0) {
-                this.errorMessage = "At least one run day must be selected.";
+                this.errorMessage = "At least one Run Day must be selected.";
                 this.isValid = false;
                 return;
             }
