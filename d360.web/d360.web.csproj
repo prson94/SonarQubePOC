@@ -649,7 +649,9 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
     <Content Include="Content\primeng\v11.1.0\default.css" />
-    <Content Include="Content\primeng\v11.1.0\default.min.css" />
+    <Content Include="Content\primeng\v11.1.0\default.min.css">
+      <DependentUpon>default.css</DependentUpon>
+    </Content>
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\v11.1.0\images\color.png" />
     <Content Include="Content\primeng\v11.1.0\images\hue.png" />
@@ -659,7 +661,9 @@
     <Content Include="Content\primeng\v11.1.0\primeng.css" />
     <Content Include="Content\primeng\v11.1.0\primeng.min.css" />
     <Content Include="Content\primeng\v11.1.0\theme.css" />
-    <Content Include="Content\primeng\v11.1.0\theme.min.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />

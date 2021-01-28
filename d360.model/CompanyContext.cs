@@ -27,6 +27,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using d360.core.entities.Metric;
+using d360.model.helpers;
 
 namespace d360.model
 {
@@ -2888,6 +2889,152 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
             }
             return relationFieldInfos;
+        }
+
+        #endregion
+
+        #region API Query Parameter Parsing
+
+        public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+        {
+            dbArgs = new DynamicParameters();
+            whereStatements = new List<string>();
+
+            if (queryParams.Any(x => x.Key.Equals("_filter", StringComparison.OrdinalIgnoreCase)))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var filterExpressionParser = new FilterExpressionParser(this, FilterExpressionParseType.CustomFields, false);
+                    filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+                }
+            }
+        }
+
+        public void ParseSimpleFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+        {
+            var wheres = new List<string>();
+            var dbs = new DynamicParameters();
+            if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    fieldList.ForEach(f =>
+                    {
+                        switch (f.SqlFieldType)
+                        {
+                            case SqlFieldType.Text:
+                                wheres.Add($"{f.SqlExpression} like @{f.ApiName}");
+                                dbs.Add($"@{f.ApiName}", value+"%");
+                                break;
+                            case SqlFieldType.Decimal:
+                            case SqlFieldType.Number:
+                                if (decimal.TryParse(value, out _))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
+                                    dbs.Add($"@{f.ApiName}", value);
+                                }
+
+                                break;
+                            case SqlFieldType.Guid:
+                                if (Guid.TryParse(value, out _))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
+                                    dbs.Add($"@{f.ApiName}", value);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                }
+            }
+            whereStatements = wheres;
+            dbArgs = dbs;
+        }
+
+        public string ParseOrderColumn(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fields, string defaultColumn)
+        {
+            var column = defaultColumn;
+            if (queryParams.Any(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)))
+            {
+                string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
+
+                if (!fields.Any(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase)))
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid order by passed in the request.");
+            }
+            return column;
+        }
+
+        public string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc")
+        {
+            var direction = defaultDirection;
+            if (queryParams.Any(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)).Value;
+
+                if (allowedDirections.Contains(order.Trim().ToLower()))
+                    direction = order;
+                else
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid direction by passed in the request.");
+            }
+            return direction;
+        }
+
+        public int ParsePageNumber(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultPage = 1)
+        {
+            var size = defaultPage;
+            if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out size))
+                {
+                    if (size < 1)
+                    {
+                        size = defaultPage;
+                    }
+                }
+            }
+            return size;
+        }
+
+        public int ParsePageSize(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultSize = 250)
+        {
+            var size = defaultSize;
+            if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out size))
+                {
+                    if (size < 1)
+                    {
+                        size = defaultSize;
+                    }
+                }
+            }
+            return size;
+        }
+
+        public string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000)
+        {
+            var offset = "";
+            if (pageSize > 0 || pageNumber > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize > pageSizeLimit) pageSize = pageSizeLimit;
+                if (pageNumber > 10000) pageNumber = 10000;
+                offset = $" offset {pageSize * (pageNumber - 1)} rows fetch next {pageSize} rows only ";
+            }
+            return offset;
         }
 
         #endregion

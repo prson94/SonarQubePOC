@@ -14,6 +14,7 @@ namespace d360.model.DataAccessLayer
         MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model);
         MetricAllocation GetAllocationByUid(Guid allocationUid);
         List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error);
+        Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         bool HasActiveMeasures(MetricAllocation alloc);
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref MetricAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, MetricAllocation alloc);

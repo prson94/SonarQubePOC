@@ -202,7 +202,7 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The Uid of a specific connector label to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of connector labels.", typeof(List<ConnectorLabelApiModelWrapper>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),

@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.model;
 using d360.web.Models;
@@ -17,6 +18,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
 using System.Web.Mvc;
 
 namespace System.Net.Http
@@ -118,10 +120,20 @@ namespace d360.web.Controllers
         #region Validation constants
 
         internal const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to perform this action.";
+        internal const string CONFLICT_MESSAGE = "Encountered a data conflict between your request and Govern.";
+        internal const string NOT_FOUND_GENERIC_MESSAGE = "The item you are looking for cannot be located.";
         internal const string BAD_REQUEST_GENERIC_MESSAGE = "Error while processing request.";
         internal const string INTERNAL_ERROR_MESSAGE = "An unknown error occurred while processing this request.";
         internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
-        
+
+        #endregion
+
+        #region Parameter Description Constants
+
+        internal const string ADVANCED_FILTER_DESCRIPTION = "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.";
+        internal const string PAGE_SIZE_DESCRIPTION = "The number of results to return per page. The default value is 200. Maximum is 250.";
+        internal const string PAGE_NUMBER_DESCRIPTION = "The page number to return results for.";
+
         #endregion
 
         public BaseApiController(ICommunityContext community, ICompanyContext company)
@@ -167,7 +179,54 @@ namespace d360.web.Controllers
             return Request.CreateResponse<GenericHttpError>(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
         }
 
+        public class StatusCodeErrorMessage 
+        {
+            public HttpStatusCode Status { get; set; }
+            public string ErrorMessage { get; set; }
+        }
+
         #endregion
+
+        protected internal IHttpActionResult DetermineUnhandledException(Exception ex, string errorHeading, List<StatusCodeErrorMessage> errorMessages, Dictionary<string, string> methodProperties)
+        {
+            if (errorMessages == null)
+            {
+                errorMessages = new List<StatusCodeErrorMessage>();
+            }
+
+            if (ex is InsufficientPermissionException && errorMessages.Any(e => e.Status == HttpStatusCode.Forbidden))
+            {
+                return errorMessageResponse((ex as InsufficientPermissionException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Forbidden).ErrorMessage);
+            }
+            else if (ex is ConflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
+            {
+                return errorMessageResponse((ex as ConflictException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
+            }
+            else if (ex is NotFoundException && errorMessages.Any(e => e.Status == (ex as NotFoundException).StatusCode))
+            {
+                return errorMessageResponse((ex as NotFoundException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as NotFoundException).StatusCode).ErrorMessage);
+            }
+            else if (ex is GenericException)
+            {
+                return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).Message);
+            }
+            else
+            { 
+                if (ex.Message.Contains("invalid filter expression"))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, "Invalid filter expression used. Please check your filter text.");
+                }
+                else if (ex.Message.Contains("Conversion failed when converting from"))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, "Invalid filter expression used. Please check your filter values and their data types.");
+                }
+                else
+                {
+                    SendException(ex, methodProperties);
+                    return errorMessageResponse(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+                }
+            }
+        }
 
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
         {

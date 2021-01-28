@@ -70,6 +70,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You do not have read permissions to the underlying asset..
+        /// </summary>
+        public static string InsufficientAssetPermissions {
+            get {
+                return ResourceManager.GetString("InsufficientAssetPermissions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Assets of this Type do not support permissions..
         /// </summary>
         public static string Permissions_Not_Supported {
