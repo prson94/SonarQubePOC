@@ -73,12 +73,12 @@
                 </div>
             </div>
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType != 3">
-                <div class="col s12" style="padding: 0; position:relative;">
+                <div class="col s12 diagram-container">
                     <div #relationshipBadges
                          [hidden]="!isRelationshipSelectorAvailable"
                          class="relationship-badges-overlay">
                         <ng-container *ngIf="followPart && followPart.data.relations">
-                            <div class="relationships" style="transform: scale({{scale}});transform-origin: 100% 0;">
+                            <div class="relationships" style="transform: scale({{scale}});transform-origin: {{transformOrigin}};">
                                 <div class="relation-item" *ngFor="let rel of relationshipData;let i = index" (click)="htmlBadgeClick(i)">
                                     <div class="item-icon">
                                         <i *ngIf="!rel.expanded && !rel.showLoading" class="fa fa-plus-square"></i>

@@ -109,7 +109,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showNodeCount: boolean = true;
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
-    autoCollapseRelationshipCount: number = 20;
+    autoCollapseRelationshipCount: number = 300;
 
     popupMenuItems = [
         {
@@ -457,6 +457,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private badge_ClickImpact(e, obj, overrideItemIndex: number = NaN) {
+        //console.log("Clicked");
+        //var icon = (obj as go.Part).findObject("badge-icon");
+        //console.log(obj);
+        //if (icon) {
+        //    var animation = new go.Animation();
+        //    // Animate the node's angle from its current value to a random value between 0 and 150 degrees
+        //    animation.add(icon, "angle", icon.angle, 360);
+        //    animation.duration = 300; // Animate over 1 second, instead of the default 600 milliseconds
+        //    animation.start();
+        //}
         if (obj !== null && obj.part !== null && obj.part.data !== null) {
             let ix = obj.itemIndex;
             if (!isNaN(overrideItemIndex)) {
@@ -3193,7 +3203,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = obj.part.data[propertyName] as Array<any>;
-                return arrData.length <= this.autoCollapseRelationshipCount;
+                return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
             {
@@ -3208,7 +3218,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = obj.part.data[propertyName] as Array<any>;
-                return arrData.length <= this.autoCollapseRelationshipCount;
+                return arrData.length < this.autoCollapseRelationshipCount;
             }).ofObject(),
             new go.Binding("itemArray", propertyName),
             {
@@ -3249,6 +3259,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             font: '14px FontAwesome',
                             stroke: "#006fc0",
+                            name: 'badge-icon',
                             minSize: new go.Size(16, 16)
                         },
                         new go.Binding("text", "", function (obj: go.Part) {
@@ -3342,6 +3353,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             font: '14px FontAwesome',
                             stroke: "#006fc0",
+                            name: 'badge-icon',
                             minSize: new go.Size(16, 16)
                         },
                         new go.Binding("text", "", function (obj: go.Part) {
@@ -3404,14 +3416,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //relationship panel
     private isRelationshipSelectorAvailable: boolean = false;
-    private relationshipSelectorType: string = '';
+    private relationshipSelectorType: string = "";
     private followPart: go.Part = null;
     private relationshipData: any[];
+    private transformOrigin: string = "0% 100%";
 
     private updatePredicateSelectorPosition() {
         if (this.isRelationshipSelectorAvailable && this.relationshipBadgesRef) {
             var refHtmlElement = this.relationshipBadgesRef.nativeElement as HTMLElement;
-            let showOnSide: string = 'right';
+            let showOnSide: string = "right";
             var position = this.diagram.transformDocToView(this.followPart.position);
             var posX = position.x;
 
@@ -3419,16 +3432,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var correctionY = 0;
 
             if (this.followPart.data["template"] === "FocalPortGroup") {
-                correctionX = -23;
-                correctionY = -12;
+                correctionX = -23 * this.scale;
+                correctionY = -12 * this.scale;
             }
 
-            if (showOnSide == 'left') {
+            var parentEl = refHtmlElement.parentElement;
+            if (parentEl.className.indexOf("diagram-container") !== -1) {
+                var rightBound = parentEl.getBoundingClientRect().y + parentEl.getBoundingClientRect().width;
+                var rightLocation = posX + this.followPart.getDocumentBounds().width + refHtmlElement.offsetWidth + parentEl.getBoundingClientRect().y + correctionX + 10;
+                if (rightLocation > rightBound) {
+                    showOnSide = "left";
+                }
+            }
+
+            if (showOnSide == "left") {
                 refHtmlElement.style.left = (posX - refHtmlElement.offsetWidth - correctionX - 2) + "px";
                 refHtmlElement.style.top = (position.y - correctionY) + "px";
+                this.transformOrigin = "100% 0%";
             }
             else {
-                refHtmlElement.style.left = (posX + this.followPart.getDocumentBounds().width + 2 + correctionX) + "px";
+                this.transformOrigin = "0% 0%";
+                refHtmlElement.style.left = (posX + (this.followPart.getDocumentBounds().width * this.scale) + 2 + correctionX) + "px";
                 refHtmlElement.style.top = (position.y - correctionY) + "px";
             }
         }
@@ -3465,7 +3489,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = obj.part.data[propertyName] as Array<any>;
-                return arrData.length > this.autoCollapseRelationshipCount;
+                return arrData.length >= this.autoCollapseRelationshipCount;
             }).ofObject(),
             this.g(go.Panel, "Auto",
                 this.g(go.Shape,
