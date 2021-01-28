@@ -570,6 +570,8 @@ export class WorkflowAssignmentDetail {
     StepName: string;
     StepType: StepType;    
     ActivityType: WorkflowActivityType;
+    responseType: string;
+    countAssigned: number;
 }
 
 export class WorkflowItemStep {
@@ -605,6 +607,8 @@ export class BulkWorkflowReassignModel {
     NewAssigneeResourceName: string = '';
     StepName: string = 'Form';
     SendFormEmails: boolean = true;
+    IsClearOtherAssignmentsAllowed: boolean = false;
+    ClearOtherAssignments: boolean = false ;
 }
 
 

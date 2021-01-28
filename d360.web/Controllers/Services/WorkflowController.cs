@@ -323,7 +323,6 @@ order by wi.StartedOn desc";
                     throw new Exception("item step id not found");
                 else
                 {
-                    Console.WriteLine(clearAssignments);
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
                     await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, clearAssignments);
                 }
@@ -2362,7 +2361,9 @@ order by wi.StartedOn desc";
                                     ,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
                                       when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
                                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
-                                    end as Name
+                                    end as Name,
+                                    wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
+	                                wis.Fields.value('(fields/@TotalResources)[1]', 'int') as 'countAssigned'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -3142,7 +3143,7 @@ order by wi.StartedOn desc";
                             if (reassigned["@objectType"] != null)
                             {
                                 int objectId = (int)reassigned["@objectId"];
-                                var objectType = (string)reassigned["@objectType"];
+                                var objectType = (string)reassigned["@objectType"] ?? "";
                                 var previousObjectName = "";
                                 if (objectType == "ResponsibilityType")
                                 {
@@ -3162,7 +3163,7 @@ order by wi.StartedOn desc";
                                     previousObjectName = (" - ") + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
 
                                 }
-                                reassigned["@fromResourceName"] = string.IsNullOrEmpty(previousObjectName) ? "[unknown]" : $"{objectType}{previousObjectName}";
+                                reassigned["@fromResourceName"] = $"{objectType}{previousObjectName}";
                             }
                         }
                     }
@@ -3605,6 +3606,14 @@ order by wi.StartedOn desc";
                                     if (assignee != null)
                                         users.Add(assignee);
                                 }
+
+                                if(res.ReassignType == "Resource")
+                                {
+                                    users = new List<GlobalReportingResource>();
+                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
+                                    if (assignee != null)
+                                        users.Add(assignee);
+                                }
                             }
 
                             var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
@@ -3791,7 +3800,7 @@ order by wi.StartedOn desc";
 
             try
             {
-                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
+                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
             }
             catch (Exception ex)
             {

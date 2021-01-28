@@ -1580,9 +1580,9 @@ namespace d360.model
                 if (stepSettings.ResponsibilityTypeID > 0 || (stepSettings.RecipientGroup != null || stepSettings.RecipientGroup != Guid.Empty))
                 {
 
-                    isResourceReassignment = false;
                     if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
                     {
+                        isResourceReassignment = false;
                         objectType = SystemObjects.ResponsibilityType.ToString();
                         objectId = stepSettings.ResponsibilityTypeID;
                     }
@@ -1591,13 +1591,27 @@ namespace d360.model
                         var group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
                         if(group != null)
                         {
+                            isResourceReassignment = false;
                             objectType = SystemObjects.Group.ToString();
                             objectId = group.ObjectID;
                         }
                     }else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
                     {
+                        isResourceReassignment = false;
                         objectType = "Specific Users";
                         objectId = -1;
+                    }
+                    DateTime date = DateTime.MinValue;
+                    var type = "";
+                    foreach (var elem in fieldElement.Elements("Reassigned"))
+                    {
+                        var reassignTime = DateTime.Parse(elem.Attribute("reassignOn").Value);
+                        if(date < reassignTime)
+                        {
+                            date = reassignTime;
+                            type = elem.Attribute("reassignType").Value;
+                            isResourceReassignment = type == "Resource";
+                        }
                     }
                 }
 
@@ -1624,9 +1638,10 @@ namespace d360.model
                 List<WorkflowItemAssignment> currentAssignments = new List<WorkflowItemAssignment>();
                 if (clearAssignments)
                 {
-                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == originalResourceId).ToList();
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource").ToList();
                     var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
                     itemFields.NumberOfResponses = 1;
+                    itemFields.TotalResources = 1;
                     using(var sr = new StringWriter())
                     {
                         var serializer = new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel));
