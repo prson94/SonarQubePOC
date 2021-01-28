@@ -1439,6 +1439,18 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
+
+                foreach (IDictionary<string, object> value in Values)
+                {
+                    foreach (var pair in value)
+                    {
+                        if (pair.Key.EndsWith("_assetPath"))
+                        {
+                            value[pair.Key] = WebUtility.HtmlDecode(pair.Value.ToString());
+                        }
+                    }
+                }
+
                 if (returnForUI || isStreamResponse)
                 {
                     useFriendlyNames = useUnflattedStructure = false;
