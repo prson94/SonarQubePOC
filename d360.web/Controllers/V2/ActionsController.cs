@@ -677,9 +677,9 @@ for json path";
             if (issueType == null)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"No Action Type found matching the Uid Provided."));
 
-            if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID) || Company.IssueTypeRelations.Any(x => x.IssueTypeID == issueType.ID)))
+            if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID)))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions / allocations. Enable on cascade request to delete."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions and allocations. Enable on cascade request to delete."));
             }
 
             var deleteSQL = $@" DELETE FROM IssueTypeRelation Where IssueTypeID = @issueTypeId
