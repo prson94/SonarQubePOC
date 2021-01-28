@@ -621,7 +621,7 @@ order by r.Name";
             }
 
             #endregion
-            //here for the bit about escaping the uri components
+            
             var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
