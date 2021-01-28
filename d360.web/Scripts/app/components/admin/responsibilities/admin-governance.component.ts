@@ -1,17 +1,17 @@
-﻿import { Component, OnDestroy } from '@angular/core';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { ResponsibilityType } from '../../../models/responsibility-type.model';
-import { FormMode } from '../../../models/form.model';
-import { AdminBaseComponent } from '../admin-base.component';
-import { Title } from '@angular/platform-browser';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
+﻿import { Component, OnDestroy } from "@angular/core";
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
+import { SecondaryNavService } from "../../../services/right-sidebar.service";
+import { ResponsibilityTypeService } from "../../../services/responsibility-type.service";
+import { ResponsibilityType } from "../../../models/responsibility-type.model";
+import { FormMode } from "../../../models/form.model";
+import { AdminBaseComponent } from "../admin-base.component";
+import { Title } from "@angular/platform-browser";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
 
 @Component({
-    selector: 'admin-governance',
+    selector: "admin-governance",
     providers: [ResponsibilityTypeService],
-    templateUrl: './admin-governance.component.html',
+    templateUrl: "./admin-governance.component.html",
 })
 
 export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {
@@ -28,15 +28,15 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Responsibilities";
         this.adminHeading = "Security";
-        this.tabTitle = 'Responsibility Types';
+        this.tabTitle = "Responsibility Types";
         this.theDeleteCallback = this.doDelete.bind(this);
         this.load();
     }
 
     selectedItemChange() {
-        this.responsibilityTypeService.getAdminResponsibilityTypeDetails(this.selectedRow.uid).subscribe(res => {
+        this.responsibilityTypeService.getAdminResponsibilityTypeDetails(this.selectedRow.uid).subscribe((res) => {
             this.selectedRow.ID = res.data.ID;
-            this.buildSecondaryNavigationForObject(this.selectedRow.ID, 'ResponsibilityType');
+            this.buildSecondaryNavigationForObject(this.selectedRow.ID, "ResponsibilityType");
         });
     }
 
@@ -46,7 +46,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     load(): void {
         this.responsibilityTypeService.getAdminResponsibilityTypes()
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];
                 this.selectedItemChange();
@@ -59,13 +59,13 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     edit(uid: string): void {
         this.formMode = FormMode.Editing;
-        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid == uid);
+        this.selectedRow = this.responsibilityTypeItems.find((i) => i.uid === uid);
         this.selectedItemChange();
     }
      
     delete(uid: string): void {
         this.formMode = FormMode.Deleting;
-        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid == uid);
+        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid === uid);
         this.selectedItemChange();
     }
 
@@ -83,14 +83,15 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.forceRulesReloadFlag = !this.forceRulesReloadFlag;
     }
     doDelete() {
-        this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe(res => {
+        this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe((res) => {
             if (res && res.Success) {
-                this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+                this.messagesService.showInfoMessage("Success", "Item deleted successfully");
             }
             else {
-                this.messagesService.showError('Error', 'An error occurred');
+                this.messagesService.showError("Error", "An error occurred");
             }
             this.formMode = FormMode.Default;
+            this.selectedRow = null;
             this.load();
         });
     }
