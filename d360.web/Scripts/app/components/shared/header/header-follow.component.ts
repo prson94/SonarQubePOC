@@ -1,8 +1,7 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+﻿﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FollowerService } from '../../../services/follower.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { MessageService } from 'primeng/api';//primeng/api
 
@@ -26,7 +25,6 @@ import { MessageService } from 'primeng/api';//primeng/api
             <i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>
         </div>
     `,
-    providers: [FollowerService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -73,8 +71,8 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         if (o != null) {
             this.objectType = o.type;
             this.objectId = o.id;
+            this.checkActive();        
         }
-        this.checkActive();        
     }
 
 
