@@ -124,7 +124,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.OriginalAssigneeResourceID = isNaN(this.resourceID) ? CurrentResourceID : this.resourceID;
             this.bulkReassignModel.StepName = this.assignmentSummary.StepName;
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
-            let noOfItemsCanClearAssignments = this.selection.filter(x =>  x.countAssigned > 1 && x.responseType.toLowerCase() === 'firstresponse').length;
+            let noOfItemsCanClearAssignments = this.selection.filter((x) => { return x.countAssigned > 1 && x.responseType.toLowerCase() === "firstresponse" }).length;
             //only show option to bulk clear other assignments if all have the ability to clear assignments 
             this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments === this.selection.length);
             this.showBulkReassignEditor = true;
