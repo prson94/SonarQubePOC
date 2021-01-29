@@ -273,8 +273,15 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
             Guid guid = Guid.Parse(intersectTypeUid);
-            int id = RelationshipRepository.GetIntersectTypeByUid(guid).ID;
+            
+            int id = -1;
 
+            var intersectType = RelationshipRepository.GetIntersectTypeByUid(guid);
+            if (intersectType != null)
+            {
+                id = intersectType.ID;
+            }
+            
             var customColumns = FieldsRepository.GetCustomFields(SystemObjects.IntersectType, id);
             IEnumerable<dynamic> models;
 
@@ -300,6 +307,7 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
+
         }
 
         private static SLDocument GetDocumentFromModels(IEnumerable<string> customColumns, IEnumerable<dynamic> models)
