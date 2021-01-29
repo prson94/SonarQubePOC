@@ -20,6 +20,7 @@ import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 import { HeaderActionsService } from './services/header-actions.service';
 import { SecondaryNavService } from './services/right-sidebar.service';
 import { FavoritesService } from './services/favorites.service';
+import { FollowerService } from './services/follower.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
 import { ApplicationInsightsService } from './services/application-insights.service';
@@ -105,6 +106,7 @@ export function localeInitializer(localeId: string) {
         MessagesObservableService,
         SecondaryNavService,
         FavoritesService,
+        FollowerService,
         AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,
