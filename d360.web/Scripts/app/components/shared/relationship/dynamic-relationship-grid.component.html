@@ -53,7 +53,7 @@
                         </div>
                     </td>
                     <td>
-                        <div class="RowTools" *ngIf="hasEdit && !readOnly && item.CanEdit">
+                        <div class="RowTools" *ngIf="hasEdit && !readOnly && item.CanEdit && showEditPencil">
                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true;" title="Edit"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
