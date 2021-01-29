@@ -274,7 +274,8 @@ export class NodeSettings {
     MessageBodyTemplate: any;
     MessageSubjectTemplate: any;
     ResponsibilitySide: any;
-
+    SendToDefaultUsers: any;
+     
     IncludePreviousFormResponses: any;
     WaitForAllTransitions: any;
 }

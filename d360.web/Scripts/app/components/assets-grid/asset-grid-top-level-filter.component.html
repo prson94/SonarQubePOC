@@ -16,6 +16,7 @@
                                 (ngModelChange)="field.value=$event;enableParentFilters(field);"
                                 [style]="{width:'100%'}"
                                 [disabled]="field.disabled"
+                                appendTo="body"
                                 defaultLabel="Choose"></p-multiSelect>
                         </span>
                         <span *ngSwitchCase="'checkbox'">

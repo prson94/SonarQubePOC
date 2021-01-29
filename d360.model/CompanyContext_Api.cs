@@ -1322,7 +1322,8 @@ where T.ExecutionId = @executionid;
             DataTable fieldTable, out bool success, out string errorMessage,
             bool useFriendlyNames = false,
             bool allowTagFields = false,
-            FieldValidationFieldProperties validationFieldProperties = null
+            FieldValidationFieldProperties validationFieldProperties = null,
+            bool jsonElementsEnabled = true
             )
         {
             List<DataRow> fieldRows = new List<DataRow>();
@@ -1546,7 +1547,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "JSON":
-                                    if (fieldValue.Length > 2500)
+                                    if (jsonElementsEnabled && (fieldValue.Length > 2500) )
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
@@ -4458,7 +4459,7 @@ where   ExecutionID = @ExecutionID
                             {
                                 bool success;
                                 string errorMessage;
-                                var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties);
+                                var fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes);
 
                                 if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                                 {
@@ -5557,7 +5558,7 @@ delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);
 
                                 bool success;
                                 string errorMessage;
-                                var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage);
+                                var fieldRows = ValidateFields("IntersectType", rt.ID, true, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out success, out errorMessage, jsonElementsEnabled:false);
 
                                 if (success)
                                 {
@@ -9175,7 +9176,7 @@ WHEN MATCHED THEN DELETE;
                     }
 
                     // Now that results are deleted, send the score events to re-process scores for impacted assets.
-                    if (assetMeasures.Count > 0)
+                    if (assetMeasures != null && assetMeasures.Count > 0)
                     {
                         SendScoreEventWithPayload(ScoreQueueChangeType.AssetMeasures, assetMeasures, execution.ExecutionID);
                     }

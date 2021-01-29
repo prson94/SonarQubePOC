@@ -679,7 +679,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            ModelState.AddModelError("UnknownError", "An unknown error occurred.");
+            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
             return View(model);
         }
 
@@ -1490,7 +1490,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            ModelState.AddModelError("UnknownError", "An unknown error occurred.");
+            ModelState.AddModelError("UnknownError", UNKNOWN_ERROR_MESSAGE);
             return View(model);
         }
 

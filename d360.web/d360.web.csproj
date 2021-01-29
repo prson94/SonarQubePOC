@@ -944,6 +944,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\scoring\admin-metric-pass-test-details.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\common-screen-references-model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-external.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\scoring\measure-editor-base.component.ts" />
@@ -1036,6 +1037,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />

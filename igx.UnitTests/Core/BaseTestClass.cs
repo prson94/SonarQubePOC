@@ -561,9 +561,6 @@ namespace igx.UnitTests
             mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetEditModel>()))
                 .Returns(new WorkHttpStatus(HttpStatusCode.OK, "", ""));
 
-            mock.Setup(x => x.BulkMetricsImport(It.IsAny<BulkMetricsImport>(), It.IsAny<ApiExecution>()))
-                .Returns(new List<BulkMetricTemporaryTableModel>() { new BulkMetricTemporaryTableModel() });
-
             mock.Setup(x => x.DeleteMetric(It.IsAny<MetricAsset>()));
 
             mock.Setup(x => x.GetActiveMetric(It.IsAny<Guid>()))

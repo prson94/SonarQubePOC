@@ -301,6 +301,15 @@ order by wi.StartedOn desc";
             });
 
             @event.SettingsObject = XmlToDynamic(@event.Settings, false);
+            
+            //Augment existing schedule with only interval with defaults for days and type
+            if (@event.SettingsObject.Settings != null &&
+                @event.SettingsObject.Settings.ScheduleInterval != null &&
+                @event.SettingsObject.Settings.ScheduleType == null)
+            {
+                @event.SettingsObject.Settings.ScheduleType = "d";
+                @event.SettingsObject.Settings.ScheduleDays = 127;
+            }
 
             return new WorkflowDiagramModel
             {

@@ -69,7 +69,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, int? ResourceID = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "", bool _includeOrganization = false)
         {
@@ -334,7 +334,7 @@ namespace d360.web.Controllers.V2
            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
@@ -416,7 +416,7 @@ namespace d360.web.Controllers.V2
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
            SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
@@ -558,7 +558,7 @@ namespace d360.web.Controllers.V2
             Route("groups"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false)
@@ -607,7 +607,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
@@ -661,7 +661,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteUsers(List<DeleteUserModel> users)
         {
@@ -733,7 +733,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users, bool lookupFieldsPassedByValue = false)
         {
@@ -795,7 +795,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users, bool lookupFieldsPassedByValue = false, bool IsChangePasswordReqeust = false)
         {
@@ -870,7 +870,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         HttpGet,
         Route("users/me/favorites"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetFavorites()
         {
@@ -933,7 +933,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         HttpDelete,
         Route("users/me/favorites"),
         SwaggerResponse(HttpStatusCode.OK, ""),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> ClearFavorites()
         {
@@ -969,7 +969,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
         {
@@ -986,7 +986,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
             SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
             SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
@@ -1055,7 +1055,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
@@ -1101,7 +1101,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
@@ -1136,7 +1136,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 
         ]
         public async Task<IHttpActionResult> AddGroup(List<AddGroupModel> groups)
@@ -1193,7 +1193,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
      SwaggerResponse(HttpStatusCode.OK, "Gets a list of Organizations.", typeof(List<OrganizationModel>)),
      SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Parameters provided"),
      SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+     SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
  ]
         public async Task<IHttpActionResult> GetOrganizationsByType(Guid organizationTypeUid)
         {
@@ -1265,7 +1265,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
              SwaggerResponse(HttpStatusCode.OK, "Gets details about a single organization.", typeof(List<OrganizationDetailModel>)),
              SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Organization Uid"),
              SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied: User is not an administrator"),
-             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetOrganizationsDetails(Guid organizationUid)
         {
@@ -1344,7 +1344,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         Route("users/me/apikey"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ApiKeyDetailModel>)),
         SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetApikey()
         {
@@ -1404,7 +1404,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         Route("users/me/roles"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<string>)),
         SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IHttpActionResult> GetUserRoles()
         {

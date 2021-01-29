@@ -17,7 +17,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
     dateVal2: Date;
     dateShowType: string;
     showPassTest: boolean;
-    formattedCheck: string ="";
+    formattedCheck: string = "";
     ruleResultFilters: any[];
     ruleResultPathHtml: string = '';
 
@@ -32,7 +32,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
     private hasPassTest() {
         if (
             this.definition &&
-            (this.definition.DataQuality || (this.definition.Governance && this.definition.Governance.Check) )
+            (this.definition.DataQuality || (this.definition.Governance && this.definition.Governance.Check))
         ) {
             return true;
         } else {
@@ -205,5 +205,28 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
         } else {
             this.formattedCheck = "";
         }
+    }
+
+
+    public getPassTestValue() {
+        if (!this.formattedCheck && !this.definition)
+            return '';
+        var prefix = '';
+        let check: string = '';
+        if (this.definition && this.definition.Governance)
+            check = this.definition.Governance.Check.toString();
+
+        if (!check)
+            return '';
+
+        switch (check) {
+            case 'External': prefix = ''; break;
+            case 'Field': prefix = 'Field: '; break;
+            case 'Owner': prefix = 'Ownership: '; break;
+            case 'Predicate': prefix = 'Predicate: '; break;
+            case 'Relation': prefix = 'Relationship: '; break;
+            default: ' default';
+        }
+        return prefix + this.formattedCheck;
     }
 }

@@ -115,6 +115,15 @@ namespace d360.web.Controllers
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
+        #region Validation constants
+
+        internal const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to perform this action.";
+        internal const string BAD_REQUEST_GENERIC_MESSAGE = "Error while processing request.";
+        internal const string INTERNAL_ERROR_MESSAGE = "An unknown error occurred while processing this request.";
+        internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+        
+        #endregion
+
         public BaseApiController(ICommunityContext community, ICompanyContext company)
         {
             Community = community;
@@ -398,6 +407,12 @@ namespace d360.web.Controllers
             Community = community;
             Company = company;
         }
+
+        #region Validation constants
+
+        internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+
+        #endregion
 
         #region Json Message Handling
 
