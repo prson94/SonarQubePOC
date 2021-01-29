@@ -759,7 +759,9 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (item.ForceRefresh.HasValue)
             {
                 if (item.ForceRefresh.Value)
+                {
                     model.Add("ForceRefresh", item.ForceRefresh.Value);
+                }
             }
             foreach (var n in fields.Where(f => f.ObjectID == item.ID).OrderBy(f => f.SortOrder))
             {
@@ -940,16 +942,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
             var sql = @"select 1 from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
                     where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
-
-            return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
-        }
-
-        public bool TypeHasChildren(SystemObjects type, int id)
-        {
-
-            var sql = @"select 1 from IntersectType I
-                    inner join [Predicate] P on P.ID = I.PredicateID
-                    where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
 
             return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
         }
@@ -1506,17 +1498,22 @@ where	I.ID is null";
         {
             var now = DateTime.UtcNow;
             if (relations == null)
+            {
                 relations = new List<CommentRelation>();
+            }
 
             var removeRelations = Filter<CommentRelation>(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID)).ToList();
 
             foreach (var r in removeRelations)
+            {
                 if (!relations.ToList().Contains(r))
+                {
                     Set<CommentRelation>().Remove(r);
+                }
+            }
 
             foreach (var r in relations)
             {
-
                 try
                 {
                     r.Date = now;
@@ -1559,7 +1556,10 @@ where	I.ID is null";
                 try
                 {
                     r.Date = comment.DateCreated;
-                    if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
+                    if (r.CommentID == 0)
+                    {
+                        r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
+                    }
                     Set<CommentRelation>().Add(r);
                     SaveChanges();
                 }
@@ -2200,7 +2200,9 @@ where	I.ID is null";
                     {
                         case EntityState.Added:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
                             break;
                         case EntityState.Deleted:
                             if (o.Type == DataType.JSON.ToString())
@@ -2212,7 +2214,9 @@ where	I.ID is null";
                             break;
                         case EntityState.Modified:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
                             break;
                     }
                 }
@@ -2227,11 +2231,15 @@ where	I.ID is null";
                     {
                         case EntityState.Added:
                             if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.ParentID == o.ParentID && i.Name == o.Name))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
                             break;
                         case EntityState.Modified:
                             if (Any<FusionAttributeType>(i => i.FusionTypeID == o.FusionTypeID && i.Name == o.Name && i.ParentID == o.ParentID && i.ID != o.ID))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
                             break;
                     }
                 }
@@ -2246,12 +2254,16 @@ where	I.ID is null";
                     {
                         case EntityState.Added:
                             if (Any<Fusion>(i => i.Name == o.Name))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                         case EntityState.Modified:
                             if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                     }
@@ -2267,12 +2279,16 @@ where	I.ID is null";
                     {
                         case EntityState.Added:
                             if (Any<FusionType>(i => i.Name == o.Name))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                         case EntityState.Modified:
                             if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                     }
@@ -2288,17 +2304,23 @@ where	I.ID is null";
                     {
                         case EntityState.Added:
                             if (Any<Group>(i => i.Name == o.Name))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                         case EntityState.Modified:
                             if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
+                            {
                                 throw new ArgumentException(Messages.Error_NameTaken);
+                            }
 
                             break;
                         case EntityState.Deleted:
                             if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
+                            {
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
+                            }
 
                             break;
                     }
