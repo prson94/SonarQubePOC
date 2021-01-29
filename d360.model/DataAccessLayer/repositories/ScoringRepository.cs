@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
 
             var dbArgs = new DynamicParameters();
 
-            Dictionary<string, string> fieldMapping = new Dictionary<string, string>()
+            Dictionary<string, string> fieldMapping = new Dictionary<string, string>
             {
                 { "assetclassname","AT.class" },
                 { "assettypepath","P.[Path]"},
@@ -183,8 +183,8 @@ namespace d360.model.DataAccessLayer
                         whereStatements.Add($"({string.Join(" or ", globalFilters)})");
                         break;
                     case "_direction":
-                        string val = kp.Value.ToLower();
-                        if (!(new string[] { "asc", "desc" }.Contains(val)))
+                        string val = kp.Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+                        if (!(new []{ "asc", "desc" }.Contains(val)))
                         {
                             error = "Invalid _direction specified. Allowed values are 'asc' and 'desc'.";
                             return null;
@@ -192,7 +192,7 @@ namespace d360.model.DataAccessLayer
                         orderDirection = val;
                         break;
                     case "_order":
-                        string order = kp.Value.ToLower();
+                        string order = kp.Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
                         if (!fieldMapping.ContainsKey(order))
                         {
                             error = "Invalid _order specified.";
