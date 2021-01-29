@@ -109,7 +109,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showNodeCount: boolean = true;
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
 
-    autoCollapseRelationshipCount: number = 300;
+    autoCollapseRelationshipCount: number = 3;
 
     popupMenuItems = [
         {
@@ -128,29 +128,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
     private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Source Sans Pro'";
 
-    private readonly fontOwnerBadge: string = "8pt 'Source Sans Pro'";
     private readonly fontOwnerBackColor: string = "#FEF6F2";
     private readonly fontOwnerBadgeLabelBorderColor: string = "#DE4B00";
-    private readonly fontOwnerBadgeLabelBorderColor_Disabled: string = "#ebebeb";
     private readonly fontOwnerBadgeLabelBackColor: string = "#FFE5D0";
-    private readonly fontOwnerBadgeLabelBackColor_Disabled: string = "#ebebeb";
-    private readonly fontOwnerBadgeLabelForeColor: string = "#000000";
-    private readonly fontOwnerBadgeCountBackColor: string = "#DE4B00";
-    private readonly fontOwnerBadgeCountBackColor_Disabled: string = "#ebebeb";
-    private readonly fontOwnerBadgeCountForeColor: string = "white";
-
-    private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
-    private readonly fontRelationBadgeLabelBorderColor: string = "#A4AAAF";
-    private readonly fontRelationBadgeLabelBorderColor_Disabled: string = "#ebebeb";
-    private readonly fontRelationBadgeLabelBackColor: string = "#ffffff";
-    private readonly fontRelationBadgeLabelBackColor_Disabled: string = "#ebebeb";
-    private readonly fontRelationBadgeLabelForeColor: string = "#000000";
-    private readonly fontRelationBadgeCountBackColor: string = "#A4AAAF";
-    private readonly fontRelationBadgeCountBackColor_Disabled: string = "#ebebeb";
-    private readonly fontRelationBadgeCountForeColor: string = "#ffffff";
 
     private readonly fontLabelIcon: string = "12px FontAwesome";
-    private readonly fontLoadingIcon: string = "10px FontAwesome";
     private readonly fontLabelAlertColor: string = "#FF0000";
     private readonly fontLabel: string = "14px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
@@ -158,12 +140,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLinkColor: string = "#fff";
     private readonly linkBackColor: string = "#808080";
     private readonly lightenBoxColor: string = "#fff";
-    private readonly darkenBoxColor: string = "#000";
     private readonly linkDefaultBackColor: string = '#808080';
     private readonly linkDefaultBorderColor: string = '#999';
     private readonly plusIcon: string = '\uf067';
     private readonly hideIcon: string = '\uf070';
-    private readonly loadingIcon: string = '\uf110';
     private readonly disabledNodeBackColor: string = '#fff';
 
     private readonly textMaxSize = new go.Size(200, Infinity);
@@ -175,10 +155,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly selectionPathHighlightColor: string = '#F5C2FF';
     private readonly leafBackColor: string = 'transparent';
 
-    private readonly maxDescendantCount: number = 500;
-
-
-    private readonly fontBadgeNew: string = "14px 'Source Sans Pro'";
+    private readonly badgeFont: string = "14px 'Source Sans Pro'";
+    private readonly badgeStrokeColor = "#d6d5d5";
+    private readonly badgeTextColor = "#006fc0";
 
     //#endregion
 
@@ -456,18 +435,26 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
+    private animateBadgeIcon(part: go.Part): go.Animation {
+        var icon = part.findObject("badge-icon");
+        if (icon) {
+            var animation = new go.Animation();
+
+            animation.add(icon, "angle", icon.angle, 360);
+            animation.duration = 1000;
+            animation.start();
+            animation.finished = (animation: go.Animation) => {
+                if (!part.data["expanded"]) {
+                    this.animateBadgeIcon(part);
+                }
+            }
+            return animation;
+        }
+    }
+
     private badge_ClickImpact(e, obj, overrideItemIndex: number = NaN) {
-        //console.log("Clicked");
-        //var icon = (obj as go.Part).findObject("badge-icon");
-        //console.log(obj);
-        //if (icon) {
-        //    var animation = new go.Animation();
-        //    // Animate the node's angle from its current value to a random value between 0 and 150 degrees
-        //    animation.add(icon, "angle", icon.angle, 360);
-        //    animation.duration = 300; // Animate over 1 second, instead of the default 600 milliseconds
-        //    animation.start();
-        //}
         if (obj !== null && obj.part !== null && obj.part.data !== null) {
+            var currentAnimation = this.animateBadgeIcon(obj);
             let ix = obj.itemIndex;
             if (!isNaN(overrideItemIndex)) {
                 ix = overrideItemIndex;
@@ -490,6 +477,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.model.setDataProperty(relation, 'showLoading', false);
                     this.helper_UpdateDiagramLayout();
                     this.helper_HighlightPath(null, lastHighlightedPart);
+
+                    if (currentAnimation)
+                        currentAnimation.stop();
                 }
                 else {
                     relation.disabled = true;
@@ -541,6 +531,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.helper_HideDeselectedPredicates();
                             this.helper_HideDeselectedResponsibilityTypes();
                             this.helper_HighlightPath(null, lastHighlightedPart);
+
+                            if (currentAnimation)
+                                currentAnimation.stop();
                         });
                 }
             }
@@ -549,6 +542,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private badge_ClickOwner(e, obj, overrideItemIndex: number = NaN) {
         if (obj != null && obj.part != null && obj.part.data != null) {
+            var currentAnimation = this.animateBadgeIcon(obj);
+
             let ix = obj.itemIndex;
 
             if (!isNaN(overrideItemIndex)) {
@@ -571,6 +566,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.helper_UpdateDiagramLayout();
                 this.helper_HighlightPath(null, lastHighlightedPart);
 
+                if (currentAnimation)
+                    currentAnimation.stop();
             }
             else {
 
@@ -618,6 +615,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.helper_SetFilterWindow();
                         this.helper_HighlightPath(null, lastHighlightedPart);
 
+                        if (currentAnimation)
+                            currentAnimation.stop();
                     });
             }
         }
@@ -3240,47 +3239,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         parameter1: 2,
                         strokeWidth: 1.5,
                         fill: "white",
-                        stroke: "#d6d5d5",
+                        stroke: this.badgeStrokeColor,
                         margin: new go.Margin(0, 0, -1, 0)
-                    }
+                    },
+                    new go.Binding("fill", "", (obj) => {
+                        return obj.data['expanded'] == true ? "#f1f1f3" : "white";
+                    }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
                     return part.data['showBadge'];
                 }).ofObject(),
                 this.g(go.Panel, "Horizontal",
                     {
-                        alignment: go.Spot.Left,
-                        padding: 2
+                        alignment: go.Spot.Left
                     },
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: new go.Margin(2, 4, 0, 4),
-                            editable: false,
-                            font: '14px FontAwesome',
-                            stroke: "#006fc0",
-                            name: 'badge-icon',
-                            minSize: new go.Size(16, 16)
-                        },
-                        new go.Binding("text", "", function (obj: go.Part) {
-                            if (obj.data['showLoading'] == true)
-                                return FontAwesomeHelper.GetHtmlCode("fa-spinner");
-
-                            if (obj.data['expanded'] == true)
-                                return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
-                            else
-                                return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
-
-                        }).ofObject()
-
-                    ),
+                    this.template_badgeIconHolder(),
                     this.g(
                         go.TextBlock,
                         {
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
-                            font: this.fontBadgeNew,
-                            stroke: "#006fc0",
+                            font: this.badgeFont,
+                            stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "predicate"),
                         new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
@@ -3294,6 +3274,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(go.Panel, "Auto",
                         {
                             alignment: go.Spot.Right,
+                            margin: new go.Margin(0, 2, 0, 0)
                         },
                         this.g(go.Shape, "RoundedRectangle",
                             {
@@ -3301,18 +3282,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
                                 margin: new go.Margin(0, 0, 0, 4),
-                                fill: "#006fc0"
+                                fill: this.badgeTextColor
                             },
+                            new go.Binding("fill", "", (obj) => {
+                                return obj.data['expanded'] == true ? "#7690a9" : this.badgeTextColor;
+                            }).ofObject()
                         ),
                         this.g(
                             go.TextBlock,
                             {
                                 margin: new go.Margin(1, 0, 0, 0),
                                 editable: false,
-                                font: this.fontBadgeNew,
+                                font: this.badgeFont,
                                 stroke: "white",
                             },
-                            new go.Binding("text", "count")
+                            new go.Binding("text", "", (obj) => {
+                                return this.formatBadgeNumber(+obj.data["count"]);
+                            }).ofObject()
                         )
                     )
                 )
@@ -3334,47 +3320,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         parameter1: 2,
                         strokeWidth: 1.5,
                         fill: "white",
-                        stroke: "#d6d5d5",
+                        stroke: this.badgeStrokeColor,
                         margin: new go.Margin(0, 0, -1, 0)
-                    }
+                    },
+                    new go.Binding("fill", "", (obj) => {
+                        return obj.data['expanded'] == true ? "#f1f1f3" : "white";
+                    }).ofObject()
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
                     return part.data['showBadge'];
                 }).ofObject(),
                 this.g(go.Panel, "Horizontal",
                     {
-                        alignment: go.Spot.Left,
-                        padding: 2
+                        alignment: go.Spot.Left
                     },
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: new go.Margin(2, 4, 0, 4),
-                            editable: false,
-                            font: '14px FontAwesome',
-                            stroke: "#006fc0",
-                            name: 'badge-icon',
-                            minSize: new go.Size(16, 16)
-                        },
-                        new go.Binding("text", "", function (obj: go.Part) {
-                            if (obj.data['showLoading'] == true)
-                                return FontAwesomeHelper.GetHtmlCode("fa-spinner");
-
-                            if (obj.data['expanded'] == true)
-                                return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
-                            else
-                                return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
-
-                        }).ofObject()
-
-                    ),
+                    this.template_badgeIconHolder(),
                     this.g(
                         go.TextBlock,
                         {
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
-                            font: this.fontBadgeNew,
-                            stroke: "#006fc0",
+                            font: this.badgeFont,
+                            stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "responsibilityType"),
                         new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
@@ -3388,6 +3355,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(go.Panel, "Auto",
                         {
                             alignment: go.Spot.Right,
+                            margin: new go.Margin(0, 2, 0, 0)
                         },
                         this.g(go.Shape, "RoundedRectangle",
                             {
@@ -3395,18 +3363,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
                                 margin: new go.Margin(0, 0, 0, 4),
-                                fill: "#006fc0"
+                                fill: this.badgeTextColor
                             },
+                            new go.Binding("fill", "", (obj) => {
+                                return obj.data['expanded'] == true ? "#7690a9" : this.badgeTextColor;
+                            }).ofObject()
                         ),
                         this.g(
                             go.TextBlock,
                             {
                                 margin: new go.Margin(1, 0, 0, 0),
                                 editable: false,
-                                font: this.fontBadgeNew,
+                                font: this.badgeFont,
                                 stroke: "white",
                             },
-                            new go.Binding("text", "count")
+                            new go.Binding("text", "", (obj) => {
+                                return this.formatBadgeNumber(+obj.data["count"]);
+                            }).ofObject()
                         )
                     )
                 )
@@ -3478,6 +3451,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }, 10);
     }
 
+    private template_badgeIconHolder(textPartName: string = "badge-icon"): go.Panel {
+        return this.g(go.Panel, "Spot",
+            this.g(go.Shape, "Rectangle",
+                {
+                    width: 20,
+                    height: 20,
+                    fill: "transparent",
+                    stroke: "transparent",
+                    margin: new go.Margin(0, 0, 0, 0)
+                }
+            ),
+            this.g(
+                go.TextBlock,
+                {
+                    editable: false,
+                    font: '14px FontAwesome',
+                    stroke: this.badgeTextColor,
+                    name: textPartName,
+                    maxSize: new go.Size(14, 14),
+                    alignment: new go.Spot(0.5, 0.5)
+                },
+                new go.Binding("text", "", function (obj: go.Part) {
+                    if (obj.data['showLoading'] == true)
+                        return FontAwesomeHelper.GetHtmlCode("fa-spinner");
+
+                    if (obj.data['expanded'] == true)
+                        return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                    else
+                        return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+
+                }).ofObject()
+            )
+        );
+    }
+
     private template_fixedBadge(propertyName: string): go.Panel {
         return this.g(go.Panel, "Auto", {
             stretch: go.GraphObject.Horizontal,
@@ -3498,7 +3506,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         parameter1: 2,
                         strokeWidth: 1.5,
                         fill: "white",
-                        stroke: "#d6d5d5",
+                        stroke: this.badgeStrokeColor,
                         margin: new go.Margin(0, 0, -1, 0)
                     }
                 ),
@@ -3507,33 +3515,42 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }).ofObject(),
                 this.g(go.Panel, "Horizontal",
                     {
-                        alignment: go.Spot.Left,
-                        padding: 2
+                        alignment: go.Spot.Left
                     },
-                    this.g(
-                        go.TextBlock,
-                        {
-                            margin: new go.Margin(2, 4, 0, 4),
-                            editable: false,
-                            font: '14px FontAwesome',
-                            stroke: "#006fc0",
-                            minSize: new go.Size(16, 16),
-                        },
-                        new go.Binding("text", "", function (obj: go.Part) {
-                            if (obj.data['relExpanded' + propertyName] == true)
-                                return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
-                            else
-                                return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
+                    this.g(go.Panel, "Spot",
+                        this.g(go.Shape, "Rectangle",
+                            {
+                                width: 20,
+                                height: 20,
+                                fill: "transparent",
+                                stroke: "transparent",
+                                margin: new go.Margin(0, 0, 0, 0)
+                            }
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                editable: false,
+                                font: '14px FontAwesome',
+                                stroke: this.badgeTextColor,
+                                maxSize: new go.Size(14, 14),
+                                alignment: new go.Spot(0.5, 0.5)
+                            },
+                            new go.Binding("text", "", function (obj: go.Part) {
+                                if (obj.data['relExpanded' + propertyName] == true)
+                                    return FontAwesomeHelper.GetHtmlCode("fa-minus-square");
+                                else
+                                    return FontAwesomeHelper.GetHtmlCode("fa-plus-square");
 
-                        }).ofObject()
-                    ),
-                    this.g(
+                            }).ofObject()
+                        )
+                    ), this.g(
                         go.TextBlock,
                         {
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
-                            font: this.fontBadgeNew,
-                            stroke: "#006fc0"
+                            font: this.badgeFont,
+                            stroke: this.badgeTextColor
                         },
                         new go.Binding("text", "", (obj) => {
                             return propertyName === "relations" ? "Relationships" : "Responsibilities";
@@ -3549,6 +3566,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(go.Panel, "Auto",
                         {
                             alignment: go.Spot.Right,
+                            margin: new go.Margin(0, 2, 0, 0)
                         },
                         this.g(go.Shape, "RoundedRectangle",
                             {
@@ -3556,7 +3574,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
                                 margin: new go.Margin(0, 4, 0, 4),
-                                fill: "#006fc0"
+                                fill: this.badgeTextColor
                             },
                         ),
                         this.g(
@@ -3564,7 +3582,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             {
                                 margin: new go.Margin(1, 0, 0, 0),
                                 editable: false,
-                                font: this.fontBadgeNew,
+                                font: this.badgeFont,
                                 stroke: "white",
                             },
                             new go.Binding("text", "", (obj: go.GraphObject) => {
@@ -3592,9 +3610,31 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return 72 + txt.length * 6;
     }
     private calculateBadgeTextWidth(width: number): number {
-        return width - 72;
+        var ret = width - 66;
+        if (ret > 300)
+            ret = 300;
+        return ret;
     }
     private calculateBadgeTextWidthForGroupNode(width: number): number {
         return width - 60;
+    }
+    private formatBadgeNumber(countValue: number): string {
+        if (isNaN(countValue)) {
+            return "---";
+        }
+
+        if (countValue > 100000000) {
+            countValue = (countValue / 1000000000)
+            return countValue.toFixed(1) + "B";
+        }
+        if (countValue > 100000) {
+            countValue = (countValue / 1000000)
+            return countValue.toFixed(1) + "M";
+        }
+        if (countValue > 1000) {
+            countValue = (countValue / 1000)
+            return countValue.toFixed(1) + "K";
+        }
+        return countValue.toString();
     }
 }
