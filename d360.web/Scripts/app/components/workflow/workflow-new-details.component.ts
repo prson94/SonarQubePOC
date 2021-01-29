@@ -70,7 +70,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.fromMail = params['fromMail'] === '1' ? true : false;
 
             this.isMe = this.resourceID ? this.resourceID == CurrentResourceID : true;
-            this.authenticationService.checkCurrentUserAdmin().subscribe(x => {
+            this.authenticationService.checkCurrentUserAdmin().subscribe((x) => {
                 this.isAdmin = x;
             });
             this.headerBreadcrumbService.clearBreadcrumbs();    
@@ -126,9 +126,7 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
             this.bulkReassignModel.StepHasFormEmails = this.assignmentSummary.SendFormEmail;
             let noOfItemsCanClearAssignments = this.selection.filter(x =>  x.countAssigned > 1 && x.responseType.toLowerCase() === 'firstresponse').length;
             //only show option to bulk clear other assignments if all have the ability to clear assignments 
-            this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments == this.selection.length);
-            console.log(this.bulkReassignModel.IsClearOtherAssignmentsAllowed);
-            console.log(this.selection);
+            this.bulkReassignModel.IsClearOtherAssignmentsAllowed = (noOfItemsCanClearAssignments === this.selection.length);
             this.showBulkReassignEditor = true;
         }
     }
