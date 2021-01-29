@@ -21,6 +21,7 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -32,6 +33,7 @@ import { V2ApiFilters } from '../../models/asset-search.model';
         PoliciesService,
         PermissionsService,
         AssetService,
+        WebAnalyticsService,
     ],
     templateUrl: 'hierarchy-item-structure.component.html'
 })
@@ -90,10 +92,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         private policiesService: PoliciesService,
         private headerActionsService: HeaderActionsService,
         protected secondaryNavService: SecondaryNavService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        webAnalyticsService: WebAnalyticsService
     ) {
         super();
 
+        this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
     }
 
@@ -118,7 +122,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.showDiagram = false;
                 break;
         }
-
+        
         this.routeSub = this.route.params.subscribe(params => {
             this.objectTypeId = +params['typeId'];
             this.assetTypeUid = params['uid'];
@@ -128,11 +132,14 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.isLoading = true;
                     this.objectTypeId = res.ObjectID
                     this.load();
+                    this.logAction("open", this.objectType, this.objectTypeId);
                 });
             } else {
                 this.isLoading = true;
+                this.logAction("open", this.objectType, this.objectTypeId);
                 this.load();
             }
+
         });
     }
 
