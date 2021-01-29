@@ -283,7 +283,7 @@ namespace d360.model.validators
                     {
                         new Regex(field.Type.Text.Validation.Pattern);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Validation pattern is not valid Regex expression!");
                     }
