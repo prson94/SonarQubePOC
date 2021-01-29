@@ -121,6 +121,12 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         });
 
         this.metricForm.updateValueAndValidity();
+
+        this.metricForm.valueChanges.subscribe(() => {
+            setTimeout(() => {
+                this.checkModelChanged();
+            })
+        });
         this.load();
         this.loadFieldData();
     }
@@ -129,15 +135,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         this.originalConditions = _.cloneDeep(this.conditions)
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
-        if (this.uid) {
-            this.metricForm?.valueChanges.subscribe(() => {
-                setTimeout(() => {
-                    this.checkModelChanged();
-                })
-            });
-
-            this.cdRef.detectChanges();
-        } else {
+        if (!this.uid) {
             this.hasModelChanged = true;
         }
     }
