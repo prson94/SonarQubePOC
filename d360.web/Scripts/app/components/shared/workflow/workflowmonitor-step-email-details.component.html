@@ -15,6 +15,12 @@
             <div *ngFor="let res of step.ItemSettings.Responsibilities">
                 {{res.name}}
             </div>
+            <div class="FieldName">
+                Send To Default Users:
+            </div>
+            <div>
+                {{emailSettings.SendToDefaultUsers == 'false' ? 'No' : 'Yes'}}
+            </div>
         </div>
     </div>
     <div class="col s6"
