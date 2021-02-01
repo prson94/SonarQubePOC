@@ -32,8 +32,8 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        IStorageProvider Storage;
-        IResponsibilityRepository ResponsibilityRepository;
+        readonly IStorageProvider Storage;
+        readonly IResponsibilityRepository ResponsibilityRepository;
 
         public FormController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
             : base(community, company)
@@ -102,7 +102,7 @@ namespace d360.web.Controllers
             var style = Company.GetAssetTypeStyle(assetType.ID);
             bool add = (style == null);
 
-            string iconText = "Tx";
+            string iconText;
 
             var words = objectName.Split(' ');
             if (words.Length > 1)
@@ -133,22 +133,12 @@ namespace d360.web.Controllers
                 Company.Update(style);
             }
         }
-
-        private string ConverDate(string date)
-        {
-            var stringDate = date;
-            DateTime dateVal = DateTime.MinValue;
-            if (DateTime.TryParse(stringDate, out dateVal))
-            {
-                return  dateVal.ToShortDateString();
-            }
-            return null;
-        }
+          
         #endregion
 
         #region Parse Methods
 
-        bool parseBooleanField(FormCollection form, string fieldName, bool defaultValue = false)
+        bool parseBooleanField(FormCollection form, string fieldName)
         {
             if (form.AllKeys.Any(i => i == fieldName))
             {
@@ -178,7 +168,7 @@ namespace d360.web.Controllers
             }
             else
             {
-                return false;// defaultValue;
+                return false;
             }
         }
 
@@ -202,7 +192,9 @@ namespace d360.web.Controllers
                 }
             }
             else
+            {
                 return defaultValue;
+            }
         }
 
         int parseIntField(FormCollection form, string fieldName)
@@ -215,24 +207,12 @@ namespace d360.web.Controllers
             return form.AllKeys.Any(i => i == fieldName) ? ((htmlEncode) ? Server.HtmlEncode(form[fieldName]) : form[fieldName]) : defaultValue;
         }
 
-        string parseNameField(FormCollection form, string fieldName, string defaultValue = null)
-        {
-            var value = form.AllKeys.Any(i => i == fieldName) ? (form[fieldName]) : defaultValue;
-
-            // only allow alpha numeric, whitespace, and apostrophes in firstname / last name.
-            if (!isValidUserProfileName(value))
-                throw new Exception("Error invalid characters contained in the provided name field.");
-
-            return value;
-        }
-
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
         [HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
         public JsonResult DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
         {
-
             var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
             var o = assetType.Object;
             return this.DynamicEditorEditFields(o, assetUid);
@@ -266,7 +246,9 @@ namespace d360.web.Controllers
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
                     {
                         if (sysobj.ToString().ToUpper() == o.ToUpper())
+                        {
                             objectId = Company.GetObjectId(uid.Value, sysobj);
+                        }
                     }
                     return DynamicEditorEditFields(o, objectId);
             }
@@ -384,23 +366,35 @@ namespace d360.web.Controllers
                 {
                     var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);
                     if (issueType != null)
+                    {
                         return DynamicEditorAddFields(SystemObjects.Issue.ToString(), issueType.ID, null, null);
+                    }
                     else
-                        throw new Exception("No Issue Type found for given Guid");                              
+                    {
+                        throw new Exception("No Issue Type found for given Guid");
+                    }
                 } else if (objectType == SystemObjects.IssueTypeRelation.ToString())
                 {
-                    var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);                    
+                    var issueType = Company.IssueTypes.FirstOrDefault(x => x.uid == guid);
                     if (issueType != null)
+                    {
                         return DynamicEditorAddFields(SystemObjects.IssueTypeRelation.ToString(), issueType.ID, null, null);
+                    }
                     else
+                    {
                         throw new Exception("No Issue Type found for given Guid");
+                    }
                 }else 
                 {
                     var asset = Company.AssetTypes.FirstOrDefault(x => x.uid == guid);
                     if (asset != null)
+                    {
                         return DynamicEditorAddFields(asset.Object.Replace("Type", ""), asset.ObjectID, null, null);
+                    }
                     else
+                    {
                         throw new Exception("No Asset Type found for given Guid");
+                    }
                 }               
             }
             throw new Exception("Invalid Guid");
@@ -519,9 +513,10 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "INTERSECTTYPE":
-                    return Relationship_AddFields(objectID, targetType, targetID);                
-            }
-            throw new Exception("Invalid or non implemented editor type");
+                    return Relationship_AddFields(objectID, targetType, targetID);
+                default:
+                    throw new Exception("Invalid or non implemented editor type");
+            }            
         }
 
         [HttpPut, Route("dynamicedit/edit/{objectType}"), ValidateInput(false)]
@@ -575,9 +570,9 @@ namespace d360.web.Controllers
                     return EditServiceEndpointVersion(form);
                 case "URI":
                     return EditServiceEndpointVersionUri(form);
-            }
-
-            throw new Exception("Invalid / unsupported edit type");
+                default:
+                    throw new Exception("Invalid / unsupported edit type");
+            }            
         }
 
         [HttpDelete, Route("dynamicedit/delete/{objectType}/{objectID:int}"), ValidateInput(false)]
@@ -634,9 +629,9 @@ namespace d360.web.Controllers
                     return DeleteCustomAPIUri(form);
                 case "VERSION":
                     return DeleteCustomAPIVersion(form);
-            }
-
-            throw new Exception("Invalid / unsupported delete type");
+                default:
+                    throw new Exception("Invalid / unsupported delete type");
+            }            
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/create/{objectType}"), ValidateInput(false)]
@@ -690,9 +685,9 @@ namespace d360.web.Controllers
                     return AddServiceEndpointVersion(form);
                 case "URI":
                     return AddServiceEndpointVersionUri(form);
-            }
-
-            throw new Exception("Invalid / unsupported create type");
+                default:
+                    throw new Exception("Invalid / unsupported create type");
+            }            
         }
                
         #endregion
@@ -1146,7 +1141,9 @@ namespace d360.web.Controllers
         public JsonNetResult UpdateLineage(LineageEditorModel model)
         {
             if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
+            {
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
             model.Deletes?.ForEach(d =>
             {
@@ -1168,7 +1165,9 @@ namespace d360.web.Controllers
                 {
                     //reset state on fail to avoid future errors in SaveChanges()
                     if (mapItem != null)
+                    {
                         Company.Entry(mapItem).State = System.Data.Entity.EntityState.Unchanged;
+                    }
 
                     d.HasError = true;
                     d.ErrorMessage = ex.GetFullExceptionData();
@@ -1185,7 +1184,9 @@ namespace d360.web.Controllers
                     i.ObjectID == a.SourceObjectID).SingleOrDefault();
 
                     if (sourceIntersect == null)  //add source intersect if it doesn't exist
+                    {
                         sourceIntersect = Company.AddIntersect(a.SourceIntersectTypeID, a.SourceSubject, a.SourceSubjectID, a.SourceObject, a.SourceObjectID);
+                    }
 
 
                     var targetIntersect = Company.IntersectDetails.Where(i =>
@@ -1194,19 +1195,23 @@ namespace d360.web.Controllers
                     i.ObjectID == a.TargetObjectID).SingleOrDefault();
 
                     if (targetIntersect == null)//add target intersect
+                    {
                         targetIntersect = Company.AddIntersect(a.TargetIntersectTypeID, a.TargetSubject, a.TargetSubjectID, a.TargetObject, a.TargetObjectID);
+                    }
 
                     //add map item
                     var mapItem = Company.MapItems.Where(i => i.SourceIntersectID == sourceIntersect.ID && i.TargetIntersectID == targetIntersect.ID).SingleOrDefault();
 
                     if (mapItem == null)
-                        mapItem = Company.MapItems.Add(new MapItem()
+                    {
+                        mapItem = Company.MapItems.Add(new MapItem
                         {
                             SourceIntersectID = sourceIntersect.ID,
                             TargetIntersectID = targetIntersect.ID,
                             CreatedBy = Company.CurrentResourceID,
                             UpdatedBy = Company.CurrentResourceID
                         });
+                    }
 
                     Company.SaveChanges();
                     a.SourceIntersectID = sourceIntersect.ID;
@@ -1231,7 +1236,9 @@ namespace d360.web.Controllers
         public JsonNetResult UpdateTechnicalLineage(LineageEditorTechnicalModel model)
         {
             if (!Company.HasAssetPermission(model.Focal, model.FocalID, Permission.ModifyAsset))
+            {
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
             model.Deletes?.ForEach(d =>
             {
@@ -1396,7 +1403,9 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.HasAssetPermission(type, id, Permission.ModifyRelationships))
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 model.Items.ForEach(m =>
                 {
@@ -1572,7 +1581,9 @@ order by Sort, title";
             }
 
             if (!string.IsNullOrEmpty(sql))
+            {
                 models = Company.Query<OptionModel>(sql);
+            }
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -1637,7 +1648,10 @@ order by Sort, title";
 
         private void CreateExcelList(int numLookupColumns, SLDocument document, string lookupWorksheetName, SLDataValidation dataValidation, IEnumerable<string> values)
         {
-            if (!values.Any()) return;
+            if (!values.Any())
+            {
+                return;
+            }
 
             var currentSheet = document.GetCurrentWorksheetName();
             document.SelectWorksheet(lookupWorksheetName);
@@ -1699,11 +1713,20 @@ order by Sort, title";
 
 
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 // Perform checks to make sure fields are populated.
-                if (string.IsNullOrEmpty(model.Type)) throw new NoFormDataException("Type");
-                if (string.IsNullOrEmpty(model.LoadAction)) throw new NoFormDataException("LoadAction");
+                if (string.IsNullOrEmpty(model.Type))
+                {
+                    throw new NoFormDataException("Type");
+                }
+
+                if (string.IsNullOrEmpty(model.LoadAction))
+                {
+                    throw new NoFormDataException("LoadAction");
+                }
 
                 var match = MimeTypeExtensionsMap.RegEx.Match(model.File);
 
@@ -2072,9 +2095,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult Map_AddFields()
         {
             var list = new List<EditableField>();
-            
+
             if (!Company.HasAssetPermission(SystemObjects.Map, 0, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var mapTypes = new List<SelectListItem>();            
             
@@ -2097,7 +2122,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var a = Company.GetById<core.entities.Map>(id);
 
             if (!Company.HasAssetPermission(SystemObjects.Map, a.ID, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
             var mapTypes = new List<SelectListItem>();
 
@@ -2118,7 +2145,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("Map");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("Map");
+                }
 
                 var map = new Map
                 {                    
@@ -2130,7 +2160,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 };
 
                 if (!Company.HasAssetTypePermission(SystemObjects.MapType, map.MapTypeID, Permission.ModifyAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 Company.Add(map);
 
@@ -2152,13 +2184,18 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("Map");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("Map");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Map>(id);
-                
+
                 if (!Company.HasAssetPermission(SystemObjects.Map, model.ID, Permission.ModifyAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
                 
                 model.MapTypeID = parseIntField(form, "MapType");                
                 model.UpdatedBy = Company.CurrentResourceID;
@@ -2185,14 +2222,19 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             try
             {
-                if (!form.HasKeys()) throw new NoFormDataException("lineage mapping");
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException("lineage mapping");
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Map>(id);
                 if (model == null) throw new NotFoundException("mapping");
 
                 if (!Company.HasAssetPermission(SystemObjects.Map, id, Permission.DeleteAsset))
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 Company.Delete(model);
 
@@ -2218,7 +2260,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult ReferenceItem_AddFields(int id)
         {
             if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, id, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
             var list = new List<EditableField>();
             var row = 1;
@@ -2250,7 +2294,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var a = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
             if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, a.ObjectID, Permission.ModifyAsset))
+            {
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
             var row = 1;
             //resolve the color correctly from the Id or hex value
@@ -2314,10 +2360,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
 
             if (myCart == null)
+            {
                 return jsonException("The specified cart could not be found", HttpStatusCode.NotFound);
+            }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
+            {
                 return jsonException("You do not have permission to add items to this cart", HttpStatusCode.Forbidden);
+            }
 
             var existingItem = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == myCart.ID && i.Object == type && i.ObjectID == id).FirstOrDefault();
 
@@ -2356,14 +2406,18 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var cart = Company.GetById<ShoppingCart>(shoppingCartID);
 
             if (cart == null)
+            {
                 return jsonException("Could not find the shopping cart specified.", HttpStatusCode.NotFound);
+            }
 
             if (cart.ResourceID != Company.CurrentResourceID)
                 return jsonException("You do not have permission to remove this item", HttpStatusCode.Forbidden);
 
             var item = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == shoppingCartID && i.Object == type && i.ObjectID == id).FirstOrDefault();
             if (item == null)
+            {
                 return jsonException("Shopping cart item could not be found", HttpStatusCode.NotFound);
+            }
 
             try
             {
@@ -2382,6 +2436,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var cart = Company.ShoppingCarts.Where(s => s.ResourceID == Company.CurrentResourceID && s.ShoppingCartTypeID == typeID && s.RequestedOn == null).FirstOrDefault();
             if (cart == null)
+            {
                 return new JsonNetResult
                 {
                     Data =
@@ -2392,9 +2447,12 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     },
                     Formatting = Newtonsoft.Json.Formatting.None
                 };
+            }
 
             if (cart.ResourceID > 0)
+            {
                 cart.Requestor = Company.Query<string>("select FirstName + ' ' + LastName as Requestor from reporting.Global_Resource where ResourceID = @id", new { id = cart.ResourceID }).SingleOrDefault();
+            }
 
             var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
 
@@ -2418,7 +2476,9 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var items = Company.Query<dynamic>(QueryConstants.ShoppingCartItemList, new { id = cart.ID }).ToList();
 
             if (cart != null && cart.ResourceID > 0)
+            {
                 cart.Requestor = Company.Query<string>("select FirstName + ' ' + LastName as Requestor from reporting.Global_Resource where ResourceID = @id", new { id = cart.ResourceID }).SingleOrDefault();
+            }
 
 
             return new JsonNetResult
@@ -2438,10 +2498,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var myCart = Company.GetById<ShoppingCart>(cart.ID);
             if (myCart == null)
+            {
                 return jsonException("Could not find shopping cart", HttpStatusCode.NotFound);
+            }
 
             if (myCart.ResourceID != Company.CurrentResourceID)
+            {
                 return jsonException("You do not have permission to request this shopping cart.", HttpStatusCode.Forbidden);
+            }
 
             try
             {
@@ -2466,10 +2530,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 var cart = Company.GetById<ShoppingCart>(cartID);
                 if (cart == null)
+                {
                     return jsonException("Could not find the specified cart.", HttpStatusCode.NotFound);
+                }
 
                 if (cart.ResourceID != Company.CurrentResourceID)
+                {
                     return jsonException("You do not have permission to clear this cart.", HttpStatusCode.Forbidden);
+                }
 
                 var items = Company.ShoppingCartItems.Where(i => i.ShoppingCartID == cartID).ToList();
                 Company.ShoppingCartItems.RemoveRange(items);
@@ -2492,11 +2560,19 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult AddShortcut(Shortcut shortcut)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+            }
+
             if (string.IsNullOrEmpty(shortcut.Name))
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);            
+            {
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+            }
+
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconPayload))
+            {
                 return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+            }
 
             try
             {
@@ -2523,8 +2599,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 var MaxDisplayShortcut = Company.Shortcuts.OrderByDescending(o => o.DisplayOrder).FirstOrDefault();
                 shortcut.DisplayOrder = (MaxDisplayShortcut != null) ? MaxDisplayShortcut.DisplayOrder + 1 : 0;
                 
-
-
                 shortcut.Url += "";
                 Company.Add(shortcut);
             }
@@ -2542,16 +2616,26 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+            }
 
             var existing = Company.GetById<Shortcut>(shortcut.ID);
 
             if (existing == null)
+            {
                 return jsonException($"The shortcut with id {shortcut.ID} could not be found.", HttpStatusCode.BadRequest);
+            }
+
             if (string.IsNullOrEmpty(shortcut.Name))
-                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);            
+            {
+                return jsonException("This shortcut requires a name", HttpStatusCode.BadRequest);
+            }
+
             if (string.IsNullOrEmpty(shortcut.Icon) && string.IsNullOrEmpty(shortcut.IconUrl) && string.IsNullOrEmpty(shortcut.IconPayload))
+            {
                 return jsonException("This shortcut is missing an icon", HttpStatusCode.BadRequest);
+            }
 
             try
             {
@@ -2620,19 +2704,31 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult DeleteShortcut(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return jsonException("You do not have permission to edit shortcuts.", HttpStatusCode.Forbidden);
+            }
 
             var existing = Company.GetById<Shortcut>(id);
 
             if (existing == null)
+            {
                 return jsonException($"The shortcut with the id {id} could not be found.", HttpStatusCode.BadRequest);
+            }
 
             try
             {
                 if (!string.IsNullOrEmpty(existing.IconUrl))
-                {
-                    //delete the file
-                    Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
+                {                    
+                    try
+                    {
+                        Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, new Uri(existing.FullURL).Segments.Last());
+                    }
+                    catch
+                    {
+                        //surpress the exception if we cant delete the custom file 
+                        // it is most likely already deleted we should not prevent 
+                        // removing of the shortcut from govern in this case see GOV-13572
+                    }
                 }
 
                 Company.Delete(existing);
@@ -2655,7 +2751,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 var shortcut = Company.GetById<Shortcut>(id);
                 if (shortcut == null)
+                {
                     throw new Exception($"Shortcut Id ${id} not found");
+                }
+
                 direction = moveUp ? "up" : "down";
                 Shortcut adjacentShortcut = null;
                 if (moveUp)
