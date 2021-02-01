@@ -64,4 +64,4 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     private doExport(option: AssetTypeExportTemplate) {
         this.customExportClick.emit(option);
     }
-};
+}

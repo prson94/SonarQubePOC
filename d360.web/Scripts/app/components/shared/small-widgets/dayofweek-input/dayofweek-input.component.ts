@@ -72,10 +72,11 @@ export class DayOfWeekInputComponent implements ControlValueAccessor {
 
     constructor(
     ) {
-        let offset = 0
+        let offset = 0;
         try {
             offset = getLocaleFirstDayOfWeek(navigator.language);
         } catch (e) {
+            offset = 0;
         }
         this.week = [].constructor(7).fill().map((x, i) => (offset + i) % 7);
         this.days = [].constructor(7).fill(false);
@@ -121,7 +122,7 @@ export class DayOfWeekInputComponent implements ControlValueAccessor {
     setDisabledState(isDisabled: boolean): void {
         this.disabled = isDisabled;
     }
-};
+}
 
 @NgModule({
     imports: [

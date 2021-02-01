@@ -157,4 +157,4 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
         this.clearSidebar();
     }
-};
+}

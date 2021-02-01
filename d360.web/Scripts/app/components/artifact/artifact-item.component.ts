@@ -101,4 +101,4 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         this.isLoading = true;
         this.load(e.ID, this.artifactTypeId);
     }
-};
+}

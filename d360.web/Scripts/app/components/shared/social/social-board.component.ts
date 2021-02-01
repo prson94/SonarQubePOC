@@ -198,4 +198,4 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             });
     }
     
-};
+}

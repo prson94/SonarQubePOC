@@ -162,6 +162,14 @@ namespace d360.core.entities.Membership
         public string apikey { get; set; }
         public string apiSecret { get; set; }
     }
+
+    public class UpdateUserWatchModel
+    {
+        public Guid? assetUid { get; set; }
+        public Guid? assetTypeUid { get; set; }
+        public bool watches { get; set; }
+    }
+
     public class AssetTypeWatchCountModel
     {
         public Guid assetTypeUid { get; set; }

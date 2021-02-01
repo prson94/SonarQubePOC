@@ -91,7 +91,7 @@ export class DynamicFieldValueComponentV2 extends BaseComponent implements OnIni
                     this.colorText = parsedJSON.Name;
                 }
             } else {
-                this.hasColor = false;;
+                this.hasColor = false;
                 this.colorText = 'None';
             }
         }

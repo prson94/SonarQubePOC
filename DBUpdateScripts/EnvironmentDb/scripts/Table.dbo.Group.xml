@@ -80,7 +80,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Group-Group_AfterInsert-v1">
+  <changeSet author="TKlok" id="Table.dbo.Group-Group_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -95,6 +95,13 @@ BEGIN
 	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
 		SELECT	T.ID, 1, O.ID, 'Group', O.ID, O.UpdatedOn, coalesce(O.UpdatedBy, 0), O.UpdatedOn, coalesce(O.UpdatedBy, 0)
 		FROM	inserted O inner join  AssetType T on T.Object = 'GroupType' and T.ObjectID = 1;
+		
+	INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+	SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], A.UpdatedOn
+	FROM	inserted O
+	INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = O.ID
+	INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
+	WHERE NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = A.Uid);
 END
 		]]>
     </sql>

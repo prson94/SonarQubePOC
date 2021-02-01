@@ -47,7 +47,7 @@ export class BrowserWarningComponent implements OnInit {
     get currentYear(): string {
         return new Date().getFullYear().toString();
     }
-};
+}
 
 @NgModule({
     declarations: [

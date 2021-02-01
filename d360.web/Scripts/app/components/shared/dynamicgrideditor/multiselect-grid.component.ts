@@ -131,4 +131,4 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
     registerOnTouched(fn: Function): void {
         this.onModelTouched = fn;
     }
-};
+}

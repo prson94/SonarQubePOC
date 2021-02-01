@@ -174,4 +174,4 @@ export class AdminSurveysComponent extends AdminBaseComponent {
             });
     }
 
-};
+}

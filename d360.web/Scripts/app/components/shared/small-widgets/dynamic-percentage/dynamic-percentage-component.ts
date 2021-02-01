@@ -48,4 +48,4 @@ export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
     }
 
 
-};
+}

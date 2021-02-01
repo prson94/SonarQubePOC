@@ -87,7 +87,7 @@ export class FusionAttributeItemDetailsComponent extends BaseComponent implement
     public openItemInFusion() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionAttributeValueDetails.FusionID};fusionAttributeTypeId=${this.fusionAttributeValueDetails.FusionAttributeTypeID};fusionAttributeId=${this.fusionAttributeId}`);
     }
-};
+}
 
 
 
