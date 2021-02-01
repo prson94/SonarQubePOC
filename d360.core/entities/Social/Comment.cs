@@ -70,8 +70,8 @@ namespace d360.core.entities
 
     public interface IApiComment
     {
-        public string Body { get; set; }
-        public List<Guid> Tags { get; set; }
+        string Body { get; set; }
+        List<Guid> Tags { get; set; }
     }
 
     public class CommentApiPostModel: IApiComment

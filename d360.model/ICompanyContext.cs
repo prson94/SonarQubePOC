@@ -161,7 +161,6 @@ namespace d360.model
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
 
         new bool Add<T>(T item) where T : BaseObject;
-        IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations);
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
         IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);        
         void AddOrUpdateFields(List<Field> items);
@@ -180,7 +179,6 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);

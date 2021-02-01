@@ -64,7 +64,10 @@ namespace d360.model.DataAccessLayer
 
             return executionInfo;
         }
-
+        public Asset GetAssetByObjectId(string obj, int objId)
+        {
+            return CompanyContext.Filter<Asset>(i => i.Object == obj && i.ObjectID == objId).SingleOrDefault();
+        }
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();

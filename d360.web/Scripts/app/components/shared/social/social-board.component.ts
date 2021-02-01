@@ -27,8 +27,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
-    @Input() objectID: number = 0;
-    @Input() objectType: string;
+    @Input() assetUid: string;
     @Input() hasCloseButton: boolean = false;
     @Input() hasNewInput: boolean = true;
     @Input() daysToLookBack: number = -1;
@@ -72,7 +71,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     loadComments() {
         this.isLoading = true;
-        this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
+        this.socialService.getComments(this.assetUid, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
             .subscribe(res => {
                 this.isLoading = false;
                 this.comments = this.comments.concat(res);
