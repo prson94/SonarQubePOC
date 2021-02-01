@@ -992,7 +992,8 @@ order by	case
 
                     foreach (var action in model.StructuredDefinition.When)
                     {
-                        if (!allowedFieldTypeIds.Contains(action.FieldTypeID))
+                        // if a field check type AND its a field type not on this asset type dont allow it
+                        if (action.CheckType == "F"  && !allowedFieldTypeIds.Contains(action.FieldTypeID))
                         {
                             throw new GenericException(HttpStatusCode.BadRequest, "ResponsibilityType", FormInfo.Responsibility_Then_InvalidFieldType);
                         }
