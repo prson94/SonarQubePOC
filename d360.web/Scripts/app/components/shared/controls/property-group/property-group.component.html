@@ -4,7 +4,7 @@
             <span class="fa fa-chevron-circle-right" [ngClass]="{'down': expanded}"></span>
             <div class="pg-title noselect" pTooltip="{{title}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" [ngClass]="{'close': !expanded}">{{title}}</div>
             <div class="info-tip" *ngIf="showMoreInfo">
-                <i class="fa fa-question-circle" pTooltip="{{moreInfoHtml}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" pTooltip="{{moreInfoHtml}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
             </div>
         </div>
         <div class="badge-containers">
