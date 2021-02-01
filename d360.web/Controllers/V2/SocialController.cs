@@ -78,6 +78,25 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of ResponsibilityBreakdown.", typeof(List<dynamic>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
+        public async Task<HttpResponseMessage> ResponsibilityBreakdownByResource(int id, Guid responsibilityTypeUID)
+        {
+            //Use responsibilityTypeID in the query for efficieny - the Type is primary key and ResponsibilityDetail a union view
+            int? responsibilityTypeID = null;
+            if (responsibilityTypeUID != Guid.Empty)
+            {
+                responsibilityTypeID = Company.ResponsibilityTypes.Where(t => t.UID == responsibilityTypeUID).Select(t => t.ID).FirstOrDefault();
+            }
+            return await ResponsibilityBreakdownByResource(id, responsibilityTypeID);
+        }
+
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("ResponsibilityBreakdownByResource"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of ResponsibilityBreakdown.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
         public async Task<HttpResponseMessage> ResponsibilityBreakdownByResource(int id, int? responsibilityTypeID = null)
         {
 

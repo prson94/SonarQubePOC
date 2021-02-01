@@ -29,14 +29,14 @@ import * as Highcharts from 'highcharts';
                     </div>
                 </div>
             </div>
-            <div class="col l6 m12 s12" *ngIf="selectedResponsibilityId">
+            <div class="col l6 m12 s12" *ngIf="selectedResponsibilityUid">
                 <div class="tile tile-detail">  
-                    <d3s-community-responsibility-count [responsibilityTypeName]="selectedResponsibilityName" [responsibilityTypeId]="selectedResponsibilityId" [(selected)]="selectedResource"></d3s-community-responsibility-count>                    
+                    <d3s-community-responsibility-count [responsibilityTypeName]="selectedResponsibilityName" [responsibilityTypeUid]="selectedResponsibilityUid" [(selected)]="selectedResource"></d3s-community-responsibility-count>                    
                 </div>
             </div>
             <div class="col s12" *ngIf="selectedResource">
                 <div class="tile tile-detail">   
-                   <d3s-resource-responsibility-tile [responsibilityTypeId]="selectedResponsibilityId" [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
+                   <d3s-resource-responsibility-tile [responsibilityTypeUid]="selectedResponsibilityUid" [resourceId]="selectedResource.ResourceID"></d3s-resource-responsibility-tile>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@ import * as Highcharts from 'highcharts';
 
 export class CommunityComponent extends BaseComponent implements OnInit {
     responsibilitiesPie: Object;
-    selectedResponsibilityId: number = 0;
+    selectedResponsibilityUid: string = '';
     selectedResponsibilityName: string;
     selectedResource: ResourceResponsibilityTypeCount;
 
@@ -125,7 +125,8 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         data: result.map(x => ({
                             name: x.ResponsibilityType,
                             y: x.Count,
-                            id: x.ResponsibilityTypeID
+                            id: x.ResponsibilityTypeID,
+                            uid: x.ResponsibilityTypeUID
                         })),
                         events: {
                             click: function (e) { this.onPieClick(e) }.bind(this)
@@ -140,8 +141,9 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     }
 
     onPieClick(e) {
+        console.log('pieClick', e);
         this.selectedResource = null;
         this.selectedResponsibilityName = e.point.name; //name
-        this.selectedResponsibilityId = e.point.id; // triggers user responsibilities piece to load.    
+        this.selectedResponsibilityUid = e.point.uid; // triggers user responsibilities piece to load.    
     }
 }

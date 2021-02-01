@@ -44,7 +44,7 @@ import { StringConstants } from '../../static/string-constants';
 })
 
 export class CommunityResponsibilityCountComponent extends BaseComponent implements OnChanges {
-    @Input() responsibilityTypeId: number;
+    @Input() responsibilityTypeUid: string;
     @Input() responsibilityTypeName: string;
     @Input() selected: ResourceResponsibilityTypeCount;
 
@@ -59,7 +59,7 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['responsibilityTypeId'] && this.responsibilityTypeId > 0)
+        if (changes['responsibilityTypeUid'] && '' + this.responsibilityTypeUid != '')
             this.load();
     }
 
@@ -69,7 +69,7 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
 
     load() {
         this.isLoading = true;
-        this.responsibilityTypeService.getResourceResponsibilityByType(this.responsibilityTypeId).
+        this.responsibilityTypeService.getResourceResponsibilityByType(this.responsibilityTypeUid).
             subscribe(result => {
                 this.users = result;
                 this.isLoading = false;

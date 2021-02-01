@@ -41,7 +41,7 @@ declare var CurrentResourceID;
 })
 
 export class ResourceResponsibilityComponent implements OnChanges {
-    @Input() responsibilityTypeId: number = 0;
+    @Input() responsibilityTypeUid: string = '';
     @Input() resourceId: any = 0;
     @Input() resource: any = null;
     private itemsres: any[] = [];
@@ -74,7 +74,7 @@ export class ResourceResponsibilityComponent implements OnChanges {
 
         this.isMe = (this.resourceId == CurrentResourceID);
 
-        this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeId)
+        this.resourcesService.getResponsibilityBreakdownByResource(this.resourceId, this.responsibilityTypeUid)
             .subscribe(r => {
                 this.items = r;
                 if (this.items && this.items.length > 0)
@@ -95,6 +95,6 @@ export class ResourceResponsibilityComponent implements OnChanges {
     }
 
     export() {
-        this.resourcesService.exportResponsibilitiesByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID, this.responsibilityTypeId);
+        this.resourcesService.exportResponsibilitiesByResourceByType(this.resourceId, this.selected.Type, this.selected.TypeID, this.responsibilityTypeUid);
     }
 }

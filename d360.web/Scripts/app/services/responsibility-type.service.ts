@@ -106,8 +106,8 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getResourceResponsibilityByType(responsibilityTypeId: number): Observable<ResourceResponsibilityTypeCount[]> {
-        return this.http.get(`queries/${responsibilityTypeId}/ResourcesByResponsibilityType`)
+    getResourceResponsibilityByType(responsibilityTypeUid: string): Observable<ResourceResponsibilityTypeCount[]> {
+        return this.http.get(`queries/${responsibilityTypeUid}/ResourcesByResponsibilityType`)
             .pipe(
                 map(response => <ResourceResponsibilityTypeCount[]>response),
                 catchError(err => this.handleError(err))
