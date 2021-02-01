@@ -38,4 +38,4 @@ export class AssetsComponent implements OnInit, OnDestroy {
             this.sub.unsubscribe();
         }
     }
-};
+}

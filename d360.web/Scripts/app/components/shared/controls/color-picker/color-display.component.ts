@@ -53,4 +53,4 @@ export class ColorDisplayComponent implements OnInit {
                 return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
         }
     }
-};
+}

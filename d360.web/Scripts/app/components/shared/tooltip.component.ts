@@ -21,4 +21,4 @@ export class TooltipComponent  {
     @HostBinding('style.background') @Input() foreColor: string;
 
     @Output() click = new EventEmitter();        
-};
+}

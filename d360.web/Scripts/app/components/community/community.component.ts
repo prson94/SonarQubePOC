@@ -144,4 +144,4 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.selectedResponsibilityName = e.point.name; //name
         this.selectedResponsibilityId = e.point.id; // triggers user responsibilities piece to load.    
     }
-};
+}

@@ -105,4 +105,4 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.routeParamsSubscription.unsubscribe();
         }
     }
-};
+}

@@ -138,4 +138,4 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
             });
     }
 
-};
+}

@@ -122,4 +122,4 @@ export class FusionAttributeSummaryFiltersComponent extends BaseComponent implem
         else
             filter.columnType = "";        
     }    
-};
+}

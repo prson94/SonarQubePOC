@@ -72,4 +72,4 @@ export class FusionQueryAttributeEditorComponent extends BaseComponent {
         //save the item back to the save or edit url        
         this.saveClick.emit({ query: this.editedQuery, action: this.query ? "new" : "edit" });
     }    
-};
+}

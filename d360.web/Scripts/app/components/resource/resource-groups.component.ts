@@ -87,4 +87,4 @@ export class ResourceGroupsComponent extends BaseComponent implements OnInit{
             });
        
     }
-};
+}

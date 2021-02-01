@@ -124,4 +124,4 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
 
         localStorage.setItem("NavigationMenu", JSON.stringify(nav));
     }
-};
+}

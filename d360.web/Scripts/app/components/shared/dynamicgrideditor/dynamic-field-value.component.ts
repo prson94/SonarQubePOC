@@ -92,7 +92,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
                     this.colorText = parsedJSON.Name;
                 }
             } else {
-                this.hasColor = false;;
+                this.hasColor = false;
                 this.colorText = 'None';
             }
         }

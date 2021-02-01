@@ -273,4 +273,4 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     private export() {
         this.connectorLabelService.exportLabelUsage(this.label.uid, `Connector Labels`, this.sort, this.filters)
     }
-};
+}

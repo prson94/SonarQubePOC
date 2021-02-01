@@ -146,4 +146,4 @@ export class AdminSurveyQuestionEditorEditor {
         }
         return null;
     }
-};
+}

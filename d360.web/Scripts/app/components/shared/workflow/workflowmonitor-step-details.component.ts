@@ -60,7 +60,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['itemStepId'] != null && (changes['itemStepId'].isFirstChange || (changes['itemStepId'].currentValue != changes['itemStepId'].previousValue))) {
-            this.load().subscribe();;
+            this.load().subscribe();
         }
     }
 

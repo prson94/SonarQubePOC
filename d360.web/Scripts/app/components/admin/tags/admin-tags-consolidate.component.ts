@@ -44,4 +44,4 @@ export class AdminTagsConsolidateComponent implements OnChanges {
         this.selected = tag;
     }
 
-};
+}
