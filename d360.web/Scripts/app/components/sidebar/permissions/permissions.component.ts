@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -21,7 +21,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
     providers: [ObjectDetailService]
 })
 
-export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     assetTypeId: number;    
     title: string;
@@ -44,14 +44,6 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
    
         });
         this.checkSecondaryNavLocalStorage();
-    }
-     
-    ngAfterViewInit(): void {
-        window.setTimeout(() => {
-            if (!this.authenticationService.isAdmin) {            
-                this.router.navigateByUrl('/home');
-            }
-        }, 200);
     }
 
     ngOnDestroy() {
