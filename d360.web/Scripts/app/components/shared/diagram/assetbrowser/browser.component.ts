@@ -1076,12 +1076,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             g.findLinksOutOf().each(l => {
                 if (hiddenIds.findIndex(id => { return l.data.predicateId == id; }) == -1) {
-                    if (l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "p" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "p" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
                 else {
-                    if (l.toNode.data.isGroup) {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup) {
                         this.helper_HideAndDisableSingleGroup(l.toNode as go.Group, "p");
                     }
                 }
@@ -1107,12 +1107,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             g.findLinksOutOf().each(l => {
                 if (hiddenIds.findIndex(id => { return l.data.responsibilityTypeId == id; }) == -1) {
-                    if (l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "r" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup && (l.toNode.data.filterHiddenBy == "r" || !l.toNode.data.filterHiddenBy) && l.toNode.data.template !== "HiddenNode") {
                         this.helper_ShowAndEnableSingleGroup(l.toNode as go.Group);
                     }
                 }
                 else {
-                    if (l.toNode.data.isGroup) {
+                    if (l.toNode && l.toNode.data && l.toNode.data.isGroup) {
                         this.helper_HideAndDisableSingleGroup(l.toNode as go.Group, "r");
                     }
                 }
