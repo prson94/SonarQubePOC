@@ -48,6 +48,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private usedIn: any[] = [];
     private deletingField;
     private selectedIndex: number = 0;
+    private selectedRow: any = null;
 
     private usedFields: any[] = [];
     private showHelp = false;
@@ -274,6 +275,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.step.fields.form.field[this.selectedIndex + offset] = item;
 
         this.selectedIndex += offset;
+        this.select(this.selectedIndex);
     }
 
     moveTop() {
@@ -283,18 +285,15 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
         this.step.fields.form.field.unshift(first);
         this.step.fields.form.field.unshift(item);
 
-        this.selectedIndex = 0;
+        this.select(0);
     }
 
     moveBottom() {
         let lastIndex = this.step.fields.form.field.length - 1;
-        let last = this.step.fields.form.field.splice(lastIndex, 1)[0];
-        let item = this.step.fields.form.field.splice(this.selectedIndex - 1, 1)[0];
+        let item = this.step.fields.form.field.splice(this.selectedIndex, 1)[0];
 
-        this.step.fields.form.field.unshift(last);
-        this.step.fields.form.field.unshift(item);
-
-        this.selectedIndex = lastIndex;
+        this.step.fields.form.field.push(item);
+        this.select(lastIndex);
     }
 
     confirmDelete() {
@@ -553,5 +552,6 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     select(index: number) {
         this.selectedIndex = index;
+        this.selectedRow = this.step.fields.form.field[index];
     }
 }
