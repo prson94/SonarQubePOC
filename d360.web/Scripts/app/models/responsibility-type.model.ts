@@ -158,7 +158,7 @@ export class ResponsibilityTypeRelationRuleFormData {
     IntersectTypes: SelectItem[] = [];
 }
 export class ResponsibilityTypeRelationRuleFormDataFieldType {
-    value: string;
+    value: number;
     label: string;
     type: string;
     isLookup: boolean;
