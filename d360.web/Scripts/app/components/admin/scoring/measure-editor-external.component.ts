@@ -151,4 +151,4 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
         }
         this.cdRef.markForCheck();
     }
-};
+}

@@ -110,4 +110,4 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     public focus(evt) {
         this.dropdown.focus();
     }
-};
+}

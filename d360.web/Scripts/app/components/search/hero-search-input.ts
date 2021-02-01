@@ -57,4 +57,4 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
             label.textContent = 'Search ' + this.searchTypes.length + ' Categories';
         }
     }
-};
+}

@@ -202,4 +202,4 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
     }
-};
+}

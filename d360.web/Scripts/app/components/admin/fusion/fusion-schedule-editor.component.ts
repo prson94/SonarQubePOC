@@ -68,4 +68,4 @@ export class FusionScheduleEditorComponent extends BaseComponent implements OnIn
         //save the item back to the save or edit url        
         this.saveClick.emit({ schedule: this.editedSchedule, action: this.action == "New" ? "new" : "edit" });
     }    
-};
+}

@@ -150,7 +150,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
         var d = forkJoin(this.assetStyleService.getAssetTypeObjectStyle(objectType, objectID), this.getFolderIcon(menuID)).pipe(
             map(([first, second]) => {
-                let icon = "fa-folder";;
+                let icon = "fa-folder";
                 if (first && first.Icon) {
                     icon = first.Icon;
                 } else {

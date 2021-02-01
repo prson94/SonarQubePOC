@@ -61,7 +61,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
             return `0% - ${this.lowerThreshold}%`;
         if (score <= this.upperThreshold)
             return `${this.lowerThreshold}.% - ${this.upperThreshold}%`;
-        return `${this.upperThreshold}.% - 100%`;;
+        return `${this.upperThreshold}.% - 100%`;
     }
 
 
@@ -120,4 +120,4 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
         return null;
     }
 
-};
+}

@@ -17,7 +17,7 @@ export class ReferenceService extends BaseObservableService {
             .pipe(
              map(response => <boolean>response),
             catchError(err => this.handleError(err)));
-    };
+    }
 
     saveReferenceItemType(item: ReferenceItemType) {
         if (item.ID == undefined || !item.ID) {

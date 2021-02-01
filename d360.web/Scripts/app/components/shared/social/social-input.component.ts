@@ -87,4 +87,4 @@ export class SocialInputComponent extends BaseComponent {
         this.comment = "";
         this.isEditing = true;
     }
-};
+}

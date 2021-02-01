@@ -192,4 +192,4 @@ export class ChipsFilterComponent {
                 this.searchInputElement.last.nativeElement.focus();
         }, 150);
     }
-};
+}

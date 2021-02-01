@@ -211,4 +211,4 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private OnDelete() {
         this.selectedItemChange(() => this.showDelete = true);
     }
-};
+}

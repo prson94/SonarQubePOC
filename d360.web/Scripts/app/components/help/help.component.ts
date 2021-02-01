@@ -85,4 +85,4 @@ export class HelpComponent extends BaseComponent implements OnInit {
     isFile(hr: HelpResource) {
         return (hr.Type == 2);
     }
-};
+}

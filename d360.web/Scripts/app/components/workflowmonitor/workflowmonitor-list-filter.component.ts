@@ -148,4 +148,4 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
         this.filterChange.emit();
   }
  
-};
+}

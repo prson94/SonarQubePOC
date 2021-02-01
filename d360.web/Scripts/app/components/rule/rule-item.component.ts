@@ -95,4 +95,4 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     editRule(e: any) {
         this.load(e.ID);
     }
-};
+}
