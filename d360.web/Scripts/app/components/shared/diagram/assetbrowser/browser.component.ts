@@ -1986,6 +1986,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private template_AncestorNode(): go.Group {
+        var self = this;
         return this.g(
             go.Group,
             "Auto",
@@ -2016,52 +2017,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",  // title above Placeholder
-                {
-                    name: 'header-panel'
-                },
                 new go.Binding("minSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
-                    var topLevel = obj.part.findTopLevelPart();
-                    var dia = obj.diagram;
-                    var key = target.part.data['key'].toString();
-                    var size = new go.Size(NaN, NaN);
-
-                    var data = obj.diagram.nodes.filter(x =>
-                        x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
-                    );
-                    var maxCharCount = 0;
-                    data.each(d => {
-                        if (d.data['text'].length > maxCharCount)
-                            maxCharCount = d.data['text'].length;
-                    });
-
-
-                    if (topLevel['__gohashid'] == obj.part['__gohashid'] || isNaN(topLevel.getDocumentBounds().x)) {
-                        return;
-                    }
-
-                    if (!dia['objectsWidthMap']) {
-                        dia['objectsWidthMap'] = {};
-                    }
-
-                    //set max top width depending on max character count withing hierarchy
-                    var topWidth = 70 + maxCharCount * 6;
-
-                    var levelPadding = target.actualBounds.x * 2;
-                    var parentWidth = topWidth - levelPadding;
-
-                    if (parentWidth > 0 && parentWidth != NaN) {
-
-                        if (parentWidth > 255)
-                            parentWidth = 255;
-                        dia['objectsWidthMap'][key] = { width: parentWidth };
-                    }
-
-                    if (dia['objectsWidthMap'][key]) {
-                        size.width = dia['objectsWidthMap'][key]['width'];
-                        target.minSize = size;
-                    }
-
-                    return;
+                    var part = target.part;
+                    return new go.Size(self.calculateNodeWidth(part), NaN);
                 }).ofObject(),
                 this.g(
                     go.Panel,
@@ -2100,15 +2058,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         go.TextBlock,
                         {
+                            row: 1,
+                            column: 3,
                             editable: false,
                             font: this.fontLabel,
                             stroke: this.fontLabelColor,
                             visible: false,
                             maxLines: this.textMaxLines,
                             overflow: this.textOverflowStyle,
-                            margin: new go.Margin(0, -4, 0, 0),
-                            row: 1,
-                            column: 3,
+                            margin: new go.Margin(5, 0, 5, 5),
                         },
                         new go.Binding("text", "highlight").makeTwoWay(),
                         new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -2117,20 +2075,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.g(
                         go.TextBlock,
                         {
+                            row: 1,
+                            column: 4,
                             editable: false,
-                            margin: 5,
+                            margin: new go.Margin(5, 5, 5, 0),
                             font: this.fontLabel,
                             maxLines: this.textMaxLines,
                             maxSize: this.textMaxSize,
                             overflow: this.textOverflowStyle,
                             toolTip: this.template_Tooltip(),
-                            row: 1,
-                            column: 4,
                             stretch: go.GraphObject.Horizontal
                         },
                         new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                        new go.Binding("text", "text").makeTwoWay()
-                    ),
+                        new go.Binding("text", "text").makeTwoWay(),
+                        new go.Binding("margin", "", (obj: go.GraphObject) => {
+                            return obj.part.data["highlight_visible"] ? new go.Margin(5, 5, 5, 0) : 5;
+                        }).ofObject()
+                    ),// end of Title containing Panel (higlighted + normal text)
                     this.template_nodeCount()
                 ),  // end Horizontal Panel
                 this.g(
@@ -2220,11 +2181,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                     }
                 },
-                new go.Binding("visible", "", function (obj) {
-                    if (obj.part.data.template && obj.part.data.template == 'Owner')
-                        return false;
-                    return obj.part.data.assetUid !== this.emptyUid && obj.part.data.hasAssetReadAccess;
-                }).ofObject()
+                new go.Binding("visible", "", (o) => (
+                    !(o.part.data.template && o.part.data.template == 'Owner') &&
+                    (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)
+                )).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
@@ -2896,7 +2856,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
                     }
-                    else if (longestPredicate.length > "Relationships".length) {
+                    else if (arr.length > 0 && longestPredicate.length < "Relationships".length) {
                         longestPredicate = "Relationships";
                     }
                 }
@@ -2909,7 +2869,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
                     }
-                    else if (longestPredicate.length > "Responsibilities".length) {
+                    else if (arr.length > 0 && longestPredicate.length < "Responsibilities".length) {
                         longestPredicate = "Responsibilities";
                     }
                 }
@@ -2941,6 +2901,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private template_NodeContent(): go.Panel {
+        var self = this;
         return this.g(go.Panel, "Auto",
             {
                 name: "node-content"
@@ -2957,9 +2918,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
             ),
             this.g(go.Panel, "Vertical",
-                {
-                    name: 'header-panel'
-                },
+                new go.Binding("minSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                    var part = target.part;
+                    return new go.Size(self.calculateNodeWidth(part), NaN);
+                }).ofObject(),
+                // title above Placeholder
                 this.g(
                     go.Panel,
                     "Table",
@@ -2993,46 +2956,42 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("visible", "showIcon")
                     ),
                     //This TextBlock is placeholder for highlighted text
-                    this.g(go.Panel, "Horizontal", {
-                        row: 1,
-                        column: 3
-                    },
-                        new go.Binding("minSize", "", (obj: go.GraphObject) => {
-                            return new go.Size(this.calculateBadgeTextWidthForGroupNode(+obj.part.data["predicateWidth"]), NaN);
-                        }).ofObject(),
-                        this.g(
-                            go.TextBlock,
-                            {
-                                editable: false,
-                                font: this.fontLabel,
-                                stroke: this.fontLabelColor,
-                                visible: false,
-                                maxLines: this.textMaxLines,
-                                overflow: this.textOverflowStyle,
-                                margin: new go.Margin(5, 0, 5, 5),
-                            },
-                            new go.Binding("text", "highlight").makeTwoWay(),
-                            new go.Binding("visible", "highlight_visible").makeTwoWay(),
-                            new go.Binding("background", "highlight_background").makeTwoWay()
-                        ),
-                        this.g(
-                            go.TextBlock,
-                            {
-                                editable: false,
-                                margin: new go.Margin(5, 5, 5, 0),
-                                font: this.fontLabel,
-                                maxLines: this.textMaxLines,
-                                maxSize: this.textMaxSize,
-                                overflow: this.textOverflowStyle,
-                                toolTip: this.template_Tooltip(),
-                                stretch: go.GraphObject.Horizontal
-                            },
-                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
-                            new go.Binding("text", "text").makeTwoWay(),
-                            new go.Binding("margin", "", (obj: go.GraphObject) => {
-                                return obj.part.data["highlight_visible"] ? new go.Margin(5, 5, 5, 0) : 5;
-                            }).ofObject()
-                        )
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 1,
+                            column: 3,
+                            editable: false,
+                            font: this.fontLabel,
+                            stroke: this.fontLabelColor,
+                            visible: false,
+                            maxLines: this.textMaxLines,
+                            overflow: this.textOverflowStyle,
+                            margin: new go.Margin(5, 0, 5, 5),
+                        },
+                        new go.Binding("text", "highlight").makeTwoWay(),
+                        new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                        new go.Binding("background", "highlight_background").makeTwoWay()
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 1,
+                            column: 4,
+                            editable: false,
+                            margin: new go.Margin(5, 5, 5, 0),
+                            font: this.fontLabel,
+                            maxLines: this.textMaxLines,
+                            maxSize: this.textMaxSize,
+                            overflow: this.textOverflowStyle,
+                            toolTip: this.template_Tooltip(),
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                        new go.Binding("text", "text").makeTwoWay(),
+                        new go.Binding("margin", "", (obj: go.GraphObject) => {
+                            return obj.part.data["highlight_visible"] ? new go.Margin(5, 5, 5, 0) : 5;
+                        }).ofObject()
                     )// end of Title containing Panel (higlighted + normal text)
                     ,
                     this.template_nodeCount()
@@ -3052,6 +3011,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             ) //end Vertical Panel,
         ); //end Auto Panel (main group Panel)
     }
+
 
     private template_Tooltip(): go.Adornment {
         return this.g("ToolTip",
@@ -3618,6 +3578,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private calculateBadgeTextWidthForGroupNode(width: number): number {
         return width - 60;
     }
+
     private formatBadgeNumber(countValue: number): string {
         if (isNaN(countValue)) {
             return "---";
@@ -3637,4 +3598,40 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         return countValue.toString();
     }
+    private calculateNodeWidth(part: go.Part) {
+        var maxWidth: number = 0;
+        try {
+            if (part.data["predicateWidth"]) {
+                var predicateWidth = +part.part.data["predicateWidth"];
+                var width = this.calculateBadgeTextWidth(predicateWidth) + 66;
+                if (!isNaN(width)) {
+                    maxWidth = width;
+                }
+            }
+
+            var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']
+            );
+            var maxCharCount = 0;
+            data.each(d => {
+                if (d.data['text'].length > maxCharCount)
+                    maxCharCount = d.data['text'].length;
+            });
+
+            //set max top width depending on max character count withing hierarchy
+            var nodeWidth = 70 + maxCharCount * 6;
+            if (!isNaN(nodeWidth) && nodeWidth > maxWidth) {
+                maxWidth = nodeWidth;
+            }
+
+            if (maxWidth > 260)
+                maxWidth = 260;
+            console.log("Calculated width:", maxWidth);
+        }
+        catch (ex) {
+            console.log(maxWidth);
+            maxWidth = 260;
+        }
+        return maxWidth;
+    }
+
 }
