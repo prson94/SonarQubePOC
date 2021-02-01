@@ -268,20 +268,22 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Exported relationships to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
             Guid guid = Guid.Parse(intersectTypeUid);
             
-            int id = -1;
-
             var intersectType = RelationshipRepository.GetIntersectTypeByUid(guid);
-            if (intersectType != null)
+
+            if (intersectType == null)
             {
-                id = intersectType.ID;
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid Intersect Type Uid provided {intersectTypeUid}.");
             }
-            
+
+            int id = intersectType.ID;
+
             var customColumns = FieldsRepository.GetCustomFields(SystemObjects.IntersectType, id);
             IEnumerable<dynamic> models;
 
