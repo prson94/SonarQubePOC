@@ -75,4 +75,4 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
                 this.isLoading = false;
             });
     }
-};
+}

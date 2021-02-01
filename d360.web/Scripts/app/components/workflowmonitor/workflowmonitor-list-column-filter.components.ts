@@ -192,5 +192,5 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
     }
-};
+}
 

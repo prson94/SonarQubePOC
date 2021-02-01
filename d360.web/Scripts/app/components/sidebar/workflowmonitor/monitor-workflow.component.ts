@@ -67,4 +67,4 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
             this.sub.unsubscribe();
         }
     }
-};
+}

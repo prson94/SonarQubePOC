@@ -10,12 +10,13 @@ import { RuleDetail, RuleType } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
 import { Subscription } from 'rxjs';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-rule-item',
-    providers: [RulesService, PermissionsService],
+    providers: [RulesService, PermissionsService, WebAnalyticsService],
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
@@ -44,9 +45,12 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService
+        protected permissionsService: PermissionsService,
+        webAnalyticsService: WebAnalyticsService
     ) {
         super();
+
+        this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerBreadcrumbService;
     }
@@ -56,7 +60,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
-
+            this.logAction("open", "Rule", ruleId);
             this.load(ruleId);
         });
 
@@ -91,4 +95,4 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     editRule(e: any) {
         this.load(e.ID);
     }
-};
+}

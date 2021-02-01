@@ -1,5 +1,7 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.entities.Membership;
+using d360.core.entities.Views;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
@@ -1434,6 +1436,104 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+        }
+
+        /// <summary>
+        /// Updates the watch status of an Asset/Asset Type for the requesting user.
+        /// </summary>
+        /// <param name="model">Request model containing the Asset/Asset Type to be watched/unwatched</param>
+        [
+            HttpPut,
+            Route("users/me/watches"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),            
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid request model parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> UpdateWatches(UpdateUserWatchModel model)
+        {
+            int id = -1;
+            string type = "";
+            string name = "";
+            string parentName = "";
+            bool includeChildren = false;            
+
+            if (model.assetTypeUid == null && model.assetUid == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Either assetTypeUid or assetUid must be provided"));
+            }
+
+            if (model.assetTypeUid != null && model.assetUid != null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Only one of assetTypeUid or assetUid should be provided"));
+            }
+
+            if (model.assetTypeUid != null)
+            {
+                if((model.assetTypeUid.Value == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == model.assetTypeUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided"));
+                }
+                else
+                {
+                    var assetType = assetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                    id = assetType.ObjectID;
+                    type = assetType.Object;
+                    name = assetType.Name;
+                    includeChildren = true;
+                }                
+            }
+           
+            if (model.assetUid != null)
+            {
+                
+                if((model.assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == model.assetUid.Value))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided"));
+                }
+                else
+                {
+                    var asset = Company.Filter<AssetDetail>(x => x.uid == model.assetUid.Value).FirstOrDefault();
+                    id = asset.ObjectID;
+                    type = asset.Object;
+                    name = asset.DisplayValue;
+                    parentName = asset.TypeName;
+                }               
+            }
+
+            var followDetail = Company.Filter<FollowDetail>(i => i.ObjectID == id && i.ObjectType == type && i.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+
+            if(model.watches && followDetail != null)
+            {
+
+                if (followDetail.HardFollow)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are already watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'")));
+                }
+                else
+                {
+                    if (followDetail != null && !followDetail.HardFollow)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching '{name}' via it's parent, '{parentName}'."));
+                    }
+                }                
+            }
+
+            if(!model.watches)
+            {
+                if(followDetail == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", string.Format("You are not currently watching {0}.", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'")));
+                }
+                if(followDetail != null && !followDetail.HardFollow)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You are currently watching this item's parent, '{parentName}'.  You can not unwatch this item individually."));
+                }
+            }
+
+            bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);            
+
+            return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
         }
     }
 }

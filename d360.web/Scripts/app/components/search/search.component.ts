@@ -108,4 +108,4 @@ export class SearchComponent extends BaseComponent implements OnInit, AfterViewI
         this.searchStateService.search(this.searchText, resetPage);
     }
 
-};
+}

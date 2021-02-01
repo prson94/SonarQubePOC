@@ -305,12 +305,12 @@
 
 <ng-template #weightTooltip>
     <div class="info-tip">
-        <i class="fa fa-question-circle" pTooltip="{{weightTootlip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+        <i class="fa fa-question-circle" pTooltip="{{weightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>
 
 <ng-template #groupTooltip>
     <div class="info-tip">
-        <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+        <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>

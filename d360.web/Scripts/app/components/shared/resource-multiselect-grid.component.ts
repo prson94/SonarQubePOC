@@ -176,4 +176,4 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     registerOnTouched(fn: Function): void {
         this.onModelTouched = fn;
     }
-};
+}

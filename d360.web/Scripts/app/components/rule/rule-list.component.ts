@@ -16,10 +16,11 @@ import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { AssetGridObject } from '../assets-grid/asset-grid.model';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 @Component({
     selector: 'd3s-rule-list',
-    providers: [GridDefinitionService, RulesService, PermissionsService],
+    providers: [GridDefinitionService, RulesService, PermissionsService, WebAnalyticsService],
     templateUrl: './rule-list.component.html'
 })
 
@@ -41,9 +42,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        secondaryNavService: SecondaryNavService
+        secondaryNavService: SecondaryNavService,
+        webAnalyticsService: WebAnalyticsService,
     ) {
         super();
+        this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
     }
 
@@ -51,6 +54,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.routeParamsSubscription = this.route.params.subscribe(params => {
 
             this.ruleTypeId = +params['ruleTypeId'];
+            this.logAction("open", "RuleType", this.ruleTypeId);
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('RuleType', this.ruleTypeId)
@@ -67,7 +71,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.gridObject = RuleType.AsGridObject(this.ruleType);
 
                     this.setObjectInfo('RuleType', this.ruleType.ID);
-
+                    
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
@@ -101,4 +105,4 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.routeParamsSubscription.unsubscribe();
         }
     }
-};
+}

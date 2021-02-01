@@ -19,4 +19,4 @@ export class AdminTagsActionComponent {
     onConsolidateClick() {
         this.onConsolidate.emit();
     }
-};
+}

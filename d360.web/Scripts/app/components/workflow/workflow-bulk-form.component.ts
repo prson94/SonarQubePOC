@@ -240,4 +240,4 @@ export class WorkflowBulkFormComponent extends BaseComponent implements OnInit, 
     private userFriendlyObjectName(objectType: string) {
         return D3SObjectHelpers.getObjectTypeFriendlyName(objectType);
     }
-};
+}

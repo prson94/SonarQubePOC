@@ -20,4 +20,4 @@
 export class LoadingComponent {
     @Input() isLoading: boolean;
     @Input() showTransparentLoader: boolean = false;
-};
+}

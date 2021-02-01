@@ -1,5 +1,5 @@
 ﻿import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import { catchError, map, shareReplay } from "rxjs/operators";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 
@@ -17,6 +17,10 @@ export class FollowerService extends BaseObservableService {
     ) {
         super(messagesService);
     }
+
+    //Follow Info cache
+    private _followInfoCache: Map<string, Observable<FollowInfo>> = new Map<string, Observable<FollowInfo>>();
+    private _cacheTime = () => 5 * 1000; //5 seconds
 
     getFollowers(
         type: string,
@@ -36,13 +40,22 @@ export class FollowerService extends BaseObservableService {
         type: string,
         id: number
     ): Observable<FollowInfo> {
-        return this
-            .http
-            .get(`api/followinfo/${type}/${id}`)
-            .pipe(
-                map(response => <FollowInfo>response),
-                catchError(err => this.handleError(err))
-            );
+        const cacheKey = type + '||' + id.toString();
+
+        if (!this._followInfoCache.has(cacheKey)) {
+            this._followInfoCache.set(cacheKey, this
+                .http
+                .get(`api/followinfo/${type}/${id}`)
+                .pipe(
+                    map(response => <FollowInfo>response),
+                    catchError(err => this.handleError(err)),
+                    shareReplay(1, this._cacheTime())
+                ));
+            setTimeout(() => {
+                this._followInfoCache.delete(cacheKey);
+            }, this._cacheTime())
+        }
+        return this._followInfoCache.get(cacheKey)
     }
 
     updateFollowStatus(
@@ -50,6 +63,7 @@ export class FollowerService extends BaseObservableService {
         id: number,
         includeChildren: boolean = false
     ): Observable<any> {
+        this._followInfoCache.clear();
         return this
             .http
             .post('resources/UpdateFollowStatus', {type: type, id: id, includeChildren: includeChildren})

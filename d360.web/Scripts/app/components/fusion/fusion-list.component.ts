@@ -69,4 +69,4 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         }
     }
     
-};
+}

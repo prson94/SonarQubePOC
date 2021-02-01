@@ -27,7 +27,7 @@ export class InfoTooltipComponent implements OnInit {
             }
         }
     }
-};
+}
 
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';

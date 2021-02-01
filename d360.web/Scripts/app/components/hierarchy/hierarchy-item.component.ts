@@ -13,6 +13,7 @@ import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 declare var CompanySettings;
 
@@ -22,6 +23,7 @@ declare var CompanySettings;
         ModelsService,
         PoliciesService,
         PermissionsService,
+        WebAnalyticsService,
     ],
     templateUrl: 'hierarchy-item.component.html'
 })
@@ -51,9 +53,12 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected policiesService: PoliciesService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService) {
+        protected permissionsService: PermissionsService,
+        webAnalyticsService: WebAnalyticsService
+        ) {
         super();
 
+        this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = headerBreadcrumbService;
     }
@@ -93,6 +98,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
 
+            this.logAction("open", this.object, hierarchyId);
             if (this.objectTypeId != newObjectTypeId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
                 this.objectTypeId = newObjectTypeId;
                 this.isLoading = true;

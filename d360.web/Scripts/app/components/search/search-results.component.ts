@@ -29,4 +29,4 @@ export class SearchResultsComponent extends BaseComponent {
         this.searchStateService.page(data.first, data.size);
     }
 
-};
+}

@@ -144,4 +144,4 @@ export class WorkflowNewDetailComponent extends BaseComponent implements OnInit,
 
         }
     }
-};
+}

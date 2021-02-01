@@ -145,4 +145,4 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
             this.detailVisible = false;
         }
     }
-};
+}

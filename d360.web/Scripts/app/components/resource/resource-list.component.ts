@@ -47,4 +47,4 @@ export class ResourceListComponent extends BaseComponent {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Resource"))
         
     }    
-};
+}

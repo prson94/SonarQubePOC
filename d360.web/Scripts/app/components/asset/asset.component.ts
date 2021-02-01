@@ -50,4 +50,4 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
             this.sub.unsubscribe();
         }
     }
-};
+}

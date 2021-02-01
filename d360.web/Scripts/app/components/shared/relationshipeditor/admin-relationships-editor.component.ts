@@ -196,4 +196,4 @@ export class AdminRelationshipsEditor {
         //save the item back to the save or edit url        
         this.saveClick.emit({ relationship: this.editedRelationship, action: this.relationshipID > 0 ? "new" : "edit" });
     }
-};
+}

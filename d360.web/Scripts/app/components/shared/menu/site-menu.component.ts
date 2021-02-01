@@ -116,7 +116,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             let elem = this.menu.nativeElement;
             let scrollDistance = (elem.offsetHeight - 120);
             if (this.scrollingUp) {
-                elem.scrollTop -= scrollDistance;;
+                elem.scrollTop -= scrollDistance;
             } else {
                 elem.scrollTop += scrollDistance;
             }

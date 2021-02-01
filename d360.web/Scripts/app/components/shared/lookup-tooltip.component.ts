@@ -132,4 +132,4 @@ export class LookupTooltipComponent implements OnDestroy  {
         },
             40);
     }
-};
+}
