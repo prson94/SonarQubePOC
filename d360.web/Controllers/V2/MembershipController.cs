@@ -1549,7 +1549,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
         ]
-        public async Task<IHttpActionResult> UpdateWatches(Guid assetTypeUid, Guid? resourceUid = null)
+        public async Task<IHttpActionResult> GetWatchCountByType(Guid assetTypeUid, Guid? resourceUid = null)
         {
             int resourceId = -1;
 
