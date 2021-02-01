@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SocialComment, SocialVote, SocialVoteType, SocialEditCommentData } from '../models/social.model';
+import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail } from '../models/social.model';
 import { Count } from '../models/counts.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -12,74 +12,69 @@ export class SocialService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<SocialComment[]> {        
-        //let headers = new HttpHeaders({
-        //    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        //});
+    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetail[]> {        
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
 
         return this.http
-            .post(`api/v2/comments`, `?AssetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`, httpOptions)
+            .post(`api/v2/comments`, `?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`, httpOptions)
             .pipe(
-                map(res => <SocialComment[]>res),
+                map(res => <CommentDetail[]>res),
                 catchError(err => this.handleError(err))
             );
     }
 
-    addVote(commentUid: string, emoji: string): Observable<SocialVote[]>{
+    addVote(commentUid: string, emoji: Emoji): Observable<boolean>{
        
         return this.http
-            .post(`api/v2/comments/${commentUid}/votes/${emoji}`, {})
+            .post(`api/v2/comments/${commentUid}/votes/${emoji}`, {}, { observe: "response" })
             .pipe(
-                map(res => <SocialVote[]>res),
+                map(res => (res.status == 200 || res.status == 201)),
                 catchError(err => this.handleError(err))
             );
     }
 
-    deleteVote(commentUid: string, emoji: string): Observable<SocialVote[]> {
+    deleteVote(commentUid: string, emoji: Emoji): Observable<boolean> {
 
         return this.http
-            .delete(`api/v2/comments/${commentUid}/votes/${emoji}`)
+            .delete(`api/v2/comments/${commentUid}/votes/${emoji}`, { observe: "response" })
             .pipe(
-                map(res => <SocialVote[]>res),
+                map(res => (res.status == 200)),
                 catchError(err => this.handleError(err))
             );
     }
 
-    addComment(commentAddData: SocialEditCommentData): Observable<SocialComment> {
+    addComment(comment: CommentApiPostModel): Observable<CommentDetail> {
         let headers = new HttpHeaders();
 
         headers.append('Content-Type', 'application/json');
         return this.http
-            .post('api/v2/comments', commentAddData, { headers })
+            .post('api/v2/comments', comment, { headers })
             .pipe(
-                map(res => <SocialComment>res),
+                map(res => <CommentDetail>res),
                 catchError(err => this.handleError(err))
             );
     }
 
-    editComment(commentEditData: SocialEditCommentData): Observable<SocialComment> {
+    editComment(comment: CommentApiPutModel): Observable<boolean> {
         const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            observe: "response"
         };
         return this.http
-            .put(`api/v2/comments/${commentEditData.Comment.Uid}`, commentEditData, httpOptions)
+            .put(`api/v2/comments/${comment.Uid}`, comment, {observe: "response"})//httpOptions)
             .pipe(
-                map(res => <SocialComment>res),
+                map(res => (res.status == 200)),
                 catchError(err => this.handleError(err))
             );
     }
 
-    deleteComment(commentUid: string): Observable<SocialComment> {
-        let headers = new HttpHeaders();
-
-        headers.append('Content-Type', 'application/json');
+    deleteComment(commentUid: string): Observable<boolean> {
         return this.http
-            .delete(`api/v2/comments/${commentUid}`, { headers })
+            .delete(`api/v2/comments/${commentUid}`, { observe: "response" })
             .pipe(
-                map(res => <SocialComment>res),
+                map(res => (res.status == 200)),
                 catchError(err => this.handleError(err))
             );
     }

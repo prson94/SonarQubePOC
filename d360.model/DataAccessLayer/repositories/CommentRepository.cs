@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace d360.model.DataAccessLayer.repositories
+namespace d360.model.DataAccessLayer
 {
     public class CommentRepository : BaseRepository, ICommentRepository
     {
@@ -282,7 +283,7 @@ ORDER BY	C.ParentID, C.CreatedOn DESC";
 					)
 			AND C.IsDeleted = 0
 			AND (
-					(C.DateCreated between @rangeStart and @rangeEnd and @rangeStart is not null and @rangeEnd is not null) or
+					(C.CreatedOn between @rangeStart and @rangeEnd and @rangeStart is not null and @rangeEnd is not null) or
 					(@rangeStart is null and @rangeEnd is null)
 				)
 			AND C.ParentID is null
@@ -314,6 +315,37 @@ order by u.CommentTypeName";
 			var request = await CompanyContext.QueryAsync<CommentCount>(sql, new { resourceId, searchPhrase, rangeStart, rangeEnd });
 			var counts = request.ToList();
 			return counts;
+		}
+
+		public async Task<List<CommentDetail>> GetCommentDetails(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var sql = $@"
+	with P as (
+		select		ID,
+					ParentID,
+					AssetUid
+		from		Comment
+		where		AssetUid = @assetUid
+					and ParentID is null
+		union all
+		select		C.ID,
+					C.ParentID,
+					P.AssetUid
+		from		Comment C
+					inner join P on P.ID = C.ParentID
+	)
+	{COMMENT_DETAIL_SQL}";
+
+			var request = await CompanyContext.QueryAsync<CommentDetail>(sql, new { assetUid });
+			var flatComments = request.ToList();
+			var rootComments = flatComments.Where(c => c.Uid == assetUid && !c.ParentID.HasValue);
+			var returnedComments = new List<CommentDetail>();
+			foreach (var commentDetail in rootComments)
+			{
+				loadCommentDetailDescendants(flatComments, commentDetail);
+				returnedComments.Add(commentDetail);
+			}
+			return returnedComments;
 		}
 
 		public async Task<CommentDetail> GetCommentDetailByUid(Guid commentUid)
@@ -381,38 +413,6 @@ order by u.CommentTypeName";
 
 		/*
 
-        public IQueryable<CommentDetail> GetCommentDetail(int id)
-        {
-            var comments = (
-                    from c in Database.SqlQuery<CommentDetail>("GetCommentDetailByID @id", new SqlParameter("id", id)).ToList()
-                    join r in Community.Resources on c.CreatedBy equals r.ID
-                    select new CommentDetail
-                    {
-                        Body = c.Body,
-                        Comments = c.Comments,
-                        CommentType = c.CommentType,
-                        CreatedBy = c.CreatedBy,
-                        CreatedOn = c.CreatedOn,
-                        ID = c.ID,
-                        AssetUid = c.AssetUid,
-                        AssetPath = c.AssetPath,
-                        Url = c.Url,
-                        ParentID = c.ParentID,
-                        ResourceEmail = r.Email,
-                        ResourceName = r.FormatDisplayName(),
-                        TagsXml = c.TagsXml,
-                        VotesXml = c.VotesXml,
-                        CreatorIsOwner = c.CreatorIsOwner,
-                        UpdatedOn = c.UpdatedOn,
-                        IsDeleted = c.IsDeleted,
-                        IsEditable = (CurrentResourceID == c.CreatedBy),
-                        IsDeletable = (CurrentResourceIsAdmin || CurrentResourceID == c.CreatedBy)
-                    }
-                   );
-
-            return comments.AsQueryable();
-        }
-
         public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
         {
 
@@ -456,26 +456,6 @@ order by u.CommentTypeName";
 
         }
 
-        public IQueryable<CommentDetail> GetCommentDetailsByID(int id)
-        {
-            var comments =
-                Query<CommentDetail>("GetCommentDetailByID @id",
-                new
-                {
-                    id = id
-                });
-            foreach (CommentDetail cd in comments)
-            {
-                cd.IsEditable = (CurrentResourceID == cd.CreatedBy
-                        && !Any<Comment>(c => c.ParentID == cd.ID)
-                        && DateTime.UtcNow.Subtract(cd.CreatedOn).Duration() < TimeSpan.FromMinutes(5));
-                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
-
-            }
-
-            return comments.AsQueryable();
-        }
-
 		public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
 		{
 
@@ -517,9 +497,6 @@ order by u.CommentTypeName";
 
 			return comments.AsQueryable();
 		}
-
-
-
 
 		*/
 	}

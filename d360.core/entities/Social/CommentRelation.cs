@@ -18,13 +18,13 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class CommentRelationDetail : BaseObject
     {
-        [DataMember]
+        [DataMember, Key, Column(Order = 1)]
         public Guid AssetUid { get; set; }
 
-        [DataMember]
+        [DataMember, Key, Column(Order = 2)]
         public string Path { get; set; }
 
-        [DataMember]
+        [DataMember, Key, Column(Order = 3)]
         public string TypeName { get; set; }
 
         [DataMember]

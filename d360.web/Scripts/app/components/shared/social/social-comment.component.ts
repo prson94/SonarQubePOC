@@ -1,7 +1,7 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SocialService } from '../../../services/social.service';
-import { SocialComment, SocialVoteType, SocialCommentType } from '../../../models/social.model';
+import { CommentDetail, CommentType, Emoji } from '../../../models/social.model';
 import { Router } from '@angular/router';
 import { CurrentCompanySettings } from '../../../static/company-settings'
 
@@ -108,8 +108,8 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
 
 })
 
-export class SocialCommentComponent extends BaseComponent implements OnInit {
-    @Input() comment: SocialComment;
+export class SocialCommentComponent extends BaseComponent {
+    @Input() comment: CommentDetail;
 
     @Output() delete = new EventEmitter();
     @Output() reply = new EventEmitter();
@@ -125,30 +125,15 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     replyText: string = "";    
     editText: string = "";
 
-    socialVoteType = SocialVoteType; // for template to use enum
-       
-
     constructor(private socialService: SocialService, private router: Router) {
         super();
-    }
+    } 
 
-    ngOnInit() {
-        if (this.comment && this.comment.Votes) {
-            this.calculateVotes();               
-        }
-    }   
-    
-    calculateVotes() {
-        this.upVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.UpVote).length;
-        this.downVotes = this.comment.Votes.filter(res => res.Vote == SocialVoteType.DownVote).length;
-    }
-
-    doVote(vote: SocialVoteType) {
-        this.socialService.vote(this.comment.ID, vote).subscribe(
+    doVote(emoji: Emoji) {
+        this.socialService.addVote(this.comment.Uid, emoji).subscribe(
             res => {
-                if (res) {                    
-                    this.comment.Votes = res;                    
-                    this.calculateVotes();    
+                if (res) {
+                    this.comment.Emojis.find(e => e.Emoji == emoji).Count++;
                 }
             });
     }
@@ -163,18 +148,17 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private commentTypeIcon() {
         switch (this.comment.CommentType) {
-            case SocialCommentType.Issue:
+            case CommentType.Issue:
                 return "Issue";
-            case SocialCommentType.Social:
+            case CommentType.Social:
                 return "";
-         
         }
 
         return "Other";
     }
 
     handleReplyClick() {        
-        this.reply.emit({ reply: this.replyText, commentId: this.comment.ID });
+        this.reply.emit({ reply: this.replyText, parentUid: this.comment.Uid });
         this.showReply = false;
     }
 
@@ -185,11 +169,11 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     isSocial(): boolean {        
-        return this.comment.CommentType == SocialCommentType.Social;
+        return this.comment.CommentType == CommentType.Social;
     }
 
     isIssue(): boolean {
-        return this.comment.CommentType == SocialCommentType.Issue;
+        return this.comment.CommentType == CommentType.Issue;
     }
 
     canReply(): boolean {

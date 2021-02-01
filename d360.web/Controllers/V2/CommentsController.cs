@@ -269,13 +269,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetComments()
+        public async Task<IHttpActionResult> GetComments(Guid assetUid)
         {
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-                var model = new { };// await ScoringRepository.GetEvidenceForDataQualityScoreItem(scoreItemUid, queryParams);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+                var comments = await Comments.GetCommentDetails(assetUid, queryParams);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, comments));
             }
             catch (Exception ex)
             {

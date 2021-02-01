@@ -17,5 +17,6 @@ namespace d360.model.DataAccessLayer
         Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment);
         Task<List<CommentCount>> GetCommentCountsByFollower(int resourceId, string searchPhrase = null, DateTime? rangeStart = null, DateTime? rangeEnd = null);
         Task<CommentDetail> GetCommentDetailByUid(Guid commentUid);
+        Task<List<CommentDetail>> GetCommentDetails(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

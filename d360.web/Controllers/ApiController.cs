@@ -33,16 +33,18 @@ namespace d360.web.Controllers
     {
         #region DI
 
+        ICommentRepository commentsRepository;
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            commentsRepository = comments;
             this.tagRepository = tagRepository;
             this.connectorLabelRepository = connectorLabelRepository;
         }
@@ -5294,6 +5296,74 @@ SELECT (
             }
 
             return Company.Query<AssetDetail>(sql, new { assetTypeId });
+        }
+
+        [Route("Count/{area}/{days}")]
+        public IEnumerable<CountModel> GetHomeCounts(string area, int days, int id = -1)
+        {
+            //Social count has been moved to V2 Social controller and should be got from there
+            var areaName = (area ?? string.Empty).ToUpper();
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
+
+            switch (areaName)
+            {
+                case "SOCIAL":
+                    return LoadSocialActivityCount(days, resourceId).Result;
+                case "ACTIVITY":
+                    return LoadArtifactActivityCount(days);
+                case "ASSIGNMENTS":
+                    return LoadWorkflowAssignmentsCount(resourceId);
+            }
+            return null;
+        }
+
+        [Route("Counts/{id}/{days}")]
+        public async Task<IEnumerable<CountModel>> GetTheCounts(int days, int id = -1)
+        {
+            //Social count has been moved to V2 Social controller and should be got from there
+            var resourceId = id > 0 ? id : Company.CurrentResourceID;
+            return await LoadSocialActivityCount(days, resourceId);
+        }
+
+        private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
+        {
+            var sql = string.Empty;
+            if (days != 0)
+            {
+                days = days * -1;
+                sql = QueryConstants.ArtifactActivitySpecificDateCountList;
+            }
+            else
+            {
+                sql = QueryConstants.ArtifactActivityAllDateCountList;
+            }
+
+            return Company.Query<CountModel>(sql, new { d = days });
+        }
+
+        private async Task<IEnumerable<CountModel>> LoadSocialActivityCount(int days, int resourceId)
+        {
+            days = days * -1;
+            var rangeEnd = DateTime.UtcNow;
+            var rangeStart = rangeEnd.AddDays(days);
+            var countsRequest = await commentsRepository.GetCommentCountsByFollower(resourceId, null, rangeStart, rangeEnd);
+            var counts = countsRequest.OrderBy(i => i.CommentTypeName);
+            
+            List<CountModel> items = new List<CountModel>();
+
+            //need to add a record for social, Issue, Task, DataEvent, Question
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) });
+
+            items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) });
+
+            return items.OrderBy(x => x.Name);
+        }
+
+        private int getCommentCategoryCount(IEnumerable<CommentCount> counts, CommentType commentType)
+        {
+            var commentsItem = (counts.FirstOrDefault(x => x.CommentType == commentType));
+            return commentsItem == null ? 0 : commentsItem.Count;
         }
 
         private IEnumerable<CountModel> LoadWorkflowAssignmentsCount(int resourceId)

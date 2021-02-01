@@ -3,7 +3,6 @@ import {NavigationEnd, Router} from '@angular/router';
 import {Title} from '@angular/platform-browser';
 
 import {Breadcrumb} from '../../models/breadcrumb.model';
-import {SocialCommentType} from '../../models/social.model';
 import {WorkflowType} from '../../models/workflow.model';
 import {Dashboard} from '../../models/dashboard.model';
 
@@ -15,6 +14,7 @@ import {DashboardService} from '../../services/dashboard.service';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 
 import {BaseComponent} from '../shared/base.component';
+import { CommentType } from '../../models/social.model';
 
 declare var CompanySettings;
 
@@ -44,7 +44,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     private selectedArtifactTypeId: number;
     private selectedArtifactTypeName: string;
 
-    private selectedSocialType: SocialCommentType;
+    private selectedCommentType: CommentType;
 
     private selectedWorkflowType: WorkflowType;
 
@@ -143,13 +143,13 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         }
         switch (event.selected.Name.toUpperCase()) {
             case "COMMENT":
-                this.selectedSocialType = SocialCommentType.Social;
+                this.selectedCommentType = CommentType.Social;
                 break;
             case "OPEN ACTIONS":
-                this.selectedSocialType = SocialCommentType.Issue;
+                this.selectedCommentType = CommentType.Issue;
                 break;
             default:
-                this.selectedSocialType = undefined;
+                this.selectedCommentType = undefined;
                 break;
         }
 

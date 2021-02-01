@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.core.entities
 {
@@ -26,10 +27,10 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class CommentAggregateVoteDetail : BaseObject
     {
-        [DataMember]
+        [DataMember, Key, Column(Order = 1)]
         public Emoji Emoji { get; set; }
 
-        [DataMember]
+        [DataMember, Key, Column(Order = 2)]
         public int Count { get; set; }
     }
 }
