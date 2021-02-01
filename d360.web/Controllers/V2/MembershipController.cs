@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Membership;
+using d360.core.entities.Views;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
@@ -1434,6 +1435,50 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+        }
+
+        /// <summary>
+        /// Get count of assets being watched for a given Asset.        
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type to return watch counts for.</param>        
+        /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/watchers/counts"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            //SwaggerParameter("resourceUid", "The unique identifier of the resource.", DataType = "string", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> UpdateWatches(Guid assetTypeUid, Guid? resourceUid = null)
+        {
+            int resourceId = -1;
+
+            if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided"));
+            }
+
+            if (resourceUid != null)
+            {
+                if(!Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid resourceUid provided"));
+                }
+                else
+                {
+                    resourceId = Company.GlobalReportingResources.SingleOrDefault(u => u.Uid == resourceUid).ResourceID;
+                }
+            }
+
+            var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            var followCount = Company.Count<FollowDetail>(fd => fd.TypeID == assetType.ObjectID && fd.ObjectID != assetType.ObjectID && fd.Type == assetType.Object && (resourceUid == null || (resourceUid != null && fd.ResourceID==resourceId)));
+
+            var response = Request.CreateResponse(HttpStatusCode.OK, new AssetTypeWatchCountModel { assetTypeUid = assetTypeUid, assetTypeName = assetType.Name, count = followCount });
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));             
         }
     }
 }
