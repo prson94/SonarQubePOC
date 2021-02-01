@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.model
@@ -128,7 +129,10 @@ order by RT.Name", new { id }).AsQueryable();
             if (!hasPermission)
             {
                 var assetTypeID = Query<int>("select AssetTypeID from Asset where Object = @type and ObjectID = @id", new { type, id }).FirstOrDefault();
-                if (assetTypeID <= 0) return true; // objects not in asset table we grant permission               
+                if (assetTypeID <= 0)
+                {
+                    return true; // objects not in asset table we grant permission               
+                }
                hasPermission = HasReadPermission(type, id, assetTypeID, permission);
             }
 
@@ -332,9 +336,11 @@ order by RT.Name", new { id }).AsQueryable();
             var results = new List<ResponsibilityAssetMeasureProcessedResult>();
 
             if (Connection.State != System.Data.ConnectionState.Open)
+            {
                 Connection.Open();
+            }
 
-            IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(ruleID);
+            IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(ruleID).ConfigureAwait(false);
 
             var rulesRequiringRun = new List<int>();
 
@@ -344,18 +350,18 @@ order by RT.Name", new { id }).AsQueryable();
             {
                 try
                 {
-                    if (await ShouldRuleRun(rule.ID))
+                    if (await ShouldRuleRun(rule.ID).ConfigureAwait(false))
                     {
                         rulesRequiringRun.Add(rule.ID);
                         rule.SetDefinitionFromRaw();
 
                         if (rule.ApplyToType)
                         {
-                            await ProcessRuleForAssetType(rule, results);
+                            await ProcessRuleForAssetType(rule, results).ConfigureAwait(false);
                         }
                         else
                         {
-                            await ProcessRuleForAsset(rule, results);
+                            await ProcessRuleForAsset(rule, results).ConfigureAwait(false);
                         }
                     }
                 }
@@ -416,7 +422,7 @@ order by RT.Name", new { id }).AsQueryable();
                 try
                 {
                     var thenSql = GetThenResultsSql(rule, false, transaction, false);
-                    var whenSql = await GetWhenResultsSql(rule, transaction, false);
+                    var whenSql = await GetWhenResultsSql(rule, transaction, false).ConfigureAwait(false);
 
                     thenSql = string.Format(thenSql, "");
 
@@ -498,6 +504,7 @@ from    #changes C
                     }
                     catch
                     {
+                        //possible invalid rule ignore
                     }
 
                     throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
@@ -599,6 +606,7 @@ from    #changes C
                     }
                     catch
                     {
+                        // ignore invalid rules
                     }
 
                     throw new ApplicationException($"{rule.ID}: {ex.GetFullExceptionData()}. SQL was: {sqlToExecute}.\n");
@@ -640,7 +648,9 @@ from    #changes C
 
             whenSql += "select distinct A.ID as AssetID ";
             if (includeName)
+            {
                 whenSql += ", utility.GetAssetDisplayValueWrapper(A.ID) as Name ";
+            }
 
             whenSql += $"from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ";
 
@@ -690,8 +700,8 @@ from    #changes C
         }
 
         private string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "")
-        {
-            string thenSql = "";
+        {            
+            StringBuilder thenSql = new StringBuilder();
 
             int tCount = 1;
             string whenSuffix = "";
@@ -700,25 +710,25 @@ from    #changes C
 
             if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null))
             {
-                thenSql = $@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}";
+                thenSql.Append($@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}");
 
                 if (rule.StructuredDefinition.Then.Object == "OrganizationType")
                 {
                     obj = "Organization";
-                    thenSql += $"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} from Organization O ";
+                    thenSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} from Organization O ");
                 }
 
                 if (rule.StructuredDefinition.Then.Object == "GroupType")
                 {
                     obj = "Group";
-                    thenSql += $"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")}  from	[Group] O ";
+                    thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")}  from	[Group] O ");
                 }
 
                 if (rule.StructuredDefinition.Then.Object == "ResourceType")
                 {
                     obj = "Resource";
                     uniqueIdField = "ResourceID";
-                    thenSql += $@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} from reporting.Global_Resource O ";
+                    thenSql.Append($@"'R' as SecurityAsset, O.ResourceID as SecurityAssetID{(includeName ? ", O.FirstName + ' ' + O.LastName as Name" : "")} from reporting.Global_Resource O ");
                 }
 
                 if (rule.StructuredDefinition.Then.Conditions != null)
@@ -728,16 +738,16 @@ from    #changes C
                         if (rc.FieldTypeID > 0)
                         {
                             var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();
-                            thenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ";
+                            thenSql.Append($"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = '{obj}' and F.ObjectID = O.{uniqueIdField} ");
                             if (thenFieldType != null)
                             {
-                                thenSql += (thenFieldType.AllowMultipleValues) ?
+                                thenSql.Append((thenFieldType.AllowMultipleValues) ?
                                     $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{tCount}" :
-                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}";
+                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue, F.FormattedValue) = '{rc.Value}' ) FV{tCount}");
                             }
                             else
                             {
-                                thenSql += $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}";
+                                thenSql.Append($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' ) FV{tCount}");
                             }
                         }
                         else
@@ -769,10 +779,12 @@ from    #changes C
                 }
             }
 
-            if (!string.IsNullOrEmpty(thenSql) || !string.IsNullOrEmpty(whenSuffix))
-                thenSql += " {0} " + whenSuffix;
+            if (thenSql.Length > 0 || !string.IsNullOrEmpty(whenSuffix))
+            {
+                thenSql.Append(" {0} " + whenSuffix);
+            }
 
-            return thenSql;
+            return thenSql.ToString();
         }
 
         #endregion
@@ -785,7 +797,7 @@ from    #changes C
 
         public async Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
         {
-            string sql = await GetWhenResultsSql(rule, trans);
+            string sql = await GetWhenResultsSql(rule, trans).ConfigureAwait(false);
             return await Connection.QueryAsync<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
         }
 
