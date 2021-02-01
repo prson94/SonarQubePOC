@@ -596,4 +596,56 @@ namespace d360.core.entities.Metric
         [DataMember]
         public MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
+
+    #region Evidence Models
+
+    public class DataQualityScoreItemEvidenceViewModel
+    {
+        public int pageSize { get; set; }
+        public int pageNum { get; set; }
+        public int total { get; set; }
+        public List<DataQualityScoreItemEvidenceItemViewModel> items { get; set; }
+    }
+
+    public class DataQualityScoreItemEvidenceItemViewModel
+    {
+        [JsonIgnore]
+        public string RollupPathJson { get; set; }
+
+        public List<DataQualityScoreItemEvidenceItemRollupPathViewModel> RollupPath 
+        { 
+            get 
+            { 
+                return JsonConvert.DeserializeObject<List<DataQualityScoreItemEvidenceItemRollupPathViewModel>>(RollupPathJson ?? "[]"); 
+            } 
+        }
+
+        public Guid ResultUid { get; set; }
+        public Guid OwningAssetUid { get; set; }
+        public string OwningAssetPath { get; set; }
+        public string OwningAssetTypePath { get; set; }
+        public string OwningAssetDisplayPath { get; set; }
+        public Guid EvaluatedAssetUid { get; set; }
+        public string EvaluatedAssetPath { get; set; }
+        public string EvaluatedAssetTypePath { get; set; }
+        public string EvaluatedAssetDisplayPath { get; set; }
+        public AssetTypeClass EvaluatedAssetClass { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public DateTime RunDate { get; set; }
+        public int TotalCount { get; set; }
+        public float PassFraction { get; set; }
+        public int PassCount { get; set; }
+        public int FailCount { get; set; }
+    }
+
+    public class DataQualityScoreItemEvidenceItemRollupPathViewModel
+    {
+        public Guid Uid { get; set; }
+        public string AssetPath { get; set; }
+        public string AssetTypePath { get; set; }
+        public string Predicate { get; set; }
+        public int Position { get; set; }
+    }
+
+    #endregion
 }

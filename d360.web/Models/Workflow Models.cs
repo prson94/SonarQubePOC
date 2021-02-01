@@ -48,6 +48,7 @@ namespace d360.web.Models
         public bool SendFormEmails { get; set; } = true;
         public int NewAssigneeResourceID { get; set; }
         public int OriginalAssigneeResourceID { get; set; }
+        public bool ClearOtherAssignments { get; set; }
 
     }
 }

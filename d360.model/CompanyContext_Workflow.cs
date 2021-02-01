@@ -20,6 +20,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace d360.model
 {
@@ -1564,7 +1565,7 @@ namespace d360.model
         /// <param name="originalResourceId">The resource Id of the original assignee on the form</param>
         /// <param name="sendFormEmails">Whether or not to resend form emails. If the step doesn't have form emails configured this setting is ignored</param>
         /// <returns></returns>
-        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true)
+        public async Task BulkWorkflowFormReassign(List<WorkflowItemStep> itemSteps, GlobalReportingResource resource, int originalResourceId, bool sendFormEmails = true, bool clearAssignments = false)
         {
             foreach (var itemStep in itemSteps)
             {
@@ -1572,12 +1573,62 @@ namespace d360.model
                     continue;
 
                 var stepSettings = WorkflowItemStepSettingModel.ParseXml(itemStep.Step.Settings);
-
+                
                 var fieldElement = XElement.Parse(itemStep.Fields);
                 var reassigned = new XElement("Reassigned");
+                var objectType = "";
+                int objectId = 0;
+                var isResourceReassignment = true;
+                if (stepSettings.ResponsibilityTypeID > 0 || (stepSettings.RecipientGroup != null || stepSettings.RecipientGroup != Guid.Empty))
+                {
+
+                    if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
+                    {
+                        isResourceReassignment = false;
+                        objectType = SystemObjects.ResponsibilityType.ToString();
+                        objectId = stepSettings.ResponsibilityTypeID;
+                    }
+                    else if(stepSettings.RecipientType == EmailTaskRecipientType.Group)
+                    {
+                        var group = Assets.Where(x => x.uid == stepSettings.RecipientGroup).FirstOrDefault();
+                        if(group != null)
+                        {
+                            isResourceReassignment = false;
+                            objectType = SystemObjects.Group.ToString();
+                            objectId = group.ObjectID;
+                        }
+                    }else if(stepSettings.RecipientType == EmailTaskRecipientType.SpecificUser)
+                    {
+                        isResourceReassignment = false;
+                        objectType = "Specific Users";
+                        objectId = -1;
+                    }
+                    DateTime date = DateTime.MinValue;
+                    var type = "";
+                    foreach (var elem in fieldElement.Elements("Reassigned"))
+                    {
+                        var reassignTime = DateTime.Parse(elem.Attribute("reassignOn").Value);
+                        if(date < reassignTime)
+                        {
+                            date = reassignTime;
+                            type = elem.Attribute("reassignType").Value;
+                            isResourceReassignment = type == "Resource";
+                        }
+                    }
+                }
+
+                if (isResourceReassignment)
+                {
+                    reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                    reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
+                }
+                else
+                {
+                    reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
+                    reassigned.Add(new XAttribute("objectId", objectId));
+                    reassigned.Add(new XAttribute("objectType", objectType));
+                }
                 reassigned.Add(new XAttribute("reassignType", "Resource"));
-                reassigned.Add(new XAttribute("toResourceId", resource.ResourceID.ToString()));
-                reassigned.Add(new XAttribute("fromResourceId", originalResourceId.ToString()));
                 reassigned.Add(new XAttribute("byResourceId", CurrentResourceID.ToString()));
                 reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
 
@@ -1586,7 +1637,22 @@ namespace d360.model
                 itemStep.Fields = fieldElement.ToString();
                 itemStep.StartedOn = DateTime.UtcNow;
 
-                var currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource" && x.ResourceObjectID == originalResourceId).ToList();
+                List<WorkflowItemAssignment> currentAssignments = new List<WorkflowItemAssignment>();
+                if (clearAssignments)
+                {
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObject == "Resource").ToList();
+                    var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
+                    itemFields.NumberOfResponses = 1;
+                    itemFields.TotalResources = 1;
+                    using(var sr = new StringWriter())
+                    {
+                        var serializer = new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel));
+                        serializer.Serialize(sr, itemFields);
+                        itemStep.Fields = sr.ToString();
+                    }
+                }
+                else
+                    currentAssignments = WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).ToList();
 
                 if (currentAssignments.Any())
                 {
@@ -1621,7 +1687,6 @@ namespace d360.model
                     //resend email to the reassigned user
                     stepSettings.SpecificUser = resource.Email;
                     stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-
                     await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, objEventInfo, stepSettings);
                 }
                 else

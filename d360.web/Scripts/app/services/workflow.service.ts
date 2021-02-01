@@ -223,9 +223,9 @@ export class WorkflowService extends BaseObservableService {
             );
     }
  
-    reassignUser(itemStepId: number, resourceId: number): Observable<JsonResult> {
+    reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
         return this.http
-            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}`, null)
+            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))
