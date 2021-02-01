@@ -52,6 +52,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     selected: any = null;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    showEditPencil: boolean = true;
     isGridLoading: boolean = false;
     isDataLoading: boolean = false;
     theDeleteCallback: Function;
@@ -104,6 +105,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.isGridLoading = false;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
+                this.showEditPencil = (result.FieldsCount > 0);
                 this.readOnly = result.IsReadOnly;
                 this.readOnlyChange.emit(this.readOnly);
             }
