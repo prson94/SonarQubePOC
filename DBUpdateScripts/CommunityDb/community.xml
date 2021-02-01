@@ -75,4 +75,5 @@
   <include file="scripts/GOV-8477.xml"/>  <!-- Drop DateLastLoggedIn column from Resource.-->
   <include file="scripts/GOV-11255.xml"/>  <!-- service account name update with less confusing name-->
   <include file="scripts/GOV-13225.xml"/>  <!--Change setting type from string to GUID of Governance Role Reference List Uid(73).-->
+  <include file="scripts/GOV-11835.xml"/>  <!-- Removing table plugin.ClientFusionType_backup-->
 </databaseChangeLog>
