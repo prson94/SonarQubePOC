@@ -1438,7 +1438,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }
 
         /// <summary>
-        /// Get count of assets being watched for a given Asset.        
+        /// Get count of assets being watched for a given Asset Type.        
         /// </summary>
         /// <param name="assetTypeUid">Uid of the asset type to return watch counts for.</param>        
         /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
@@ -1448,8 +1448,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            //SwaggerParameter("resourceUid", "The unique identifier of the resource.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
         ]
         public async Task<IHttpActionResult> UpdateWatches(Guid assetTypeUid, Guid? resourceUid = null)
         {
