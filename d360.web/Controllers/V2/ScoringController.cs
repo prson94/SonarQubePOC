@@ -435,7 +435,7 @@ namespace d360.web.Controllers.V2
             Route("{scoreItemUid:Guid}/quality/evidence"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "A description", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", SIMPLE_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by OwningAssetDisplayPath.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_sort", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),

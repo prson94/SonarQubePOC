@@ -130,6 +130,7 @@ namespace d360.web.Controllers
 
         #region Parameter Description Constants
 
+        internal const string SIMPLE_FILTER_DESCRIPTION = "The text or phrase you want to find within the data set. Filtering is done using 'Starts with' logic.";
         internal const string ADVANCED_FILTER_DESCRIPTION = "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.";
         internal const string PAGE_SIZE_DESCRIPTION = "The number of results to return per page. The default value is 200. Maximum is 250.";
         internal const string PAGE_NUMBER_DESCRIPTION = "The page number to return results for.";

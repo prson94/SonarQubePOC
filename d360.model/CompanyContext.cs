@@ -2936,6 +2936,23 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 wheres.Add($"{f.SqlExpression} like @{f.ApiName}");
                                 dbs.Add($"@{f.ApiName}", value+"%");
                                 break;
+                            case SqlFieldType.Boolean:
+                                bool filterBool;
+                                if (bool.TryParse(value, out filterBool))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
+                                    dbs.Add($"@{f.ApiName}", filterBool);
+                                }
+                                break;
+                            case SqlFieldType.Date:
+                            case SqlFieldType.DateTime:
+                                DateTime filterDate;
+                                if (DateTime.TryParse(value, out filterDate))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
+                                    dbs.Add($"@{f.ApiName}", filterDate);
+                                }
+                                break;
                             case SqlFieldType.Decimal:
                             case SqlFieldType.Number:
                                 if (decimal.TryParse(value, out _))
