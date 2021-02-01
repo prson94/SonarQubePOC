@@ -189,7 +189,7 @@ namespace d360.web.Controllers.V2
                     ex,
                     "Error retrieving audit records",
                     messages,
-                    new Dictionary<string, string>() { { "Method Name", prefix } }
+                    new Dictionary<string, string> { { "Method Name", prefix } }
                 );
             }
         }

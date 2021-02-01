@@ -457,7 +457,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                var messages = new List<StatusCodeErrorMessage>()
+                var messages = new List<StatusCodeErrorMessage>
                 {
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Conflict, ErrorMessage = $"Score item with Uid {scoreItemUid} is not a data quality measure." },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to read the asset that is related to this score item." },
@@ -467,7 +467,7 @@ namespace d360.web.Controllers.V2
                     ex, 
                     "Error retrieving data quality evidence for score result", 
                     messages, 
-                    new Dictionary<string, string>() { { "Method Name", "GetEvidenceForDataQualityScoreItem" } } 
+                    new Dictionary<string, string> { { "Method Name", "GetEvidenceForDataQualityScoreItem" } } 
                 );
             }
         }
