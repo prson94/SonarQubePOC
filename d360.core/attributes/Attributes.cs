@@ -5,6 +5,15 @@ using System;
 
 namespace d360.core
 {
+    public class EmojiValueAttribute : Attribute
+    {
+        public int Value { get; private set; } = 0;
+        public EmojiValueAttribute(int value)
+        {
+            Value = value;
+        }
+    }
+
     public class BackColorAttribute : Attribute
     {
         public string Color { get; private set; } = "#000";

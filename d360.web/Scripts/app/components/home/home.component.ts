@@ -148,9 +148,6 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
             case "OPEN ACTIONS":
                 this.selectedSocialType = SocialCommentType.Issue;
                 break;
-            case "TASK":
-                this.selectedSocialType = SocialCommentType.Task;
-                break;
             default:
                 this.selectedSocialType = undefined;
                 break;

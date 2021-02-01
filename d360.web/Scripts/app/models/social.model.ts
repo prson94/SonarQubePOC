@@ -6,13 +6,7 @@
 export enum SocialCommentType {
     System = 1,
     Social = 2,
-    Governance = 3,
-    Relationship = 4,
-    Issue = 5,
-    Task = 6,
-    RedFlag = 7,
-    DataEvent = 8,
-    Challenge = 9,
+    Issue = 5
 }
 
 export class SocialCommentTag {
@@ -31,7 +25,7 @@ export class SocialVote {
 export class SocialComment {
     Body: string;
     Comments: SocialComment[];
-    CommentTypeID: SocialCommentType;
+    CommentType: SocialCommentType;
     CreatorIsOwner: boolean;
     CreatingResourceID: number;
     DateCreated: Date;
@@ -39,6 +33,7 @@ export class SocialComment {
     DateEdited: Date;
     DateEditedUTCString: Date;
     ID: number;
+    Uid: string;
     IsDeletable: boolean;
     IsDeleted: boolean;
     IsEditable: boolean;

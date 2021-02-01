@@ -59,8 +59,6 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 this.socialMessage = `My comments ${this.daysMessage()}`;
             else if (this.limitToType == SocialCommentType.Issue)
                 this.socialMessage = `My issues ${this.daysMessage()}`;
-            else if (this.limitToType == SocialCommentType.Task)
-                this.socialMessage = `My tasks ${this.daysMessage()}`;
             else
                 this.socialMessage = 'My comments';
         }
@@ -123,7 +121,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let comment = new SocialComment();
 
         comment.Body = commentContent;
-        comment.CommentTypeID = SocialCommentType.Social;
+        comment.CommentType = SocialCommentType.Social;
         
         let addData = new SocialEditCommentData(comment);
         addData.ObjectID = this.objectID;
@@ -174,7 +172,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let comment = new SocialComment();
 
         comment.Body = replyText;
-        comment.CommentTypeID = SocialCommentType.Social;
+        comment.CommentType = SocialCommentType.Social;
         comment.ParentID = commentId;
 
         let addData = new SocialEditCommentData(comment);

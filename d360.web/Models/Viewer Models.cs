@@ -78,15 +78,6 @@ namespace d360.web.Models
         public List<AttributeNode> Children { get; set; }
     }
 
-    public class CommentData
-    {
-        public string ObjectType { get; set; }
-        public int? ObjectID { get; set; }
-        public Comment Comment { get; set; }
-
-        public List<CommentTag> Tags { get; set; }
-    }
-
     public class CommentRequestData
     {
         public string ObjectType { get; set; }
@@ -104,12 +95,6 @@ namespace d360.web.Models
         public string SearchFilter { get; set; }
 
         public bool IsNg { get; set; }
-    }
-
-    public class CommentTag
-    {
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
     }
 
     public class CountModel

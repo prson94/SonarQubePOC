@@ -162,15 +162,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private commentTypeIcon() {
-        switch (this.comment.CommentTypeID) {
-            case SocialCommentType.Challenge:
-                return "Challenge";
+        switch (this.comment.CommentType) {
             case SocialCommentType.Issue:
                 return "Issue";
             case SocialCommentType.Social:
                 return "";
-            case SocialCommentType.Task:
-                return "Task";            
+         
         }
 
         return "Other";
@@ -187,16 +184,12 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.showEdit = false;
     }
 
-    isChallenge(): boolean {
-        return this.comment.CommentTypeID == SocialCommentType.Challenge;
-    }
-
     isSocial(): boolean {        
-        return this.comment.CommentTypeID == SocialCommentType.Social;
+        return this.comment.CommentType == SocialCommentType.Social;
     }
 
     isIssue(): boolean {
-        return this.comment.CommentTypeID == SocialCommentType.Issue;
+        return this.comment.CommentType == SocialCommentType.Issue;
     }
 
     canReply(): boolean {

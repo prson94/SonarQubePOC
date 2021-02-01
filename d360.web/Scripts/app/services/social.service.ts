@@ -12,42 +12,39 @@ export class SocialService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getComments(objectID: number, objectType: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<SocialComment[]> {        
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-        
+    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<SocialComment[]> {        
+        //let headers = new HttpHeaders({
+        //    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        //});
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+
         return this.http
-            .post(`api/v2/social/comments`, `IsNg=true&ObjectType=${objectType}&ObjectID=${objectID > 0 ? objectID : ''}&Skip=${page ? page : 0}&Take=${count ? count : 10}&DateFilter=-${daysToLookBack}&TypeFilter=${typeFilter == undefined ? '' : typeFilter}`,  { headers })
+            .post(`api/v2/comments`, `?AssetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`, httpOptions)
             .pipe(
-            map(res => <SocialComment[]>res),
-            catchError(err => this.handleError(err))
+                map(res => <SocialComment[]>res),
+                catchError(err => this.handleError(err))
             );
     }
 
-    vote(commentID: number, vote: SocialVoteType): Observable<SocialVote[]>{
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-        
+    addVote(commentUid: string, emoji: string): Observable<SocialVote[]>{
+       
         return this.http
-            .post('api/v2/social/vote', `CommentID=${commentID}&Vote=${vote}`, { headers })
+            .post(`api/v2/comments/${commentUid}/votes/${emoji}`, {})
             .pipe(
-            map(res => <SocialVote[]>res),
-            catchError(err => this.handleError(err))
+                map(res => <SocialVote[]>res),
+                catchError(err => this.handleError(err))
             );
     }
 
-    editComment(commentEditData: SocialEditCommentData): Observable<SocialComment> {
-        let headers = new HttpHeaders();
+    deleteVote(commentUid: string, emoji: string): Observable<SocialVote[]> {
 
-        headers.append('Content-Type', 'application/json');
-        
         return this.http
-            .post('api/v2/social/edit', commentEditData, { headers })
+            .delete(`api/v2/comments/${commentUid}/votes/${emoji}`)
             .pipe(
-            map(res => <SocialComment>res),
-            catchError(err => this.handleError(err))
+                map(res => <SocialVote[]>res),
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -55,18 +52,40 @@ export class SocialService extends BaseObservableService  {
         let headers = new HttpHeaders();
 
         headers.append('Content-Type', 'application/json');
-        
         return this.http
-            .post('api/v2/social/comment', commentAddData, { headers })
+            .post('api/v2/comments', commentAddData, { headers })
             .pipe(
-            map(res => <SocialComment>res),
-            catchError(err => this.handleError(err))
+                map(res => <SocialComment>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    editComment(commentEditData: SocialEditCommentData): Observable<SocialComment> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this.http
+            .put(`api/v2/comments/${commentEditData.Comment.Uid}`, commentEditData, httpOptions)
+            .pipe(
+                map(res => <SocialComment>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    deleteComment(commentUid: string): Observable<SocialComment> {
+        let headers = new HttpHeaders();
+
+        headers.append('Content-Type', 'application/json');
+        return this.http
+            .delete(`api/v2/comments/${commentUid}`, { headers })
+            .pipe(
+                map(res => <SocialComment>res),
+                catchError(err => this.handleError(err))
             );
     }
 
     getMyCounts(daysToLookBack: number): Observable<Count[]> {
-        let resourceID = -1;
-        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
+        return this.http.get(`api/v2/comments/count/0/${daysToLookBack}`)
             .pipe(
             map(response => <Count[]>response),
             catchError(err => this.handleError(err))
@@ -74,7 +93,7 @@ export class SocialService extends BaseObservableService  {
     }
 
     getTheCounts(resourceID: number, daysToLookBack: number): Observable<Count[]> {
-        return this.http.get(`api/v2/social/count/${resourceID}/${daysToLookBack}`)
+        return this.http.get(`api/v2/comments/count/${resourceID}/${daysToLookBack}`)
             .pipe(
             map(response => <Count[]>response),
             catchError(err => this.handleError(err))

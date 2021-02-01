@@ -748,7 +748,7 @@ for json path";
 
                     comment.OwnerObjectType = SystemObjects.Resource.ToString();
                     comment.OwnerObjectID = Company.CurrentResourceID;
-                    comment.CommentTypeID = CommentType.Issue;
+                    comment.CommentType = CommentType.Issue;
                     comment.Body = issueModel.Comment ?? $"New {issueType.Name} Raised.";
 
                     //add relation to current artifact

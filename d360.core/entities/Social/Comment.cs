@@ -1,51 +1,90 @@
-﻿using System;
-using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using d360.core.entities.Contracts;
 using d360.core.enums;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Comment : BaseIntObject, IIntObject
+    public class Comment : BaseCreatedAndUpdatedIntObject, IIntObject
     {
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "Description_Name", Description = "Description_Description")]
         public string Body { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string OwnerObjectType { get; set; }
+        [DataMember]
+        public Guid Uid { get; set; }
 
         [DataMember]
-        public int OwnerObjectID { get; set; }
+        public Guid AssetUid { get; set; }
 
         [DataMember]
-        public CommentType CommentTypeID { get; set; }
-
-        [DataMember]
-        public CommentVisibility VisibilityID { get; set; }
-
-        [DataMember]
-        public DateTime DateCreated { get; set; }
-
-        [DataMember]
-        public DateTime? DateEdited { get; set; }
+        public CommentType CommentType { get; set; }
 
         [DataMember]
         public bool IsDeleted { get; set; }
 
         [DataMember]
-        public int CreatingResourceID { get; set; }
+        public int? ParentID { get; set; }
+    }
+
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentDetail : Comment
+    {
+        [DataMember, NotMapped]
+        public string CreatedOnUTCString { get { return ((CreatedOn == null) ? null : ((DateTime)UpdatedOn).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
+
+        [DataMember, NotMapped]
+        public string UpdatedOnUTCString { get { return ((UpdatedOn == null) ? null : ((DateTime)UpdatedOn).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
+
+        [DataMember, NotMapped]
+        public string ResourceName { get; set; }
+
+        [DataMember, NotMapped]
+        public bool CreatorIsOwner { get; set; }
 
         [DataMember]
-        public int? ParentID { get; set; }
+        public string AssetPath { get; set; }
 
-        public virtual Comment Parent { get; set; }
-        [ForeignKey("CommentID")]
-        public virtual ICollection<CommentRelation> Relations { get; set; }
-        [ForeignKey("ParentID")]
-        public virtual ICollection<Comment> Children { get; set; }
+        [DataMember]
+        public string Url { get; set; }
+
+        [IgnoreDataMember]
+        public string TagsJson { get; set; }
+
+        [IgnoreDataMember]
+        public string EmojisJson { get; set; }
+
+        [DataMember]
+        public List<CommentRelationDetail> Tags { get { return JsonConvert.DeserializeObject<List<CommentRelationDetail>>(TagsJson); } }
+
+        [DataMember]
+        public List<CommentAggregateVoteDetail> Emojis { get { return JsonConvert.DeserializeObject<List<CommentAggregateVoteDetail>>(EmojisJson); } }
+
+        [DataMember, NotMapped]
+        public ICollection<CommentDetail> Comments { get; set; }
+    }
+
+    public interface IApiComment
+    {
+        public string Body { get; set; }
+        public List<Guid> Tags { get; set; }
+    }
+
+    public class CommentApiPostModel: IApiComment
+    {
+        public Guid AssetUid { get; set; }
+        public Guid? ParentUid { get; set; }
+        public string Body { get; set; }
+        public List<Guid> Tags { get; set; }
+    }
+
+    public class CommentApiPutModel: IApiComment
+    {
+        public string Body { get; set; }
+        public List<Guid> Tags { get; set; }
     }
 }

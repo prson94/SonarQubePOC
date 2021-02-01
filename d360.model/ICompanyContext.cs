@@ -196,13 +196,7 @@ namespace d360.model
         AssetDetail GetAssetDetail(string objectType, long objectId);
         string GetAssetTypeNoReadSqlStatement(string identifier = null);
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
-        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);        
-        IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "");
-        IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "");
-        IQueryable<CommentDetail> GetCommentDetail(int id);
-        IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
-        IQueryable<CommentDetail> GetCommentDetailsByID(int id);
-        IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
+        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);
         Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90);
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
@@ -287,7 +281,6 @@ namespace d360.model
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
-        IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote);
         Database Database { get; }
         DbEntityEntry Entry(object entity);
 
