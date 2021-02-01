@@ -1537,26 +1537,21 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         }        
 
         /// <summary>
-        /// Get count of assets being watched for a given Asset Type.        
-        /// </summary>
-        /// <param name="assetTypeUid">Uid of the asset type to return watch counts for.</param>        
+        /// Get count of assets being watched for each Asset Type.
+        /// </summary>        
         /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
         [
             HttpGet,
-            Route("{assetTypeUid:Guid}/watchers/counts"),
+            Route("watchers/counts"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "List of Asset Types with count of watchers", typeof(List<AssetTypeWatchCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
         ]
-        public async Task<IHttpActionResult> GetWatchCountByType(Guid assetTypeUid, Guid? resourceUid = null)
+        public async Task<IHttpActionResult> GetWatchCountByType(Guid? resourceUid = null)
         {
-            int resourceId = -1;
-
-            if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided"));
-            }
+            string resourceJoin = "";
+            DynamicParameters dbArgs = new DynamicParameters();
 
             if (resourceUid != null)
             {
@@ -1566,15 +1561,29 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                 }
                 else
                 {
-                    resourceId = Company.GlobalReportingResources.SingleOrDefault(u => u.Uid == resourceUid).ResourceID;
+                    resourceJoin = $@"INNER JOIN
+                                      reporting.Global_Resource R on R.ResourceID = FD.ResourceID and R.uid = @resourceUid";
+
+                    dbArgs.Add("@resourceUid", resourceUid);
                 }
             }
 
-            var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+            var sql = $@"
+                        SELECT 
+		                    ast.[Name] as AssetTypeName,
+		                    ast.[uid] as AssetTypeUid,
+		                    count(*) as [Count]
+	                    FROM 
+		                    FollowDetail FD 
+		                    INNER JOIN  
+		                    AssetType AST on fd.TypeID = ast.ObjectID and fd.Type=ast.Object and fd.ObjectID != ast.ObjectID	
+                            {resourceJoin}
+	                    GROUP BY 
+		                    ast.[uid],ast.[Name]";
 
-            var followCount = Company.Count<FollowDetail>(fd => fd.TypeID == assetType.ObjectID && fd.ObjectID != assetType.ObjectID && fd.Type == assetType.Object && (resourceUid == null || (resourceUid != null && fd.ResourceID==resourceId)));
+            var results = await Company.QueryAsync<AssetTypeWatchCountModel>(sql, dbArgs, ApiTimeout);            
 
-            var response = Request.CreateResponse(HttpStatusCode.OK, new AssetTypeWatchCountModel { assetTypeUid = assetTypeUid, assetTypeName = assetType.Name, count = followCount });
+            var response = Request.CreateResponse(HttpStatusCode.OK, results);
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));             
         }
