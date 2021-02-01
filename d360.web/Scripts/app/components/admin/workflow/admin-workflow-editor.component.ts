@@ -167,7 +167,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
-                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
+                        this.workflowObjectTypes = r;
                         if (this.hideShoppingCart) {
                             this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                         }
@@ -244,7 +244,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
+                map(r => this.workflowObjectTypes = r),
                 map(() => {
                     if (this.hideShoppingCart) {
                         this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
