@@ -14,8 +14,8 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'ig-color-picker',
     template: `
-                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass">
-                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled">
+                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass" tabindex="-1">
+                    <p-dropdown [class]="'p-dropdown-wrapper'" #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled" (focus)="focus($event)">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -37,7 +37,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         "(click)": "focus($event)",
-        '(focus)': 'focus($event)',
+        '(blur)': 'focus($event)',
     }
 })
 
@@ -52,6 +52,8 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     @Input() styleClass: string = '';
     @Input() style: any;
     @Input() tabindex: number = 0;
+
+    @Input() igSize: string = '';
 
     @Output() selectedColorChange = new EventEmitter();
 
@@ -80,6 +82,18 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
         if (this.invalidOptions.indexOf(this.selectedColor) != -1) {
             this.writeValue(null);
         }
+
+        //set igSize
+        if (this.igSize && this.igSize === "small") {
+            this.styleClass += "ig-input-small";
+        } else if (this.igSize && this.igSize === "medium") {
+            this.styleClass += "ig-input-medium";
+        } else if (this.igSize && this.igSize === "large") {
+            this.styleClass += "ig-input-large";
+        } else if (this.igSize && this.igSize === "full") {
+            this.styleClass += "ig-input-full";
+        }
+
         this.ref.markForCheck();
     }
 
