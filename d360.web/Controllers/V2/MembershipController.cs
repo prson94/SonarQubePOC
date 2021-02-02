@@ -1535,57 +1535,5 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
         }        
-
-        /// <summary>
-        /// Get count of assets being watched for each Asset Type.
-        /// </summary>        
-        /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
-        [
-            HttpGet,
-            Route("watchers/counts"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "List of Asset Types with count of watchers", typeof(List<AssetTypeWatchCountModel>)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),            
-        ]
-        public async Task<IHttpActionResult> GetWatchCountByType(Guid? resourceUid = null)
-        {
-            string resourceJoin = "";
-            DynamicParameters dbArgs = new DynamicParameters();
-
-            if (resourceUid != null)
-            {
-                if(!Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid resourceUid provided"));
-                }
-                else
-                {
-                    resourceJoin = $@"INNER JOIN
-                                      reporting.Global_Resource R on R.ResourceID = FD.ResourceID and R.uid = @resourceUid";
-
-                    dbArgs.Add("@resourceUid", resourceUid);
-                }
-            }
-
-            var sql = $@"
-                        SELECT 
-		                    ast.[Name] as AssetTypeName,
-		                    ast.[uid] as AssetTypeUid,
-		                    count(*) as [Count]
-	                    FROM 
-		                    FollowDetail FD 
-		                    INNER JOIN  
-		                    AssetType AST on fd.TypeID = ast.ObjectID and fd.Type=ast.Object and fd.ObjectID != ast.ObjectID	
-                            {resourceJoin}
-	                    GROUP BY 
-		                    ast.[uid],ast.[Name]";
-
-            var results = await Company.QueryAsync<AssetTypeWatchCountModel>(sql, dbArgs, ApiTimeout);            
-
-            var response = Request.CreateResponse(HttpStatusCode.OK, results);
-
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));             
-        }
     }
 }

@@ -891,4 +891,11 @@ namespace d360.core.entities
         public int resourceId { get; set; }
         public string name { get; set; }
     }
+
+    public class AssetTypeWatchCountModel
+    {
+        public Guid assetTypeUid { get; set; }
+        public string assetTypeName { get; set; }
+        public int count { get; set; }
+    }
 }

@@ -169,11 +169,4 @@ namespace d360.core.entities.Membership
         public Guid? assetTypeUid { get; set; }
         public bool watches { get; set; }
     }
-
-    public class AssetTypeWatchCountModel
-    {
-        public Guid assetTypeUid { get; set; }
-        public string assetTypeName { get; set; }
-        public int count { get; set; }
-    }
 }
