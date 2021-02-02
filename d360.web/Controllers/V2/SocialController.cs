@@ -86,7 +86,7 @@ namespace d360.web.Controllers.V2
             {
                 responsibilityTypeID = Company.ResponsibilityTypes.Where(t => t.UID == responsibilityTypeUID).Select(t => t.ID).FirstOrDefault();
             }
-            return await ResponsibilityBreakdownByResource(id, responsibilityTypeID);
+            return await ResponsibilityBreakdownByResource(id, responsibilityTypeID).ConfigureAwait(false);
         }
 
         [

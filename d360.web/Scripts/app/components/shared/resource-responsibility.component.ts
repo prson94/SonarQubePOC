@@ -41,7 +41,7 @@ declare var CurrentResourceID;
 })
 
 export class ResourceResponsibilityComponent implements OnChanges {
-    @Input() responsibilityTypeUid: string = '';
+    @Input() responsibilityTypeUid: string = "";
     @Input() resourceId: any = 0;
     @Input() resource: any = null;
     private itemsres: any[] = [];

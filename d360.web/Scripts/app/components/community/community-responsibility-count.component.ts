@@ -59,8 +59,9 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['responsibilityTypeUid'] && '' + this.responsibilityTypeUid != '')
+        if (changes["responsibilityTypeUid"] && "" + this.responsibilityTypeUid !== "") {
             this.load();
+        }
     }
 
     selectResource(item: ResourceResponsibilityTypeCount) {

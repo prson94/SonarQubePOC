@@ -46,7 +46,7 @@ import * as Highcharts from 'highcharts';
 
 export class CommunityComponent extends BaseComponent implements OnInit {
     responsibilitiesPie: Object;
-    selectedResponsibilityUid: string = '';
+    selectedResponsibilityUid: string = "";
     selectedResponsibilityName: string;
     selectedResource: ResourceResponsibilityTypeCount;
 
