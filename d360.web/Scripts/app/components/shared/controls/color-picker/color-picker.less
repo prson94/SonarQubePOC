@@ -5,13 +5,12 @@
 @import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 .d3s-color-picker {
-	min-width: 248px;
-	display: inline-flex;
-	
+    min-width: 248px;
+    display: inline-flex;
 }
 
 .d3s-color-picker.multi {
-	max-width: unset;
+    max-width: unset;
 }
 
 .d3s-color-picker .p-dropdown,
@@ -19,12 +18,12 @@
     background: @ig-white;
     border: @ig-field-border;
     height: @ig-field-height;
-     border-radius: @ig-field-border-radius;
-	width: 100%;
-	min-width: 248px;
+    border-radius: @ig-field-border-radius;
+    width: 100%;
+    min-width: 248px;
 }
 
-.d3s-color-picker .p-dropdown.required{
+.d3s-color-picker .p-dropdown.required {
     background: @ig-lightblue-t5;
     box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
     border-color: @ig-field-border-color;
@@ -71,7 +70,7 @@
     margin-right: 3px;
     border-radius: 2px;
     font-size: 10px;
-    border:none;
+    border: none;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-trigger:hover,
@@ -80,26 +79,26 @@
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-trigger:active,
-.p-multiselect .p-multiselect-trigger:active{
+.p-multiselect .p-multiselect-trigger:active {
     background-color: @ig-grey-t3;
 }
 
-.d3s-color-picker .p-dropdown .p-dropdown-clear-icon  {
-  right: 30px;
-  top: 3px;
-  margin-top: 0;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  background: @ig-grey-t5;
-  color:@ig-grey;
-  text-align: center;
-  font-size: 16px;
-  color: @ig-black;
+.d3s-color-picker .p-dropdown .p-dropdown-clear-icon {
+    right: 30px;
+    top: 3px;
+    margin-top: 0;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    background: @ig-grey-t5;
+    color: @ig-grey;
+    text-align: center;
+    font-size: 16px;
+    color: @ig-black;
 }
 
-.d3s-color-picker .p-dropdown .p-dropdown-clear-icon:hover  {
-  background-color: @ig-grey-t4;
+.d3s-color-picker .p-dropdown .p-dropdown-clear-icon:hover {
+    background-color: @ig-grey-t4;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-clear-icon:active {
@@ -107,23 +106,23 @@
 }
 
 .d3s-color-picker .p-dropdown.p-dropdown-clearable .p-dropdown-label {
-  padding-right: 100px;
+    padding-right: 30px;
 }
 
 body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder {
-	color: @ig-placeholder-color !important;
+    color: @ig-placeholder-color !important;
 }
 
-.d3s-color-picker .p-dropdown-panel, 
+.d3s-color-picker .p-dropdown-panel,
 .igx-blue.p-dropdown-panel,
 .d3s-color-picker .p-multiselect-panel {
-	padding: 0;
-	border: none;
-	background-color: @ig-white;
-	-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-	-moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-	max-width: 600px;
+    padding: 0;
+    border: none;
+    background-color: @ig-white;
+    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+    max-width: 600px;
 }
 
 .d3s-color-picker .p-multiselect .p-checkbox-box {
@@ -133,14 +132,17 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
     line-height: 1px;
     border-radius: 2px !important;
 }
-.d3s-color-picker .p-multiselect .p-checkbox-box .pi{
+
+.d3s-color-picker .p-multiselect .p-checkbox-box .pi {
     font-size: 1.1em;
     font-weight: bold;
     color: @ig-black;
 }
+
 .d3s-color-picker .p-multiselect .p-multiselect-header {
     display: flex;
 }
+
 .d3s-color-picker .p-multiselect .p-multiselect-header .p-checkbox {
     display: flex;
     vertical-align: middle;
@@ -149,21 +151,23 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
     margin-left: 4px;
 }
 
-.d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container, 
-.igx-blue.p-dropdown-panel .p-dropdown-filter-container, 
+.d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container,
+.igx-blue.p-dropdown-panel .p-dropdown-filter-container,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container {
-  position: relative;
-  padding: 4px;
-  border-bottom: 1px solid @ig-grey-t5;
-  color: @ig-black;
-  background-color: @ig-white;
-  margin: 0;
-  width: 100%;
-  margin-right: 22px;
+    position: relative;
+    padding: 4px;
+    border-bottom: 1px solid @ig-grey-t5;
+    color: @ig-black;
+    background-color: @ig-white;
+    margin: 0;
+    width: 100%;
+    margin-right: 22px;
 }
+
 .d3s-color-picker .pi {
     font-size: 1.25em;
 }
+
 .d3s-color-picker .p-inputtext:enabled:focus:not(.p-state-error) {
     outline: 0 none;
     outline-offset: 0;
@@ -174,26 +178,26 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
 .d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter,
 .igx-blue.p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container .p-inputtext {
-  width: 100%;
-  padding-right: 32px;
-   border-radius: @ig-field-border-radius;
-  height: @ig-field-height;
-  padding-left: 8px;
+    width: 100%;
+    padding-right: 32px;
+    border-radius: @ig-field-border-radius;
+    height: @ig-field-height;
+    padding-left: 8px;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter-icon,
 .igx-blue.p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter-icon,
-.d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container .p-multiselect-filter-icon{
-  width: 24px;
-  height: 24px;
-  line-height: 28px;
-  text-align: center;
-  color: @ig-black;
-  top: 13px;
-  right: 9px;
-  color: @ig-black;
-   border-radius: @ig-field-border-radius;
-  margin-left: auto;
+.d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container .p-multiselect-filter-icon {
+    width: 24px;
+    height: 24px;
+    line-height: 28px;
+    text-align: center;
+    color: @ig-black;
+    top: 13px;
+    right: 9px;
+    color: @ig-black;
+    border-radius: @ig-field-border-radius;
+    margin-left: auto;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items,
@@ -202,38 +206,38 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
     padding: 0;
 }
 
-.d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item, 
+.d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item,
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item-group,
-.igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item, 
+.igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item,
 .igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group,
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item, 
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group{
-  padding: 8px 8px;
-  color: @ig-black;
-  font-family: 'Source Sans Pro', sans-serif;
-  padding: 0 8px;
-  height: @ig-field-height;
-  line-height: 32px;
-  white-space: nowrap;
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item,
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group {
+    padding: 8px 8px;
+    color: @ig-black;
+    font-family: 'Source Sans Pro', sans-serif;
+    padding: 0 8px;
+    height: @ig-field-height;
+    line-height: 32px;
+    white-space: nowrap;
 }
 
-.d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight, 
+.d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight,
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item-group.p-highlight,
-.igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight, 
+.igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight,
 .igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group.p-highlight,
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight, 
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group.p-highlight{
-  color: @ig-black;
-  background-color: @ig-lightblue-t2;
-  border-radius: 0px;
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight,
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group.p-highlight {
+    color: @ig-black;
+    background-color: @ig-lightblue-t2;
+    border-radius: 0px;
 }
 
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight{
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight {
     border-color: @ig-midblue;
 }
 
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item:focus,
-.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group:focus{
+.d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group:focus {
     border: none !important;
     outline: none !important;
 }
@@ -250,15 +254,15 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
 }
 
 .p-dropdown-empty-message, .p-multiselect-empty-message {
-  font-family: 'Source Sans Pro', sans-serif;
-  padding-left: 8px;
-  color: @ig-grey;
+    font-family: 'Source Sans Pro', sans-serif;
+    padding-left: 8px;
+    color: @ig-grey;
 }
 
 .d3s-color-picker .p-corner-all {
     -moz-border-radius: @ig-field-border-radius;
     -webkit-border-radius: @ig-field-border-radius;
-     border-radius: @ig-field-border-radius;
+    border-radius: @ig-field-border-radius;
 }
 
 .d3s-color-picker .p-corner-top {
@@ -305,4 +309,47 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
     width: auto;
+}
+
+.d3s-color-picker {
+    p-dropdown:focus {
+        outline:none;
+    }
+
+    &.ig-input-small {
+        max-width: @ig-field-width-small;
+
+        .p-dropdown {
+            min-width: @ig-field-width-small;
+        }
+    }
+
+    &.ig-input-medium {
+        max-width: @ig-field-width-medium;
+
+        .p-dropdown {
+            min-width: @ig-field-width-medium;
+        }
+    }
+
+    &.ig-input-large {
+        max-width: @ig-field-width-large;
+
+        .p-dropdown {
+            min-width: @ig-field-width-large;
+        }
+    }
+
+    &.ig-input-full {
+        min-width: unset;
+        width: 100%;
+
+        p-dropdown {
+            width: @ig-field-width-full;
+        }
+
+        .p-dropdown {
+            min-width: unset;
+        }
+    }
 }

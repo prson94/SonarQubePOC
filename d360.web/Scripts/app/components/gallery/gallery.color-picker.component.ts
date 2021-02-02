@@ -58,6 +58,7 @@ export class GalleryColorPickerComponent implements OnInit {
         this.properties.push({ Name: "invalidOptions", Type: "String Array", Description: "Allows the user to define options that can be disabled. If the selected color passed into the component matches any invalid option the value is cleared.", Default: "" });
         this.properties.push({ Name: "styleClass", Type: "string", Description: "Style class of the component.", Default: "" });
         this.properties.push({ Name: "tabindex", Type: "number", Description: "Index of the element in tabbing order.", Default: "0" });
+        this.properties.push({ Name: "igSize", Type: "string", Description: "Size of the input. Options are small(150px), medium(308px), large(624px) and full(100%).", Default: "full" });
 
         this.events = new Array();
         this.events.push({ Name: "selectedColorChange", Type: "string", Description: "Function that outputs the selected value from the lsit of colors.", Default: "false" });

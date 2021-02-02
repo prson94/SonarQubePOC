@@ -14,8 +14,8 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'ig-color-picker',
     template: `
-                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass">
-                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled">
+                <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass" tabindex="-1">
+                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled" (focus)="focus($event)">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -37,7 +37,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         "(click)": "focus($event)",
-        '(focus)': 'focus($event)',
+        '(blur)': 'focus($event)',
     }
 })
 
@@ -60,6 +60,8 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     onModelTouched: Function = () => { };
     protected value: string;
 
+    public _size: string;
+
     @ViewChild("dd", { static: false }) dropdown: Dropdown;
 
     constructor(private ref: ChangeDetectorRef) {
@@ -80,6 +82,18 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
         if (this.invalidOptions.indexOf(this.selectedColor) != -1) {
             this.writeValue(null);
         }
+
+        //set igSize
+        if (this._size && this._size === "small") {
+            this.styleClass += "ig-input-small";
+        } else if (this._size && this._size === "medium") {
+            this.styleClass += "ig-input-medium";
+        } else if (this._size && this._size === "large") {
+            this.styleClass += "ig-input-large";
+        } else if (this._size && this._size === "full") {
+            this.styleClass += "ig-input-full";
+        }
+
         this.ref.markForCheck();
     }
 
@@ -109,5 +123,12 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     public focus(evt) {
         this.dropdown.focus();
+    }
+
+    @Input() get igSize(): string {
+        return this._size;
+    }
+    set igSize(val: string) {
+        this._size = val;
     }
 }
