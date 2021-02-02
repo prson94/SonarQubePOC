@@ -1534,6 +1534,6 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);            
 
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
-        }        
+        }
     }
 }

@@ -2795,25 +2795,45 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    resourceJoin = $@"INNER JOIN
-                                      reporting.Global_Resource R on R.ResourceID = FD.ResourceID and R.uid = @resourceUid";
+                    resourceJoin = $@" and r.uid = @resourceUid";
 
                     dbArgs.Add("@resourceUid", resourceUid);
                 }
             }
 
             var sql = $@"
+                        SELECT AssetTypeName, AssetTypeUid, count(*) as [Count] FROM (
                         SELECT 
-		                    ast.[Name] as AssetTypeName,
-		                    ast.[uid] as AssetTypeUid,
-		                    count(*) as [Count]
-	                    FROM 
-		                    FollowDetail FD 
-		                    INNER JOIN  
-		                    AssetType AST on fd.TypeID = ast.ObjectID and fd.Type=ast.Object and fd.ObjectID != ast.ObjectID	
-                            {resourceJoin}
-	                    GROUP BY 
-		                    ast.[uid],ast.[Name]";
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        FROM
+	                        Follow f
+	                        inner join
+	                        AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
+	                        inner join 
+	                        Asset a on a.AssetTypeID=ast.ID 
+	                        inner join
+	                        reporting.Global_Resource r on r.ResourceID = f.ResourceID {resourceJoin}
+                        union
+                        select 
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        from 
+	                        Follow f
+	                        inner join
+	                        Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
+	                        inner join 
+	                        AssetType ast on a.AssetTypeID=ast.ID
+	                        inner join
+	                        reporting.Global_Resource r on r.ResourceID = f.ResourceID {resourceJoin}
+	                        ) watches
+                        Group by 
+	                        watches.AssetTypeUid, watches.AssetTypeName
+                        order by AssetTypeName";
 
             var results = await Company.QueryAsync<AssetTypeWatchCountModel>(sql, dbArgs, ApiTimeout);
 
