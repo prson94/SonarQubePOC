@@ -1748,15 +1748,15 @@ order by    rnk, [Name]";
 
             try
             {
-                any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly",
-                    new { @object = new DbString { Value = type, IsAnsi= true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true }
+                any = await Company.QueryFirstOrDefaultAsync<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly, @checkExists",
+                    new { @object = new DbString { Value = type, IsAnsi= true, Length = 50 }, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true, checkExists = true }
                 );
             }
             catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
-                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1" }
+                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1, 1" }
                 });
             }
 

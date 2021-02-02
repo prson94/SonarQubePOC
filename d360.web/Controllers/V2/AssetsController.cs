@@ -1419,7 +1419,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
                        dbArgs
                     );
 
@@ -1478,7 +1478,7 @@ namespace d360.web.Controllers.V2
                 dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
+                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
                      dbArgsCount
                      ).First();
 
