@@ -2769,5 +2769,76 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Get count of assets being watched for each Asset Type.
+        /// </summary>        
+        /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
+        [
+            HttpGet,
+            Route("watchers/counts"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "List of Asset Types with count of watchers", typeof(List<AssetTypeWatchCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetWatchCountByType(Guid? resourceUid = null)
+        {
+            string resourceJoin = "";
+            DynamicParameters dbArgs = new DynamicParameters();
+
+            if (resourceUid != null)
+            {
+                if (!Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid resourceUid provided"));
+                }
+                else
+                {
+                    resourceJoin = $@"INNER JOIN
+                                      reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.uid = @resourceUid";
+
+                    dbArgs.Add("@resourceUid", resourceUid);
+                }
+            }
+
+            var sql = $@"
+                        SELECT AssetTypeName, AssetTypeUid, count(*) as [Count] FROM (
+                        SELECT 
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        FROM
+	                        Follow f
+	                        inner join
+	                        AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
+	                        inner join 
+	                        Asset a on a.AssetTypeID=ast.ID 
+	                        {resourceJoin}
+                        union
+                        select 
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        from 
+	                        Follow f
+	                        inner join
+	                        Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
+	                        inner join 
+	                        AssetType ast on a.AssetTypeID=ast.ID
+	                        {resourceJoin}
+	                        ) watches
+                        Group by 
+	                        watches.AssetTypeUid, watches.AssetTypeName
+                        order by AssetTypeName";
+
+            var results = await Company.QueryAsync<AssetTypeWatchCountModel>(sql, dbArgs, ApiTimeout);
+
+            var response = Request.CreateResponse(HttpStatusCode.OK, results);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+        }
     }
 }
