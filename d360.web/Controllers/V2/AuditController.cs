@@ -401,12 +401,12 @@ namespace d360.web.Controllers.V2
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
         {
-            string querySql = @"select
+            string querySql = $@"select
                 ga.*,
-                CASE WHEN R.State = 1 THEN
-                    R.FirstName + ' ' + R.LastName
-                ELSE
+                CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
                     R.FirstName + ' ' + R.LastName + ' (deleted)'
+                ELSE
+                    R.FirstName + ' ' + R.LastName
                 END as ResourceName,
                 fa.FieldName as Field, 
 			    CASE WHEN ga.Action = 'Tag Consolidate' THEN
@@ -452,13 +452,13 @@ namespace d360.web.Controllers.V2
             if (type.ToString() == "FusionType")
             {
                 //Gets the Fusion audit for the fusion type
-                querySql += @" UNION 
+                querySql += $@" UNION 
                         select 	                            
                         ga.*,
-                        case when R.State = 1 then
-                            R.FirstName + ' ' + R.LastName
-                        else
+                        case when R.State = {(int)CompanyResourceState.Deleted} then
                             R.FirstName + ' ' + R.LastName + ' (deleted)'
+                        else
+                            R.FirstName + ' ' + R.LastName
                         end as ResourceName, 
                             fa.FieldName as Field, 
                             fa.Value as NewValue, 
@@ -481,13 +481,13 @@ namespace d360.web.Controllers.V2
 
             if (type == SystemObjects.ReferenceItemType)
             {
-                querySql += @" UNION
+                querySql += $@" UNION
                     select 	                            
                     ga.*,
-                    case when R.State = 1 then
-                        R.FirstName + ' ' + R.LastName
-                    else
+                    case when R.State = {(int)CompanyResourceState.Deleted} then
                         R.FirstName + ' ' + R.LastName + ' (deleted)'
+                    else
+                        R.FirstName + ' ' + R.LastName
                     end as ResourceName,
                         fa.FieldName as Field, 
                         fa.Value as NewValue, 
@@ -525,14 +525,14 @@ namespace d360.web.Controllers.V2
         {
             //This query should generally match the one in GetBaseAuditQueryForId except UID columns are returned instead of Object/id same
 
-            string querySql = @"select
+            string querySql = $@"select
 	            ad.uid,
 	            ad.DisplayValue as name,
 	            r.uid as resourceUid,
-	            CASE WHEN R.State = 1 THEN
-		            R.FirstName + ' ' + R.LastName
-	            ELSE
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
 		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
 	            END as resourceName,
 	            ga.Date as date,
 	            ga.action,
@@ -589,14 +589,14 @@ namespace d360.web.Controllers.V2
 
         private string GetBaseAuditQueryForAssetTypeUid(bool includeReferenceItem)
         {
-            string querySql = @"select
+            string querySql = $@"select
 	            at.uid,
 	            at.Name as name,
 	            r.uid as resourceUid,
-	            CASE WHEN R.State = 1 THEN
-		            R.FirstName + ' ' + R.LastName
-	            ELSE
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
 		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
 	            END as resourceName,
 	            ga.Date as date,
 	            ga.action,
@@ -636,14 +636,14 @@ namespace d360.web.Controllers.V2
 
             if(includeReferenceItem)
             {
-                querySql += @" UNION select
+                querySql += $@" UNION select
                     ad.uid,
 	                ad.DisplayValue as name,
 	                r.uid as resourceUid,
-	                CASE WHEN R.State = 1 THEN
-                        R.FirstName + ' ' + R.LastName
-                    ELSE
+	                CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
                         R.FirstName + ' ' + R.LastName + ' (deleted)'
+                    ELSE
+                        R.FirstName + ' ' + R.LastName
                     END as resourceName,
 	                ga.Date as date,
 	                ga.action,
