@@ -275,19 +275,23 @@ export class TagView extends BaseComponent implements OnInit {
                     if (typeof NodeList.prototype.forEach === "function") return false;
                     tagElements.forEach = Array.prototype.forEach;
                 })();
-                tagElements.forEach(tagEle => {
-                    this.tags.forEach(tag => {
-                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
-                            subscribe(result => {
-                                if (tagEle.children[1].innerText.trim() == tag.Value.trim()) {
-                                    if (result == CurrentResourceID)
-                                        this.showDeleteOption = true;
-                                    if (result != CurrentResourceID)
-                                        tagEle.children[2].parentElement.removeChild(tagEle.children[2]);
-
+                this.tags.forEach(tag => {
+                    this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
+                        subscribe(result => {
+                            tagElements.filter = Array.prototype.filter;
+                            var showDelete = tagElements.filter(te => te.children[1].innerText.trim() == tag.Value.trim());
+                            if (showDelete.length == 1) {
+                                if (result == CurrentResourceID)
+                                    this.showDeleteOption = true;
+                                if (result != CurrentResourceID) {
+                                    tagElements.forEach(e => {
+                                        if (e.children[1].innerText.trim() == tag.Value.trim()) {
+                                            e.children[2].parentElement.removeChild(e.children[2]);
+                                        }
+                                    })
                                 }
-                            }, err => this.showMessageForResult(this.messagesService, err));
-                    })
+                            }
+                        }, err => this.showMessageForResult(this.messagesService, err));
                 })
             }
 
