@@ -53,14 +53,14 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     @Input() style: any;
     @Input() tabindex: number = 0;
 
+    @Input() igSize: string = '';
+
     @Output() selectedColorChange = new EventEmitter();
 
     onModelChange: Function = () => { };
 
     onModelTouched: Function = () => { };
     protected value: string;
-
-    public _size: string;
 
     @ViewChild("dd", { static: false }) dropdown: Dropdown;
 
@@ -84,13 +84,13 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
         }
 
         //set igSize
-        if (this._size && this._size === "small") {
+        if (this.igSize && this.igSize === "small") {
             this.styleClass += "ig-input-small";
-        } else if (this._size && this._size === "medium") {
+        } else if (this.igSize && this.igSize === "medium") {
             this.styleClass += "ig-input-medium";
-        } else if (this._size && this._size === "large") {
+        } else if (this.igSize && this.igSize === "large") {
             this.styleClass += "ig-input-large";
-        } else if (this._size && this._size === "full") {
+        } else if (this.igSize && this.igSize === "full") {
             this.styleClass += "ig-input-full";
         }
 
@@ -123,12 +123,5 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     public focus(evt) {
         this.dropdown.focus();
-    }
-
-    @Input() get igSize(): string {
-        return this._size;
-    }
-    set igSize(val: string) {
-        this._size = val;
     }
 }
