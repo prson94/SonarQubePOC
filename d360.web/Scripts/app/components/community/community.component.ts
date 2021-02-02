@@ -141,7 +141,6 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     }
 
     onPieClick(e) {
-        console.log('pieClick', e);
         this.selectedResource = null;
         this.selectedResponsibilityName = e.point.name; //name
         this.selectedResponsibilityUid = e.point.uid; // triggers user responsibilities piece to load.    
