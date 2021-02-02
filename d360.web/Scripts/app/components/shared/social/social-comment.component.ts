@@ -1,34 +1,41 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { SocialService } from '../../../services/social.service';
 import { CommentDetail, CommentType, Emoji } from '../../../models/social.model';
 import { Router } from '@angular/router';
 import { CurrentCompanySettings } from '../../../static/company-settings'
 
+declare var CurrentResourceID;
+
 @Component({
     selector: 'd3s-social-comment',    
     template: ` 
-                <div class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
+                <div *ngIf="comment.IsDeleted" class="row comment">
+                    <div class="col s1">&nbsp;</div>
+                    <div class="col s5 comment-removed">Comment removed.</div>
+                    <div class="col s6">&nbsp;</div>
+                </div>
+                <div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
                     <div class="col s1 right-align">
-                        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatingResourceID + '?size=35'" width="35">                        
+                        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatedBy + '?size=35'" width="35">                        
                     </div>
                     <div class="col s11">
                         <div class="row" *ngIf="!showEdit">
                             <div class="col s12 toolbox">                                
-                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() ,'fa-question-circle purple-text': isChallenge(), 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;<span class="user">                                    
-                                    <d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatingResourceID">{{comment.ResourceName}}</d3s-preview-tooltip>
-                                </span>&nbsp;<span class="postDate">{{comment.DateCreated | date:'medium'}}</span> 
+                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() , 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;
+                                <span class="user"><d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatedBy">{{comment.ResourceName}}</d3s-preview-tooltip></span>&nbsp;
+                                <span class="postDate">{{comment.CreatedOn | date:'medium'}}</span> 
                                 <div *ngIf="showTools" class="comment-tools">
                                     <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
-                                    <a *ngIf="comment.IsDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
-                                    <a *ngIf="comment.IsEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
-                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.UpVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
-                                    <a class="comment-tool-item-mid" (click)="doVote(socialVoteType.DownVote);"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
+                                    <a *ngIf="isDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
+                                    <a *ngIf="isEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
+                                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsUp');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
+                                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
                                 </div>                      
                             </div>
                             <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>                            
                             <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
+                                <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.Path}}</d3s-preview-tooltip>
                             </div>
                         </div>                        
                         <div class="row" *ngIf="showEdit">
@@ -52,9 +59,9 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                     </div>
                 </div>   
                 <div class="row reply" *ngFor="let response of comment?.Comments">
-                    <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatingResourceID + '?size=35'" width="35"></div>
+                    <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatedBy + '?size=35'" width="35"></div>
                     <div class="col s10">
-                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatingResourceID">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.DateCreated | date:'medium'}}</span>                        
+                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>                        
                         <div [innerHtml]="response.Body"></div>                            
                     </div>                                
                 </div>                 
@@ -69,6 +76,14 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                 img.user{
                     border-radius:5px;
                 }                                              
+                .comment-removed {
+                    border-radius: 3px;
+                    padding: 5px;
+                    background: #EFEFEF;
+                    border: 1px solid #CCCCCC;
+                    cursor:pointer;
+                    font-size: 90%;
+                }                
                 .comment-tag{
                     border-radius: 5px;
                     margin-right: 5px;
@@ -108,8 +123,9 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
 
 })
 
-export class SocialCommentComponent extends BaseComponent {
+export class SocialCommentComponent extends BaseComponent implements OnInit {
     @Input() comment: CommentDetail;
+    @Input() isAdmin: boolean;
 
     @Output() delete = new EventEmitter();
     @Output() reply = new EventEmitter();
@@ -125,11 +141,32 @@ export class SocialCommentComponent extends BaseComponent {
     replyText: string = "";    
     editText: string = "";
 
+    isDeletable: boolean = false;
+    isEditable: boolean = false;
+
+    //public emoji: Emoji;
+
     constructor(private socialService: SocialService, private router: Router) {
-        super();
+        super(); 
     } 
 
-    doVote(emoji: Emoji) {
+    ngOnInit(): void {
+        this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
+        this.isEditable = this.comment.CreatedBy == CurrentResourceID;
+        this.downVotes = this.comment.Emojis.filter(e => e.Emoji == Emoji.ThumbsDown).length;
+        this.upVotes = this.comment.Emojis.filter(e => e.Emoji == Emoji.ThumbsUp).length;
+    }
+
+    doVote(emojiString: string) {
+        let emoji: Emoji = Emoji[emojiString];
+
+        if (emoji == Emoji.ThumbsDown) {
+            this.downVotes++;
+        }
+        else {
+            this.upVotes++;
+        }
+
         this.socialService.addVote(this.comment.Uid, emoji).subscribe(
             res => {
                 if (res) {

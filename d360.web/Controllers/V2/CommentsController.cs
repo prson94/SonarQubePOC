@@ -33,117 +33,57 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        /*
-        [
-            HttpPost,
-            MapToApiVersion("2.0"),
-            Route("comments"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "Gets comments.", typeof(List<CommentDetail>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            NonNullableParameters
-        ]
-        public List<CommentDetail> GetComments(CommentRequestData pageData)
-        {
-            List<CommentDetail> comments = null;
-            if (!string.IsNullOrEmpty(pageData.ObjectType) && pageData.ObjectID.HasValue)
-            {
-                if (pageData.ObjectType.ToUpper() == "COMMENT")
-                {
-                    comments = Company.GetCommentDetailsByID(pageData.ObjectID.Value).ToList();
-                }
-                else
-                {
-                    comments = Company.GetCommentDetailsByType(
-                        (SystemObjects)Enum.Parse(typeof(SystemObjects), pageData.ObjectType),
-                        pageData.ObjectID.Value,
-                        pageData.Skip,
-                        pageData.Take,
-                        pageData.DateFilter,
-                        pageData.TypeFilter,
-                        pageData.SearchFilter
-                        ).ToList();
-                }
-            }
-            else
-            {
-                comments = Company.GetCommentDetailsByFollower(
-                    pageData.ObjectID ?? Company.CurrentResourceID,
-                    pageData.Skip,
-                    pageData.Take,
-                    pageData.DateFilter,
-                    pageData.TypeFilter,
-                    pageData.SearchFilter
-                    ).ToList();
-            }
-
-            var list = getChildren(comments, null, pageData.IsNg);
-            return list;
-        }
-
-        List<CommentDetail> getChildren(List<CommentDetail> fullList, int? currentParentID, bool isNg)
-        {
-            var listToLoad = new List<CommentDetail>();
-
-            if (fullList != null)
-            {
-                List<CommentDetail> thisLevel;
-                if (currentParentID.HasValue)
-                {
-                    thisLevel = fullList.Where(i => i.ParentID == currentParentID).OrderBy(i => i.CreatedOn).ToList();
-                }
-                else
-                {
-                    thisLevel = fullList.Where(i => i.ParentID == currentParentID).OrderByDescending(i => i.CreatedOn).ToList();
-                }
-                thisLevel.ForEach(c =>
-                {
-                    if (!string.IsNullOrEmpty(c.TagsXml))
-                    {
-                        c.ParseTagXml();
-                    }
-                    if (!string.IsNullOrEmpty(c.VotesXml))
-                    {
-                        c.ParseVoteXml();
-                    }
-                    listToLoad.Add(c);
-                    if (fullList.Any(i => i.ParentID == c.ID))
-                    {
-                        c.Comments = getChildren(fullList, c.ID, isNg);
-                    }
-                });
-            }
-            return listToLoad;
-        }         
-         */
-
+        /// <summary>
+        /// Provides support for adding a comment to an asset. You must have read permission to this asset in order to add a comment.
+        /// </summary>
+        /// <param name="comment">The body of the comment to add.</param>
+        /// <returns>An enriched comment, containing the text of the comment as well as information about the asset you attached the comment to.</returns>
         [
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(CommentDetail)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
-        public IHttpActionResult AddComment(CommentApiPostModel comment)
+        public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
         {
-            const string ERROR_HEADER = "Error adding comment";
             try
             {               
-                var detail = Comments.AddComment(comment);
+                var detail = await Comments.AddComment(comment);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, detail));
             }
             catch (Exception ex)
             {
-                //TODO
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADER, ex.Message);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to create this comment." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error adding comment",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "AddComment" } }
+                );
             }
         }
-        
+
+        /// <summary>
+        /// Use this endpoint to register your vote for a particular comment using one of the available emoji.
+        /// </summary>
+        /// <param name="commentUid">The Uid of the comment to vote on.</param>
+        /// <param name="emoji">The emoji to vote with.</param>
+        /// <returns>An HTTP status code : Created / OK</returns>
         [
             HttpPost,
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.Created, "The request was accepted and the vote was registered.", null),
+            SwaggerResponse(HttpStatusCode.OK, "The request was accepted but the user already used this emoji on the comment.", null),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public IHttpActionResult AddVote(Guid commentUid, Emoji emoji)
@@ -162,16 +102,32 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                //TODO.
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "error", ex.Message);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error while voting on the comment using this emoji",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "AddVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
+                );
             }
         }
-       
+
+        /// <summary>
+        /// Use this endpoint to remove the comment from the asset's Board. Depending on whether this comment has replies, it will either be completed removed (if no replies) 
+        /// or hidden (if there are replies). You must either have created the comment to begin with or be an administrator in this environment. 
+        /// </summary>
+        /// <param name="commentUid">The Uid of the comment to remove.</param>
+        /// <returns>An Http Status code: OK</returns>
         [
             HttpDelete,
             Route("{commentUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Removing a comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.OK, "Removed the comment.", null),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteComment(Guid commentUid)
@@ -189,57 +145,89 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                //TODO.
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "error", ex.Message);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to remove this comment." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error deleting this comment",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "DeleteComment" }, { "CommentUid", commentUid.ToString() } }
+                );
             }
         }
         
+        /// <summary>
+        /// Use this endpoint to unregister your vote for a particular comment.
+        /// </summary>
+        /// <param name="commentUid">The Uid of the comment.</param>
+        /// <param name="emoji">The Emoji-based vote to unregister.</param>
+        /// <returns>An Http Status code: OK</returns>
         [
             HttpDelete,
             Route("{commentUid:Guid}/votes/{emoji}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.OK, "Adding new comment.", null),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
         public IHttpActionResult DeleteVote(Guid commentUid, Emoji emoji)
         {
             try {
-                var returnValue = Comments.DeleteVote(commentUid, Company.CurrentResourceID, emoji);
-                if (returnValue)
-                {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
-                }
-                else
-                {
-                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
-                }
+                Comments.DeleteVote(commentUid, Company.CurrentResourceID, emoji);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
             }
             catch (Exception ex)
             {
-                //TODO.
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "error", ex.Message);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error while removing your vote on the comment using this emoji",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "DeleteVote" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
+                );
             }
         }
 
+        /// <summary>
+        /// Provides support for updating a comment on an asset. You must have created the comment to begin with in order to successfully call this endpoint.
+        /// </summary>
+        /// <param name="commentUid">The Uid of the comment.</param>
+        /// <param name="comment">The comment body to use when updating.</param>
+        /// <returns>An enriched comment, containing the text of the comment as well as information about the asset.</returns>
         [
             HttpPut,
             Route("{commentUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult EditComment(Guid commentUid, CommentApiPutModel comment)
+        public async Task<IHttpActionResult> EditComment(Guid commentUid, CommentApiPutModel comment)
         {
-            const string ERROR_HEADER = "Error updating comment";
             try
             {
-                var detail = Comments.EditComment(commentUid, comment);
+                var detail = await Comments.EditComment(commentUid, comment);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, detail));
             }
             catch (Exception ex)
             {
-                //TODO
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADER, ex.Message);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see voters for this comment." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error updating comment",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "EditComment" }, { "CommentUid", commentUid.ToString() } }
+                );
             }
         }
 
@@ -256,30 +244,39 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            //SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "A description", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by OwningAssetDisplayPath.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_sort", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerResponse(HttpStatusCode.OK, "Returns the rule results used to determine the data quality score for this score item based on a defined measure.", typeof(DataQualityScoreItemEvidenceViewModel)),
-            //SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("assetUid", "The asset unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("followerUid", "The user's unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedOn.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_sort", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered desc.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the rule results used to determine the data quality score for this score item based on a defined measure.", typeof(List<CommentDetail>)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            //SwaggerResponse(HttpStatusCode.Conflict, CONFLICT_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetComments(Guid assetUid)
+        public async Task<IHttpActionResult> GetComments()
         {
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-                var comments = await Comments.GetCommentDetails(assetUid, queryParams);
+                var comments = await Comments.GetCommentDetails(queryParams);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, comments));
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ex.GetFullExceptionData(false)));
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see votes for this comment." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving votes based on the comment",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetComments" } }
+                );
             }
         }
 
@@ -291,30 +288,32 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{commentUid:Guid}/votes/{emoji}/users"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            //SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "A description", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by OwningAssetDisplayPath.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_sort", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerResponse(HttpStatusCode.OK, "Returns the rule results used to determine the data quality score for this score item based on a defined measure.", typeof(DataQualityScoreItemEvidenceViewModel)),
-            //SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            //SwaggerResponse(HttpStatusCode.Conflict, CONFLICT_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of voters using a particular emoji on a specific comment.", typeof(List<CommentVoterDetail>)), 
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetCommentVotersByEmoji(Guid commentUid, string emoji)
+        public async Task<IHttpActionResult> GetCommentVotersByEmoji(Guid commentUid, Emoji emoji)
         {
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-                var model = new { };// await ScoringRepository.GetEvidenceForDataQualityScoreItem(scoreItemUid, queryParams);
+                var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ex.GetFullExceptionData(false)));
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see voters for this comment." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving voters based on the comment and emoji",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetCommentVotersByEmoji" }, { "CommentUid", commentUid.ToString() }, { "Emoji", emoji.ToString() } }
+                );
             }
         }
 
@@ -327,16 +326,8 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{commentUid:Guid}/votes"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            //SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_simpleFilter", "A description", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by OwningAssetDisplayPath.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_sort", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "int", ParameterType = "query", Required = false),
-            //SwaggerResponse(HttpStatusCode.OK, "Returns the rule results used to determine the data quality score for this score item based on a defined measure.", typeof(DataQualityScoreItemEvidenceViewModel)),
-            //SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            //SwaggerResponse(HttpStatusCode.Conflict, CONFLICT_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of votes on a specific comment.", typeof(List<CommentVoteDetail>)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -345,12 +336,22 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-                var model = new { };// await ScoringRepository.GetEvidenceForDataQualityScoreItem(scoreItemUid, queryParams);
+                var model = await Comments.GetCommentVotesByCommentUid(commentUid);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ex.GetFullExceptionData(false)));
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see votes for this comment." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving votes based on the comment",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetCommentVotes" }, { "CommentUid", commentUid.ToString() } }
+                );
             }
         }
 
@@ -360,42 +361,60 @@ namespace d360.web.Controllers.V2
             Route("count/{resourceId:int}/{days:int}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets counts for number of days and id.", typeof(List<CountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetCountsRolledUpByCommentType(int resourceId, int days)
         {
-            days *= -1;
-
-            DateTime dateStart;
-            DateTime dateEnd = DateTime.UtcNow;
-            if (days == 0)
+            try
             {
-                dateStart = new DateTime(2000, 1, 1);
+                days *= -1;
+
+                DateTime dateStart;
+                DateTime dateEnd = DateTime.UtcNow;
+                if (days == 0)
+                {
+                    dateStart = new DateTime(2000, 1, 1);
+                }
+                else
+                {
+                    dateStart = (days < 0) ? dateEnd.AddDays(days) : dateEnd.AddDays(-days);
+                }
+                if (resourceId == 0)
+                {
+                    resourceId = Company.CurrentResourceID;
+                }
+
+                var counts = await Comments.GetCommentCountsByFollower(resourceId, null, dateStart, dateEnd);
+                var items = new List<CountModel>();
+
+                Func<CommentType, int> getCommentCategoryCount = delegate (CommentType ct)
+                {
+                    var commentsItem = (counts.FirstOrDefault(x => x.CommentType == ct));
+                    return commentsItem == null ? 0 : commentsItem.Count;
+                };
+
+                //need to add a record for Discussion, Issue
+                items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(CommentType.Social) });
+                items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(CommentType.Issue) });
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, items));
             }
-            else
+            catch (Exception ex)
             {
-                dateStart = (days < 0) ? dateEnd.AddDays(days) : dateEnd.AddDays(-days);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = "An error occured with your request. Please check your parameters and try again." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see rolled up counts by comment type." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving rolled up counts by comment type",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetCountsRolledUpByCommentType" }, { "resourceId", resourceId.ToString() } }
+                );
             }
-            if (resourceId == 0)
-            {
-                resourceId = Company.CurrentResourceID;
-            }
-
-            var counts = await Comments.GetCommentCountsByFollower(resourceId, null, dateStart, dateEnd);
-            var items = new List<CountModel>();
-
-            Func<CommentType, int> getCommentCategoryCount = delegate (CommentType ct)
-            {
-                var commentsItem = (counts.FirstOrDefault(x => x.CommentType == ct));
-                return commentsItem == null ? 0 : commentsItem.Count;
-            };
-
-            //need to add a record for Discussion, Issue
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(CommentType.Social) });
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(CommentType.Issue) });
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, items));
         }
 
     }

@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { CommentsComponent } from './comments.component';
 
 const routes: Routes = [
-    { path: ':objectType/:objectId', component: CommentsComponent},
+    { path: ':assetUid', component: CommentsComponent},
 ];
 
 @NgModule({

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -15,6 +16,9 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public long? OverrideID { get; set; }
+
+        [DataMember]
+        public Guid? AssetUid { get; set; }
 
         [DataMember, Key, Column(Order = 3)]
         public int ResponsibilityTypeID { get; set; }

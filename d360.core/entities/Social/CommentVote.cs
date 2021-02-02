@@ -3,10 +3,11 @@ using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
 using d360.core.enums;
 using System.ComponentModel.DataAnnotations;
+using System;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE), NotMapped]
+    [DataContract(Namespace = NAMESPACE)]
     public class CommentVote : BaseIntObject, IIntObject
     {
         #region Properties
@@ -32,5 +33,28 @@ namespace d360.core.entities
 
         [DataMember, Key, Column(Order = 2)]
         public int Count { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentVoteDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public Emoji emoji { get; set; }
+
+        [DataMember, Key, Column(Order = 2)]
+        public Guid resourceUid { get; set; }
+
+        [DataMember]
+        public string userDisplayName { get; set; }
+    }
+
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentVoterDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public Guid resourceUid { get; set; }
+
+        [DataMember]
+        public string userDisplayName { get; set; }
     }
 }

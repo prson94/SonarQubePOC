@@ -21,7 +21,8 @@
 <div class="row" *ngIf="showBoardDetails">
     <div class="col s12">
         <div class="tile tile-detail">
-            <d3s-social-board [limitToType]="selectedSocialType"
+            <d3s-social-board [followerUid]=""
+                              [limitToType]="selectedSocialType"
                               [daysToLookBack]="boardDaysToLookBack"
                               [hasNewInput]="false"
                               [hasCloseButton]="true"

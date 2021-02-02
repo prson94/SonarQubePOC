@@ -4,18 +4,12 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
-using d360.core.entities;
-using d360.core;
-using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {

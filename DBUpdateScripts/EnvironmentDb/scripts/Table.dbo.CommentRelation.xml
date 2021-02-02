@@ -40,5 +40,85 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.CommentRelation-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table CommentRelation add AssetUid uniqueidentifier null
+GO
+
+update	C
+set		C.AssetUid = A.Uid
+from	CommentRelation C
+		inner join Asset A on A.Object = C.ObjectType and A.ObjectID = C.ObjectID
+GO
+
+delete CommentRelation where AssetUid is null
+GO
+
+alter table CommentRelation alter column AssetUid uniqueidentifier not null
+GO
+
+ALTER TABLE [dbo].[CommentRelation] DROP CONSTRAINT [PK_CommentRelation] WITH ( ONLINE = OFF )
+GO
+
+ALTER TABLE [dbo].[CommentRelation] ADD  CONSTRAINT [PK_CommentRelation] PRIMARY KEY CLUSTERED ( CommentID ASC, AssetUid ASC )
+GO
+
+DROP INDEX [IX_CommentRelation_ObjectType-ObjectID] ON [dbo].[CommentRelation]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CommentRelation_AssetUid] ON [dbo].[CommentRelation] ( [AssetUid] ASC )
+GO
+
+alter table CommentRelation drop column ObjectType
+GO
+alter table CommentRelation drop column ObjectID
+GO
+
+ALTER TABLE [dbo].[CommentRelation] DROP CONSTRAINT [DF_CommentRelation_Date]
+GO
+alter table CommentRelation drop column Date
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table CommentRelation add [Date] datetime CONSTRAINT [DF_CommentRelation_Date]  DEFAULT (getutcdate()) not null
+GO
+
+alter table CommentRelation add [ObjectType] varchar(50) null
+GO
+
+alter table CommentRelation add [ObjectID] int null
+GO
+
+update	C
+set		C.ObjectType = A.Object,
+		C.ObjectID = A.ObjectID
+from	CommentRelation C
+		inner join Asset A on A.Uid = C.AssetUid
+GO
+
+alter table CommentRelation alter column [ObjectType] varchar(50) not null
+GO
+
+alter table CommentRelation alter column [ObjectID] int not null
+GO
+
+alter table CommentRelation drop column AssetUid
+GO
+
+CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CommentRelation_ObjectType-ObjectID] ON [dbo].[CommentRelation] ( [ObjectType] ASC, [ObjectID] ASC )
+GO
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>

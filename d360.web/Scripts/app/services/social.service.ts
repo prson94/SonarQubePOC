@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail } from '../models/social.model';
+import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails } from '../models/social.model';
 import { Count } from '../models/counts.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -12,15 +12,20 @@ export class SocialService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetail[]> {        
-        const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-        };
-
+    getComments(assetUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {        
         return this.http
-            .post(`api/v2/comments`, `?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`, httpOptions)
+            .get(`api/v2/comments?assetUid=${assetUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
-                map(res => <CommentDetail[]>res),
+                map(res => <CommentDetails>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getCommentForFollowers(followerUid: string, daysToLookBack: number, page?: number, count?: number, typeFilter?: number): Observable<CommentDetails> {
+        return this.http
+            .get(`api/v2/comments?followerUid=${followerUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
+            .pipe(
+                map(res => <CommentDetails>res),
                 catchError(err => this.handleError(err))
             );
     }

@@ -30,10 +30,56 @@ namespace d360.core.entities
         public int? ParentID { get; set; }
     }
 
-
     [DataContract(Namespace = NAMESPACE)]
-    public class CommentDetail : Comment
+    public class CommentDetails: BaseObject
     {
+        [DataMember]
+        public int count { get; set; }
+        [DataMember] 
+        public int page { get; set; }
+        [DataMember] 
+        public int pageSize { get; set; }
+        [DataMember] 
+        public List<CommentDetail> comments { get; set; }
+    }
+
+
+    [DataContract]
+    public class CommentDetail
+    {
+        [DataMember]
+        public int ID { get; set; }
+
+        [DataMember]
+        public int CreatedBy { get; set; }
+
+        [DataMember]
+        public int UpdatedBy { get; set; }
+
+        [DataMember]
+        public DateTime CreatedOn { get; set; }
+
+        [DataMember]
+        public DateTime UpdatedOn { get; set; }
+
+        [DataMember]
+        public string Body { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid AssetUid { get; set; }
+
+        [DataMember]
+        public CommentType CommentType { get; set; }
+
+        [DataMember]
+        public bool IsDeleted { get; set; }
+
+        [DataMember]
+        public int? ParentID { get; set; }
+
         [DataMember, NotMapped]
         public string CreatedOnUTCString { get { return ((CreatedOn == null) ? null : ((DateTime)UpdatedOn).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
 

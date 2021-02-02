@@ -4,6 +4,7 @@ import { SocialService } from '../../../services/social.service';
 import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from '../../../models/social.model';
 import { CurrentCompanySettings } from '../../../static/company-settings'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
     selector: 'd3s-social-board',
@@ -14,7 +15,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <d3s-social-input (commented)="addComment($event);" *ngIf="allowComments()"></d3s-social-input>                        
                         <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
                         <div *ngFor="let comment of comments">
-                            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
+                            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
                         </div>                
                         <div style="margin-top:10px;">
                             <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
@@ -27,6 +28,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class SocialBoardComponent extends BaseComponent implements OnInit {
+    @Input() followerUid: string;
     @Input() assetUid: string;
     @Input() hasCloseButton: boolean = false;
     @Input() hasNewInput: boolean = true;
@@ -36,13 +38,15 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Output() countsChanged = new EventEmitter();
     @Output() close = new EventEmitter();
     
-    rowCount: number = 5;
-    pageNumber: number = 0;
+    rowCount: number = 15;
+    pageNumber: number = 1;
     hasMore: boolean = true;
     comments: CommentDetail[] = [];
     socialMessage: string;
 
-    constructor(private socialService: SocialService, protected messagesService: MessagesObservableService) {
+    isAdmin: boolean = false;
+
+    constructor(private authenticationService: AuthenticationService, private socialService: SocialService, protected messagesService: MessagesObservableService) {
         super();
     }
 
@@ -59,8 +63,11 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             else
                 this.socialMessage = 'My comments';
         }
-                
-        this.loadComments();
+
+        this.authenticationService.checkCurrentUserAdmin().subscribe(res => {
+            this.isAdmin = res;
+            this.loadComments();
+        });
     }
 
     private daysMessage(): string {
@@ -69,12 +76,24 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
 
     loadComments() {
         this.isLoading = true;
-        this.socialService.getComments(this.assetUid, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
-            .subscribe(res => {
-                this.isLoading = false;
-                this.comments = this.comments.concat(res);
-                this.hasMore = (res.length && res.length > 0);
-            });
+        if (this.assetUid) {
+            this.socialService.getComments(this.assetUid, this.daysToLookBack, this.pageNumber, this.rowCount, this.limitToType)
+                .subscribe(res => {
+                    this.isLoading = false;
+                    this.comments = this.comments.concat(res.comments);
+                    this.hasMore = (res.count > this.comments.length);
+                    this.pageNumber++;
+                });
+        }
+        else {
+            this.socialService.getCommentForFollowers(this.followerUid, this.daysToLookBack, this.pageNumber, this.rowCount, this.limitToType)
+                .subscribe(res => {
+                    this.isLoading = false;
+                    this.comments = this.comments.concat(res.comments);
+                    this.hasMore = (res.comments.length && res.comments.length > 0);
+                });
+        }
+
         this.pageNumber++;
     }
 
@@ -94,8 +113,8 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 if (res) {
                     comment.IsDeleted = true;
                     let index = this.comments.findIndex(x => x.ID == comment.ID);
-                    
-                    if (index >= 0) {
+
+                    if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
                         this.comments.splice(index,1);
                     }
                     this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
@@ -116,7 +135,15 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         comment.Body = commentContent;
         comment.AssetUid = this.assetUid;
         comment.Body = commentContent;
-        comment.Tags = event.tags? event.tags : [];
+        let taggedAssetUids: string[] = [];
+
+        if (event.tags) {
+            event.tags.forEach(t => {
+                taggedAssetUids.push(t.AssetUid);
+            });
+        }
+
+        comment.Tags = taggedAssetUids;
 
         this.socialService.addComment(comment).
             subscribe(res => {                

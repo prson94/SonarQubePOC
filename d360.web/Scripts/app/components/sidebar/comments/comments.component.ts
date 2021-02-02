@@ -13,7 +13,7 @@ declare var CurrentResourceID;
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-social-board *ngIf="showBoard" [objectType]="objectType" [objectID]="objectId" [daysToLookBack]="daysToLookBack"></d3s-social-board>
+                        <d3s-social-board *ngIf="showBoard" [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></d3s-social-board>
                     </div>
                 </div>
             </div>
@@ -21,8 +21,7 @@ declare var CurrentResourceID;
 })
 
 export class CommentsComponent extends BaseComponent implements OnInit, OnDestroy {
-    @Input() objectId: number = 0;
-    @Input() objectType: string="";
+    @Input() assetUid: string="";
 
     private sub: any;
     daysToLookBack: number = -1;
@@ -44,8 +43,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.objectId = +params['objectId'];
-            this.objectType = params['objectType'];
+            this.assetUid = params['assetUid'];
             this.isLoading = false;
             this.showBoard = true;
 
@@ -53,7 +51,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
                 this.checkSecondaryNavLocalStorage();
             }
             else {
-                this.buildSecondaryNavigationForObject(this.objectId, this.objectType);
+                this.buildSecondaryNavigation(this.assetUid);
             }
         });
     }

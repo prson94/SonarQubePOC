@@ -23,6 +23,13 @@ export class CommentAggregateVoteDetail {
     Emoji: Emoji;
 }
 
+export class CommentDetails {
+    count: number;
+    page: number;
+    pageSize: number;
+    comments: CommentDetail[];
+}
+
 export class CommentDetail {
     Uid: string;
     Body: string;

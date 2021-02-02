@@ -36,4 +36,35 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table CommentVote add Emoji int constraint DF_CommentVote_Emoji default(1) not null
+GO
+
+update CommentVote set Emoji = iif(Vote = 1, 1, 2)
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CommentVote_CommentID] ON [dbo].[CommentVote] ( [CommentID] )
+GO
+
+CREATE NONCLUSTERED INDEX [IX_CommentVote_ResourceID] ON [dbo].[CommentVote] ( [ResourceID] )
+GO
+
+ALTER TABLE [dbo].[CommentVote] DROP CONSTRAINT [DF_CommentVote_Vote]
+GO
+
+alter table CommentVote drop column Vote
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
