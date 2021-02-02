@@ -2795,7 +2795,8 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    resourceJoin = $@" and r.uid = @resourceUid";
+                    resourceJoin = $@"INNER JOIN
+                                      reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.uid = @resourceUid";
 
                     dbArgs.Add("@resourceUid", resourceUid);
                 }
@@ -2814,8 +2815,7 @@ namespace d360.web.Controllers.V2
 	                        AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
 	                        inner join 
 	                        Asset a on a.AssetTypeID=ast.ID 
-	                        inner join
-	                        reporting.Global_Resource r on r.ResourceID = f.ResourceID {resourceJoin}
+	                        {resourceJoin}
                         union
                         select 
 	                        ast.[Name] as AssetTypeName,
@@ -2828,8 +2828,7 @@ namespace d360.web.Controllers.V2
 	                        Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
 	                        inner join 
 	                        AssetType ast on a.AssetTypeID=ast.ID
-	                        inner join
-	                        reporting.Global_Resource r on r.ResourceID = f.ResourceID {resourceJoin}
+	                        {resourceJoin}
 	                        ) watches
                         Group by 
 	                        watches.AssetTypeUid, watches.AssetTypeName
