@@ -5,205 +5,205 @@
 @import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 .d3s-color-picker {
-    min-width: 248px;
-    display: inline-flex;
+  min-width: 248px;
+  display: inline-flex;
 }
 
 .d3s-color-picker.multi {
-    max-width: unset;
+  max-width: unset;
 }
 
 .d3s-color-picker .p-dropdown,
 .d3s-color-picker .p-multiselect {
-    background: @ig-white;
-    border: @ig-field-border;
-    height: @ig-field-height;
-    border-radius: @ig-field-border-radius;
-    width: 100%;
-    min-width: 248px;
+  background: @ig-white;
+  border: @ig-field-border;
+  height: @ig-field-height;
+  border-radius: @ig-field-border-radius;
+  width: 100%;
+  min-width: 248px;
 }
 
 .d3s-color-picker .p-dropdown.required {
-    background: @ig-lightblue-t5;
-    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-    border-color: @ig-field-border-color;
+  background: @ig-lightblue-t5;
+  box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+  border-color: @ig-field-border-color;
 }
 
 .d3s-color-picker .p-dropdown:not(.p-disabled):hover
 .d3s-color-picker .p-multiselect:not(.p-disabled):hover {
-    border-color: @ig-white;
+  border-color: @ig-white;
 }
 
 .d3s-color-picker .p-dropdown:not(.p-disabled).p-focus,
 .d3s-color-picker .p-multiselect:not(.p-disabled).p-focus {
-    outline: 0 none;
-    outline-offset: 0;
-    -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-    -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-    border-color: @ig-midblue;
+  outline: 0 none;
+  outline-offset: 0;
+  -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+  -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+  box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+  border-color: @ig-midblue;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-label,
 .d3s-color-picker .p-multiselect .p-multiselect-label {
-    font-family: 'Source Sans Pro', sans-serif;
-    background: none;
-    height: 24px;
-    line-height: 24px;
-    padding-left: 8px;
-    padding-right: 32px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-family: 'Source Sans Pro', sans-serif;
+  background: none;
+  height: 24px;
+  line-height: 24px;
+  padding-left: 8px;
+  padding-right: 32px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-trigger,
 .d3s-color-picker .p-multiselect .p-multiselect-trigger {
-    background-color: @ig-grey-t5;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    padding: 0;
-    color: @ig-black;
-    margin-top: 3px;
-    margin-right: 3px;
-    border-radius: 2px;
-    font-size: 10px;
-    border: none;
+  background-color: @ig-grey-t5;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  padding: 0;
+  color: @ig-black;
+  margin-top: 3px;
+  margin-right: 3px;
+  border-radius: 2px;
+  font-size: 10px;
+  border: none;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-trigger:hover,
 .d3s-color-picker .p-multiselect .p-multiselect-trigger:hover {
-    background-color: @ig-grey-t4;
+  background-color: @ig-grey-t4;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-trigger:active,
 .p-multiselect .p-multiselect-trigger:active {
-    background-color: @ig-grey-t3;
+  background-color: @ig-grey-t3;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-clear-icon {
-    right: 30px;
-    top: 3px;
-    margin-top: 0;
-    width: 24px;
-    height: 24px;
-    line-height: 24px;
-    background: @ig-grey-t5;
-    color: @ig-grey;
-    text-align: center;
-    font-size: 16px;
-    color: @ig-black;
+  right: 30px;
+  top: 3px;
+  margin-top: 0;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background: @ig-grey-t5;
+  color: @ig-grey;
+  text-align: center;
+  font-size: 16px;
+  color: @ig-black;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-clear-icon:hover {
-    background-color: @ig-grey-t4;
+  background-color: @ig-grey-t4;
 }
 
 .d3s-color-picker .p-dropdown .p-dropdown-clear-icon:active {
-    background-color: @ig-grey-t3;
+  background-color: @ig-grey-t3;
 }
 
 .d3s-color-picker .p-dropdown.p-dropdown-clearable .p-dropdown-label {
-    padding-right: 30px;
+  padding-right: 30px;
 }
 
 body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder {
-    color: @ig-placeholder-color !important;
+  color: @ig-placeholder-color !important;
 }
 
 .d3s-color-picker .p-dropdown-panel,
 .igx-blue.p-dropdown-panel,
 .d3s-color-picker .p-multiselect-panel {
-    padding: 0;
-    border: none;
-    background-color: @ig-white;
-    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
-    max-width: 600px;
+  padding: 0;
+  border: none;
+  background-color: @ig-white;
+  -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+  -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.33);
+  max-width: 600px;
 }
 
 .d3s-color-picker .p-multiselect .p-checkbox-box {
-    border: @ig-field-border;
-    background: white;
-    color: @ig-white;
-    line-height: 1px;
-    border-radius: 2px !important;
+  border: @ig-field-border;
+  background: white;
+  color: @ig-white;
+  line-height: 1px;
+  border-radius: 2px !important;
 }
 
 .d3s-color-picker .p-multiselect .p-checkbox-box .pi {
-    font-size: 1.1em;
-    font-weight: bold;
-    color: @ig-black;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: @ig-black;
 }
 
 .d3s-color-picker .p-multiselect .p-multiselect-header {
-    display: flex;
+  display: flex;
 }
 
 .d3s-color-picker .p-multiselect .p-multiselect-header .p-checkbox {
-    display: flex;
-    vertical-align: middle;
-    cursor: pointer;
-    margin-top: 8px;
-    margin-left: 4px;
+  display: flex;
+  vertical-align: middle;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-left: 4px;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container,
 .igx-blue.p-dropdown-panel .p-dropdown-filter-container,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container {
-    position: relative;
-    padding: 4px;
-    border-bottom: 1px solid @ig-grey-t5;
-    color: @ig-black;
-    background-color: @ig-white;
-    margin: 0;
-    width: 100%;
-    margin-right: 22px;
+  position: relative;
+  padding: 4px;
+  border-bottom: 1px solid @ig-grey-t5;
+  color: @ig-black;
+  background-color: @ig-white;
+  margin: 0;
+  width: 100%;
+  margin-right: 22px;
 }
 
 .d3s-color-picker .pi {
-    font-size: 1.25em;
+  font-size: 1.25em;
 }
 
 .d3s-color-picker .p-inputtext:enabled:focus:not(.p-state-error) {
-    outline: 0 none;
-    outline-offset: 0;
-    box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
-    border-color: @ig-midblue;
+  outline: 0 none;
+  outline-offset: 0;
+  box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+  border-color: @ig-midblue;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter,
 .igx-blue.p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container .p-inputtext {
-    width: 100%;
-    padding-right: 32px;
-    border-radius: @ig-field-border-radius;
-    height: @ig-field-height;
-    padding-left: 8px;
+  width: 100%;
+  padding-right: 32px;
+  border-radius: @ig-field-border-radius;
+  height: @ig-field-height;
+  padding-left: 8px;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter-icon,
 .igx-blue.p-dropdown-panel .p-dropdown-filter-container .p-dropdown-filter-icon,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-filter-container .p-multiselect-filter-icon {
-    width: 24px;
-    height: 24px;
-    line-height: 28px;
-    text-align: center;
-    color: @ig-black;
-    top: 13px;
-    right: 9px;
-    color: @ig-black;
-    border-radius: @ig-field-border-radius;
-    margin-left: auto;
+  width: 24px;
+  height: 24px;
+  line-height: 28px;
+  text-align: center;
+  color: @ig-black;
+  top: 13px;
+  right: 9px;
+  color: @ig-black;
+  border-radius: @ig-field-border-radius;
+  margin-left: auto;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items,
 .igx-blue.p-dropdown-panel .p-dropdown-items,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items {
-    padding: 0;
+  padding: 0;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item,
@@ -212,13 +212,13 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
 .igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group {
-    padding: 8px 8px;
-    color: @ig-black;
-    font-family: 'Source Sans Pro', sans-serif;
-    padding: 0 8px;
-    height: @ig-field-height;
-    line-height: 32px;
-    white-space: nowrap;
+  padding: 8px 8px;
+  color: @ig-black;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding: 0 8px;
+  height: @ig-field-height;
+  line-height: 32px;
+  white-space: nowrap;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight,
@@ -227,19 +227,19 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
 .igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group.p-highlight,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group.p-highlight {
-    color: @ig-black;
-    background-color: @ig-lightblue-t2;
-    border-radius: 0px;
+  color: @ig-black;
+  background-color: @ig-lightblue-t2;
+  border-radius: 0px;
 }
 
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item.p-highlight {
-    border-color: @ig-midblue;
+  border-color: @ig-midblue;
 }
 
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item:focus,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group:focus {
-    border: none !important;
-    outline: none !important;
+  border: none !important;
+  outline: none !important;
 }
 
 .d3s-color-picker .p-dropdown-panel .p-dropdown-items .p-dropdown-item:not(.p-highlight):not(.p-disabled):hover,
@@ -248,108 +248,108 @@ body .p-dropdown .p-dropdown-label.p-placeholder, body .p-inputtext::placeholder
 .igx-blue.p-dropdown-panel .p-dropdown-items .p-dropdown-item-group:not(.p-highlight):not(.p-disabled):hover,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item:not(.p-highlight):not(.p-disabled):hover,
 .d3s-color-picker .p-multiselect-panel .p-multiselect-items .p-multiselect-item-group:not(.p-highlight):not(.p-disabled):hover {
-    color: @ig-black;
-    background-color: @ig-lightblue-t4;
-    border-radius: 0px;
+  color: @ig-black;
+  background-color: @ig-lightblue-t4;
+  border-radius: 0px;
 }
 
 .p-dropdown-empty-message, .p-multiselect-empty-message {
-    font-family: 'Source Sans Pro', sans-serif;
-    padding-left: 8px;
-    color: @ig-grey;
+  font-family: 'Source Sans Pro', sans-serif;
+  padding-left: 8px;
+  color: @ig-grey;
 }
 
 .d3s-color-picker .p-corner-all {
-    -moz-border-radius: @ig-field-border-radius;
-    -webkit-border-radius: @ig-field-border-radius;
-    border-radius: @ig-field-border-radius;
+  -moz-border-radius: @ig-field-border-radius;
+  -webkit-border-radius: @ig-field-border-radius;
+  border-radius: @ig-field-border-radius;
 }
 
 .d3s-color-picker .p-corner-top {
-    -moz-border-radius-topleft: @ig-field-border-radius;
-    -webkit-border-top-left-radius: @ig-field-border-radius;
-    border-top-left-radius: @ig-field-border-radius;
-    -moz-border-radius-topright: @ig-field-border-radius;
-    -webkit-border-top-right-radius: @ig-field-border-radius;
-    border-top-right-radius: @ig-field-border-radius;
+  -moz-border-radius-topleft: @ig-field-border-radius;
+  -webkit-border-top-left-radius: @ig-field-border-radius;
+  border-top-left-radius: @ig-field-border-radius;
+  -moz-border-radius-topright: @ig-field-border-radius;
+  -webkit-border-top-right-radius: @ig-field-border-radius;
+  border-top-right-radius: @ig-field-border-radius;
 }
 
 .d3s-color-picker .p-corner-bottom {
-    -moz-border-radius-bottomleft: @ig-field-border-radius;
-    -webkit-border-bottom-left-radius: @ig-field-border-radius;
-    border-bottom-left-radius: @ig-field-border-radius;
-    -moz-border-radius-bottomright: @ig-field-border-radius;
-    -webkit-border-bottom-right-radius: @ig-field-border-radius;
-    border-bottom-right-radius: @ig-field-border-radius;
+  -moz-border-radius-bottomleft: @ig-field-border-radius;
+  -webkit-border-bottom-left-radius: @ig-field-border-radius;
+  border-bottom-left-radius: @ig-field-border-radius;
+  -moz-border-radius-bottomright: @ig-field-border-radius;
+  -webkit-border-bottom-right-radius: @ig-field-border-radius;
+  border-bottom-right-radius: @ig-field-border-radius;
 }
 
 .d3s-color-picker .p-corner-left {
-    -moz-border-radius-topleft: @ig-field-border-radius;
-    -webkit-border-top-left-radius: @ig-field-border-radius;
-    border-top-left-radius: @ig-field-border-radius;
-    -moz-border-radius-bottomleft: @ig-field-border-radius;
-    -webkit-border-bottom-left-radius: @ig-field-border-radius;
-    border-bottom-left-radius: @ig-field-border-radius;
+  -moz-border-radius-topleft: @ig-field-border-radius;
+  -webkit-border-top-left-radius: @ig-field-border-radius;
+  border-top-left-radius: @ig-field-border-radius;
+  -moz-border-radius-bottomleft: @ig-field-border-radius;
+  -webkit-border-bottom-left-radius: @ig-field-border-radius;
+  border-bottom-left-radius: @ig-field-border-radius;
 }
 
 .d3s-color-picker .p-corner-right {
-    -moz-border-radius-topright: @ig-field-border-radius;
-    -webkit-border-top-right-radius: @ig-field-border-radius;
-    border-top-right-radius: @ig-field-border-radius;
-    -moz-border-radius-bottomright: @ig-field-border-radius;
-    -webkit-border-bottom-right-radius: @ig-field-border-radius;
-    border-bottom-right-radius: @ig-field-border-radius;
+  -moz-border-radius-topright: @ig-field-border-radius;
+  -webkit-border-top-right-radius: @ig-field-border-radius;
+  border-top-right-radius: @ig-field-border-radius;
+  -moz-border-radius-bottomright: @ig-field-border-radius;
+  -webkit-border-bottom-right-radius: @ig-field-border-radius;
+  border-bottom-right-radius: @ig-field-border-radius;
 }
 
 .error-message {
-    background: #b21a3e;
-    padding: 2px 7px;
-    font-size: 12px;
-    color: white;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
-    width: auto;
+  background: #b21a3e;
+  padding: 2px 7px;
+  font-size: 12px;
+  color: white;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  width: auto;
 }
 
 .d3s-color-picker {
-    p-dropdown:focus {
-        outline:none;
+  p-dropdown:focus {
+    outline: none;
+  }
+
+  &.ig-input-small {
+    max-width: @ig-field-width-small;
+
+    .p-dropdown {
+      min-width: @ig-field-width-small;
+    }
+  }
+
+  &.ig-input-medium {
+    max-width: @ig-field-width-medium;
+
+    .p-dropdown {
+      min-width: @ig-field-width-medium;
+    }
+  }
+
+  &.ig-input-large {
+    max-width: @ig-field-width-large;
+
+    .p-dropdown {
+      min-width: @ig-field-width-large;
+    }
+  }
+
+  &.ig-input-full {
+    min-width: unset;
+    width: 100%;
+
+    p-dropdown {
+      width: @ig-field-width-full;
     }
 
-    &.ig-input-small {
-        max-width: @ig-field-width-small;
-
-        .p-dropdown {
-            min-width: @ig-field-width-small;
-        }
+    .p-dropdown {
+      min-width: unset;
     }
-
-    &.ig-input-medium {
-        max-width: @ig-field-width-medium;
-
-        .p-dropdown {
-            min-width: @ig-field-width-medium;
-        }
-    }
-
-    &.ig-input-large {
-        max-width: @ig-field-width-large;
-
-        .p-dropdown {
-            min-width: @ig-field-width-large;
-        }
-    }
-
-    &.ig-input-full {
-        min-width: unset;
-        width: 100%;
-
-        p-dropdown {
-            width: @ig-field-width-full;
-        }
-
-        .p-dropdown {
-            min-width: unset;
-        }
-    }
+  }
 }
