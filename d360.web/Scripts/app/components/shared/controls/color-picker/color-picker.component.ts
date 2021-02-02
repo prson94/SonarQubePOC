@@ -15,7 +15,7 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
     selector: 'ig-color-picker',
     template: `
                 <div [ngStyle]="style" [class]="'d3s-color-picker ' + styleClass" tabindex="-1">
-                    <p-dropdown #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled" (focus)="focus($event)">
+                    <p-dropdown [class]="'p-dropdown-wrapper'" #dd [tabIndex]="tabindex" [appendTo]="'body'" [options]="colors" [panelStyleClass]="'igx-blue'" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="{{filterplaceholder}}" [disabled]="disabled" (focus)="focus($event)">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
