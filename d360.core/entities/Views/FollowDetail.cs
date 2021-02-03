@@ -18,7 +18,7 @@ namespace d360.core.entities.Views
         public string ObjectType { get; set; }
 
         [DataMember]
-        public long AssetID { get; set; }
+        public long? AssetID { get; set; }
 
         [DataMember]
         public int FollowID { get; set; }

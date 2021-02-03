@@ -22,6 +22,7 @@ declare var CurrentResourceID;
 
 export class CommentsComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUid: string="";
+    @Input() localStorage: boolean = false;
 
     private sub: any;
     daysToLookBack: number = -1;
@@ -44,10 +45,11 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
 
         this.sub = this.route.params.subscribe(params => {
             this.assetUid = params["assetUid"];
+            this.localStorage = params["localStorage"];
             this.isLoading = false;
             this.showBoard = true;
 
-            if (this.objectType && this.objectType.toUpperCase() == "RESOURCE") {
+            if (this.localStorage) {
                 this.checkSecondaryNavLocalStorage();
             }
             else {

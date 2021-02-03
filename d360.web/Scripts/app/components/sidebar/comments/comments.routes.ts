@@ -3,7 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { CommentsComponent } from './comments.component';
 
 const routes: Routes = [
-    { path: ':assetUid', component: CommentsComponent},
+    { path: ':assetUid', component: CommentsComponent },
+    { path: ':assetUid/:localStorage', component: CommentsComponent },
 ];
 
 @NgModule({
