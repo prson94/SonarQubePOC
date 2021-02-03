@@ -335,7 +335,6 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var queryParams = Request.GetQueryNameValuePairs();
                 var model = await Comments.GetCommentVotesByCommentUid(commentUid);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }

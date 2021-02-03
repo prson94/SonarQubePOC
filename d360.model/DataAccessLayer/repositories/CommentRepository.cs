@@ -136,7 +136,7 @@ namespace d360.model.DataAccessLayer
 				}
 				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
-				return await GetCommentDetailByUid(dbComment.Uid);
+				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
 			}
 			else
 			{
