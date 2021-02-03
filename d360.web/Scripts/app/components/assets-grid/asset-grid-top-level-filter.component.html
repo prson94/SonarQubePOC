@@ -1,69 +1,69 @@
 <form (ngSubmit)="onSubmit()"
-    #filterForm="ngForm">
-    <div class="row">
+      #filterForm="ngForm">
+    <div class="flex-grid">
         <ng-template ngFor
-            let-field
-            [ngForOf]="fields">
+                     let-field
+                     [ngForOf]="fields">
             <div [ngSwitch]="field.columntype"
-                class="col s3">
+                 class="flex-col col s3">
                 <div class="row">
                     <div class="col s12 FieldName">{{field.text}}</div>
                     <div class="col s12">
                         <span *ngSwitchCase="'dropdownlist'">
                             <p-multiSelect [name]="field.datafield"
-                                [options]="field.filteritems | arraySelectItemPipe:'labelasval'"
-                                [ngModel]="field.value"
-                                (ngModelChange)="field.value=$event;enableParentFilters(field);"
-                                [style]="{width:'100%'}"
-                                [disabled]="field.disabled"
-                                appendTo="body"
-                                defaultLabel="Choose"></p-multiSelect>
+                                           [options]="field.filteritems | arraySelectItemPipe:'labelasval'"
+                                           [ngModel]="field.value"
+                                           (ngModelChange)="field.value=$event;enableParentFilters(field);"
+                                           [style]="{width:'100%'}"
+                                           [disabled]="field.disabled"
+                                           appendTo="body"
+                                           defaultLabel="Choose"></p-multiSelect>
                         </span>
                         <span *ngSwitchCase="'checkbox'">
                             <select [name]="field.datafield"
-                                [ngModel]="field.value"
-                                (ngModelChange)="field.value=$event;enableParentFilters(field);"
-                                [disabled]="field.disabled"
-                                style="width: 100%">
+                                    [ngModel]="field.value"
+                                    (ngModelChange)="field.value=$event;enableParentFilters(field);"
+                                    [disabled]="field.disabled"
+                                    style="width: 100%">
                                 <option></option>
                                 <option *ngFor="let i of field.filteritems | arraySelectItemPipe"
-                                    [value]="i.value">{{i.label}}</option>
+                                        [value]="i.value">
+                                    {{i.label}}
+                                </option>
                             </select>
                         </span>
                         <span *ngSwitchCase="'datetimeinput'">
                             <p-calendar [(ngModel)]="field.value"
-                                [name]="field.datafield"
-                                [dateFormat]="getLocaleDateString()"></p-calendar>
+                                        [name]="field.datafield"
+                                        [dateFormat]="getLocaleDateString()"></p-calendar>
                         </span>
                         <input *ngSwitchDefault
-                            [name]="field.datafield"
-                            type="text"
-                            [ngModel]="field.value"
-                            (ngModelChange)="field.value = $event"
-                            placeholder="Enter a value"
-                            style="width:100%;">
+                               [name]="field.datafield"
+                               type="text"
+                               [ngModel]="field.value"
+                               (ngModelChange)="field.value = $event"
+                               placeholder="Enter a value"
+                               style="width:100%;">
                     </div>
                 </div>
             </div>
         </ng-template>
-        <div class="col s6 buttons">
-            <div class="row">
-                <div class="col s12">&nbsp;</div>
-                <div class="col s12">
-                    <button pButton
+    </div>
+    <div class="flex-grid buttons">
+        <div class="row">
+            <div class="col s12">
+                <button pButton
                         type="submit"
                         [disabled]="!filterForm.form.valid"
                         style="padding:3px"
                         label="Filter Results"></button>
-                    &nbsp;
-                    <button pButton
+                &nbsp;
+                <button pButton
                         (click)="resetFilters()"
                         type="button"
                         style="padding:3px"
                         label="Clear Filters"></button>
-                </div>
             </div>
         </div>
     </div>
-    <br />
 </form>

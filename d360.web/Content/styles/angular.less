@@ -249,6 +249,7 @@ nav.top, .left-side-nav {
         }
     }
 }
+
 d3s-navbar-item {
     > div {
         &.router-link-active > a, &.router-link-active > span, &.router-link-active > span > a {
@@ -2936,8 +2937,8 @@ button.tab-scroller {
     }
 
     &.asset-img {
-        max-height:30px;
-        max-width:30px;
+        max-height: 30px;
+        max-width: 30px;
     }
 
     &.asset-icon {
@@ -4474,6 +4475,7 @@ button.tab-scroller {
 
 .kebabmenu li.p-menuitem {
     padding: 8px;
+
     &:hover {
         background-color: @igx-lightblue-xlight;
     }
@@ -6365,7 +6367,7 @@ table {
                 font-size: large;
                 font-weight: bold;
                 margin-bottom: 16px;
-                word-break:break-all;
+                word-break: break-all;
             }
         }
 
@@ -6874,6 +6876,7 @@ table {
         list-style: inherit !important;
     }
 }
+
 .front-elide {
     white-space: nowrap;
     overflow: hidden;
@@ -6896,5 +6899,15 @@ table {
         .p-dropdown-item {
             white-space: pre-wrap !important;
         }
+    }
+}
+
+.flex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px 0 8px 0;
+
+    .flex-col {
+        padding:0px 16px 0px 0px;
     }
 }
