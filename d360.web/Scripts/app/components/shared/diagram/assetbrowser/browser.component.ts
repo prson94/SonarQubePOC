@@ -1543,7 +1543,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_RevealLineageHop(e: go.InputEvent, obj: go.GraphObject) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let data = obj.part.data;
-
+            let currentHighlightedNode = this.highlightedPart;
             // Get relations to ignore.
             let assets: AssetBrowserApiHopAssetRequestModel[] = [];
             let hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === data.hierarchyKey; });
@@ -1592,9 +1592,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.helper_HideDeselectedAssetTypes();
                         this.helper_HideDeselectedPredicates();
                         this.helper_HideDeselectedResponsibilityTypes();
+                        this.helper_HighlightPath(null, currentHighlightedNode);
                     }
                     else {
                         this.helper_RemoveRevealNode(data, direction);
+                        this.helper_HighlightPath(null, currentHighlightedNode);
                     }
                 });
         }
@@ -2006,8 +2008,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
                             comparer: (a, b) => this.helper_SortParts(a, b)
                         }
-                    ),
+                    )
             },
+            new go.Binding("isSubGraphExpanded", "", this.isSubGraphExpanded.bind(this)).ofObject(),
             this.g(
                 go.Shape,
                 "Rectangle",
@@ -2789,6 +2792,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     )
             },
+            new go.Binding("isSubGraphExpanded", "", this.isSubGraphExpanded.bind(this)).ofObject(),
             this.g(go.Panel,
                 "Auto",
 
@@ -2835,8 +2839,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
                             comparer: (a, b) => this.helper_SortParts(a, b)
                         }
-                    )
+                    ),
             },
+            new go.Binding("isSubGraphExpanded", "", this.isSubGraphExpanded.bind(this)).ofObject(),
             this.template_RootNodeContent()
         );
     }
@@ -2912,7 +2917,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 {
                     strokeWidth: 2,
                     isPanelMain: true,
-                    margin: new go.Margin(2, 0, 0, 0)
+                    margin: new go.Margin(2, 0, 0, 0),
                 },
                 new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
                 new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
@@ -3065,34 +3070,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     overflow: this.textOverflowStyle,
                     background: "white",
                 },
-                new go.Binding("text", "", function (obj: go.GraphObject, target: go.GraphObject) {
-                    var data = obj.diagram.nodes.filter(x =>
-                        x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
-                        && x.data['group'] == obj.part.data['key']
-                    );
-
-                    try {
-                        if (self.autoCollapseNodeCount > 0) {
-                            if (data.count >= self.autoCollapseNodeCount) {
-                                var node = obj.diagram.findNodeForKey(obj.part.data['key']);
-                                //If already happened dont do it again, otherwise its not possible to expand 
-                                if (!node.data['autoCollapsed']) {
-                                    (node as any).collapseSubGraph();
-                                    node.data['autoCollapsed'] = true;
-                                }
-                            }
-                        }
-                    }
-                    catch (ex) {
-                        console.warn(ex);
-                    }
-
-                    obj.part.data['_childrenCount'] = data.count;
-
-                    return data.count;
+                new go.Binding("text", "", function (obj: go.GraphObject) {
+                    return self.getPartChildrenCount(obj);
                 }).ofObject()
             ));
         return badge;
+    }
+
+    private getPartChildrenCount(obj: go.GraphObject) {
+        if (!obj || !obj.part || !obj.part.data)
+            return NaN;
+
+        if (!obj.part.data['_childrenCount']) {
+            var data = obj.diagram.nodes.filter(x =>
+                x.data['hierarchyKey'] == obj.part.data['hierarchyKey']
+                && x.data['group'] == obj.part.data['key']
+            );
+            if (!isNaN(data.count) && data.count != 0) {
+                obj.part.data['_childrenCount'] = data.count;
+            }
+        }
+        return +obj.part.data['_childrenCount'];
     }
 
     //#endregion
@@ -3391,6 +3389,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
     private groupedBadgeClick(obj: go.GraphObject, propName: string) {
+        let lastHighlightedPart = this.highlightedPart;
         setTimeout(() => {
             this.followPart = obj.part;
             this.isRelationshipSelectorAvailable = obj.part.data["relExpanded" + propName];
@@ -3406,7 +3405,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     rel.text = rel.responsibilityType;
                 })
             }
-
+            this.helper_HighlightPath(null, lastHighlightedPart);
             this.cdRef.markForCheck();
         }, 10);
     }
@@ -3598,9 +3597,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         return countValue.toString();
     }
-    private calculateNodeWidth(part: go.Part) {
+    private calculateNodeWidth(object: go.Part) {
         var maxWidth: number = 0;
         try {
+            var part = object.findTopLevelPart();
+            console.log(part.data["text"]);
             if (part.data["predicateWidth"]) {
                 var predicateWidth = +part.part.data["predicateWidth"];
                 var width = this.calculateBadgeTextWidth(predicateWidth) + 66;
@@ -3609,11 +3610,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
 
-            var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']
-            );
+            var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']);
             var maxCharCount = 0;
             data.each(d => {
-                if (d.data['text'].length > maxCharCount)
+                if (d.data && d.data["text"] &&  d.data['text'].length > maxCharCount)
                     maxCharCount = d.data['text'].length;
             });
 
@@ -3625,13 +3625,34 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             if (maxWidth > 260)
                 maxWidth = 260;
-            console.log("Calculated width:", maxWidth);
         }
         catch (ex) {
-            console.log(maxWidth);
+            console.log(ex);
             maxWidth = 260;
         }
+        console.log(maxWidth);
         return maxWidth;
     }
 
+    private isSubGraphExpanded(obj: go.GraphObject, target: go.GraphObject) {
+        try {
+            if (!target['autoExpandSet']) {
+                var nodeCount = this.getPartChildrenCount(target);
+                if (!isNaN(nodeCount)) {
+                    var setValue = this.autoCollapseNodeCount > nodeCount
+                    target['autoExpandSet'] = true;
+                    return setValue;
+                }
+                else {
+                    return false;
+                }
+            }
+            return target["isSubGraphExpanded"];
+        }
+        catch (ex) {
+            console.log(ex);
+            return true;
+        }
+
+    }
 }
