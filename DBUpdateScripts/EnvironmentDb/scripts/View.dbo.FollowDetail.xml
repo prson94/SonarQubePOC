@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FollowDetail-v7">
+  <changeSet author="Pappas" id="View.dbo.FollowDetail-v7.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -193,7 +193,7 @@ create or alter view [dbo].[FollowDetail]
 				dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
 				F.ObjectID,  
 				F.[Object] as ObjectType,  
-				A.Uid as AssetUid,
+				A.ID as AssetID,
 				O.ObjectID as ID,  
 				O.Name,  
 				O.TextPath,  

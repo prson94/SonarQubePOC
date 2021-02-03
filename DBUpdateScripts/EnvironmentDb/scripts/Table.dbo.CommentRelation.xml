@@ -47,31 +47,31 @@ END
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table CommentRelation add AssetUid uniqueidentifier null
+alter table CommentRelation add AssetID bigint null
 GO
 
 update	C
-set		C.AssetUid = A.Uid
+set		C.AssetID = A.ID
 from	CommentRelation C
 		inner join Asset A on A.Object = C.ObjectType and A.ObjectID = C.ObjectID
 GO
 
-delete CommentRelation where AssetUid is null
+delete CommentRelation where AssetID is null
 GO
 
-alter table CommentRelation alter column AssetUid uniqueidentifier not null
+alter table CommentRelation alter column AssetID bigint not null
 GO
 
 ALTER TABLE [dbo].[CommentRelation] DROP CONSTRAINT [PK_CommentRelation] WITH ( ONLINE = OFF )
 GO
 
-ALTER TABLE [dbo].[CommentRelation] ADD  CONSTRAINT [PK_CommentRelation] PRIMARY KEY CLUSTERED ( CommentID ASC, AssetUid ASC )
+ALTER TABLE [dbo].[CommentRelation] ADD  CONSTRAINT [PK_CommentRelation] PRIMARY KEY CLUSTERED ( CommentID ASC, AssetID ASC )
 GO
 
 DROP INDEX [IX_CommentRelation_ObjectType-ObjectID] ON [dbo].[CommentRelation]
 GO
 
-CREATE NONCLUSTERED INDEX [IX_CommentRelation_AssetUid] ON [dbo].[CommentRelation] ( [AssetUid] ASC )
+CREATE NONCLUSTERED INDEX [IX_CommentRelation_AssetID] ON [dbo].[CommentRelation] ( [AssetID] ASC )
 GO
 
 alter table CommentRelation drop column ObjectType
@@ -100,7 +100,7 @@ update	C
 set		C.ObjectType = A.Object,
 		C.ObjectID = A.ObjectID
 from	CommentRelation C
-		inner join Asset A on A.Uid = C.AssetUid
+		inner join Asset A on A.ID = C.AssetID
 GO
 
 alter table CommentRelation alter column [ObjectType] varchar(50) not null
@@ -109,10 +109,10 @@ GO
 alter table CommentRelation alter column [ObjectID] int not null
 GO
 
-alter table CommentRelation drop column AssetUid
+DROP INDEX [IX_CommentRelation_AssetID] ON [dbo].[CommentRelation]
 GO
 
-CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
+alter table CommentRelation drop column AssetID
 GO
 
 CREATE NONCLUSTERED INDEX [IX_CommentRelation_ObjectType-ObjectID] ON [dbo].[CommentRelation] ( [ObjectType] ASC, [ObjectID] ASC )

@@ -23,13 +23,6 @@ export class CommentAggregateVoteDetail {
     Emoji: Emoji;
 }
 
-export class CommentDetails {
-    count: number;
-    page: number;
-    pageSize: number;
-    comments: CommentDetail[];
-}
-
 export class CommentDetail {
     Uid: string;
     Body: string;
@@ -44,21 +37,23 @@ export class CommentDetail {
     CreatedOn: Date;
     UpdatedOn: Date;
 
-
-    CreatedOnUTCString: Date;
-    UpdatedOnUTCString: Date;
     ResourceName: string;
-    CreatorIsOwner: boolean;
     AssetPath: string;
     Url: string;
 
-    //IsDeletable: boolean;
-    //IsEditable: boolean;
-    //ResourceEmail: string;
+    IsDeletable: boolean;
+    IsEditable: boolean;
 
     Comments: CommentDetail[];
     Tags: CommentRelationDetail[];
     Emojis: CommentAggregateVoteDetail[];
+}
+
+export class CommentDetails {
+    count: number;
+    page: number;
+    pageSize: number;
+    comments: CommentDetail[];
 }
 
 export class CommentApiPostModel {

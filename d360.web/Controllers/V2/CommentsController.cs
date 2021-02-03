@@ -23,7 +23,7 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        ICommentRepository Comments;
+        readonly ICommentRepository Comments;
 
         public CommentsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments)
             : base(community, company)
@@ -245,6 +245,7 @@ namespace d360.web.Controllers.V2
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("assetUid", "The asset unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypeUid", "The asset type unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("followerUid", "The user's unique identifier to filter by", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedOn.", DataType = "string", ParameterType = "query", Required = false),
@@ -269,11 +270,11 @@ namespace d360.web.Controllers.V2
             {
                 var messages = new List<StatusCodeErrorMessage>
                 {
-                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to see votes for this comment." }
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You do not have permissions to view comments." }
                 };
                 return DetermineUnhandledException(
                     ex,
-                    "Error retrieving votes based on the comment",
+                    "Error retrieving comments",
                     messages,
                     new Dictionary<string, string> { { "Method Name", "GetComments" } }
                 );
@@ -297,7 +298,6 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var queryParams = Request.GetQueryNameValuePairs();
                 var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }

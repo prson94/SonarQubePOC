@@ -1,26 +1,26 @@
-﻿import {Component, OnDestroy, OnInit} from '@angular/core';
-import {NavigationEnd, Router} from '@angular/router';
-import {Title} from '@angular/platform-browser';
+﻿import {Component, OnDestroy, OnInit} from "@angular/core";
+import {NavigationEnd, Router} from "@angular/router";
+import {Title} from "@angular/platform-browser";
 
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {WorkflowType} from '../../models/workflow.model';
-import {Dashboard} from '../../models/dashboard.model';
+import {Breadcrumb} from "../../models/breadcrumb.model";
+import {WorkflowType} from "../../models/workflow.model";
+import {Dashboard} from "../../models/dashboard.model";
 
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {SecondaryNavService} from '../../services/right-sidebar.service';
-import {WebAnalyticsService} from '../../services/web-analytics.service';
-import {DashboardService} from '../../services/dashboard.service';
+import {HeaderBreadcrumbService} from "../../services/header-breadcrumb.service";
+import {SecondaryNavService} from "../../services/right-sidebar.service";
+import {WebAnalyticsService} from "../../services/web-analytics.service";
+import {DashboardService} from "../../services/dashboard.service";
 
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import {SiteUrlHelpers} from "../../static/site-url-helpers";
 
-import {BaseComponent} from '../shared/base.component';
-import { CommentType } from '../../models/social.model';
+import {BaseComponent} from "../shared/base.component";
+import { CommentType } from "../../models/social.model";
 
 declare var CompanySettings;
 
 @Component({
-    selector: 'home',
-    templateUrl: './home.component.html',
+    selector: "home",
+    templateUrl: "./home.component.html",
     providers: [DashboardService]
 })
 
@@ -33,10 +33,10 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public showBoardTile: boolean = true;
     public showAssignmentTile: boolean = true;
     public showTitle: boolean = false;
-    private titleSize: string = '38pt';
-    private titleColor: string = '#fff';
-    private title: string = 'D3S';
-    public backgroundImage: string = '';
+    private titleSize: string = "38pt";
+    private titleColor: string = "#fff";
+    private title: string = "D3S";
+    public backgroundImage: string = "";
 
     private activityDaysToLookBack: number = 7;
     private boardDaysToLookBack: number = 7;
@@ -74,28 +74,28 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Home');
+        this.setBrowserTitle(this.titleService, "Home");
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Home'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Home"));
 
         this.clearSidebar();
 
         this.secondaryNavService.showHeader(false);
-        this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true';
-        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true';
-        this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true';
+        this.showActivityTile = CompanySettings.ShowHomeActivityTile == "true";
+        this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == "true";
+        this.showBoardTile = CompanySettings.ShowHomeBoardTile == "true";
 
-        this.showTitle = CompanySettings.ShowHomePageTitle == 'true';
+        this.showTitle = CompanySettings.ShowHomePageTitle == "true";
         this.title = CompanySettings.BrowserTitlePrefix;
         this.titleSize = CompanySettings.HomePageTitleSize;
         this.titleColor = CompanySettings.HomePageTitleColor;
 
-        if (CompanySettings.HomePageBackgroundImage != null && CompanySettings.HomePageBackgroundImage != '')
+        if (CompanySettings.HomePageBackgroundImage != null && CompanySettings.HomePageBackgroundImage != "")
             this.backgroundImage = CompanySettings.HomePageBackgroundImage;
         else
-            this.backgroundImage = '/content/images/home.background.new.jpg';
+            this.backgroundImage = "/content/images/home.background.new.jpg";
 
         this.numTiles = (this.showAssignmentTile ? 1 : 0)
             + (this.showBoardTile ? 1 : 0)
@@ -149,7 +149,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
                 this.selectedCommentType = CommentType.Issue;
                 break;
             default:
-                this.selectedCommentType = undefined;
+                this.selectedCommentType = null;
                 break;
         }
 

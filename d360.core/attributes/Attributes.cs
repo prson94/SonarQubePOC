@@ -7,7 +7,7 @@ namespace d360.core
 {
     public class EmojiValueAttribute : Attribute
     {
-        public int Value { get; private set; } = 0;
+        public int Value { get; private set; }
         public EmojiValueAttribute(int value)
         {
             Value = value;

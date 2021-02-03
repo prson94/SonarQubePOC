@@ -17,9 +17,6 @@ namespace d360.core.entities.Views
         [DataMember]
         public long? OverrideID { get; set; }
 
-        [DataMember]
-        public Guid? AssetUid { get; set; }
-
         [DataMember, Key, Column(Order = 3)]
         public int ResponsibilityTypeID { get; set; }
 

@@ -1,13 +1,13 @@
-﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../../shared/base.component';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+﻿import { Component, OnInit, Input, OnDestroy } from "@angular/core";
+import { Router, ActivatedRoute } from "@angular/router";
+import { BaseComponent } from "../../shared/base.component";
+import { SecondaryNavService } from "../../../services/right-sidebar.service";
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-comments',
+    selector: "d3s-comments",
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
@@ -43,11 +43,11 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.assetUid = params['assetUid'];
+            this.assetUid = params["assetUid"];
             this.isLoading = false;
             this.showBoard = true;
 
-            if (this.objectType && this.objectType.toUpperCase() == 'RESOURCE') {
+            if (this.objectType && this.objectType.toUpperCase() == "RESOURCE") {
                 this.checkSecondaryNavLocalStorage();
             }
             else {

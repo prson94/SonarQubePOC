@@ -12,7 +12,7 @@ namespace d360.core.entities
         public int CommentID { get; set; }
 
         [Column(Order = 2), DataMember, Key]
-        public Guid AssetUid { get; set; }
+        public long AssetID { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
@@ -26,6 +26,9 @@ namespace d360.core.entities
 
         [DataMember, Key, Column(Order = 3)]
         public string TypeName { get; set; }
+
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
 
         [DataMember]
         public string Url { get; set; }

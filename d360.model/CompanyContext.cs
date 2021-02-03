@@ -2449,9 +2449,13 @@ select @err";
             {
                 case "Rule":
                     if (ruleMeansEvent)
+                    {
                         type = "Event";
+                    }
                     else
+                    {
                         fieldTypeRelationType += "Type";
+                    }
                     break;
                 default:
                     fieldTypeRelationType += "Type";
@@ -2461,12 +2465,18 @@ select @err";
             if (fields == null)
             {
                 if (listableOnly)
+                {
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+                }
                 else
+                {
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
+                }
 
                 if (includeKeyColumnOnly)
-                    fields = fields.Where(x => x.IsPartOfKey == true).ToList();
+                { 
+                    fields = fields.Where(x => x.IsPartOfKey == true).ToList(); 
+                }
             }
 
             var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
@@ -2495,14 +2505,23 @@ select @err";
                             var tableName = relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
 
-                            if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                            if (includeIdColumn)
+                            {
+                                columns += $"{name}_T.ID as [{name}ID], ";
+                            }
 
                             if (isReferenceItemType || isFusionAttributeType)
+                            {
                                 columns += $"{name}_OT.Name";
+                            }
                             else if (isTaxonomyType || isPolicyType)
+                            {
                                 columns += $"{name}_OTT.TextPath";
+                            }
                             else
+                            {
                                 columns += $"{name}_OTD.DisplayValue";
+                            }
 
                             columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
 
@@ -2554,7 +2573,10 @@ select @err";
                                     var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
                                     var sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
 
-                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    if (includeIdColumn)
+                                    {
+                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                    }
                                     columns += $"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                                     joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
@@ -2567,7 +2589,10 @@ select @err";
                                 }
                                 else
                                 {
-                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    if (includeIdColumn)
+                                    {
+                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                    }
                                     columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
 
                                     joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
@@ -2583,7 +2608,10 @@ select @err";
                 }
                 else if (f.Type == DataType.Decimal.ToString())
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn) 
+                    { 
+                        columns += $"{name}_T.Value as [{name}ID], "; 
+                    }
                     columns += $@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
@@ -2595,7 +2623,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else if (f.Type == DataType.Number.ToString())
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
                     columns += $@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
@@ -2632,7 +2663,11 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                     string assetIdPath = "A.Id";
 
 
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
+
                     columns += $@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
@@ -2661,7 +2696,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
                     columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
@@ -2682,10 +2720,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             {
                 var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
                 if (obj != "ReferenceItemType")
+                {
                     return false;
+                }
                 var assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
                 if (assettype != null)
-                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+                { 
+                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null); 
+                }
             }
             return false;
         }
@@ -2815,7 +2857,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
 
                 if (!fields.Any(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase)))
+                {
                     throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid order by passed in the request.");
+                }
             }
             return column;
         }
@@ -2829,9 +2873,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)).Value;
 
                 if (allowedDirections.Contains(order.Trim().ToLower()))
+                {
                     direction = order;
+                }
                 else
+                {
                     throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid direction by passed in the request.");
+                }
             }
             return direction;
         }

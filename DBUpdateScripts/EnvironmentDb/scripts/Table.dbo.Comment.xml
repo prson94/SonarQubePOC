@@ -94,19 +94,19 @@ CREATE NONCLUSTERED INDEX [IX_Comment_Uid] ON [dbo].[Comment] ( [Uid] ASC )
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table Comment add AssetUid uniqueidentifier null
+alter table Comment add AssetID bigint null
 GO
 
 update	C
-set		C.AssetUid = A.Uid
+set		C.AssetID = A.ID
 from	Comment C
 		inner join Asset A on A.Object = C.OwnerObjectType and A.ObjectID = C.OwnerObjectID
 GO
 
-delete Comment where AssetUid is null
+delete Comment where AssetID is null
 GO
 
-alter table Comment alter column AssetUid uniqueidentifier not null
+alter table Comment alter column AssetID bigint not null
 GO
 
 alter table Comment drop column OwnerObjectType
@@ -114,7 +114,7 @@ GO
 alter table Comment drop column OwnerObjectID
 GO
 
-CREATE NONCLUSTERED INDEX [IX_Comment_AssetUid] ON [dbo].[Comment] ( [AssetUid] ASC )
+CREATE NONCLUSTERED INDEX [IX_Comment_AssetID] ON [dbo].[Comment] ( [AssetID] ASC )
 		]]>
     </sql>
 	<rollback>
@@ -127,13 +127,13 @@ update	C
 set		C.OwnerObjectType = A.Object,
 		C.OwnerObjectID = A.ObjectID
 from	Comment C
-		inner join Asset A on A.Uid = C.AssetUid
+		inner join Asset A on A.ID = C.AssetID
 GO
 alter table Comment alter column OwnerObjectType varchar(50) not null
 GO
 alter table Comment alter column OwnerObjectID int not null
 GO
-alter table Comment drop column AssetUid
+alter table Comment drop column AssetID
 GO
 		]]>
 	</rollback>

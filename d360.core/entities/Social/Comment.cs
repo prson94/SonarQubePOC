@@ -18,7 +18,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [DataMember]
-        public Guid AssetUid { get; set; }
+        public long AssetID { get; set; }
 
         [DataMember]
         public CommentType CommentType { get; set; }
@@ -28,6 +28,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int? ParentID { get; set; }
+
+        [IgnoreDataMember, ForeignKey("AssetID")]
+        public virtual Asset Asset { get; set; }
     }
 
     [DataContract(Namespace = NAMESPACE)]
@@ -72,6 +75,9 @@ namespace d360.core.entities
         public Guid AssetUid { get; set; }
 
         [DataMember]
+        public Guid AssetTypeUid { get; set; }
+
+        [DataMember]
         public CommentType CommentType { get; set; }
 
         [DataMember]
@@ -81,16 +87,7 @@ namespace d360.core.entities
         public int? ParentID { get; set; }
 
         [DataMember, NotMapped]
-        public string CreatedOnUTCString { get { return ((CreatedOn == null) ? null : ((DateTime)UpdatedOn).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
-
-        [DataMember, NotMapped]
-        public string UpdatedOnUTCString { get { return ((UpdatedOn == null) ? null : ((DateTime)UpdatedOn).ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'")); } }
-
-        [DataMember, NotMapped]
         public string ResourceName { get; set; }
-
-        [DataMember, NotMapped]
-        public bool CreatorIsOwner { get; set; }
 
         [DataMember]
         public string AssetPath { get; set; }

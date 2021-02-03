@@ -1,29 +1,14 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from '@angular/core';
-import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/social.service';
-import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from '../../../models/social.model';
-import { CurrentCompanySettings } from '../../../static/company-settings'
-import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AuthenticationService } from '../../../services/authentication.service';
+﻿import { Input, Component, EventEmitter, Output, OnInit, HostBinding } from "@angular/core";
+import { BaseComponent } from "../base.component";
+import { SocialService } from "../../../services/social.service";
+import { CommentApiPostModel, CommentApiPutModel, CommentDetail, CommentType } from "../../../models/social.model";
+import { CurrentCompanySettings } from "../../../static/company-settings"
+import { MessagesObservableService } from "../../../services/messages-observable.service";
+import { AuthenticationService } from "../../../services/authentication.service";
 
 @Component({
-    selector: 'd3s-social-board',
-    template: ` 
-                <div class="row">
-                    <div class="col s12">
-                        <header>{{socialMessage}}</header>  
-                        <d3s-social-input (commented)="addComment($event);" *ngIf="allowComments()"></d3s-social-input>                        
-                        <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
-                        <div *ngFor="let comment of comments">
-                            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>                            
-                        </div>                
-                        <div style="margin-top:10px;">
-                            <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
-                            <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>                    
-                        </div>
-                    </div>
-                </div>
-                `,
+    selector: "d3s-social-board",
+    templateUrl: "./social-board.component.html", 
     providers: [SocialService],       
 })
 
@@ -56,22 +41,25 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             this.socialMessage = null;
         }
         else {
-            if (this.limitToType == CommentType.Social)
+            if (this.limitToType == CommentType.Social) {
                 this.socialMessage = `My comments ${this.daysMessage()}`;
-            else if (this.limitToType == CommentType.Issue)
+            }
+            else if (this.limitToType == CommentType.Issue) {
                 this.socialMessage = `My issues ${this.daysMessage()}`;
-            else
-                this.socialMessage = 'My comments';
+            }
+            else {
+                this.socialMessage = "My comments";
+            }
         }
 
-        this.authenticationService.checkCurrentUserAdmin().subscribe(res => {
+        this.authenticationService.checkCurrentUserAdmin().subscribe((res) => {
             this.isAdmin = res;
             this.loadComments();
         });
     }
 
     private daysMessage(): string {
-        return this.daysToLookBack > 0 ? ('for the last ' + this.daysToLookBack + ' days') : '- all';
+        return this.daysToLookBack > 0 ? ("for the last " + this.daysToLookBack + " days") : "- all";
     }
 
     loadComments() {
@@ -112,12 +100,12 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
             subscribe(res => {
                 if (res) {
                     comment.IsDeleted = true;
-                    let index = this.comments.findIndex(x => x.ID == comment.ID);
+                    let index = this.comments.findIndex((x) => x.ID == comment.ID);
 
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
                         this.comments.splice(index,1);
                     }
-                    this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+                    this.messagesService.showInfoMessage("Success", "Item deleted successfully");
                 }
                 this.countsChanged.emit({}); // counts changed fire event
                 this.isLoading = false;
@@ -127,7 +115,9 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     addComment(event) {
         let commentContent = event.comment;
 
-        if (!commentContent) return;
+        if (!commentContent) {
+            return;
+        }
 
         this.isLoading = true;
         let comment = new CommentApiPostModel();
@@ -138,7 +128,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let taggedAssetUids: string[] = [];
 
         if (event.tags) {
-            event.tags.forEach(t => {
+            event.tags.forEach((t) => {
                 taggedAssetUids.push(t.AssetUid);
             });
         }
@@ -150,14 +140,16 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                 if (res) {
                     this.comments.unshift(res);                    
                 }
-                this.messagesService.showInfoMessage('Success', 'Item added successfully');
+                this.messagesService.showInfoMessage("Success", "Item added successfully");
                 this.countsChanged.emit({}); // counts have changed fire event
                 this.isLoading = false;
             });
     }
 
     editComment(event) {
-        if (!event.comment) return;
+        if (!event.comment) {
+            return;
+        }
 
         this.isLoading = true;
 
@@ -168,7 +160,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         
         this.socialService.editComment(comment).
             subscribe(res => {       
-                this.messagesService.showInfoMessage('Success', 'Item edited successfully');
+                this.messagesService.showInfoMessage("Success", "Item edited successfully");
                 this.isLoading = false;
             });
     }
@@ -181,7 +173,9 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         let replyText = event.reply;
         let parentUid = event.parentUid;
         
-        if (!replyText || !parentUid) return;
+        if (!replyText || !parentUid) {
+            return;
+        }
 
         this.isLoading = true;
 

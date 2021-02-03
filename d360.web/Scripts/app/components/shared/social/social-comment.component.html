@@ -1,0 +1,58 @@
+﻿<div *ngIf="comment.IsDeleted" class="row comment">
+    <div class="col s1">&nbsp;</div>
+    <div class="col s5 comment-removed">Comment removed.</div>
+    <div class="col s6">&nbsp;</div>
+</div>
+<div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
+    <div class="col s1 right-align">
+        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatedBy + '?size=35'" width="35" />                        
+    </div>
+    <div class="col s11">
+        <div class="row" *ngIf="!showEdit">
+            <div class="col s12 toolbox">                                
+                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() , 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;
+                <span class="user"><d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatedBy">{{comment.ResourceName}}</d3s-preview-tooltip></span>&nbsp;
+                <span class="postDate">{{comment.CreatedOn | date:'medium'}}</span> 
+                <span class="comment-modified" *ngIf="isModified()">[modified]</span>
+                <div *ngIf="showTools" class="comment-tools">
+                    <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
+                    <a *ngIf="isDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
+                    <a *ngIf="isEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
+                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsUp');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
+                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
+                </div>                      
+            </div>
+            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>                            
+            <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
+                <i class="fa fa-tag" aria-hidden="true"></i> 
+                Comment Tags: 
+                <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.Path}}</d3s-preview-tooltip>
+            </div>
+        </div>                        
+        <div class="row" *ngIf="showEdit">
+            <div class="col s11 offset-s1" style="padding-top:15px">   
+                <p-editor name="Edit" [style]="{'height':'50px'}" [(ngModel)]="editText" ></p-editor>                 
+            </div>
+            <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
+                <button pButton type="button" (click)="handleEditClick();" label="Edit"></button>
+                <button pButton type="button" (click)="showEdit = false;" label="Cancel"></button>
+            </div>
+        </div>
+    </div>                                    
+</div> 
+<div class="row add-reply" *ngIf="showReply">
+    <div class="col s11 offset-s1" style="padding-top:15px">   
+        <p-editor placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>
+    </div>
+    <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
+        <button pButton type="button" (click)="handleReplyClick();" label="Post"></button>
+        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel"></button>
+    </div>
+</div>   
+<div class="row reply" *ngFor="let response of comment?.Comments">
+    <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatedBy + '?size=35'" width="35"></div>
+    <div class="col s10">
+        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="response.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>                        
+        <div [innerHtml]="response.Body"></div>
+    </div>                                
+</div>

@@ -36,16 +36,19 @@ namespace d360.model.DataAccessLayer
 
 		#region Common Sql
 
+		const string COMMENT_TABLE_COLUMNS = @"C.Uid, C.ID, C.ParentID, C.CommentType, iif(C.IsDeleted = 1, '[Comment removed]', C.Body) as Body, C.CreatedOn, C.CreatedBy, C.UpdatedBy, C.UpdatedOn, C.IsDeleted"; 
+
 		const string TAGS_JSON_SQL = @"coalesce(
 			(
-			select	CR.AssetUid,
+			select	CRA.Uid as AssetUid,
+					CRA.AssetTypeUid,
 					AD.DisplayPath as [Path],
 					CRA.TypeName,
 					U.Url,
 					CRA.BackColor as IconBackColor,
 					CRA.ForeColor as IconForeColor
 			from	CommentRelation CR
-					inner join AssetDetail CRA on CRA.Uid = CR.AssetUid and CR.CommentID = C.ID
+					inner join AssetDetail CRA on CRA.ID = CR.AssetID and CR.CommentID = C.ID
 					inner join graph.AssetNodeDisplayPath AD on AD.ID = CRA.ID
 					cross apply GetAssetUrlById(CRA.ID) U
 			for		json path
@@ -68,9 +71,10 @@ namespace d360.model.DataAccessLayer
 			validateComment(comment);
 
 			int? parentId = null;
+			long? assetId = null;
 			if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
 			{
-				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value).SingleOrDefault();
+				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
 				if (parentComment == null)
 				{
 					throw new NotFoundException("parent comment");
@@ -78,7 +82,8 @@ namespace d360.model.DataAccessLayer
 				else 
 				{
 					parentId = parentComment.ID;
-					comment.AssetUid = parentComment.AssetUid;
+					comment.AssetUid = parentComment.Asset.uid;
+					assetId = parentComment.Asset.ID;
 				}
 			}
 
@@ -86,17 +91,20 @@ namespace d360.model.DataAccessLayer
 			{
 				throw new GenericException(System.Net.HttpStatusCode.BadRequest, "", "You must provide a valid Uid for the AssetUid property.");
 			}
-			else 
+
+			if (!assetId.HasValue)
 			{
 				var asset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
 				if (asset == null)
 				{
 					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
 				}
-				if (!CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset))
-				{
-					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
-				}
+				assetId = asset.ID;
+			}
+
+			if (!CompanyContext.HasAssetPermission(assetId.Value, Permission.ReadAsset))
+			{
+				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
 			}
 
 			var dbComment = new Comment
@@ -105,7 +113,7 @@ namespace d360.model.DataAccessLayer
 				CreatedBy = CompanyContext.CurrentResourceID,
 				CreatedOn = DateTime.UtcNow,
 				IsDeleted = false,
-				AssetUid = comment.AssetUid,
+				AssetID = assetId.Value,
 				Body = comment.Body,
 				ParentID = parentId,
 				Uid = Guid.NewGuid(),
@@ -116,15 +124,17 @@ namespace d360.model.DataAccessLayer
 
 			if (commentAdded)
 			{
-				var commentRelations = new List<CommentRelation>();
 				var commentId = dbComment.ID;
-				foreach (var r in comment.Tags)
+				if (comment.Tags != null && comment.Tags.Count > 0)
 				{
-					CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetUid = r });
+					var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+					foreach (var r in taggedAssets)
+					{
+						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+					}
+					await CompanyContext.SaveChangesAsync();
 				}
-				await CompanyContext.SaveChangesAsync();
-				
-				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.Uid = C.AssetUid where C.CommentID = @commentId and A.ID is null", new { commentId });
+				CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.ID = C.AssetID where C.CommentID = @commentId and A.ID is null", new { commentId });
 
 				return await GetCommentDetailByUid(dbComment.Uid);
 			}
@@ -245,19 +255,22 @@ namespace d360.model.DataAccessLayer
 
 				CompanyContext.Connection.Execute("delete CommentRelation where CommentID = @commentId", new { commentId });
 
-				var commentRelations = new List<CommentRelation>();
 				if (comment.Tags != null)
-				{ 
-					foreach (var r in comment.Tags)
+				{
+					if ( comment.Tags.Count > 0)
 					{
-						CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetUid = r });
+						var taggedAssets = CompanyContext.Filter<Asset>(o => comment.Tags.Contains(o.uid)).Select(o => o.ID).ToList();
+						foreach (var r in taggedAssets)
+						{
+							CompanyContext.CommentRelations.Add(new CommentRelation { CommentID = commentId, AssetID = r });
+						}
+						await CompanyContext.SaveChangesAsync();
 					}
-					await CompanyContext.SaveChangesAsync();
 
 					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.Uid = C.AssetUid where C.CommentID = @commentId and A.ID is null", new { commentId });				
 				}
 
-				return await GetCommentDetailByUid(dbComment.Uid);
+				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
 			}
 			else
 			{
@@ -280,7 +293,7 @@ namespace d360.model.DataAccessLayer
 					select	O.CommentID as ID
 					from	Follow F
 							inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID 
-							inner join CommentRelation O on O.AssetUid = A.Uid
+							inner join CommentRelation O on O.AssetID = A.ID
 					where	F.ResourceID = @resourceId
 					union all
 					select	ID 
@@ -289,7 +302,7 @@ namespace d360.model.DataAccessLayer
 					union all
 					select	O.ID 
 					from	Comment O
-							inner join Asset A on A.Uid = O.AssetUid
+							inner join Asset A on A.ID = O.AssetID
 							inner join ResponsibilityDetail R on R.ResourceID = @resourceId and R.AssetID = A.ID
 					)
 			AND C.IsDeleted = 0
@@ -359,6 +372,13 @@ order by u.CommentTypeName";
 				var asset = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
 				assetUidPresent = Guid.TryParse(asset, out assetUid);
 			}
+			Guid assetTypeUid = Guid.Empty;
+			bool assetTypeUidPresent = false;
+			if (queryParams.Any(qp => qp.Key.ToLower() == "assettypeuid"))
+			{
+				var assetType = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value;
+				assetTypeUidPresent = Guid.TryParse(assetType, out assetTypeUid);
+			}
 			Guid followerUid = Guid.Empty;
 			bool followerUidPresent = false;
 			if (queryParams.Any(qp => qp.Key.ToLower() == "followeruid"))
@@ -366,8 +386,6 @@ order by u.CommentTypeName";
 				var follower = queryParams.FirstOrDefault(x => x.Key.ToLower() == "followeruid").Value;
 				followerUidPresent = Guid.TryParse(follower, out followerUid);
 			}
-				
-			//dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
 
 			var orderColumn = CompanyContext.ParseOrderColumn(queryParams, queryFieldOptions, "C.CreatedOn");
 			var orderDirection = CompanyContext.ParseOrderDirection(queryParams, "desc");
@@ -380,8 +398,39 @@ order by u.CommentTypeName";
 			var baseCommentWheres = new List<string> { "C.ParentID is null" };
 			if (assetUidPresent)
 			{
-				dbArgs.Add("@assetUid", assetUid);
-				baseCommentWheres.Add(@"( (C.AssetUid = @assetUid) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetUid = @assetUid)) )");
+				var asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
+				if (asset == null)
+				{
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
+				}
+				dbArgs.Add("@assetId", asset.ID);
+				baseCommentWheres.Add(@"( (C.AssetID = @assetId) or (C.ID in (select coalesce(ic.ParentID, ic.ID) from CommentRelation ir inner join Comment ic on ic.ID = ir.CommentID and ir.AssetID = @assetId)) )");
+			}
+			if (assetTypeUidPresent)
+			{
+				var assetType = CompanyContext.Filter<AssetType>(o => o.uid == assetTypeUid).FirstOrDefault();
+				if (assetType == null)
+				{
+					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset Type with provided Uid does not exist.");
+				}
+				dbArgs.Add("@assetTypeId", assetType.ID);
+				baseCommentWheres.Add(@"( 
+					(C.ID in ( 
+						     select ic.ID 
+							 from	Comment ic 
+									inner join Asset ia on ia.ID = ic.AssetID 
+									inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
+							 )
+					) 
+					or (C.ID in (
+							select	coalesce(ic.ParentID, ic.ID) 
+							from	CommentRelation ir 
+									inner join Comment ic on ic.ID = ir.CommentID 
+									inner join Asset ia on ia.ID = ir.AssetID 
+									inner join AssetType iat on iat.ID = ia.AssetTypeID and iat.ID = @assetTypeId
+							)
+					) 
+				)");
 			}
 			if (followerUidPresent)
 			{
@@ -390,7 +439,7 @@ order by u.CommentTypeName";
 				{
 					dbArgs.Add("@followerId", follower.ResourceID);
 					baseCommentWheres.Add(@"(
-(C.AssetUid in (select f.AssetUid from FollowDetail f where f.ResourceID = @followerId union select r.AssetUid from ResponsibilityDetail r where r.ResourceID = @followerId)) 
+(C.AssetID in (select f.AssetID from FollowDetail f where f.ResourceID = @followerId union select r.AssetID from ResponsibilityDetail r where r.ResourceID = @followerId)) 
 or (C.ID in (select ParentID from Comment where ParentID is not null and CreatedBy = @followerId))
 )");
 				}
@@ -400,13 +449,13 @@ or (C.ID in (select ParentID from Comment where ParentID is not null and Created
 with P as (
 	select		C.ID,
 				C.ParentID,
-				C.AssetUid
+				C.AssetID
 	from		Comment C 
 	where		{string.Join(" and ", baseCommentWheres)}
 	union all
 	select		C.ID,
 				C.ParentID,
-				P.AssetUid
+				P.AssetID
 	from		Comment C
 				inner join P on P.ID = C.ParentID
 ) ";
@@ -416,7 +465,8 @@ with P as (
 			var tableSql = @"from	Comment C
 		inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy
 		inner join P ON C.ID = P.ID
-		inner join Asset O on O.Uid = P.AssetUid
+		inner join Asset O on O.ID = P.AssetID
+		inner join AssetType T on T.ID = O.AssetTypeID
 		inner join graph.AssetNodeDisplayPath AP on AP.ID = O.ID
 		outer apply [dbo].[GetAssetUrlById](O.ID) AUrl ";
 
@@ -428,13 +478,14 @@ select	count(1) as [Count]
 
 			var sql = $@"
 {cteSql}
-select	C.*,
+select	{COMMENT_TABLE_COLUMNS},
+		O.Uid as AssetUid,
+		T.Uid as AssetTypeUid,
 		AUrl.Url as Url,
 		AP.DisplayPath as AssetPath,
 		R.FirstName + ' ' + R.LastName as ResourceName,
 		{TAGS_JSON_SQL},
-		{EMOJIS_JSON_SQL},
-		cast(IIF(R.Uid = C.AssetUid, 1, 0) as bit) as CreatorIsOwner
+		{EMOJIS_JSON_SQL} 
 {tableSql} {whereSql} {orderBySql} {offset}";
 
 			var countRequest = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
@@ -465,27 +516,29 @@ select	C.*,
 with P as (
 	select		ID,
 				ParentID,
-				AssetUid
+				AssetID
 	from		Comment
 	where		Uid = @commentUid
 	union all
 	select		C.ID,
 				C.ParentID,
-				P.AssetUid
+				P.AssetID
 	from		Comment C
 				inner join P on P.ID = C.ParentID
 )
-select	C.*,
+select	{COMMENT_TABLE_COLUMNS},
+		O.Uid as AssetUid,
+		T.Uid as AssetTypeUid,
 		AUrl.Url as Url,
 		AP.DisplayPath as AssetPath,
 		R.FirstName + ' ' + R.LastName as ResourceName,
 		{TAGS_JSON_SQL},
-		{EMOJIS_JSON_SQL},
-		cast(IIF(R.Uid = C.AssetUid, 1, 0) as bit) as CreatorIsOwner
+		{EMOJIS_JSON_SQL} 
 from	Comment C
-		inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy
+		inner join reporting.Global_Resource R on R.ResourceID = C.CreatedBy 
 		inner join P ON C.ID = P.ID
-		inner join Asset O on O.Uid = P.AssetUid
+		inner join Asset O on O.ID = P.AssetID
+		inner join AssetType T on T.ID = O.AssetTypeID
 		inner join graph.AssetNodeDisplayPath AP on AP.ID = O.ID
 		outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
 ORDER BY	C.ParentID, C.CreatedOn DESC";

@@ -1,71 +1,15 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { BaseComponent } from '../base.component';
-import { SocialService } from '../../../services/social.service';
-import { CommentDetail, CommentType, Emoji } from '../../../models/social.model';
-import { Router } from '@angular/router';
-import { CurrentCompanySettings } from '../../../static/company-settings'
+﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
+import { BaseComponent } from "../base.component";
+import { SocialService } from "../../../services/social.service";
+import { CommentDetail, CommentType, Emoji } from "../../../models/social.model";
+import { Router } from "@angular/router";
+import { CurrentCompanySettings } from "../../../static/company-settings"
 
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-social-comment',    
-    template: ` 
-                <div *ngIf="comment.IsDeleted" class="row comment">
-                    <div class="col s1">&nbsp;</div>
-                    <div class="col s5 comment-removed">Comment removed.</div>
-                    <div class="col s6">&nbsp;</div>
-                </div>
-                <div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
-                    <div class="col s1 right-align">
-                        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatedBy + '?size=35'" width="35">                        
-                    </div>
-                    <div class="col s11">
-                        <div class="row" *ngIf="!showEdit">
-                            <div class="col s12 toolbox">                                
-                                <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() , 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true" ></i></span>&nbsp;
-                                <span class="user"><d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatedBy">{{comment.ResourceName}}</d3s-preview-tooltip></span>&nbsp;
-                                <span class="postDate">{{comment.CreatedOn | date:'medium'}}</span> 
-                                <div *ngIf="showTools" class="comment-tools">
-                                    <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true" ></i></a>
-                                    <a *ngIf="isDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true" ></i></a>                                    
-                                    <a *ngIf="isEditable" class="comment-tool-item-mid" (click)="showEdit = true;editText = comment.Body"><i class="fa fa-pencil-square-o" aria-hidden="true" ></i></a>                                    
-                                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsUp');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'up'" [icon]="'thumbs-o-up'" [iconColor]="'#646464'"></d3s-tooltip> {{upVotes}}</a>
-                                    <a class="comment-tool-item-mid" (click)="doVote('ThumbsDown');"><d3s-tooltip [objectType]="'Comment/Votes'" [objectId]="comment.ID" [tooltipType]="'down'" [icon]="'thumbs-o-down'" [iconColor]="'#646464'"></d3s-tooltip> {{downVotes}}</a>
-                                </div>                      
-                            </div>
-                            <div class="col s12 comment-box" [innerHtml]="comment.Body"></div>                            
-                            <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.Path}}</d3s-preview-tooltip>
-                            </div>
-                        </div>                        
-                        <div class="row" *ngIf="showEdit">
-                            <div class="col s11 offset-s1" style="padding-top:15px">   
-                                <p-editor name="Edit" [style]="{'height':'50px'}" [(ngModel)]="editText" ></p-editor>                 
-                            </div>
-                            <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                                <button pButton type="button" (click)="handleEditClick();" label="Edit"></button>
-                                <button pButton type="button" (click)="showEdit = false;" label="Cancel"></button>
-                            </div>
-                        </div>
-                    </div>                                    
-                </div> 
-                <div class="row add-reply" *ngIf="showReply">
-                    <div class="col s11 offset-s1" style="padding-top:15px">   
-                        <p-editor placeholder="Post Reply..." name="Reply" [style]="{'height':'50px'}" [(ngModel)]="replyText" ></p-editor>                 
-                    </div>
-                    <div class="col s11 offset-s1" style="padding-top:15px;padding-botton:15px;">   
-                        <button pButton type="button" (click)="handleReplyClick();" label="Post"></button>
-                        <button pButton type="button" (click)="showReply = false;replyText='';" label="Cancel"></button>
-                    </div>
-                </div>   
-                <div class="row reply" *ngFor="let response of comment?.Comments">
-                    <div class="col s2 right-align"><img class="user" height="35" [src]="'/resources/image/' + response.CreatedBy + '?size=35'" width="35"></div>
-                    <div class="col s10">
-                        <div><span class="user"><d3s-preview-tooltip [objectType]="'Resource'" [objectId]="comment.CreatedBy">{{response.ResourceName}}</d3s-preview-tooltip></span>&nbsp;<span class="postDate">{{response.CreatedOn | date:'medium'}}</span>                        
-                        <div [innerHtml]="response.Body"></div>                            
-                    </div>                                
-                </div>                 
-                `,    
+    selector: "d3s-social-comment",    
+    templateUrl: "./social-comment.component.html",    
     styles: [`
                 span.user{
                     font-weight:bold;
@@ -81,9 +25,12 @@ declare var CurrentResourceID;
                     padding: 5px;
                     background: #EFEFEF;
                     border: 1px solid #CCCCCC;
-                    cursor:pointer;
                     font-size: 90%;
-                }                
+                }       
+                .comment-modified {
+                    margin-left: 5px;
+                    font-style: oblique;
+                }
                 .comment-tag{
                     border-radius: 5px;
                     margin-right: 5px;
@@ -120,7 +67,6 @@ declare var CurrentResourceID;
                     position:relative;
                 }
             `]
-
 })
 
 export class SocialCommentComponent extends BaseComponent implements OnInit {
@@ -153,8 +99,8 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
-        this.downVotes = this.comment.Emojis.filter(e => e.Emoji == Emoji.ThumbsDown).length;
-        this.upVotes = this.comment.Emojis.filter(e => e.Emoji == Emoji.ThumbsUp).length;
+        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsDown).length;
+        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsUp).length;
     }
 
     doVote(emojiString: string) {
@@ -170,7 +116,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         this.socialService.addVote(this.comment.Uid, emoji).subscribe(
             res => {
                 if (res) {
-                    this.comment.Emojis.find(e => e.Emoji == emoji).Count++;
+                    this.comment.Emojis.find((e) => e.Emoji == emoji).Count++;
                 }
             });
     }
@@ -181,6 +127,10 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     private changeUrl(route) {
         this.router.navigate([route]); 
+    }
+
+    isModified() {
+        return (this.comment.CreatedOn != this.comment.UpdatedOn);
     }
 
     private commentTypeIcon() {
@@ -194,12 +144,13 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
         return "Other";
     }
 
-    handleReplyClick() {        
+    handleReplyClick() {
         this.reply.emit({ reply: this.replyText, parentUid: this.comment.Uid });
         this.showReply = false;
     }
 
     handleEditClick() {
+        this.comment.UpdatedOn = new Date(0); //Just to show the modified symbol.
         this.comment.Body = this.editText;
         this.edit.emit({ comment: this.comment });
         this.showEdit = false;
