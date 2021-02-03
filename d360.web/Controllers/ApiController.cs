@@ -33,16 +33,18 @@ namespace d360.web.Controllers
     {
         #region DI
 
+        ICommentRepository commentsRepository;
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
         IConnectorLabelRepository connectorLabelRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, ITagRepository tagRepository, IConnectorLabelRepository connectorLabelRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            commentsRepository = comments;
             this.tagRepository = tagRepository;
             this.connectorLabelRepository = connectorLabelRepository;
         }
@@ -5307,7 +5309,7 @@ SELECT (
             switch (areaName)
             {
                 case "SOCIAL":
-                    return LoadSocialActivityCount(days, resourceId);
+                    return LoadSocialActivityCount(days, resourceId).Result;
                 case "ACTIVITY":
                     return LoadArtifactActivityCount(days);
                 case "ASSIGNMENTS":
@@ -5317,11 +5319,11 @@ SELECT (
         }
 
         [Route("Counts/{id}/{days}")]
-        public IEnumerable<CountModel> GetTheCounts(int days, int id = -1)
+        public async Task<IEnumerable<CountModel>> GetTheCounts(int days, int id = -1)
         {
             //Social count has been moved to V2 Social controller and should be got from there
             var resourceId = id > 0 ? id : Company.CurrentResourceID;
-            return LoadSocialActivityCount(days, resourceId);
+            return await LoadSocialActivityCount(days, resourceId);
         }
 
         private IEnumerable<CountModel> LoadArtifactActivityCount(int days)
@@ -5340,12 +5342,14 @@ SELECT (
             return Company.Query<CountModel>(sql, new { d = days });
         }
 
-        private IEnumerable<CountModel> LoadSocialActivityCount(int days, int resourceId)
+        private async Task<IEnumerable<CountModel>> LoadSocialActivityCount(int days, int resourceId)
         {
             days = days * -1;
-
-            var counts = Company.GetCommentCountByFollower(resourceId, days).ToList().OrderBy(i => i.CommentTypeName);
-
+            var rangeEnd = DateTime.UtcNow;
+            var rangeStart = rangeEnd.AddDays(days);
+            var countsRequest = await commentsRepository.GetCommentCountsByFollower(resourceId, null, rangeStart, rangeEnd);
+            var counts = countsRequest.OrderBy(i => i.CommentTypeName);
+            
             List<CountModel> items = new List<CountModel>();
 
             //need to add a record for social, Issue, Task, DataEvent, Question
@@ -5353,10 +5357,6 @@ SELECT (
             items.Add(new CountModel { Name = Resources.Core.CommentType_Social, Total = getCommentCategoryCount(counts, CommentType.Social) });
 
             items.Add(new CountModel { Name = Resources.Core.CommentType_Action, Total = getCommentCategoryCount(counts, CommentType.Issue) });
-
-            items.Add(new CountModel { Name = Resources.Core.CommentType_Task, Total = getCommentCategoryCount(counts, CommentType.Task) });
-
-            items.Add(new CountModel { Name = Resources.Core.CommentType_DataEvent, Total = getCommentCategoryCount(counts, CommentType.DataEvent) });
 
             return items.OrderBy(x => x.Name);
         }

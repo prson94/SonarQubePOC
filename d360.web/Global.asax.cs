@@ -40,6 +40,7 @@ namespace d360.web
             builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
 
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
+            builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
             builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();
             builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();

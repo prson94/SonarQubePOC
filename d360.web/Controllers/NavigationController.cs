@@ -1013,7 +1013,7 @@ namespace d360.web.Controllers
 
                     if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
                     {
-                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null, null);
+                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null, null, null);
                         apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
                         responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                     }

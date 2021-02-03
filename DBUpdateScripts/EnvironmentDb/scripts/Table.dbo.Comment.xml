@@ -75,4 +75,163 @@ AS
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-Uid">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table Comment add Uid uniqueidentifier constraint DF_Comment_Uid default(newid()) not null
+GO
+CREATE NONCLUSTERED INDEX [IX_Comment_Uid] ON [dbo].[Comment] ( [Uid] ASC )
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-AssetConversion">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table Comment add AssetID bigint null
+GO
+
+update	C
+set		C.AssetID = A.ID
+from	Comment C
+		inner join Asset A on A.Object = C.OwnerObjectType and A.ObjectID = C.OwnerObjectID
+GO
+
+delete Comment where AssetID is null
+GO
+
+alter table Comment alter column AssetID bigint not null
+GO
+
+alter table Comment drop column OwnerObjectType
+GO
+alter table Comment drop column OwnerObjectID
+GO
+
+CREATE NONCLUSTERED INDEX [IX_Comment_AssetID] ON [dbo].[Comment] ( [AssetID] ASC )
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table Comment add OwnerObjectType varchar(50) null
+GO
+alter table Comment add OwnerObjectID int null
+GO
+update	C
+set		C.OwnerObjectType = A.Object,
+		C.OwnerObjectID = A.ObjectID
+from	Comment C
+		inner join Asset A on A.ID = C.AssetID
+GO
+alter table Comment alter column OwnerObjectType varchar(50) not null
+GO
+alter table Comment alter column OwnerObjectID int not null
+GO
+alter table Comment drop column AssetID
+GO
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-VisibilityRemoval">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table Comment drop column VisibilityID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table Comment add VisibilityID int null
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-Renames">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+EXEC sp_rename 'dbo.Comment.DateCreated', 'CreatedOn', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.CreatingResourceID', 'CreatedBy', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.DateEdited', 'UpdatedOn', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.CommentTypeID', 'CommentType', 'COLUMN';
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+EXEC sp_rename 'dbo.Comment.CreatedOn', 'DateCreated', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.CreatedBy', 'CreatingResourceID', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.UpdatedOn', 'DateEdited', 'COLUMN';
+GO
+EXEC sp_rename 'dbo.Comment.CommentType', 'CommentTypeID', 'COLUMN';
+GO
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-UpdatedBy">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table Comment add UpdatedBy int null
+GO
+update Comment set UpdatedBy = CreatedBy
+GO
+alter table Comment alter column UpdatedBy int not null
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table Comment drop column UpdatedBy
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-RemoveTrigger">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP TRIGGER IF EXiSTS dbo.[Comment_AfterInsert]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter trigger [dbo].[Comment_AfterInsert]
+   ON  [dbo].[Comment] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	insert into [queue].[Task] ([Action], [Custom], [Object], ObjectID)
+		select	'Notify',
+				'1',
+				'Comment',
+				ID
+		from	inserted
+		where	CommentType in (2, 5);
+GO
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

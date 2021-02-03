@@ -15,8 +15,6 @@ export class AdminUserGuard implements CanActivate {
         }
 
         if (this.authenticationService.isAdmin) {
-            //
-            console.log('auth');
             return true;
         }
         else {

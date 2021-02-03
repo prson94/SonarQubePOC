@@ -162,7 +162,6 @@ namespace d360.model
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
 
         new bool Add<T>(T item) where T : BaseObject;
-        IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations);
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
         IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);        
         void AddOrUpdateFields(List<Field> items);
@@ -181,7 +180,6 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
@@ -197,13 +195,7 @@ namespace d360.model
         AssetDetail GetAssetDetail(string objectType, long objectId);
         string GetAssetTypeNoReadSqlStatement(string identifier = null);
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
-        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);        
-        IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "");
-        IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "");
-        IQueryable<CommentDetail> GetCommentDetail(int id);
-        IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
-        IQueryable<CommentDetail> GetCommentDetailsByID(int id);
-        IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
+        List<FusionAttributeItem> GetAttributesByFusion(int fusionID);
         Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs, int timeout = 90);
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
@@ -287,7 +279,6 @@ namespace d360.model
         new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);        
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);
-        IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote);
         Database Database { get; }
         DbEntityEntry Entry(object entity);
 

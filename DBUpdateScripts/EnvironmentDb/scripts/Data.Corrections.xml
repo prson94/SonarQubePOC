@@ -1276,4 +1276,14 @@ END
 ]]>
 		</sql>
 	</changeSet>
+	
+	<changeSet author="Pappas" id="Data.Corrections.GOV-13496">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+delete T from CommentVote T inner join Comment C on C.ID = T.CommentID and C.CommentType not in (1,2,5);
+delete T from CommentRelation T inner join Comment C on C.ID = T.CommentID and C.CommentType not in (1,2,5);
+delete Comment where CommentType not in (1,2,5);
+]]>
+		</sql>
+	</changeSet>	
 </databaseChangeLog>

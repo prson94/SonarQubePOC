@@ -394,7 +394,7 @@ export class BaseComponent {
 
                 this.commentsSidebar = new SecondaryNavItem(
                     'Comments', 'Comments', ['fa-comments'],
-                    `/sidebar/comments/${this.objectType}/${this.objectID}`, null, 33
+                    `/sidebar/comments/${this.uid}`, null, 33
                 );
 
                 this.secondaryNavService.showItem(this.commentsSidebar);

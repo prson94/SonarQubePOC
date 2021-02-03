@@ -150,7 +150,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.secondaryNavService.showItem(this.hasRelations);
                     this.comments = new SecondaryNavItem(
                         'Comments', 'comments', ['fa-comments'],
-                        `/sidebar/comments/Resource/${resourceId}`, null, 25
+                        `/sidebar/comments/${this.resource.uid}/true`, null, 25
                     );
                     this.secondaryNavService.showItem(this.comments);
                     this.secondaryNavService.clearCurrentObject();
