@@ -9,7 +9,8 @@ import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-r
 import { MeasureRuleResultsComponent } from './measure-rule-results.component';
 import { SiteModalModule } from '../../modal/gov-modal.module';
 import { CoreModule } from '../../core.module';
-
+import { TableModule } from 'primeng/table';
+import { SharedGridPagingInfoModule } from '../../grid-paging-info.component';
 
 @NgModule({
     imports: [
@@ -19,7 +20,9 @@ import { CoreModule } from '../../core.module';
         HttpClientModule,
         DirectivesModule,
         CoreModule,
-        SiteModalModule
+        SiteModalModule,
+        TableModule,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         ScoreCalculationComponent,

@@ -1,18 +1,67 @@
-﻿<div class="modal-measure-rule-results">
+﻿<div class="content">
+    <div class="description">Showing rule results for the measure <strong>Accuracy</strong> on the asset <strong>Contact Email Address</strong> (<strong>Business Term</strong>):</div>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="row" *ngIf="!isLoading" style="height:100%">
-        <div style="margin-left: 0.67em;height: 5%">
-            <p>Showing rule results for the measure <strong>Accuracy</strong> on the asset <strong>Contact Email Address (Business Term)</strong>:</p>
-        </div>
-        <div class="col s7" style="height:90%;overflow-y:auto;">
-        </div>
+    <div *ngIf="!isLoading">
+        <div class="scoring-v2">
+            <div class="score-left-content right-padding-16 flex">
+                <!--<input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">-->
+                <p-table #dt [value]="Evidence?.items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['OwningAssetPath']" sortField="OwningAssetPath" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange(selected?.ResultUid)">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'OwningAssetPath'">
+                                Rule
+                                <d3s-sortIcon [field]="'OwningAssetPath'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'EvaluatedAssetPath'">
+                                Asset
+                                <d3s-sortIcon [field]="'EvaluatedAssetPath'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'PassFraction'">
+                                Pass Fraction
+                                <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                        <!--<tr [hidden]="showSimpleFilter">
+                            <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th></th>
+                            <th></th>
+                        </tr>-->
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr (dblclick)="selected=item;" [pSelectableRow]="item">
+                            <td>{{item.OwningAssetPath}}</td>
+                            <td>{{item.EvaluatedAssetPath}}</td>
+                            <td>{{item.PassFraction}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+            <div class="score-right-content">
+                <div class="card-box">
+                    <div class="button-group show-multiple">
+                        <button igButton label="Result" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='Result'"></button>
+                        <button igButton label="Rule" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Rule'"></button>
+                        <button igButton label="Asset" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Asset'"></button>
+                    </div>
+                    <div [hidden]="!(activeTab=='Result')">
+                        Result
+                    </div>
+                    <div [hidden]="!(activeTab=='Rule')">
+                        Rule
 
-        <div style="padding-top:20px;padding-bottom:20px;height:5%;align-content:center;" class="right">
-            <button igButton class="ig-button-primary"
-                    type="button"
-                    (click)="cancel()"
-                    label="Close">
-            </button>
+                    </div>
+                    <div [hidden]="!(activeTab=='Asset')">
+                        Asset
+
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="bottom-action-bar">
+        <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
     </div>
 </div>

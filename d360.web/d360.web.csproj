@@ -832,6 +832,7 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />

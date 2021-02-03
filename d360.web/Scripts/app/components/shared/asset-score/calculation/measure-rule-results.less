@@ -1,0 +1,71 @@
+﻿@import "/Content/styles/infogix-ui/infogix-ui.less";
+@import "/Content/styles/_Variables.less";
+
+.scoring-v2 {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+
+    .score-left-content {
+        flex-grow: 1;
+        min-width: 600px;
+    }
+
+    .score-right-content {
+        flex-grow: 0;
+        flex-shrink: 0;
+        width: 400px;
+        padding-left: 24px;
+
+        .card-box {
+            box-shadow: none;
+            padding: 0;
+        }
+    }
+
+    .right-padding-16 {
+        padding-right: 16px !important;
+    }
+
+    .button-group {
+        display: flex;
+        flex-grow: 1;
+
+        &.width-300 {
+            width: 300px;
+        }
+
+        &.show-multiple {
+            button {
+                border-radius: 0px;
+                flex-grow: 1;
+
+                &:focus {
+                    border: none;
+                    outline: none;
+                    box-shadow: none;
+
+                    &.ig-state-active {
+                        background: @ig-grey-t3;
+                    }
+                }
+
+                &:hover {
+                    &.ig-state-active {
+                        background: @ig-grey-t3;
+                    }
+                }
+            }
+
+            button:first-of-type {
+                border-bottom-left-radius: 4px;
+                border-top-left-radius: 4px;
+            }
+
+            button:last-of-type {
+                border-bottom-right-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+        }
+    }
+}
