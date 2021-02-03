@@ -13,10 +13,16 @@ export class ScoreCalculationComponent extends BaseComponent {
     @Input() measures: PointBreakdown[];
     @Input() formattedCheck: string = '';
 
+    private isRuleResultsModalVisible: boolean = false;
+
     private getSum(): number {
         var res = 0;
         this.measures.forEach(x => res += x.Weight);
         return res;
+    }
+
+    public showRuleResults(isVisible: boolean) {
+        this.isRuleResultsModalVisible = isVisible;
     }
 
     showPassTest(): boolean {

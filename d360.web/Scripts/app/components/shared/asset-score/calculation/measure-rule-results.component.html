@@ -1,0 +1,18 @@
+﻿<div class="modal-measure-rule-results">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row" *ngIf="!isLoading" style="height:100%">
+        <div style="margin-left: 0.67em;height: 5%">
+            <p>Showing rule results for the measure <strong>Accuracy</strong> on the asset <strong>Contact Email Address (Business Term)</strong>:</p>
+        </div>
+        <div class="col s7" style="height:90%;overflow-y:auto;">
+        </div>
+
+        <div style="padding-top:20px;padding-bottom:20px;height:5%;align-content:center;" class="right">
+            <button igButton class="ig-button-primary"
+                    type="button"
+                    (click)="cancel()"
+                    label="Close">
+            </button>
+        </div>
+    </div>
+</div>

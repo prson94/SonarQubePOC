@@ -6,6 +6,10 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DirectivesModule } from '../../../../directives/directives.module';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
+import { MeasureRuleResultsComponent } from './measure-rule-results.component';
+import { SiteModalModule } from '../../modal/gov-modal.module';
+import { CoreModule } from '../../core.module';
+
 
 @NgModule({
     imports: [
@@ -14,13 +18,16 @@ import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-r
         RouterModule,
         HttpClientModule,
         DirectivesModule,
-
+        CoreModule,
+        SiteModalModule
     ],
     declarations: [
-        ScoreCalculationComponent
+        ScoreCalculationComponent,
+        MeasureRuleResultsComponent
     ],
     exports: [
-        ScoreCalculationComponent
+        ScoreCalculationComponent,
+        MeasureRuleResultsComponent
     ],
     providers: [
         {
