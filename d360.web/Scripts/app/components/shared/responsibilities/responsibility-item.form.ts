@@ -165,7 +165,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                     &&
                     (this.item.ResourceUid && this.item.ResourceUid == this.itemToSave.ResourceUid)
                 ) {
-                    if ((this.item.Description && this.item.Description != this.itemToSave.Description)) {
+                    if (this.item.Description != this.itemToSave.Description) {
                         this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid)
                             .subscribe(() => {
                                 this.postRequest();
