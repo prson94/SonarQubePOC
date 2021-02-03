@@ -94,6 +94,8 @@
             <div [hidden]="viewType == 'diagram'" id="list-view" *ngIf="myDiagram && myDiagram.model">
                 <d3s-process-diagram-list-view #listView [diagram]="myDiagram" [nodeArray]="myDiagram.model.nodeDataArray" [nodeSelection]="myDiagram.selection"></d3s-process-diagram-list-view>
             </div>
+
+            <d3s-assetbrowser-overview [hidden]="viewType != 'diagram' || !isDiagramLoaded || isCanvasEmpty" #overview [diagram]="myDiagram"></d3s-assetbrowser-overview>
         </div>
 
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
@@ -123,6 +125,7 @@
                 </div>
             </div>
         </div>
+
 
     </div>
 
@@ -342,7 +345,6 @@
                          [objectType]="'Task'">
 </d3s-relationships-modal>
 
-<d3s-assetbrowser-overview *ngIf="viewType == 'diagram' && isDiagramLoaded && !isCanvasEmpty" #overview [diagram]="myDiagram" ></d3s-assetbrowser-overview>
 
 
 <div *ngIf="viewType == 'diagram' && !isCanvasEmpty" class="asset-browser-controls-bottom {{isInfoPanelOpened ? 'info-panel-opened' : ''}}">
