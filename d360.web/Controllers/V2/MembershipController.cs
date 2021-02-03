@@ -1545,7 +1545,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <param name="assetUid">Uid of the asset</param>
         [
             HttpGet,
-            Route("membership/users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
+            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
@@ -1562,7 +1562,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <param name="assetTypeUid">Uid of the asset type</param>
         [
             HttpGet,
-            Route("membership/users/me/watches/{assetTypeUid:Guid}"),
+            Route("users/me/watches/{assetTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
