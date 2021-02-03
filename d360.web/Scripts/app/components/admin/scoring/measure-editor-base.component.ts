@@ -46,7 +46,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     child = "";
     closeLabel: string = "Cancel";
     conditionFormMode = FormMode.Default;
-    conditions: FieldCondition[] = [];
+    //conditions: FieldCondition[] = [];
+    conditionGroups: MetricAssetVersionConditionViewModel[] = [];
     currentEffectiveDate: Date;
     displayWeight: number;
     displayEffectiveDate: Date;
@@ -89,27 +90,30 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0 && this.model.ConditionGroups[0].ConditionItems) {
-            const conditions = this.model.ConditionGroups[0].ConditionItems;
-            this.conditions = [];
-            if (conditions.length > 0) {
-                conditions.forEach(c => {
-                    const cond = new FieldCondition();
-                    cond['uid'] = c.Uid;
-                    cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
-                    cond.isValid = true;
-                    cond.operator = c.Operator;
-                    cond.value = c.Values[0];
+            this.model.ConditionGroups.forEach((x, cgidx) => {
+                //get all condition items and convert them into FieldCoditions for the conditiongroup
+                const conditions = this.model.ConditionGroups[0].ConditionItems;
+                this.conditionGroups[cgidx].conditionItemFields = [];
+                if (conditions.length > 0) {
+                    conditions.forEach((c, idx) => {
+                        const cond = new FieldCondition();
+                        cond['uid'] = c.Uid;
+                        cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
+                        cond.isValid = true;
+                        cond.operator = c.Operator;
+                        cond.value = c.Values[0];
 
-                    if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
-                        cond.value = new Date(cond.value);
-                    }
-                    if (c.FieldType.Type == 'Lookup') {
-                        cond.value = cond.value.toString();
-                    }
+                        if (c.FieldType.Type == 'DateTime' || c.FieldType.Type == 'Date') {
+                            cond.value = new Date(cond.value);
+                        }
+                        if (c.FieldType.Type == 'Lookup') {
+                            cond.value = cond.value.toString();
+                        }
 
-                    this.conditions.push(cond);
-                })
-            }
+                        this.conditionGroups[idx].conditionItemFields.push(cond);
+                    })
+                }
+            });
         }
     }
 
@@ -166,8 +170,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         return new Date(utc);
     }
 
-    validateConditions() {
-        const toEval = this.conditions.filter(x => x.field);
+    validateConditions(conditions) {
+        const toEval = conditions.filter(x => x.field);
         this.showMatchPicker = (toEval.length > 1);
         return true;
     }

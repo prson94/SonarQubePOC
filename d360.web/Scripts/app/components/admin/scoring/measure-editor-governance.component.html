@@ -283,9 +283,21 @@
                 </div>
             </ig-property-group>
 
-            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Condition'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
-                    <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
+                    <div class="row">
+                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="All" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="Any" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
+                    </div>
+                     <div class="condition-group">
+                        <field-condition-grid 
+                                              *ngIf="!isLoadingFields" 
+                                              [formGroup]="metricForm" 
+                                              [conditions]="conditions" 
+                                              [conditionPrefix]="'ac_'" 
+                                              [fields]="fields" 
+                                              (onChange)="updateFormValidity($event)"></field-condition-grid>
+                     </div>
                     <div class="row" *ngIf="showMatchPicker">
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
                         <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
