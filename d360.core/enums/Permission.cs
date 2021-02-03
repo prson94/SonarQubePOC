@@ -5,28 +5,44 @@ using System.Reflection;
 
 namespace d360.core.enums
 {
+    [Flags]
     public enum Permission
     {
         [Name("Read asset"), Description("Read an asset and its properties."), Category("R")]
         ReadAsset = 1,
-        [Name("Modify asset"), Description("Add or update an asset's properties."), Category("M")]
-        ModifyAsset = 2,
+        [Name("Add asset"), Description("Add an asset."), Category("M")]
+        AddAsset = 2,
         [Name("Remove asset"), Description("Remove an asset."), Category("D")]
-        DeleteAsset = 4,        
+        DeleteAsset = 4,
+        [Name("Edit asset"), Description("Update an asset's properties."), Category("M")]
+        EditAsset = 8,
+
+        [Name("Modify asset"), Description("Add or update an asset's properties."), Category("M")]
+        ModifyAsset = AddAsset | EditAsset,
 
         [Name("Read responsibilties"), Description("Read an asset's roles and responsibilities."), Category("R")]
-        ReadResponsibilities = 64,
-        [Name("Modify responsibilties"), Description("Add or modify an asset's roles and responsibilities."), Category("M")]
-        ModifyResponsibilities = 128,
+        ReadResponsibilities = 32,
+        [Name("Add responsibilties"), Description("Add an asset's roles and responsibilities."), Category("M")]
+        AddResponsibilities = 64,
         [Name("Remove responsibilties"), Description("Remove an asset's roles and responsibilities."), Category("D")]
-        DeleteResponsibilities = 256,
+        DeleteResponsibilities = 128,
+        [Name("Edit responsibilties"), Description("Modify an asset's roles and responsibilities."), Category("M")]
+        EditResponsibilities = 256,
+
+        [Name("Modify responsibilties"), Description("Add or modify an asset's roles and responsibilities."), Category("M")]
+        ModifyResponsibilities = AddResponsibilities | EditResponsibilities,
 
         [Name("Read relationships"), Description("Read an asset's relationships."), Category("R")]
-        ReadRelationships = 512,
-        [Name("Modify relationships"), Description("Add or modify an asset's relationships."), Category("M")]
-        ModifyRelationships = 1024,
+        ReadRelationships = 1024,
+        [Name("Add relationships"), Description("Add an asset's relationships."), Category("M")]
+        AddRelationships = 2048,
         [Name("Remove relationships"), Description("Remove an asset's relationships."), Category("D")]
-        DeleteRelationships = 2048
+        DeleteRelationships = 4096,
+        [Name("Edit relationships"), Description("Modify an asset's relationships."), Category("M")]
+        EditRelationships = 8192,
+
+        [Name("Modify relationships"), Description("Add or modify an asset's relationships."), Category("M")]
+        ModifyRelationships = AddRelationships | EditRelationships,
     }
 
     public class PermissionInfo
