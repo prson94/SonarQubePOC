@@ -76,4 +76,5 @@
   <include file="scripts/GOV-11255.xml"/>  <!-- service account name update with less confusing name-->
   <include file="scripts/GOV-13225.xml"/>  <!--Change setting type from string to GUID of Governance Role Reference List Uid(73).-->
   <include file="scripts/GOV-11835.xml"/>  <!-- Removing table plugin.ClientFusionType_backup-->
+  <include file="scripts/GOV-13550.xml"/>  <!-- Rename tables plugin.CompanyPackage and plugin.FieldType-->
 </databaseChangeLog>
