@@ -3,6 +3,7 @@
 export class PointBreakdown {
     Uid: string;
     ParentUid: string;
+    ScoreItemUid: string;
     IsGroup: boolean;
     Name: string;
     Description: string;

@@ -31,6 +31,9 @@ namespace d360.core.entities
         public Guid? ParentUid { get; set; }
 
         [DataMember]
+        public Guid ScoreItemUid { get; set; }
+
+        [DataMember]
         public bool IsGroup { get; set; }
 
         [DataMember]
