@@ -4204,6 +4204,7 @@ select	A.ID as AssetID,
         A.UID as UID,
 		A.ObjectID,
 		T.ID as TypeID,
+        T.uid as AssetTypeUid,
 		P.TextPath,
 		L.Level
 from	Asset A
@@ -4266,7 +4267,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = levelInfo.AssetType.uid.ToString(), DataType = "string" }
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = taxonomy.AssetTypeUid.ToString(), DataType = "string" }
                             },
                             Category = Resources.FieldInfo.SystemFieldCategory
                         });
