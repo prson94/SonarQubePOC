@@ -135,10 +135,10 @@ export class ResourcesService extends BaseObservableService {
             .subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));
     }
 
-    getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Observable<CountObject[]> {
+    getResponsibilityBreakdownByResource(id: number, responsibilityTypeUid: string = ""): Observable<CountObject[]> {
         var url = "";
-        if (responsibilityTypeId > 0) {
-            url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeID=${responsibilityTypeId}`;
+        if (responsibilityTypeUid !== "") {
+            url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}&responsibilityTypeUID=${responsibilityTypeUid}`;
         }
         else {
             url = `/api/v2/social/ResponsibilityBreakdownByResource?id=${id}`;
@@ -185,10 +185,11 @@ export class ResourcesService extends BaseObservableService {
         window.location.assign(`/resources/${resourceID}/following/${type}/${id}.xlsx`);
     }
 
-    exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number, responsibilityTypeId: number = null) {
+    exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number, responsibilityTypeUid: string = null) {
         let uri = `/resources/${resourceID}/ownership/${type}/${id}.xlsx`
-        if (responsibilityTypeId != null && responsibilityTypeId > 0)
-            uri += `?responsibilityTypeId=${responsibilityTypeId}`;
+        if (responsibilityTypeUid != null && responsibilityTypeUid !== "") {
+            uri += `?responsibilityTypeId=${responsibilityTypeUid}`;
+        }
         window.location.assign(uri);
     }
 

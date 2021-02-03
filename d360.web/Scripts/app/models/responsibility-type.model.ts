@@ -8,7 +8,7 @@ export interface IResponsibilityTypeService {
     postResponsibilityType(responsibilityType: ResponsibilityType): Observable<any>;
     deleteResponsibilityType(uid: string, cascade?: boolean): Observable<any>;
     getResponsibilityTypeBreakdown(): Observable<ResponsibilityTypeCount[]>;
-    getResourceResponsibilityByType(responsibilityTypeId: number): Observable<ResourceResponsibilityTypeCount[]>;
+    getResourceResponsibilityByType(responsibilityTypeUid: string): Observable<ResourceResponsibilityTypeCount[]>;
     getResponsibilityTypesByObject(type: string, id: number): Observable<any>;
 }
 
@@ -81,6 +81,7 @@ export class ResponsibilityTypeCount {
     Count: number;
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
+    ResponsibilityTypeUID: number;
 }
 
 export class ResourceResponsibilityTypeCount {
@@ -90,6 +91,7 @@ export class ResourceResponsibilityTypeCount {
     ResourceID: number;
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
+    ResponsibilityTypeUID: string;
 }
 
 export class ResponsibilityTypeRelationRuleSummary {

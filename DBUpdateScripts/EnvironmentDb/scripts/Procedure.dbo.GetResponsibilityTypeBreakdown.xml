@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v1">
+  <changeSet author="TKlok" id="Procedure.dbo.GetResponsibilityTypeBreakdown-v2">
+  <comment>GOV-13455</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,7 +16,8 @@ create or alter procedure [dbo].[GetResponsibilityTypeBreakdown]
 as
 begin
 	select
-		ResponsibilityTypeID, 
+		ResponsibilityTypeID,
+		ResponsibilityTypeUID,
 		ResponsibilityTypeName as ResponsibilityType, 
 		sum(AssetCount) as [Count] 
 	from
@@ -23,6 +25,7 @@ begin
 	
 	select 
 		r.ResponsibilityTypeID, 
+		rt.[uid] as ResponsibilityTypeUID,
 		rt.[Name] as ResponsibilityTypeName,  
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
@@ -33,10 +36,11 @@ begin
 		inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
 	where RES.State=1 and r.IsVisible = 1	
 	group by 
-		r.ResponsibilityTypeID, rt.[Name]
+		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
 	UNION ALL
 	select 
 		r.ResponsibilityTypeID, 
+		rt.[uid] as ResponsibilityTypeUID,
 		rt.[Name] as ResponsibilityTypeName,  
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
@@ -49,10 +53,11 @@ begin
 		inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 	where RES.State=1 and r.IsVisible = 1	
 	group by 
-		r.ResponsibilityTypeID, rt.[Name]
+		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
 	UNION ALL
 	select 
 		r.ResponsibilityTypeID, 
+		rt.[uid] as ResponsibilityTypeUID,
 		rt.[Name] as ResponsibilityTypeName,  
 		count(1) as AssetCount
 	from [responsibilitytyperelationrule] r
@@ -65,10 +70,11 @@ begin
 		inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
 	where RES.State=1 and r.IsVisible = 1	
 	group by 
-		r.ResponsibilityTypeID, rt.[Name]
+		r.ResponsibilityTypeID, rt.[uid], rt.[Name]
 	UNION ALL 
 	select 	      
 			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+			  RT.[uid] as ResponsibilityTypeUID,
 			  RT.[Name] as ResponsibilityTypeName,  
 			  count(1) as AssetCount
 		   from 
@@ -81,10 +87,11 @@ begin
 			 inner join AssetType T on T.ID = A.AssetTypeID  
 			 inner join reporting.Global_Resource RES on RES.ResourceID = rresource.SecurityAssetID and rresource.SecurityAsset = 'R' 
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
-		   group by r.ResponsibilityTypeID, RT.[Name]
+		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
 		   UNION ALL	   
 		   select 	      
 			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+			  RT.[uid] as ResponsibilityTypeUID,
 			  RT.[Name] as ResponsibilityTypeName,  
 			  count(1) as AssetCount
 		   from 
@@ -99,10 +106,11 @@ begin
 			 inner join ResourceGroup RG on RG.GroupID = G.ID           
 			 inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
-		   group by r.ResponsibilityTypeID, RT.[Name]
+		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
 		   UNION ALL	   
 		   select 	      
 			  r.ResponsibilityTypeID as ResponsibilityTypeID,  
+			  RT.[uid] as ResponsibilityTypeUID,
 			  RT.[Name] as ResponsibilityTypeName,  
 			  count(1) as AssetCount
 		   from 
@@ -116,10 +124,11 @@ begin
 			 inner join OrganizationResource RD on RD.OrganizationID = D.ID
 			 inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
 		   where RES.State=1 and r.IsVisible = 1 and r.ApplyToType = 0
-		   group by r.ResponsibilityTypeID, RT.[Name]
+		   group by r.ResponsibilityTypeID, RT.[uid], RT.[Name]
 		   UNION ALL	   
 		   select		 
 			 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+			 RT.[uid] as ResponsibilityTypeUID,
 			 RT.[Name] as ResponsibilityTypeName,  
 			 count(1) as AssetCount
 			from 
@@ -129,10 +138,11 @@ begin
 				inner join [dbo].assettype att on (att.id = a.assettypeid)
 				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)			
 				inner join reporting.Global_Resource RES on RES.ResourceID = oride.SecurityAssetID and oride.SecurityAsset = 'R' and RES.State = 1
-			group by rr.ResponsibilityTypeID,RT.[Name]
+			group by rr.ResponsibilityTypeID, RT.[uid], RT.[Name]
 	       UNION ALL	   
 		   select		 
 			 rr.ResponsibilityTypeID as ResponsibilityTypeID,  
+			 RT.[uid] as ResponsibilityTypeUID,
 			 RT.[Name] as ResponsibilityTypeName,  
 			 count(1) as AssetCount
 			from 
@@ -144,10 +154,13 @@ begin
 				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID  
 				inner join ResourceGroup RG on RG.GroupID = G.ID           
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
-			group by rr.ResponsibilityTypeID,RT.[Name]
+			group by rr.ResponsibilityTypeID, RT.[uid], RT.[Name]
 	) X
 	group by 
 		ResponsibilityTypeID,
+		ResponsibilityTypeUID,
+		ResponsibilityTypeName
+	order by
 		ResponsibilityTypeName
 
 end
