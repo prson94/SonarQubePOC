@@ -39,15 +39,23 @@ namespace d360.web.Controllers
         [HttpPost, Route("Results"), NonNullableParameters]
         public async Task<JsonResult> Results(QueryRequest queryRequest)
         {
-            var o = new SearchResultsViewModel();
-
-            if (!string.IsNullOrEmpty(queryRequest.Term))
+            try
             {
-                queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
-                o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
-                await AugmentResults(o.Result.Results);
+                var o = new SearchResultsViewModel();
+
+                if (!string.IsNullOrEmpty(queryRequest.Term))
+                {
+                    queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
+                    o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
+                    await AugmentResults(o.Result.Results);
+                }
+                return Json(o);
             }
-            return Json(o);
+            catch (Exception ex)
+            {
+                Response.StatusCode = (int)System.Net.HttpStatusCode.InternalServerError;
+                return jsonException(ex, System.Net.HttpStatusCode.InternalServerError);
+            }
         }
 
         [HttpGet, Route("AutoComplete"), NonNullableParameters]
@@ -253,7 +261,7 @@ namespace d360.web.Controllers
 
         private async Task AppendPaths(IEnumerable<TypeaheadResult> results)
         {
-            Dictionary<Guid, List<PathComponent>> paths = await AssetRepository.GetAssetPathComponents(results.Select(r => r.Uid ?? Guid.Empty).ToList());
+            Dictionary<Guid, List<PathComponent>> paths = await AssetRepository.GetAssetPathComponents(results.Where(r => r.Uid.HasValue).Select(r => r.Uid ?? Guid.Empty).ToList());
             foreach(var r in results.Where(r => r.Uid.HasValue))
             {
                 Guid uid = r.Uid ?? Guid.Empty;

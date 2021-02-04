@@ -32,7 +32,17 @@ export class SearchService extends BaseObservableService  {
             .post('search/results', query)
             .pipe(
                 map(res => <SearchResultsObject>res),
-                catchError(err => this.handleError(err))
+                catchError((err) => {
+                    let errorMessage = null;
+                    if (Object.keys(err).indexOf("error") > -1) {
+                        errorMessage = err.error.message;
+                    }
+                    if (errorMessage == null || errorMessage == "") {
+                        errorMessage = "An error has occurred.";
+                    }
+                    this.messages.showError("Search Error", errorMessage);
+                    return of(this.getEmptyResult());
+                })
             );
     }
 
