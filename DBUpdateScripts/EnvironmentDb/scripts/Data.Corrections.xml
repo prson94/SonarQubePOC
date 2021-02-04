@@ -5,6 +5,156 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="MDonato" id="Data.Corrections.GOV-13409">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+			/*
+			-----------------------------------------------------
+			Permission					| Old Value	| New Value |
+			-----------------------------------------------------
+			ReadAsset					| 1			| 1			|
+			AddAsset					| -			| 2			|
+			DeleteAsset					| 4			| 4			|
+			EditAsset					| -			| 8			|
+			ModifyAsset					| 2			| 2|8		|
+
+			ReadResponsibilities		| 64		| 32		|
+			AddResponsibilities			| -			| 64		|
+			DeleteResponsibilities		| 256		| 128		|
+			EditResponsibilities		| -			| 256		|
+			ModifyResponsibilities		| 128		| 64|256	|
+
+			ReadRelationship			| 512		| 1024		|
+			AddRelationship				| -			| 2048		|
+			DeleteRelationship			| 2048		| 4096		|
+			EditRelationship			| -			| 8192		|
+			ModifyRelationship			| 1024		| 2048|8192	|
+			-----------------------------------------------------
+			*/
+
+
+			--update ModifyAsset to AddAsset|EditAsset
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 8
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 2 = 2;
+
+			--update ReadResponsibilities to 32
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 32 ^ 64
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 64 = 64;
+
+			--store DeleteResponsibilities in 16
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 16 ^ 256
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 256 = 256;
+
+			--update ModifyResponsibilities(128) to AddResponsibilities|EditResponsibilities
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 64 | 256 ^ 128
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 128 = 128;
+
+			--restore 16 to new DeleteResponsibilities(128)
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 128 ^ 16
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 16 = 16;
+
+			--store ReadRelationships(512) in 16
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 16 ^ 512
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 512 = 512;
+
+			--update DeleteRelationship to 4096
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 4096 ^ 2048
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 2048 = 2048;
+
+			--update ModifyRelationship to AddRelationship|EditRelationship
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 2048 | 8192 ^ 1024
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 1024 = 1024;
+
+			--restore 16 to ReadRelationship(1024)
+			update R
+			set R.PermissionsBitMask = R.PermissionsBitMask | 1024 ^ 16
+			from ResponsibilityTypeRelation R
+			where R.PermissionsBitMask & 16 = 16;
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+		--store ModifyRelationship in 16
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 16 ^ (2048|8192)
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & (2048|8192) = (2048|8192);
+
+		--revert DeleteRelationship
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 2048 ^ 4096
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 4096 = 4096;
+
+		--revert ReadRelationship
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 512 ^ 1024
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 1024 = 1024;
+
+		--restore ModifyRelationship
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 1024 ^ 16
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 16 = 16;
+
+		--store ModifyResponsibilities in 16
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 16 ^ (64|256)
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & (64|256) = (64|256);
+
+		--revert DeleteResponsibilities 
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 256 ^ 128
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 128 = 128;
+
+		--revert ReadResponsibilities 
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 64 ^ 32
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 32 = 32;
+
+		--restore ModifyResponsibilities 
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask | 128 ^ 16
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 16 = 16;
+
+		--clear EditAsset bit
+		update R
+		set R.PermissionsBitMask = R.PermissionsBitMask ^ 8
+		from ResponsibilityTypeRelation R
+		where R.PermissionsBitMask & 8 = 8;
+
+		]]>
+    </rollback>
+  </changeSet>
+
+
+
+
+
   <changeSet author="MDonato" id="Data.Corrections.GOV-11768">
     <sql dbms="mssql"
             endDelimiter="\nGO"
