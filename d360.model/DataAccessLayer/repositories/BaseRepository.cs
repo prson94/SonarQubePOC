@@ -13,11 +13,11 @@ namespace d360.model.DataAccessLayer.repositories
 {
     public abstract class BaseRepository
     {
-        ICompanyContext CompanyContext;
+        readonly ICompanyContext CompanyContext;
         const string RELATIONSHIP_DELIMITER = "|";
         protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-        public BaseRepository(ICompanyContext ctx)
+        protected BaseRepository(ICompanyContext ctx)
         {
             this.CompanyContext = ctx;
         }
@@ -34,7 +34,10 @@ namespace d360.model.DataAccessLayer.repositories
 
         private bool DoesIntersectHasRefList(IntersectType intersectType)
         {
-            if (intersectType == null) return false;
+            if (intersectType == null)
+            {
+                return false;
+            }
 
             return intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0 || intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0;
         }
@@ -102,20 +105,26 @@ namespace d360.model.DataAccessLayer.repositories
                     valueColumn = "Value";
                     defaultVal = f.DefaultValue;
                 }
-                    
+
 
                 if (f.Type == "Score")
+                {
                     joinPrefix = "outer";
+                }
 
                 FieldType relatedField = null;
                 if (f.Type == "FieldFromRelationship")
                 {
                     if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
+                    {
                         return;
+                    }
 
                     relatedField = CompanyContext.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
                     if (relatedField == null)
+                    {
                         return;
+                    }
 
                 }
 
@@ -125,9 +134,13 @@ namespace d360.model.DataAccessLayer.repositories
                     if (!string.IsNullOrEmpty(fieldDataType))
                     {
                         if (fieldDataType == "bit")
+                        {
                             fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                        }
                         else
+                        {
                             fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                        }
                     }
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
@@ -147,7 +160,9 @@ namespace d360.model.DataAccessLayer.repositories
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                     }
                     else
+                    {
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                    }
                 }
                 else
                 {
@@ -160,11 +175,13 @@ namespace d360.model.DataAccessLayer.repositories
                                 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
                             }
                             else
+                            {
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            }
                         }
                         else if (f.Type == "Lookup" && f.AllowAllValue)
                         {
-                           
+
                             fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
@@ -181,7 +198,9 @@ namespace d360.model.DataAccessLayer.repositories
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]");
                         }
                         else
+                        {
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
+                        }
 
                         dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
                     }
@@ -190,9 +209,13 @@ namespace d360.model.DataAccessLayer.repositories
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
+                            {
                                 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            }
                             else
+                            {
                                 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]");
+                            }
                         }
                         else if (f.Type == "JsonElement")
                         {
@@ -401,28 +424,26 @@ namespace d360.model.DataAccessLayer.repositories
                     if (f.AllowMultipleValues)
                     {
                         displayName = $@"ADV{tableAlias}.DisplayValue";
-                        lookupValueJoinCriteria = $" cross apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias} inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+                        lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
                     }
                     else
                     {
-                        displayName = $@"{tableAlias}.formattedValue";
-                        lookupValueJoinCriteria = $" inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = {tableAlias}.Value ";
+                        displayName = $@"F{tableAlias}.formattedValue";                        
+                        lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
                     }
 
 
-                    string sql = $@"outer apply(
+                    string sql = $@"
+                                left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
+                                left join FieldType FT{tableAlias} on FT{tableAlias}.ID = F{tableAlias}.FieldTypeID
+                                outer apply(
                                 select FormattedValue = 
-                                (SELECT COALESCE({displayName}, AC{tableAlias}.Code) as name,
+                                (SELECT COALESCE({displayName}, ACF{tableAlias}.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
-                                from Field {tableAlias}
-								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
-                                {lookupValueJoinCriteria}								
-                                cross apply dbo.GetAssetColorJsonByColor(AC{tableAlias}.Color) ACJ{tableAlias}
-                                cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
-                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH),
-                                [Value] = 
-									(SELECT [Value] from Field {tableAlias}
-									 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql})                                
+                                from Asset ACF{tableAlias}								                                						
+                                cross apply dbo.GetAssetColorJsonByColor(ACF{tableAlias}.Color) ACJ{tableAlias}                                
+                                {lookupValueJoinCriteria} FOR JSON PATH),
+                                [Value] = F{tableAlias}.[Value]
                             ){tableAlias}(FormattedValue, [Value]) ";
                     fieldJoins.Add(sql);
 
@@ -515,7 +536,7 @@ namespace d360.model.DataAccessLayer.repositories
 
                                     if (field == null)
                                     {
-                                        var orderBy = $"A.ID {orderDirection}";
+                                        string orderBy;
                                         switch (q.Value.Trim().ToLower())
                                         {
                                             case "createdon":
@@ -536,7 +557,10 @@ namespace d360.model.DataAccessLayer.repositories
                                         return;
                                     }
 
-                                    if (field.Type == "Link") valueColumn = "Value";
+                                    if (field.Type == "Link")
+                                    {
+                                        valueColumn = "Value";
+                                    }
 
                                     if (!string.IsNullOrEmpty(fieldDataType))
                                     {
@@ -583,14 +607,20 @@ namespace d360.model.DataAccessLayer.repositories
                             {
                                 if (int.TryParse(q.Value, out pageNum))
                                 {
-                                    if (pageNum < 1) pageNum = 1;
+                                    if (pageNum < 1)
+                                    {
+                                        pageNum = 1;
+                                    }
                                 }
                             }
                             else if (key == "_pagesize")
                             {
                                 if (int.TryParse(q.Value, out pageSize))
                                 {
-                                    if (pageSize < 1) pageSize = 1;
+                                    if (pageSize < 1)
+                                    {
+                                        pageSize = 1;
+                                    }
                                 }
                             }
                         }
@@ -655,7 +685,9 @@ namespace d360.model.DataAccessLayer.repositories
                 bool useTypeLevelDefaultSorts = false;
                 var defSorts = queryParams.FirstOrDefault(x => x.Key.ToLower() == "usetypeleveldefaultsorts");
                 if (!string.IsNullOrEmpty(defSorts.Key))
+                {
                     bool.TryParse(defSorts.Value, out useTypeLevelDefaultSorts);
+                }
 
                 if (useTypeLevelDefaultSorts)
                 {
@@ -665,7 +697,9 @@ namespace d360.model.DataAccessLayer.repositories
                         .ToList();
 
                     if (orderFields.Count == 0)
+                    {
                         orderBySql = "order by A.ID ";
+                    }
                     else
                     {
                         List<string> sortStatements = new List<string>();
@@ -694,8 +728,14 @@ namespace d360.model.DataAccessLayer.repositories
 
                 if (pageSize > 0 || pageNum > 0)
                 {
-                    if (pageSize < 1) pageSize = 1;
-                    if (pageNum < 1) pageNum = 1;
+                    if (pageSize < 1)
+                    {
+                        pageSize = 1;
+                    }
+                    if (pageNum < 1)
+                    {
+                        pageNum = 1;
+                    }
 
                     model.pageSize = pageSize;
                     model.pageNum = pageNum;
@@ -721,9 +761,13 @@ namespace d360.model.DataAccessLayer.repositories
                 }
 
                 if (fieldType == "bit")
+                {
                     return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
+                }
                 else
+                {
                     return $"try_cast({val} as {fieldType})";
+                }
             }
 
             return $"F{ft.ID}.FormattedValue";
@@ -753,16 +797,24 @@ namespace d360.model.DataAccessLayer.repositories
                 case "DECIMAL":
                     double dVal = 0;
                     if (double.TryParse(valueString, out dVal))
+                    {
                         document.SetCellValue(rowIndex, colIndex, dVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, colIndex, valueString);
+                    }
                     break;
                 case "NUMBER":
                     int intVal = 0;
                     if (int.TryParse(valueString, out intVal))
+                    {
                         document.SetCellValue(rowIndex, colIndex, intVal);
+                    }
                     else
+                    {
                         document.SetCellValue(rowIndex, colIndex, valueString);
+                    }
                     break;
                 case "DATE":
                     if (DateTime.TryParse(valueString, out DateTime dateVal))
@@ -779,12 +831,16 @@ namespace d360.model.DataAccessLayer.repositories
                     doc.LoadHtml(value + "");
                     var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
                     if (txt.StartsWith("="))
+                    {
                         txt = "'" + txt;
+                    }
                     document.SetCellValue(rowIndex, colIndex, txt);
                     break;
                 default:
                     if (valueString.StartsWith("="))
+                    {
                         valueString = "'" + valueString;
+                    }
                     document.SetCellValue(rowIndex, colIndex, valueString);
                     break;
             }
