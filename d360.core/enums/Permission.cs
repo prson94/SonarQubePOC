@@ -72,9 +72,12 @@ namespace d360.core.enums
                     Category = ((CategoryAttribute)tm.GetCustomAttribute(typeof(CategoryAttribute))).Category,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                 };
+
                 //Add/Edit permissions not supported currently
-                if (new List<string>() { "R", "D", "M" }.Contains(info.Category))
+                if (new List<string>{ "R", "D", "M" }.Contains(info.Category))
+                {
                     list.Add(info);
+                }
             }
 
             return list;
