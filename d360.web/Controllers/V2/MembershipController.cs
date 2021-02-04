@@ -1535,5 +1535,82 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
         }
+
+
+
+        /// <summary>
+        /// Checks the watch status of an Asset for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        /// <param name="assetUid">Uid of the asset</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAsset(Guid assetTypeUid, Guid? assetUid)
+        {            
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, assetUid));
+        }
+
+        /// <summary>
+        /// Checks the watch status of an Asset Type for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAssetType(Guid assetTypeUid)
+        {
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, null));
+        }
+
+        private IHttpActionResult GetWatchStatusForUser(Guid assetTypeUid, Guid? assetUid)
+        {
+            bool response = false;
+
+            if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided.");
+            }
+
+            var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetUid != null)
+            {
+
+                if ((assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == assetUid.Value))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided.");
+                }
+                else
+                {
+                    var asset = Company.Filter<AssetDetail>(x => x.uid == assetUid.Value).FirstOrDefault();
+
+                    if (asset.AssetTypeUid != assetTypeUid)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid does not match the asset type provided.");
+                    }
+
+                    response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
+                }
+
+            }
+            
+            if(!response)
+            {
+                response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+        }
     }
 }
