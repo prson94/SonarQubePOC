@@ -216,7 +216,7 @@ END
 	</rollback>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-Renames">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-Renames">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
