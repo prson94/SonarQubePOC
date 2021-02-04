@@ -36,35 +36,88 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.CommentVote-v2">
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-AddEmoji">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table CommentVote add Emoji int constraint DF_CommentVote_Emoji default(1) not null
-GO
-
-update CommentVote set Emoji = iif(Vote = 1, 1, 2)
-GO
-
-CREATE NONCLUSTERED INDEX [IX_CommentVote_CommentID] ON [dbo].[CommentVote] ( [CommentID] )
-GO
-
-CREATE NONCLUSTERED INDEX [IX_CommentVote_ResourceID] ON [dbo].[CommentVote] ( [ResourceID] )
-GO
-
-ALTER TABLE [dbo].[CommentVote] DROP CONSTRAINT [DF_CommentVote_Vote]
-GO
-
-alter table CommentVote drop column Vote
-GO
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentVote' and COLUMN_NAME = 'Emoji')
+BEGIN
+	alter table CommentVote add Emoji int constraint DF_CommentVote_Emoji default(1) not null
+END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-UpdateEmojiValue">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentVote' and COLUMN_NAME = 'Vote')
+BEGIN
+	exec('update CommentVote set Emoji = iif(Vote = 1, 1, 2)')
+END
 		]]>
-	</rollback>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-AddCommentIDIndex">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_CommentVote_CommentID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_CommentVote_CommentID] ON [dbo].[CommentVote] ( [CommentID] )
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-AddResourceIDIndex">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_CommentVote_ResourceID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_CommentVote_ResourceID] ON [dbo].[CommentVote] ( [ResourceID] )
+END
+		]]>
+    </sql>
+  </changeSet>
+  
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-DropVoteConstraint">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from [sys].[default_constraints] where name = 'DF_CommentVote_Vote')
+BEGIN
+	ALTER TABLE [dbo].[CommentVote] DROP CONSTRAINT [DF_CommentVote_Vote]
+END
+		]]>
+    </sql>
+  </changeSet>
+  
+  <changeSet author="Core" id="Table.dbo.CommentVote-v2.1-DropVoteColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'CommentVote' and COLUMN_NAME = 'Vote')
+BEGIN
+	alter table CommentVote drop column Vote
+END
+		]]>
+    </sql>
   </changeSet>
 
 </databaseChangeLog>
