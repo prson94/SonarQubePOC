@@ -2020,7 +2020,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",  // title above Placeholder
-                new go.Binding("minSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
                     var part = target.part;
                     return new go.Size(self.calculateNodeWidth(part), NaN);
                 }).ofObject(),
@@ -2850,11 +2850,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(go.Panel, "Vertical",
             this.template_relationshipTopPanel("relations"),
             this.template_ownersTopPanel("owners"),
-            new go.Binding("", "", (obj: go.GraphObject) => {
+            new go.Binding("", "", (obj: go.GraphObject, target: go.GraphObject) => {
                 let longestPredicate: string = "";
+
                 if (obj.part.data && obj.part.data["relations"]) {
                     var arr = obj.part.data["relations"] as Array<any>;
-                    if (arr.length < this.autoCollapseNodeCount) {
+                    if (arr.length < this.autoCollapseRelationshipCount) {
                         arr.forEach(rel => {
                             if (rel["predicate"].length > longestPredicate.length) {
                                 longestPredicate = rel["predicate"];
@@ -2867,7 +2868,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 if (obj.part.data && obj.part.data["owners"]) {
                     var arr = obj.part.data["owners"] as Array<any>;
-                    if (arr.length < this.autoCollapseNodeCount) {
+                    if (arr.length < this.autoCollapseRelationshipCount) {
                         arr.forEach(rel => {
                             if (rel["responsibilityType"].length > longestPredicate.length) {
                                 longestPredicate = rel["responsibilityType"];
@@ -2923,7 +2924,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
             ),
             this.g(go.Panel, "Vertical",
-                new go.Binding("minSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
+                new go.Binding("desiredSize", "", function (obj: go.GraphObject, target: go.GraphObject) {
                     var part = target.part;
                     return new go.Size(self.calculateNodeWidth(part), NaN);
                 }).ofObject(),
@@ -3601,36 +3602,43 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         var maxWidth: number = 0;
         try {
             var part = object.findTopLevelPart();
-            console.log(part.data["text"]);
             if (part.data["predicateWidth"]) {
                 var predicateWidth = +part.part.data["predicateWidth"];
-                var width = this.calculateBadgeTextWidth(predicateWidth) + 66;
-                if (!isNaN(width)) {
-                    maxWidth = width;
+                if (!isNaN(predicateWidth)) {
+                    maxWidth = predicateWidth;
                 }
             }
 
             var data = part.diagram.nodes.filter(x => x.data['hierarchyKey'] == part.data['hierarchyKey']);
             var maxCharCount = 0;
             data.each(d => {
-                if (d.data && d.data["text"] &&  d.data['text'].length > maxCharCount)
+                if (d.data && d.data["text"] && d.data['text'].length > maxCharCount)
                     maxCharCount = d.data['text'].length;
             });
 
             //set max top width depending on max character count withing hierarchy
-            var nodeWidth = 70 + maxCharCount * 6;
+            var nodeWidth = 80 + maxCharCount * 6;
             if (!isNaN(nodeWidth) && nodeWidth > maxWidth) {
                 maxWidth = nodeWidth;
             }
 
             if (maxWidth > 260)
                 maxWidth = 260;
+
+            if (object != part) {
+                var depth = object.findSubGraphLevel();
+                maxWidth = maxWidth - depth * 6;
+            }
+
+            if (maxWidth < 100) {
+                maxWidth = 100;
+            }
         }
         catch (ex) {
             console.log(ex);
             maxWidth = 260;
         }
-        console.log(maxWidth);
+
         return maxWidth;
     }
 
