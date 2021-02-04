@@ -59,6 +59,22 @@ export class BaseObservableService {
         )
     }
 
+    protected downloadFile(data: Blob, name: string) {
+        let filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            let url = window.URL.createObjectURL(data);
+            let anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+
     protected deleteDynamicWithResult(
         http: HttpClient,
         type: string,

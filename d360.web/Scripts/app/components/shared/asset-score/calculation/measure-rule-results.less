@@ -9,6 +9,19 @@
     .score-left-content {
         flex-grow: 1;
         min-width: 600px;
+
+        .path-column-wrapper {
+            display: flex;
+
+            .path-column {
+                flex: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                direction: rtl;
+                text-align: left;
+            }
+        }
     }
 
     .score-right-content {
@@ -16,11 +29,7 @@
         flex-shrink: 0;
         width: 400px;
         padding-left: 24px;
-
-        .card-box {
-            box-shadow: none;
-            padding: 0;
-        }
+        min-height: 600px;
     }
 
     .right-padding-16 {

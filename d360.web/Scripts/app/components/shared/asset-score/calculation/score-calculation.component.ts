@@ -11,7 +11,9 @@ export class ScoreCalculationComponent extends BaseComponent {
     @Input() scoreType: ScoreType;
     @Input() selected: PointBreakdown;
     @Input() measures: PointBreakdown[];
-    @Input() formattedCheck: string = '';
+    @Input() formattedCheck: string = "";
+    @Input() assetName: string;
+    @Input() assetTypeName: string;
 
     private isRuleResultsModalVisible: boolean = false;
 

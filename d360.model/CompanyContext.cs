@@ -2803,15 +2803,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                         switch (f.SqlFieldType)
                         {
                             case SqlFieldType.Text:
-                                wheres.Add($"{f.SqlExpression} like @{f.ApiName}");
-                                dbs.Add($"@{f.ApiName}", value+"%");
+                                wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
+                                dbs.Add($"@S_{f.ApiName}", value+"%");
                                 break;
                             case SqlFieldType.Boolean:
                                 bool filterBool;
                                 if (bool.TryParse(value, out filterBool))
                                 {
-                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
-                                    dbs.Add($"@{f.ApiName}", filterBool);
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterBool);
                                 }
                                 break;
                             case SqlFieldType.Date:
@@ -2819,24 +2819,25 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                                 DateTime filterDate;
                                 if (DateTime.TryParse(value, out filterDate))
                                 {
-                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
-                                    dbs.Add($"@{f.ApiName}", filterDate);
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterDate);
                                 }
                                 break;
                             case SqlFieldType.Decimal:
                             case SqlFieldType.Number:
-                                if (decimal.TryParse(value, out _))
+                                decimal filterNumber;
+                                if (decimal.TryParse(value, out filterNumber))
                                 {
-                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
-                                    dbs.Add($"@{f.ApiName}", value);
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterNumber);
                                 }
-
                                 break;
                             case SqlFieldType.Guid:
-                                if (Guid.TryParse(value, out _))
+                                Guid filterGuid;
+                                if (Guid.TryParse(value, out filterGuid))
                                 {
-                                    wheres.Add($"{f.SqlExpression} = @{f.ApiName}");
-                                    dbs.Add($"@{f.ApiName}", value);
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterGuid);
                                 }
                                 break;
                             default:

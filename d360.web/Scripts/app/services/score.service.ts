@@ -12,12 +12,25 @@ export class ScoreService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getDataQualityEvidenceForScoreItem(scoreItemUid: string): Observable<DataQualityEvidenceModel> {
-        return this.http.get(`/api/v2/scoring/${scoreItemUid}/quality/evidence`)
+    getDataQualityEvidenceForScoreItem(scoreItemUid: string, simpleFilter: string): Observable<DataQualityEvidenceModel> {
+        let url: string = `/api/v2/scoring/${scoreItemUid}/quality/evidence`;
+        if (simpleFilter && simpleFilter !== '') {
+            url += "?_simpleFilter=" + simpleFilter;
+        }
+        return this.http.get(url)
             .pipe(
                 map((response) => <DataQualityEvidenceModel>response),
                 catchError((err) => this.handleError(err))
             );
+    }
+
+    public getDataQualityEvidenceForScoreItemExcel(scoreItemUid: string, simpleFilter: string) {
+        let url: string = `/api/v2/scoring/${scoreItemUid}/quality/evidence`;
+        if (simpleFilter && simpleFilter !== '') {
+            url += "?_simpleFilter=" + simpleFilter;
+        }
+        this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe(data => this.downloadFile(data, "Rule Results"));
     }
 
     getPointBreakdown(assetUid: string, type: ScoreType, date: string = null): Observable<PointBreakdown[]> {

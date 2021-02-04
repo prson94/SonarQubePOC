@@ -434,7 +434,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{scoreItemUid:Guid}/quality/evidence"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", SIMPLE_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by OwningAssetDisplayPath.", DataType = "string", ParameterType = "query", Required = false),
@@ -454,7 +454,45 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
                 var model = await ScoringRepository.GetEvidenceForDataQualityScoreItem(scoreItemUid, queryParams);
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+                
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+                if (isStreamResponse)
+                {
+                    var document = new SLDocument();
+
+                    // Select the first worksheet as the active one.
+                    var firstSheet = document.GetWorksheetNames()[0];
+                    document.SelectWorksheet(firstSheet);
+
+                    document.SetCellValue(1, 1, "Rule");
+                    document.SetCellValue(1, 2, "Asset");
+                    document.SetCellValue(1, 3, "Pass Fraction");
+
+                    int ix = 2;
+                    model.items.ForEach(row =>
+                    {
+                        document.SetCellValue(ix, 1, row.OwningAssetDisplayPath);
+                        document.SetCellValue(ix, 2, row.EvaluatedAssetDisplayPath);
+                        document.SetCellValue(ix, 3, row.PassFraction);
+                        ix++;
+                    });
+
+                    document.AutoFitColumn(1);
+                    document.AutoFitColumn(2);
+                    document.AutoFitColumn(3);
+
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+
+                    byte[] bytes = stream.ToArray();
+
+                    return ResponseMessage(createFileResponseMessage(HttpStatusCode.OK, $"Rule Results.xlsx", bytes));
+                }
+                else
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+                }
             }
             catch (Exception ex)
             {

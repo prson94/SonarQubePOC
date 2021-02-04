@@ -20,6 +20,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     @Input() objectName: string;
     assetTypeUid: string;
 
+    assetTypeName: string = "";
+    assetName: string = "";
+
     scoresPoints: ScorePoint[];
     measurePoints: ScorePoint[];
 
@@ -148,6 +151,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
             this.assetService.getUIDetailsForAssetUID(this.uid).subscribe(res => {
                 this.assetTypeUid = res.AssetTypeUid;
+                this.assetName = res.DisplayValue;
+                this.assetTypeName = res.TypeName;
             });
 
             this.metricService.getActiveAllocationsByAssetUid(this.uid).subscribe(x => {

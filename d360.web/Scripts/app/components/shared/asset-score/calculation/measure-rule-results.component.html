@@ -1,13 +1,14 @@
 ﻿<div class="content">
-    <div class="description">Showing rule results for the measure <strong>Accuracy</strong> on the asset <strong>Contact Email Address</strong> (<strong>Business Term</strong>):</div>
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div *ngIf="!isLoading">
+    <div class="description">Showing rule results for the measure <strong>{{scoreItem.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
+    <div>
         <div class="scoring-v2">
             <div class="score-left-content right-padding-16 flex">
-                <p-table #dt [value]="Evidence?.items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['OwningAssetDisplayPath']" sortField="OwningAssetDisplayPath" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange(selected?.ResultUid)">
+                <p-table #dt [value]="Evidence?.items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['OwningAssetDisplayPath']" sortField="OwningAssetDisplayPath" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected" (onRowSelect)="selectedItemChange(selected?.ResultUid)">
                     <ng-template pTemplate="caption">
-                        <div style="margin-bottom: 8px">
-                            <ig-search-field placeholder="Search rule results" mode="Keypress" (onSearch)="performSimpleSearch($event)"></ig-search-field>
+                        <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
+                            <span style="width: 300px"><ig-search-field placeholder="Search rule results" mode="Keypress" debounce="500" (onSearch)="performSimpleSearch($event)"></ig-search-field></span>
+                            <span class="grow"></span>
+                            <button igButton icon="fa-download" tooltip="Download these rule results" (click)="performDownload()"></button>
                         </div>
                     </ng-template>
                     <ng-template pTemplate="header">
@@ -28,8 +29,8 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
                         <tr (dblclick)="selected=item;" [pSelectableRow]="item">
-                            <td>{{item.OwningAssetDisplayPath}}</td>
-                            <td>{{item.EvaluatedAssetDisplayPath}}</td>
+                            <td><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath">{{item.OwningAssetDisplayPath}}</div></div></td>
+                            <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath">{{item.EvaluatedAssetDisplayPath}}</div></div></td>
                             <td>{{item.PassFraction}}</td>
                         </tr>
                     </ng-template>
@@ -39,66 +40,60 @@
                 </p-table>
             </div>
             <div class="score-right-content">
-                <div class="card-box">
-                    <div class="button-group show-multiple">
-                        <button igButton label="Result" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='Result'"></button>
-                        <button igButton label="Rule" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Rule'"></button>
-                        <button igButton label="Asset" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Asset'"></button>
-                    </div>
-                    <div [hidden]="!(activeTab=='Result')" class="score-definition-container">
-                        <div *ngIf="selected" class="definition-wrapper">
-                            <div class="measure-details-item">
-                                <div class="details-header">Rule</div>
-                                <div class="details-content"><a href="#">{{selected.OwningAssetDisplayPath}}</a></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Asset</div>
-                                <div class="details-content"><a href="#">{{selected.EvaluatedAssetDisplayPath}}</a></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Rule Selection</div>
-                                <div class="details-content">
-                                    <div *ngFor="let item of selected.RollupPath">
-                                        <a href="#">{{item.AssetPath}}</a> ({{item.AssetTypePath}}) {{item.Predicate}}
-                                    </div>
+                <div class="button-group show-multiple">
+                    <button igButton label="Result" class="ig-button {{(activeTab=='Result' ? 'ig-state-active' : '')}}" (click)="activeTab='Result'"></button>
+                    <!--<button igButton label="Rule" class="ig-button {{(activeTab=='Rule' ? 'ig-state-active' : '')}}" (click)="activeTab='Rule'"></button>
+                    <button igButton label="Asset" class="ig-button {{(activeTab=='Asset' ? 'ig-state-active' : '')}}" (click)="activeTab='Asset'"></button>-->
+                </div>
+                <div [hidden]="!(activeTab=='Result')" class="score-definition-container">
+                    <div *ngIf="selected" class="definition-wrapper">
+                        <div class="measure-details-item">
+                            <div class="details-header">Rule</div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid">{{selected.OwningAssetDisplayPath}}</a></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Asset</div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid">{{selected.EvaluatedAssetDisplayPath}}</a></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rule Selection</div>
+                            <div class="details-content">
+                                <div *ngFor="let item of selected.RollupPath; index as i">
+                                    <a [routerLink]="'/asset/' + item.Uid">{{item.AssetPath}}</a> ({{item.AssetTypePath}}){{getFormattedPredicate(i)}}
                                 </div>
                             </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Run Date</div>
-                                <div class="details-content" [innerText]="selected.RunDate"></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Effective Date</div>
-                                <div class="details-content" [innerText]="selected.EffectiveDate"></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Pass Fraction</div>
-                                <div class="details-content" [innerText]="selected.PassFraction"></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Total Rows</div>
-                                <div class="details-content" [innerText]="selected.TotalCount"></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Rows Passed</div>
-                                <div class="details-content" [innerText]="selected.PassCount"></div>
-                            </div>
-                            <div class="measure-details-item">
-                                <div class="details-header">Rows Failed</div>
-                                <div class="details-content" [innerText]="selected.FailCount"></div>
-                            </div>
                         </div>
-
-                    </div>
-                        <div [hidden]="!(activeTab=='Rule')">
-                            Rule
-
+                        <div class="measure-details-item">
+                            <div class="details-header">Run Date</div>
+                            <div class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
                         </div>
-                        <div [hidden]="!(activeTab=='Asset')">
-                            Asset
-
+                        <div class="measure-details-item">
+                            <div class="details-header">Effective Date</div>
+                            <div class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Pass Fraction</div>
+                            <div class="details-content" [innerText]="selected.PassFraction"></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Total Rows</div>
+                            <div class="details-content" [innerText]="selected.TotalCount"></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rows Passed</div>
+                            <div class="details-content" [innerText]="selected.PassCount"></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rows Failed</div>
+                            <div class="details-content" [innerText]="selected.FailCount"></div>
                         </div>
                     </div>
+
+                </div>
+                <!--
+                <div [hidden]="!(activeTab=='Rule')">Rule</div>
+                <div [hidden]="!(activeTab=='Asset')">Asset</div>
+                -->
             </div>
         </div>
     </div>
