@@ -871,7 +871,6 @@ where   E.ExecutionID = @ExecutionID
                 ResourceID = CurrentResourceID,
                 Method = "SCORE",
                 State = State.Unknown,
-                Route = "ScoreEngine", 
                 Total = 0
             };
             Add(apiExecution);
