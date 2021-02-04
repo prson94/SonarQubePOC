@@ -325,6 +325,13 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
+        public ICommentRepository GetCommentRepository()
+        {
+            var mock = new Mock<ICommentRepository>();
+
+            return mock.Object;
+        }
+
         public ICrossReferencesRepository GetCrossReferencesRepository()
         {
             var mock = new Mock<ICrossReferencesRepository>();

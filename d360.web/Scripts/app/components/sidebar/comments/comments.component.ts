@@ -1,19 +1,19 @@
-﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { BaseComponent } from '../../shared/base.component';
-import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+﻿import { Component, OnInit, Input, OnDestroy } from "@angular/core";
+import { Router, ActivatedRoute } from "@angular/router";
+import { BaseComponent } from "../../shared/base.component";
+import { SecondaryNavService } from "../../../services/right-sidebar.service";
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-comments',
+    selector: "d3s-comments",
     template: `
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                        <d3s-social-board *ngIf="showBoard" [objectType]="objectType" [objectID]="objectId" [daysToLookBack]="daysToLookBack"></d3s-social-board>
+                        <d3s-social-board *ngIf="showBoard" [assetUid]="assetUid" [daysToLookBack]="daysToLookBack"></d3s-social-board>
                     </div>
                 </div>
             </div>
@@ -21,8 +21,8 @@ declare var CurrentResourceID;
 })
 
 export class CommentsComponent extends BaseComponent implements OnInit, OnDestroy {
-    @Input() objectId: number = 0;
-    @Input() objectType: string="";
+    @Input() assetUid: string="";
+    @Input() localStorage: boolean = false;
 
     private sub: any;
     daysToLookBack: number = -1;
@@ -44,16 +44,16 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.objectId = +params['objectId'];
-            this.objectType = params['objectType'];
+            this.assetUid = params["assetUid"];
+            this.localStorage = params["localStorage"];
             this.isLoading = false;
             this.showBoard = true;
 
-            if (this.objectType && this.objectType.toUpperCase() == 'RESOURCE') {
+            if (this.localStorage) {
                 this.checkSecondaryNavLocalStorage();
             }
             else {
-                this.buildSecondaryNavigationForObject(this.objectId, this.objectType);
+                this.buildSecondaryNavigation(this.assetUid);
             }
         });
     }

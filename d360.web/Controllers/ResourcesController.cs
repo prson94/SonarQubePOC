@@ -134,8 +134,13 @@ from	FollowDetail F
         }
 
         [HttpGet, Route("{resourceID:int}/ownership/{type}/{id:int}.xlsx")]
-        public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id, int? responsibilityTypeId = null)
+        public FileResult ExportResponsibilitiesByResourceByType(int resourceID, string type, int id, int? responsibilityTypeId = null, Guid? responsibilityTypeUid = null)
         {
+            if (!responsibilityTypeId.HasValue && responsibilityTypeUid.HasValue && responsibilityTypeUid != Guid.Empty)
+            {
+                responsibilityTypeId = Company.ResponsibilityTypes.Where(t => t.UID == responsibilityTypeUid).Select(t => t.ID).FirstOrDefault();
+            }
+
             var document = new SLDocument();
             document.AddWorksheet("Items");
 

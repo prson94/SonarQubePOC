@@ -375,6 +375,7 @@
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -902,6 +903,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
+    <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -1045,6 +1047,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
+    <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />

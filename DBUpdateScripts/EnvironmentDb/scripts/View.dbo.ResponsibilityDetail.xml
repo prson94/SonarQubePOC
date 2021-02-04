@@ -171,7 +171,6 @@
     </sql>
 	<rollback>
 		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

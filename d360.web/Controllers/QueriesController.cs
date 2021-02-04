@@ -38,6 +38,13 @@ where ResourceID = @r and Type = @t and TypeID = @i", new { r = resourceID, t = 
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
+        [Route("{uid:Guid}/ResourcesByResponsibilityType")]
+        public JsonNetResult GetResourcesByResponsibilityType(Guid uid)
+        {
+            int responsibilityTypeID = Company.ResponsibilityTypes.Where(t => t.UID == uid).Select(t => t.ID).First();
+            return GetResourcesByResponsibilityType(responsibilityTypeID);
+        }
+
         [Route("{id:int}/ResourcesByResponsibilityType")]
         public JsonNetResult GetResourcesByResponsibilityType(int id)
         {

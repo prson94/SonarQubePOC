@@ -34,14 +34,16 @@ namespace d360.web.Controllers.V2
     ]
     public class ActionsController : BaseV2ApiController
     {
-        IIssueRepository issueRepository;
         IAssetRepository assetRepository;
+        ICommentRepository commentRepository;
+        IIssueRepository issueRepository;
 
-        public ActionsController(ICommunityContext community, ICompanyContext company, IIssueRepository repository, IAssetRepository assetRepository)
+        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets)
             : base(community, company)
         {
-            this.issueRepository = repository;
-            this.assetRepository = assetRepository;
+            assetRepository = assets;
+            commentRepository = comments;
+            issueRepository = issues;
         }
 
         /// <summary>
@@ -741,22 +743,19 @@ for json path";
 
                 if (isWriteActionDescriptionEnabled)
                 {
-                    var relations = new List<CommentRelation>();
-                    var comment = new Comment();
+                    var resourceAsset = assetRepository.GetAssetByObjectId(SystemObjects.Resource.ToString(), Company.CurrentResourceID);
+                    var actionAsset = assetRepository.GetAssetByObjectId(issueModel.Issue.Object, issueModel.Issue.ObjectID);
 
-                    relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
-
-                    comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                    comment.OwnerObjectID = Company.CurrentResourceID;
-                    comment.CommentTypeID = CommentType.Issue;
-                    comment.Body = issueModel.Comment ?? $"New {issueType.Name} Raised.";
-
-                    //add relation to current artifact
-                    relations.Add(new CommentRelation { ObjectType = issueModel.Issue.Object, ObjectID = issueModel.Issue.ObjectID, Date = DateTime.UtcNow });
-
-                    var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
-
-                    issueModel.Issue.CommentID = dtl.ID;
+                    if (actionAsset != null && resourceAsset != null) 
+                    {
+                         var comment = new CommentApiPostModel { 
+                            AssetUid = resourceAsset.uid,
+                            Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
+                            Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
+                         };
+                        var dtl = await commentRepository.AddComment(comment);
+                        issueModel.Issue.CommentID = dtl.ID;
+                    }
                 }
 
                 var insertSQL = $@"INSERT INTO [dbo].[Issue]
