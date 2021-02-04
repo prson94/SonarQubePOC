@@ -840,14 +840,14 @@ namespace d360.web.Controllers.V2
 		                    GR.resourceid,
 		                    Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END as Permissionsfound 
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END as Permissionsfound 
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
 
                     )   
                     and gr.Email not like '%@infogix.com' 
@@ -856,7 +856,7 @@ namespace d360.web.Controllers.V2
                     and gr.IsAdministrator = 0
                 ";
               
-                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql, new { pm = (int)Permission.ModifyAsset, pd = (int)Permission.DeleteAsset }).ConfigureAwait(false);
                 var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
 
 

@@ -374,7 +374,7 @@ namespace d360.web.Controllers
             var PermissionJoins = "";
             if (!Company.CurrentResourceIsAdmin)
             {
-                PermissionJoins = @" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & 1024 = 1024 and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
+                PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
             }
 
             var subSql = $@"(

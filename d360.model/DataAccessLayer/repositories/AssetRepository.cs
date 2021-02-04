@@ -515,7 +515,7 @@ namespace d360.model.DataAccessLayer
 
             var restrictions = (await CompanyContext.QueryAsync<UserGetAPIRestrictionModel>(@"select
                     case when exists(
-                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
+                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & @p)) = 0)
                      then 1
                      else 0
                     end as HasAssetRestriction,
@@ -529,7 +529,7 @@ namespace d360.model.DataAccessLayer
                      then 1
                      else 0
                     end as HasAssetPermission
-                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }
+                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
                     , ApiTimeout))
                     .FirstOrDefault();
 
@@ -551,7 +551,7 @@ namespace d360.model.DataAccessLayer
 
                 if (restrictions.HasAssetRestriction && !useAsAdmin)
                 {
-                    whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & 1)) = 0)");
+                    whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & {(int)Permission.ReadAsset})) = 0)");
                 }
             }
 
@@ -2773,7 +2773,7 @@ where	O.RowNum = 1";
         {
 
             string assetPermissionWhere = @" and ID NOT IN (select AssetId 
-                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & 1)) = 0
+                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & @p)) = 0
                         )";
 
             string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
@@ -2808,7 +2808,7 @@ where	O.RowNum = 1";
                          at.Class in @filterClasses
                          {assetTypePermissionWhere}
                     order by at.name";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses }, ApiTimeout);
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses, p = (int)Permission.ReadAsset }, ApiTimeout);
         }
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
