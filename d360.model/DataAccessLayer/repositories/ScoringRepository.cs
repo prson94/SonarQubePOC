@@ -35,7 +35,7 @@ namespace d360.model.DataAccessLayer
                 };
         }
 
-        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error)
+        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error, AssetTypeClass? Class = null)
         {
             error = string.Empty;
             List<string> whereStatements = new List<string>();
@@ -54,6 +54,13 @@ namespace d360.model.DataAccessLayer
                 { "lowerthreshold","AL.lowerThreshold" },
                 { "upperthreshold","AL.upperThreshold"}
             };
+
+            if(Class.HasValue)
+            {
+                whereStatements.Add("AT.class = @Class");
+                dbArgs.Add("@Class", Class);
+            }
+           
 
             foreach (var kp in queryParams)
             {
