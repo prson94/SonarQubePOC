@@ -75,82 +75,143 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-Uid">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.2-Uid">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table Comment add Uid uniqueidentifier constraint DF_Comment_Uid default(newid()) not null
-GO
-CREATE NONCLUSTERED INDEX [IX_Comment_Uid] ON [dbo].[Comment] ( [Uid] ASC )
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'Uid')
+BEGIN
+	alter table Comment add Uid uniqueidentifier constraint DF_Comment_Uid default(newid()) not null	
+END
 		]]>
     </sql>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-AssetConversion">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-AddUidIndex">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table Comment add AssetID bigint null
-GO
-
-update	C
-set		C.AssetID = A.ID
-from	Comment C
-		inner join Asset A on A.Object = C.OwnerObjectType and A.ObjectID = C.OwnerObjectID
-GO
-
-delete Comment where AssetID is null
-GO
-
-alter table Comment alter column AssetID bigint not null
-GO
-
-alter table Comment drop column OwnerObjectType
-GO
-alter table Comment drop column OwnerObjectID
-GO
-
-CREATE NONCLUSTERED INDEX [IX_Comment_AssetID] ON [dbo].[Comment] ( [AssetID] ASC )
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Comment_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Comment_Uid] ON [dbo].[Comment] ( [Uid] ASC )
+END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
-alter table Comment add OwnerObjectType varchar(50) null
-GO
-alter table Comment add OwnerObjectID int null
-GO
-update	C
-set		C.OwnerObjectType = A.Object,
-		C.OwnerObjectID = A.ObjectID
-from	Comment C
-		inner join Asset A on A.ID = C.AssetID
-GO
-alter table Comment alter column OwnerObjectType varchar(50) not null
-GO
-alter table Comment alter column OwnerObjectID int not null
-GO
-alter table Comment drop column AssetID
-GO
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-CreateAssetIDColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'AssetID')
+BEGIN
+	alter table Comment add AssetID bigint null	
+END
 		]]>
-	</rollback>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-UpdateAssetIDColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'OwnerObjectType')
+BEGIN
+	exec('update C set C.AssetID = A.ID from Comment C inner join Asset A on A.Object = C.OwnerObjectType and A.ObjectID = C.OwnerObjectID')
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-RemoveBadData">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'AssetID')
+BEGIN
+	delete V from CommentRelation V inner join Comment C on C.ID = V.CommentID and C.AssetID is null;
+	delete V from CommentVote V inner join Comment C on C.ID = V.CommentID and C.AssetID is null;
+	delete Comment where AssetID is null;
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-MakeAssetIDNotNullable">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'AssetID')
+BEGIN
+	alter table Comment alter column AssetID bigint not null
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-RemoveObjectTypeColumns">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'OwnerObjectType')
+BEGIN
+	alter table Comment drop column OwnerObjectType
+END
+
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'OwnerObjectID')
+BEGIN
+	alter table Comment drop column OwnerObjectID
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2-AddAssetIdIndex">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Comment_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Comment_AssetID] ON [dbo].[Comment] ( [AssetID] ASC )
+END
+		]]>
+    </sql>
   </changeSet>
   
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-VisibilityRemoval">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-VisibilityRemoval">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table Comment drop column VisibilityID
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'VisibilityID')
+BEGIN
+	alter table Comment drop column VisibilityID	
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-alter table Comment add VisibilityID int null
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'VisibilityID')
+BEGIN		
+	alter table Comment add VisibilityID int null
+END
 		]]>
 	</rollback>
   </changeSet>
@@ -161,14 +222,22 @@ alter table Comment add VisibilityID int null
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-EXEC sp_rename 'dbo.Comment.DateCreated', 'CreatedOn', 'COLUMN';
-GO
-EXEC sp_rename 'dbo.Comment.CreatingResourceID', 'CreatedBy', 'COLUMN';
-GO
-EXEC sp_rename 'dbo.Comment.DateEdited', 'UpdatedOn', 'COLUMN';
-GO
-EXEC sp_rename 'dbo.Comment.CommentTypeID', 'CommentType', 'COLUMN';
-GO
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'DateCreated')
+BEGIN
+	EXEC sp_rename 'dbo.Comment.DateCreated', 'CreatedOn', 'COLUMN';
+END
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'CreatingResourceID')
+BEGIN
+	EXEC sp_rename 'dbo.Comment.CreatingResourceID', 'CreatedBy', 'COLUMN';
+END
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'DateEdited')
+BEGIN
+	EXEC sp_rename 'dbo.Comment.DateEdited', 'UpdatedOn', 'COLUMN';
+END
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'CommentTypeID')
+BEGIN
+	EXEC sp_rename 'dbo.Comment.CommentTypeID', 'CommentType', 'COLUMN';
+END
 		]]>
     </sql>
 	<rollback>
@@ -185,25 +254,54 @@ GO
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Comment-v2-UpdatedBy">
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-CreateUpdatedBy">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter table Comment add UpdatedBy int null
-GO
-update Comment set UpdatedBy = CreatedBy
-GO
-alter table Comment alter column UpdatedBy int not null
-GO
+if not exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'UpdatedBy')
+BEGIN
+	alter table Comment add UpdatedBy int null
+END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-alter table Comment drop column UpdatedBy
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'UpdatedBy')
+BEGIN
+	alter table Comment drop column UpdatedBy
+END
 		]]>
 	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-UpdateUpdatedByData">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'UpdatedBy')
+BEGIN
+	update Comment set UpdatedBy = CreatedBy
+END
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Comment-v2.1-AlterUpdatedByColumn">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists(select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_NAME = 'Comment' and COLUMN_NAME = 'UpdatedBy')
+BEGIN
+	alter table Comment alter column UpdatedBy int not null
+END
+		]]>
+    </sql>
   </changeSet>
   
   <changeSet author="Pappas" id="Table.dbo.Comment-v2-RemoveTrigger">
