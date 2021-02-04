@@ -25,15 +25,16 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        console.log(changes);
         if (changes["scoreItemUid"] && changes["scoreItemUid"].currentValue !== changes["scoreItemUid"].previousValue) {
             console.log('here');
             if (this.scoreItemUid) {
                 this.isLoading = true;
                 this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItemUid)
                     .subscribe((result) => {
-                        console.log(result);
                         this.Evidence = result;
+                        if (this.Evidence.items.length > 0) {
+                            this.selected = this.Evidence.items[0];
+                        }
                         this.isLoading = false;
                     });
             }
@@ -49,6 +50,10 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     selectedItemChange(ruleResultUid: string) {
+
+    }
+
+    performSimpleSearch(phrase: string) {
 
     }
 

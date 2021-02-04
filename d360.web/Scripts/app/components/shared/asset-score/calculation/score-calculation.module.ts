@@ -11,6 +11,7 @@ import { SiteModalModule } from '../../modal/gov-modal.module';
 import { CoreModule } from '../../core.module';
 import { TableModule } from 'primeng/table';
 import { SharedGridPagingInfoModule } from '../../grid-paging-info.component';
+import { SearchFieldModule } from '../../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -22,7 +23,8 @@ import { SharedGridPagingInfoModule } from '../../grid-paging-info.component';
         CoreModule,
         SiteModalModule,
         TableModule,
-        SharedGridPagingInfoModule
+        SharedGridPagingInfoModule,
+        SearchFieldModule
     ],
     declarations: [
         ScoreCalculationComponent,
