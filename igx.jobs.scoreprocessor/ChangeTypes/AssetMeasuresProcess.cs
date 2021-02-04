@@ -44,7 +44,6 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         ResourceID = Info.ResourceID ?? 0,
                         Method = "SCORE",
                         State = State.Unknown,
-                        Route = "ScoreEngine",
                         Total = assetMeasures.Count
                     };
                     Db.Add(executionRecord);
@@ -68,7 +67,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 select  cast(iif(count(1) > 0, 1, 0) as bit) 
 from    api.Execution
 where   ExecutionID <> @id 
-        and [Route] = 'ScoreEngine'
+        and [Method] = 'SCORE'
         and MarkedForProcessing = 1 
         and (
     (Total <= 1000 and ProcessingStartedOn > dateadd(mi, -10, getutcdate())) OR
