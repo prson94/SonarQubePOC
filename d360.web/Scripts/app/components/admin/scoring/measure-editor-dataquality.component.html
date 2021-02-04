@@ -149,15 +149,21 @@
             <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" *ngIf="!metricForm.value.isGroup">
                 <div inputs>
                     <div class="row">
-                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="model.MatchConditionsOnly" value="true" label="Match all conditions"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="model.MatchConditionsOnly" value="false" label="Match any conditions"></p-radioButton>-->
                     </div>
-                    <div class="condition-group">
-                        <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [conditions]="conditions" [conditionPrefix]="'ac_'" [fields]="fields" (onChange)="updateFormValidity($event)"></field-condition-grid>
-                    </div>
-                    <div class="row" *ngIf="showMatchPicker">
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                    <div class="condition-group" *ngFor="let cg of conditionGroups;let i=index">
+                        <field-condition-grid *ngIf="!isLoadingFields"
+                                              [formGroup]="metricForm"
+                                              [conditions]="cg.conditionItemFields"
+                                              [conditionPrefix]="'ac_' + i + '_'"
+                                              [fields]="fields"
+                                              (onChange)="updateFormValidity($event)"></field-condition-grid>
+                        {{cg.conditionItemFields.length}}
+                        <div class="row" *ngIf="cg.conditionItemFields.length > 1">
+                            <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="cg.matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
+                            <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="cg.matchType" value="Any" label="Match any conditions"></p-radioButton>
+                        </div>
                     </div>
                 </div>
             </ig-property-group>

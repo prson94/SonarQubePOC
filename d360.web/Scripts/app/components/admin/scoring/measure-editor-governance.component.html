@@ -283,24 +283,45 @@
                 </div>
             </ig-property-group>
 
-            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
+            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" [shouldBePadded]="false" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated">
                 <div inputs>
-                    <div class="row">
-                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="All" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="conditionAll" [(ngModel)]="matchType" value="Any" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
-                    </div>
-                     <div class="condition-group">
-                        <field-condition-grid 
-                                              *ngIf="!isLoadingFields" 
-                                              [formGroup]="metricForm" 
-                                              [conditions]="conditions" 
-                                              [conditionPrefix]="'ac_'" 
-                                              [fields]="fields" 
-                                              (onChange)="updateFormValidity($event)"></field-condition-grid>
-                     </div>
-                    <div class="row" *ngIf="showMatchPicker">
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                    <div class="no-padding-container">
+                        <div class="row">
+                            <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="1" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
+                            <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="0" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
+                        </div>
+                        <div class="condition-group" *ngFor="let cg of conditionGroups;let i=index">
+                            <div class="row cg-header-row">
+                                <div class="condition-group-header">Condition Group {{i+1}}</div>
+                                <div class="input-actions">
+                                    <label for="weight" class="ig-label">
+                                        Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                                    </label>
+                                    <ig-number-input [tabindex]="4"
+                                                     placeholder="25"
+                                                     [min]="1"
+                                                     [max]="100"
+                                                     [step]="1"
+                                                     formControlName="cg_{{i}}_weight"
+                                                     [(ngModel)]="cg.Weight"></ig-number-input>
+                                    <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                                    <ig-popup-menu (onSelect)="menuClicked($event)" [items]="menuOptions" #menu [tabIndex]="1"></ig-popup-menu>
+
+                                </div>
+                            </div>
+                            <div class="cg-field-group-container">
+                                <field-condition-grid *ngIf="!isLoadingFields"
+                                                      [formGroup]="metricForm"
+                                                      [conditions]="cg.conditionItemFields"
+                                                      [conditionPrefix]="'ac_' + i + '_'"
+                                                      [fields]="fields"
+                                                      (onChange)="updateFormValidity($event)"></field-condition-grid>
+                            </div>
+                            <div class="row" *ngIf="showConditionMatch(cg)">
+                                <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
+                                <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="matchType" value="Any" label="Match any conditions"></p-radioButton>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </ig-property-group>
@@ -324,5 +345,11 @@
 <ng-template #groupTooltip>
     <div class="info-tip">
         <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #conditionWeightTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{conditionWeightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>

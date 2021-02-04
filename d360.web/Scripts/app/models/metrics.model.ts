@@ -16,7 +16,7 @@ export class MetricAssetViewModel {
     Weight: number;
     AdjustedWeight: number;
     Threshold: number;
-    MatchConditionsOnly: boolean;
+    MatchConditionsOnly: boolean = false;
     ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
     VersionCount: number;
     HasResults: boolean;

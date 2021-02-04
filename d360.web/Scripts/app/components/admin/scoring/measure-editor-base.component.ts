@@ -6,7 +6,7 @@ import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Operator } from '../../../models/operator.model';
-import { FormGroup, ValidatorFn, AbstractControl } from '@angular/forms';
+import { FormGroup, ValidatorFn, AbstractControl, FormControl } from '@angular/forms';
 import { FieldCondition, FieldTypeAPIModelFieldCondition } from '../../../models/field-condition-grid.models';
 import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
 import * as _ from 'lodash';
@@ -41,6 +41,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         + 'similar nature(E.g.responsibility assignments, required field checks).'
         + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
 
+    conditionWeightTootlip: string = "You can override the Weight set in the detiail section here, specifically for assets which meet the conditions of this group.";
+
     //#endregion
 
     child = "";
@@ -59,12 +61,36 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     metricForm: FormGroup = null;
     matchType: string;
     maxHeight: number = window.innerHeight - 160;
-    originalConditions: FieldCondition[];
+    originalConditions: MetricAssetVersionConditionViewModel[];
     originalEffectiveDate: Date;
     originalModel: MetricAssetViewModel;
     saveLabel: string = "Create";
     showMatchPicker: boolean = false;
     verb = "Add";
+
+    menuClicked($event) {
+        switch ($event.value) {
+            case 'moveUp': this.moveUp();
+                break;
+            case 'moveDown': this.moveDown();
+                break;
+        }
+    }
+    moveDown() {
+        throw new Error("Method not implemented.");
+    }
+    moveUp() {
+        throw new Error("Method not implemented.");
+    }
+
+    private menuOptions = [
+        {
+            "title": "moveUp"
+        },
+        {
+            "title": "moveDown"
+        }
+    ];
 
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
 
@@ -83,19 +109,29 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) {
+            this.conditionGroups = [];
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
             dummyConditionGroup.MatchType = "All";
-            this.model.ConditionGroups.push(dummyConditionGroup);
-        }
+            dummyConditionGroup.conditionItemFields = [];
+            this.conditionGroups.push(dummyConditionGroup);
 
-        if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0 && this.model.ConditionGroups[0].ConditionItems) {
-            this.model.ConditionGroups.forEach((x, cgidx) => {
+            this.addConditionGroupFormControls(0);
+
+        } else if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0) {
+            this.conditionGroups = [];
+            this.model.ConditionGroups.forEach((x, idx) => {
+                let newGroup: MetricAssetVersionConditionViewModel = new MetricAssetVersionConditionViewModel();
+                newGroup.Uid = x.Uid;
+                newGroup.MatchType = x.MatchType;
+                newGroup.Position = x.Position;
+                newGroup.Threshold = x.Threshold;
+                newGroup.Weight = x.Weight;
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
-                const conditions = this.model.ConditionGroups[0].ConditionItems;
-                this.conditionGroups[cgidx].conditionItemFields = [];
+                const conditions = x.ConditionItems;
+                newGroup.conditionItemFields = [];
                 if (conditions.length > 0) {
-                    conditions.forEach((c, idx) => {
+                    conditions.forEach((c) => {
                         const cond = new FieldCondition();
                         cond['uid'] = c.Uid;
                         cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
@@ -110,11 +146,24 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                             cond.value = cond.value.toString();
                         }
 
-                        this.conditionGroups[idx].conditionItemFields.push(cond);
+                        newGroup.conditionItemFields.push(cond);
                     })
                 }
+
+                this.addConditionGroupFormControls(idx);
+                this.conditionGroups.push(newGroup);
             });
         }
+    }
+
+    addConditionGroupFormControls(index: number) {
+        const prefix = `cg_${index}_`;
+        this.metricForm.addControl(prefix + 'matchType', new FormControl());
+        this.metricForm.addControl(prefix + 'weight', new FormControl());
+    }
+
+    showConditionMatch(cg): boolean{
+        return cg.conditionItemFields.filter(x => x.field).length > 1;
     }
 
     loadConditionFieldOptions(): Observable<boolean> {
@@ -168,12 +217,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     getUtcDate(date: Date) {
         var utc = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
         return new Date(utc);
-    }
-
-    validateConditions(conditions) {
-        const toEval = conditions.filter(x => x.field);
-        this.showMatchPicker = (toEval.length > 1);
-        return true;
     }
 
     setFormPropertiesBasedOnMode() {
@@ -271,29 +314,32 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             while (arr.length > 0) {
                 arr.pop();
             }
-            let conditions = this.conditions.filter(x => x.field);
-            conditions.forEach(c => {
-                let fieldCondition = new MetricAssetVersionConditionItemViewModel();
-                fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
-                fieldCondition.Operator = c.operator;
-                fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
 
-                if (!fieldCondition.Values) {
-                    fieldCondition.Values = [];
-                }
-                if (fieldCondition.Values.length === 0) {
-                    fieldCondition.Values.push('');
-                }
-                fieldCondition.Values[0] = this.getCorrectedValueForRawByDataType(fieldCondition.FieldType.Type, c.value);
+            this.conditionGroups.forEach(x => {
+                const conditions = x.conditionItemFields.filter(x => x.field);
+                conditions.forEach(c => {
+                    let fieldCondition = new MetricAssetVersionConditionItemViewModel();
+                    fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
+                    fieldCondition.Operator = c.operator;
+                    fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
 
-                if (!this.doesSelectedOperatorAllowValues(<any>c.operator)) {
-                    fieldCondition.Values = [];
-                }
+                    if (!fieldCondition.Values) {
+                        fieldCondition.Values = [];
+                    }
+                    if (fieldCondition.Values.length === 0) {
+                        fieldCondition.Values.push('');
+                    }
+                    fieldCondition.Values[0] = this.getCorrectedValueForRawByDataType(fieldCondition.FieldType.Type, c.value);
 
-                if (c['uid']) {
-                    fieldCondition.Uid = c['uid'];
-                }
-                arr.push(fieldCondition);
+                    if (!this.doesSelectedOperatorAllowValues(<any>c.operator)) {
+                        fieldCondition.Values = [];
+                    }
+
+                    if (c['uid']) {
+                        fieldCondition.Uid = c['uid'];
+                    }
+                    arr.push(fieldCondition);
+                });
             });
 
             let weight = +this.displayWeight;
@@ -370,8 +416,42 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         return condate
     }
 
-    haveConditionsChanged(updated: FieldCondition[], original: FieldCondition[]) {
+    haveConditionsChanged(updated: MetricAssetVersionConditionViewModel[], original: MetricAssetVersionConditionViewModel[]) {
 
+        if (updated && !original) {
+            return true;
+        }
+
+        if (updated && original) {
+
+            let changeFound = updated.length != original.length;
+            //console.log(updated);
+            //console.log(original);
+            updated.forEach(x => {
+                let originalMatch = original.find(y => y.Uid == x.Uid);
+                if (originalMatch) {
+                    if (x.MatchType != originalMatch.MatchType
+                        || x.Position != originalMatch.Position
+                        || x.Threshold != originalMatch.Threshold
+                        || x.Weight != originalMatch.Weight) {
+                        changeFound = true;
+                    } else if (!originalMatch.conditionItemFields.every((item) => {
+                        return x.conditionItemFields.findIndex(x => x.field == item.field
+                            && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
+                            && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1
+                    })) {
+                        changeFound = true;
+                    }
+                } else {
+                    changeFound = true;
+                }
+            });
+        }
+        return false;
+    }
+
+
+    haveRuleConditionsChanged(updated: FieldCondition[], original: FieldCondition[]) {
         if (updated && !original) {
             return true;
         }
