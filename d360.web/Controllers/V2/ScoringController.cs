@@ -75,9 +75,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("isExternallyCalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by asset type path.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),            
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetAllocations()
         {
@@ -86,26 +85,6 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    //if assetUid filter is specifiand and user has an access let skip admin check
-                    //we can assume this request probably comes from UI
-                    bool assetUidSpecified = queryParams.Any(x => x.Key == "assetUid");
-                    if (assetUidSpecified)
-                    {
-                        var assetUid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key == "assetUid").Value);
-                        var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).Select(x => x.AssetTypeID).FirstOrDefault();
-                        if (!(await Company.HasAssetTypeReadPermission(assetTypeId)))
-                        {
-                            return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                        }
-                    }
-                    else
-                    {
-                        return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                    }
-                }
 
                 string errorMessage = string.Empty;
 
