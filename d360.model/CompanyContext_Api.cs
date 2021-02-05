@@ -3066,7 +3066,6 @@ from	IntersectType I
 
                         if (generalChecksCompleted)
                         {
-
                             bool runCompleted = false;
                             int retryCount = 0;
 
@@ -3142,6 +3141,7 @@ from	IntersectType I
                                                 {
                                                     AddMeasurement(metrics, $"Asset Type '{at.uid}' deletion : {(i + 1)}/{transactionsCount}", sw.ElapsedMilliseconds, 1);
                                                     sw.Restart();
+
                                                     #region RemoveAssetsGraphDataByChunks
                                                     using (var trans = Connection.BeginTransaction())
                                                     {
@@ -3323,15 +3323,15 @@ from	IntersectType I
                             }
 
                             Connection.Close();
-
+                        
                             // Queue successfully deleted asset types for reindexing
                             results.Where(r => r.Success).ToList().ForEach(r =>
-                            {
-                                Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
                                 {
-                                    CompanyID = CurrentCompanyID,
-                                    AssetTypeUid = r.uid
-                                });
+                                    Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+                                    {
+                                        CompanyID = CurrentCompanyID,
+                                        AssetTypeUid = r.uid
+                                    });
                             });
                         }
                     }
@@ -3594,19 +3594,12 @@ from	IntersectType I
                                     			delete	T
                                     			from	api.Entity T
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-
-
                                   			
                                     			delete	T
                                     			from	[Load] T
                                     					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-
-                                                delete	T
-                                    			from	[metrics].[Allocation] T
-                                    					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-
-                                    			delete	T
+                                       			delete	T
                                     			from	SiteNavPermission T
                                     					inner join SiteNav O on O.ID = T.SiteNavID
                                     					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
@@ -3635,6 +3628,25 @@ from	IntersectType I
                                     			from    AssetTypeStyle E 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
                                     			
+                                                delete	T
+                                    			from	[metrics].[ScoreItem] T
+                                    					inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
+                                    					inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
+                                    					inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
+                                    					where A.AssetTypeUid = @assetTypeUid;
+
+                                                delete	T
+                                    			from	[metrics].[Score] T
+                                    					inner join Asset MA on MA.Uid = T.AssetUid and MA.AssetTypeID = @assetTypeId;
+
+                                                delete  [metrics].[RollupPathSegment] 
+                                                where   AssetTypeID = @assetTypeId;
+
+                                                delete  [metrics].[AssetVersionRollupPathFilter] 
+                                                where   AssetTypeID = @assetTypeId;
+
+                                    			delete	[metrics].Allocation where AssetTypeUid = @assetTypeUid;
+
                                     			delete	T
                                     			from	[IntersectType] T
                                                         where T.Subject = @Object and T.SubjectID = @ObjectId;
@@ -3651,19 +3663,7 @@ from	IntersectType I
                                                 delete	T
                                     			from	FieldType T
                                     					where T.Object = @Object and T.ObjectID = @ObjectId;
-                                                
-                                                delete	T
-                                    			from	[metrics].[ScoreItem] T
-                                    					inner join [metrics].[AssetVersion] MV on MV.Uid = T.AssetVersionUid
-                                    					inner join [metrics].[Asset] MA on MA.Uid = MV.AssetUid
-                                    					inner join [metrics].Allocation A on A.Uid = MA.AllocationUid
-                                    					where A.AssetTypeUid = @assetTypeUid;
-                                                
-                                    			delete	T
-                                    			from	[metrics].[Asset] T
-                                    					inner join [metrics].Allocation A on A.Uid = T.AllocationUid
-                                    					where A.AssetTypeUid = @assetTypeUid;
-
+                                               
                                     			delete	T
                                     			from	IssueTypeRelation T
                                     					where T.AssetTypeID = @AssetTypeId;
@@ -3915,7 +3915,9 @@ where   ExecutionID = @ExecutionID
                                             $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
                                             new { execution.ExecutionID }
                                             ).ToList();
-                    }
+
+                    SendScoreEventWithPayload(ScoreQueueChangeType.RollupPathChanged, new RollupPathChangedModel(), execution.ExecutionID);
+                }
                     finally
                     {
                         if (Database.Connection.State == ConnectionState.Open)
