@@ -90,8 +90,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     ];
 
     menuClicked(event, pos) {
-        console.log(event);
-        console.log(pos);
         switch (event.value) {
             case 'Duplicate': this.duplicate(pos);
                 break;
@@ -111,7 +109,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     delete(pos) {
-        console.log(pos);
         this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position != pos)];
         this.removeConditionGroupFormControls(pos);
 
@@ -149,7 +146,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     getMaxPositionForGroups(): number {
         if (this.conditionGroups.length > 0) {
-            console.log(this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
             return (this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
         } else {
             return 0;
@@ -171,14 +167,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     orderConditionGroups() {
         this.conditionGroups.sort((a, b) => a.Position - b.Position);
         this.conditionGroups.forEach((x, i) => {
-            this.removeConditionGroupFormControls(i);
-            this.addConditionGroupFormControls(i);
-            x.Position = i;
+            let pos = i + 1;
+            this.removeConditionGroupFormControls(pos);
+            this.addConditionGroupFormControls(pos);
+            x.Position = pos;
         });
     }
 
     addConditionGroupFormControls(index: number) {
-
         const prefix = `cg_${index}_`;
         this.metricForm.addControl(prefix + 'matchType', new FormControl());
         this.metricForm.addControl(prefix + 'weight', new FormControl());
