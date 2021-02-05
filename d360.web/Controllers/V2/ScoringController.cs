@@ -464,7 +464,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
             SwaggerParameter("_includeDisabled", "Parameter to include disabled measures or not.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
+            SwaggerProduces("application/json")
         ]
         public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
         {
@@ -508,32 +508,41 @@ namespace d360.web.Controllers.V2
             HttpGet,
             ApiExplorerSettings(IgnoreApi = true),
             Route("unallocatedAssetTypes/{scoreType}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns a list of asset types that are not yet allocated to the score type provided.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)), 
             SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetUnallocatedAssetTypesForScoreType(string scoreType)
         {
-            const string ERROR_HEADING = "Error retrieving unallocated asset types";
-
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                    throw new StatusCodeException(HttpStatusCode.Unauthorized);
                 }
 
                 if (!Enum.TryParse(scoreType, true, out ScoreType sc))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                    throw new StatusCodeException(HttpStatusCode.BadRequest);
                 }
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await ScoringRepository.GetUnallocatedAssetTypes(sc)));
             }
-            catch
+            catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving unallocated asset types",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetUnallocatedAssetTypesForScoreType" } }
+                );
             }
         }
 
@@ -553,7 +562,8 @@ namespace d360.web.Controllers.V2
             Route("{scoreType}/externalresults"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultApiResponseModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult PostExternalResultsByScoreType(string scoreType, List<ExternalScoreResultApiRequestModel> model)
@@ -562,25 +572,31 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.EndpointNotAuthorizedMessage);
+                    throw new StatusCodeException(HttpStatusCode.Forbidden);
                 }
 
                 if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorAddingScoreResultsHeading, $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                    throw new StatusCodeException(HttpStatusCode.BadRequest);
                 }
 
                 var execution = getApiExecution(model.Count);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
             }
-            catch (GenericException ex)
+            catch (Exception ex)
             {
-                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
-            }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.ErrorAddingScoreResultsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "PostExternalResultsByScoreType" } }
+                );
             }
         }
 
@@ -600,9 +616,8 @@ namespace d360.web.Controllers.V2
             Route("{scoreType}/results"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiResponseModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request model was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult PostScoreResultsByScoreType(string scoreType, List<InternalScoreResultApiRequestModel> model)
@@ -610,27 +625,38 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.EndpointNotAuthorizedMessage);
+                {
+                    throw new StatusCodeException(HttpStatusCode.Forbidden);
+                }
 
                 if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorAddingScoreResultsHeading, $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                {
+                    throw new StatusCodeException(HttpStatusCode.BadRequest);
+                }
 
                 if (model == null || model.Count < 1)
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+                }
 
                 var execution = getApiExecution(model.Count);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
             }
-            catch (GenericException ex)
+            catch (Exception ex)
             {
-                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
-            }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.ErrorAddingScoreResultsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "PostScoreResultsByScoreType" } }
+                );
             }
         }
-
 
         /// <summary>
         /// Post externally calculated scores and measure results.
@@ -643,7 +669,8 @@ namespace d360.web.Controllers.V2
             Route("{allocationUid:Guid}/externalresults"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultApiResponseModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult PostExternalResultsByAllocation(Guid allocationUid, List<ExternalScoreResultApiRequestModel> model)
@@ -652,19 +679,24 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                 {
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.EndpointNotAuthorizedMessage);
+                    throw new StatusCodeException(HttpStatusCode.Forbidden);
+                }
+
+                if (model == null || model.Count < 1)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
                 }
 
                 var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
 
                 if (allocation == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.ErrorAddingScoreResultsHeading, $"Score definition with {allocationUid} could not be found.");
+                    throw new StatusCodeException(HttpStatusCode.NotFound);
                 }
 
                 if (!allocation.IsExternallyCalculated)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorAddingScoreResultsHeading, $"Score definition with {allocationUid} is not externally calculated.");
+                    throw new StatusCodeException(HttpStatusCode.BadRequest);
                 }
 
                 var execution = getApiExecution(model.Count);
@@ -676,16 +708,22 @@ namespace d360.web.Controllers.V2
                     )
                 );
             }
-            catch (GenericException ex)
+            catch (Exception ex)
             {
-                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
-            }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Score definition with {allocationUid} could not be found." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = $"Score definition with {allocationUid} is not externally calculated." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.ErrorAddingScoreResultsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "PostExternalResultsByAllocation" } }
+                );
             }
         }
-
 
         /// <summary>
         /// Post measure results to calculate a score internally.
@@ -698,9 +736,8 @@ namespace d360.web.Controllers.V2
             Route("{allocationUid:Guid}/results"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiResponseModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request model was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult PostScoreResultsByAllocation(Guid allocationUid, List<InternalScoreResultApiRequestModel> model)
@@ -708,22 +745,26 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.EndpointNotAuthorizedMessage);
+                {
+                    throw new StatusCodeException(HttpStatusCode.Forbidden);
+                }
+
+                if (model == null || model.Count < 1)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+                }
 
                 var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
 
                 if (allocation == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.ErrorAddingScoreResultsHeading, $"Score definition with {allocationUid} could not be found.");
+                    throw new StatusCodeException(HttpStatusCode.NotFound);
                 }
 
                 if (allocation.IsExternallyCalculated)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorAddingScoreResultsHeading, $"Score definition with {allocationUid} is externally calculated.");
+                    throw new StatusCodeException(HttpStatusCode.BadRequest);
                 }
-
-                if (model == null || model.Count < 1)
-                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
 
                 var execution = getApiExecution(model.Count);
                 
@@ -734,17 +775,22 @@ namespace d360.web.Controllers.V2
                     )
                 );
             }
-            catch (GenericException ex)
+            catch (Exception ex)
             {
-                return errorMessageResponse(ex.StatusCode, ex.StatusMessage, ex.StatusDescription);
-            }
-            catch
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.ErrorAddingScoreResultsHeading, ApiMessages.UnknownErrorInvestigatingMessage);
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Score definition with {allocationUid} could not be found." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = $"Score definition with {allocationUid} is externally calculated." },
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.ErrorAddingScoreResultsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "PostScoreResultsByAllocation" } }
+                );
             }
         }
-
-
 
         /// <summary>
         /// Get the Measure Version history.
@@ -756,28 +802,35 @@ namespace d360.web.Controllers.V2
             Route("history/measure/{measureUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the version history the given measure.", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMeasureHistory(Guid measureUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the measure version history for this measure."));
-
-            var prefix = "Metrics.GetMeasureHistory => ";
-
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    throw new StatusCodeException(HttpStatusCode.Unauthorized);
+                }
+
                 var models = MetricsRepository.GetMetricVersionHistory(measureUid);
+                
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models.OrderByDescending(x => x.Version)));
             }
             catch (Exception ex)
             {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = "You are not allowed to retrieve the measure version history for this measure." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.EndpointGettingMeasureHistoryHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "GetMeasureHistory" } }
+                );
             }
         }
 
@@ -793,9 +846,8 @@ namespace d360.web.Controllers.V2
             Route("history/{allocationUid}/{assetUid}/scores"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset and allocation.", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you are not allowed to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that you have passed an incorrectly formatted identifier.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that you have passed an incorrectly formatted identifier.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult GetScoreHistoryByAllocationAndAsset(string allocationUid, string assetUid)
         {

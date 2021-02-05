@@ -172,12 +172,12 @@ namespace d360.model.DataAccessLayer
 
 			if (dbComment == null)
 			{
-				throw new NotFoundException("comment");
+				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 			}
 
 			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID || !CompanyContext.CurrentResourceIsAdmin)
 			{
-				throw new UnauthorizedException("You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
+				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
 			}
 
 			bool commentUpdated = false;
@@ -200,7 +200,7 @@ namespace d360.model.DataAccessLayer
 			}
 			else
 			{
-				throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "", "Comment was not successfully removed.");
+				throw new GenericException(System.Net.HttpStatusCode.InternalServerError, "Comment was not successfully removed.");
 			}
 		}
 
@@ -239,7 +239,7 @@ namespace d360.model.DataAccessLayer
 
 			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID)
 			{
-				throw new UnauthorizedException("You are not the creator of this comment and may not update it.", "You are not the creator of this comment and may not update it.");
+				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment and may not update it.", "You are not the creator of this comment and may not update it.");
 			}
 			
 

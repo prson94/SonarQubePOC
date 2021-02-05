@@ -70,6 +70,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error getting measure history.
+        /// </summary>
+        internal static string EndpointGettingMeasureHistoryHeading {
+            get {
+                return ResourceManager.GetString("EndpointGettingMeasureHistoryHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not authorized.
         /// </summary>
         internal static string EndpointNotAuthorizedHeading {
@@ -120,6 +129,15 @@ namespace Resources {
         internal static string ForbiddenUserNotAuthorizedMessage {
             get {
                 return ResourceManager.GetString("ForbiddenUserNotAuthorizedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid score type provided, please provide a valid score type..
+        /// </summary>
+        internal static string InvalidScoreType {
+            get {
+                return ResourceManager.GetString("InvalidScoreType", resourceCulture);
             }
         }
         

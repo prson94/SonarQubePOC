@@ -195,17 +195,17 @@ namespace d360.web.Controllers
                 errorMessages = new List<StatusCodeErrorMessage>();
             }
 
-            if (ex is InsufficientPermissionException && errorMessages.Any(e => e.Status == HttpStatusCode.Forbidden))
-            {
-                return errorMessageResponse((ex as InsufficientPermissionException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Forbidden).ErrorMessage);
-            }
-            else if (ex is ConflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
+            if (ex is ConflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
             {
                 return errorMessageResponse((ex as ConflictException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
             }
             else if (ex is NotFoundException && errorMessages.Any(e => e.Status == (ex as NotFoundException).StatusCode))
             {
                 return errorMessageResponse((ex as NotFoundException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as NotFoundException).StatusCode).ErrorMessage);
+            }
+            else if (ex is StatusCodeException && errorMessages.Any(e => e.Status == (ex as StatusCodeException).StatusCode))
+            {
+                return errorMessageResponse((ex as StatusCodeException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as StatusCodeException).StatusCode).ErrorMessage);
             }
             else if (ex is GenericException)
             {
