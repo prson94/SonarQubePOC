@@ -545,6 +545,8 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
             case 'Date':
             case 'DateTime':
                 return formFieldsWithAction.filter(f => f['@type'] == 'date');
+            case 'Link':
+                return formFieldsWithAction.filter(f => f['@type'] == 'link');
             case 'Html':
                 return formFieldsWithAction.filter(f => f['@type'] == 'text' || f['@type'] == 'html');
             case 'Text':
