@@ -60,6 +60,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets a list of score definitions set up in Administration / Scoring.
         /// </summary>
+        /// <param name="Class">Allows for filtering the allocations by asset type class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
         /// <returns>The allocation.</returns>
         [
             HttpGet,
@@ -78,17 +79,18 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),            
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetAllocations()
+        public async Task<IHttpActionResult> GetAllocations(AssetTypeClass? Class = null)
         {
             const string ERROR_HEADING = "Error retrieving allocations";
 
             try
             {
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 string errorMessage = string.Empty;
 
-                List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams, out errorMessage);
+                List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams, out errorMessage, Class);
 
                 if (!string.IsNullOrEmpty(errorMessage))
                     return errorMessageResponse(HttpStatusCode.BadRequest, ERROR_HEADING, errorMessage);
