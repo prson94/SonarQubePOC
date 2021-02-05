@@ -53,7 +53,11 @@ export class ExplainWidgetComponent implements OnInit {
             details: val.details,
             expanded: this.expanded
         };
-        while (this.reduceDuplicateDetails(detail)) {
+
+        var IsDuplicateDetails = true;
+
+        while (IsDuplicateDetails) {
+            IsDuplicateDetails = this.reduceDuplicateDetails(detail)
         }
 
         if (detail.description.substring(0, 4) === "idf,") {
