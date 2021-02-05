@@ -120,6 +120,9 @@
   <data name="BadRequest" xml:space="preserve">
     <value>Bad Request</value>
   </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>Error getting measure history</value>
+  </data>
   <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
     <value>Not authorized</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>Forbidden user is not an administrator.</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>Invalid score type provided, please provide a valid score type.</value>
   </data>
   <data name="NotFound" xml:space="preserve">
     <value>Not Found</value>

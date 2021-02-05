@@ -8,5 +8,10 @@ namespace d360.core.exceptions
             :base(status, title, error)
         {
         }
+
+        public GenericException(HttpStatusCode status, string error)
+            : base(status, error, error)
+        {
+        }
     }
 }

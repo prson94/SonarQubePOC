@@ -582,15 +582,15 @@ end";
 
             if (!scoreItemExists)
             {
-                throw new NotFoundException("score item");
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
             }
             if (!isDq)
             {
-                throw new ConflictException("", "");
+                throw new StatusCodeException(System.Net.HttpStatusCode.Conflict);
             }
             if (!canReadAsset) 
             {
-                throw new InsufficientPermissionException(Permissions.InsufficientAssetPermissions);
+                throw new StatusCodeException(System.Net.HttpStatusCode.Forbidden);
             }
 
             return evidenceModel;
