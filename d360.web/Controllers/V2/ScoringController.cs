@@ -87,25 +87,6 @@ namespace d360.web.Controllers.V2
             {
 
                 var queryParams = Request.GetQueryNameValuePairs();
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    //if assetUid filter is specified and and user has an access let skip admin check
-                    //we can assume this request probably comes from UI
-                    bool assetUidSpecified = queryParams.Any(x => x.Key == "assetUid");
-                    if (assetUidSpecified)
-                    {
-                        var assetUid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key == "assetUid").Value);
-                        var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).Select(x => x.AssetTypeID).FirstOrDefault();
-                        if (!(await Company.HasAssetTypeReadPermission(assetTypeId)))
-                        {
-                            return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                        }
-                    }
-                    else
-                    {
-                        return errorMessageResponse(HttpStatusCode.Unauthorized, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
-                    }
-                }
 
                 string errorMessage = string.Empty;
 
