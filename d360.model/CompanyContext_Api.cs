@@ -2616,16 +2616,16 @@ from	IntersectType I
                                                 Connection.Execute($@"
     delete	T
     from	CommentRelation T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
     delete	T
     from	CommentVote T
 		    inner join Comment C on C.ID = T.CommentID
-		    inner join api.ExecutionDeletedAsset S on S.Object = C.OwnerObjectType and S.ObjectID = C.OwnerObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = C.AssetID and {querySuffix};
 
     delete	T
     from	Comment T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.OwnerObjectType and S.ObjectID = T.OwnerObjectID and {querySuffix};
+		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};
 
     delete	T
     from	Favorite T
@@ -3413,18 +3413,18 @@ from	IntersectType I
 
                                                 delete	T
                                     			from	CommentRelation T
-                                    					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
+                                    					inner join Asset O on O.ID = T.AssetID 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
                                     			from	CommentVote T
                                     					inner join Comment C on C.ID = T.CommentID
-                                    					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
+                                    					inner join Asset O on O.ID = C.AssetID 
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
                                     			from	Comment T
-                                    					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
+                                    					inner join Asset O on O.ID = T.AssetID
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
                                                         where O.ID in (select id from #deleteAssets);
                                     			delete	T
