@@ -1,10 +1,10 @@
-﻿import { Component, Input } from '@angular/core';
-import { ScoreType } from '../../../../models/metrics.model';
-import { PointBreakdown } from '../../../../models/score.model';
-import { BaseComponent } from '../../base.component';
+﻿import { Component, Input } from "@angular/core";
+import { ScoreType } from "../../../../models/metrics.model";
+import { PointBreakdown } from "../../../../models/score.model";
+import { BaseComponent } from "../../base.component";
 
 @Component({
-    selector: 'score-calculation',
+    selector: "score-calculation",
     templateUrl: `score-calculation.component.html`
 })
 export class ScoreCalculationComponent extends BaseComponent {
