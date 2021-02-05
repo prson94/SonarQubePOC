@@ -19,7 +19,8 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
     showPassTest: boolean;
     formattedCheck: string = "";
     ruleResultFilters: any[];
-    ruleResultPathHtml: string = '';
+    ruleResultOperation: string = "";
+    ruleResultPathHtml: string = "";
 
     constructor(protected metricsService: MetricsService) {
     }
@@ -48,6 +49,18 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
         return (this.definition && this.definition.Governance);
     }
 
+    hasRuleResultFilters() {
+        let present: boolean = false;
+        if (this.showPassTest) {
+            if (this.isDataQualityMeasure()) {
+                if (this.definition.DataQuality) {
+                    present = (this.definition.DataQuality.Filters && this.definition.DataQuality.Filters.length > 0);
+                }
+            }
+        }
+        return present;
+    }
+
     private formatDefinition() {
         if (this.showPassTest) {
 
@@ -56,6 +69,9 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                     const dq = this.definition.DataQuality;
 
                     const resultPathUid = dq.ResultPathUid;
+
+                    this.ruleResultOperation = dq.ResultOperation.toString();
+
                     const paths = this.screenReferences.paths.filter(x => { return x.value == resultPathUid; });
 
                     if (paths.length > 0) {
