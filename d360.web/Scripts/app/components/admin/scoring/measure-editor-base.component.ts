@@ -68,29 +68,128 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     showMatchPicker: boolean = false;
     verb = "Add";
 
-    menuClicked($event) {
-        switch ($event.value) {
-            case 'moveUp': this.moveUp();
-                break;
-            case 'moveDown': this.moveDown();
-                break;
-        }
-    }
-    moveDown() {
-        throw new Error("Method not implemented.");
-    }
-    moveUp() {
-        throw new Error("Method not implemented.");
-    }
-
     private menuOptions = [
         {
-            "title": "moveUp"
+            "title": "Duplicate"
         },
         {
-            "title": "moveDown"
+            "title": "Delete"
+        },
+        {
+            "title": "Move To Top"
+        },
+        {
+            "title": "Move Up"
+        },
+        {
+            "title": "Move Down"
+        },
+        {
+            "title": "Move To Bottom"
         }
     ];
+
+    menuClicked(event, pos) {
+        console.log(event);
+        console.log(pos);
+        switch (event.value) {
+            case 'Duplicate': this.duplicate(pos);
+                break;
+            case 'Delete': this.delete(pos);
+                break;
+            case 'Move To Top': this.moveTotop(pos);
+                break;
+            case 'Move Up': this.moveUp(pos);
+                break;
+            case 'Move Down': this.moveDown(pos);
+                break;
+            case 'Move To Bottom': this.moveToBottom(pos);
+                break;
+            default: console.log("unknown action");
+                break;
+        }
+    }
+
+    delete(pos) {
+        console.log(pos);
+        this.conditionGroups = [...this.conditionGroups.filter((x) => x.Position != pos)];
+        this.removeConditionGroupFormControls(pos);
+
+        if (this.conditionGroups.length == 0)
+            this.addNewGroup();
+        this.orderConditionGroups();
+    }
+    moveTotop(pos) {
+        throw new Error("Method not implemented.");
+    }
+    moveUp(pos) {
+        throw new Error("Method not implemented.");
+    }
+    moveDown(pos) {
+        throw new Error("Method not implemented.");
+    }
+    moveToBottom(pos) {
+        throw new Error("Method not implemented.");
+    }
+    duplicate(pos) {
+        let itemToDupe = this.conditionGroups.find(x => x.Position == pos);
+        let newITem = { ...itemToDupe };
+        newITem.Position = this.getMaxPositionForGroups();
+    }
+
+    addNewGroup() {
+        let newGroup = new MetricAssetVersionConditionViewModel();
+        newGroup.Position = this.getMaxPositionForGroups();
+        newGroup.MatchType = "All";
+        newGroup.conditionItemFields = [];
+        this.addConditionGroupFormControls(newGroup.Position);
+
+        this.conditionGroups.push(newGroup);
+    }
+
+    getMaxPositionForGroups(): number {
+        if (this.conditionGroups.length > 0) {
+            console.log(this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
+            return (this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
+        } else {
+            return 0;
+        }
+    }
+
+    canAddNewGroup(): boolean {
+        if (this.conditionGroups.length > 0) {
+            if (this.conditionGroups.length === 1) {
+                return this.metricForm.valid;
+            } else {
+                return this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0) && this.metricForm.valid;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    orderConditionGroups() {
+        this.conditionGroups.sort((a, b) => a.Position - b.Position);
+        this.conditionGroups.forEach((x, i) => {
+            this.removeConditionGroupFormControls(i);
+            this.addConditionGroupFormControls(i);
+            x.Position = i;
+        });
+    }
+
+    addConditionGroupFormControls(index: number) {
+
+        const prefix = `cg_${index}_`;
+        this.metricForm.addControl(prefix + 'matchType', new FormControl());
+        this.metricForm.addControl(prefix + 'weight', new FormControl());
+    }
+
+    removeConditionGroupFormControls(index: number) {
+        const prefix = `cg_${index}_`;
+        this.metricForm.removeControl(prefix + 'matchType');
+        this.metricForm.removeControl(prefix + 'weight');
+    }
+
 
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
 
@@ -116,15 +215,15 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             dummyConditionGroup.conditionItemFields = [];
             this.conditionGroups.push(dummyConditionGroup);
 
-            this.addConditionGroupFormControls(0);
+            this.addConditionGroupFormControls(1);
 
         } else if (this.model.ConditionGroups && this.model.ConditionGroups.length > 0) {
             this.conditionGroups = [];
-            this.model.ConditionGroups.forEach((x, idx) => {
+            this.model.ConditionGroups.forEach((x) => {
                 let newGroup: MetricAssetVersionConditionViewModel = new MetricAssetVersionConditionViewModel();
                 newGroup.Uid = x.Uid;
                 newGroup.MatchType = x.MatchType;
-                newGroup.Position = x.Position;
+                newGroup.Position = x.Position ?? this.getMaxPositionForGroups();
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
@@ -150,16 +249,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     })
                 }
 
-                this.addConditionGroupFormControls(idx);
+                this.addConditionGroupFormControls(newGroup.Position);
                 this.conditionGroups.push(newGroup);
             });
+            this.orderConditionGroups();
         }
-    }
-
-    addConditionGroupFormControls(index: number) {
-        const prefix = `cg_${index}_`;
-        this.metricForm.addControl(prefix + 'matchType', new FormControl());
-        this.metricForm.addControl(prefix + 'weight', new FormControl());
     }
 
     showConditionMatch(cg): boolean{
@@ -290,6 +384,37 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     saveMeasure() {
+        
+        this.conditionGroups.forEach(x => {
+            const conditions = x.conditionItemFields.filter(x => x.field);
+            conditions.forEach(c => {
+                let fieldCondition = new MetricAssetVersionConditionItemViewModel();
+                fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
+                fieldCondition.Operator = c.operator;
+                fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
+
+                if (!fieldCondition.Values) {
+                    fieldCondition.Values = [];
+                }
+                if (fieldCondition.Values.length === 0) {
+                    fieldCondition.Values.push('');
+                }
+                fieldCondition.Values[0] = this.getCorrectedValueForRawByDataType(fieldCondition.FieldType.Type, c.value);
+
+                if (!this.doesSelectedOperatorAllowValues(<any>c.operator)) {
+                    fieldCondition.Values = [];
+                }
+
+                if (c['uid']) {
+                    fieldCondition.Uid = c['uid'];
+                }
+                x.ConditionItems.push(fieldCondition);
+            });
+        });
+        this.model.ConditionGroups = this.conditionGroups;
+        console.log(this.conditionGroups);
+        console.log(this.model);
+        return;
         this.isSaving = true;
         let prevDate: string | Date = null;
         let previousConditions = [...this.model.ConditionGroups];

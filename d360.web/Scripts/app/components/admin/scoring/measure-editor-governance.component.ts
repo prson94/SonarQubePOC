@@ -35,6 +35,9 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
     .field-row{
         margin-bottom: 8px;
     }
+    .top-margin{
+        margin-top: 8px;
+    }
     `]
 
 })

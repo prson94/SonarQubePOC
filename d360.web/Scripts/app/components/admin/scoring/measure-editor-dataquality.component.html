@@ -159,10 +159,9 @@
                                               [conditionPrefix]="'ac_' + i + '_'"
                                               [fields]="fields"
                                               (onChange)="updateFormValidity($event)"></field-condition-grid>
-                        {{cg.conditionItemFields.length}}
                         <div class="row" *ngIf="cg.conditionItemFields.length > 1">
-                            <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="cg.matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                            <p-radioButton igRadioButton formControlName="cg_{{i}}_matchType" [(ngModel)]="cg.matchType" value="Any" label="Match any conditions"></p-radioButton>
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.matchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.matchType" value="Any" label="Match any conditions"></p-radioButton>
                         </div>
                     </div>
                 </div>
