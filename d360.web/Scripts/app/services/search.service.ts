@@ -37,7 +37,7 @@ export class SearchService extends BaseObservableService  {
                     if (Object.keys(err).indexOf("error") > -1) {
                         errorMessage = err.error.message;
                     }
-                    if (errorMessage == null || errorMessage == "") {
+                    if (errorMessage === null || errorMessage === "") {
                         errorMessage = "An error has occurred.";
                     }
                     this.messages.showError("Search Error", errorMessage);
