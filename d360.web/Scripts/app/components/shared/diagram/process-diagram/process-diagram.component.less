@@ -258,3 +258,26 @@ d3s-process-diagram {
         bottom: 60px;
     }
 }
+
+.gojs-pallete-tooltip {
+    color: @ig-black;
+    display: none;
+    z-index: 20000;
+    padding: 12px;
+    border-radius: 4px;
+    box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
+    border: solid 1px @ig-grey-t3;
+    background-color: @ig-white;
+    font-weight: normal;
+    text-align: left;
+    position: absolute;
+    max-height: 200px;
+    max-width: 400px;
+    transform: translateY(-100%);
+    overflow: auto;
+
+    p {
+        padding: 0px;
+        margin: 0px;
+    }
+}
