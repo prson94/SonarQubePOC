@@ -3260,7 +3260,7 @@ where   A.[uid] = @assetUid";
 
             if (queryParams.Any(q => q.Key == "_order"))
             {
-                string[] allowedValues = new string[] { "name", "resourceuid", "resourceid" };
+                string[] allowedValues = new string[] { "name", "resourceid" };
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.Trim().ToLower();
                 if (allowedValues.Contains(order))
                 {
