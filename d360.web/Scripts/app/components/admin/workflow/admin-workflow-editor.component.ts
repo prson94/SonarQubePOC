@@ -82,6 +82,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }
+        this.defaultWorkflowObject.label = "";
+        this.defaultWorkflowObject.value = "";
 
         this.load();
     }
@@ -167,7 +169,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
                     map(r => {
-                        this.workflowObjectTypes = r;
+                        this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
                         if (this.hideShoppingCart) {
                             this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
                         }
@@ -244,7 +246,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map(r => this.workflowObjectTypes = r),
+                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
                 map(() => {
                     if (this.hideShoppingCart) {
                         this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
