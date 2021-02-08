@@ -2349,15 +2349,15 @@ from    ResponsibilityTypeRelationRule R
             var columns = "";
             getDynamicFieldJoinStatements(id, "Policy", out joins, out columns, false, false, true, false, "A.ObjectID");
 
-            var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
+            var permissionSql = $@"case when exists (
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.ModifyAsset} = {(int)Permission.ModifyAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & {(int)Permission.DeleteAsset} = {(int)Permission.DeleteAsset} and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -4664,9 +4664,9 @@ where v.id = {0}", id)).FirstOrDefault();
 , case when PE.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanEdit
 , case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
 
-            var permissionJoins = @"
-outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & 1024 = 1024 and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
-outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & 2048 = 2048 and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PD ";
+            var permissionJoins = $@"
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & {(int)Permission.DeleteRelationships} = {(int)Permission.DeleteRelationships} and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PD ";
 
             if (isTargetSubjectSame)
             {
@@ -5487,8 +5487,8 @@ select	1
 from	ResponsibilityDetail
 where	Type = 'ReferenceItemType'
 		and TypeID = @id 
-		and PermissionsBitMask & 1 = 0
-		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
+		and PermissionsBitMask & @p = 0
+		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID, p = (int)Permission.ReadAsset});
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
         }

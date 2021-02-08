@@ -390,9 +390,9 @@ where	ExecutionID = @executionID
             {
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
-            if (!CurrentResourceIsAdmin && isInsert && p == Permission.ModifyAsset)
+            if (!CurrentResourceIsAdmin && isInsert && (p & Permission.AddAsset) != 0)
             {
-                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
+                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => (x.ID & Permission.AddAsset) != 0).SingleOrDefault();
                 if (permission == null || !permission.Selected)
                 {
                     Connection.Execute($@"
@@ -5881,7 +5881,7 @@ begin
 			                    or P.AssetID is null
 			                    )
 			                    and (
-				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
 				                    or 
 				                    P.PermissionsBitMask is null
 				                    )
@@ -5902,14 +5902,14 @@ begin
 			                    or P.AssetID is null
 			                    )
 			                    and (
-				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p <> @p) 
 				                    or 
 				                    P.PermissionsBitMask is null
 				                    )
                         group by R.ExecutionID, R.ItemNumber
                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 end",
-                        new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
+                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
                         AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
                         #endregion
 
@@ -6277,7 +6277,7 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
@@ -6300,7 +6300,7 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & @p = @p) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
@@ -6309,7 +6309,7 @@ from	api.ExecutionDeletedRelationship T
 where	T.ExecutionID = @ExecutionID 
 		and S.ItemNumber is null;
 end",
-                    new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
+                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.DeleteRelationships }, commandTimeout: timeout);
 
                     #endregion
 
