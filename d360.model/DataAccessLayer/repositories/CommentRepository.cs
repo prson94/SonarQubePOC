@@ -175,7 +175,7 @@ namespace d360.model.DataAccessLayer
 				throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 			}
 
-			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID || !CompanyContext.CurrentResourceIsAdmin)
+			if (dbComment.CreatedBy != CompanyContext.CurrentResourceID && !CompanyContext.CurrentResourceIsAdmin)
 			{
 				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "You are not the creator of this comment or administrator and may not update it.", "You are not the creator of this comment or administrator and may not update it.");
 			}
