@@ -157,7 +157,7 @@ namespace d360.extensions.search
             if(clearIndex)
                 _source.ClearIndex(_companyID, ObjectType);
 
-            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType, null);
+            IEnumerable<IndexObjectModel> models = LoadModels(_context, _companyID, ObjectType);
             _source.AddToIndex(models);
         }
 
@@ -620,17 +620,24 @@ namespace d360.extensions.search
 
             if (mode.HasFlag(IndexMode.WithFields))
             {
-                if(useTempTable)
+                if (useTempTable)
+                {
                     FieldQuery = new TempTablePagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
+                }
                 else
+                {
                     FieldQuery = new PagedQuery<FieldSqlModel>(context, GetFieldQuery(parameters), parameters);
+                }
             }
             if (mode.HasFlag(IndexMode.WithTags))
+            {
                 TagsQuery = new PagedQuery<TagSqlModel>(context, GetTagQuery(parameters), parameters);
+            }
             if (mode.HasFlag(IndexMode.WithResponsibility))
+            {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
-
-            var list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
+            }
+            IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
 
             foreach (var item in list)
             {
@@ -809,16 +816,16 @@ namespace d360.extensions.search
 
     internal abstract class BasePagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
     {
-        protected static readonly int PageSize = 50000;
-        protected long CurrentHighID = 0;
+        protected readonly int PageSize = 50000;
+        protected long CurrentHighID;
         protected List<T> _data;
         protected SqlConnection _connection;
         protected string _query;
         public DynamicParameters _param;
-        protected bool LastPage = false;
-        protected static readonly int _defaultQueryCommandTimeout = 180;
+        protected bool LastPage;
+        protected readonly int _defaultQueryCommandTimeout = 180;
 
-        public BasePagedQuery(SqlConnection connection, DynamicParameters param = null)
+        protected BasePagedQuery(SqlConnection connection, DynamicParameters param = null)
         {
             _connection = connection;
             _param = new DynamicParameters();
@@ -901,7 +908,7 @@ namespace d360.extensions.search
             //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
             string alias = "pagedquery";
             string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
-            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ({query}) {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.AssetID option(recompile)"; ;
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ({query}) {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.AssetID option(recompile)";
         }
     }
 
@@ -924,7 +931,7 @@ namespace d360.extensions.search
             //Use <T> to specify columns to select, as SqlMapper can slow down a lot over *
             string alias = "pagedquery";
             string queryColumns = string.Join(", ", typeof(T).GetProperties().Select(p => $"{alias}.{p.Name}").ToArray());
-            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ##{_tableIdentifier} {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.sortid option(recompile)"; ;
+            _query = $"SELECT TOP (@PageSize) {queryColumns} FROM ##{_tableIdentifier} {alias} WHERE {alias}.AssetID >= @PagerAssetID ORDER BY {alias}.sortid option(recompile)";
 
             _connection.Execute($@"
                 DROP TABLE IF EXISTS ##{_tableIdentifier};
