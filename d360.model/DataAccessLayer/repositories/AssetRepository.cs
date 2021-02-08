@@ -3308,5 +3308,158 @@ where   A.[uid] = @assetUid";
             
             return new AssetWatchers { total = count, items = items};
         }
+
+
+        public async Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageNum = 0;
+            int pageSize = 200;
+            string orderBy = "name";
+            string orderDirection = "asc";
+            string offsetSQL = "OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
+            string resourceSQL = "";
+
+            bool includeTotal = true;
+            var dbArgs = new DynamicParameters();
+
+            int? count = 0;
+
+            if (queryParams.Any(q => q.Key == "resourceUid"))
+            {
+                if (Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) && CompanyContext.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    resourceSQL = $@" and r.uid = @resourceUid";
+
+                    dbArgs.Add("@resourceUid", resourceUid);
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res > 0 ? res - 1 : 0;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    includeTotal = res;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {
+                string[] allowedValues = new string[] { "name", "resourceid", "assetdisplayvalue", "governancescore", "dataqualityscore" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.Trim().ToLower();
+                if (allowedValues.Contains(order))
+                {
+                    orderBy = order;
+                }
+            }
+
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value.Trim().ToLower();
+
+                if (allowedValues.Contains(directionFilter))
+                {
+                    orderDirection = directionFilter;
+                }
+            }
+
+            var orderBySQL = $"order by {orderBy} {orderDirection}";
+            
+            dbArgs.Add("@assetTypeUid", assetTypeUid);
+            dbArgs.Add("@pageSize", pageSize);
+            dbArgs.Add("@offset", (pageSize * pageNum));
+
+            var dataSQL = $@"
+                            SELECT
+	                            R.uid as resourceUid,
+	                            R.ResourceID,	
+	                            R.FirstName + ' ' + R.LastName as name,
+	                            a.[uid] as assetUid,
+	                            AName.DisplayValue as assetDisplayValue,
+	                            Governance.Score as governanceScore,
+	                            DataQuality.Score as dataQualityScore
+                            FROM
+	                            Follow f
+	                            inner join 
+	                            Asset a on a.ObjectID=f.ObjectID and a.[Object]=f.ObjectType and f.FollowTypeID=1
+	                            inner join 
+	                            AssetType ast on a.AssetTypeID=ast.ID and ast.[uid]=@assetTypeUid
+	                            inner join 
+	                            reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
+	                            cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+	                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+					                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
+								                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance
+	                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+					                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.DataQuality.ToString("D")} and Al.OverrideName is null
+								                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) DataQuality
+                            union
+                            select 
+                            R.uid as resourceUid,
+	                            R.ResourceID,	
+	                            R.FirstName + ' ' + R.LastName as name,  	
+	                            a.[uid] as assetUid,
+	                            AName.DisplayValue as assetDisplayValue,
+	                            Governance.Score as governanceScore,
+	                            DataQuality.Score as dataQualityScore	
+                            FROM
+		                            Follow f	
+		                            inner join 
+		                            AssetType ast on ast.ObjectID=f.ObjectID and ast.[Object]=f.ObjectType and f.FollowTypeID=3 and ast.[uid]=@assetTypeUid
+		                            inner join 
+		                            Asset a on a.AssetTypeID=ast.ID		
+		                            inner join 
+	                                reporting.Global_Resource r on r.ResourceId = f.ResourceId {resourceSQL}
+		                            cross apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+		                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+						                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.Governance.ToString("D")} and Al.OverrideName is null
+									                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) Governance
+		                            outer apply (select cast(S.Value * 100 as decimal(18,1)) as Score from metrics.Score S
+						                            inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = {ScoreType.DataQuality.ToString("D")} and Al.OverrideName is null
+									                            and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)) DataQuality";
+
+            var itemsSQL = $@"
+                            SELECT
+                                * 
+                            FROM 
+                            (
+                                {dataSQL}
+                            ) items
+                            {orderBySQL}
+                            {offsetSQL}
+                            ";
+
+            var items = (await CompanyContext.QueryAsync<WatchedAssetTypeDetailItemModel>(itemsSQL, dbArgs, timeout: ApiTimeout));
+
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                                SELECT COUNT(*) FROM (
+                                    {dataSQL}
+                                ) items
+                                ";
+                count = (await CompanyContext.QueryAsync<int>(countSQL, dbArgs, timeout: ApiTimeout)).FirstOrDefault();
+            }
+
+            count = includeTotal ? count : null;
+
+            return new WatchedAssetTypeDetailModel { total = count, items = items };
+        }
     }
 }

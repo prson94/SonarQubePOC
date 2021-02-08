@@ -187,6 +187,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid {0} provided.
+        /// </summary>
+        public static string InvalidParameterProvided {
+            get {
+                return ResourceManager.GetString("InvalidParameterProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not valid ParentUid for the Class..
         /// </summary>
         public static string InvalidParentForClass {

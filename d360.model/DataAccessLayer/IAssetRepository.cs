@@ -61,5 +61,6 @@ namespace d360.model.DataAccessLayer
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
         Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
         Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

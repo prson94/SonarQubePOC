@@ -210,4 +210,7 @@
   <data name="UserEndPoint" xml:space="preserve">
     <value>/api/v2/membership/users</value>
   </data>
+  <data name="InvalidParameterProvided" xml:space="preserve">
+    <value>Invalid {0} provided</value>
+  </data>
 </root>
