@@ -1084,7 +1084,7 @@ from	metrics.Asset A
                                     Uid uniqueidentifier not null,
                                     AssetUid uniqueidentifier not null,
                                     EffectiveDate date not null,
-                                    Value decimal(5,3) null,
+                                    Value decimal(8,6) null,
                                     RunDate datetime not null,
                                     EndDate date null,
                                     AllocationUid uniqueidentifier null,
@@ -1098,12 +1098,12 @@ from	metrics.Asset A
 	                                Uid uniqueidentifier NOT NULL,
 	                                UpdatedOn datetime NOT NULL,
 	                                Value bit NOT NULL,
-	                                AdjustedWeight decimal(5, 3) NULL,
+	                                AdjustedWeight decimal(8,6) NULL,
 	                                RunDate datetime NULL,
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
-	                                AdjustedMaxWeight decimal(5, 3) NULL,
+	                                AdjustedMaxWeight decimal(8,6) NULL,
                                     DecimalValue float NULL
                                 );
                                 create table #ScoreItemLinks (
