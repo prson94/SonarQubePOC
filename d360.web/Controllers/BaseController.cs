@@ -209,7 +209,7 @@ namespace d360.web.Controllers
             }
             else if (ex is GenericException)
             {
-                return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).Message);
+                return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).StatusDescription);
             }
             else
             { 

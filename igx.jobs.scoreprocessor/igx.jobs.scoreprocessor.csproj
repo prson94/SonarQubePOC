@@ -213,6 +213,7 @@
     <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
     <Compile Include="ChangeTypes\ProcessBase.cs" />
     <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
+    <Compile Include="Models\AlreadyProcessedMeasureModel.cs" />
     <Compile Include="Models\AssetMeasuresProcessField.cs" />
     <Compile Include="Models\DataQualityMeasureQueryModel.cs" />
     <Compile Include="Models\MeasureRemovedScoreRequeueDataItem.cs" />
