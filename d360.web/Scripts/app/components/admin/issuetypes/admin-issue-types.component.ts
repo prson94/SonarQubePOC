@@ -138,7 +138,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.workflowService.deleteWorkflowIssueType(uid)
             .subscribe(result => {
-                if (result != undefined) {
+                if (result) {
                     this.showMessageForApiResponse(this.messagesService, result);
                     if (result.Success) {
                         this.issueTypes = this.issueTypes.filter(x => x.Uid != uid);
