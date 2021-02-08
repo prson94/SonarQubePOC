@@ -21,6 +21,7 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.IO;
 using System.Xml.Serialization;
+using d360.core.entities.Metric;
 
 namespace d360.model
 {
@@ -1295,6 +1296,7 @@ namespace d360.model
             if (!settings.FieldUpdateSettings.Any()) return;
             var issue = Issues.FirstOrDefault(x => x.ID == objectInfo.ObjectID);
             Asset asset = null;
+            AssetType assetType = null;
             bool isAssetEdited = false;
 
             foreach (var item in settings.FieldUpdateSettings)
@@ -1309,8 +1311,14 @@ namespace d360.model
                     objectType = issue.Object;
                     objectId = issue.ObjectID;
                     asset = Assets.Where(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID).FirstOrDefault();
+                    assetType = AssetTypes.FirstOrDefault(a => a.Object == issue.ObjectType && a.ObjectID == issue.ObjectTypeID);
                     ObjectContext.ObjectStateManager.ChangeObjectState(asset, EntityState.Modified);                    
                     isAssetEdited = true;
+                }
+                else
+                {
+                    asset = Assets.Where(x => x.Object == objectInfo.Object.ToString() && x.ObjectID == objectInfo.ObjectID).FirstOrDefault();
+                    assetType = AssetTypes.FirstOrDefault(a => a.Object == objectInfo.ObjectType.ToString() && a.ObjectID == objectInfo.ObjectTypeID);
                 }
 
                 if (fieldType == null)
@@ -1384,7 +1392,38 @@ namespace d360.model
             {
                 asset.UpdatedBy = CurrentResourceID;
                 asset.UpdatedOn = DateTime.UtcNow;
+
+                //send scoring updates
+                if (assetType != null && Any<MetricAllocation>(i => i.AssetTypeUid == assetType.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
+                {
+                    var measureUids = Query<Guid>(@"select	M.Uid 
+                from	metrics.Allocation A 
+                  inner join metrics.Asset M on M.AllocationUid = A.Uid 
+                  and A.AssetTypeUid = @AssetTypeUid 
+                  and M.State = 1 and A.ScoreType = 1 and A.IsExternallyCalculated = 0 and M.IsGroup = 0
+                  cross apply (
+                   select	Definition
+                   from	metrics.AssetVersion 
+                   where	AssetUid = M.Uid
+                	    and EffectiveDate <= getutcdate()
+                	    and EffectiveEndDate is null
+                	    and JSON_VALUE(Definition, '$.Governance.Check') <> 'External'
+                	    and Definition <> '{}') V", new { AssetTypeUid = assetType.uid }).ToList();
+
+                    if (measureUids.Any())
+                    {
+                        SendScoreEventWithPayload(ScoreQueueChangeType.ExternalMeasureResultsCreated, measureUids.Select(m => new ExternalMeasureResultsCreatedModel
+                        {
+                            EffectiveDate = DateTime.UtcNow,
+                            AssetUid = asset.uid,
+                            MetricAssetUid = m,
+                            Result = false
+                        }).ToList());
+                    }
+                }
+
             }
+
 
             SaveChanges();
 
