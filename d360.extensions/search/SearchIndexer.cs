@@ -637,7 +637,7 @@ namespace d360.extensions.search
             {
                 ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, GetResponsibilityQuery(parameters), parameters);
             }
-            IEnumerable<IndexObjectModel> list = context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
+            IEnumerable<IndexObjectModel> list = (IEnumerable<IndexObjectModel>)context.Query(sql, parameters, commandTimeout: _defaultQueryCommandTimeout, buffered: false).ToList().Select(a => convertToDictionary(a));
 
             foreach (var item in list)
             {
