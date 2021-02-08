@@ -50,7 +50,7 @@ namespace d360.model
 
         #endregion
 
-        #region Engine Methods
+        #region Methods
 
         public List<InternalScoreResultApiResponseModel> BulkMetricsImport(List<InternalScoreResultApiRequestModel> model, ApiExecution execution, MetricAllocation allocation)
         {
@@ -981,6 +981,12 @@ from	metrics.AssetVersion V
             
             return list;
         }
+
+        #endregion
+
+        #region Score Engine Methods
+
+
 
         #endregion
     }
