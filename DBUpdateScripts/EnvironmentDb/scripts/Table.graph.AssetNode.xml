@@ -230,4 +230,43 @@ END
 	</rollback>
   </changeSet>  
 
+  <changeSet author="Puneet Gupta" id="Table.graph.AssetNode_Drop_FullText_Index-v4" runInTransaction="false">
+  <comment>GOV-13535</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select f.* from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'AssetNode')
+BEGIN
+	DROP FULLTEXT INDEX ON [graph].[AssetNode]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (select f.* from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'AssetNode')
+BEGIN
+	CREATE FULLTEXT INDEX ON [graph].[AssetNode] KEY INDEX [PK_GraphAssetNode] ON [FieldCatalog] WITH STOPLIST [emptyStopList]
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Properties' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
+BEGIN
+	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Properties] LANGUAGE 1033)
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Path' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
+and COL_LENGTH('[graph].[AssetNode]','Path') IS NOT NULL
+BEGIN
+	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Path] LANGUAGE 1033)
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Segments' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
+BEGIN
+	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Segments] LANGUAGE 1033)
+END
+		]]>
+	</rollback>
+  </changeSet>  
+
 </databaseChangeLog>
