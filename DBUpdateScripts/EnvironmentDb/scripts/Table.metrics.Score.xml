@@ -86,5 +86,27 @@ end
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Core" id="Table.metrics.Score-v3">
+    <sql dbms="mssql"
+		endDelimiter="\nGO" 
+		splitStatements="true"
+        stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Value')
+BEGIN
+	alter table metrics.Score alter column [Value] decimal(8,6) not null
+END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Value')
+BEGIN
+	alter table metrics.Score alter column [Value] decimal(5,3) not null
+END
+	]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
