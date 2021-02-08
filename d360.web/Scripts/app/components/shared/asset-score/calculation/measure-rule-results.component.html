@@ -3,7 +3,23 @@
     <div>
         <div class="scoring-v2">
             <div class="score-left-content right-padding-16 flex">
-                <p-table #dt [value]="Evidence?.items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['OwningAssetDisplayPath']" sortField="OwningAssetDisplayPath" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected" (onRowSelect)="selectedItemChange(selected?.ResultUid)">
+                <p-table #dt 
+                         [value]="Evidence?.items" 
+                         selectionMode="single" 
+                         [metaKeySelection]="true" 
+                         [dataKey]="ResultUid"
+                         [globalFilterFields]="['OwningAssetDisplayPath']" 
+                         [pageLinks]="3" 
+                         [paginator]="true" 
+                         [rows]="10" 
+                         [(selection)]="selected" 
+                         (onRowSelect)="selectedItemChange(selected?.ResultUid)"
+                         [lazy]="true"
+                         (onLazyLoad)="performLazyLoad($event)"
+                         [totalRecords]="totalRecords"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         >
                     <ng-template pTemplate="caption">
                         <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
                             <span style="width: 300px"><ig-search-field placeholder="Search rule results" mode="Keypress" debounce="500" (onSearch)="performSimpleSearch($event)"></ig-search-field></span>
@@ -42,24 +58,22 @@
             <div class="score-right-content">
                 <div class="button-group show-multiple">
                     <button igButton label="Result" class="ig-button {{(activeTab=='Result' ? 'ig-state-active' : '')}}" (click)="activeTab='Result'"></button>
-                    <!--<button igButton label="Rule" class="ig-button {{(activeTab=='Rule' ? 'ig-state-active' : '')}}" (click)="activeTab='Rule'"></button>
-                    <button igButton label="Asset" class="ig-button {{(activeTab=='Asset' ? 'ig-state-active' : '')}}" (click)="activeTab='Asset'"></button>-->
                 </div>
                 <div [hidden]="!(activeTab=='Result')" class="score-definition-container">
                     <div *ngIf="selected" class="definition-wrapper">
                         <div class="measure-details-item">
                             <div class="details-header">Rule</div>
-                            <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid">{{selected.OwningAssetDisplayPath}}</a></div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid" target="MeasureEvidenceRuleResult">{{selected.OwningAssetDisplayPath}}</a></div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Asset</div>
-                            <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid">{{selected.EvaluatedAssetDisplayPath}}</a></div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid" target="MeasureEvidenceRuleResult">{{selected.EvaluatedAssetDisplayPath}}</a></div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Rule Selection</div>
                             <div class="details-content">
                                 <div *ngFor="let item of selected.RollupPath; index as i">
-                                    <a [routerLink]="'/asset/' + item.Uid">{{item.AssetPath}}</a> ({{item.AssetTypePath}}){{getFormattedPredicate(i)}}
+                                    <a [routerLink]="'/asset/' + item.Uid" target="MeasureEvidenceRuleResult">{{item.AssetPath}}</a> ({{item.AssetTypePath}}){{getFormattedPredicate(i)}}
                                 </div>
                             </div>
                         </div>
@@ -90,10 +104,6 @@
                     </div>
 
                 </div>
-                <!--
-                <div [hidden]="!(activeTab=='Rule')">Rule</div>
-                <div [hidden]="!(activeTab=='Asset')">Asset</div>
-                -->
             </div>
         </div>
     </div>

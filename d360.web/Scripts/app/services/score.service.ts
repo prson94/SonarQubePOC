@@ -12,10 +12,24 @@ export class ScoreService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getDataQualityEvidenceForScoreItem(scoreItemUid: string, simpleFilter: string): Observable<DataQualityEvidenceModel> {
+    getDataQualityEvidenceForScoreItem(scoreItemUid: string, pageNumber: number, pageSize: number, simpleFilter: string, sortField: string = 'OwningAssetDisplayPath', sortOrder: string = 'asc'): Observable<DataQualityEvidenceModel> {
         let url: string = `/api/v2/scoring/${scoreItemUid}/quality/evidence`;
+        if (!pageSize) {
+            pageSize = 200;
+        }
+        if (!pageNumber || pageNumber <= 0) {
+            pageNumber = 1;
+        }
+        url += "?_pageNum=" + pageNumber;
+        url += "&_pageSize=" + pageSize;
+        if (sortField) {
+            url += "&_order=" + sortField;
+        }
+        if (sortOrder) {
+            url += "&_sort=" + sortOrder;
+        }
         if (simpleFilter && simpleFilter !== "") {
-            url += "?_simpleFilter=" + simpleFilter;
+            url += "&_simpleFilter=" + simpleFilter;
         }
         return this.http.get(url)
             .pipe(

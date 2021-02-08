@@ -1,4 +1,7 @@
 ﻿import { Component, Input, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from "@angular/core";
+import * as _ from "lodash";
+import { LazyLoadEvent } from "primeng/api";
+import { ScoreType } from "../../../../models/metrics.model";
 import { DataQualityEvidenceItemModel, DataQualityEvidenceModel, PointBreakdown } from "../../../../models/score.model";
 import { ScoreService } from "../../../../services/score.service";
 import { BaseComponent } from "../../base.component";
@@ -20,6 +23,8 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     selected: DataQualityEvidenceItemModel;
     activeTab: string = "Result";
     currentSearchPhrase: string;
+    previousEvent: LazyLoadEvent;
+    totalRecords: number;
 
     constructor(
         private scoreService: ScoreService
@@ -30,7 +35,8 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["scoreItem"] && changes["scoreItem"].currentValue !== changes["scoreItem"].previousValue) {
             if (this.scoreItem) {
-                this.getResults(null);
+                this.currentSearchPhrase = null;
+                this.getResults(1, 250);
             }
         }
     }
@@ -59,17 +65,32 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         return predicate;
     }
 
-    getResults(searchPhrase: string) {
+    performLazyLoad(event: LazyLoadEvent) {
+        if (_.isEqual(event, this.previousEvent)) {
+            return;
+        }
+        this.previousEvent = event;
+        //event.first = First row offset
+        //event.rows = Number of rows per page
+        //event.sortField = Field name to sort with
+        //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
+        this.getResults((event.first / event.rows), event.rows, event.sortField, ((event.sortOrder == 1) ? "asc" : "desc"));
+    }
+
+    getResults(pageNum: number, pageSize: number, sortField: string = null, sortOrder: string = null) {
         if (this.scoreItem) {
-            this.isLoading = true;
-            this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItem.ScoreItemUid, searchPhrase)
-                .subscribe((result) => {
-                    this.Evidence = result;
-                    if (this.Evidence.items.length > 0) {
-                        this.selected = this.Evidence.items[0];
-                    }
-                    this.isLoading = false;
-                });
+            if (this.scoreItem.ScoreType == ScoreType.DataQuality) {
+                this.isLoading = true;
+                this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItem.ScoreItemUid, pageNum, pageSize, this.currentSearchPhrase)
+                    .subscribe((result) => {
+                        this.Evidence = result;
+                        if (this.Evidence.items.length > 0) {
+                            this.selected = this.Evidence.items[0];
+                        }
+                        this.totalRecords = this.Evidence.items.length;
+                        this.isLoading = false;
+                    });
+            }
         }
     }
 
@@ -81,7 +102,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
 
     performSimpleSearch(phrase: string) {
         this.currentSearchPhrase = phrase;
-        this.getResults(phrase);
+        this.getResults(1, 250);
     }
 
     selectedItemChange(ruleResultUid: string) {
