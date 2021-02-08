@@ -14,16 +14,26 @@ export interface IResponsibilityTypeService {
 
 export enum Permission {
     ReadAsset = 1,
-    ModifyAsset = 2,
+    AddAsset = 2,
     DeleteAsset = 4,
+    EditAsset = 8,
 
-    ReadResponsibilities = 64,
-    ModifyResponsibilities = 128,
-    DeleteResponsibilities = 256,
+    ModifyAsset = Permission.AddAsset | Permission.EditAsset,
 
-    ReadRelationships = 512,
-    ModifyRelationships = 1024,
-    DeleteRelationships = 2048
+    ReadResponsibilities = 32,
+    AddResponsibilities = 64,
+    DeleteResponsibilities = 128,
+    EditResponsibilities = 256,
+
+    ModifyResponsibilities = Permission.AddResponsibilities | Permission.EditResponsibilities,
+
+
+    ReadRelationships = 1024,
+    AddRelationships = 2048,
+    DeleteRelationships = 4096,
+    EditRelationships = 8192,
+
+    ModifyRelationships = Permission.AddRelationships | Permission.EditRelationships
 }
 
 export class ResponsibilityType {
