@@ -482,20 +482,23 @@ namespace d360.model.DataAccessLayer
             var tables = $@"
 from	metrics.ScoreItem I
 		cross apply openjson(I.Evidence) E
-		cross apply openjson(E.value, '$.ResultResultUids') R
-		inner join AssetResult AR on AR.Uid = R.value
-		inner join AssetResultEdge OA on OA.$to_id = AR.$node_id and OA.Class = 1
-		
-		inner join graph.AssetNode OAN on OAN.$node_id = OA.$from_id
+		cross apply (
+			select	count(1) as PathItemCount
+			from	openjson(E.value, N'$.RollupPath')
+		) Pc
+
+		inner join graph.AssetNode OAN on OAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
 		inner join graph.AssetNodeKeyPath OANKP on OANKP.Uid = OAN.Uid
 		inner join graph.AssetNodeDisplayPath OANDP on OANDP.Uid = OAN.Uid
 		cross apply GetAssetTypeTextPathById(OAN.AssetTypeID, ' > ') OANTP
 
-		inner join AssetResultEdge EA on EA.$to_id = AR.$node_id and EA.Class = 2
-		inner join graph.AssetNode EAN on EAN.$node_id = EA.$from_id
+		inner join graph.AssetNode EAN on EAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
 		inner join graph.AssetNodeKeyPath EANKP on EANKP.Uid = EAN.Uid
 		inner join graph.AssetNodeDisplayPath EANDP on EANDP.Uid = EAN.Uid
 		cross apply GetAssetTypeTextPathById(EAN.AssetTypeID, ' > ') EANTP 
+
+		outer apply openjson(E.value, '$.ResultResultUids') R
+		left join AssetResult AR on AR.Uid = R.value
 where   {string.Join(" and ", whereStatements)} {simpleWhere}";
 
             var sql = $@"
@@ -572,7 +575,7 @@ begin
 		    AR.EffectiveDate,
 		    AR.RunDate,
 		    AR.TotalCount,
-		    AR.PassFraction,
+		    coalesce(AR.PassFraction, 0) as PassFraction,
 		    AR.PassCount,
 		    AR.FailCount
      {tables} {orderBySql} {offset} 

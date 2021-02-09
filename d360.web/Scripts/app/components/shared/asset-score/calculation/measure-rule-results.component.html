@@ -79,11 +79,13 @@
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Run Date</div>
-                            <div class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
+                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
+                            <div *ngIf="!selected.RunDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Effective Date</div>
-                            <div class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                            <div *ngIf="!selected.EffectiveDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Pass Fraction</div>
@@ -91,15 +93,18 @@
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Total Rows</div>
-                            <div class="details-content" [innerText]="selected.TotalCount"></div>
+                            <div *ngIf="selected.TotalCount" class="details-content" [innerText]="selected.TotalCount"></div>
+                            <div *ngIf="!selected.TotalCount" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Rows Passed</div>
-                            <div class="details-content" [innerText]="selected.PassCount"></div>
+                            <div *ngIf="selected.PassCount" class="details-content" [innerText]="selected.PassCount"></div>
+                            <div *ngIf="!selected.PassCount" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Rows Failed</div>
-                            <div class="details-content" [innerText]="selected.FailCount"></div>
+                            <div *ngIf="selected.FailCount" class="details-content" [innerText]="selected.FailCount"></div>
+                            <div *ngIf="!selected.FailCount" class="details-content">---</div>
                         </div>
                     </div>
 
