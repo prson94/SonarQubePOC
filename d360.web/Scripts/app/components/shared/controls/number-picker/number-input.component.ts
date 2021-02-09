@@ -43,9 +43,11 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
         if (obj) {
             if (this.max != undefined && obj > this.max) {
                 this.value = this.max;
+                this.el.nativeElement.value = this.value;
             }
             else if (this.min != undefined && obj < this.min) {
                 this.value = this.min;
+                this.el.nativeElement.value = this.value;
             }
             else {
                 this.value = obj;
@@ -59,7 +61,6 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
             this.hasValue = false;
             this.value = null;
         }
-
         this.onModelChange(this.value);
         this.onModelTouched();
         this.ref.markForCheck();
