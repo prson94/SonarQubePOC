@@ -739,19 +739,6 @@ from	FieldTypeLookup T
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-10740">
-    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-		<![CDATA[
-    update graph.AssetNode set [Path] = null
-		]]>
-    </sql>
-	  <rollback>
-		<![CDATA[	
-
-		]]>
-    </rollback>
-  </changeSet>  
-
   <changeSet author="bquinlivan" id="Data.Corrections.GOV-10512">
     <sql dbms="mssql"
             endDelimiter="\nGO"
