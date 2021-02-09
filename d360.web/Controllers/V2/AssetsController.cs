@@ -1050,7 +1050,7 @@ namespace d360.web.Controllers.V2
         ]
         public dynamic GetUIDetails(Guid assetUid)
         {
-            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid, TypeName from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
         /// <summary>
