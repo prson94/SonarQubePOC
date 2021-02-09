@@ -140,13 +140,14 @@ export class WorkflowService extends BaseObservableService {
     deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
 
         var model = { cascade: false };
+        var queryString = '?_RequestfromUI=true';
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: model
         };
 
-        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}`, httpHeaders)
+        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}` + queryString, httpHeaders)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))

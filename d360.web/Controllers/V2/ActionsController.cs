@@ -674,6 +674,25 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid actionTypeUid must be provided."));
             }
 
+
+            var queryParams = Request.GetQueryNameValuePairs();
+            bool IsFromUI = false;
+
+            if ((queryParams.Any(p => p.Key.Trim().ToLower() == "_requestfromui")))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_requestfromui");
+
+                if (!bool.TryParse(val.Value, out _))
+                {
+                    IsFromUI = false;
+                }
+                else
+                {
+                    IsFromUI = true;
+                }
+
+            }
+
             var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
             if (issueType == null)
@@ -681,7 +700,14 @@ for json path";
 
             if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID)))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions and allocations. Enable on cascade request to delete."));
+                if (IsFromUI)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The selected action type ({issueType.Name}) has associated actions, and therefore cannot be deleted."));
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions. Enable on cascade request to delete."));
+                }
             }
 
             var deleteSQL = $@" DELETE FROM IssueTypeRelation Where IssueTypeID = @issueTypeId
