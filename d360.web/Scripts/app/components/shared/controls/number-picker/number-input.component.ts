@@ -40,20 +40,6 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
     constructor(private ref: ChangeDetectorRef) { }
 
     writeValue(obj: any): void {
-        if (obj) {
-            if (this.max != undefined && obj > this.max) {
-                this.value = this.max;
-                this.el.nativeElement.value = this.value;
-            }
-            else if (this.min != undefined && obj < this.min) {
-                this.value = this.min;
-                this.el.nativeElement.value = this.value;
-            }
-            else {
-                this.value = obj;
-            }
-        }
-
         if (obj != undefined && obj != null) {
             this.hasValue = true;
         }
@@ -61,6 +47,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit {
             this.hasValue = false;
             this.value = null;
         }
+        this.value = obj;
         this.onModelChange(this.value);
         this.onModelTouched();
         this.ref.markForCheck();
