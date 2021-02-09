@@ -269,4 +269,27 @@ END
 	</rollback>
   </changeSet>  
 
+  <changeSet author="Puneet Gupta" id="Table.graph.AssetNode_Drop_path_column-v5">
+  <comment>GOV-13536</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if COL_LENGTH('[graph].[AssetNode]','Path') IS NOT NULL
+BEGIN
+	alter table [graph].[AssetNode] DROP COLUMN IF EXISTS [Path]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if COL_LENGTH('[graph].[AssetNode]','Path') IS NULL
+BEGIN
+	alter table graph.AssetNode add [Path] [nvarchar](2500) NULL
+END
+		]]>
+	</rollback>
+  </changeSet>  
+
 </databaseChangeLog>
