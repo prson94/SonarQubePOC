@@ -1,9 +1,9 @@
-﻿<div class="score-definition-container" *ngIf="selectedMetric">
+﻿<div class="score-definition-container {{isAdminPage ? 'no-padding' : ''}}" *ngIf="selectedMetric">
     <div #scoreDefinitionPanel class="definition-wrapper">
-        <!--<div class="panel-heading">
+        <div *ngIf="isAdminPage" class="panel-heading">
             {{selectedMetric?.Name}}
-        </div>-->
-        <div class="measure-details-item">
+        </div>
+        <div *ngIf="!isAdminPage" class="measure-details-item">
             <div class="details-header">Name</div>
             <div class="details-content">{{selectedMetric?.Name ? selectedMetric?.Name :'---'}}</div>
         </div>
@@ -21,7 +21,7 @@
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Weight</div>
-            <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} <span *ngIf="selectedMetric?.AdjustedWeight != selectedMetric?.Weight">(adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</span></div>
+            <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} <span *ngIf="!isAdminPage && selectedMetric?.AdjustedWeight != selectedMetric?.Weight">(adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</span></div>
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
             <div class="details-header">Grouping Measure</div>

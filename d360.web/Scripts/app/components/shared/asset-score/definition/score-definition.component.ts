@@ -22,6 +22,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
     @Input() assetTypeUid: string;
     @Input() allocationUid: string;
     @Input() isExternallyCalculated: boolean = false;
+    @Input() isAdminPage: boolean = false;
 
     private screenReferences: CommonScreenReferencesModel;
 
