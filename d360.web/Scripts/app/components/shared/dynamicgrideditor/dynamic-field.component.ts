@@ -650,7 +650,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (e == null || e.target == null || min == null || max == null) {
             return;
         }
-
         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
             this.form.controls[this.field.FieldName].setValue(newVal);
             this.field.Value = newVal;
