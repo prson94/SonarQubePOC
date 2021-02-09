@@ -335,7 +335,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     let foundColorToken = false;
                     for (var prop in x) { 
                         if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
-                            if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf(',"color":') > -1) {
+                            if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf('"color":') > -1) {
 
                                 foundColorToken = true;
                             }
