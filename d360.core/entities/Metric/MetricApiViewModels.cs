@@ -620,7 +620,7 @@ namespace d360.core.entities.Metric
             } 
         }
 
-        public Guid ResultUid { get; set; }
+        public Guid? ResultUid { get; set; }
         public Guid OwningAssetUid { get; set; }
         public string OwningAssetPath { get; set; }
         public string OwningAssetTypePath { get; set; }
@@ -630,12 +630,12 @@ namespace d360.core.entities.Metric
         public string EvaluatedAssetTypePath { get; set; }
         public string EvaluatedAssetDisplayPath { get; set; }
         public AssetTypeClass EvaluatedAssetClass { get; set; }
-        public DateTime EffectiveDate { get; set; }
-        public DateTime RunDate { get; set; }
-        public int TotalCount { get; set; }
+        public DateTime? EffectiveDate { get; set; }
+        public DateTime? RunDate { get; set; }
+        public int? TotalCount { get; set; }
         public float PassFraction { get; set; }
-        public int PassCount { get; set; }
-        public int FailCount { get; set; }
+        public int? PassCount { get; set; }
+        public int? FailCount { get; set; }
     }
 
     public class DataQualityScoreItemEvidenceItemRollupPathViewModel
