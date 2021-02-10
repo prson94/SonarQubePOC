@@ -89,7 +89,7 @@
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Pass Fraction</div>
-                            <div class="details-content" [innerText]="selected.PassFraction"></div>
+                            <div class="details-content"><span [innerText]="selected.PassFraction"></span><span *ngIf="!selected.TotalCount">&#160;[No result found]</span></div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Total Rows</div>
@@ -112,7 +112,7 @@
             </div>
         </div>
     </div>
-    <div class="bottom-action-bar">
+    <div style="position: absolute; right: 24px; bottom: 16px">
         <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
     </div>
 </div>

@@ -5,14 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v2.0">
+  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 create or alter procedure [metrics].[BuildDataQualityMeasureQuery]
-	@IncomingAllocationUid uniqueidentifier, 
+	@QueryType int, -- 1 => Impacted Assets/Effective Dates by ResultUids   |   2 => Impacted Asset/Effective Dates By Provided Uid   |   3 => Get Measure Results For Calculation
 	@AssetVersionRollupPathUid uniqueidentifier
 as
 begin
@@ -20,9 +20,18 @@ begin
 	-- Working vars
 	declare	@MaxStartPosition int = 1,
 			@FilterMatchType int = 1,
+			@AssetVersionUid uniqueidentifier,
+			@AssetVersionEffectiveDate date,
+			@AllocationUid uniqueidentifier,
 			@RollupPathUid uniqueidentifier; -- default weekly
 
-	select	@RollupPathUid		= RollupPathUid			from	metrics.AssetVersionRollupPath	where	Uid = @AssetVersionRollupPathUid;
+	select	@AllocationUid = A.AllocationUid,
+			@AssetVersionEffectiveDate = V.EffectiveDate,
+			@AssetVersionUid = P.AssetVersionUid,
+			@RollupPathUid	= P.RollupPathUid
+	from	metrics.AssetVersionRollupPath P
+			inner join metrics.AssetVersion V on V.Uid = P.AssetVersionUid and P.Uid = @AssetVersionRollupPathUid
+			inner join metrics.Asset A on A.Uid = V.AssetUid;
 	select	@MaxStartPosition	= max(StartPosition)	from	[metrics].[RollupPathLink]		where	RollupPathUid = @RollupPathUid;
 	select	@FilterMatchType	= FilterMatchType		from	metrics.AssetVersionRollupPath	where	Uid = @AssetVersionRollupPathUid;
 
@@ -62,7 +71,7 @@ begin
 		declare @IncomingAssetClass int = 7;
 		select	@IncomingAssetClass = T.[Class] 
 		from	metrics.Allocation A 
-				inner join AssetType T on T.Uid = A.AssetTypeUid and A.Uid = @IncomingAllocationUid;
+				inner join AssetType T on T.Uid = A.AssetTypeUid and A.Uid = @AllocationUid;
 
 		update	@tbl
 		set		Col =	iif(@IncomingAssetClass = 7,
@@ -150,35 +159,73 @@ begin
 	from	@tbl
 	where	StartPosition = @MaxStartPosition
 
-	set @sql =	'select distinct ' + @c + 
-				'(select * from ('+@p+') A order by Position asc for json path) as [Path], ' + 
-				'(
-				select	Uid, 
-						PassFraction,
-						EffectiveDate
-				from	(
-						select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id order by R.EffectiveDate desc, R.UpdatedOn desc) as RowNumber, 
-								R.Uid, 
-								R.PassFraction,
-								R.EffectiveDate
-						from	graph.AssetNode TA, 
-								graph.AssetNode RA,
-								dbo.AssetResultEdge ERO, --owns 
-								dbo.AssetResultEdge ERE, --evalby
-								dbo.AssetResult R
-						where	match(RA-(ERO)->R<-(ERE)-TA) 
-								and TA.Uid = '+@TechnicalAssetUidColumn+'
-								and RA.Uid = '+@RuleAssetUidColumn+'
-								and ERO.[Class] = 1
-								and ERE.[Class] = 2
-								and R.EffectiveDate >= @MinimumEffectiveDate
-								and R.EffectiveDate <= @MaximumEffectiveDate
-						) O 
-				where	RowNumber = 1
-				for json path
-				) as [Results]' +
-				' from ' + @t + 
-				' where match('+@m+')' + @w + ' and ' + @StartingAssetUidColumn + ' = @AssetUid'
+	if @QueryType = 1
+	begin
+	declare @ResultUids dbo.UidTable;
+	set @sql =	'select	distinct O.StartingAssetUid as AssetUid, R.EffectiveDate from (
+select	distinct ' + @c + ', null as NullVal from ' + @t + ' where match('+@m+')' + @w + '{{FILTERS}}) O 
+cross apply (
+select	EffectiveDate
+from	(select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id, R.EffectiveDate order by R.UpdatedOn desc) as RowNumber, 
+		R.Uid, 
+		R.PassFraction,
+		R.EffectiveDate
+from	graph.AssetNode TA, graph.AssetNode RA, dbo.AssetResultEdge ERO, dbo.AssetResultEdge ERE, dbo.AssetResult R, @ResultUids U
+where	match(RA-(ERO)->R<-(ERE)-TA) and TA.Uid = O.TechnicalAssetUid and RA.Uid = O.RuleAssetUid and ERO.[Class] = 1 and ERE.[Class] = 2 and U.Uid = R.Uid
+		) O 
+where	RowNumber = 1) R
+where 1=1'
+	end
+
+	if @QueryType = 2
+	begin
+	set @sql =	'select	distinct O.StartingAssetUid as AssetUid, R.EffectiveDate from (
+select	distinct ' + @c + ' null as NullVal from ' + @t + ' where match('+@m+')' + @w + '{{FILTERS}}) O 
+cross apply (
+select	EffectiveDate
+from	(select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id, R.EffectiveDate order by R.UpdatedOn desc) as RowNumber, 
+		R.Uid, 
+		R.PassFraction,
+		R.EffectiveDate
+from	graph.AssetNode TA, graph.AssetNode RA, dbo.AssetResultEdge ERO, dbo.AssetResultEdge ERE, dbo.AssetResult R
+where	match(RA-(ERO)->R<-(ERE)-TA) and TA.Uid = O.TechnicalAssetUid and RA.Uid = O.RuleAssetUid and ERO.[Class] = 1 and ERE.[Class] = 2 and R.EffectiveDate >= @AssetVersionEffectiveDate
+		) O 
+where	RowNumber = 1) R
+where 1=1'
+	end
+
+	if @QueryType = 3
+	begin
+		set @sql =	'select distinct ' + @c + 
+					'(select * from ('+@p+') A order by Position asc for json path) as [Path], ' + 
+					'(
+					select	Uid, 
+							PassFraction,
+							EffectiveDate
+					from	(
+							select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id order by R.EffectiveDate desc, R.UpdatedOn desc) as RowNumber, 
+									R.Uid, 
+									R.PassFraction,
+									R.EffectiveDate
+							from	graph.AssetNode TA, 
+									graph.AssetNode RA,
+									dbo.AssetResultEdge ERO,
+									dbo.AssetResultEdge ERE,
+									dbo.AssetResult R
+							where	match(RA-(ERO)->R<-(ERE)-TA) 
+									and TA.Uid = '+@TechnicalAssetUidColumn+'
+									and RA.Uid = '+@RuleAssetUidColumn+'
+									and ERO.[Class] = 1
+									and ERE.[Class] = 2
+									and R.EffectiveDate >= @MinimumEffectiveDate
+									and R.EffectiveDate <= @MaximumEffectiveDate
+							) O 
+					where	RowNumber = 1
+					for json path
+					) as [Results]' +
+					' from ' + @t + 
+					' where match('+@m+')' + @w + ' and ' + @StartingAssetUidColumn + ' = @AssetUid{{FILTERS}}'
+	end
 
 
 	select @sql as [Sql];
