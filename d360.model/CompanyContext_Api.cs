@@ -10218,7 +10218,25 @@ SO.ObjectID as SecondaryID
                     }
                 }
 
-                return results;
+
+            //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
+            IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r => {
+                return new DatabaseBulkAssetResult
+                {
+                    ExecutionItemUid = r.ExecutionItemUid,
+                    ItemNumber = r.ItemNumber,
+                    uid = r.uid ?? Guid.Empty,
+                    Message = r.Message,
+                    Success = r.Success,
+                    Object = SystemObjects.Group.ToString()
+                };
+            }).AsEnumerable();
+            if (graphResults.Any())
+            {
+                SendAssetGraphEvents(graphResults);
+            }
+
+            return results;
             }
 
             public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
