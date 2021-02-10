@@ -2840,5 +2840,92 @@ namespace d360.web.Controllers.V2
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
         }
+
+        /// <summary>
+        /// Retrieves details about assets being watched for a given asset type.
+        /// </summary>
+        /// <returns>Returns a list of watched asset details</returns>        
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/watchers"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId, name, assetDisplayValue, governanceScore or dataQualityScore. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("resourceUid", "Optional Uid of a resource. If provided returns assets relevant to that specific resource. If null asset details returned will be for all watchers.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),            
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetTypeWatchDetails(Guid assetTypeUid)
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, isValid));
+            }         
+
+            if (queryParams.Any(q => q.Key == "resourceUid"))
+            {
+                if(!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) || !Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "resourceUid")));
+                }                
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {                
+                string[] allowedValues = new string[] { "name", "resourceid", "assetdisplayvalue", "governancescore", "dataqualityscore" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
+                if (!allowedValues.Contains(order))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{order} is not a valid _order field"));
+                }
+            }
+
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+                if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "_direction")));
+                }
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_includetotal");
+
+                if (!bool.TryParse(val.Value, out _))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "_includeTotal")));
+                }
+            }
+
+            var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+            if (assetType == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
+            }            
+
+            try
+            {
+                var results = await AssetRepository.GetWatchedAssetDetails(assetTypeUid, queryParams);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
     }
 }
