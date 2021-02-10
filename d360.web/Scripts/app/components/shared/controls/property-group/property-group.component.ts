@@ -1,5 +1,5 @@
 ﻿
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -17,7 +17,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
-
+    @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;
     expanded: boolean = true;
@@ -28,6 +28,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     delayedRefresh = _.debounce(() => {
         this.requiredCount = this.getRequiredCount();
         this.invalidCount = this.getInvalidCount();
+        this.isValid.emit(this.requiredCount == 0 && this.invalidCount == 0);
         this.ref.markForCheck();
     }, 200);
 
@@ -65,6 +66,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                 }
             });
         }
+        
         return reqCount;
     }
 

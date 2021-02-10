@@ -46,6 +46,7 @@ export class MetricAssetVersionConditionViewModel {
 
     //used for the fieldconditiongrids
     conditionItemFields: FieldCondition[] = [];
+    DisplayOrder: number;
 
 }
 

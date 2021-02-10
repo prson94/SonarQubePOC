@@ -67,41 +67,53 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     saveLabel: string = "Create";
     showMatchPicker: boolean = false;
     verb = "Add";
-
-    private menuOptions = [
-        {
-            "title": "Duplicate"
-        },
-        {
-            "title": "Delete"
-        },
-        {
-            "title": "Move To Top"
-        },
-        {
-            "title": "Move Up"
-        },
-        {
-            "title": "Move Down"
-        },
-        {
-            "title": "Move To Bottom"
-        }
+    canAddGroup: boolean = false;
+    private baseMenuItems = [
+        { "title": "Delete" }
     ];
 
-    menuClicked(event, pos) {
+    private duplicationMenu = [
+        { "title": "Duplicate" },
+    ];
+
+    private upMenuItems: any[] = [
+        { title: "Move to Top" },
+        { title: "Move Up" }
+    ];
+
+    private downMenuItems: any[] = [
+        { title: "Move Down" },
+        { title: "Move to Bottom" }
+    ];
+
+    menuOptions(includeUp: boolean, includeDown: boolean): any[] {
+
+        if (includeUp && includeDown) {
+            return this.baseMenuItems
+                .concat(this.upMenuItems)
+                .concat(this.downMenuItems);
+        } else if (includeUp) {
+            return this.baseMenuItems.concat(this.upMenuItems);
+        } else if (includeDown) {
+            return this.baseMenuItems.concat(this.downMenuItems);
+        } else {
+            return this.baseMenuItems;
+        }
+    }
+
+    menuClicked(event, displyOrder, pos) {
         switch (event.value) {
             case 'Duplicate': this.duplicate(pos);
                 break;
             case 'Delete': this.delete(pos);
                 break;
-            case 'Move To Top': this.moveTotop(pos);
+            case 'Move to Top': this.moveTotop(displyOrder);
                 break;
-            case 'Move Up': this.moveUp(pos);
+            case 'Move Up': this.moveUp(displyOrder);
                 break;
-            case 'Move Down': this.moveDown(pos);
+            case 'Move Down': this.moveDown(displyOrder);
                 break;
-            case 'Move To Bottom': this.moveToBottom(pos);
+            case 'Move to Bottom': this.moveToBottom(displyOrder);
                 break;
             default: console.log("unknown action");
                 break;
@@ -117,26 +129,38 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         this.orderConditionGroups();
     }
     moveTotop(pos) {
-        throw new Error("Method not implemented.");
+        this.moveGroupItems(pos, 1);
     }
     moveUp(pos) {
-        throw new Error("Method not implemented.");
+        this.moveGroupItems(pos, pos - 1);
     }
     moveDown(pos) {
-        throw new Error("Method not implemented.");
+        this.moveGroupItems(pos, pos + 1);
     }
     moveToBottom(pos) {
-        throw new Error("Method not implemented.");
-    }
-    duplicate(pos) {
-        let itemToDupe = this.conditionGroups.find(x => x.Position == pos);
-        let newITem = { ...itemToDupe };
-        newITem.Position = this.getMaxPositionForGroups();
+        this.moveGroupItems(pos, this.conditionGroups.length);
     }
 
+    duplicate(pos) {
+        let itemToDupe = this.conditionGroups.find(x => x.Position == pos);
+        let newGroup = _.cloneDeep(itemToDupe);
+        newGroup.Position = this.getMaxPositionForGroups();
+        this.addConditionGroupFormControls(newGroup.Position);
+        this.conditionGroups.push(newGroup);
+    }
+    moveGroupItems(from, to) {
+        let temp = from;
+        let fromitem = this.conditionGroups.find(x => x.DisplayOrder == from);
+        let toitem = this.conditionGroups.find(x => x.DisplayOrder == to);
+
+        fromitem.DisplayOrder = to
+        toitem.DisplayOrder = temp;
+        this.orderConditionGroups();
+}
     addNewGroup() {
         let newGroup = new MetricAssetVersionConditionViewModel();
         newGroup.Position = this.getMaxPositionForGroups();
+        newGroup.DisplayOrder = newGroup.Position;
         newGroup.MatchType = "All";
         newGroup.conditionItemFields = [];
         this.addConditionGroupFormControls(newGroup.Position);
@@ -151,29 +175,27 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             return 0;
         }
     }
-
-    canAddNewGroup(): boolean {
-        if (this.conditionGroups.length > 0) {
-            if (this.conditionGroups.length === 1) {
-                return this.metricForm.valid;
-            } else {
-                return this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0) && this.metricForm.valid;
-            }
+   
+    canAddNewGroup(event: boolean) {
+        if (this.conditionGroups.length > 0 && this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0)) {
+            this.canAddGroup = event;
         } else {
-            return true;
+            this.canAddGroup = false;
         }
-    }
+    } 
 
     orderConditionGroups() {
-        this.conditionGroups.sort((a, b) => a.Position - b.Position);
+        this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
         this.conditionGroups.forEach((x, i) => {
             let pos = i + 1;
             this.removeConditionGroupFormControls(pos);
             this.addConditionGroupFormControls(pos);
-            x.Position = pos;
+            x.DisplayOrder = pos;
         });
     }
-
+    sortByDisplayOrder() {
+        return this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
+    }
     addConditionGroupFormControls(index: number) {
         const prefix = `cg_${index}_`;
         this.metricForm.addControl(prefix + 'matchType', new FormControl());
@@ -207,6 +229,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.conditionGroups = [];
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
+            dummyConditionGroup.DisplayOrder = 1;
             dummyConditionGroup.MatchType = "All";
             dummyConditionGroup.conditionItemFields = [];
             this.conditionGroups.push(dummyConditionGroup);
@@ -219,15 +242,18 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 let newGroup: MetricAssetVersionConditionViewModel = new MetricAssetVersionConditionViewModel();
                 newGroup.Uid = x.Uid;
                 newGroup.MatchType = x.MatchType;
-                newGroup.Position = x.Position ?? this.getMaxPositionForGroups();
+                newGroup.DisplayOrder = x.Position ?? this.getMaxPositionForGroups();
+                newGroup.Position = newGroup.DisplayOrder; 
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
+
                 const conditions = x.ConditionItems;
                 newGroup.conditionItemFields = [];
                 if (conditions.length > 0) {
                     conditions.forEach((c) => {
                         const cond = new FieldCondition();
+                        c.FieldType = this.screenReferences.fields.find(x => x.ApiName == c.ConditionFieldTypeName);
                         cond['uid'] = c.Uid;
                         cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
                         cond.isValid = true;
@@ -381,36 +407,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     saveMeasure() {
         
-        this.conditionGroups.forEach(x => {
-            const conditions = x.conditionItemFields.filter(x => x.field);
-            conditions.forEach(c => {
-                let fieldCondition = new MetricAssetVersionConditionItemViewModel();
-                fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
-                fieldCondition.Operator = c.operator;
-                fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
-
-                if (!fieldCondition.Values) {
-                    fieldCondition.Values = [];
-                }
-                if (fieldCondition.Values.length === 0) {
-                    fieldCondition.Values.push('');
-                }
-                fieldCondition.Values[0] = this.getCorrectedValueForRawByDataType(fieldCondition.FieldType.Type, c.value);
-
-                if (!this.doesSelectedOperatorAllowValues(<any>c.operator)) {
-                    fieldCondition.Values = [];
-                }
-
-                if (c['uid']) {
-                    fieldCondition.Uid = c['uid'];
-                }
-                x.ConditionItems.push(fieldCondition);
-            });
-        });
         this.model.ConditionGroups = this.conditionGroups;
-        console.log(this.conditionGroups);
-        console.log(this.model);
-        return;
         this.isSaving = true;
         let prevDate: string | Date = null;
         let previousConditions = [...this.model.ConditionGroups];
@@ -431,13 +428,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.model.ConditionGroups = [];
         }
         else {
-            let arr = this.model.ConditionGroups[0].ConditionItems;
-            while (arr.length > 0) {
-                arr.pop();
-            }
-
             this.conditionGroups.forEach(x => {
                 const conditions = x.conditionItemFields.filter(x => x.field);
+                x.Position = x.DisplayOrder;
                 conditions.forEach(c => {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
@@ -459,7 +452,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     if (c['uid']) {
                         fieldCondition.Uid = c['uid'];
                     }
-                    arr.push(fieldCondition);
+
+                    x.ConditionItems.push(fieldCondition);
                 });
             });
 
@@ -544,10 +538,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         if (updated && original) {
-
             let changeFound = updated.length != original.length;
-            //console.log(updated);
-            //console.log(original);
             updated.forEach(x => {
                 let originalMatch = original.find(y => y.Uid == x.Uid);
                 if (originalMatch) {
