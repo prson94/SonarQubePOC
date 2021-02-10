@@ -18,7 +18,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             placeholder="Tag an item"
                             (onSelect)="selectItem()">   
                             <ng-template let-item pTemplate="item">
-                                   <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}}
+                                   <span style="color:#999999;">{{userFriendlyObjectName(item.Displayobject)}} - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}} -</span></span> {{item.TextPath}}
                             </ng-template>  
                     </p-autoComplete>
         `,
