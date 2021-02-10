@@ -41,9 +41,11 @@ namespace d360.web
                 {
 
                 }
-                
+
                 if (!string.IsNullOrEmpty(ctx.Request.UserAgent) && string.IsNullOrEmpty(telemetry.Context.User.UserAgent))
+                {
                     telemetry.Context.User.UserAgent = ctx.Request.UserAgent;
+                }
 
             }            
         }

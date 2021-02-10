@@ -144,11 +144,17 @@ namespace d360.model.DataAccessLayer
                     case "isexternallycalculated":
                         bool? isExtern = null;
                         if ("external".Contains(kp.Value.ToLower()))
+                        {
                             isExtern = true;
+                        }
                         if ("internal".Contains(kp.Value.ToLower()))
+                        {
                             isExtern = false;
+                        }
                         if ("ternal".Contains(kp.Value.ToLower()))
+                        {
                             isExtern = null;
+                        }
 
                         if (isExtern.HasValue)
                         {
