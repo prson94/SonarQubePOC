@@ -11,8 +11,11 @@
     forwardRef,
 
     ViewChild,
-    AfterViewInit,
-    HostListener
+    AfterViewInit,
+
+    HostListener,
+
+    OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarModule, Calendar } from 'primeng/calendar';
@@ -22,6 +25,7 @@ import {
     NG_VALUE_ACCESSOR,
     ControlValueAccessor
 } from '@angular/forms';
+import { PlotAbandsBottomLineOptions } from 'highcharts';
 
 export const IG_DATE_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -42,7 +46,7 @@ export const IG_DATE_VALUE_ACCESSOR: any = {
         '(focus)': 'focus($event)',
     }
 })
-export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
+export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDestroy {
     @Input() style: string;
     @Input() styleClass: string;
     @Input() inputStyle: string;
@@ -58,11 +62,13 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
     @Input() name: string;
     @Input() label: string;
 
+    //PrimeNG p-calendar cannot set zIndex of overlay when using appendTo using [style] so we need to add it manually
+    @Input() overlayLowerZIndex: boolean = false;
+
 
     @ViewChild("cal", { static: false }) calendar: Calendar;
 
     protected value = null;
-    private isOverlayVisible: boolean = false;
 
     onModelChange: Function = () => { };
 
@@ -77,27 +83,28 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
         this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
     }
 
+    private checkInterval;
     ngAfterViewInit() {
-        setInterval(() => {
-            if (this.isOverlayVisible !== this.calendar.overlayVisible) {
-                if (this.calendar.overlayVisible && this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
+        this.checkInterval = setInterval(() => {
+            if (this.calendar.overlayVisible) {
+                if (this.calendar.overlay.className.indexOf(this.getStyleClass) == -1) {
                     this.calendar.overlay.classList.add(this.getStyleClass);
-
-                    if (this.calendar.appendTo == 'body') {
-                        var self = this;
-                        this.calendar.overlay.onkeydown = (e: KeyboardEvent) => {
-                            if (e.keyCode == 27) {
-                                event.stopPropagation();
-                                event.preventDefault();
-                                setTimeout(() => { self.focus(event); });
-                            }
-                            if (e.keyCode == 13) {
-                                setTimeout(() => { self.focus(event); });
-                            }
+                    this.calendar.overlay.classList.add("ig-date-overlay-normal-index");
+                    if (this.overlayLowerZIndex) {
+                        this.calendar.overlay.classList.add("ig-date-overlay-lower-index");
+                    }
+                    var self = this;
+                    this.calendar.overlay.onkeydown = (e: KeyboardEvent) => {
+                        if (e.keyCode == 27) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                            setTimeout(() => { self.focus(event); });
+                        }
+                        if (e.keyCode == 13) {
+                            setTimeout(() => { self.focus(event); });
                         }
                     }
                 }
-                this.isOverlayVisible = this.calendar.overlayVisible;
             }
         }, 10);
     }
@@ -146,6 +153,12 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit {
                 var secondLe = (this.calendar.overlay as HTMLElement).getElementsByClassName('p-datepicker-prev')[0] as HTMLElement;
                 setTimeout(() => { firstEl.click(); secondLe.click(); });
             }
+        }
+    }
+
+    ngOnDestroy() {
+        if (!this.checkInterval) {
+            window.clearInterval(this.checkInterval);
         }
     }
 }

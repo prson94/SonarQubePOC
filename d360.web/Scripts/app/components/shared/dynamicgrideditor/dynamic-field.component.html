@@ -45,7 +45,8 @@
                                             [appendTo]="'body'"
                                             [options]="field.Items | selectItemTextToLabel"
                                             [virtualScroll]="field.VirtualScroll"
-                                            [required]="isRequired()">
+                                            [required]="isRequired()"
+                                            [overlayLowerZIndex]="true">
                                 </p-dropdown>
                             </ng-container>
                             <ng-container *ngIf="field.UseColorControl">
@@ -111,7 +112,8 @@
                                             [appendTo]="'body'"
                                             [options]="field.Items | selectItemTextToLabel"
                                             [virtualScroll]="field.VirtualScroll"
-                                            [required]="isRequired()">
+                                            [required]="isRequired()"
+                                            [overlayLowerZIndex]="true">
                                 </p-dropdown>
                             </ng-template>
                         </ng-container>
@@ -225,7 +227,7 @@
             <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
             <ig-switch *ngSwitchCase="'Boolean'" [trueLabel]="'True'" [falseLabel]="'False'" [formControlName]="field.FieldName" [optional]="!isRequired()"></ig-switch>
             <div *ngSwitchCase="'Date'">
-                <ig-date [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()"></ig-date>
+                <ig-date [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()" [appendTo]="'body'" [required]="isRequired()" [overlayLowerZIndex]="true"></ig-date>
             </div>
             <div *ngSwitchCase="'DateTime'">
                 <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
