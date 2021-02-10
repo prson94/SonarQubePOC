@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error recalculating measure score items.
+        /// </summary>
+        internal static string EndpointRecalculatingMeasureScoreItemsHeading {
+            get {
+                return ResourceManager.GetString("EndpointRecalculatingMeasureScoreItemsHeading", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error adding score results.
         /// </summary>
         internal static string ErrorAddingScoreResultsHeading {

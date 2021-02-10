@@ -924,5 +924,45 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
+
+
+        /// <summary>
+        /// Forces a recalculation of Governance score item results associated with a specific measure.
+        /// </summary>
+        /// <param name="allocationUid">The unique identifier for the allocation the measure belongs to.</param>
+        /// <param name="measureUid">The unique identifier for the measure.</param>
+        /// <returns>Http Status OK</returns>
+        [
+            HttpPut,
+            Route("{allocationUid:Guid}/measures/{measureUid:Guid}/recalculations"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Now Recalculating score item results for this measure."),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid)
+        {
+            try
+            {
+                MetricsRepository.RecalculateMeasureScoreItems(allocationUid, measureUid);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+            }
+            catch (Exception ex)
+            {
+                var messages = new List<StatusCodeErrorMessage>
+                {
+                    new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = "You are not allowed to recalculate score items associated with this measure." }
+                };
+                return DetermineUnhandledException(
+                    ex,
+                    ApiMessages.EndpointRecalculatingMeasureScoreItemsHeading,
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", "RecalculateMeasureScoreItems" } }
+                );
+            }
+        }
+
     }
 }
