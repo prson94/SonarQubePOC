@@ -36,8 +36,8 @@ begin
 	insert into #ids ([Key], ID)
 		select O.[Key], A.ID from @assets O inner join Asset A on A.Uid = O.Uid;
  
- 
-	if @ancestry = 1 and exists(select top 1 * from [Predicate] where uid = @predicateUid and [type] = 16)
+     --Predicates of type 16 means that we want to see contents of process diagram, so lets unpack it and add diagram assets manually
+	if exists(select top 1 * from [Predicate] where uid = @predicateUid and [type] = 16)
 	begin
 		
 		drop table if exists #diagramIds;

@@ -27,14 +27,15 @@ begin
 	declare @maxLineageDescendants int = 500;
 	declare @dataLimitReached bit = 0;
 
-	if @ancestry = 3
+if @ancestry = 3
 	begin	-- This is impact
 		insert into @functionalTypesToInclude (ID) values (1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13)
+		insert into @offLimitImpactFunctionalTypes (ID) values (15)
 	end
 	else
 	begin	-- This is lineage
 		insert into @functionalTypesToInclude (ID) values (1),(12),(13)
-		insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13)
+		insert into @offLimitImpactFunctionalTypes (ID) values (1),(3),(4),(12),(13),(15)
 	end
 
 	drop table if exists #ids;
@@ -692,10 +693,11 @@ begin
 				inner join AssetTypeStyle S on S.ID = T.ID
 	order by	H.hierarchyKey
 
+	--For assets which contains process diagram we should manually map its diagram nodes and underlaying Diagram Use relationship otherwise they wont be included
 	drop table if exists #hierarchyPredicates
-	create table #hierarchyPredicates ([key] nvarchar(50), Predicate nvarchar(200), ID int, Uid uniqueidentifier, AssetId int, Direction int);
+	create table #hierarchyPredicates ([key] nvarchar(50), Predicate nvarchar(200), ID int, Uid uniqueidentifier, AssetId int, Direction int, hierarchyKey nvarchar(50), SourceAssetId int);
 
-	if @ancestry = 1 and exists (select top 1 * from asset a 
+	if exists (select top 1 * from asset a 
 			inner join assetprocessdiagram apd on apd.assetid = a.id where a.uid = @uid)
 	begin
 		drop table if exists #hierarchyDiagramUseMap
@@ -713,6 +715,7 @@ begin
 		select @back = (select top 1 [back] from #hierarchies where uid = @uid)
 		select @backAmount = (select top 1 [backAmount] from #hierarchies where uid = @uid)
 
+		--Map all diagram nodes which are part of process diagram
 		;with asset_cte as(
 				select da.id, da.uid as assetUid, h.hierarchykey, it.uid as ituid, h.isleaf from #hierarchies h
 					inner join assetprocessdiagram d on d.assetid = h.id
@@ -737,14 +740,17 @@ begin
 		insert into #hierarchyDiagramUseMap 
 		select distinct id, assetUid, hierarchyKey, ituid, IsLeaf from asset_cte 
 
+		--Find all Diagram use relationships that exists for current asset and its diagram nodes
+		--This will be included as badge
 		insert into #hierarchyPredicates
-		select	distinct
-							Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
+		select distinct	Hr.hierarchyKey + '-R-' + cast(E.PredicateID as varchar) as [key],
 							(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
 							E.PredicateID as ID, 
 							E.PredicateUid as Uid, 
-							S.ID as AssetId,
-							1 as Direction
+							T.ID as AssetId,
+							1 as Direction,
+							Hr.hierarchyKey,
+							S.ID as SourceAssetId
 					from	graph.AssetNode S,
 							graph.AssetEdge E,
 							graph.AssetNode T,
@@ -754,52 +760,56 @@ begin
 							and E.IntersectTypeUid = Hr.iuid and S.Id = Hr.Id
 							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 
-		insert into #flatNodeCollection
-		select  @hierarchyKey as hierarchyKey,
-				1,
-				0 as leaf,
-				@diagramHash as [key],
-				@hierarchyKey as [group],
-				@uid as assetUid,
-				null,
-				@uid,
-				@backAmount,
-				@back,
-				'fa-share-alt',
-				15,
-				'Diagram' as [text],
-				0 as actionCount, 
-				0 as useAsTransformation,
-				1,
-				0 as isSubjectInTransformation
-		from		asset a 
-					inner join assetprocessdiagram apd on apd.assetid = a.id 
-					where a.uid = @uid
 
-		;with assets as (select distinct assetUid from #hierarchyDiagramUseMap)
-			insert into #flatNodeCollection
-			select @hierarchyKey as hierarchyKey,
-					1,
-					1 as leaf,
-					@diagramHash as [key],
-					@diagramHash as [group],
-					ad.uid as assetUid,
-					null,
-					ad.uid,
-					@backAmount,
-					@back,
-					isnull(ats.icon,'fa-book'),
-					15,
-					ad.displayvalue as [text],
-					0 as actionCount, 
-					0 as useAsTransformation,
-					1,
-					0 as isSubjectInTransformation 
-			from assets 
-			inner join assetdetail ad on ad.uid = assets.assetUid
-			inner join assettype at on at.id = ad.assettypeid
-			inner join #hierarchyPredicates hp on hp.assetid = ad.id
-			left join assettypestyle ats on ats.id = at.id
+		--In case of Lineage create a `Diagram` group node, and add process diagrams nodes as leaf nodes
+		if @ancestry = 1
+		begin
+				insert into #flatNodeCollection
+				select  @hierarchyKey as hierarchyKey,
+						1,
+						0 as leaf,
+						@diagramHash as [key],
+						@hierarchyKey as [group],
+						@uid as assetUid,
+						null,
+						@uid,
+						@backAmount,
+						@back,
+						'fa-share-alt',
+						15,
+						'Diagram' as [text],
+						0 as actionCount, 
+						0 as useAsTransformation,
+						1,
+						0 as isSubjectInTransformation
+				from		asset a 
+							inner join assetprocessdiagram apd on apd.assetid = a.id 
+							where a.uid = @uid
+
+				;with assets as (select distinct SourceAssetId from #hierarchyPredicates)
+							insert into #flatNodeCollection
+							select @hierarchyKey as hierarchyKey,
+									1,
+									1 as leaf,
+									@diagramHash as [key],
+									@diagramHash as [group],
+									ad.uid as assetUid,
+									null,
+									ad.uid,
+									@backAmount,
+									@back,
+									isnull(ats.icon,'fa-book'),
+									15,
+									ad.displayvalue as [text],
+									0 as actionCount, 
+									0 as useAsTransformation,
+									1,
+									0 as isSubjectInTransformation 
+							from assets 
+							inner join assetdetail ad on ad.id = assets.SourceAssetId
+							inner join assettype at on at.id = ad.assettypeid
+							left join assettypestyle ats on ats.id = at.id
+		end
 	end
 
 	select * from #flatNodeCollection
@@ -920,7 +930,9 @@ begin
 							and E.ID not in (select IntersectID from #hops where Hop <> -1)
 							and ( (@includeNonLeaf = 0 and Hr.IsLeaf = 1) or (@includeNonLeaf = 1) )
 					union 
-					select * from #hierarchyPredicates
+					select [key], Predicate, ID, Uid, AssetId, Direction 
+					   from #hierarchyPredicates hp 
+					where hp.hierarchykey = H.hierarchyKey
 					) O
 			left join #processAssetCountMap pacm on pacm.puid = O.uid and pacm.dir = O.direction and pacm.[key]  = O.[key]
 			group by [Predicate], ID, Uid, Direction,O.[key],pacm.[count]
