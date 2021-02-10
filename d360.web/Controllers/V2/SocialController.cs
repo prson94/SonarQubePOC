@@ -58,7 +58,7 @@ namespace d360.web.Controllers.V2
         	                FollowDetail
                         where 
         	                ResourceID = @r
-        	                and ObjectType not in ('ArtifactType', 'PolicyType', 'ReferenceItemType', 'ResourceType', 'TaxonomyType')
+        	                and ObjectType not in ('ArtifactType', 'PolicyType', 'ReferenceItemType', 'ResourceType', 'TaxonomyType', 'RuleType')
                         group by Type, TypeName, TypeID) T
                         left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
                         left join AssetTypeStyle S on S.ID = A.ID
