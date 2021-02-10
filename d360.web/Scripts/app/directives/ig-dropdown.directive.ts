@@ -12,7 +12,7 @@ export class DropdownDirective implements AfterContentInit {
     public _size: string;
     @Input() required: boolean;
     @Input() disabled: boolean;
-    private isOverlayVisible: boolean = false;
+    @Input() overlayLowerZIndex: boolean = false;
 
     constructor(public el: ElementRef, public dropdownRef: Dropdown, private ref: ChangeDetectorRef) { }
 
@@ -52,26 +52,29 @@ export class DropdownDirective implements AfterContentInit {
             }
         }
         this.dropdownRef.scrollHeight = '340px';
-        setInterval(() => {
-            if (this.isOverlayVisible !== this.dropdownRef.overlayVisible) {
-                if (this.dropdownRef.overlayVisible && this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
-                    this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
 
+        setInterval(() => {
+            if (this.dropdownRef.overlayVisible) {
+                if (this.dropdownRef.overlay.className.indexOf('ig-dropdown-overlay') == -1) {
+                    this.dropdownRef.overlay.classList.add('ig-dropdown-overlay');
+                    if (this.overlayLowerZIndex) {
+                        this.dropdownRef.overlay.classList.add('ig-dropdown-overlay-lower-index');
+                    }
                     var input = this.dropdownRef.overlay.getElementsByTagName('input')[0];
 
                     if (input)
                         input.className = 'ig-input';
                 }
-                this.isOverlayVisible = this.dropdownRef.overlayVisible;
 
-                if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
-                    this.dropdownRef.filter = true;
-                    this.dropdownRef.filterPlaceholder = 'Search fields';
-                }
-                else {
-                    this.dropdownRef.filter = false;
-                }
+            }
 
+
+            if (this.dropdownRef.options && this.dropdownRef.options.length > 10) {
+                this.dropdownRef.filter = true;
+                this.dropdownRef.filterPlaceholder = 'Search fields';
+            }
+            else {
+                this.dropdownRef.filter = false;
             }
         }, 10);
 
