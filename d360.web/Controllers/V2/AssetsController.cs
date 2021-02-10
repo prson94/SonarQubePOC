@@ -2782,14 +2782,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
-        public async Task<IHttpActionResult> GetWatchCountByType(Guid? resourceUid = null)
+        public async Task<IHttpActionResult> GetWatchCountByType(string resourceUid = null)
         {
             string resourceJoin = "";
             DynamicParameters dbArgs = new DynamicParameters();
 
             if (resourceUid != null)
             {
-                if (!Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                if (!Guid.TryParse(resourceUid, out Guid rUid) || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid resourceUid provided"));
                 }
@@ -2798,7 +2798,7 @@ namespace d360.web.Controllers.V2
                     resourceJoin = $@"INNER JOIN
                                       reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.uid = @resourceUid";
 
-                    dbArgs.Add("@resourceUid", resourceUid);
+                    dbArgs.Add("@resourceUid", rUid);
                 }
             }
 
