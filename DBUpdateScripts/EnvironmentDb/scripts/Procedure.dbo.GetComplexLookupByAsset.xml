@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.dbo.GetComplexLookupByAsset-v40">
+  <changeSet author="MDonato" id="Procedure.dbo.GetComplexLookupByAsset-v41">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -28,7 +28,6 @@ CREATE OR ALTER procedure [dbo].[GetComplexLookupByAsset]
 as
 begin
 set nocount on;
-
 	declare @assetId bigint,
 			@type varchar(50)
 	select top 1 @assetId = ID from Asset where Object = @object and ObjectID = @objectId
@@ -63,6 +62,7 @@ set nocount on;
 	declare @finalOrders table ([Statement] varchar(500), SortOrder int, INDEX IX1 CLUSTERED(SortOrder asc))
 
 	declare @count int = 0
+	declare @hasSimpleFilter bit =  case when LEN(coalesce(@simpleFilter,'')) > 0 then 1 else 0 end;
 
 	if @checkExists = 1
 	begin
@@ -433,7 +433,7 @@ set nocount on;
 			set @current = @current + 1
 		end
 
-		if @countOnly = 0 or exists (select 1 from @filters)
+		if @countOnly = 0 or exists (select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			insert into @tables
 				select	case 
@@ -453,7 +453,7 @@ set nocount on;
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
 		end
 
-		if @countOnly = 0 or exists(select 1 from @filters)
+		if @countOnly = 0 or exists(select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			-- Resolve data types to send back to caller.
 			update	T
@@ -543,7 +543,7 @@ set nocount on;
 				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit) R
 		where	O.FieldTypeID = @fieldTypeId;
 
-		if @countOnly = 0 or exists(select 1 from @filters)
+		if @countOnly = 0 or exists(select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			-- Common
 			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
@@ -651,7 +651,7 @@ set nocount on;
 			insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = A.AssetTypeID)')
 		end
 
-		if @countOnly = 0 or exists(select 1 from @filters)
+		if @countOnly = 0 or exists(select 1 from @filters) or @hasSimpleFilter = 1
 		begin
 			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
 				select		ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
