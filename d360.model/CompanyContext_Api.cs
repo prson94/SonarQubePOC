@@ -10221,7 +10221,7 @@ SO.ObjectID as SecondaryID
 
             //Convert GroupResponseResult to DatabaseBulkAssetResult to use in SendAssetGraphEvents
             IEnumerable<IGraphAsset> graphResults = results.Where(r => r.uid.HasValue).Select(r => {
-                return new DatabaseBulkAssetResult()
+                return new DatabaseBulkAssetResult
                 {
                     ExecutionItemUid = r.ExecutionItemUid,
                     ItemNumber = r.ItemNumber,
