@@ -1,15 +1,11 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange  } from '@angular/core';
-
-
-import * as _ from 'lodash';
-import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
-import { SortOrder } from '../../models/enums.model';
-import { EditorField } from '../../models/editor-field.model';
-import { BaseComponent } from './base.component';
-import { UriBasedService } from '../../services/uri-based.service';
-import { ResourcesService } from '../../services/resources.service';
-import { LazyLoadEvent } from 'primeng/api';
-import { GridFilterExpression } from '../../models/grid-definition.model';
+﻿import { Input, Component, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange  } from "@angular/core";
+import * as _ from "lodash";
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from "@angular/forms";
+import { SortOrder } from "../../models/enums.model";
+import { EditorField } from "../../models/editor-field.model";
+import { BaseComponent } from "./base.component";
+import { ResourcesService } from "../../services/resources.service";
+import { LazyLoadEvent } from "primeng/api";
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -20,8 +16,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
 
 @Component({
     selector: 'd3s-resource-multiselect-grid',
-    template: ` 
-               
+    template: `                
                 <span>
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" (keypress)="handleKeyPress()" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [scrollable]="true" scrollWidth="100%" [lazy]="true" [totalRecords]="totalRecords" [metaKeySelection]="!multiple" 
@@ -42,7 +37,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                     Name
                                     <d3s-sortIcon [field]="'Text'"></d3s-sortIcon>
                                 </th>
-                                <th [pSortableColumn]="'Type'">
+                                <th [pSortableColumn]="'Type'" *ngIf="showResourceType">
                                     Resource Type
                                     <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                                 </th>
@@ -77,7 +72,7 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush, 
 })
 
-export class ResourceMultiSelectGridComponent extends BaseComponent implements OnInit, OnChanges,ControlValueAccessor  {   
+export class ResourceMultiSelectGridComponent extends BaseComponent implements OnChanges,ControlValueAccessor  {   
     
    @Input("field") field: EditorField;
     @Input() multiple: boolean = true;
@@ -89,7 +84,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     totalRecords: number;
     rowsPerPage: number = 10;
     currentPageNumber: number = 0;
-    sortField: string = undefined;
+    sortField: string;
     sortOrder: SortOrder = SortOrder.None;
     globalfilter: string;
 
@@ -104,12 +99,8 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         super();
     }
 
-    ngOnInit() {
-        
-    }
-
     ngOnChanges(changes: { [propName: string]: SimpleChange} ) {
-        if ((changes["field"].previousValue != undefined) &&
+        if ((changes["field"].previousValue != null) &&
             (changes["field"].currentValue.TypeaheadUri != changes["field"].previousValue.TypeaheadUri)) {
             this.load();
         }
@@ -117,13 +108,13 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     private load() {
         this.isLoading = true;
        
-        this.sortField = this.sortField == undefined ? "" : this.sortField;
-        this.globalfilter = this.globalfilter == undefined ? "" : this.globalfilter;
+        this.sortField = this.sortField == null ? "" : this.sortField;
+        this.globalfilter = this.globalfilter == null ? "" : this.globalfilter;
         
         let url = `${this.field.TypeaheadUri}&pagenum=${this.currentPageNumber}&pagesize=${this.rowsPerPage}&sortdatafield=${this.sortField}&sortorder=${this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Ascending ? "asc" : "desc")}&gbfilter=${this.globalfilter}`;
         
         this.resourceService.getResourceItems(url).
-            subscribe(data => {
+            subscribe((data) => {
                 this.isLoading = false;
                 this.items = data.results;
                 this.totalRecords = data.total;
@@ -143,20 +134,20 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
     handleItemSelection(event) {
         if (this.multiple) {
             this.selectedItems = event;
-            var items = [];
+            let seletions = [];
             for (let item of event) {
-                items.push(item.Value);
+                seletions.push(item.Value);
             }
-            this.value = _.cloneDeep(items);
+            this.value = _.cloneDeep(seletions);
             this.onModelChange(this.value);
         }
         else {
-            var items = [];
-            items.push(event.Value);
+            var selections = [];
+            selections.push(event.Value);
             var sel = [];
             sel.push(event);
             this.selectedItems = sel;
-            this.value = _.cloneDeep(items);
+            this.value = _.cloneDeep(selections);
             this.onModelChange(this.value);
         }
     }
