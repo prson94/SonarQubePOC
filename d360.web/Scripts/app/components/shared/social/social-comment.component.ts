@@ -106,23 +106,24 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     doVote(emojiString: string) {
         let emoji: Emoji = Emoji[emojiString];
 
-        if (this.isLoading == true)
+        if (this.isLoading === true) {
             return;
+        }
 
         this.isLoading = true;
 
         this.socialService.addVote(this.comment.Uid, emoji)
-            .subscribe(res => {
+            .subscribe((res) => {
                 if (res) {
                     this.socialService.getCommentVotes(this.comment.Uid)
-                        .subscribe(v => {
-                            let emojis = this.comment.Emojis.find((e) => e.Emoji == emoji);
-                            let count = v.filter((e) => e.emoji == emoji).length;
+                        .subscribe((v) => {
+                            let emojis = this.comment.Emojis.find((e) => e.Emoji === emoji);
+                            let count = v.filter((e) => e.emoji === emoji).length;
 
                             if (emojis) {
                                 emojis.Count = count;
                             } else {
-                                this.comment.Emojis.push({ Emoji: emoji, Count: count })
+                                this.comment.Emojis.push({ Emoji: emoji, Count: count });
                             }
 
                             this.calculateVotes();
@@ -133,8 +134,8 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     }
 
     private calculateVotes() {
-        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsDown).reduce((prev, curr) => prev + curr.Count, 0);
-        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsUp).reduce((prev, curr) => prev + curr.Count, 0);
+        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsDown).reduce((prev, curr) => prev + curr.Count, 0);
+        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsUp).reduce((prev, curr) => prev + curr.Count, 0);
     }
 
     private deleteCommentClick() {
