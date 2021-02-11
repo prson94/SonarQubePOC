@@ -17,7 +17,6 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
     @Input() screenReferences: CommonScreenReferencesModel;
 
     ngOnChanges(changes: SimpleChanges): void {
-        console.log(this.conditionGroups);
         this.formatConditions();
     }
 
