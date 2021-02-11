@@ -1198,15 +1198,22 @@ for json path";
                                             T.Uid as AssetTypeUid, 
 		                                    T.Name, 
 		                                    T.[Class], 
-		                                    P.Path
+		                                    P.Path,
+                                            RUid.ResponsibilitiesJson
                                         FROM 
                                             IssueTypeRelation R
                                             INNER JOIN AssetType T ON T.ID = R.AssetTypeID
                                             CROSS APPLY dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+                                            OUTER APPLY (select 
+                                                    CONCAT('[""',STRING_AGG(STRING_ESCAPE(cast(ResponsibilityTypeUid as nvarchar(36)),'JSON'), '"",""'),'""]') as ResponsibilitiesJson		                                 
+	                                            from 
+		                                            IssueTypeRelationResponsibility ITRR 
+	                                            where 
+		                                            ITRR.IssueTypeRelationID = R.ID) RUid
                                         WHERE 
                                             R.IssueTypeID = @issueTypeID";
 
-                var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });
+                var allocations = await Company.QueryAsync<IssueTypeAllocationsResponse>(allocationsSQL, new { issueTypeID = issueType.ID });                
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations)));
             }
