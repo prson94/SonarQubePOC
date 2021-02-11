@@ -1,7 +1,10 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
+using d360.core.exceptions;
+using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -32,7 +35,7 @@ namespace d360.model.DataAccessLayer
                 };
         }
 
-        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error)
+        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error, AssetTypeClass? Class = null)
         {
             error = string.Empty;
             List<string> whereStatements = new List<string>();
@@ -51,6 +54,13 @@ namespace d360.model.DataAccessLayer
                 { "lowerthreshold","AL.lowerThreshold" },
                 { "upperthreshold","AL.upperThreshold"}
             };
+
+            if(Class.HasValue)
+            {
+                whereStatements.Add("AT.class = @Class");
+                dbArgs.Add("@Class", Class);
+            }
+           
 
             foreach (var kp in queryParams)
             {
@@ -404,6 +414,196 @@ namespace d360.model.DataAccessLayer
         public List<InternalScoreResultApiResponseModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<InternalScoreResultApiRequestModel> results)
         {
             return companyContext.BulkMetricsImport(results, execution, scoreType);
+        }
+
+        public async Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var evidenceModel = new DataQualityScoreItemEvidenceViewModel { };
+
+            var dbArgs = new DynamicParameters();
+            List<string> whereStatements = new List<string>();
+            var queryFieldOptions = new List<DefaultFilter>
+            {
+                new DefaultFilter("ResultUid", "AR.Uid", SqlFieldType.Guid),
+                new DefaultFilter("OwningAssetUid", "OAN.Uid", SqlFieldType.Guid),
+                new DefaultFilter("OwningAssetPath", "OANKP.KeyPath", SqlFieldType.Text),
+                new DefaultFilter("OwningAssetTypePath", "OANTP.Path", SqlFieldType.Text),
+                new DefaultFilter("OwningAssetDisplayPath", "OANDP.DisplayPath", SqlFieldType.Text),
+
+                new DefaultFilter("EvaluatedAssetUid", "EAN.Uid", SqlFieldType.Guid),
+                new DefaultFilter("EvaluatedAssetPath", "EANKP.KeyPath", SqlFieldType.Text),
+                new DefaultFilter("EvaluatedAssetTypePath", "EANTP.Path", SqlFieldType.Text),
+                new DefaultFilter("EvaluatedAssetDisplayPath", "EANDP.DisplayPath", SqlFieldType.Text),
+
+                new DefaultFilter("EffectiveDate", "AR.EffectiveDate", SqlFieldType.DateTime),
+                new DefaultFilter("RunDate", "AR.RunDate", SqlFieldType.DateTime),
+                new DefaultFilter("TotalCount", "AR.TotalCount", SqlFieldType.Number),
+                new DefaultFilter("PassFraction", "AR.PassFraction", SqlFieldType.Number),
+                new DefaultFilter("PassCount", "AR.PassCount", SqlFieldType.Number),
+                new DefaultFilter("FailCount", "AR.FailCount", SqlFieldType.Number),
+            };
+
+            DynamicParameters advFilterArgs = null;
+            List<string> advFilterStatements = null;
+            companyContext.ParseAdvancedFilterQueryParameter(queryParams, queryFieldOptions, out advFilterArgs, out advFilterStatements);
+            if (advFilterArgs != null && advFilterStatements != null)
+            {
+                dbArgs.AddDynamicParams(advFilterArgs);
+                whereStatements.AddRange(advFilterStatements);
+            }
+
+            DynamicParameters simpleFilterArgs = null;
+            List<string> simpleFilterStatements = null;
+            var simpleWhere = "";
+            companyContext.ParseSimpleFilterQueryParameter(queryParams, queryFieldOptions, out simpleFilterArgs, out simpleFilterStatements);
+            if (simpleFilterArgs.ParameterNames.Count() != 0 && simpleFilterStatements.Count != 0)
+            {
+                dbArgs.AddDynamicParams(simpleFilterArgs);
+
+                simpleWhere = " and ( " + string.Join(" or ", simpleFilterStatements) + ") ";
+            }
+
+            //Add the default query items
+            dbArgs.Add("@scoreItemUid", scoreItemUid);
+            dbArgs.Add("@userId", companyContext.CurrentResourceID);
+            whereStatements.Insert(0, "I.Uid = @scoreItemUid");
+
+            var orderColumn = companyContext.ParseOrderColumn(queryParams, queryFieldOptions, "OANDP.DisplayPath");
+            var orderDirection = companyContext.ParseOrderDirection(queryParams, "desc");
+            var orderBySql = $" order by {orderColumn} {orderDirection} ";
+
+            int pageNum = companyContext.ParsePageNumber(queryParams, 1);
+            int pageSize = companyContext.ParsePageSize(queryParams);
+            string offset = companyContext.ParsePageOffsetSql(pageNum, pageSize);
+
+            evidenceModel.pageNum = pageNum;
+            evidenceModel.pageSize = pageSize;
+
+            var tables = $@"
+from	metrics.ScoreItem I
+		cross apply openjson(I.Evidence) E
+		cross apply (
+			select	count(1) as PathItemCount
+			from	openjson(E.value, N'$.RollupPath')
+		) Pc
+
+		inner join graph.AssetNode OAN on OAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
+		inner join graph.AssetNodeKeyPath OANKP on OANKP.Uid = OAN.Uid
+		inner join graph.AssetNodeDisplayPath OANDP on OANDP.Uid = OAN.Uid
+		cross apply GetAssetTypeTextPathById(OAN.AssetTypeID, ' > ') OANTP
+
+		inner join graph.AssetNode EAN on EAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
+		inner join graph.AssetNodeKeyPath EANKP on EANKP.Uid = EAN.Uid
+		inner join graph.AssetNodeDisplayPath EANDP on EANDP.Uid = EAN.Uid
+		cross apply GetAssetTypeTextPathById(EAN.AssetTypeID, ' > ') EANTP 
+
+		outer apply openjson(E.value, '$.ResultResultUids') R
+		left join AssetResult AR on AR.Uid = R.value
+where   {string.Join(" and ", whereStatements)} {simpleWhere}";
+
+            var sql = $@"
+declare @exists bit = 0,
+        @visible bit = 0,
+        @isDq bit = 0,
+        @total int = 0
+
+select	@exists = cast(iif(count(1) > 0, 1, 0) as bit)
+from	metrics.ScoreItem I
+where	I.Uid = @scoreItemUid
+
+select	@visible = cast(iif(count(1) > 0, 1, 0) as bit)
+from	metrics.ScoreItem I
+		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid
+		inner join metrics.Score S on S.Uid = L.ScoreUid
+		inner join Asset A on A.Uid = S.AssetUid
+where	I.Uid = @scoreItemUid
+
+select	@isDq = cast(iif(count(1) > 0, 1, 0) as bit)
+from	metrics.ScoreItem I
+		inner join metrics.ScoreItemLink L on L.ScoreItemUid = I.Uid
+		inner join metrics.Score S on S.Uid = L.ScoreUid
+		inner join metrics.Allocation A on A.Uid = S.AllocationUid and A.ScoreType = 2
+where	I.Uid = @scoreItemUid;
+
+select	@total = count(1) {tables};
+
+
+select @exists;
+select @visible;
+select @isDq;
+select @total;
+
+if @exists = 1 and @visible = 1
+begin
+    select	(
+			    select 	ERP.PathAssetUid as [Uid],
+					    P.DisplayPath as AssetPath,
+					    TP.Path as AssetTypePath,
+					    case ERP.PathPosition
+						    when 1 then null 
+						    when MP.Position then PR.Inverse
+						    else PR.Name 
+					    end as [Predicate],
+					    ERP.PathPosition as [Position]
+			    from	openjson(E.value, '$.RollupPath') with (
+						    [PathAssetUid] uniqueidentifier '$.Uid',
+						    [PathPosition] int '$.Position'
+					    ) ERP
+					    inner join graph.AssetNodeDisplayPath P on P.Uid = ERP.PathAssetUid
+					    cross apply GetAssetTypeTextPathById(P.AssetTypeID, ' > ') TP
+					    inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
+					    inner join metrics.AssetVersionRollupPath VR on VR.AssetVersionUid = V.Uid
+					    inner join metrics.RollupPathLink PL on PL.RollupPathUid = VR.RollupPathUid and ( (ERP.PathPosition = 1 and ERP.PathPosition = PL.StartPosition) or (ERP.PathPosition > 1 and ERP.PathPosition = PL.EndPosition) )
+					    inner join IntersectType IT on IT.ID = PL.IntersectTypeID
+					    inner join [Predicate] as PR on PR.ID = IT.PredicateID
+					    cross apply (
+						    select	max(P) as [Position]
+						    from	openjson(E.value, '$.RollupPath') with ([P] int '$.Position')
+					    ) MP
+			    order by ERP.PathPosition
+			    for json path
+		    ) as RollupPathJson,
+		    AR.Uid as ResultUid,
+		    OAN.Uid as OwningAssetUid, 
+		    OANKP.KeyPath as OwningAssetPath,
+		    OANTP.Path as OwningAssetTypePath,
+		    OANDP.DisplayPath as OwningAssetDisplayPath,
+		    EAN.Uid as EvaluatedAssetUid, 
+		    EANKP.KeyPath as EvaluatedAssetPath,
+		    EANTP.Path as EvaluatedAssetTypePath,
+		    EANDP.DisplayPath as EvaluatedAssetDisplayPath,
+		    AR.EffectiveDate,
+		    AR.RunDate,
+		    AR.TotalCount,
+		    coalesce(AR.PassFraction, 0) as PassFraction,
+		    AR.PassCount,
+		    AR.FailCount
+     {tables} {orderBySql} {offset} 
+end";
+
+            var evidenceModelRequest = await companyContext.QueryMultipleAsync(sql, dbArgs);
+            var scoreItemExists = evidenceModelRequest.Read<bool>().Single();
+            var canReadAsset = evidenceModelRequest.Read<bool>().Single();
+            var isDq = evidenceModelRequest.Read<bool>().Single();
+            evidenceModel.total = evidenceModelRequest.Read<int>().Single();
+            evidenceModel.items = (scoreItemExists && canReadAsset && isDq) ? 
+                evidenceModelRequest.Read<DataQualityScoreItemEvidenceItemViewModel>().ToList() : 
+                null;
+
+            if (!scoreItemExists)
+            {
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+            }
+            if (!isDq)
+            {
+                throw new StatusCodeException(System.Net.HttpStatusCode.Conflict);
+            }
+            if (!canReadAsset) 
+            {
+                throw new StatusCodeException(System.Net.HttpStatusCode.Forbidden);
+            }
+
+            return evidenceModel;
         }
     }
 }

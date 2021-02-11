@@ -461,7 +461,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerConsumes("application/json"), 
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by eventDate.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to include the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -840,14 +840,14 @@ namespace d360.web.Controllers.V2
 		                    GR.resourceid,
 		                    Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END as Permissionsfound 
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END as Permissionsfound 
 		                    from #AssetTypesWithResponsibilities AT
 			                    outer apply (Select * from UserAssetPermissions(GR.ResourceID,AT.AssetTypeID)) permission 
 			                    where 1 = Case 
 		                                                       when permission.PermissionsBitMask is null then gr.IsAdministrator
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 2 = 2 then 1
-		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & 4 = 4 then 1 END
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pm = @pm then 1
+		                                                       when permission.PermissionsBitMask is not null and permission.PermissionsBitMask & @pd = @pd then 1 END
 
                     )   
                     and gr.Email not like '%@infogix.com' 
@@ -856,7 +856,7 @@ namespace d360.web.Controllers.V2
                     and gr.IsAdministrator = 0
                 ";
               
-                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql).ConfigureAwait(false);
+                var contibutorCount = await Company.QueryFirstOrDefaultAsync<int>(contributorSql, new { pm = (int)Permission.ModifyAsset, pd = (int)Permission.DeleteAsset }).ConfigureAwait(false);
                 var model = new { assets = new { count = allAssets }, users = new { total = allusers, contributors = (contibutorCount + allAdminUsers), administrators = allAdminUsers } };
 
 

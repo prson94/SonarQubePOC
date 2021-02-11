@@ -396,7 +396,7 @@ namespace d360.model.helpers
 
     public enum SqlFieldType
     {
-        Text, Boolean, Number, Decimal, Date, DateTime
+        Text, Boolean, Number, Decimal, Date, DateTime, Guid
     }
 
     public class DefaultFilter

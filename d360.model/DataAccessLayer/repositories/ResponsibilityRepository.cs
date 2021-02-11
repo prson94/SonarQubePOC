@@ -239,8 +239,9 @@ namespace d360.model.DataAccessLayer
 
             if (!Company.CurrentResourceIsAdmin)
             {
-                permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & 64 = 64 and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
+                permissionsCriteria = $" and exists(select 1 from UserAssetPermissions(@r,a.AssetTypeID) u where u.PermissionsBitMask & @p = @p and (u.AssetID = a.ID or (u.AssetID = 0 and u.AssetTypeID = a.AssetTypeID)))";
                 dbArgs.Add("r", Company.CurrentResourceID);
+                dbArgs.Add("p", (int)Permission.ReadResponsibilities);
             }
 
             var sql = $@"select 

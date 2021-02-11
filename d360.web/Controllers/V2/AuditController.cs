@@ -21,6 +21,7 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.model.helpers;
 using d360.core.enums;
+using d360.core.exceptions;
 
 namespace d360.web.Controllers.V2
 {
@@ -64,11 +65,11 @@ namespace d360.web.Controllers.V2
             SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200. Maximum is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", PAGE_SIZE_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by Date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_filter", "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false)
         ]
         public async Task<IHttpActionResult> GetAuditAsync(Guid assetUid)
         {
@@ -81,11 +82,8 @@ namespace d360.web.Controllers.V2
                 int pageSizeLimit = isStreamResponse ? 200000 : 250;
 
                 var orderBySql = "";
-                var orderDirection = "desc";
                 var dbArgs = new DynamicParameters();
                 List<string> whereStatements = new List<string>();
-                int pageNum = 1;
-                int pageSize = 200;
 
                 string isValid = IsPageSizeAndNumValid(queryParams, pageSizeLimit);
                 if (!string.IsNullOrEmpty(isValid))
@@ -93,68 +91,38 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
 
-                if (queryParams.Any(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase)))
-                {
-                    string[] allowedDirections = new string[] { "asc", "desc" };
-                    string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase)).Value;
-
-                    if(allowedDirections.Contains(order.Trim().ToLower()))
-                        orderDirection = order;
-                    else
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid direction by passed in the request"));
-                }
-
                 List<DefaultFilter> fieldList = new List<DefaultFilter>
-            {
-                new DefaultFilter("uid", "A.uid", SqlFieldType.Text),
-                new DefaultFilter("name", "A.name", SqlFieldType.Text),
-                new DefaultFilter("resourceUid", "A.resourceUid", SqlFieldType.Text),
-                new DefaultFilter("resourceName", "A.resourceName", SqlFieldType.Text),
-                new DefaultFilter("date", "A.date", SqlFieldType.DateTime),
-                new DefaultFilter("action", "A.action", SqlFieldType.Text),
-                new DefaultFilter("actionAssetUid", "A.actionAssetUid", SqlFieldType.Text),
-                new DefaultFilter("actionAssetTypeUid", "A.actionAssetTypeUid", SqlFieldType.Text),
-                new DefaultFilter("actionObject", "A.actionObject", SqlFieldType.Text),
-                new DefaultFilter("actionObjectTypeName", "A.actionObjectTypeName", SqlFieldType.Text),
-                new DefaultFilter("actionObjectName", "A.actionObjectName", SqlFieldType.Text),
-                new DefaultFilter("actionDescription", "A.actionDescription", SqlFieldType.Text),
-                new DefaultFilter("field", "A.field", SqlFieldType.Text),
-                new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
-                new DefaultFilter("class", "A.class", SqlFieldType.Number),
-                new DefaultFilter("version", "A.version", SqlFieldType.Number),
-                new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
-            };
-
-                if (queryParams.Any(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)))
                 {
-                    var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                    if (!fieldList.Any(i => i.ApiName.Equals(orderByCol, StringComparison.OrdinalIgnoreCase)))
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request"));
+                    new DefaultFilter("uid", "A.uid", SqlFieldType.Guid),
+                    new DefaultFilter("name", "A.name", SqlFieldType.Text),
+                    new DefaultFilter("resourceUid", "A.resourceUid", SqlFieldType.Guid),
+                    new DefaultFilter("resourceName", "A.resourceName", SqlFieldType.Text),
+                    new DefaultFilter("date", "A.date", SqlFieldType.DateTime),
+                    new DefaultFilter("action", "A.action", SqlFieldType.Text),
+                    new DefaultFilter("actionAssetUid", "A.actionAssetUid", SqlFieldType.Guid),
+                    new DefaultFilter("actionAssetTypeUid", "A.actionAssetTypeUid", SqlFieldType.Guid),
+                    new DefaultFilter("actionObject", "A.actionObject", SqlFieldType.Text),
+                    new DefaultFilter("actionObjectTypeName", "A.actionObjectTypeName", SqlFieldType.Text),
+                    new DefaultFilter("actionObjectName", "A.actionObjectName", SqlFieldType.Text),
+                    new DefaultFilter("actionDescription", "A.actionDescription", SqlFieldType.Text),
+                    new DefaultFilter("field", "A.field", SqlFieldType.Text),
+                    new DefaultFilter("newValue", "A.newValue", SqlFieldType.Text),
+                    new DefaultFilter("class", "A.class", SqlFieldType.Number),
+                    new DefaultFilter("version", "A.version", SqlFieldType.Number),
+                    new DefaultFilter("previousValue", "A.previousValue", SqlFieldType.Text)
+                };
 
-                    orderBySql = $" order by {orderByCol} {orderDirection} ";
+                var orderColumn = Company.ParseOrderColumn(queryParams, fieldList, "Date");
+                var orderDirection = Company.ParseOrderDirection(queryParams, "desc");
+                orderBySql = $" order by {orderColumn} {orderDirection} ";
 
-                }
-                else
+                DynamicParameters advFilterArgs = null;
+                List<string> advFilterStatements = null;
+                Company.ParseAdvancedFilterQueryParameter(queryParams, fieldList, out advFilterArgs, out advFilterStatements);
+                if (advFilterArgs != null && advFilterStatements != null)
                 {
-                    orderBySql = $" order by Date {orderDirection} ";
-                }
-
-                if (queryParams.Any(x => x.Key.Equals("_filter", StringComparison.OrdinalIgnoreCase)))
-                {
-                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false);
-                        filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
-                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                        List<int> filteredFields = new List<int>();
-                        whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
-
-                        foreach (var item in sqlParams)
-                        {
-                            dbArgs.Add(item.Key, item.Value);
-                        }
-                    }
+                    dbArgs.AddDynamicParams(advFilterArgs);
+                    whereStatements.AddRange(advFilterStatements);
                 }
 
                 bool isAssetType = false;
@@ -180,23 +148,9 @@ namespace d360.web.Controllers.V2
                 if (whereStatements.Any())
                     whereSql = $" where {string.Join(" and ", whereStatements)}";
 
-                string offsetSql = "";
-                if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
-                    if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
-                        if (pageNum < 1) pageNum = 1;
-
-                if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
-                    if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
-                        if (pageSize < 1) pageSize = 1;
-
-                if (pageSize > 0 || pageNum > 0)
-                {
-                    if (pageSize < 1) pageSize = 1;
-                    if (pageNum < 1) pageNum = 1;
-                    if (pageSize > pageSizeLimit) pageSize = pageSizeLimit;
-                    if (pageNum > 10000) pageNum = 10000;
-                    offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
-                }
+                int pageNum = Company.ParsePageNumber(queryParams, 1);
+                int pageSize = Company.ParsePageSize(queryParams);
+                string offsetSql = Company.ParsePageOffsetSql(pageNum, pageSize);
 
                 var countSql = string.Format(@"select count(1) from ({0}) A {1}", baseSql, whereSql);
                 var sql = string.Format(@"select * from ({0}) A {1}", baseSql, whereSql);
@@ -230,11 +184,13 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+                var messages = new List<StatusCodeErrorMessage>();
+                return DetermineUnhandledException(
+                    ex,
+                    "Error retrieving audit records",
+                    messages,
+                    new Dictionary<string, string> { { "Method Name", prefix } }
+                );
             }
         }
 
@@ -445,12 +401,12 @@ namespace d360.web.Controllers.V2
 
         private string getBaseAuditQueryForId(SystemObjects type, bool auditingByType = false)
         {
-            string querySql = @"select
+            string querySql = $@"select
                 ga.*,
-                CASE WHEN R.State = 1 THEN
-                    R.FirstName + ' ' + R.LastName
-                ELSE
+                CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
                     R.FirstName + ' ' + R.LastName + ' (deleted)'
+                ELSE
+                    R.FirstName + ' ' + R.LastName
                 END as ResourceName,
                 fa.FieldName as Field, 
 			    CASE WHEN ga.Action = 'Tag Consolidate' THEN
@@ -496,13 +452,13 @@ namespace d360.web.Controllers.V2
             if (type.ToString() == "FusionType")
             {
                 //Gets the Fusion audit for the fusion type
-                querySql += @" UNION 
+                querySql += $@" UNION 
                         select 	                            
                         ga.*,
-                        case when R.State = 1 then
-                            R.FirstName + ' ' + R.LastName
-                        else
+                        case when R.State = {(int)CompanyResourceState.Deleted} then
                             R.FirstName + ' ' + R.LastName + ' (deleted)'
+                        else
+                            R.FirstName + ' ' + R.LastName
                         end as ResourceName, 
                             fa.FieldName as Field, 
                             fa.Value as NewValue, 
@@ -525,13 +481,13 @@ namespace d360.web.Controllers.V2
 
             if (type == SystemObjects.ReferenceItemType)
             {
-                querySql += @" UNION
+                querySql += $@" UNION
                     select 	                            
                     ga.*,
-                    case when R.State = 1 then
-                        R.FirstName + ' ' + R.LastName
-                    else
+                    case when R.State = {(int)CompanyResourceState.Deleted} then
                         R.FirstName + ' ' + R.LastName + ' (deleted)'
+                    else
+                        R.FirstName + ' ' + R.LastName
                     end as ResourceName,
                         fa.FieldName as Field, 
                         fa.Value as NewValue, 
@@ -569,14 +525,14 @@ namespace d360.web.Controllers.V2
         {
             //This query should generally match the one in GetBaseAuditQueryForId except UID columns are returned instead of Object/id same
 
-            string querySql = @"select
+            string querySql = $@"select
 	            ad.uid,
 	            ad.DisplayValue as name,
 	            r.uid as resourceUid,
-	            CASE WHEN R.State = 1 THEN
-		            R.FirstName + ' ' + R.LastName
-	            ELSE
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
 		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
 	            END as resourceName,
 	            ga.Date as date,
 	            ga.action,
@@ -633,14 +589,14 @@ namespace d360.web.Controllers.V2
 
         private string GetBaseAuditQueryForAssetTypeUid(bool includeReferenceItem)
         {
-            string querySql = @"select
+            string querySql = $@"select
 	            at.uid,
 	            at.Name as name,
 	            r.uid as resourceUid,
-	            CASE WHEN R.State = 1 THEN
-		            R.FirstName + ' ' + R.LastName
-	            ELSE
+	            CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
 		            R.FirstName + ' ' + R.LastName + ' (deleted)'
+	            ELSE
+		            R.FirstName + ' ' + R.LastName
 	            END as resourceName,
 	            ga.Date as date,
 	            ga.action,
@@ -680,14 +636,14 @@ namespace d360.web.Controllers.V2
 
             if(includeReferenceItem)
             {
-                querySql += @" UNION select
+                querySql += $@" UNION select
                     ad.uid,
 	                ad.DisplayValue as name,
 	                r.uid as resourceUid,
-	                CASE WHEN R.State = 1 THEN
-                        R.FirstName + ' ' + R.LastName
-                    ELSE
+	                CASE WHEN R.State = {(int)CompanyResourceState.Deleted} THEN
                         R.FirstName + ' ' + R.LastName + ' (deleted)'
+                    ELSE
+                        R.FirstName + ' ' + R.LastName
                     END as resourceName,
 	                ga.Date as date,
 	                ga.action,

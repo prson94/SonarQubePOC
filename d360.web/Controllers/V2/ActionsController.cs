@@ -34,14 +34,16 @@ namespace d360.web.Controllers.V2
     ]
     public class ActionsController : BaseV2ApiController
     {
-        IIssueRepository issueRepository;
         IAssetRepository assetRepository;
+        ICommentRepository commentRepository;
+        IIssueRepository issueRepository;
 
-        public ActionsController(ICommunityContext community, ICompanyContext company, IIssueRepository repository, IAssetRepository assetRepository)
+        public ActionsController(ICommunityContext community, ICompanyContext company, ICommentRepository comments, IIssueRepository issues, IAssetRepository assets)
             : base(community, company)
         {
-            this.issueRepository = repository;
-            this.assetRepository = assetRepository;
+            assetRepository = assets;
+            commentRepository = comments;
+            issueRepository = issues;
         }
 
         /// <summary>
@@ -672,6 +674,25 @@ for json path";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"A valid actionTypeUid must be provided."));
             }
 
+
+            var queryParams = Request.GetQueryNameValuePairs();
+            bool IsFromUI = false;
+
+            if ((queryParams.Any(p => p.Key.Trim().ToLower() == "_requestfromui")))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_requestfromui");
+
+                if (!bool.TryParse(val.Value, out _))
+                {
+                    IsFromUI = false;
+                }
+                else
+                {
+                    IsFromUI = true;
+                }
+
+            }
+
             var issueType = Company.IssueTypes.FirstOrDefault(i => i.uid == actionTypeUid);
 
             if (issueType == null)
@@ -679,7 +700,14 @@ for json path";
 
             if (!model.cascade && (Company.Issues.Any(x => x.IssueTypeID == issueType.ID)))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions and allocations. Enable on cascade request to delete."));
+                if (IsFromUI)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The selected action type ({issueType.Name}) has associated actions, and therefore cannot be deleted."));
+                }
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Action Type has associated actions. Enable on cascade request to delete."));
+                }
             }
 
             var deleteSQL = $@" DELETE FROM IssueTypeRelation Where IssueTypeID = @issueTypeId
@@ -741,22 +769,19 @@ for json path";
 
                 if (isWriteActionDescriptionEnabled)
                 {
-                    var relations = new List<CommentRelation>();
-                    var comment = new Comment();
+                    var resourceAsset = assetRepository.GetAssetByObjectId(SystemObjects.Resource.ToString(), Company.CurrentResourceID);
+                    var actionAsset = assetRepository.GetAssetByObjectId(issueModel.Issue.Object, issueModel.Issue.ObjectID);
 
-                    relations.Add(new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow });
-
-                    comment.OwnerObjectType = SystemObjects.Resource.ToString();
-                    comment.OwnerObjectID = Company.CurrentResourceID;
-                    comment.CommentTypeID = CommentType.Issue;
-                    comment.Body = issueModel.Comment ?? $"New {issueType.Name} Raised.";
-
-                    //add relation to current artifact
-                    relations.Add(new CommentRelation { ObjectType = issueModel.Issue.Object, ObjectID = issueModel.Issue.ObjectID, Date = DateTime.UtcNow });
-
-                    var dtl = Company.AddComment(comment, relations).FirstOrDefault(i => i.ID == comment.ID);
-
-                    issueModel.Issue.CommentID = dtl.ID;
+                    if (actionAsset != null && resourceAsset != null) 
+                    {
+                         var comment = new CommentApiPostModel { 
+                            AssetUid = resourceAsset.uid,
+                            Body = issueModel.Comment ?? $"New {issueType.Name} Raised.",
+                            Tags = new List<Guid> { actionAsset.uid }       // Add relation to current artifact
+                         };
+                        var dtl = await commentRepository.AddComment(comment);
+                        issueModel.Issue.CommentID = dtl.ID;
+                    }
                 }
 
                 var insertSQL = $@"INSERT INTO [dbo].[Issue]

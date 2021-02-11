@@ -422,7 +422,7 @@ namespace d360.web.Controllers.V2
            SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-           SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+           SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
        ]
         public async Task<HttpResponseMessage> GetMembers(Guid groupUid)
         {
@@ -1188,7 +1188,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
      Route("organizations/{organizationTypeUid:Guid}"),
      SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
      SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-     SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+     SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
      SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
      SwaggerParameter("_filter", "The filter expression used to filter organisations by name and accepted users email. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
@@ -1534,6 +1534,83 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             bool success = Company.UpdateFollowStatus((SystemObjects)Enum.Parse(typeof(SystemObjects), type), id, null, includeChildren);            
 
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
+        }
+
+
+
+        /// <summary>
+        /// Checks the watch status of an Asset for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        /// <param name="assetUid">Uid of the asset</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}/{assetUid:Guid}"),            
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAsset(Guid assetTypeUid, Guid? assetUid)
+        {            
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, assetUid));
+        }
+
+        /// <summary>
+        /// Checks the watch status of an Asset Type for the requesting user.
+        /// </summary>
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        [
+            HttpGet,
+            Route("users/me/watches/{assetTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetWatchStatusOfAssetType(Guid assetTypeUid)
+        {
+            return await Task.FromResult(GetWatchStatusForUser(assetTypeUid, null));
+        }
+
+        private IHttpActionResult GetWatchStatusForUser(Guid assetTypeUid, Guid? assetUid)
+        {
+            bool response = false;
+
+            if ((assetTypeUid == Guid.Empty) || !Company.Any<AssetType>(x => x.uid == assetTypeUid))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetTypeUid provided.");
+            }
+
+            var assetType = assetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetUid != null)
+            {
+
+                if ((assetUid.Value == Guid.Empty) || !Company.Any<Asset>(x => x.uid == assetUid.Value))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid provided.");
+                }
+                else
+                {
+                    var asset = Company.Filter<AssetDetail>(x => x.uid == assetUid.Value).FirstOrDefault();
+
+                    if (asset.AssetTypeUid != assetTypeUid)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid assetUid does not match the asset type provided.");
+                    }
+
+                    response = Company.Any<Follow>(F => F.ObjectID == asset.ObjectID && F.ObjectType == asset.Object && F.ResourceID == Company.CurrentResourceID);
+                }
+
+            }
+            
+            if(!response)
+            {
+                response = Company.Any<Follow>(F => F.ObjectID == assetType.ObjectID && F.ObjectType == assetType.Object && F.ResourceID == Company.CurrentResourceID);
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
         }
     }
 }

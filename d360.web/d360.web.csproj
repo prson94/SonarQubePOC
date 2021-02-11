@@ -375,6 +375,7 @@
     <Compile Include="Controllers\Forms\FormController_Hierarchy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\CommentsController.cs" />
     <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
@@ -649,7 +650,9 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
     <Content Include="Content\primeng\v11.1.0\default.css" />
-    <Content Include="Content\primeng\v11.1.0\default.min.css" />
+    <Content Include="Content\primeng\v11.1.0\default.min.css">
+      <DependentUpon>default.css</DependentUpon>
+    </Content>
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.svg" />
     <Content Include="Content\primeng\v11.1.0\images\color.png" />
     <Content Include="Content\primeng\v11.1.0\images\hue.png" />
@@ -659,7 +662,9 @@
     <Content Include="Content\primeng\v11.1.0\primeng.css" />
     <Content Include="Content\primeng\v11.1.0\primeng.min.css" />
     <Content Include="Content\primeng\v11.1.0\theme.css" />
-    <Content Include="Content\primeng\v11.1.0\theme.min.css" />
+    <Content Include="Content\primeng\v11.1.0\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
     <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\quill\v1.3.7\quill.snow.min.css" />
@@ -805,6 +810,7 @@
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\search\search.component.html" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\browser-warning\browser-warning.component.html" />
@@ -828,6 +834,7 @@
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v11.1.0\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.less" />
     <None Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.less" />
     <Content Include="Scripts\app\components\shared\controls\date\date.html" />
     <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
@@ -897,6 +904,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\synonyms.tile.html" />
+    <Content Include="Scripts\app\components\shared\social\social-board.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\shared\where-used\where-used.component.html" />
@@ -997,6 +1005,7 @@
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\asset-path-widget\asset-path-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-session.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\measure-rule-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\calculation\score-calculation.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\definition\score-definition.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asset-score\history\score-history.module.ts" />
@@ -1040,6 +1049,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dayofweek-input\dayofweek-input.component.ts" />
+    <Content Include="Scripts\app\components\shared\social\social-comment.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\app\components\workflow\workflow-view-details.component.html" />
     <Content Include="Scripts\dist\*.js" />

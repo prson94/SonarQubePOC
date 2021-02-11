@@ -140,13 +140,14 @@ export class WorkflowService extends BaseObservableService {
     deleteWorkflowIssueType(actionTypeUid: string): Observable<ApiResult & ErrorResponse> {
 
         var model = { cascade: false };
+        var queryString = '?_RequestfromUI=true';
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: model
         };
 
-        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}`, httpHeaders)
+        return this.http.delete(`/api/v2/actions/type/${actionTypeUid}` + queryString, httpHeaders)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))
@@ -223,9 +224,9 @@ export class WorkflowService extends BaseObservableService {
             );
     }
  
-    reassignUser(itemStepId: number, resourceId: number): Observable<JsonResult> {
+    reassignUser(itemStepId: number, resourceId: number, clearAssignents: boolean): Observable<JsonResult> {
         return this.http
-            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}`, null)
+            .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err=>this.handleError(err))

@@ -1,0 +1,14 @@
+﻿<div class="row">
+    <div class="col s12">
+        <header>{{socialMessage}}</header>
+        <d3s-social-input (commented)="addComment($event);" *ngIf="allowComments()"></d3s-social-input>
+        <d3s-loading [isLoading]="isLoading" showTransparentLoader="true"></d3s-loading>
+        <div *ngFor="let comment of comments">
+            <d3s-social-comment [comment]="comment" (delete)="deleteComment($event);" [isAdmin]="isAdmin" (reply)="replyToComment($event);" (edit)="editComment($event);"></d3s-social-comment>
+        </div>
+        <div style="margin-top:10px;">
+            <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
+            <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
+        </div>
+    </div>
+</div>

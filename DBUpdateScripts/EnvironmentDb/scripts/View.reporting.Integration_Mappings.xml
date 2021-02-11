@@ -5,12 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Integration_Mappings-v1">
-    <sql dbms="mssql"
+  <changeSet author="Puneet Gupta" id="View.reporting.Integration_Mappings-drop-v2">
+  <comment>GOV-13659</comment>
+  <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+			drop view if exists [reporting].[Integration_Mappings]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER VIEW [reporting].[Integration_Mappings] AS
 	select	case SE.IntegrationSystem
 				when 1 then 'IGC'
@@ -68,11 +74,6 @@ CREATE OR ALTER VIEW [reporting].[Integration_Mappings] AS
 					inner join ResponsibilityType RT on RT.ID = F.ResponsibilityTypeID
 			) O 
 			inner join [integration].Setting SE on SE.ID = O.IntegrationSettingID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

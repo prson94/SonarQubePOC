@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
@@ -12,6 +13,7 @@ namespace d360.model.DataAccessLayer
 {
     public interface IAssetRepository
     {
+        Asset GetAssetByObjectId(string obj, int objId);
         Asset GetAssetByUID(Guid assetUid);
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
@@ -59,5 +61,6 @@ namespace d360.model.DataAccessLayer
         Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids);
         Task<List<AssetTypeExportTemplate>> GetExportTemplates(Guid assetTypeUid = default(Guid), Guid exportTemplateUID = default(Guid));
         Task<AssetWatchers> GetAssetWatchers(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<WatchedAssetTypeDetailModel> GetWatchedAssetDetails(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

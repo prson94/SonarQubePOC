@@ -110,6 +110,14 @@ namespace d360.model.validators
                     }
                 }
 
+                if (actionTypeIdentifierInfoModel != null)
+                {
+                    if (field.Type.IsPartOfKey())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Action Types cannot have field property 'IsPartOfKey' set to true.");
+                    }
+                }
+
                 if (field.Type.Path != null)
                 {
                     if (actionTypeIdentifierInfoModel != null)
@@ -163,9 +171,12 @@ namespace d360.model.validators
                 #endregion
 
                 #region isPartOfKey
-                if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString())
+                if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel != null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a key fields defined!");
+                    if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a key fields defined!");
+                    }
                 }
 
                 #endregion

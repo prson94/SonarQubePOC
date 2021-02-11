@@ -154,4 +154,25 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.reporting.Global_Resource-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE NONCLUSTERED INDEX [IX_ReportingGlobalResource_Uid] ON [reporting].[Global_Resource] ( [Uid] ASC )
+		]]>
+    </sql>
+	<rollback>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
+		]]>
+    </sql>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

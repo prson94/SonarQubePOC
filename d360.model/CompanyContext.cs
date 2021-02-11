@@ -27,6 +27,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using d360.core.entities.Metric;
+using d360.model.helpers;
 
 namespace d360.model
 {
@@ -114,6 +115,8 @@ namespace d360.model
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
+
+        public DbSet<CommentVote> CommentVotes { get; set; }
 
         public DbSet<ContractAcceptance> ContractAcceptance { get; set; }
 
@@ -1494,262 +1497,6 @@ where	I.ID is null";
 
         #region Social
 
-        public IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations)
-        {
-            var now = DateTime.UtcNow;
-            if (relations == null)
-            {
-                relations = new List<CommentRelation>();
-            }
-
-            var removeRelations = Filter<CommentRelation>(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID)).ToList();
-
-            foreach (var r in removeRelations)
-            {
-                if (!relations.ToList().Contains(r))
-                {
-                    Set<CommentRelation>().Remove(r);
-                }
-            }
-
-            foreach (var r in relations)
-            {
-                try
-                {
-                    r.Date = now;
-                    if (r.CommentID == 0) r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
-                    Set<CommentRelation>().Add(r);
-                    SaveChanges();
-                }
-                catch
-                {
-                    Set<CommentRelation>().Remove(r);
-                }
-            }
-
-
-            Comment c = GetById<Comment>(comment.ID);
-            var hasReplies = Any<Comment>(x => x.ParentID == c.ID);
-            if (((c.Body != comment.Body || removeRelations.Count() + 1 != relations.Count()) && !hasReplies) || (c.IsDeleted != comment.IsDeleted && (!hasReplies || CurrentResourceIsAdmin)))
-            {
-                c.IsDeleted = comment.IsDeleted;
-                c.Body = comment.Body;
-                c.DateEdited = comment.DateEdited;
-                SaveChanges();
-            }
-
-            var coms = GetCommentDetail(comment.ID).ToList();
-
-            return coms.AsQueryable();
-
-        }
-
-        public IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations)
-        {
-
-            comment.DateCreated = DateTime.UtcNow;
-            comment.CreatingResourceID = CurrentResourceID;
-            SaveOrUpdate<Comment>(comment);
-
-            foreach (var r in relations)
-            {
-                try
-                {
-                    r.Date = comment.DateCreated;
-                    if (r.CommentID == 0)
-                    {
-                        r.CommentID = comment.ID; //If comment ID is not 0, then a parent comment ID has already been assigned.
-                    }
-                    Set<CommentRelation>().Add(r);
-                    SaveChanges();
-                }
-                catch
-                {
-                    Set<CommentRelation>().Remove(r);
-                }
-            }
-
-
-            return GetCommentDetail(comment.ID);
-        }
-
-        public IQueryable<CommentDetail> GetCommentDetail(int id)
-        {
-            var comments = (
-                    from c in Database.SqlQuery<CommentDetail>("GetCommentDetailByID @id", new SqlParameter("id", id)).ToList()
-                    join r in Community.Resources on c.CreatingResourceID equals r.ID
-                    select new CommentDetail
-                    {
-                        Body = c.Body,
-                        Comments = c.Comments,
-                        CommentTypeID = c.CommentTypeID,
-                        CreatingResourceID = c.CreatingResourceID,
-                        DateCreated = c.DateCreated,
-                        ID = c.ID,
-                        ObjectID = c.ObjectID,
-                        ObjectName = c.ObjectName,
-                        ObjectType = c.ObjectType,
-                        ObjectUrl = c.ObjectUrl,
-                        ParentID = c.ParentID,
-                        ResourceEmail = r.Email,
-                        ResourceName = r.FormatDisplayName(),
-                        TagsXml = c.TagsXml,
-                        VotesXml = c.VotesXml,
-                        CreatorIsOwner = c.CreatorIsOwner,
-                        DateEdited = c.DateEdited,
-                        IsDeleted = c.IsDeleted,
-                        IsEditable = (CurrentResourceID == c.CreatingResourceID
-                            && (!Any<Comment>(re => re.ParentID == c.ID))
-                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)),
-                        IsDeletable = (CurrentResourceIsAdmin || (CurrentResourceID == c.CreatingResourceID
-                            && (!Any<Comment>(re => re.ParentID == c.ID))
-                            && DateTime.UtcNow.Subtract(c.DateCreated).Duration() < TimeSpan.FromMinutes(5)))
-                    }
-                   );
-
-            return comments.AsQueryable();
-        }
-
-        public IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
-        {
-
-            DateTime dateStart;
-            DateTime dateEnd = DateTime.UtcNow;
-            if (daysToGet == 0)
-            {
-                dateStart = new DateTime(2000, 1, 1);
-            }
-            else
-            {
-                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
-            }
-
-            if (searchPhrase == null)
-                searchPhrase = "";
-
-            var comments =
-                Query<CommentDetail>("GetCommentDetailsByFollower @resourceID, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
-                new
-                {
-                    resourceID = resourceID,
-                    skip = skip,
-                    take = take,
-                    dateStart = dateStart,
-                    dateEnd = dateEnd,
-                    commentTypeID = commentType,
-                    searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
-                });
-
-            foreach (CommentDetail cd in comments)
-            {
-                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Any<Comment>(c => c.ParentID == cd.ID)
-                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
-                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
-
-            }
-
-            return comments.AsQueryable();
-
-        }
-
-        public IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "")
-        {
-            DateTime dateStart;
-            DateTime dateEnd = DateTime.UtcNow;
-            if (daysToGet == 0)
-            {
-                dateStart = new DateTime(2000, 1, 1);
-            }
-            else
-            {
-                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
-            }
-            return Query<CommentCount>("GetCommentCountByFollower @resourceID, @dateStart, @dateEnd, @searchPhrase", new { resourceID, dateStart, dateEnd, searchPhrase }).AsQueryable();
-        }
-
-        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "")
-        {
-            DateTime dateStart;
-            DateTime dateEnd = DateTime.UtcNow;
-            if (daysToGet == 0)
-            {
-                dateStart = new DateTime(2000, 1, 1);
-            }
-            else
-            {
-                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
-            }
-            return Query<CommentCount>("GetCommentCountByType @type, @id, @dateStart, @dateEnd, @searchPhrase", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, dateStart, dateEnd, searchPhrase }).AsQueryable();
-        }
-
-        public IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote)
-        {
-            return Query<CommentVote>("VoteComment @CommentID, @ResourceID, @Vote", new { CommentID, ResourceID, Vote }).AsQueryable();
-        }
-
-        public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
-        {
-
-            DateTime dateStart;
-            DateTime dateEnd = DateTime.UtcNow;
-            if (daysToGet == 0)
-            {
-                dateStart = new DateTime(2000, 1, 1);
-            }
-            else
-            {
-                dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
-            }
-
-            if (searchPhrase == null)
-                searchPhrase = "";
-
-            var comments =
-                Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
-                new
-                {
-                    type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
-                    id = id,
-                    skip = skip,
-                    take = take,
-                    dateStart = dateStart,
-                    dateEnd = dateEnd,
-                    commentTypeID = commentType,
-                    searchPhrase = searchPhrase.Replace("'", "''").Replace("--", "")
-                }).ToList();
-            foreach (CommentDetail cd in comments)
-            {
-                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Any<Comment>(c => c.ParentID == cd.ID)
-                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
-                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
-
-            }
-
-            return comments.AsQueryable();
-        }
-
-        public IQueryable<CommentDetail> GetCommentDetailsByID(int id)
-        {
-            var comments =
-                Query<CommentDetail>("GetCommentDetailByID @id",
-                new
-                {
-                    id = id
-                });
-            foreach (CommentDetail cd in comments)
-            {
-                cd.IsEditable = (CurrentResourceID == cd.CreatingResourceID
-                        && !Any<Comment>(c => c.ParentID == cd.ID)
-                        && DateTime.UtcNow.Subtract(cd.DateCreated).Duration() < TimeSpan.FromMinutes(5));
-                cd.IsDeletable = (CurrentResourceIsAdmin || cd.IsEditable.Value);
-
-            }
-
-            return comments.AsQueryable();
-        }
-
         /// <summary>
         /// Get a list of those following the current object.
         /// </summary>
@@ -2702,9 +2449,13 @@ select @err";
             {
                 case "Rule":
                     if (ruleMeansEvent)
+                    {
                         type = "Event";
+                    }
                     else
+                    {
                         fieldTypeRelationType += "Type";
+                    }
                     break;
                 default:
                     fieldTypeRelationType += "Type";
@@ -2714,12 +2465,18 @@ select @err";
             if (fields == null)
             {
                 if (listableOnly)
+                {
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+                }
                 else
+                {
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
+                }
 
                 if (includeKeyColumnOnly)
-                    fields = fields.Where(x => x.IsPartOfKey == true).ToList();
+                { 
+                    fields = fields.Where(x => x.IsPartOfKey == true).ToList(); 
+                }
             }
 
             var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
@@ -2748,14 +2505,23 @@ select @err";
                             var tableName = relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
 
-                            if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                            if (includeIdColumn)
+                            {
+                                columns += $"{name}_T.ID as [{name}ID], ";
+                            }
 
                             if (isReferenceItemType || isFusionAttributeType)
+                            {
                                 columns += $"{name}_OT.Name";
+                            }
                             else if (isTaxonomyType || isPolicyType)
+                            {
                                 columns += $"{name}_OTT.TextPath";
+                            }
                             else
+                            {
                                 columns += $"{name}_OTD.DisplayValue";
+                            }
 
                             columns += $" as [{(useFriendlyName ? friendlyName : name)}],";
 
@@ -2807,7 +2573,10 @@ select @err";
                                     var jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
                                     var sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
 
-                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    if (includeIdColumn)
+                                    {
+                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                    }
                                     columns += $"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                                     joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
@@ -2820,7 +2589,10 @@ select @err";
                                 }
                                 else
                                 {
-                                    if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
+                                    if (includeIdColumn)
+                                    {
+                                        columns += $"{name}_T.ID as [{name}ID], ";
+                                    }
                                     columns += $"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
 
                                     joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
@@ -2836,7 +2608,10 @@ select @err";
                 }
                 else if (f.Type == DataType.Decimal.ToString())
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn) 
+                    { 
+                        columns += $"{name}_T.Value as [{name}ID], "; 
+                    }
                     columns += $@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
@@ -2848,7 +2623,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else if (f.Type == DataType.Number.ToString())
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
                     columns += $@"case     
     when {name}_T.FormattedValue is not null then try_cast({name}_T.FormattedValue as bigint)
     when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
@@ -2885,7 +2663,11 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                     string assetIdPath = "A.Id";
 
 
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
+
                     columns += $@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
@@ -2914,7 +2696,10 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
                 else
                 {
-                    if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
+                    if (includeIdColumn)
+                    {
+                        columns += $"{name}_T.Value as [{name}ID], ";
+                    }
                     columns += $@"case 
     when {name}_TT.AllowAllValue = 1 and {name}_T.Value = '0' then {name}_TT.AllowAllLabel 
     when {name}_T.FormattedValue is not null then {name}_T.FormattedValue 
@@ -2935,10 +2720,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             {
                 var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
                 if (obj != "ReferenceItemType")
+                {
                     return false;
+                }
                 var assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
                 if (assettype != null)
-                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+                { 
+                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null); 
+                }
             }
             return false;
         }
@@ -2970,6 +2759,176 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 }
             }
             return relationFieldInfos;
+        }
+
+        #endregion
+
+        #region API Query Parameter Parsing
+
+        public void ParseAdvancedFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+        {
+            dbArgs = new DynamicParameters();
+            whereStatements = new List<string>();
+
+            if (queryParams.Any(x => x.Key.Equals("_filter", StringComparison.OrdinalIgnoreCase)))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    var filterExpressionParser = new FilterExpressionParser(this, FilterExpressionParseType.CustomFields, false);
+                    filterExpressionParser.OverrideAllowedDefaultFields(fieldList);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+                }
+            }
+        }
+
+        public void ParseSimpleFilterQueryParameter(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fieldList, out DynamicParameters dbArgs, out List<string> whereStatements)
+        {
+            var wheres = new List<string>();
+            var dbs = new DynamicParameters();
+            if (queryParams.Any(x => x.Key.Equals("_simpleFilter", StringComparison.OrdinalIgnoreCase)))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+                if (!string.IsNullOrEmpty(value))
+                {
+                    fieldList.ForEach(f =>
+                    {
+                        switch (f.SqlFieldType)
+                        {
+                            case SqlFieldType.Text:
+                                wheres.Add($"{f.SqlExpression} like @S_{f.ApiName}");
+                                dbs.Add($"@S_{f.ApiName}", value+"%");
+                                break;
+                            case SqlFieldType.Boolean:
+                                bool filterBool;
+                                if (bool.TryParse(value, out filterBool))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterBool);
+                                }
+                                break;
+                            case SqlFieldType.Date:
+                            case SqlFieldType.DateTime:
+                                DateTime filterDate;
+                                if (DateTime.TryParse(value, out filterDate))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterDate);
+                                }
+                                break;
+                            case SqlFieldType.Decimal:
+                            case SqlFieldType.Number:
+                                decimal filterNumber;
+                                if (decimal.TryParse(value, out filterNumber))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterNumber);
+                                }
+                                break;
+                            case SqlFieldType.Guid:
+                                Guid filterGuid;
+                                if (Guid.TryParse(value, out filterGuid))
+                                {
+                                    wheres.Add($"{f.SqlExpression} = @S_{f.ApiName}");
+                                    dbs.Add($"@S_{f.ApiName}", filterGuid);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                }
+            }
+            whereStatements = wheres;
+            dbArgs = dbs;
+        }
+
+        public string ParseOrderColumn(IEnumerable<KeyValuePair<string, string>> queryParams, List<DefaultFilter> fields, string defaultColumn)
+        {
+            var column = defaultColumn;
+            if (queryParams.Any(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)))
+            {
+                string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
+
+                if (!fields.Any(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid order by passed in the request.");
+                }
+            }
+            return column;
+        }
+
+        public string ParseOrderDirection(IEnumerable<KeyValuePair<string, string>> queryParams, string defaultDirection = "desc")
+        {
+            var direction = defaultDirection;
+            if (queryParams.Any(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                string order = queryParams.FirstOrDefault(x => x.Key.Equals("_direction", StringComparison.OrdinalIgnoreCase) || x.Key.Equals("_sort", StringComparison.OrdinalIgnoreCase)).Value;
+
+                if (allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    direction = order;
+                }
+                else
+                {
+                    throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid direction by passed in the request.");
+                }
+            }
+            return direction;
+        }
+
+        public int ParsePageNumber(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultPage = 1)
+        {
+            var size = defaultPage;
+            if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out size))
+                {
+                    if (size < 1)
+                    {
+                        size = defaultPage;
+                    }
+                }
+            }
+            return size;
+        }
+
+        public int ParsePageSize(IEnumerable<KeyValuePair<string, string>> queryParams, int defaultSize = 250)
+        {
+            var size = defaultSize;
+            if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out size))
+                {
+                    if (size < 1)
+                    {
+                        size = defaultSize;
+                    }
+                }
+            }
+            return size;
+        }
+
+        public string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000)
+        {
+            var offset = "";
+            if (pageSize > 0 || pageNumber > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNumber < 1) pageNumber = 1;
+                if (pageSize > pageSizeLimit) pageSize = pageSizeLimit;
+                if (pageNumber > 10000) pageNumber = 10000;
+                offset = $" offset {pageSize * (pageNumber - 1)} rows fetch next {pageSize} rows only ";
+            }
+            return offset;
         }
 
         #endregion

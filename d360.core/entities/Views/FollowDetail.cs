@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System;
 
 namespace d360.core.entities.Views
 {
@@ -15,6 +16,9 @@ namespace d360.core.entities.Views
 
         [DataMember, Key, Column(Order = 3, TypeName = "varchar"), StringLength(50)]
         public string ObjectType { get; set; }
+
+        [DataMember]
+        public long? AssetID { get; set; }
 
         [DataMember]
         public int FollowID { get; set; }

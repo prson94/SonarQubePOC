@@ -84,7 +84,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         this.routeParamsSubscription = this.route.params.subscribe(params => {
             this.allocationUid = params['allocationUid'];
             this.assetTypeUid = params['assetTypeUid'];
-
+            this.selectedMetric = null;
             this.isLoading = true;
 
             this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {

@@ -587,7 +587,7 @@ namespace d360.core.enums
                             }
                             else
                             {
-                                result = (valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
+                                result = !(valueToCompare ?? "").Equals(values[0], StringComparison.OrdinalIgnoreCase);
                             }
                             break;
                         case "Number":

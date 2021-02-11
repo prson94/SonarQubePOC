@@ -82,6 +82,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true') {
             this.hideShoppingCart = false;
         }
+        this.defaultWorkflowObject.label = "";
+        this.defaultWorkflowObject.value = "";
 
         this.load();
     }

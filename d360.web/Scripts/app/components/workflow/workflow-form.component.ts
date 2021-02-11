@@ -45,6 +45,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private typeName: string;
     private hasObjectReassign: boolean = true;
     private resourceId: number;
+    private IsClearAssignementsAllowed: boolean = true;
 
     fieldType = WorkflowFormFieldType;
     private isCompleted: boolean = false;
@@ -60,6 +61,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectedReassignObjectId: number;
     private selectedReassignObjectType: string;
     private selectedReassignResource: number;
+    private clearAssignments: boolean = false;
     private searchSub: ISubscription;
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
@@ -175,11 +177,12 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                 this.issueTypeName = res.IssueTypeName;
                 this.objectTypeID = res.ObjectTypeID;
                 this.typeName = res.TypeName;
+                this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
                 if (res.AllowReassignObject)
                     this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                 if (res.AllowReassignResource) {
                     this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
-                    this.loadResources();
+                    this.loadResources(); 
                 }
                 this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
             }),map(() => {
@@ -215,7 +218,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
             });
         }
         else if (this.reassignType == 'resource') {
-            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource).subscribe(result => {
+            this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe(result => {
                 this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
                 this.isLoading = false;
                 this.isCompleted = true;

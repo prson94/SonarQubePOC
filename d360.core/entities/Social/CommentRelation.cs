@@ -11,15 +11,32 @@ namespace d360.core.entities
         [Column(Order = 1), DataMember, Key]
         public int CommentID { get; set; }
 
-        [Column(Order = 2, TypeName = "varchar"), DataMember, Key, StringLength(50)]
-        public string ObjectType { get; set; }
+        [Column(Order = 2), DataMember, Key]
+        public long AssetID { get; set; }
+    }
 
-        [Column(Order = 3), DataMember, Key]
-        public int ObjectID { get; set; }
+    [DataContract(Namespace = NAMESPACE)]
+    public class CommentRelationDetail : BaseObject
+    {
+        [DataMember, Key, Column(Order = 1)]
+        public Guid AssetUid { get; set; }
+
+        [DataMember, Key, Column(Order = 2)]
+        public string Path { get; set; }
+
+        [DataMember, Key, Column(Order = 3)]
+        public string TypeName { get; set; }
 
         [DataMember]
-        public DateTime Date { get; set; }
+        public Guid AssetTypeUid { get; set; }
 
-        public virtual Comment Parent { get; set; }
+        [DataMember]
+        public string Url { get; set; }
+
+        [DataMember]
+        public string IconBackColor { get; set; }
+
+        [DataMember]
+        public string IconForeColor { get; set; }
     }
 }

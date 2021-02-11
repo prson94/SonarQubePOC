@@ -1,0 +1,118 @@
+﻿<div class="content">
+    <div class="description">Showing rule results for the measure <strong>{{scoreItem.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
+    <div>
+        <div class="scoring-v2">
+            <div class="score-left-content right-padding-16 flex">
+                <p-table #dt 
+                         [value]="Evidence?.items" 
+                         selectionMode="single" 
+                         [metaKeySelection]="true" 
+                         [dataKey]="ResultUid"
+                         [globalFilterFields]="['OwningAssetDisplayPath']" 
+                         [pageLinks]="3" 
+                         [paginator]="true" 
+                         [rows]="10" 
+                         [(selection)]="selected" 
+                         (onRowSelect)="selectedItemChange(selected?.ResultUid)"
+                         [lazy]="true"
+                         (onLazyLoad)="performLazyLoad($event)"
+                         [totalRecords]="totalRecords"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         >
+                    <ng-template pTemplate="caption">
+                        <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
+                            <span style="width: 300px"><ig-search-field placeholder="Search rule results" mode="Keypress" debounce="500" (onSearch)="performSimpleSearch($event)"></ig-search-field></span>
+                            <span class="grow"></span>
+                            <button igButton icon="fa-download" tooltip="Download these rule results" (click)="performDownload()"></button>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'OwningAssetDisplayPath'" style="width: 25%">
+                                Rule
+                                <d3s-sortIcon [field]="'OwningAssetDisplayPath'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'EvaluatedAssetDisplayPath'">
+                                Asset
+                                <d3s-sortIcon [field]="'EvaluatedAssetDisplayPath'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'PassFraction'" style="width: 15%">
+                                Pass Fraction
+                                <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr (dblclick)="selected=item;" [pSelectableRow]="item">
+                            <td><div class="path-column-wrapper"><div class="path-column" [title]="item.OwningAssetDisplayPath">{{item.OwningAssetDisplayPath}}</div></div></td>
+                            <td><div class="path-column-wrapper"><div class="path-column" [title]="item.EvaluatedAssetDisplayPath">{{item.EvaluatedAssetDisplayPath}}</div></div></td>
+                            <td>{{item.PassFraction}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+            <div class="score-right-content">
+                <div class="button-group show-multiple">
+                    <button igButton label="Result" class="ig-button {{(activeTab=='Result' ? 'ig-state-active' : '')}}" (click)="activeTab='Result'"></button>
+                </div>
+                <div [hidden]="!(activeTab=='Result')" class="score-definition-container">
+                    <div *ngIf="selected" class="definition-wrapper">
+                        <div class="measure-details-item">
+                            <div class="details-header">Rule</div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid" target="MeasureEvidenceRuleResult">{{selected.OwningAssetDisplayPath}}</a></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Asset</div>
+                            <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid" target="MeasureEvidenceRuleResult">{{selected.EvaluatedAssetDisplayPath}}</a></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rule Selection</div>
+                            <div class="details-content">
+                                <div *ngFor="let item of selected.RollupPath; index as i">
+                                    <a [routerLink]="'/asset/' + item.Uid" target="MeasureEvidenceRuleResult">{{item.AssetPath}}</a> ({{item.AssetTypePath}}){{getFormattedPredicate(i)}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Run Date</div>
+                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
+                            <div *ngIf="!selected.RunDate" class="details-content">---</div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Effective Date</div>
+                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                            <div *ngIf="!selected.EffectiveDate" class="details-content">---</div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Pass Fraction</div>
+                            <div class="details-content" [innerText]="selected.PassFraction"></div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Total Rows</div>
+                            <div *ngIf="selected.TotalCount" class="details-content" [innerText]="selected.TotalCount"></div>
+                            <div *ngIf="!selected.TotalCount" class="details-content">---</div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rows Passed</div>
+                            <div *ngIf="selected.PassCount" class="details-content" [innerText]="selected.PassCount"></div>
+                            <div *ngIf="!selected.PassCount" class="details-content">---</div>
+                        </div>
+                        <div class="measure-details-item">
+                            <div class="details-header">Rows Failed</div>
+                            <div *ngIf="selected.FailCount" class="details-content" [innerText]="selected.FailCount"></div>
+                            <div *ngIf="!selected.FailCount" class="details-content">---</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom-action-bar">
+        <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
+    </div>
+</div>

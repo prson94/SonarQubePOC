@@ -141,4 +141,36 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.metrics.ScoreItem-v4.1">
+    <sql dbms="mssql"
+		endDelimiter="\nGO" 
+		splitStatements="true"
+        stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedWeight')
+BEGIN
+	alter table metrics.ScoreItem alter column [AdjustedWeight] decimal(8,6) null
+END
+GO
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
+BEGIN
+	alter table metrics.ScoreItem alter column [AdjustedMaxWeight] decimal(8,6) null
+END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedWeight')
+BEGIN
+	alter table metrics.ScoreItem alter column [AdjustedWeight] decimal(5,3) null
+END
+GO
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'ScoreItem' AND COLUMN_NAME = 'AdjustedMaxWeight')
+BEGIN
+	alter table metrics.ScoreItem alter column [AdjustedMaxWeight] decimal(5,3) null
+END
+	]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

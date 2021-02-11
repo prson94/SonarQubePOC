@@ -204,7 +204,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
@@ -213,7 +213,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_filter", "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_relationFilter", "The filter expression used to filter assets by relation to other asset.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_loadPermissionDetails", "If the value is set to True, the results will include permission details for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -1050,7 +1050,7 @@ namespace d360.web.Controllers.V2
         ]
         public dynamic GetUIDetails(Guid assetUid)
         {
-            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue,lower(AssetTypeUid) as AssetTypeUid, TypeName from AssetDetail where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
         }
 
         /// <summary>
@@ -1239,7 +1239,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
@@ -1419,7 +1419,7 @@ namespace d360.web.Controllers.V2
                 dbArgs.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls, @filters",
                        dbArgs
                     );
 
@@ -1490,7 +1490,7 @@ namespace d360.web.Controllers.V2
                 dbArgsCount.Add("filters", advFilters.AsTableValuedParameter("dbo.AssetFiltersTable"));
 
                 var count = Company.Query<int>(
-                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
+                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, 0, @pageSize, @pageNum, @simpleFilter, '','', 0, @filters",
                      dbArgsCount
                      ).First();
 
@@ -2700,7 +2700,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceUid, resourceId, or name. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId or name. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(AssetWatchers)),
@@ -2716,7 +2716,7 @@ namespace d360.web.Controllers.V2
 
             if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_order"))
             {
-                string[] allowedValues = new string[] { "name", "resourceuid", "resourceid"};
+                string[] allowedValues = new string[] { "name", "resourceid"};
                 var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
                 if (!allowedValues.Contains(order))
                 {
@@ -2760,6 +2760,164 @@ namespace d360.web.Controllers.V2
             {
                 var results = await AssetRepository.GetAssetWatchers(assetUid, queryParams);
                 HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Get count of assets being watched for each Asset Type.
+        /// </summary>        
+        /// <param name="resourceUid">Optional Uid of a resource. If provided returns count for that specific resource. If null count will be of all watchers.</param>    
+        [
+            HttpGet,
+            Route("watchers/counts"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "List of Asset Types with count of watchers", typeof(List<AssetTypeWatchCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetWatchCountByType(string resourceUid = null)
+        {
+            string resourceJoin = "";
+            DynamicParameters dbArgs = new DynamicParameters();
+
+            if (resourceUid != null)
+            {
+                if (!Guid.TryParse(resourceUid, out Guid rUid) || !Company.GlobalReportingResources.Any(u => u.Uid == rUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid resourceUid provided"));
+                }
+                else
+                {
+                    resourceJoin = $@"INNER JOIN
+                                      reporting.Global_Resource R on R.ResourceID = F.ResourceID and R.uid = @resourceUid";
+
+                    dbArgs.Add("@resourceUid", rUid);
+                }
+            }
+
+            var sql = $@"
+                        SELECT AssetTypeName, AssetTypeUid, count(*) as [Count] FROM (
+                        SELECT 
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        FROM
+	                        Follow f
+	                        inner join
+	                        AssetType ast on f.ObjectID = ast.ObjectID and f.ObjectType=ast.Object and f.FollowTypeID =3
+	                        inner join 
+	                        Asset a on a.AssetTypeID=ast.ID 
+	                        {resourceJoin}
+                        union
+                        select 
+	                        ast.[Name] as AssetTypeName,
+	                        ast.[uid] as AssetTypeUid,
+	                        a.uid,
+	                        f.ResourceID
+                        from 
+	                        Follow f
+	                        inner join
+	                        Asset a on f.ObjectID = a.ObjectID and f.ObjectType=a.Object and f.FollowTypeID = 1
+	                        inner join 
+	                        AssetType ast on a.AssetTypeID=ast.ID
+	                        {resourceJoin}
+	                        ) watches
+                        Group by 
+	                        watches.AssetTypeUid, watches.AssetTypeName
+                        order by AssetTypeName";
+
+            var results = await Company.QueryAsync<AssetTypeWatchCountModel>(sql, dbArgs, ApiTimeout);
+
+            var response = Request.CreateResponse(HttpStatusCode.OK, results);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+        }
+
+        /// <summary>
+        /// Retrieves details about assets being watched for a given asset type.
+        /// </summary>
+        /// <returns>Returns a list of watched asset details</returns>        
+        /// <param name="assetTypeUid">Uid of the asset type</param>
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/watchers"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId, name, assetDisplayValue, governanceScore or dataQualityScore. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("resourceUid", "Optional Uid of a resource. If provided returns assets relevant to that specific resource. If null asset details returned will be for all watchers.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),            
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetTypeWatchDetails(Guid assetTypeUid)
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            string isValid = isPageSizeAndNumValid(queryParams);
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, isValid));
+            }         
+
+            if (queryParams.Any(q => q.Key == "resourceUid"))
+            {
+                if(!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "resourceUid").Value.ToLower(), out Guid resourceUid) || !Company.GlobalReportingResources.Any(u => u.Uid == resourceUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "resourceUid")));
+                }                
+            }
+
+            if (queryParams.Any(q => q.Key == "_order"))
+            {                
+                string[] allowedValues = new string[] { "name", "resourceid", "assetdisplayvalue", "governancescore", "dataqualityscore" };
+                var order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value.ToLower();
+                if (!allowedValues.Contains(order))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{order} is not a valid _order field"));
+                }
+            }
+
+            if (string.IsNullOrEmpty(isValid) && queryParams.Any(q => q.Key == "_direction"))
+            {
+                string[] allowedValues = new string[] { "asc", "desc" };
+                var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+                if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "_direction")));
+                }
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_includetotal");
+
+                if (!bool.TryParse(val.Value, out _))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, string.Format(AssetTypeErrors.InvalidParameterProvided, "_includeTotal")));
+                }
+            }
+
+            var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+            if (assetType == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
+            }            
+
+            try
+            {
+                var results = await AssetRepository.GetWatchedAssetDetails(assetTypeUid, queryParams);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

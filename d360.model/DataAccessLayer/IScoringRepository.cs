@@ -13,7 +13,8 @@ namespace d360.model.DataAccessLayer
         bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model);
         MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model);
         MetricAllocation GetAllocationByUid(Guid allocationUid);
-        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error);
+        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error, AssetTypeClass? Class = null);
+        Task<DataQualityScoreItemEvidenceViewModel> GetEvidenceForDataQualityScoreItem(Guid scoreItemUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         bool HasActiveMeasures(MetricAllocation alloc);
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref MetricAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, MetricAllocation alloc);

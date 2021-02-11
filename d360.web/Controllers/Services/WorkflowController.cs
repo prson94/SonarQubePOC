@@ -322,8 +322,8 @@ order by wi.StartedOn desc";
             };
         }
 
-        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}")]
-        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId)
+        [HttpPost, Route("ReassignWorkflowResource/{itemStepId:int}/{resourceId:int}/{clearAssignments:bool}")]
+        public async Task<HttpResponseMessage> ReassignWorkflowResource(int itemStepId, int resourceId, bool clearAssignments)
         {
             try
             {
@@ -333,7 +333,7 @@ order by wi.StartedOn desc";
                 else
                 {
                     var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resourceId).ToList().FirstOrDefault();
-                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true);
+                    await Company.BulkWorkflowFormReassign(new List<WorkflowItemStep> { itemStep }, resource, Company.CurrentResourceID, true, clearAssignments);
                 }
                 return Request.CreateResponse(HttpStatusCode.Accepted, -1);
             }
@@ -891,6 +891,14 @@ order by wi.StartedOn desc";
 
             // check if the user has access
             var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
+            //See if there are more than one user and the response type is first response if so we can give option to reassign to a sigle user and clear other assignments.
+          
+            
+            var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
+            var assignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).Count();
+            var IsClearAssignementsAllowed = (assignments > 1)
+                && (formSettings.ResponseType == FormResponseType.FirstResponse);
+
 
 
             //replace any tokens in hte description            
@@ -916,7 +924,8 @@ order by wi.StartedOn desc";
                 IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
                 IssueTypeName = issueTypeName,
                 AllowReassignObject = allowReassignObject,
-                AllowReassignResource = allowReassignResource
+                AllowReassignResource = allowReassignResource,
+                IsClearAssignementsAllowed
             });
         }
 
@@ -2361,7 +2370,9 @@ order by wi.StartedOn desc";
                                     ,case when wi.[object] = 'Issue' then utility.getassetdisplayvalue(cod.id)
                                       when wi.[object] = 'Intersect' then coalesce(utility.deriveintersectname(wi.objectid), '(unknown relationship)')
                                         else coalesce(utility.getassetdisplayvalue(ass.id),'(unknown)')
-                                    end as Name
+                                    end as Name,
+                                    wvs.Settings.query('settings/FormResponseType').value('.', 'varchar(50)') as 'responseType',
+	                                wis.Fields.value('(fields/@TotalResources)[1]', 'int') as 'countAssigned'
                                 from
 	                                [workflow].[type] wt
 	                                inner join [workflow].[version] wv on (wt.id = wv.typeid)
@@ -3078,6 +3089,20 @@ order by wi.StartedOn desc";
                                 userList.Add((int)reassigned["@byResourceId"]);
                             }
                         }
+                        else if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] != null)
+                        {
+                            hasBulkReassignments = true;
+                            userList.Add((int)reassigned["@toResourceId"]);
+
+                            if (reassigned["@fromResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@fromResourceId"]);
+                            }
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                userList.Add((int)reassigned["@byResourceId"]);
+                            }
+                        }
                     }
                 }
 
@@ -3090,7 +3115,7 @@ order by wi.StartedOn desc";
                     {
                         var reassigned = detail.ItemFields.Reassigned[i];
 
-                        if (reassigned["@reassignType"] == "Resource")
+                        if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] == null)
                         {
                             if (reassigned["@byResourceId"] != null)
                             {
@@ -3108,6 +3133,46 @@ order by wi.StartedOn desc";
                             {
                                 var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@fromResourceId"]);
                                 reassigned["@fromResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+                        }
+                        else
+                        {
+                            if (reassigned["@byResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@byResourceId"]);
+                                reassigned["@byResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@toResourceId"] != null)
+                            {
+                                var res = users.FirstOrDefault(r => r.ResourceID == (int)reassigned["@toResourceId"]);
+                                reassigned["@toResourceName"] = res == null ? "[unknown user]" : res.FullName;
+                            }
+
+                            if (reassigned["@objectType"] != null)
+                            {
+                                int objectId = (int)reassigned["@objectId"];
+                                var objectType = (string)reassigned["@objectType"] ?? "";
+                                var previousObjectName = "";
+                                if (objectType == "ResponsibilityType")
+                                {
+                                    var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
+                                    previousObjectName = resp != null ? (" - " + resp.Name) : "[unknown]";
+                                }else if(objectType == "Specific Users")
+                                {
+                                    previousObjectName = "";
+                                }
+                                else
+                                {
+                                    var sql = @"Select D.DisplayValue as ObjectName
+                                                From
+                                                Asset A
+                                                cross apply dbo.GetAssetDisplayValueById(A.ID) D
+                                                where   A.Object = @obj and A.ObjectID = @objId";
+                                    previousObjectName = (" - ") + Company.Query<string>(sql, new { obj = objectType, objId = objectId }).FirstOrDefault();
+
+                                }
+                                reassigned["@fromResourceName"] = $"{objectType}{previousObjectName}";
                             }
                         }
                     }
@@ -3550,6 +3615,14 @@ order by wi.StartedOn desc";
                                     if (assignee != null)
                                         users.Add(assignee);
                                 }
+
+                                if(res.ReassignType == "Resource")
+                                {
+                                    users = new List<GlobalReportingResource>();
+                                    var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
+                                    if (assignee != null)
+                                        users.Add(assignee);
+                                }
                             }
 
                             var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
@@ -3559,53 +3632,53 @@ order by wi.StartedOn desc";
                         }
                     }
 
-                    foreach (var form in itemFields.Forms)
-                    {
-                        if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
-                            resourceIds.Add(form.ResourceID);
-                    }
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form.field != null)
+                        foreach (var form in itemFields.Forms)
                         {
-                            if (form.field.GetType() != typeof(JArray))
+                            if (form.ResourceID != 0 && !resourceIds.Any(r => r == form.ResourceID))
+                                resourceIds.Add(form.ResourceID);
+                        }
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
+                        {
+                            var form = detail.ItemFields.form[i];
+
+                            if (form.field != null)
                             {
-                                form.field = new JArray(form.field);
+                                if (form.field.GetType() != typeof(JArray))
+                                {
+                                    form.field = new JArray(form.field);
+                                }
+                            }
+                            else
+                            {
+                                form.field = new JArray();
+                            }
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                if (!resourceIds.Any(r => r == resId))
+                                    resourceIds.Add(resId);
                             }
                         }
-                        else
+
+
+                        //get all relevant resource info
+                        var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
+
+                        for (int i = 0; i < detail.ItemFields.form.Count; i++)
                         {
-                            form.field = new JArray();
+                            var form = detail.ItemFields.form[i];
+
+                            if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+                            {
+                                var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
+                                if (res != null)
+                                    form.resourceName = res.FullName;
+                            }
+                            SetWorkFlowStepRelationshipAssets(form);
                         }
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            if (!resourceIds.Any(r => r == resId))
-                                resourceIds.Add(resId);
-                        }
-                    }
-
-
-                    //get all relevant resource info
-                    var formResources = Company.GlobalReportingResources.Where(r => resourceIds.Contains(r.ResourceID)).ToList();
-
-                    for (int i = 0; i < detail.ItemFields.form.Count; i++)
-                    {
-                        var form = detail.ItemFields.form[i];
-
-                        if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
-                        {
-                            var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
-                            if (res != null)
-                                form.resourceName = res.FullName;
-                        }
-                        SetWorkFlowStepRelationshipAssets(form);
                     }
                 }
-            }
             catch (Exception ex)
             {
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex);
@@ -3736,7 +3809,7 @@ order by wi.StartedOn desc";
 
             try
             {
-                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails);
+                await Company.BulkWorkflowFormReassign(itemSteps, resource, model.OriginalAssigneeResourceID, model.SendFormEmails, model.ClearOtherAssignments);
             }
             catch (Exception ex)
             {

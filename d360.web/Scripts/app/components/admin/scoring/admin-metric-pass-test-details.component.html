@@ -8,6 +8,14 @@
         </div>
     </div>
     <div class="measure-details-item">
+        <div class="details-header">Rule Result Operation</div>
+        <div class="details-condition">
+            <div class="condition-content">
+                <div class="condition-items" [innerHtml]="ruleResultOperation"></div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="hasRuleResultFilters()" class="measure-details-item">
         <div class="details-header">Rule Result Filters</div>
         <div class="details-condition">
             <div class="condition-content">

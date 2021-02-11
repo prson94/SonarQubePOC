@@ -7,12 +7,6 @@ namespace d360.core.enums
         [ReadOnly(true)]
         System = 1,
         Social = 2,
-        Governance = 3,
-        Relationship = 4,
-        Issue = 5,
-        Task = 6,
-        RedFlag = 7,
-        DataEvent = 8,
-        Challenge = 9
+        Issue = 5
     }
 }

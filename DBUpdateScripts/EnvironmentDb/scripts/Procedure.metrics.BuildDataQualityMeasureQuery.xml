@@ -5,12 +5,216 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v1.1">
+  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v2.0">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [metrics].[BuildDataQualityMeasureQuery]
+	@IncomingAllocationUid uniqueidentifier, 
+	@AssetVersionRollupPathUid uniqueidentifier
+as
+begin
+	set nocount on;
+	-- Working vars
+	declare	@MaxStartPosition int = 1,
+			@FilterMatchType int = 1,
+			@RollupPathUid uniqueidentifier; -- default weekly
+
+	select	@RollupPathUid		= RollupPathUid			from	metrics.AssetVersionRollupPath	where	Uid = @AssetVersionRollupPathUid;
+	select	@MaxStartPosition	= max(StartPosition)	from	[metrics].[RollupPathLink]		where	RollupPathUid = @RollupPathUid;
+	select	@FilterMatchType	= FilterMatchType		from	metrics.AssetVersionRollupPath	where	Uid = @AssetVersionRollupPathUid;
+
+	declare @tbl table (
+		StartPosition int,
+		It nvarchar(25), Pt nvarchar(3), 
+		Sp nvarchar(3), Sa nvarchar(25), Sc nvarchar(3), 
+		Ep nvarchar(3), Ea nvarchar(25), Ec nvarchar(3), 
+		Col nvarchar(2500), Tab nvarchar(2500), Whe nvarchar(2500), Mat nvarchar(2500), Pat nvarchar(2500) 
+	)
+
+	insert into @tbl
+		select	I.StartPosition,
+				cast(I.IntersectTypeID as nvarchar(25)),
+				cast(P.[Type] as nvarchar(3)),
+				cast(I.StartPosition as nvarchar(3)),
+				cast(S.AssetTypeID as nvarchar(25)),
+				cast(SA.Class as nvarchar(3)),
+				cast(I.EndPosition as nvarchar(3)),
+				cast(E.AssetTypeID as nvarchar(25)),
+				cast(EA.Class as nvarchar(3)),
+				'' as Col, '' as Tab, '' as Whe, '' as Mat, '' as Pat
+		from	[metrics].[RollupPathLink] I
+				inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.StartPosition
+				inner join AssetType SA on SA.ID = S.AssetTypeID
+				inner join [metrics].[RollupPathSegment] E on E.RollupPathUid = I.RollupPathUid and E.Position = I.EndPosition
+				inner join AssetType EA on EA.ID = E.AssetTypeID
+				inner join IntersectType IT on IT.ID = I.IntersectTypeID
+				inner join [Predicate] P on P.ID = IT.PredicateID
+		where	I.RollupPathUid = @RollupPathUid
+		order by I.StartPosition, I.EndPosition
+
+	declare @rowCount int
+	select @rowCount = count(1) from @tbl
+	if @rowCount = 1
+	begin
+		declare @IncomingAssetClass int = 7;
+		select	@IncomingAssetClass = T.[Class] 
+		from	metrics.Allocation A 
+				inner join AssetType T on T.Uid = A.AssetTypeUid and A.Uid = @IncomingAllocationUid;
+
+		update	@tbl
+		set		Col =	iif(@IncomingAssetClass = 7,
+							'N_'+Ea+'_'+Ep+'.Uid as StartingAssetUid, N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, ',
+							'N_'+Sa+'_'+Sp+'.Uid as StartingAssetUid, N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, '
+						),
+				Tab =	'graph.AssetNode N_'+Sa+'_'+Sp + 
+						', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
+						', graph.AssetNode N_'+Ea+'_'+Ep+' ',
+				Whe =	'E_'+It+'_'+Sp+'_'+Ep+'.PredicateType = 2' 
+						+ ' and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa 
+						+ ' and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' ',
+				Mat =	'N_'+Sa+'_'+Sp+'<-(E_'+It+'_'+Sp+'_'+Ep+')-N_'+Ea+'_'+Ep,
+				Pat =	'select N_'+Sa+'_'+Sp+'.Uid, '+Sp+' as Position ' +
+						'union ' + 
+						'select N_'+Ea+'_'+Ep+'.Uid, '+Ep+' as Position'
+	end
+	else
+	begin
+		update	@tbl
+		set		Col =	case StartPosition
+							when 1 then 'N_'+Sa+'_'+Sp+'.Uid as StartingAssetUid, '
+							when @MaxStartPosition then 'N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, ' + 
+														'N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, '
+							else ''
+						end,
+				Tab =	case StartPosition
+							when 1 then 'graph.AssetNode N_'+Sa+'_'+Sp +
+										', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
+										', graph.AssetNode N_'+Ea+'_'+Ep+' '
+							when @MaxStartPosition then ', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
+														', graph.AssetNode N_'+Ea+'_'+Ep+' '
+							else	', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
+									', graph.AssetNode N_'+Ea+'_'+Ep+' '
+						end,
+				Whe =	case StartPosition
+							when 1 then 'N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa + ' '
+							when @MaxStartPosition then 'E_'+It+'_'+Sp+'_'+Ep+'.PredicateType = 2' 
+														+ ' and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa
+														+ ' and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' '
+							else 'N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' '
+						end,
+				Mat =	case StartPosition
+							when 1 then 'N_'+Sa+'_'+Sp+'-(E_'+It+'_'+Sp+'_'+Ep+')->N_'+Ea+'_'+Ep
+							when @MaxStartPosition then '<-(E_'+It+'_'+Sp+'_'+Ep+')-N_'+Ea+'_'+Ep 
+							else '-(E_'+It+'_'+Sp+'_'+Ep+')->N_'+Ea+'_'+Ep 
+						end,
+				Pat =	case StartPosition
+							when 1 then 'select N_'+Sa+'_'+Sp+'.Uid, '+Sp+' as Position ' +
+										'union ' + 
+										'select N_'+Ea+'_'+Ep+'.Uid, '+Ep+' as Position'
+							else 'select N_'+Ea+'_'+Ep+'.Uid, '+Ep+' as Position'
+						end
+	end
+
+	declare @c nvarchar(max),
+			@t nvarchar(max),
+			@w nvarchar(max),
+			@m nvarchar(max),
+			@p nvarchar(max),
+			@sql nvarchar(max)
+
+	select	@c = string_agg(Col, '') from @tbl --order by StartPosition
+	select	@t = string_agg(Tab, '') from @tbl --order by StartPosition
+
+	update @tbl set Whe = null where Whe = ''
+	select	@w = string_agg(Whe, ' and ') from @tbl --order by StartPosition
+	if @w <> '' begin set @w = ' and ' + @w end
+	if @w is null begin set @w = '' end
+
+	select	@m = string_agg(Mat, '') from @tbl --order by StartPosition
+	select	@p = string_agg(Pat, ' union ') from @tbl --order by StartPosition
+
+
+	declare @StartingAssetUidColumn nvarchar(250) = '',
+			@TechnicalAssetUidColumn nvarchar(250) = '',
+			@RuleAssetUidColumn nvarchar(250) = ''
+
+	select	@StartingAssetUidColumn = iif(@IncomingAssetClass = 7, 'N_'+Ea+'_'+Ep+'.Uid', 'N_'+Sa+'_'+Sp+'.Uid') 
+	from	@tbl
+	where	StartPosition = 1
+
+	select	@RuleAssetUidColumn = 'N_'+Ea+'_'+Ep+'.Uid',
+			@TechnicalAssetUidColumn = 	'N_'+Sa+'_'+Sp+'.Uid'
+	from	@tbl
+	where	StartPosition = @MaxStartPosition
+
+	set @sql =	'select distinct ' + @c + 
+				'(select * from ('+@p+') A order by Position asc for json path) as [Path], ' + 
+				'(
+				select	Uid, 
+						PassFraction,
+						EffectiveDate
+				from	(
+						select	ROW_NUMBER() over (partition by ERO.$from_id, ERE.$from_id order by R.EffectiveDate desc, R.UpdatedOn desc) as RowNumber, 
+								R.Uid, 
+								R.PassFraction,
+								R.EffectiveDate
+						from	graph.AssetNode TA, 
+								graph.AssetNode RA,
+								dbo.AssetResultEdge ERO, --owns 
+								dbo.AssetResultEdge ERE, --evalby
+								dbo.AssetResult R
+						where	match(RA-(ERO)->R<-(ERE)-TA) 
+								and TA.Uid = '+@TechnicalAssetUidColumn+'
+								and RA.Uid = '+@RuleAssetUidColumn+'
+								and ERO.[Class] = 1
+								and ERE.[Class] = 2
+								and R.EffectiveDate >= @MinimumEffectiveDate
+								and R.EffectiveDate <= @MaximumEffectiveDate
+						) O 
+				where	RowNumber = 1
+				for json path
+				) as [Results]' +
+				' from ' + @t + 
+				' where match('+@m+')' + @w + ' and ' + @StartingAssetUidColumn + ' = @AssetUid'
+
+
+	select @sql as [Sql];
+	select @FilterMatchType as FilterMatchType;
+
+	-- Get the rule path filters for this measure version, to be used in where statement above.
+	select	F.AssetTypeID,
+			F.FieldTypeID,
+			FT.[Type],
+			F.Operator,
+			V.Value,
+			Pos.WhereQuery
+	from	[metrics].[AssetVersionRollupPath] P
+			inner join [metrics].[AssetVersionRollupPathFilter] F on F.[AssetVersionRollupPathUid] = P.Uid and P.Uid = @AssetVersionRollupPathUid
+			inner join [metrics].[AssetVersionRollupPathFilterValue] V on V.[AssetVersionRollupPathFilterUid] = F.Uid
+			inner join FieldType FT on FT.AssetTypeID = F.AssetTypeID and FT.ID = F.FieldTypeID
+			cross apply (
+				select	top 1
+						'N_' + cast(OO.AssetTypeID as nvarchar) + '_' + cast(OO.Pos as nvarchar) + '.ID' as WhereQuery
+				from	(
+						select	S.AssetTypeID,
+								I.StartPosition as [Pos]
+						from	[metrics].[RollupPathLink] I
+								inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.StartPosition and I.RollupPathUid = P.RollupPathUid and S.AssetTypeID = F.AssetTypeID
+						union
+						select	S.AssetTypeID,
+								I.EndPosition as [Pos]
+						from	[metrics].[RollupPathLink] I
+								inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.EndPosition and I.RollupPathUid = P.RollupPathUid and S.AssetTypeID = F.AssetTypeID
+						) OO
+			) Pos
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure metrics.BuildDataQualityMeasureQuery
 	@IncomingAllocationUid uniqueidentifier, 
 	@AssetVersionRollupPathUid uniqueidentifier
@@ -207,11 +411,6 @@ begin
 						) OO
 			) Pos
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop procedure if exists metrics.BuildDataQualityMeasureQuery
 		]]>
 	</rollback>
   </changeSet>

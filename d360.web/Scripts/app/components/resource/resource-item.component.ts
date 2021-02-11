@@ -45,6 +45,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resource: any;
     private isSavingProcess : boolean =  false;
     private isMe = false;
+    private showAllUsersAPIKey = false;
     private totNumber = 0;
     private days = 90;
     private resourceType = ' ';
@@ -103,6 +104,13 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.setBrowserTitle(this.titleService, `${this.resource.FirstName} ${this.resource.LastName}`);
 
+                    if (this.resource.IsAdministrator || (CompanySettings != null && CompanySettings.ShowAllUsersAPIKey != null && CompanySettings.ShowAllUsersAPIKey.toString() == 'true')) {
+                        this.showAllUsersAPIKey = true;
+                    }
+                    else {
+                        this.showAllUsersAPIKey = false;
+                    }
+                    
                     if (this.resourceId.toString() === CurrentResourceID.toString()) {
                         this.isMe = true;
                     } else {
@@ -150,7 +158,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.secondaryNavService.showItem(this.hasRelations);
                     this.comments = new SecondaryNavItem(
                         'Comments', 'comments', ['fa-comments'],
-                        `/sidebar/comments/Resource/${resourceId}`, null, 25
+                        `/sidebar/comments/${this.resource.uid}/true`, null, 25
                     );
                     this.secondaryNavService.showItem(this.comments);
                     this.secondaryNavService.clearCurrentObject();

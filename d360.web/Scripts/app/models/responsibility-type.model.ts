@@ -8,22 +8,32 @@ export interface IResponsibilityTypeService {
     postResponsibilityType(responsibilityType: ResponsibilityType): Observable<any>;
     deleteResponsibilityType(uid: string, cascade?: boolean): Observable<any>;
     getResponsibilityTypeBreakdown(): Observable<ResponsibilityTypeCount[]>;
-    getResourceResponsibilityByType(responsibilityTypeId: number): Observable<ResourceResponsibilityTypeCount[]>;
+    getResourceResponsibilityByType(responsibilityTypeUid: string): Observable<ResourceResponsibilityTypeCount[]>;
     getResponsibilityTypesByObject(type: string, id: number): Observable<any>;
 }
 
 export enum Permission {
     ReadAsset = 1,
-    ModifyAsset = 2,
+    AddAsset = 2,
     DeleteAsset = 4,
+    EditAsset = 8,
 
-    ReadResponsibilities = 64,
-    ModifyResponsibilities = 128,
-    DeleteResponsibilities = 256,
+    ModifyAsset = Permission.AddAsset | Permission.EditAsset,
 
-    ReadRelationships = 512,
-    ModifyRelationships = 1024,
-    DeleteRelationships = 2048
+    ReadResponsibilities = 32,
+    AddResponsibilities = 64,
+    DeleteResponsibilities = 128,
+    EditResponsibilities = 256,
+
+    ModifyResponsibilities = Permission.AddResponsibilities | Permission.EditResponsibilities,
+
+
+    ReadRelationships = 1024,
+    AddRelationships = 2048,
+    DeleteRelationships = 4096,
+    EditRelationships = 8192,
+
+    ModifyRelationships = Permission.AddRelationships | Permission.EditRelationships
 }
 
 export class ResponsibilityType {
@@ -81,6 +91,7 @@ export class ResponsibilityTypeCount {
     Count: number;
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
+    ResponsibilityTypeUID: number;
 }
 
 export class ResourceResponsibilityTypeCount {
@@ -90,6 +101,7 @@ export class ResourceResponsibilityTypeCount {
     ResourceID: number;
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
+    ResponsibilityTypeUID: string;
 }
 
 export class ResponsibilityTypeRelationRuleSummary {
@@ -158,7 +170,7 @@ export class ResponsibilityTypeRelationRuleFormData {
     IntersectTypes: SelectItem[] = [];
 }
 export class ResponsibilityTypeRelationRuleFormDataFieldType {
-    value: string;
+    value: number;
     label: string;
     type: string;
     isLookup: boolean;
