@@ -18,6 +18,7 @@ namespace d360.model.helpers
         private string field { get; set; }
         public string @operator { get; set; }
         private object value { get; set; }
+        private bool isNullValue { get; set; } = false;
         private FieldType fieldType { get; set; }
         private string fieldColumn { get; set; }
         private bool isLookupField { get; set; }
@@ -58,6 +59,11 @@ namespace d360.model.helpers
             this.field = field;
             @operator = op;
             this.value = value;
+
+            if (this.value != null && this.value.ToString().ToLower() == "null")
+            {
+                this.isNullValue = true;
+            }
         }
 
         public string GetSQLForField(ref Dictionary<string, object> sqlParams)
@@ -68,8 +74,15 @@ namespace d360.model.helpers
             }
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            ValidateTokenForType();
-            UpdateTokenValueForType();
+            if (!this.isNullValue)
+            {
+                ValidateTokenForType();
+                UpdateTokenValueForType();
+            }
+            else
+            {
+                UpdateTokenForNullValue();
+            }
             return stringBuilder.ToString();
         }
 
@@ -240,6 +253,18 @@ namespace d360.model.helpers
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 
+        }
+
+        private void UpdateTokenForNullValue()
+        {
+            if (!(new string[] { "eq", "ne" }.Contains(@operator)))
+            {
+                throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
+            }
+            var fieldSql = GetColumnValueSyntax(fieldType.ID);
+
+            stringBuilder.Append(fieldSql);
+            stringBuilder.Append(GetSQLNullOperator(@operator));
         }
 
         private void CheckFieldValue(DefaultFilter filter = null)
@@ -446,6 +471,15 @@ namespace d360.model.helpers
             }
         }
 
+        private string GetSQLNullOperator(string value)
+        {
+            switch (value)
+            {
+                case "eq": return " is null";
+                case "ne": return " is not null";
+                default: throw new Exception($"Invalid comparison operator '{value}'");
+            }
+        }
 
         private string GetLogicalOperator(string value)
         {
