@@ -1064,8 +1064,6 @@ from	metrics.AssetVersion V
                         case Operator.Before:
                             queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
                             break;
-                        //case Operator.Between:
-                        //    break;
                         case Operator.Contains:
                             queryColumn = $"{queryColumn} like '%' + {paramName} + '%'";
                             break;
@@ -1083,8 +1081,6 @@ from	metrics.AssetVersion V
                         case Operator.GreaterThanOrEquals:
                             queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
                             break;
-                        //case Operator.In:
-                        //    break;
                         case Operator.IsFalse:
                             queryColumn = $"coalesce(try_cast({queryColumn} as bit), 1) = 0";
                             break;
@@ -1105,8 +1101,6 @@ from	metrics.AssetVersion V
                                 $"{queryColumn} <> {paramName}" :
                                 $"try_cast({queryColumn} as {dbTypeToCastTo}) <> {paramName}";
                             break;
-                        //case Operator.NotIn:
-                        //    break;
                         case Operator.NotPopulated:
                             queryColumn = $"{queryColumn} is null";
                             break;
@@ -1122,6 +1116,12 @@ from	metrics.AssetVersion V
                         case Operator.StartsWith:
                             queryColumn = $"{queryColumn} like {paramName} + '%'";
                             break;
+                        default: //does the same thing as Equals
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} = {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
+                            break;
+
                     }
 
                     f.WhereQuery += queryColumn + ")";
@@ -1174,7 +1174,7 @@ from	metrics.AssetVersion V
                 .Select(o => new AssetMeasureModel {
                     AssetUid = o.AssetUid, 
                     EffectiveDate = o.EffectiveDate, 
-                    Measures = new List<AssetMeasureChildModel>() {
+                    Measures = new List<AssetMeasureChildModel> {
                         new AssetMeasureChildModel { 
                             MetricAssetUid = metricAssetUid, 
                             MetricAssetVersionUid = metricAssetVersionUid, 
