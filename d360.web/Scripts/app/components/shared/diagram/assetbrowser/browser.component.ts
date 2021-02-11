@@ -67,6 +67,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
 
     @ViewChild('relationshipBadges', { static: false }) relationshipBadgesRef: ElementRef;
+    @ViewChild('relationshipBadgesTooltip', { static: false }) relationshipBadgesTooltipRef: ElementRef;
 
     private diagramData: AssetBrowserResponseModel;
 
@@ -363,7 +364,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
         if (this.isRelationshipSelectorAvailable) {
-            if (!this.relationshipBadgesRef.nativeElement.contains(event.target)) {
+            if (!this.relationshipBadgesRef.nativeElement.contains(event.target)
+                && !(event.target as HTMLElement).classList.contains("rel-expand-icon")
+            ) {
                 this.isRelationshipSelectorAvailable = false;
                 this.diagram.model.setDataProperty(this.followPart.data, "relExpanded" + this.relationshipSelectorType, false);
             }
@@ -2896,9 +2899,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",
-                {
-                    stretch: go.GraphObject.Horizontal,
-                },
                 this.template_fixedBadge("relations"),
                 this.template_fixedBadge("owners"),
                 this.template_NodeContent()
@@ -3189,14 +3189,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             stretch: go.GraphObject.Horizontal,
             cursor: "pointer",
             name: "badge",
-            click: (e, obj) => this.badge_ClickImpact(e, obj),
+            click: (e, obj) => this.badge_ClickImpact(e, obj)
         },
             this.g(go.Panel, "Auto",
                 this.g(go.Shape,
                     {
                         figure: "RoundedRectangle",
                         parameter1: 2,
-                        strokeWidth: 1.5,
+                        strokeWidth: 1,
                         fill: "white",
                         stroke: this.badgeStrokeColor,
                         margin: new go.Margin(0, 0, -1, 0)
@@ -3219,7 +3219,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
                             font: this.badgeFont,
-                            stroke: this.badgeTextColor,
+                            stroke: this.badgeTextColor
                         },
                         new go.Binding("text", "predicate"),
                         new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
@@ -3235,6 +3235,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Right,
                             margin: new go.Margin(0, 2, 0, 0)
                         },
+                        new go.Binding("mouseEnter", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                this.setRelationshipBadgeHoverState(ev, val.data, true, this);
+                            }
+                        }).ofObject(),
+                        new go.Binding("mouseLeave", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                            }
+                        }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
                             {
                                 strokeWidth: 0,
@@ -3270,14 +3280,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             stretch: go.GraphObject.Horizontal,
             cursor: "pointer",
             name: "badge",
-            click: (e, obj) => this.badge_ClickOwner(e, obj),
+            click: (e, obj) => this.badge_ClickOwner(e, obj)
         },
             this.g(go.Panel, "Auto",
                 this.g(go.Shape,
                     {
                         figure: "RoundedRectangle",
                         parameter1: 2,
-                        strokeWidth: 1.5,
+                        strokeWidth: 1,
                         fill: "white",
                         stroke: this.badgeStrokeColor,
                         margin: new go.Margin(0, 0, -1, 0)
@@ -3300,7 +3310,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: new go.Margin(2, 4, 0, 0),
                             editable: false,
                             font: this.badgeFont,
-                            stroke: this.badgeTextColor,
+                            stroke: this.badgeTextColor
                         },
                         new go.Binding("text", "responsibilityType"),
                         new go.Binding("minSize", "", (obj: go.GraphObject, target: go.GraphObject) => {
@@ -3316,6 +3326,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Right,
                             margin: new go.Margin(0, 2, 0, 0)
                         },
+                        new go.Binding("mouseEnter", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                this.setRelationshipBadgeHoverState(ev, val.data, true, this);
+                            }
+                        }).ofObject(),
+                        new go.Binding("mouseLeave", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                            }
+                        }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
                             {
                                 strokeWidth: 0,
@@ -3352,6 +3372,33 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private followPart: go.Part = null;
     private relationshipData: any[];
     private transformOrigin: string = "0% 100%";
+
+    private isRelationshipBadgeTooltipVisible: boolean = false;
+    private relationshipBadgeHtml = "The item in this collection has 'xx' relationships to x other item.";
+    private showTooltipTimeout;
+    private setRelationshipBadgeHoverState(ev: go.InputEvent, data: go.ObjectData, isHover: boolean, self: AssetBrowserComponent) {
+        self.isRelationshipBadgeTooltipVisible = isHover;
+        var refHtmlElement = self.relationshipBadgesTooltipRef.nativeElement as HTMLElement;
+        if (!refHtmlElement) return;
+        if (isHover) {
+            self.relationshipBadgeHtml = self.getRelBadgeTooltip(data);
+
+            self.showTooltipTimeout = setTimeout(() => {
+                refHtmlElement.style.display = "block";
+                var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
+                refHtmlElement.style.left = position.x + "px";
+                refHtmlElement.style.top = position.y + "px";
+                refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
+                self.cdRef.detectChanges();
+            }, 100);
+        }
+        else {
+            refHtmlElement.style.display = "none";
+            if (self.showTooltipTimeout) {
+                window.clearTimeout(self.showTooltipTimeout);
+            }
+        }
+    }
 
     private updatePredicateSelectorPosition() {
         if (this.isRelationshipSelectorAvailable && this.relationshipBadgesRef) {
@@ -3448,12 +3495,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private template_fixedBadge(propertyName: string): go.Panel {
         return this.g(go.Panel, "Auto", {
-            stretch: go.GraphObject.Horizontal,
+            alignment: go.Spot.Left,
             cursor: "pointer",
             click: (e, obj) => {
                 obj.part.data['relExpanded' + propertyName] = !obj.part.data['relExpanded' + propertyName];
                 this.groupedBadgeClick(obj, propertyName);
-            },
+            }
         },
             new go.Binding("visible", "", (obj: go.GraphObject) => {
                 var arrData = obj.part.data[propertyName] as Array<any>;
@@ -3464,10 +3511,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         figure: "RoundedRectangle",
                         parameter1: 2,
-                        strokeWidth: 1.5,
+                        strokeWidth: 1,
                         fill: "white",
                         stroke: this.badgeStrokeColor,
-                        margin: new go.Margin(0, 0, -1, 0)
+                        margin: new go.Margin(0, 0, 0, 0)
                     }
                 ),
                 new go.Binding("visible", "", function (part: go.Part) {
@@ -3528,12 +3575,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Right,
                             margin: new go.Margin(0, 2, 0, 0)
                         },
+                        new go.Binding("mouseEnter", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                let totalCount: number = 0;
+                                (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
+                                var data = { consolidated: true, count: totalCount };
+                                this.setRelationshipBadgeHoverState(ev, data, true, this);
+                            }
+                        }).ofObject(),
+                        new go.Binding("mouseLeave", "", (val) => {
+                            return (ev: go.InputEvent, obj: go.GraphObject) => {
+                                this.setRelationshipBadgeHoverState(ev, val.data, false, this);
+                            }
+                        }).ofObject(),
                         this.g(go.Shape, "RoundedRectangle",
                             {
                                 strokeWidth: 0,
                                 parameter1: 2,
                                 minSize: new go.Size(32, 16),
-                                margin: new go.Margin(0, 4, 0, 4),
+                                margin: new go.Margin(0, 0, 0, 4),
                                 fill: this.badgeTextColor
                             },
                         ),
@@ -3546,7 +3606,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 stroke: "white",
                             },
                             new go.Binding("text", "", (obj: go.GraphObject) => {
-                                return (obj.part.data[propertyName] as Array<any>).length;
+                                let totalCount: number = 0;
+                                (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
+                                return totalCount;
                             }).ofObject()
                         )
                     )
@@ -3605,7 +3667,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (part.data["predicateWidth"]) {
                 var predicateWidth = +part.part.data["predicateWidth"];
                 if (!isNaN(predicateWidth)) {
-                    maxWidth = predicateWidth;
+                    maxWidth = predicateWidth - 2;
                 }
             }
 
@@ -3662,5 +3724,32 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             return true;
         }
 
+    }
+
+    private getRelBadgeTooltip(rel: any) {
+        var title = "";
+        if (rel.text) {
+            title = rel.text;
+        }
+
+        if (rel.predicate) {
+            title = rel.predicate;
+        }
+
+        if (rel.responsibilityType) {
+            title = rel.responsibilityType;
+        }
+
+        if (!rel.consolidated) {
+            if (rel.count > 1) {
+                return `Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
+            }
+            else {
+                return `The item in this collection has '${title}' relationships to ${rel.count} other item.<br/>Click to toggle the display of related item.`
+            }
+        }
+        else {
+            return `Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+        }
     }
 }
