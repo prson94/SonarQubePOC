@@ -282,8 +282,13 @@
                     </div>
                 </div>
             </ig-property-group>
-
-            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" [shouldBePadded]="false" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated" (isValid)="canAddNewGroup($event)">
+            <ig-property-group [igformGroup]="metricForm"
+                               [title]="'Asset Conditions and Weighting'"
+                               [shouldBePadded]="false"
+                               [showMoreInfo]="true"
+                               [moreInfoHtml]="assetConditionsAndWeightingTooltip"
+                               *ngIf="!metricForm.value.isGroup && !isExternallyCalculated"
+                               (isValid)="canAddNewGroup($event)">
                 <div inputs>
                     <div class="row">
                         <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="1" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
@@ -305,7 +310,7 @@
                                                  [max]="100"
                                                  [step]="1"
                                                  formControlName="cg_{{cg.Position}}_weight"
-                                                 [(ngModel)]="cg.Weight"></ig-number-input>
+                                                 [(ngModel)]="cg.DisplayWeight"></ig-number-input>
                                 <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>
@@ -324,7 +329,7 @@
                         </div>
                     </div>
                     <div class="row top-margin">
-                         <button *ngIf="canAddGroup" type="button" icon="fa-plus-circle" igButton class="ig-button-midblue" label="Add condition group" (click)="addNewGroup()"></button>  
+                        <button *ngIf="canAddGroup" type="button" icon="fa-plus-circle" igButton class="ig-button-midblue" label="Add condition group" (click)="addNewGroup()"></button>
                     </div>
                 </div>
             </ig-property-group>

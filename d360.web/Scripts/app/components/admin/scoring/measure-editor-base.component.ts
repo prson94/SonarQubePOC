@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { FieldTypeHelper } from '../../../models/fieldtype-api.model';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
+import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
 export class BaseMeasureEditorComponent extends BaseComponent {
     @Input() model: MetricAssetViewModel = null;
@@ -25,7 +26,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-
+    public conditionGroupLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
+    public conditionAndWeightLink = CurrentEnvironmentSettings.HelpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Conditio";
     //#region Tooltip data
 
     measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
@@ -41,7 +43,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         + 'similar nature(E.g.responsibility assignments, required field checks).'
         + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
 
-    conditionWeightTootlip: string = "You can override the Weight set in the detiail section here, specifically for assets which meet the conditions of this group.";
+
+    conditionWeightTootlip: string = "<div>You can override the <b>Weight</b> set in the <b>Detiail</b> section here, specifically for assets which meet the conditions of this group.</div>"
+        + "<div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+
+    assetConditionsAndWeightingTooltip: string = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
+        + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
+        + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+
 
     //#endregion
 
@@ -162,6 +171,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = newGroup.Position;
         newGroup.MatchType = "All";
+        newGroup.DisplayWeight = this.displayWeight;
         newGroup.conditionItemFields = [];
         this.addConditionGroupFormControls(newGroup.Position);
 
@@ -246,8 +256,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 newGroup.Position = newGroup.DisplayOrder; 
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
+                if (newGroup.Weight) {
+                    newGroup.DisplayWeight = Math.round(this.model.Weight * 100)
+                }
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
-
                 const conditions = x.ConditionItems;
                 newGroup.conditionItemFields = [];
                 if (conditions.length > 0) {
@@ -412,7 +424,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         let prevDate: string | Date = null;
         let previousConditions = [...this.model.ConditionGroups];
 
-        this.model.MatchConditionsOnly = !this.allocation.isExternallyCalculated;
+        if (this.allocation.isExternallyCalculated) {
+            this.model.MatchConditionsOnly = false;
+        }
 
         if (this.displayEffectiveDate !== null) {
             prevDate = this.displayEffectiveDate;
@@ -431,6 +445,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.conditionGroups.forEach(x => {
                 const conditions = x.conditionItemFields.filter(x => x.field);
                 x.Position = x.DisplayOrder;
+                if (x.DisplayWeight) {
+                    x.Weight = +(+(x.DisplayWeight / 100).toFixed(2))
+                }
                 conditions.forEach(c => {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}

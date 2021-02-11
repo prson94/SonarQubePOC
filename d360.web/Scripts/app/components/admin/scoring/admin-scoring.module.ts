@@ -56,6 +56,7 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.module';
+import { MeasureConditionsDetailsComponent } from './measure-conditions-details.component';
 
 
 @NgModule({
@@ -122,6 +123,7 @@ import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.mo
 
         MeasureListComponent,
         AdminMeasureHistoryComponent,
+        MeasureConditionsDetailsComponent
     ],
     providers: [
         {

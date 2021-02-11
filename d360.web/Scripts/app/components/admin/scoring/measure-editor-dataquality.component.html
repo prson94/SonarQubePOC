@@ -145,8 +145,14 @@
                     </div>
                 </div>
             </ig-property-group>
-
-            <ig-property-group [igformGroup]="metricForm" [title]="'Asset Conditions and Weighting'" [shouldBePadded]="false" *ngIf="!metricForm.value.isGroup && !isExternallyCalculated" (isValid)="canAddNewGroup($event)">
+            <ig-property-group 
+                               [igformGroup]="metricForm" 
+                               [title]="'Asset Conditions and Weighting'" 
+                               [shouldBePadded]="false" 
+                               [showMoreInfo]="true"
+                               [moreInfoHtml]="assetConditionsAndWeightingTooltip"
+                               *ngIf="!metricForm.value.isGroup && !isExternallyCalculated" 
+                               (isValid)="canAddNewGroup($event)">
                 <div inputs>
                     <div class="row">
                         <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="model.MatchConditionsOnly" value="1" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
@@ -168,7 +174,7 @@
                                                  [max]="100"
                                                  [step]="1"
                                                  formControlName="cg_{{cg.Position}}_weight"
-                                                 [(ngModel)]="cg.Weight"></ig-number-input>
+                                                 [(ngModel)]="cg.DisplayWeight"></ig-number-input>
                                 <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>
@@ -211,5 +217,11 @@
 <ng-template #groupTooltip>
     <div class="info-tip">
         <i class="fa fa-question-circle" pTooltip="{{groupingTooltip}}"  [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
+    </div>
+</ng-template>
+
+<ng-template #conditionWeightTooltip>
+    <div class="info-tip">
+        <i class="fa fa-question-circle" pTooltip="{{conditionWeightTootlip}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
     </div>
 </ng-template>

@@ -6365,7 +6365,7 @@ table {
                 font-size: large;
                 font-weight: bold;
                 margin-bottom: 16px;
-                word-break:break-all;
+                word-break: break-all;
             }
         }
 
@@ -6409,12 +6409,23 @@ table {
         .measure-details-item {
             margin-bottom: 8px;
 
+            .match-info {
+                margin-bottom: 8px;
+            }
+
             .condition-content {
                 display: inline-flex;
+                width: 100%;
 
                 .condition-items {
                     padding-right: 4px;
                     flex-direction: column;
+                    margin-bottom: 8px;
+                    width: 100%;
+
+                    .inline {
+                        display: inline-flex;
+                    }
                 }
             }
 
