@@ -778,7 +778,8 @@ namespace d360.web.Controllers.V2
                 {
                     Name = x.Name,
                     Description = x.Description,
-                    Uid = null
+                    Uid = x.Uid,
+                    IsNew = true
                 });
 
                 List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
@@ -953,7 +954,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody]ResponsibilityOverridePostModel model)
+        public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
         {
             var prefix = "Responsibilities.AddResponsibilitiesOverride => ";
             var errorMessage = "";
@@ -1042,7 +1043,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody]List<ResponsibilityOverrideDeleteModel> resourceUids)
+        public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] List<ResponsibilityOverrideDeleteModel> resourceUids)
         {
             var prefix = "Responsibilities.DeleteResponsibilitiesOverride => ";
             var errorMessage = "";
@@ -1099,14 +1100,14 @@ namespace d360.web.Controllers.V2
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted"));                
+                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", "Responsibility successfully deleted"));
 
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage));                
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage));
             }
         }
 
@@ -1152,7 +1153,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PostResponsibilityRules => ";
             var errorMessage = "";
@@ -1220,7 +1221,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PutResponsibilityRules => ";
             var errorMessage = "";
@@ -1265,7 +1266,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
         {
             var prefix = "Relationships.DeleteResponsibilityRules => ";
             var errorMessage = "";

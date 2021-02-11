@@ -7686,12 +7686,18 @@ where   ER.ExecutionID = @ExecutionID
                                     row["Name"] = model.Name.Trim();
                                 }
                                 row["Description"] = model.Description;
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
+                                {
                                     row["Uid"] = model.Uid;
+                                }
                                 else
                                 {
                                     row["IsNew"] = true;
+                                    row["Uid"] = Guid.NewGuid();
                                 }
+
+                                if (model.IsNew == true)
+                                    row["IsNew"] = true;
 
                                 table.Rows.Add(row);
                             }
@@ -7746,7 +7752,7 @@ where   ER.ExecutionID = @ExecutionID
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with this Uid does not exists'
     from api.ExecutionResponsibilityType ERT
     left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
-    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
+    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null and ERT.IsNew <> 1;
 
     update	api.ExecutionResponsibilityType 
     set		Success = 0,
@@ -7805,14 +7811,14 @@ where   ER.ExecutionID = @ExecutionID
                                                           and ResponsibilityTypeId is null
                                                           and Success is null
 	                                              ) S
-                                            on (RT.uid = S.uid)
+                                            on (S.IsNew <> 1)
 											when matched then
 											update  
 												set RT.Name = S.Name,
 												RT.Description = S.Description
                                             when not matched then
-	                                            insert (Name, Description)
-	                                            values (S.Name,S.Description)
+	                                            insert (Name, Description, Uid)
+	                                            values (S.Name,S.Description, S.Uid)
 	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update RT

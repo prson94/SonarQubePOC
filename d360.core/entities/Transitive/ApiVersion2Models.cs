@@ -569,6 +569,9 @@ namespace d360.core.entities
     public class ResponsibilityTypeInsertModel
     {
         [DataMember]
+        public Guid? Uid { get; set; }
+
+        [DataMember]
         public string Name { get; set; }
 
         [DataMember]
@@ -586,6 +589,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string Description { get; set; }
+
+        public bool IsNew { get; set; }
 
     }
 
@@ -880,7 +885,7 @@ namespace d360.core.entities
     }
 
     public class AssetWatchers
-    {        
+    {
         public int? total { get; set; }
         public IEnumerable<AssetWatcher> items { get; set; }
     }
