@@ -40,6 +40,7 @@ import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
                                     <td>
                                          <div [ngSwitch]="item.Type" style="overflow-x: auto">
 	                                        <span *ngSwitchCase="'Html'" style="display:block; word-wrap:break-word !important" [innerHtml]="getHtmlFieldValue(item)"></span>
+                                            <span *ngSwitchCase="'Link'" style="display:block; word-wrap:break-word !important"><a href="{{getUrl(item.Value)}}" target="_blank" style="font-weight:bold">{{getName(item.Value)}}</a></span>
 	                                        <span *ngSwitchDefault style="display:block; word-wrap:break-word !important" >{{item.Value}}</span>
                                         </div>
                                     </td>
@@ -72,6 +73,22 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
         if (typeof item.Value == 'undefined')
             return '';
         return item.Value;
+    }
+
+    getUrl(val: string): string {
+        if (val != undefined) {
+            var url = val.split('|');
+            return url[1];
+        }
+        return "";
+    }
+
+    getName(val: string): string {
+        if (val != undefined) {
+            var name = val.split('|');
+            return name[0];
+        }
+        return "";
     }
 
     getFieldName(item: WorkflowStepFieldChangeDetail): string {
