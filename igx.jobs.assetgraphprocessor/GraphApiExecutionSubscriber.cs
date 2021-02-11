@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,7 +27,9 @@ namespace igx.jobs.assetgraphprocessor
         {
             var info = brokeredMessage.GetBody<AssetEventInfo>();
             if (info.Type != AssetEventType.Execution)
+            {
                 return;
+            }
 
             CoreFunction.AITrackJobStart(functionName);
 
@@ -137,7 +138,6 @@ namespace igx.jobs.assetgraphprocessor
 
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-
         }
 
         private static async Task ProcessAssets(SqlConnection company, List<AssetUpdate> assets, Guid assetTypeUid, AssetEventInfo info, bool isInsert)
@@ -147,8 +147,7 @@ namespace igx.jobs.assetgraphprocessor
             {
                 throw new Exception("Asset JSON not found in storage");
             }
-
-            using (var trans = company.BeginTransaction())
+                        
             {
                 try
                 {
@@ -156,8 +155,7 @@ namespace igx.jobs.assetgraphprocessor
                             select F.[Name] from FieldType F 
                             inner join AssetType A on A.ID = F.AssetTypeID 
                             where A.[uid] = @assetTypeUid and F.IsPartOfKey = 1"
-                    , new { assetTypeUid }
-                    , transaction: trans))
+                    , new { assetTypeUid }))
                     .ToList();
 
                     #region Bulk Copy
@@ -187,9 +185,9 @@ namespace igx.jobs.assetgraphprocessor
                     await company.ExecuteAsync(@"
                             drop table if exists #GraphAssets;
                             create table #GraphAssets ([Uid] uniqueidentifier not null, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
-                            ", transaction: trans);
+                            ");
 
-                    var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                    var bulkCopy = new SqlBulkCopy(company)
                     {
                         BatchSize = sqlBatchSize,
                         DestinationTableName = "#GraphAssets",
@@ -220,7 +218,6 @@ namespace igx.jobs.assetgraphprocessor
 
                             update  #GraphAssets set GraphExists = 0 where GraphExists is null;
                             update  #GraphAssets set AssetExists = 0 where AssetExists is null;"
-                    , transaction: trans
                     , commandTimeout: timeout);
 
                     // Update graph records
@@ -261,24 +258,22 @@ namespace igx.jobs.assetgraphprocessor
                             update  T
                             set     T.UpdateGraph = S.UpdatePath
                             from    api.ExecutionAsset T
-                                    inner join #GraphAssets S on S.Uid = T.Uid;"
-                    , transaction: trans
+                                    inner join #GraphAssets S on S.Uid = T.Uid;"                    
                     , commandTimeout: timeout);
-
-
 
                     bool shouldUpdateGraphHierarchy = true;
                     
                     bool hasChildAssetType = (await company.QueryAsync<bool>(@"select case when T.ID is null then cast(0 as bit) else cast(1 as bit) end from AssetType A
                         left join IntersectTypeDetail T on T.Subject = A.Object and T.SubjectID = A.ObjectID and T.PredicateType in (3,4)
                         where A.[uid] = @assetTypeUid"
-                    , new { assetTypeUid }
-                    , transaction: trans))
+                    , new { assetTypeUid }))
                     .SingleOrDefault();
 
                     //skip heirarchy update if we're deleting leaf assets
-                    if (info.execution.Action == ApiExecutionAction.DeleteAssets && !hasChildAssetType) 
+                    if (info.execution.Action == ApiExecutionAction.DeleteAssets && !hasChildAssetType)
+                    {
                         shouldUpdateGraphHierarchy = false;
+                    }
 
 
                     if (shouldUpdateGraphHierarchy)
@@ -286,27 +281,19 @@ namespace igx.jobs.assetgraphprocessor
                         // Update paths/segments for applicable assets
                         await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
                         , new { executionId = info.execution.ExecutionID }
-                        , transaction: trans
                         , commandTimeout: timeout);
                     }
 
                     // Cleanup 
                     await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
-                    , transaction: trans
                     , commandTimeout: timeout);
 
                     #endregion
 
-                    trans.Commit();
                 }
-                catch (Exception ex)
-                {
-                    try
-                    {
-                        trans.Rollback();
-                        throw ex;
-                    }
-                    catch { }
+                catch
+                {    
+                    // ignore exception
                 }
 
             }
