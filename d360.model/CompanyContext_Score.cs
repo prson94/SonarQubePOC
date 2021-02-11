@@ -863,6 +863,12 @@ where   E.ExecutionID = @ExecutionID
             var fields = new { 
                 originalExecutionUid = fromExecutionUid ?? Guid.Empty
             };
+
+            SendScoreEventWithPayload(changeType, item, fields, timespan);
+        }
+
+        public void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null)
+        {
             var apiExecution = new ApiExecution
             {
                 ExecutionID = Guid.NewGuid(),
@@ -889,7 +895,7 @@ where   E.ExecutionID = @ExecutionID
             {
                 QueueSource.CreateMessageAsync(Config.GetValue<string>("ScoringQueue"), info, timespan.Value).Wait();
             }
-            else 
+            else
             {
                 QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
             }

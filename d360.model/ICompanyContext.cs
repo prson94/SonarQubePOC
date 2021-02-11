@@ -308,6 +308,7 @@ namespace d360.model
         void SendApiGraphEvent(ApiExecutionInfo info);
         Task SaveScoreProcessingResultsAsync<T>(Guid executionUid, ScoreQueueChangeType changeType, string resultFileSuffix, T item, DateTime? startedOn = null);
         void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid? fromExecutionUid = null, TimeSpan? timespan = null);
+        void SendScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, dynamic fields, TimeSpan? timespan = null);
         void SendContinuingScoreEventWithPayload<T>(ScoreQueueChangeType changeType, T item, Guid executionUid, DateTime startedOn);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);

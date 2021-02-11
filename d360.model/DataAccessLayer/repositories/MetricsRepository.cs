@@ -2306,5 +2306,73 @@ for json path";
 
             return models;
         }
+
+        internal class ReclaulatMeasureExecutionFields
+        {
+            public Guid measureUid { get; set; }
+            public string action { get; set; }
+        }
+        public void RecalculateMeasureScoreItems(Guid allocationUid, Guid measureUid) 
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                throw new StatusCodeException(HttpStatusCode.Forbidden);
+            }
+
+            var measure = Company.GetByUid<MetricAsset>(measureUid, a => a.Versions, a => a.Allocation);
+
+            if (measure == null)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, $"Measure with Uid of {measureUid} could not be found.");
+            }
+
+            if (measure.AllocationUid != allocationUid)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, $"Measure does not belong to allocation with Uid of {allocationUid}.");
+            }
+
+            if (measure.Allocation == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not belong to a valid Allocation, indicating an invalid measure.");
+            }
+
+            if (measure.Allocation.ScoreType != ScoreType.Governance)
+            {
+                throw new GenericException(HttpStatusCode.BadRequest, $"Measure does not belong to a Governance score definition.");
+            }
+
+            if (measure.Versions == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+            }
+
+            var latestVersion = measure.Versions.OrderByDescending(v => v.EffectiveDate).FirstOrDefault();
+
+            if (latestVersion == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
+            }
+
+            var startedOnLimit = DateTime.UtcNow.AddHours(-2);
+            var existingExecutions = Company
+                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= startedOnLimit && !e.CompletedOn.HasValue)
+                .ToList()
+                .Select(e => new { e.ExecutionID, Fields = JsonConvert.DeserializeObject<ReclaulatMeasureExecutionFields>(e.Fields ?? "{}") })
+                .ToList();
+
+            if (existingExecutions.Count > 0)
+            {
+                if (existingExecutions.Any(e => e.Fields.measureUid == measureUid && e.Fields.action == "recalculating"))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, $"Measure is currently being recalculated. Please wait until we have completed this action then try again.");
+                }
+            }
+
+            Company.SendScoreEventWithPayload(
+                ScoreQueueChangeType.MeasureChanged,
+                new MeasureChangedModel { EffectiveDate = latestVersion.EffectiveDate, MetricAssetUid = measure.Uid, MetricAssetVersionUid = latestVersion.Uid },
+                new ReclaulatMeasureExecutionFields { measureUid = measureUid, action = "recalculating" }
+            );
+        }
     }
 }
