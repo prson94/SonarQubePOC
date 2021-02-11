@@ -1045,6 +1045,7 @@ where   ExecutionID <> @id
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                            scoreItems.Columns.Add("OtherConditions", typeof(string));
                             scoreItems.Columns.Add("DecimalValue", typeof(float));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
@@ -1087,6 +1088,7 @@ where   ExecutionID <> @id
                                 scoreItemRow["Evidence"] = s.Evidence ?? "{}";
                                 if (s.ConditionUid.HasValue)
                                     scoreItemRow["ConditionUid"] = s.ConditionUid;
+                                scoreItemRow["OtherConditions"] = s.OtherConditions ?? "[]";
                                 if (s.AdjustedMaxWeight.HasValue)
                                     scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
                                 scoreItems.Rows.Add(scoreItemRow);
@@ -1142,6 +1144,7 @@ where   ExecutionID <> @id
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
+                                    OtherConditions nvarchar(max) NOT NULL,
 	                                AdjustedMaxWeight decimal(8,6) NULL,
                                     DecimalValue float NULL
                                 );
@@ -1182,6 +1185,7 @@ where   ExecutionID <> @id
                                 bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
                                 bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
                                 bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
+                                bulkCopy.ColumnMappings.Add("OtherConditions", "OtherConditions");
                                 bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
 
                                 await bulkCopy.WriteToServerAsync(scoreItems);
@@ -1281,10 +1285,10 @@ where   N.ActualUid is null;", transaction: trans);
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
                                 "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
-                                "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
+                                "T.ConditionUid = S.ConditionUid, T.OtherConditions = S.OtherConditions, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, OtherConditions, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.OtherConditions, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
                             await company.ExecuteAsync(

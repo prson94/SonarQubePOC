@@ -174,8 +174,16 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             if (metConditions.ConditionMet)
             {
-                metConditions.SelectedWeight = metConditions.Conditions[0].Weight;
-                metConditions.SelectedThreshold = metConditions.Conditions[0].Threshold;
+                if (metConditions.Conditions.Count > 0)
+                {
+                    metConditions.SelectedWeight = metConditions.Conditions[0].Weight;
+                    metConditions.SelectedThreshold = metConditions.Conditions[0].Threshold;
+                }
+                else 
+                {
+                    metConditions.SelectedWeight = measure.Weight;
+                    metConditions.SelectedThreshold = measure.Threshold;
+                }
             }
             else
             {

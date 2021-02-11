@@ -32,11 +32,13 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             get 
             {
                 var uids = new List<Guid>();
-                for (int i = 0; i < Conditions.Count; i++)
-                {
-                    if (i > 0)
+                if (Conditions != null) {
+                    for (int i = 0; i < Conditions.Count; i++)
                     {
-                        uids.Add(Conditions[i].ConditionUid);
+                        if (i > 0)
+                        {
+                            uids.Add(Conditions[i].ConditionUid);
+                        }
                     }
                 }
                 return uids;
