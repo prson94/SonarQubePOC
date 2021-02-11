@@ -57,7 +57,6 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     child = "";
     closeLabel: string = "Cancel";
     conditionFormMode = FormMode.Default;
-    //conditions: FieldCondition[] = [];
     conditionGroups: MetricAssetVersionConditionViewModel[] = [];
     currentEffectiveDate: Date;
     displayWeight: number;
@@ -209,7 +208,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     addConditionGroupFormControls(index: number) {
         const prefix = `cg_${index}_`;
         this.metricForm.addControl(prefix + 'matchType', new FormControl());
-        this.metricForm.addControl(prefix + 'weight', new FormControl());
+        this.metricForm.addControl(prefix + 'weight', new FormControl('', [this.isValidWeightOptional()]));
     }
 
     removeConditionGroupFormControls(index: number) {
@@ -532,6 +531,19 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined)
+                return {};
+            if ((control.value as number) < 1 || (control.value as number) > 100)
+                return {
+                    outOfRange: { value: control.value }
+                };
+            return null;
+        };
+    }
+
+    isValidWeightOptional(): ValidatorFn {
+        type NewType = AbstractControl;
+        return (control: NewType): { [key: string]: any } | null => {
+            if (control.value == null || control.value == undefined || control.value == "")
                 return {};
             if ((control.value as number) < 1 || (control.value as number) > 100)
                 return {

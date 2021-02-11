@@ -38,6 +38,17 @@ import { BaseMeasureEditorComponent } from './measure-editor-base.component';
     .top-margin{
         margin-top: 8px;
     }
+    .weight-container{
+        dislpay:flex;
+    }
+    .weight-row{
+        display: inline-flex;
+        margin-right: auto;
+        width: 100%;
+    }
+    .right{
+        margin-left:auto
+    }
     `]
 
 })

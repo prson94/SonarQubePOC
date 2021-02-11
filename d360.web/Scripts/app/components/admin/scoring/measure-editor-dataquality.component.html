@@ -164,17 +164,26 @@
                                 Condition Group {{cg.DisplayOrder}}
                             </div>
                             <div class="input-actions">
-                                <label for="weight" class="ig-label">
-                                    Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
-                                </label>
-                                <ig-number-input *ngIf="!isLoadingFields"
-                                                 [tabindex]="4"
-                                                 placeholder="25"
-                                                 [min]="1"
-                                                 [max]="100"
-                                                 [step]="1"
-                                                 formControlName="cg_{{cg.Position}}_weight"
-                                                 [(ngModel)]="cg.DisplayWeight"></ig-number-input>
+                                <div class="weight-container">
+                                    <div class="weight-row">
+                                        <label for="weight" class="ig-label right">
+                                            Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                                        </label>
+                                        <ig-number-input [tabindex]="4"
+                                                         placeholder="25"
+                                                         [min]="1"
+                                                         [max]="100"
+                                                         [step]="1"
+                                                         name="cg_{{cg.Position}}_weight"
+                                                         formControlName="cg_{{cg.Position}}_weight"
+                                                         [(ngModel)]="cg.DisplayWeight"></ig-number-input>
+                                    </div>
+                                    <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
+                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
+                                            Please enter a value between 1 and 100
+                                        </div>
+                                    </div>
+                                </div>
                                 <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Measure Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>
