@@ -141,6 +141,9 @@
   <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
     <value>Forbidden user is not an administrator.</value>
   </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Invalid Request</value>
+  </data>
   <data name="InvalidScoreType" xml:space="preserve">
     <value>Invalid score type provided, please provide a valid score type.</value>
   </data>
