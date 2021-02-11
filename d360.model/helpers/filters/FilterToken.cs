@@ -18,7 +18,7 @@ namespace d360.model.helpers
         private string field { get; set; }
         public string @operator { get; set; }
         private object value { get; set; }
-        private bool isNullValue { get; set; } = false;
+        private bool isNullValue { get; set; }
         private FieldType fieldType { get; set; }
         private string fieldColumn { get; set; }
         private bool isLookupField { get; set; }
@@ -60,7 +60,7 @@ namespace d360.model.helpers
             @operator = op;
             this.value = value;
 
-            if (this.value != null && this.value.ToString().ToLower() == "null")
+            if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
                 this.isNullValue = true;
             }
@@ -257,7 +257,7 @@ namespace d360.model.helpers
 
         private void UpdateTokenForNullValue()
         {
-            if (!(new string[] { "eq", "ne" }.Contains(@operator)))
+            if (!(new []{ "eq", "ne" }.Contains(@operator)))
             {
                 throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
             }
