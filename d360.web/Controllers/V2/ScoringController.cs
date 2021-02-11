@@ -587,7 +587,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Post externally calculated scores and measure results.
+        /// Post externally calculated scores and measure results based on score type.
         /// </summary>
         /// <param name="model">The externally calculated score results to load.</param>
         /// <param name="scoreType">
@@ -642,7 +642,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Post measure results to calculate a score internally.
+        /// Post measure results by score type to calculate a score internally.
         /// </summary>
         /// <param name="model">The score results to load.</param>
         /// <param name="scoreType">
@@ -699,7 +699,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Post externally calculated scores and measure results.
+        /// Post externally calculated scores and measure results based on score definition UID.
         /// </summary>
         /// <param name="model">The externally calculated score results to load.</param>
         /// <param name="allocationUid">The unique identifier of the score definition.</param>
@@ -766,7 +766,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Post measure results to calculate a score internally.
+        /// Post measure results by the score definition UID  to calculate a score internally.
         /// </summary>
         /// <param name="model">The score results to load.</param>
         /// <param name="allocationUid">The unique identifier of the score definition.</param>
