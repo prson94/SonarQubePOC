@@ -105,11 +105,11 @@
 
     </ng-container>
 
-    <d3s-modal [title]="'Rule Results'" additionalClasses="xlarge-dialog modal-measure" (onClose)="showRuleResults(false)" [isVisible]="isRuleResultsModalVisible">
-        <div style="height: calc(100vh - 80px)">
-            <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [assetTypeName]="assetTypeName" [assetName]="assetName">
-            </measure-rule-results>
-        </div>
-    </d3s-modal>
-
 </div>
+
+<d3s-modal [title]="'Rule Results'" additionalClasses="xlarge-dialog modal-measure" (onClose)="showRuleResults(false)" [isVisible]="isRuleResultsModalVisible">
+    <div style="height: calc(100vh - 80px)">
+        <measure-rule-results (onClose)="showRuleResults(false);" [scoreItem]="selected" [assetTypeName]="assetTypeName" [assetName]="assetName">
+        </measure-rule-results>
+    </div>
+</d3s-modal>

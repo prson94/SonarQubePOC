@@ -406,6 +406,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns the rule results used to determine the data quality score for this score item based on a defined measure.
         /// </summary>
+        /// <param name="scoreItemUid">The Uid of the score item result. This is the ScoreItemUid property value which may be found via the following endpoint: api/v2/metrics/{allocationUid}/assets/{assetUid}/pointbreakdown</param>
         /// <remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard

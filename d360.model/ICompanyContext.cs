@@ -340,5 +340,29 @@ namespace d360.model
         string ParsePageOffsetSql(int pageNumber, int pageSize, int pageSizeLimit = 10000);
 
         #endregion
+
+        #region Scoring
+
+        /// <summary>
+        /// Gets the SQL statement to execute for data quality measures, depending on the type of query needed.
+        /// </summary>
+        /// <param name="queryType">
+        /// 1 => Impacted Assets/Effective Dates by ResultUids.
+        /// 2 => Impacted Asset/Effective Dates By Provided Uid.
+        /// 3 => Get Measure Results For Calculation.
+        /// </param>
+        DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid);
+
+        /// <summary>
+        /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 2
+        /// </summary>
+        List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate);
+
+        /// <summary>
+        /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 3
+        /// </summary>
+        List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime minDate, DateTime? maxDate);
+
+        #endregion
     }
 }

@@ -986,7 +986,206 @@ from	metrics.AssetVersion V
 
         #region Score Engine Methods
 
+        public DataQualityMeasureQueryModel BuildDataQualityMeasureQueryModel(int queryType, Guid assetVersionRollupPathUid)
+        {
+            var dqQueryDetail = new DataQualityMeasureQueryModel
+            {
+                AssetVersionRollupPathUid = assetVersionRollupPathUid
+            };
 
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var dqQueryDetails = Connection.QueryMultiple(
+                "metrics.BuildDataQualityMeasureQuery @queryType, @assetVersionRollupPathUid",
+                new { queryType, assetVersionRollupPathUid }
+                );
+            var resultSqlQueryStatements = dqQueryDetails.Read<string>();
+            dqQueryDetail.FilterMatchType = dqQueryDetails.Read<MetricMatchType>().Single();
+            var resultFilters = dqQueryDetails.Read<DataQualityMeasureQueryFilterModel>();
+
+            dqQueryDetail.Sql = string.Join("", resultSqlQueryStatements);
+            dqQueryDetail.Filters = resultFilters.ToList();
+
+            var filterSql = "";
+            if (dqQueryDetail.Filters.Count > 0)
+            {
+
+                dqQueryDetail.Filters.ForEach(f =>
+                {
+                    var listFieldQuery = $" in (select FD.AssetID from FieldDetail FD inner join FieldLookupValue LV on LV.FieldTypeID = FD.FieldTypeID and LV.Value = FD.Value and FD.AssetTypeID = {f.AssetTypeID} and FD.FieldTypeID = {f.FieldTypeID} and ";
+                    var nonListFieldQuery = $" in (select AssetID from FieldDetail where AssetTypeID = {f.AssetTypeID} and FieldTypeID = {f.FieldTypeID} and ";
+
+                    f.WhereQuery += ((f.Type == "Lookup") ? listFieldQuery : nonListFieldQuery);
+                    var queryColumn = ((f.Type == "Lookup") ? "LV.AssetUid" : "FormattedValue");
+
+                    var paramName = $"@P{f.AssetTypeID}_{f.FieldTypeID}";
+                    var dbTypeToCastTo = "";
+                    switch (f.Type)
+                    {
+                        case "Date":
+                        case "DateTime":
+                            dbTypeToCastTo = "datetime";
+                            DateTime dt;
+                            if (DateTime.TryParse(f.Value, out dt))
+                            {
+                                f.Parameter = new SqlParameter(paramName, dt);
+                            }
+                            break;
+                        case "Decimal":
+                            dbTypeToCastTo = "decimal";
+                            decimal dc;
+                            if (decimal.TryParse(f.Value, out dc))
+                            {
+                                f.Parameter = new SqlParameter(paramName, dc);
+                            }
+                            break;
+                        case "Number":
+                            dbTypeToCastTo = "bigint";
+                            long lg;
+                            if (long.TryParse(f.Value, out lg))
+                            {
+                                f.Parameter = new SqlParameter(paramName, lg);
+                            }
+                            break;
+                        default:
+                            if (!string.IsNullOrEmpty(f.Value))
+                            {
+                                f.Parameter = new SqlParameter(paramName, f.Value);
+                            }
+                            break;
+                    }
+
+                    switch (f.Operator)
+                    {
+                        case Operator.After:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
+                            break;
+                        case Operator.Before:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
+                            break;
+                        case Operator.Contains:
+                            queryColumn = $"{queryColumn} like '%' + {paramName} + '%'";
+                            break;
+                        case Operator.EndsWith:
+                            queryColumn = $"{queryColumn} like '%' + {paramName}";
+                            break;
+                        case Operator.Equals:
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} = {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
+                            break;
+                        case Operator.GreaterThan:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) > {paramName}";
+                            break;
+                        case Operator.GreaterThanOrEquals:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
+                            break;
+                        case Operator.IsFalse:
+                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 1) = 0";
+                            break;
+                        case Operator.IsTrue:
+                            queryColumn = $"coalesce(try_cast({queryColumn} as bit), 0) = 1";
+                            break;
+                        case Operator.LessThan:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) < {paramName}";
+                            break;
+                        case Operator.LessThanOrEquals:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
+                            break;
+                        case Operator.NotContains:
+                            queryColumn = $"{queryColumn} not like '%' + {paramName} + '%'";
+                            break;
+                        case Operator.NotEquals:
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} <> {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) <> {paramName}";
+                            break;
+                        case Operator.NotPopulated:
+                            queryColumn = $"{queryColumn} is null";
+                            break;
+                        case Operator.OnOrAfter:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) >= {paramName}";
+                            break;
+                        case Operator.OnOrBefore:
+                            queryColumn = $"try_cast({queryColumn} as {dbTypeToCastTo}) <= {paramName}";
+                            break;
+                        case Operator.Populated:
+                            queryColumn = $"{queryColumn} is not null";
+                            break;
+                        case Operator.StartsWith:
+                            queryColumn = $"{queryColumn} like {paramName} + '%'";
+                            break;
+                        default: //does the same thing as Equals
+                            queryColumn = (string.IsNullOrEmpty(dbTypeToCastTo)) ?
+                                $"{queryColumn} = {paramName}" :
+                                $"try_cast({queryColumn} as {dbTypeToCastTo}) = {paramName}";
+                            break;
+
+                    }
+
+                    f.WhereQuery += queryColumn + ")";
+                });
+
+                filterSql = " and (" + string.Join(
+                    dqQueryDetail.FilterMatchType == MetricMatchType.Any ? " or " : " and ",
+                    dqQueryDetail.Filters.Select(f => f.WhereQuery)
+                    ) + ") ";
+            }
+
+            dqQueryDetail.Sql = dqQueryDetail.Sql.Replace("{{FILTERS}}", filterSql);
+
+            return dqQueryDetail;
+        }
+
+        public List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime minDate, DateTime? maxDate)
+        {
+            var args = new DynamicParameters();
+            args.Add("@AssetUid", assetUid, DbType.Guid);
+            args.Add("@MinimumEffectiveDate", minDate, DbType.Date);
+            args.Add("@MaximumEffectiveDate", maxDate ?? DateTime.UtcNow, DbType.Date);
+            foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
+            {
+                args.Add(p.ParameterName, p.Value, p.DbType);
+            }
+
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var list = Connection.Query<DataQualityMeasureQueryResultModel>(query.Sql, args).ToList();
+
+            return list;
+        }
+
+        public List<AssetMeasureModel> GetDataQualityAssetEffectiveDateResultModels(DataQualityMeasureQueryModel query, Guid metricAssetUid, Guid metricAssetVersionUid, DateTime measureEffectiveDate)
+        {
+            var args = new DynamicParameters();
+            args.Add("@AssetVersionEffectiveDate", measureEffectiveDate, DbType.Date);
+            foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
+            {
+                args.Add(p.ParameterName, p.Value, p.DbType);
+            }
+
+            if (Connection.State != ConnectionState.Open)
+                Connection.Open();
+
+            var list = Connection.Query<AssetMeasureModel>(query.Sql, args)
+                .ToList()
+                .Select(o => new AssetMeasureModel {
+                    AssetUid = o.AssetUid, 
+                    EffectiveDate = o.EffectiveDate, 
+                    Measures = new List<AssetMeasureChildModel> {
+                        new AssetMeasureChildModel { 
+                            MetricAssetUid = metricAssetUid, 
+                            MetricAssetVersionUid = metricAssetVersionUid, 
+                            Result = false
+                        }
+                    }
+                })
+                .ToList();
+
+            return list;
+        }
 
         #endregion
     }
