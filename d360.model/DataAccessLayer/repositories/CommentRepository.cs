@@ -144,12 +144,12 @@ namespace d360.model.DataAccessLayer
 			}
 		}
 
-		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji)
+		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
 		{
 			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 			if (comment != null)
 			{
-				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId);
+				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji);
 				if (!commentVoteExists)
 				{
 					if (CompanyContext.Add(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
@@ -157,6 +157,10 @@ namespace d360.model.DataAccessLayer
 						return true;
 					}
 				}
+				else if (toggle == true)
+                {
+					DeleteVote(commentUid, resourceId, emoji);
+                }
 				
 				return false;
 			}
@@ -209,10 +213,10 @@ namespace d360.model.DataAccessLayer
 			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 			if (comment != null)
 			{
-				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId);
-				if (commentVoteExists)
+				var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji).FirstOrDefault();
+				if (commentVote != null)
 				{
-					if (CompanyContext.Delete(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
+					if (CompanyContext.Delete(commentVote))
 					{
 						return true;
 					}

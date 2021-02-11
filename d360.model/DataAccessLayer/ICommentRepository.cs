@@ -11,7 +11,7 @@ namespace d360.model.DataAccessLayer
     public interface ICommentRepository
     {
         Task<CommentDetail> AddComment(CommentApiPostModel comment);
-        bool AddVote(Guid commentUid, int resourceId, Emoji emoji);
+        bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true);
         bool DeleteComment(Guid commentUid);
         bool DeleteVote(Guid commentUid, int resourceId, Emoji emoji);
         Task<CommentDetail> EditComment(Guid commentUid, CommentApiPutModel comment);

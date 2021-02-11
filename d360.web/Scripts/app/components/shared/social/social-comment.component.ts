@@ -1,9 +1,10 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit } from "@angular/core";
 import { BaseComponent } from "../base.component";
 import { SocialService } from "../../../services/social.service";
-import { CommentDetail, CommentType, Emoji } from "../../../models/social.model";
+import { CommentAggregateVoteDetail, CommentDetail, CommentType, Emoji } from "../../../models/social.model";
 import { Router } from "@angular/router";
 import { CurrentCompanySettings } from "../../../static/company-settings"
+import { map } from "rxjs/operators";
 
 declare var CurrentResourceID;
 
@@ -89,8 +90,7 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     isDeletable: boolean = false;
     isEditable: boolean = false;
-
-    //public emoji: Emoji;
+    
 
     constructor(private socialService: SocialService, private router: Router) {
         super(); 
@@ -99,26 +99,43 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
-        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsDown).length;
-        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji == Emoji.ThumbsUp).length;
+
+        this.calculateVotes();
     }
 
     doVote(emojiString: string) {
         let emoji: Emoji = Emoji[emojiString];
 
-        if (emoji == Emoji.ThumbsDown) {
-            this.downVotes++;
-        }
-        else {
-            this.upVotes++;
+        if (this.isLoading === true) {
+            return;
         }
 
-        this.socialService.addVote(this.comment.Uid, emoji).subscribe(
-            res => {
+        this.isLoading = true;
+
+        this.socialService.addVote(this.comment.Uid, emoji)
+            .subscribe((res) => {
                 if (res) {
-                    this.comment.Emojis.find((e) => e.Emoji == emoji).Count++;
+                    this.socialService.getCommentVotes(this.comment.Uid)
+                        .subscribe((v) => {
+                            let emojis = this.comment.Emojis.find((e) => e.Emoji === emoji);
+                            let count = v.filter((e) => e.emoji === emoji).length;
+
+                            if (emojis) {
+                                emojis.Count = count;
+                            } else {
+                                this.comment.Emojis.push({ Emoji: emoji, Count: count });
+                            }
+
+                            this.calculateVotes();
+                            this.isLoading = false;
+                        });
                 }
             });
+    }
+
+    private calculateVotes() {
+        this.downVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsDown).reduce((prev, curr) => prev + curr.Count, 0);
+        this.upVotes = this.comment.Emojis.filter((e) => e.Emoji === Emoji.ThumbsUp).reduce((prev, curr) => prev + curr.Count, 0);
     }
 
     private deleteCommentClick() {

@@ -56,6 +56,12 @@ export class CommentDetails {
     comments: CommentDetail[];
 }
 
+export class CommentVoteDetail {
+    emoji: Emoji;
+    resourceUid: string;
+    userDisplayName: string;
+}
+
 export class CommentApiPostModel {
     AssetUid: string;
     ParentUid: string;
