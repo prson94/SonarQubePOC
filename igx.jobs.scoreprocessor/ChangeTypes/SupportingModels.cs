@@ -26,6 +26,22 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             }
         }
         public List<MetConditionModel> Conditions { get; set; } = new List<MetConditionModel>();
+
+        public List<Guid> ExtraneousConditions 
+        { 
+            get 
+            {
+                var uids = new List<Guid>();
+                for (int i = 0; i < Conditions.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        uids.Add(Conditions[i].ConditionUid);
+                    }
+                }
+                return uids;
+            } 
+        }
     }
 
     internal class MetConditionModel

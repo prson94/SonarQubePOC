@@ -452,7 +452,7 @@ where   ExecutionID <> @id
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
                         if (measure != null)
                         {
-                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure);
+                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure, true);
                             
                             // This helps determine whether to remove the measure from an existing score IF there is a condition on a new version where it makes the measure no longer apply to an asset's score (GOV-13547).
                             bool measureDeleted = false;
@@ -468,7 +468,8 @@ where   ExecutionID <> @id
                                         AssetVersionUid = measure.MetricAssetVersionUid,
                                         RunDate = DateTime.UtcNow,
                                         UpdatedOn = DateTime.UtcNow,
-                                        ConditionUid = conditionValidator.SelectedConditionUid
+                                        ConditionUid = conditionValidator.SelectedConditionUid,
+                                        OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions)
                                     };
 
                                     var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
@@ -854,7 +855,7 @@ where   ExecutionID <> @id
                                 if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(aM.MetricAssetVersionUid))
                                 { 
                                     // We need to add a previous result for the missing measure, or create a new one as a failure.
-                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
+                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM, true);
                                     var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
                                     if (conditionValidator.ConditionMet)
                                     {
@@ -878,6 +879,7 @@ where   ExecutionID <> @id
                                             RunDate = DateTime.UtcNow,
                                             AssetVersionUid = aM.MetricAssetVersionUid,
                                             ConditionUid = conditionValidator.SelectedConditionUid,
+                                            OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions),
                                             UpdatedOn = DateTime.UtcNow,
                                             Value = scoreItemValue,
                                             Uid = scoreItemUid
