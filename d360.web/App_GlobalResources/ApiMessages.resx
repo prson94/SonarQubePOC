@@ -129,6 +129,9 @@
   <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
     <value>You are not authorized to perform this action.</value>
   </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>Error recalculating measure score items</value>
+  </data>
   <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
     <value>Error adding score results</value>
   </data>

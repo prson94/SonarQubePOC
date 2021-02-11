@@ -501,7 +501,7 @@ where   ExecutionID <> @id
                                                     var dqQueryDetail = dqMeasureQueryLibrary.FirstOrDefault(dq => dq.AssetVersionRollupPathUid == measure.RollupPath.AssetVersionRollupPathUid);
                                                     if (dqQueryDetail == null)
                                                     {
-                                                        dqQueryDetail = BuildDataQualityMeasureQueryModel(measure.AllocationUid, measure.RollupPath.AssetVersionRollupPathUid);
+                                                        dqQueryDetail = Db.BuildDataQualityMeasureQueryModel(3, measure.RollupPath.AssetVersionRollupPathUid);
                                                         dqMeasureQueryLibrary.Add(dqQueryDetail); // Add to library for future reference.
                                                     }
 
@@ -525,12 +525,13 @@ where   ExecutionID <> @id
                                                             case MetricUpdateFrequency.Quarterly:
                                                                 minimumDate = minimumDate.AddMonths(-3);
                                                                 break;
-                                                            case MetricUpdateFrequency.None:
                                                             case MetricUpdateFrequency.Weekly:
                                                                 minimumDate = minimumDate.AddDays(-7);
                                                                 break;
+                                                            case MetricUpdateFrequency.None:
+                                                                break;
                                                         }
-                                                        var rollupPathResults = GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
+                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {

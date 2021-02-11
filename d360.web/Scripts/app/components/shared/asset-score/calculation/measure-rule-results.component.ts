@@ -35,6 +35,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     ngOnChanges(changes: SimpleChanges): void {
         if (changes["scoreItem"] && changes["scoreItem"].currentValue !== changes["scoreItem"].previousValue) {
             if (this.scoreItem) {
+                this.selected = null;
                 this.currentSearchPhrase = null;
                 this.getResults(1, 250);
             }
@@ -46,6 +47,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     }
 
     cancel() {
+        this.selected = null;
         this.onClose.emit(null);
     }
 
