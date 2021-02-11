@@ -2331,20 +2331,31 @@ for json path";
                 throw new GenericException(HttpStatusCode.NotFound, $"Measure does not belong to allocation with Uid of {allocationUid}.");
             }
 
+            if (measure.Allocation == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not belong to a valid Allocation, indicating an invalid measure.");
+            }
+
             if (measure.Allocation.ScoreType != ScoreType.Governance)
             {
                 throw new GenericException(HttpStatusCode.BadRequest, $"Measure does not belong to a Governance score definition.");
+            }
+
+            if (measure.Versions == null)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
             }
 
             var latestVersion = measure.Versions.OrderByDescending(v => v.EffectiveDate).FirstOrDefault();
 
             if (latestVersion == null)
             {
-                throw new GenericException(HttpStatusCode.InternalServerError, $"Measure with Uid of {measureUid} does not have any versions.");
+                throw new GenericException(HttpStatusCode.Conflict, $"Measure does not contain any versions, indicating an invalid measure.");
             }
 
+            var startedOnLimit = DateTime.UtcNow.AddHours(-2);
             var existingExecutions = Company
-                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= DateTime.UtcNow.AddHours(-2) && !e.CompletedOn.HasValue)
+                .Filter<ApiExecution>(e => e.Method == "SCORE" && e.StartedOn <= startedOnLimit && !e.CompletedOn.HasValue)
                 .ToList()
                 .Select(e => new { e.ExecutionID, Fields = JsonConvert.DeserializeObject<ReclaulatMeasureExecutionFields>(e.Fields ?? "{}") })
                 .ToList();
