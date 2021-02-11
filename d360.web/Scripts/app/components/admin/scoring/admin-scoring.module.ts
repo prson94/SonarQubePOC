@@ -18,7 +18,6 @@ import { DataQualityMeasureEditorComponent } from './measure-editor-dataquality.
 import { ExternalMeasureEditorComponent } from './measure-editor-external.component';
 import { GovernanceMeasureEditorComponent } from './measure-editor-governance.component';
 import { MeasureListComponent } from './measure-list.component';
-import { AdminMetricPassTestDetailsComponent } from './admin-metric-pass-test-details.component';
 
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -57,7 +56,6 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.module';
 import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score-definition.module';
-import { MeasureConditionsDetailsComponent } from './measure-conditions-details.component';
 
 
 @NgModule({
@@ -109,6 +107,7 @@ import { MeasureConditionsDetailsComponent } from './measure-conditions-details.
         IgMessageBoxModule,
         PopupMenuModule,
         IgBadgeModule,
+        ScoreDefinitionModule,
 
         MetricPassTestDetailsModule
 
@@ -123,8 +122,7 @@ import { MeasureConditionsDetailsComponent } from './measure-conditions-details.
         GovernanceMeasureEditorComponent,
 
         MeasureListComponent,
-        AdminMeasureHistoryComponent,
-        MeasureConditionsDetailsComponent
+        AdminMeasureHistoryComponent
     ],
     providers: [
         {
