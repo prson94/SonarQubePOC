@@ -111,10 +111,23 @@
                                 (measurePointsChanged)="measurePoints=$event"></score-history>
             </div>
             <div [hidden]="!(activeTab=='Calculation')">
-                <score-calculation [scoreType]="selectedScoreType" [formattedCheck]="defTab.getPassCheckValue()" [selected]="selectedPoint" [measures]="pointBreakdown" [assetTypeName]="assetTypeName" [assetName]="assetName"></score-calculation>
+                <score-calculation 
+                                   [scoreType]="selectedScoreType" 
+                                   [formattedCheck]="defTab.getPassCheckValue()" 
+                                   [selected]="selectedPoint" 
+                                   [measures]="pointBreakdown" 
+                                   [assetTypeName]="assetTypeName" 
+                                   [assetName]="assetName"             
+                                   [definition]="selectedMetric?.Definition">
+                </score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')">
-                <score-definition #defTab [isExternallyCalculated]="isExternallyCalculated" [selectedMetric]="selectedMetric" [assetTypeUid]="assetTypeUid" [allocationUid]="allocationUid"></score-definition>
+                <score-definition #defTab 
+                                  [isExternallyCalculated]="isExternallyCalculated" 
+                                  [selectedMetric]="selectedMetric" 
+                                  [assetTypeUid]="assetTypeUid" 
+                                  [allocationUid]="allocationUid">
+                </score-definition>
             </div>
         </div>
     </div>
