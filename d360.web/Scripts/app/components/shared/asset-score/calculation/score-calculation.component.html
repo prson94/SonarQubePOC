@@ -55,12 +55,12 @@
             <div class="calculation-group">
                 <div class="title">Measure Score</div>
 
-                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score (operation) &#215; measure weight</div>
+                <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
                 <div class="indented-line" *ngIf="!selected._adjustedGroupWeight">
                     = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
                 </div>
 
-                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score (operation) &#215; measure weight &#215; group weight</div>
+                <div class="indented-line" *ngIf="selected._adjustedGroupWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
                 <div class="indented-line" *ngIf="selected._adjustedGroupWeight">
                     = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}} &#215; {{getAsPrecentage(selected._adjustedGroupWeight)}}
                 </div>
