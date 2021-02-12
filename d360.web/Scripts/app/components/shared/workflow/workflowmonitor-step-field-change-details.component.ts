@@ -76,7 +76,7 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
     }
 
     getUrl(val: string): string {
-        if (val !== undefined) {
+        if (typeof val !== "undefined") {
             var url = val.split("|");
             return url[1];
         }
@@ -84,7 +84,7 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
     }
 
     getName(val: string): string {
-        if (val !== undefined) {
+        if (typeof val !== "undefined") {
             var name = val.split("|");
             return name[0];
         }
