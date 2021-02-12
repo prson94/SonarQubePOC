@@ -147,7 +147,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditionGroups)
+        this.originalConditions = _.cloneDeep(this.conditionGroups);
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (!this.uid) {

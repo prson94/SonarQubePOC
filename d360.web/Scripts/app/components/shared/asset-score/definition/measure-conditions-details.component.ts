@@ -22,12 +22,12 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
     }
 
     formatConditions() {
-        if (!this.conditionGroups || (this.screenReferences.operators.length == 0 && this.screenReferences.fields.length == 0)) {
+        if (!this.conditionGroups || (this.screenReferences.operators.length === 0 && this.screenReferences.fields.length === 0)) {
             return;
         }
         this.conditionGroups.forEach((cg) => {
             let conditions = cg.ConditionItems;
-            cg.DisplayWeight = (cg.Weight * 100)
+            cg.DisplayWeight = (cg.Weight * 100);
             conditions.forEach((c) => {
                 const field = this.screenReferences.fields.find((f) => f.ApiName === c.ConditionFieldTypeName);
                 c.OperatorText = this.screenReferences.operators.find((o) => o.ID === c.Operator).Name;
@@ -50,27 +50,22 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
                             }
                             break;
                         case "Date":
-                            if (c.Values) {
-                                if (c.Values[0]) {
-                                    c.SingleValue = c.Values[0];
-                                    c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
-                                }
+                            if (c.Values && c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
+
                             }
                             break;
                         case "DateTime":
-                            if (c.Values) {
-                                if (c.Values[0]) {
-                                    c.SingleValue = c.Values[0];
-                                    c.ValuesText = new Date(c.Values[0]).toLocaleString();
-                                }
+                            if (c.Values && c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
                             }
                             break;
                         default:
-                            if (c.Values) {
-                                if (c.Values[0]) {
-                                    c.SingleValue = c.Values[0];
-                                    c.ValuesText = c.Values[0];
-                                }
+                            if (c.Values && c.Values[0]) {
+                                c.SingleValue = c.Values[0];
+                                c.ValuesText = c.Values[0];
                             }
                             break;
                     }

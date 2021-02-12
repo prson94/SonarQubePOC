@@ -107,7 +107,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         this.selection = e === null ? null : e.data;
 
         this.showConditions = this.hasConditions(this.selection);
-        this.showPassTest = (this.hasPassTest(this.selection) && !this.Measure.IsGroup)
+        this.showPassTest = (this.hasPassTest(this.selection) && !this.Measure.IsGroup);
     }
 
     private hasPassTest(item: MetricAssetHistoryViewModel) {

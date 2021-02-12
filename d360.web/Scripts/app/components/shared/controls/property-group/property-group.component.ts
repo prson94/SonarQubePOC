@@ -28,7 +28,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     delayedRefresh = _.debounce(() => {
         this.requiredCount = this.getRequiredCount();
         this.invalidCount = this.getInvalidCount();
-        this.isValid.emit(this.requiredCount == 0 && this.invalidCount == 0);
+        this.isValid.emit(this.requiredCount === 0 && this.invalidCount === 0);
         this.ref.markForCheck();
     }, 200);
 
