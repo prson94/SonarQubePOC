@@ -55,7 +55,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
             if (measure.Conditions.Count > 0)
             {
-                measure.Conditions.ForEach(c => {
+                measure.Conditions.OrderBy(c => c.Position).ToList().ForEach(c => {
 
                     if (!metConditions.ConditionMet || matchExtraneousConditions)
                     {
@@ -161,16 +161,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                             var metCondition = new MetConditionModel
                             {
                                 ConditionUid = c.ConditionUid,
-                                Position = c.Position
+                                Position = c.Position,
+                                Weight = (c.Weight > 0) ? c.Weight : measure.Weight,
+                                Threshold = (c.Threshold > 0) ? c.Threshold : measure.Threshold
                             };
-                            if (c.Weight > 0)
-                            {
-                                metCondition.Weight = c.Weight;
-                            }
-                            if (c.Threshold > 0)
-                            {
-                                metCondition.Threshold = c.Threshold;
-                            }
+                            metConditions.Conditions.Add(metCondition);
                         }
                     }
 
@@ -184,14 +179,9 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     metConditions.SelectedWeight = metConditions.Conditions[0].Weight;
                     metConditions.SelectedThreshold = metConditions.Conditions[0].Threshold;
                 }
-
-                // Set the measure weight as the default.
-                if (!metConditions.SelectedWeight.HasValue)
+                else 
                 {
                     metConditions.SelectedWeight = measure.Weight;
-                }
-                if (!metConditions.SelectedThreshold.HasValue)
-                {
                     metConditions.SelectedThreshold = measure.Threshold;
                 }
             }

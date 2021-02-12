@@ -15,6 +15,9 @@ namespace d360.core.entities.Metric
         public Guid? ConditionUid { get; set; }
 
         [DataMember]
+        public string OtherConditions { get; set; }
+
+        [DataMember]
         public string Evidence { get; set; }
 
         [DataMember]
