@@ -127,13 +127,19 @@ export class HeaderActionsComponent {
                     }
                 }
 
+
+                let isMonitorUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_MONITOR_ROOT.toUpperCase());
+                let isCommunityUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT.toUpperCase());
+                let isDashboardUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT.toUpperCase());
+
                 if (this.previousUrl) {
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 
                 this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !isHomeUrl && !isSearchUrl &&
-                    !this.isAdminUrl && !isReferenceUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
+                    !this.isAdminUrl && !isReferenceUrl && !isCommunityUrl && !isMonitorUrl && !isDashboardUrl && !isResourceUrl && !this.isAdminSidebarUrl &&
+                    (CompanySettings.DisableIssueManagement === 'false')) == true);                
 
                 setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
