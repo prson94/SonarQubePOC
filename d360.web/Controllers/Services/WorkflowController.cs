@@ -3036,7 +3036,14 @@ order by wi.StartedOn desc";
                         var actionFieldTypeId = int.Parse(fieldData[1]);
 
                         var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
-                        fieldChange.Value = actionField?.FormattedValue;
+                        if (fieldChange.Type == "Link")
+                        {
+                            fieldChange.Value = actionField?.Value;
+                        }
+                        else
+                        {
+                            fieldChange.Value = actionField?.FormattedValue;
+                        }
 
                     }
 
