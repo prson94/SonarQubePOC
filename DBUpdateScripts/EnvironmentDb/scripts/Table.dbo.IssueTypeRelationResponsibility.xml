@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.dbo.IssueTypeRelationResponsibility-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IssueTypeRelationResponsibility')
+BEGIN
+	CREATE TABLE [dbo].[IssueTypeRelationResponsibility](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[IssueTypeRelationID] [int] NOT NULL,
+	[ResponsibilityTypeId] [int] NOT NULL,	
+	CONSTRAINT [PK_IssueTypeRelationResponsibility] PRIMARY KEY CLUSTERED 
+	(
+		[ID] ASC	
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY]	
+	
+	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
+	WITH CHECK ADD CONSTRAINT [FK_IssueTypeRelation_IssueTypeRelationResponsibility] FOREIGN KEY([IssueTypeRelationID]) REFERENCES [dbo].[IssueTypeRelation] ([ID]) ON DELETE CASCADE
+	
+	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
+	WITH CHECK ADD CONSTRAINT [FK_ResponsibilityType_IssueTypeRelationResponsibility] FOREIGN KEY([ResponsibilityTypeId]) REFERENCES [dbo].[ResponsibilityType] ([ID]) ON DELETE CASCADE
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>  
+
+</databaseChangeLog>
