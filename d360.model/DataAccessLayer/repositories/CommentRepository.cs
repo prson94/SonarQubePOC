@@ -72,6 +72,7 @@ namespace d360.model.DataAccessLayer
 
 			int? parentId = null;
 			long? assetId = null;
+			Asset commentAsset = null;
 			if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
 			{
 				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
@@ -84,6 +85,8 @@ namespace d360.model.DataAccessLayer
 					parentId = parentComment.ID;
 					comment.AssetUid = parentComment.Asset.uid;
 					assetId = parentComment.Asset.ID;
+
+					commentAsset = parentComment.Asset;
 				}
 			}
 
@@ -94,17 +97,20 @@ namespace d360.model.DataAccessLayer
 
 			if (!assetId.HasValue)
 			{
-				var asset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
-				if (asset == null)
+				commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
+				if (commentAsset == null)
 				{
 					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
 				}
-				assetId = asset.ID;
+				assetId = commentAsset.ID;				
 			}
 
-			if (!CompanyContext.HasAssetPermission(assetId.Value, Permission.ReadAsset))
+			if (commentAsset != null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+				if (!CompanyContext.HasAssetDefaultReadPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+				{
+					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+				}
 			}
 
 			var dbComment = new Comment
