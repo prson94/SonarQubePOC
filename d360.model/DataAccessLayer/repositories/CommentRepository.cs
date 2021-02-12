@@ -271,7 +271,7 @@ namespace d360.model.DataAccessLayer
 						await CompanyContext.SaveChangesAsync();
 					}
 
-					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.Uid = C.AssetUid where C.CommentID = @commentId and A.ID is null", new { commentId });				
+					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });				
 				}
 
 				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);
