@@ -100,7 +100,7 @@ namespace d360.web.Controllers.V2
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid)).ConfigureAwait(false);
                 }
 
                 var tags = await tagRepository.GetTags(queryParams);
@@ -137,10 +137,14 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
             if (!tagRepository.DoesTagExists(tagUid))
+            {
                 return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {tagUid} not found.");
+            }
 
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+            }
 
             try
             {
@@ -175,7 +179,9 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult PostTag(TagApiUpsertModel model)
         {
             if (model == null)
+            {
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
+            }
 
             TagApiModel result = new TagApiModel();
             try
@@ -279,10 +285,14 @@ namespace d360.web.Controllers.V2
             foreach (var item in model)
             {
                 if (!tagRepository.DoesTagExists(item.uid))
+                {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {item.uid} not found.");
+                }
 
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
+                {
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+                }
             }
 
 
@@ -324,22 +334,30 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult ConsolidateTags(string parentUid, List<string> childrenUids)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
 
             try
             {
 
                 if (Guid.Parse(parentUid) == Guid.Empty)
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{parentUid} is not valid uid!");
+                }
 
                 foreach (var item in childrenUids)
                 {
                     if (Guid.Parse(item) == Guid.Empty)
+                    {
                         return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{item} is not valid uid!");
+                    }
                 }
 
                 if (childrenUids.Contains(parentUid))
+                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", "Parent tag should not be included in children tags!");
+                }
 
                 IEnumerable<TagApiModel> result = tagRepository.ConsolidateTags(parentUid, childrenUids);
 

@@ -84,16 +84,24 @@ namespace d360.web.Controllers
                     {
                         var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
                         if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
+                        {
                             Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." }); //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
+                        }
                         else
+                        {
                             throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where an IDP-supplied CER file was stored");
+                        }
                     }
                     else
                     {
                         if (SAMLAssertionSignature.Verify(assertionXml))
-                            Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." });                        
+                        {
+                            Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." });
+                        }
                         else
+                        {
                             throw new ApplicationException("AssertionConsumerService => Failed to Verify Signature where no IDP-supplied CER file was stored");
+                        }
                     }
                 }
             }
@@ -110,7 +118,9 @@ namespace d360.web.Controllers
         {
 
             if (Request.Browser.Browser.ToLower() == "internetexplorer")
+            {
                 return RedirectToAction("unsupported", "home");
+            }
 
             if (!Community.CurrentCompanySsoModel.IsCompanyActive)
             {
@@ -300,9 +310,15 @@ namespace d360.web.Controllers
                         if (Community.CurrentCompanySsoModel.AllowNewUserLogin && !string.IsNullOrEmpty(userName) && !string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
                         {
                             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Now creating resource account for Username: {userName}.", SeverityLevel = SeverityLevel.Information });
-                            
-                            if (string.IsNullOrEmpty(firstName)) firstName = "Unknown";
-                            if (string.IsNullOrEmpty(lastName)) lastName = "Unknown";
+
+                            if (string.IsNullOrEmpty(firstName))
+                            {
+                                firstName = "Unknown";
+                            }
+                            if (string.IsNullOrEmpty(lastName))
+                            {
+                                lastName = "Unknown";
+                            }
 
                             resource = new Resource
                             {
@@ -435,8 +451,10 @@ namespace d360.web.Controllers
 
                         if (!string.IsNullOrEmpty(sessionDurationString))
                         {
-                            if(!double.TryParse(sessionDurationString, out sessionLengthMinutes))
+                            if (!double.TryParse(sessionDurationString, out sessionLengthMinutes))
+                            {
                                 sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
+                            }
                         }
                         // Create a login context for the asserted identity.
 
@@ -447,7 +465,9 @@ namespace d360.web.Controllers
                             if (governHasGroups)
                             {
                                 if (Company.Connection.State != ConnectionState.Open)
+                                {
                                     Company.Connection.Open();
+                                }
                                 using (var trans = Company.Connection.BeginTransaction())
                                 {
                                     try
@@ -592,9 +612,11 @@ namespace d360.web.Controllers
                                 // http://www.foxnews.com
                                 // //stackoverflow.com
                                 // www.cnn.com, /artifact, /artifact/1 will be treated as relative urls and will just get stuck on end of current path
-                                
+
                                 if (!relayState.Contains("//"))
+                                {
                                     redirectURL = relayState;
+                                }
                             }
                         }
                         catch(Exception e)
@@ -663,7 +685,9 @@ namespace d360.web.Controllers
                         Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out testUri);
 
                         if (testUri.IsAbsoluteUri)
+                        {
                             ReturnUrl = "/home";
+                        }
 
                         return Redirect(Server.UrlDecode(ReturnUrl));
                     }
@@ -771,7 +795,7 @@ namespace d360.web.Controllers
         [AllowAnonymous, Route("registration")]
         public async Task<ActionResult> Registration()
         {
-            return await Register(null,RegisterStep.Registration);
+            return await Register(null,RegisterStep.Registration).ConfigureAwait(false);
         }
 
         [AllowAnonymous, Route("register")]
@@ -1503,7 +1527,10 @@ namespace d360.web.Controllers
             {
                 if (Company.CurrentCompanyDomain == companySetting.UrlPrefix)
                 {
-                    if (companySetting.AuthenticationType == AuthenticationType.Forms) return false;
+                    if (companySetting.AuthenticationType == AuthenticationType.Forms)
+                    {
+                        return false;
+                    }
                     break;
                 }
             }
@@ -1514,7 +1541,10 @@ namespace d360.web.Controllers
             var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
             var clientId = settings["AzureApplicationId"]; //application id from azure portal
 
-            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientSecret) || string.IsNullOrEmpty(clientId)) return false;
+            if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(clientSecret) || string.IsNullOrEmpty(clientId))
+            {
+                return false;
+            }
 
             return true;
         }

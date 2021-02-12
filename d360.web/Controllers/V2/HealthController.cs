@@ -52,7 +52,7 @@ namespace d360.web.Controllers.V2
                     this.company.Connection.Close();
                 }
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK))).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -63,7 +63,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.InternalServerError)));
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.InternalServerError))).ConfigureAwait(false);
             }
         }
     }
