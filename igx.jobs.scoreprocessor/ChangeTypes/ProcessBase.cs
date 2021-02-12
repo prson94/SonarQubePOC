@@ -235,6 +235,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
                 o.AdjustedMaxWeight = Math.Round(o.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
 
+                if (o.AdjustedMaxWeight > 1)
+                {
+                    o.AdjustedMaxWeight = 1;
+                }
+
                 decimal totalChildPassingWeights = 0;
                 // Child-level measures.
                 if (all.Any(c => c.MetricParentAssetUid == o.MetricAssetUid))
@@ -248,6 +253,10 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     {
                         c.AdjustedMaxWeight = c.RawMeasureWeight / childMeasures.Sum(i => i.RawMeasureWeight);
                         c.AdjustedMaxWeight = Math.Round(c.AdjustedMaxWeight ?? 0, 6, MidpointRounding.AwayFromZero);
+                        if (c.AdjustedMaxWeight > 1)
+                        {
+                            c.AdjustedMaxWeight = 1;
+                        }
                         if (c.DecimalValue.HasValue)
                         {
                             // Typically applies when deling with a DataQuality measure that is NOT threshold-based.
@@ -256,6 +265,11 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                         else 
                         {
                             c.AdjustedWeight = c.Value ? c.AdjustedMaxWeight : 0;
+                        }
+
+                        if (c.AdjustedWeight > 1)
+                        {
+                            c.AdjustedWeight = 1;
                         }
 
                         totalChildPassingWeights += c.AdjustedWeight.Value;
@@ -281,12 +295,20 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     }
                 }
                 o.AdjustedWeight = Math.Round(o.AdjustedWeight.Value, 6, MidpointRounding.AwayFromZero);
+                if (o.AdjustedWeight > 1)
+                {
+                    o.AdjustedWeight = 1;
+                }
                 scoreValue += o.AdjustedWeight.Value;
             }
 
-            if (scoreValue > 1) scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
+            scoreValue = Math.Round(scoreValue, 6, MidpointRounding.AwayFromZero);
+            if (scoreValue > 1)
+            {
+                scoreValue = 1; // Catch if the score is more than 100%, for whatever reason. 
+            }
 
-            return Math.Round(scoreValue, 6, MidpointRounding.AwayFromZero);
+            return scoreValue;
         }
 
         internal SqlBulkCopy CreateBulkCopy(SqlConnection company, SqlTransaction trans, string tableName)
