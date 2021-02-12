@@ -1144,11 +1144,10 @@ from	metrics.AssetVersion V
             return dqQueryDetail;
         }
 
-        public List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime minDate, DateTime? maxDate)
+        public List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate)
         {
             var args = new DynamicParameters();
             args.Add("@AssetUid", assetUid, DbType.Guid);
-            args.Add("@MinimumEffectiveDate", minDate, DbType.Date);
             args.Add("@MaximumEffectiveDate", maxDate ?? DateTime.UtcNow, DbType.Date);
             foreach (var p in query.Filters.Where(p => p.Parameter != null).Select(p => p.Parameter))
             {
