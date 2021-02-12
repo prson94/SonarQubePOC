@@ -13,7 +13,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                       dfgsd <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" [showDeleteButton]="showControls" [showEditButton]="showControls"></d3s-responsibility-relations>                        
+                       <d3s-responsibility-relations queryType="A" [id]="assetTypeId" [showAddButton]="false" [showDeleteButton]="showControls" [showEditButton]="showControls"></d3s-responsibility-relations>                        
                     </div>
                 </div>
             </div>
@@ -46,7 +46,6 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
         });
         this.checkSecondaryNavLocalStorage();
         this.authenticationService.checkCurrentUserAdmin().subscribe((isAdmin) => {
-            console.log(isAdmin);
             this.showControls = isAdmin;
         });
     }
