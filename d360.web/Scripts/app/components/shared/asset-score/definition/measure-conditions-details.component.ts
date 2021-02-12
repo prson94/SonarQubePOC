@@ -22,8 +22,12 @@ export class MeasureConditionsDetailsComponent extends BaseComponent implements 
     }
 
     formatConditions() {
+        if (!this.conditionGroups || (this.screenReferences.operators.length == 0 && this.screenReferences.fields.length == 0)) {
+            return;
+        }
         this.conditionGroups.forEach((cg) => {
             let conditions = cg.ConditionItems;
+            cg.DisplayWeight = (cg.Weight * 100)
             conditions.forEach((c) => {
                 const field = this.screenReferences.fields.find((f) => f.ApiName === c.ConditionFieldTypeName);
                 c.OperatorText = this.screenReferences.operators.find((o) => o.ID === c.Operator).Name;

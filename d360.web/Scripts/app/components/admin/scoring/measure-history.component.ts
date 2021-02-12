@@ -1,6 +1,6 @@
 ﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel } from '../../../models/metrics.model';
+import { MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, MetricFieldTypeViewModel, MetricAssetHistoryViewModel, MetricAssetViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { TreeNode } from 'primeng/api';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
@@ -18,7 +18,6 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
     @Input() AssetType: AssetTypeMetricModel;
     @Input() isExternallyCalculated: boolean = false;
     @Input() screenReferences: CommonScreenReferencesModel;
-
     @Output() onClose = new EventEmitter;
 
     private metricHistoryRecords: MetricAssetHistoryViewModel[] = [];
@@ -107,17 +106,8 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
 
-        if (this.hasConditions(this.selection)) {
-            this.showConditions = true;
-        }
-        else {
-            this.showConditions = false;
-        }
-     
-        if (this.hasPassTest(this.selection) && !this.Measure.IsGroup)
-            this.showPassTest = true
-        else
-            this.showPassTest = false;
+        this.showConditions = this.hasConditions(this.selection);
+        this.showPassTest = (this.hasPassTest(this.selection) && !this.Measure.IsGroup)
     }
 
     private hasPassTest(item: MetricAssetHistoryViewModel) {

@@ -256,7 +256,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
                 if (newGroup.Weight) {
-                    newGroup.DisplayWeight = Math.round(this.model.Weight * 100)
+                    newGroup.DisplayWeight = +((x.Weight * 100).toFixed(2)) ?? this.model.Weight;
                 }
                 //get all condition items and convert them into FieldCoditions for the conditiongroup
                 const conditions = x.ConditionItems;
@@ -445,7 +445,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 const conditions = x.conditionItemFields.filter(x => x.field);
                 x.Position = x.DisplayOrder;
                 if (x.DisplayWeight) {
-                    x.Weight = +(+(x.DisplayWeight / 100).toFixed(2))
+                    x.Weight = +(x.DisplayWeight / 100).toFixed(2);
+                } else {
+                    x.Weight = null;
                 }
                 conditions.forEach(c => {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();

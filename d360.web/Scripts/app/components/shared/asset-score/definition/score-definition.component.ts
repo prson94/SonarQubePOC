@@ -33,7 +33,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
 
     isDataLoaded: boolean = false;
 
-    showConditions: boolean;
+    showConditions: boolean = false;
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
 
     @ViewChild("passTestComponent", { static: false }) passTestRef: AdminMetricPassTestDetailsComponent;
@@ -53,12 +53,7 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
         if (changes && (changes.assetTypeUid || changes.allocationUid) && this.assetTypeUid && this.allocationUid) {
             this.loadData();
         }
-        else if (changes && changes.selectedMetric && this.assetTypeUid) {
-            if (this.hasConditions(this.selectedMetric))
-                this.showConditions = true;
-            else
-                this.showConditions = false;
-        }
+        this.showConditions = this.hasConditions(this.selectedMetric);
     }
 
     loadData() {
@@ -148,7 +143,6 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
             if (this.conditions && this.conditions.length > 0) {
-                this.formatConditions();
                 return true;
             } else
                 return false;
@@ -156,60 +150,5 @@ export class ScoreDefinitionComponent extends BaseComponent implements OnChanges
             this.conditions = [];
             return false;
         }
-    }
-
-    formatConditions() {
-        this.conditions.forEach(c => {
-            const field = this.metricListFieldTypes.find(f => f.ApiName === c.ConditionFieldTypeName);
-            c.OperatorText = this.operators.find(o => o.ID === c.Operator).Name;
-
-            if (field) {
-                c.FieldTypeName = field.Name;
-                c.FieldType = field;
-
-                switch (field.Type) {
-                    case 'Lookup':
-                        if (field.Values) {
-                            if (field.Values.length > 0) {
-                                if (c.Values) {
-                                    if (c.Values[0]) {
-                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        valueModel = field.Values.find(o => o.Value === c.Values[0]);
-                                        if (valueModel) {
-                                            c.SingleValue = c.Values[0];
-                                            c.ValuesText = valueModel.Text;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case 'Date':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleDateString();
-                            }
-                        }
-                        break;
-                    case 'DateTime':
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = new Date(c.Values[0]).toLocaleString();
-                            }
-                        }
-                        break;
-                    default:
-                        if (c.Values) {
-                            if (c.Values[0]) {
-                                c.SingleValue = c.Values[0];
-                                c.ValuesText = c.Values[0];
-                            }
-                        }
-                        break;
-                }
-            }
-        });
     }
 }
