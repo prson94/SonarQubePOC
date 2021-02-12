@@ -1286,8 +1286,7 @@ for json path";
         /// <summary>
         /// Adds allocations to a workflow action type
         /// </summary>
-        /// <param name="actionTypeUid">Uid of the action type the allocations are to be added to</param>
-        /// <param name="assetTypeUids">Collection of asset type Uids to be added</param>
+        /// <param name="actionTypeUid">Uid of the action type the allocations are to be added to</param>        
         [
             Route("allocation/{actionTypeUid:Guid}"),
             HttpPost,
@@ -1355,8 +1354,8 @@ for json path";
                 foreach(var rUid in model.responsibilityTypeUid)
                 {
                     var temp = new { allocationId, rUid };
-                    string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeUid) 
-                                                        VALUES (@allocationId, @responsibilityTypeUid)";
+                    string allocationResponsibilitySQL = $@"INSERT INTO IssueTypeRelationResponsibility (IssueTypeRelationID, ResponsibilityTypeId) 
+                                                            SELECT @allocationId, ID FROM ResponsibilityType where Uid = @responsibilityTypeUid";
 
                     var res = await Company.Database.Connection.ExecuteAsync(allocationResponsibilitySQL, new { allocationId, responsibilityTypeUid = rUid });
                 }

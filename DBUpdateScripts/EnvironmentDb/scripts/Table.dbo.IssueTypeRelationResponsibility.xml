@@ -16,15 +16,18 @@ BEGIN
 	CREATE TABLE [dbo].[IssueTypeRelationResponsibility](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[IssueTypeRelationID] [int] NOT NULL,
-	[ResponsibilityTypeUid] [uniqueidentifier] NOT NULL,	
+	[ResponsibilityTypeId] [uniqueidentifier] NOT NULL,	
 	CONSTRAINT [PK_IssueTypeRelationResponsibility] PRIMARY KEY CLUSTERED 
 	(
 		[ID] ASC	
 	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-	) ON [PRIMARY]
+	) ON [PRIMARY]	
 	
 	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
 	WITH CHECK ADD CONSTRAINT [FK_IssueTypeRelation_IssueTypeRelationResponsibility] FOREIGN KEY([IssueTypeRelationID]) REFERENCES [dbo].[IssueTypeRelation] ([ID]) ON DELETE CASCADE
+	
+	ALTER TABLE [dbo].[IssueTypeRelationResponsibility] 
+	WITH CHECK ADD CONSTRAINT [FK_ResponsibilityType_IssueTypeRelationResponsibility] FOREIGN KEY([ResponsibilityTypeId]) REFERENCES [dbo].[ResponsibilityType] ([ID]) ON DELETE CASCADE
 END
 		]]>
     </sql>
