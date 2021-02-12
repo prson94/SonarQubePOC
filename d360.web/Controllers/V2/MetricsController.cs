@@ -1581,21 +1581,21 @@ namespace d360.web.Controllers.V2
                             var point = new GraphPoints();
                             point.key = measure.Uid.ToString();
                             point.EffectiveDate = item.EffectiveDate;
-                            point.Value = measure.AdjustedWeight;// * (measure.Value.HasValue && measure.Value.Value ? 1 : 0);
+                            point.Value = measure.AdjustedWeight;
                             allPoints.Add(point);
                         }
                         else
                         {
-                            //var maxWeight = measure.AdjustedMaxWeight;
-                            //decimal result = 0;
-                            foreach (var m in measure.Measures)
-                            {
-                                var point = new GraphPoints();
-                                point.key = m.Uid.ToString();
-                                point.EffectiveDate = item.EffectiveDate;
-                                point.Value = m.AdjustedWeight;// maxWeight * m.AdjustedWeight * (m.Value.HasValue && m.Value.Value ? 1 : 0);
-                                //result += point.Value;
-                                allPoints.Add(point);
+                            if (measure.Measures != null)
+                            { 
+                                foreach (var m in measure.Measures)
+                                {
+                                    var point = new GraphPoints();
+                                    point.key = m.Uid.ToString();
+                                    point.EffectiveDate = item.EffectiveDate;
+                                    point.Value = m.AdjustedWeight;
+                                    allPoints.Add(point);
+                                }                            
                             }
 
                             var measurePoint = new GraphPoints();
@@ -1607,11 +1607,6 @@ namespace d360.web.Controllers.V2
                     }
                 }
                 allPoints.AddRange(results);
-
-                //allPoints.ForEach(point =>
-                //{
-                //    point.Value = Math.Round(point.Value, 3);
-                //});
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allPoints.GroupBy(x => x.key).Select(x => new { key = x.Key, data = x.ToList() })));
             }
