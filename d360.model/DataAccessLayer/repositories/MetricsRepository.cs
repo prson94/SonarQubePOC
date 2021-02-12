@@ -1581,10 +1581,10 @@ from	(
 				ROW_NUMBER() OVER(PARTITION BY Ma.Uid ORDER BY S.EffectiveDate DESC, SI.UpdatedOn desc) as RowNum,
 				V.EffectiveEndDate as EndDate,
 				V.[Weight],
-				SI.AdjustedWeight,
-				SI.AdjustedMaxWeight,
+				iif(SI.AdjustedWeight > 1, 1, SI.AdjustedWeight) as AdjustedWeight,
+				iif(SI.AdjustedMaxWeight > 1, 1, SI.AdjustedMaxWeight) as AdjustedMaxWeight,
 				iif(Ma.IsGroup = 1, null, SI.Value) as Value,
-                SI.DecimalValue,
+                iif(SI.DecimalValue > 1, 1, SI.DecimalValue) as DecimalValue,
 				cast(iif(SI.Evidence is not null and SI.Evidence <> '', 1, 0) as bit) as HasEvidence,
 				A.ScoreType
 		from    metrics.Score S 
