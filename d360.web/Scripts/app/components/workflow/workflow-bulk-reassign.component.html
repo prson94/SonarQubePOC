@@ -19,8 +19,7 @@
             <div class="row" style="margin-bottom: 5px">
                 <div *ngIf="model.IsClearOtherAssignmentsAllowed" class="col s6 m10 l12">
                     <p-checkbox [(ngModel)]="model.ClearOtherAssignments" binary="true"></p-checkbox>
-                    <span>Clear other assignments for the selected form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span>.
-                    (leave unchecked to only reassign this user's form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span>)</span>
+                    <span>Clear other assignments for the selected form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span> (leave unchecked to only reassign this user's form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span>)</span>
                 </div>
                 <div *ngIf="true" class="col s6 m10 l12">
                     <p-checkbox [(ngModel)]="dontSendFormEmails" binary="true"></p-checkbox>

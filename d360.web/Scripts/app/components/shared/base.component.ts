@@ -1177,7 +1177,7 @@ export class BaseComponent {
             return '0%';
         if (!val)
             return;
-        if (val == 1)
+        if (val >= 1)
             return '100%'
 
         if (val > 1) {

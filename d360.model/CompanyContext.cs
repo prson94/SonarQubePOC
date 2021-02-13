@@ -2857,11 +2857,16 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             {
                 string order = queryParams.FirstOrDefault(x => x.Key.Equals("_order", StringComparison.OrdinalIgnoreCase)).Value;
 
-                if (!fields.Any(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase)))
+                var field = fields.FirstOrDefault(i => i.ApiName.Equals(order, StringComparison.OrdinalIgnoreCase));
+
+                if (field == null)
                 {
                     throw new GenericException(System.Net.HttpStatusCode.BadRequest, "Invalid request", "Invalid order by passed in the request.");
                 }
+
+                column = field.SqlExpression;
             }
+
             return column;
         }
 

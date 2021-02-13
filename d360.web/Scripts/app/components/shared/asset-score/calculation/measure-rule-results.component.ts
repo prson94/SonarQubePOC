@@ -83,7 +83,7 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         if (this.scoreItem) {
             if (this.scoreItem.ScoreType == ScoreType.DataQuality) {
                 this.isLoading = true;
-                this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItem.ScoreItemUid, pageNum, pageSize, this.currentSearchPhrase)
+                this.scoreService.getDataQualityEvidenceForScoreItem(this.scoreItem.ScoreItemUid, pageNum, pageSize, this.currentSearchPhrase, sortField, sortOrder)
                     .subscribe((result) => {
                         this.Evidence = result;
                         if (this.Evidence.items.length > 0) {

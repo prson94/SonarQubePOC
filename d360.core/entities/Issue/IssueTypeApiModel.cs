@@ -79,4 +79,12 @@ namespace d360.core.entities
         }
 
     }
+
+    public class IssueTypeAllocationRequest
+    {
+        [DataMember]
+        public Guid assetTypeUid { get; set; }
+        [DataMember]
+        public IEnumerable<Guid> responsibilityTypeUid { get; set; }
+    }
 }

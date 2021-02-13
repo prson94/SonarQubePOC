@@ -452,7 +452,7 @@ where   ExecutionID <> @id
                         var measure = allMeasures.FirstOrDefault(i => i.MetricAssetVersionUid == n.MetricAssetVersionUid);
                         if (measure != null)
                         {
-                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure);
+                            var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, measure, true);
                             
                             // This helps determine whether to remove the measure from an existing score IF there is a condition on a new version where it makes the measure no longer apply to an asset's score (GOV-13547).
                             bool measureDeleted = false;
@@ -468,7 +468,8 @@ where   ExecutionID <> @id
                                         AssetVersionUid = measure.MetricAssetVersionUid,
                                         RunDate = DateTime.UtcNow,
                                         UpdatedOn = DateTime.UtcNow,
-                                        ConditionUid = conditionValidator.SelectedConditionUid
+                                        ConditionUid = conditionValidator.SelectedConditionUid,
+                                        OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions)
                                     };
 
                                     var definition = JsonConvert.DeserializeObject<MetricAssetDefinitionViewModel>(measure.Definition ?? "{}");
@@ -855,7 +856,7 @@ where   ExecutionID <> @id
                                 if (assetVersionCheckObjectTypes.ShouldContinueAnalysis(aM.MetricAssetVersionUid))
                                 { 
                                     // We need to add a previous result for the missing measure, or create a new one as a failure.
-                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM);
+                                    var conditionValidator = CheckMeasureConditions(assetFields, fieldTypes, aM, true);
                                     var previousScoreItem = previousScoreItems.FirstOrDefault(e => e.MetricAssetUid == aM.MetricAssetUid);
                                     if (conditionValidator.ConditionMet)
                                     {
@@ -879,6 +880,7 @@ where   ExecutionID <> @id
                                             RunDate = DateTime.UtcNow,
                                             AssetVersionUid = aM.MetricAssetVersionUid,
                                             ConditionUid = conditionValidator.SelectedConditionUid,
+                                            OtherConditions = JsonConvert.SerializeObject(conditionValidator.ExtraneousConditions),
                                             UpdatedOn = DateTime.UtcNow,
                                             Value = scoreItemValue,
                                             Uid = scoreItemUid
@@ -1043,6 +1045,7 @@ where   ExecutionID <> @id
                             scoreItems.Columns.Add("AssetVersionUid", typeof(Guid));
                             scoreItems.Columns.Add("Evidence", typeof(string));
                             scoreItems.Columns.Add("ConditionUid", typeof(Guid));
+                            scoreItems.Columns.Add("OtherConditions", typeof(string));
                             scoreItems.Columns.Add("DecimalValue", typeof(float));
                             scoreItems.Columns.Add("AdjustedMaxWeight", typeof(decimal));
 
@@ -1085,6 +1088,7 @@ where   ExecutionID <> @id
                                 scoreItemRow["Evidence"] = s.Evidence ?? "{}";
                                 if (s.ConditionUid.HasValue)
                                     scoreItemRow["ConditionUid"] = s.ConditionUid;
+                                scoreItemRow["OtherConditions"] = s.OtherConditions ?? "[]";
                                 if (s.AdjustedMaxWeight.HasValue)
                                     scoreItemRow["AdjustedMaxWeight"] = s.AdjustedMaxWeight.Value;
                                 scoreItems.Rows.Add(scoreItemRow);
@@ -1140,6 +1144,7 @@ where   ExecutionID <> @id
 	                                AssetVersionUid uniqueidentifier NULL,
 	                                Evidence nvarchar(max) NULL,
 	                                ConditionUid uniqueidentifier NULL,
+                                    OtherConditions nvarchar(max) NOT NULL,
 	                                AdjustedMaxWeight decimal(8,6) NULL,
                                     DecimalValue float NULL
                                 );
@@ -1180,6 +1185,7 @@ where   ExecutionID <> @id
                                 bulkCopy.ColumnMappings.Add("AssetVersionUid", "AssetVersionUid");
                                 bulkCopy.ColumnMappings.Add("Evidence", "Evidence");
                                 bulkCopy.ColumnMappings.Add("ConditionUid", "ConditionUid");
+                                bulkCopy.ColumnMappings.Add("OtherConditions", "OtherConditions");
                                 bulkCopy.ColumnMappings.Add("AdjustedMaxWeight", "AdjustedMaxWeight");
 
                                 await bulkCopy.WriteToServerAsync(scoreItems);
@@ -1279,10 +1285,10 @@ where   N.ActualUid is null;", transaction: trans);
                                 "update set " +
                                 "T.RunDate = S.RunDate, T.UpdatedOn = S.UpdatedOn, " +
                                 "T.AssetVersionUid = S.AssetVersionUid, T.Value = S.Value, T.DecimalValue = S.DecimalValue, T.Evidence = S.Evidence, " +
-                                "T.ConditionUid = S.ConditionUid, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
+                                "T.ConditionUid = S.ConditionUid, T.OtherConditions = S.OtherConditions, T.AdjustedWeight = S.AdjustedWeight, T.AdjustedMaxWeight = S.AdjustedMaxWeight " +
                                 "when not matched then " +
-                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, AdjustedMaxWeight) " +
-                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.AdjustedMaxWeight);", transaction: trans);
+                                "insert (UpdatedOn, Value, DecimalValue, AdjustedWeight, RunDate, Uid, AssetVersionUid, Evidence, ConditionUid, OtherConditions, AdjustedMaxWeight) " +
+                                "values (S.UpdatedOn, S.Value, S.DecimalValue, S.AdjustedWeight, S.RunDate, S.Uid, S.AssetVersionUid, S.Evidence, S.ConditionUid, S.OtherConditions, S.AdjustedMaxWeight);", transaction: trans);
 
                             // Merge score Item Links.
                             await company.ExecuteAsync(

@@ -72,6 +72,7 @@ namespace d360.model.DataAccessLayer
 
 			int? parentId = null;
 			long? assetId = null;
+			Asset commentAsset = null;
 			if (comment.ParentUid.HasValue && comment.ParentUid != Guid.Empty)
 			{
 				var parentComment = CompanyContext.Filter<Comment>(o => o.Uid == comment.ParentUid.Value, o => o.Asset).SingleOrDefault();
@@ -84,6 +85,8 @@ namespace d360.model.DataAccessLayer
 					parentId = parentComment.ID;
 					comment.AssetUid = parentComment.Asset.uid;
 					assetId = parentComment.Asset.ID;
+
+					commentAsset = parentComment.Asset;
 				}
 			}
 
@@ -94,17 +97,20 @@ namespace d360.model.DataAccessLayer
 
 			if (!assetId.HasValue)
 			{
-				var asset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
-				if (asset == null)
+				commentAsset = CompanyContext.Filter<Asset>(a => a.uid == comment.AssetUid).FirstOrDefault();
+				if (commentAsset == null)
 				{
 					throw new GenericException(System.Net.HttpStatusCode.NotFound, "", "Asset with provided Uid does not exist.");
 				}
-				assetId = asset.ID;
+				assetId = commentAsset.ID;				
 			}
 
-			if (!CompanyContext.HasAssetPermission(assetId.Value, Permission.ReadAsset))
+			if (commentAsset != null)
 			{
-				throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+				if (!CompanyContext.HasAssetDefaultReadPermission(commentAsset.Object, commentAsset.ObjectID, Permission.ReadAsset))
+				{
+					throw new GenericException(System.Net.HttpStatusCode.Forbidden, "", "You do not have permissions to add a comment to this asset.");
+				}
 			}
 
 			var dbComment = new Comment
@@ -144,12 +150,12 @@ namespace d360.model.DataAccessLayer
 			}
 		}
 
-		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji)
+		public bool AddVote(Guid commentUid, int resourceId, Emoji emoji, bool toggle = true)
 		{
 			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 			if (comment != null)
 			{
-				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId);
+				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji);
 				if (!commentVoteExists)
 				{
 					if (CompanyContext.Add(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
@@ -157,6 +163,10 @@ namespace d360.model.DataAccessLayer
 						return true;
 					}
 				}
+				else if (toggle == true)
+                {
+					DeleteVote(commentUid, resourceId, emoji);
+                }
 				
 				return false;
 			}
@@ -209,10 +219,10 @@ namespace d360.model.DataAccessLayer
 			var comment = CompanyContext.Filter<Comment>(o => o.Uid == commentUid).SingleOrDefault();
 			if (comment != null)
 			{
-				var commentVoteExists = CompanyContext.Any<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId);
-				if (commentVoteExists)
+				var commentVote = CompanyContext.Filter<CommentVote>(o => o.CommentID == comment.ID && o.ResourceID == resourceId && o.Emoji == emoji).FirstOrDefault();
+				if (commentVote != null)
 				{
-					if (CompanyContext.Delete(new CommentVote { CommentID = comment.ID, ResourceID = resourceId, Emoji = emoji }))
+					if (CompanyContext.Delete(commentVote))
 					{
 						return true;
 					}
@@ -267,7 +277,7 @@ namespace d360.model.DataAccessLayer
 						await CompanyContext.SaveChangesAsync();
 					}
 
-					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.Uid = C.AssetUid where C.CommentID = @commentId and A.ID is null", new { commentId });				
+					CompanyContext.Connection.Execute("delete C from CommentRelation C left join Asset A on A.id = C.Assetid where C.CommentID = @commentId and A.ID is null", new { commentId });				
 				}
 
 				return await GetCommentDetailByUid(dbComment.Uid).ConfigureAwait(false);

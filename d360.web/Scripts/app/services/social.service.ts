@@ -1,5 +1,5 @@
 ﻿import { Injectable } from "@angular/core";
-import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails } from "../models/social.model";
+import { CommentApiPutModel, Emoji, CommentApiPostModel, CommentDetail, CommentDetails, CommentVoteDetail } from "../models/social.model";
 import { Count } from "../models/counts.model";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { catchError, map } from "rxjs/operators";
@@ -26,6 +26,15 @@ export class SocialService extends BaseObservableService  {
             .get(`api/v2/comments?followerUid=${followerUid}&_pageNum=${page ? page : 0}&_pageSize=${count ? count : 10}`)
             .pipe(
                 map((res) => <CommentDetails>res),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    getCommentVotes(commentUid: string): Observable<CommentVoteDetail[]> {
+        return this.http
+            .get(`api/v2/comments/${commentUid}/votes`)
+            .pipe(
+                map((res) => <CommentVoteDetail[]>res),
                 catchError((err) => this.handleError(err))
             );
     }
