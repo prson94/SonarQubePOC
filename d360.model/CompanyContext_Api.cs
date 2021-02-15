@@ -9302,17 +9302,12 @@ WHEN MATCHED THEN DELETE;
                                     row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                                 }
 
-                                if (execution.Method.ToLower() == "post" && model.Uid.HasValue)
-                                {
-                                    rowError += ";Cannot use Uid in POST request. Please use PUT Api for updating records!";
-                                }
-
                                 if (execution.Method.ToLower() == "put" && !model.Uid.HasValue)
                                 {
                                     rowError += ";UID cannot be empty!";
                                 }
 
-                                if (model.Uid.HasValue)
+                                if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
                                 {
                                     row["uid"] = model.Uid.Value;
                                 }
@@ -9473,8 +9468,9 @@ WHEN MATCHED THEN DELETE;
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility Rule with specified Uid not found!'
     from api.ExecutionResponsibilityRule EP
+    inner join api.execution ae on ae.executionid = ep.executionid
     left join ResponsibilityTypeRelationRule rtrr on rtrr.uid = ep.uid
-    where	ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null;
+    where	ep.ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null and ae.Method = 'Put';
 
     update	api.ExecutionResponsibilityRule 
     set		Success = 0,
@@ -9844,13 +9840,15 @@ WHEN MATCHED
                                         xrr.Context,
                                         xrr.IsVisible,
                                         xrr.ApplyToType, 
-                                        xrr.DefinitionConverted
+                                        xrr.DefinitionConverted,
+                                        ae.method
                                          from api.executionresponsibilityrule xrr
+                                        inner join api.execution ae on ae.executionid = xrr.executionid
                                         inner join assettype at on at.uid = xrr.AssetTypeUid
                                         inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
                                         where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber and xrr.success is null
                                         )Data
-                                        ON RTRR.uid = Data.uid
+                                        ON (RTRR.uid = Data.uid and method = 'PUT')
                                         WHEN MATCHED
                                             THEN update set 
                                                 name = data.name,
@@ -9864,8 +9862,8 @@ WHEN MATCHED
                                                 updatedon = getdate(),
                                                 updatedby = @resourceId
                                         WHEN NOT MATCHED
-                                            THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
+                                            THEN insert (uid,ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	                                        values (isnull(data.uid, newid()), data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
                                             output inserted.uid, data.executionid, data.itemnumber into @mergeResults;
 
                                         update api.executionresponsibilityrule
