@@ -3385,10 +3385,26 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             self.showTooltipTimeout = setTimeout(() => {
                 refHtmlElement.style.display = "block";
+                var diagramPos = (self.diagramRef as ElementRef).nativeElement.getBoundingClientRect();
                 var position = self.diagram.transformDocToView(ev.targetObject.getDocumentBounds().position);
-                refHtmlElement.style.left = position.x + "px";
-                refHtmlElement.style.top = position.y + "px";
+
+                var positionX = (diagramPos.x + position.x);
+
+                var leftDiff = positionX - refHtmlElement.clientWidth / 2;
+                if (leftDiff < 0) {
+                    positionX += Math.abs(leftDiff);
+                }
+
+                var rightDiff = window.innerWidth - (positionX + refHtmlElement.clientWidth / 2);
+                if (rightDiff < 0) {
+                    positionX -= Math.abs(rightDiff);
+                }
+
+                refHtmlElement.style.left = positionX + "px";
+                refHtmlElement.style.top = (diagramPos.y + position.y) + "px";
+
                 refHtmlElement.style.transform = "translateY(-100%) translateX(14px) translateX(-50%)";
+                refHtmlElement.style.position = "fixed";
                 self.cdRef.detectChanges();
             }, 100);
         }
@@ -3605,10 +3621,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 font: this.badgeFont,
                                 stroke: "white",
                             },
-                            new go.Binding("text", "", (obj: go.GraphObject) => {
+                            new go.Binding("", "", (obj: go.GraphObject, target: go.TextBlock) => {
                                 let totalCount: number = 0;
                                 (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
-                                return totalCount;
+                                if (isNaN(totalCount)) {
+                                    //Handle ownership async loaded count data
+                                    target.text = '-';
+                                    var interval = setInterval(() => {
+                                        totalCount = 0;
+                                        (obj.part.data[propertyName] as Array<any>).forEach(d => totalCount += d.count);
+                                        if (!isNaN(totalCount)) {
+                                            target.text = totalCount.toString();
+                                            window.clearInterval(interval);
+                                        }
+                                    }, 200);
+                                    return;
+                                }
+                                target.text = totalCount.toString();
                             }).ofObject()
                         )
                     )
