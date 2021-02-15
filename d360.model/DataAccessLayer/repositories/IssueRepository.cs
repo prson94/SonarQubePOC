@@ -29,7 +29,9 @@ namespace d360.model.DataAccessLayer
 
             var dbArgs = new DynamicParameters();
 
+            bool hasResourceParam = false;
             var assetSQL = "";
+            var resourceSQL = "";
             var issueTypeSQL = "";
             var orderBy = $"Order by Name";
 
@@ -82,14 +84,15 @@ namespace d360.model.DataAccessLayer
 
             #endregion
 
-            #region Asset and Asset Type
+            #region Asset, Asset Type and Resource
 
+            var resourceUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_resourceuid");
 
             var assetTypeUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assettypeuid");
 
             var assetUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_assetuid");
 
-            if (assetTypeUidParam.Key != null || assetUidParam.Key != null)
+            if (assetTypeUidParam.Key != null || assetUidParam.Key != null || resourceUidParam.Key != null)
             {
                 List<string> assetConditions = new List<string>();
                 var joinSQL = $@"Inner Join IssueTypeRelation ITR on IT.ID = ITR.IssueTypeID
@@ -134,20 +137,55 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                var assetConditionStr = "";
-                if(assetConditions.Count >0)
+                if (resourceUidParam.Key != null)
                 {
-                    assetConditionStr = $"Where { string.Join(" AND ", assetConditions.ToArray())}";
+                    if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid))
+                    {
+                        if (resourceUid != Guid.Empty)
+                        {
+                            hasResourceParam = true;
+                            dbArgs.Add("@resourceUid", resourceUid);
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid resource uid value provided");
+                    }
+                }
+
+                var assetConditionStr = "";                
+                if (assetConditions.Count > 0 || hasResourceParam)
+                {
+                    var resourceJoinSQL = "";
+                    if (assetConditions.Count > 0)
+                    {                        
+                        assetConditionStr = $"Where { string.Join(" AND ", assetConditions.ToArray())}";                        
+                    }
+
+                    if (hasResourceParam)
+                    {
+                        resourceSQL = $@" UNION 
+                                {baseIssueTypesSql} 
+                                {joinSQL}
+                                Inner Join IssueTypeRelationResponsibility RR on ITR.ID=RR.IssueTypeRelationID
+	                            inner join ResponsibilityDetail RD on RD.ResponsibilityTypeID=RR.ResponsibilityTypeId and RD.ResourceUid=@resourceUid
+                                {assetConditionStr}";
+
+                        assetConditionStr += string.IsNullOrWhiteSpace(assetConditionStr) ? " where RR.ID is null" : " and RR.ID is null";
+
+                        resourceJoinSQL = "left join IssueTypeRelationResponsibility RR on RR.IssueTypeRelationID = ITR.ID";
+                    }
 
                     assetSQL = $@" UNION 
                                 {baseIssueTypesSql} 
                                 {joinSQL}
+                                {resourceJoinSQL}
                                 {assetConditionStr}";
                 }                
             }
 
             #endregion
-
+                      
             var conditionStr = conditions.Count > 0 ? string.Join(" AND ", conditions.ToArray()) : "";
 
             if (conditionStr.Trim() != "")
@@ -171,6 +209,7 @@ namespace d360.model.DataAccessLayer
             var sql = $@"{issueTypeSQL} 
                          {conditionStr}
                          {assetSQL}
+                         {resourceSQL}
                          {orderBy}";
 
             return await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);
@@ -185,7 +224,7 @@ namespace d360.model.DataAccessLayer
             string sql = $@"select I.uid,I.Name,I.Description,I.IsSystem,I.UpdatedOn
                 from IssueTypeRelation R
                 inner join AssetType T on T.ID = R.AssetTypeID
-                inner join IssueType I on I.ID = R.IssueTypeID
+                inner join IssueType I on I.ID = R.IssueTypeID                
                 {whereClause}";
 
             var allocations = await this.companyContext.QueryAsync<IssueTypeApiModel>(sql, dbArgs, ApiTimeout);

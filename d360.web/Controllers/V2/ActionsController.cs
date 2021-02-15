@@ -348,6 +348,7 @@ for json path";
             SwaggerResponse(HttpStatusCode.BadRequest, "Request Parameters are invalid.", typeof(List<IssueTypeApiModel>)),
             SwaggerResponse(HttpStatusCode.NotFound, "No matching uid for the Action Type/Asset Type/Asset Uid Provided.", typeof(List<IssueTypeApiModel>)),
             SwaggerParameter("_actionTypeUid", "Filter by provided action type Uid.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_resourceUid", "Filter by provided resource Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetTypeUid", "Filter by provided asset type Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_name", "Filter by provided name value.", DataType = "string", ParameterType = "query", Required = false),
@@ -444,6 +445,25 @@ for json path";
 
                 if (nameParam.Value.Trim().Length > 250)
                     return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Name provided must be less then 250 characters in length."));
+            }
+
+            var resourceUidParam = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_resourceuid");
+
+            if (resourceUidParam.Key != null)
+            {
+                if (Guid.TryParse(resourceUidParam.Value, out Guid resourceUid))
+                {
+                    var validUid = Company.GlobalReportingResources.Any(r => r.Uid == resourceUid);
+
+                    if (!validUid)
+                    {
+                        return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Resource Uid provided does not exist."));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Resource Uid provided is invalid."));
+                }
             }
 
             #endregion
