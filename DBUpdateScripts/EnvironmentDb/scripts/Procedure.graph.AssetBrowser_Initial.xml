@@ -886,7 +886,7 @@ if @ancestry = 3
 					inner join  asset a on a.AssetTypeID = att.ID
 					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id /*)*/  and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
                )  as a order by a.responsibilityType for json path
 			) as ownersJson,
 			(
@@ -1735,7 +1735,7 @@ begin
 					inner join  asset a on a.AssetTypeID = att.ID
 					inner join #hierarchies Ho on Ho.hierarchyKey = H.hierarchyKey and Ho.ID = a.ID and ( (@includeNonLeaf = 0 and Ho.IsLeaf = 1) or (@includeNonLeaf = 1) )
 				where
-					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id /*)*/  and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
+					exists (select 1 from ResponsibilityTypeRelationOverrideItem rra where Ho.ID = rra.AssetID and rra.ResponsibilityTypeID = rt.Id and (rra.SecurityAsset ='R' or (rra.SecurityAsset = 'G' and exists (select 1 from ResourceGroup rg where rg.GroupID = rra.SecurityAssetID) ) or (rra.SecurityAsset = 'O' and exists (select 1 from OrganizationResource og where og.OrganizationID = rra.SecurityAssetID) ) ) )
                )  as a order by a.responsibilityType for json path
 			) as ownersJson,
 			(
