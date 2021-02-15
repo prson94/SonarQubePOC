@@ -832,9 +832,43 @@ where   ExecutionID <> @id
                     {
                         allMeasures.ForEach(aM =>
                         {
-                            // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
-                            if (!alreadyProcessedMeasureUids.Any(nI => nI.MetricAssetUid == aM.MetricAssetUid))
+                            var alreadyProcessedItem = alreadyProcessedMeasureUids.FirstOrDefault(nI => nI.MetricAssetUid == aM.MetricAssetUid);
+                            if (alreadyProcessedItem != null)
                             {
+                                if (alreadyProcessedItem.Deleted)
+                                {
+                                    // You need to remove this from the database.
+                                    var previousScoreItem = previousScoreItems.SingleOrDefault(p => p.MetricAssetUid == alreadyProcessedItem.MetricAssetUid);
+                                    if (previousScoreItem != null)
+                                    { 
+                                        // This is only relevant if we are deleting something on the same date we added it.
+                                        if (previousScoreItem.EffectiveDate == assetEffectiveDate.EffectiveDate)
+                                        {
+                                            scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = previousScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
+
+                                            // Now see if we should delete the group, if no other children are present for it.
+                                            if (aM.MetricParentAssetUid.HasValue)
+                                            {
+                                                var groupScoreItem = previousScoreItems.FirstOrDefault(i => i.MetricAssetUid == aM.MetricParentAssetUid);
+                                                if (groupScoreItem != null)
+                                                {
+                                                    if (!(from a in assetScoreItems
+                                                          join all in allMeasures on a.MetricAssetUid equals all.MetricAssetUid
+                                                          where all.MetricParentAssetUid == aM.MetricParentAssetUid
+                                                          where all.MetricAssetUid != previousScoreItem.MetricAssetUid
+                                                          select all.MetricAssetUid).Any())
+                                                    {
+                                                        scoreItemLinksToDelete.Add(new ScoreItemLink { ScoreItemUid = groupScoreItem.ScoreItemUid, ScoreUid = previousScoreItem.ScoreUid });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // If no current results sent in for existing data load, then we need to carry forward the previous score items to create a complete score.
                                 if (assetVersionCheckObjectTypes.OkToAddToList(aM.MetricAssetVersionUid))
                                 {
                                     // Check the measure validity.
@@ -986,30 +1020,14 @@ where   ExecutionID <> @id
                         assetScoreItemLinksToDelete.ForEach(l => {
                             l.ScoreUid = assetScore.Uid;
                         });
-                        
 
-                        var assetScoreGroupUids = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid, i.MetricAssetVersionUid }).ToList();
-                        assetScoreGroupUids.ForEach(g =>
+                        // Empty group deletion.
+                        var uidsToRemove = getEmptyMeasureGroups(allMeasures, assetScoreItems);
+                        if (uidsToRemove.Count > 0)
                         {
-                            if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
-                            {
-                                // See if there are any child measures that we have. 
-                                // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
-                                if (
-                                    !(
-                                    from am in allMeasures
-                                    join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
-                                    where am.MetricParentAssetUid == g.MetricAssetUid
-                                    select si
-                                    ).Any()
-                                    )
-                                {
-                                    var uidsToRemove = assetScoreItems.Where(si => si.MetricAssetUid == g.MetricAssetUid).Select(i => i.Uid).ToList();
-                                    assetScoreItemLinks.RemoveAll(l => uidsToRemove.Contains(l.ScoreItemUid));
-                                    assetScoreItems.RemoveAll(si => uidsToRemove.Contains(si.Uid));
-                                }
-                            }
-                        });
+                            assetScoreItemLinks.RemoveAll(l => uidsToRemove.Contains(l.ScoreItemUid));
+                            assetScoreItems.RemoveAll(si => uidsToRemove.Contains(si.Uid));
+                        }
 
                         // Now add to master collection which will be sent to database.
                         scoreItemLinksToAdd.AddRange(assetScoreItemLinks);
@@ -1019,7 +1037,7 @@ where   ExecutionID <> @id
                     }
                 });
 
-                //Now add scores via a transaction.
+                // Now add scores via a transaction.
                 if (scoresToAdd.Count > 0)
                 {
                     using (var trans = company.BeginTransaction())
@@ -1356,6 +1374,34 @@ from	metrics.ScoreItemLink T
 
                 updateExecution(company, executionRecord, true);
             }
+        }
+
+        List<Guid> getEmptyMeasureGroups(List<AllocationDataModel> allMeasures, List<ScoreItem> assetScoreItems)
+        {
+            var uids = new List<Guid>();
+
+            var assetScoreGroups = allMeasures.Where(i => i.IsGroup).Select(i => new { i.MetricAssetUid }).ToList();
+            assetScoreGroups.ForEach(g =>
+            {
+                if (assetScoreItems.Any(i => i.MetricAssetUid == g.MetricAssetUid))
+                {
+                    // See if there are any child measures that we have. 
+                    // If not, we need to remove this measure group as it is not relevant and we should not create an entry for it.
+                    if (
+                        !(
+                        from am in allMeasures
+                        join si in assetScoreItems on am.MetricAssetUid equals si.MetricAssetUid
+                        where am.MetricParentAssetUid == g.MetricAssetUid
+                        select si
+                        ).Any()
+                        )
+                    {
+                        uids.AddRange(assetScoreItems.Where(si => si.MetricAssetUid == g.MetricAssetUid).Select(i => i.Uid));
+                    }
+                }
+            });
+
+            return uids;
         }
 
         void updateExecution(SqlConnection Db, ApiExecution executionRecord, bool completed) 
