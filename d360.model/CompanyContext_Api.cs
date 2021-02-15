@@ -7615,20 +7615,10 @@ where   ER.ExecutionID = @ExecutionID
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
-                var existingUids = new List<Guid>();
-                if(execution.Method == "POST")
-                {
-                    existingUids = Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = import.Select(x=> x.Uid) }).ToList();
-                }
 
                 if (uidDupes.Any() && execution.Method == "PUT")
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
-                }
-                if (existingUids.Any())
-                {
-                    execution.ErrorMessage = $"Non Unique Asset Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
                     results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
                 }
                 else if (nameDupes.Any())

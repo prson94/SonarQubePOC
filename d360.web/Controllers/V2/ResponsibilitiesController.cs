@@ -771,6 +771,14 @@ namespace d360.web.Controllers.V2
 
                 }
 
+                var existingUids = new List<Guid>();
+                existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Select(x => x.Uid) }).ToList();
+                if (existingUids.Any())
+                {
+                    errorMessage = $"Non Unique Asset Uids: {string.Join(", ", existingUids.Select(i => i.ToString()))}. Identifiers must be unique within a table.";
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage)));
+                }
+
                 var execution = getApiExecution(responsibilityTypes.Count);
 
                 var upserts = new List<ResponsibilityTypeUpsertModel>();
