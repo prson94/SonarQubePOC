@@ -1207,9 +1207,11 @@ for json path";
                                             INNER JOIN AssetType T ON T.ID = R.AssetTypeID
                                             CROSS APPLY dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
                                             OUTER APPLY (select 
-                                                    CONCAT('[""',STRING_AGG(STRING_ESCAPE(cast(ResponsibilityTypeUid as nvarchar(36)),'JSON'), '"",""'),'""]') as ResponsibilitiesJson		                                 
+                                                    CONCAT('[""',STRING_AGG(STRING_ESCAPE(cast(rt.Uid as nvarchar(36)),'JSON'), '"",""'),'""]') as ResponsibilitiesJson		                                 
 	                                            from 
 		                                            IssueTypeRelationResponsibility ITRR 
+                                                    INNER JOIN
+                                                    ResponsibilityType rt on RT.ID = ITRR.ResponsibilityTypeId 
 	                                            where 
 		                                            ITRR.IssueTypeRelationID = R.ID) RUid
                                         WHERE 
