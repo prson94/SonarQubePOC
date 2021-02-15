@@ -1068,7 +1068,9 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 
                 var connection = company.Connection;
                 if (connection.State != System.Data.ConnectionState.Open)
+                {
                     await connection.OpenAsync();
+                }
 
                 using (var trans = connection.BeginTransaction())
                 {
