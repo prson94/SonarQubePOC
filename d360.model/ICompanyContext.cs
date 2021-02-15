@@ -362,7 +362,7 @@ namespace d360.model
         /// <summary>
         /// Used where BuildDataQualityMeasureQueryModel uses QueryType = 3
         /// </summary>
-        List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime minDate, DateTime? maxDate);
+        List<DataQualityMeasureQueryResultModel> GetDataQualityMeasureQueryResultModels(DataQualityMeasureQueryModel query, Guid assetUid, DateTime? maxDate);
 
         #endregion
     }

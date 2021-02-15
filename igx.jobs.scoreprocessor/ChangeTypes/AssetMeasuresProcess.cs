@@ -507,31 +507,7 @@ where   ExecutionID <> @id
 
                                                     try
                                                     {
-                                                        DateTime minimumDate = measure.EffectiveDate;
-                                                        switch (measure.UpdateFrequency)
-                                                        {
-                                                            case MetricUpdateFrequency.Annually:
-                                                                minimumDate = minimumDate.AddYears(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Daily:
-                                                                minimumDate = minimumDate.AddDays(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Hourly:
-                                                                minimumDate = minimumDate.AddHours(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Monthly:
-                                                                minimumDate = minimumDate.AddMonths(-1);
-                                                                break;
-                                                            case MetricUpdateFrequency.Quarterly:
-                                                                minimumDate = minimumDate.AddMonths(-3);
-                                                                break;
-                                                            case MetricUpdateFrequency.Weekly:
-                                                                minimumDate = minimumDate.AddDays(-7);
-                                                                break;
-                                                            case MetricUpdateFrequency.None:
-                                                                break;
-                                                        }
-                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, minimumDate, measure.EffectiveEndDate);
+                                                        var rollupPathResults = Db.GetDataQualityMeasureQueryResultModels(dqQueryDetail, n.AssetUid, assetEffectiveDate.EffectiveDate);
 
                                                         if (rollupPathResults.Count > 0)
                                                         {

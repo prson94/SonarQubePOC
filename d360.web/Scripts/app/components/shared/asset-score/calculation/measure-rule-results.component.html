@@ -79,12 +79,12 @@
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Run Date</div>
-                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short'"></div>
+                            <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short':'GMT'"></div>
                             <div *ngIf="!selected.RunDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
                             <div class="details-header">Effective Date</div>
-                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate'"></div>
+                            <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate':'GMT'"></div>
                             <div *ngIf="!selected.EffectiveDate" class="details-content">---</div>
                         </div>
                         <div class="measure-details-item">
