@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityType-v1">
+  <changeSet author="TDuric" id="Table.dbo.ResponsibilityType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -31,11 +31,19 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityType_Res
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityType_ResponsibilityTypeGroup] ON [dbo].[ResponsibilityType] ( [ResponsibilityTypeGroup] ASC )
 END
+
+if not exists (SELECT * FROM dbo.sysobjects where name = 'UC_ResponsibilityType_uid' and xtype = 'UQ')
+begin
+	ALTER TABLE [dbo].[ResponsibilityType] ADD  CONSTRAINT [UC_ResponsibilityType_uid]  UNIQUE(uid)
+end
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+if exists (SELECT * FROM dbo.sysobjects where name = 'UC_ResponsibilityType_uid' and xtype = 'UQ')
+begin
+	ALTER TABLE [dbo].[ResponsibilityType] DROP CONSTRAINT [UC_ResponsibilityType_uid]
+end
 		]]>
 	</rollback>
   </changeSet>

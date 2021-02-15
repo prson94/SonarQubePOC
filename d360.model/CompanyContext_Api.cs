@@ -7692,12 +7692,17 @@ where   ER.ExecutionID = @ExecutionID
                                 }
                                 else
                                 {
-                                    row["IsNew"] = true;
                                     row["Uid"] = Guid.NewGuid();
                                 }
 
                                 if (model.IsNew == true)
+                                {
                                     row["IsNew"] = true;
+                                }
+                                else
+                                {
+                                    row["IsNew"] = false;
+                                }
 
                                 table.Rows.Add(row);
                             }
@@ -7751,8 +7756,9 @@ where   ER.ExecutionID = @ExecutionID
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with this Uid does not exists'
     from api.ExecutionResponsibilityType ERT
+    inner join api.Execution AE on AE.ExecutionID = ERT.ExecutionID
     left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
-    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null and ERT.IsNew <> 1;
+    where	 AE.Method = 'PUT' and ERT.ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
 
     update	api.ExecutionResponsibilityType 
     set		Success = 0,
@@ -7811,14 +7817,16 @@ where   ER.ExecutionID = @ExecutionID
                                                           and ResponsibilityTypeId is null
                                                           and Success is null
 	                                              ) S
-                                            on (S.IsNew <> 1)
+                                            on (RT.Uid = S.Uid and S.IsNew = 0)
 											when matched then
 											update  
 												set RT.Name = S.Name,
-												RT.Description = S.Description
+												RT.Description = S.Description,
+                                                UpdatedOn = getutcdate(),
+                                                UpdatedBy = @CurrentResourceID
                                             when not matched then
-	                                            insert (Name, Description, Uid)
-	                                            values (S.Name,S.Description, S.Uid)
+	                                            insert (Name, Description, Uid, CreatedOn, CreatedBy)
+	                                            values (S.Name,S.Description, S.Uid, getutcdate(), @CurrentResourceID)
 	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update RT
@@ -7830,7 +7838,7 @@ where   ER.ExecutionID = @ExecutionID
                                             where RT.ExecutionID = @ExecutionID and RT.Success is null";
 
                                         Connection.Execute(insertSQL,
-                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                         Connection.Execute(
                                             $"update ERT set ERT.Success = 1 from api.ExecutionResponsibilityType ERT where	{querySuffix} and ERT.ResponsibilityTypeId is not null;",
