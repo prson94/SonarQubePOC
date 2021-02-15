@@ -1,5 +1,10 @@
 ﻿<div *ngIf="isFullScreen" class="modal-background"></div>
 <div class="row asset-browser" [ngClass]="{'full-screen-ab': isFullScreen}">
+    <div #relationshipBadgesTooltip [hidden]="!isRelationshipBadgeTooltipVisible"
+         class="p-tooltip p-component p-tooltip-top ig-tooltip ig-tooltip-big">
+        <div class="p-tooltip-text" [innerHTML]="relationshipBadgeHtml"></div>
+    </div>
+
     <div class="asset-browser-body col s12">
         <div class="tile tile-detail" style="padding: 0">
             <div [hidden]="isLoading" class="asset-browser-header">
@@ -100,11 +105,6 @@
                                 </div>
                             </div>
                         </ng-container>
-                    </div>
-
-                    <div #relationshipBadgesTooltip [hidden]="!isRelationshipBadgeTooltipVisible"
-                         class="p-tooltip p-component p-tooltip-top ig-tooltip ig-tooltip-big">
-                        <div class="p-tooltip-text" [innerHTML]="relationshipBadgeHtml"></div>
                     </div>
 
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
