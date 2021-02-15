@@ -39,7 +39,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     private assetTypeUid: string;
     formattedScoreCalc: string;
     MatchType: MetricMatchType = MetricMatchType.All;
-    
+
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
     formattedCheck: string = "";
@@ -55,7 +55,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     maxScoreEffectiveDate: Date;
     showDisabled: boolean = false;
     showPassTest: boolean = false;
-    
+
 
     isMeasureListCommandBarDisabled: boolean = false;
 
@@ -175,10 +175,10 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         if (this.selectedAssetType && this.allocation) {
             this.setCommonItems(true, this.selectedAssetType.Name);
             this.setCommonSecondaryNavTabs(false);
-            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid)
-                .subscribe(r => {
+            this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid, "Active", "scoretype", "asc")
+                .subscribe(res => {
                     var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
-                    r.forEach(x => {
+                    res.forEach(x => {
                         const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
                         const searchRes: SearchResult = new SearchResult();
                         searchRes.Name = x.assetTypePath;
@@ -189,40 +189,38 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         x.icon = 'fa-drivers-license-o';
                     });
 
-                    this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, r);
+                    this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, res);
 
                     this.headerBreadcrumbService.showBreadcrumb(crumb);
-                    this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid).subscribe(res => {
-                        if (res && res.length > 0) {
-                            const items = res.filter(x => { return x.uid == this.allocation.uid });
+                    if (res && res.length > 0) {
+                        const items = res.filter(x => { return x.uid == this.allocation.uid });
 
-                            if (items.length > 0) {
-                                this.allocation = items[0];
-                                this.formatScoreCalc();
-                                this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
-                                    .subscribe(f => {
-                                        if (f && f.items && f.items.length > 0) {
-                                            let maxDates: any[] = [];
-                                            f.items.forEach(x => {
-                                                if (x.Scores && x.Scores.length > 0) {
-                                                    let scores = x.Scores.sort((x, y) => {
-                                                        let datex = new Date(x.EffectiveDate);
-                                                        let datey = new Date(y.EffectiveDate);
-                                                        return datey.getTime() - datex.getTime();
-                                                    });
-                                                    maxDates.push(new Date(scores[0].EffectiveDate));
-                                                }
-                                            });
-                                            maxDates.sort((x, y) => {
-                                                return y.getTime() - x.getTime();
-                                            });
-                                            this.maxScoreEffectiveDate = maxDates[0];
-                                        }
-                                    });
-                                this.isLoading = false;
-                            }
+                        if (items.length > 0) {
+                            this.allocation = items[0];
+                            this.formatScoreCalc();
+                            this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
+                                .subscribe(f => {
+                                    if (f && f.items && f.items.length > 0) {
+                                        let maxDates: any[] = [];
+                                        f.items.forEach(x => {
+                                            if (x.Scores && x.Scores.length > 0) {
+                                                let scores = x.Scores.sort((x, y) => {
+                                                    let datex = new Date(x.EffectiveDate);
+                                                    let datey = new Date(y.EffectiveDate);
+                                                    return datey.getTime() - datex.getTime();
+                                                });
+                                                maxDates.push(new Date(scores[0].EffectiveDate));
+                                            }
+                                        });
+                                        maxDates.sort((x, y) => {
+                                            return y.getTime() - x.getTime();
+                                        });
+                                        this.maxScoreEffectiveDate = maxDates[0];
+                                    }
+                                });
+                            this.isLoading = false;
                         }
-                    });
+                    }
                 });
         }
         else {
@@ -310,8 +308,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             item &&
             item.Definition &&
             (item.Definition.DataQuality || (item.Definition.Governance && item.Definition.Governance.Check))
-        )
-        {
+        ) {
             return true;
         } else {
             return false;
@@ -375,7 +372,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             !this.screenReferences.predicates ||
             !this.screenReferences.relationships ||
             !this.screenReferences.responsibilities
-            );
+        );
     }
 
     private save() {
