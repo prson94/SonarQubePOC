@@ -5,7 +5,7 @@
 </div>
 <div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">                                
     <div class="col s1 right-align">
-        <img class="user" height="35" [src]="'/resources/image/' + comment.CreatedBy + '?size=35'" width="35" />                        
+        <img class="user" height="35" [src]="'/api/v2/membership/users/' + comment.CreatedByUid + '/image?size=35'" width="35" />                        
     </div>
     <div class="col s11">
         <div class="row" *ngIf="!showEdit">

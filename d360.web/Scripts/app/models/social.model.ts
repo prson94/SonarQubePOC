@@ -33,6 +33,7 @@ export class CommentDetail {
     ID: number;
     ParentID: number;
     CreatedBy: number;
+    CreatedByUid: string;
     UpdatedBy: number;
     CreatedOn: Date;
     UpdatedOn: Date;

@@ -15,6 +15,7 @@ import { SocialTagInputComponent } from './social-tag-input.component';
 import { ButtonModule } from 'primeng/button';
 import { EditorModule } from 'primeng/editor';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { ResourcesService } from '../../../services/resources.service';
 
 
 @NgModule({
@@ -46,7 +47,9 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
+            multi: true
+        },
+        ResourcesService
     ]
 })
 export class SocialModule { }

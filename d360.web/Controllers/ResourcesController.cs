@@ -61,30 +61,32 @@ namespace d360.web.Controllers
         [HttpGet, ValidateContracts(Ignore = true), Route("image/{id:int}")]
         public async Task<ActionResult> MyImage(int id, int size = 150)
         {
-            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where id = @id", new { id });
+            //var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where id = @id", new { id });
 
-            if (string.IsNullOrEmpty(email)) throw new NotFoundException("Cannot find email address associated with specified Govern user.");
+            //if (string.IsNullOrEmpty(email)) throw new NotFoundException("Cannot find email address associated with specified Govern user.");
 
-            MD5 md5Hasher = MD5.Create();
+            //MD5 md5Hasher = MD5.Create();
 
-            // Convert the input string to a byte array and compute the hash. 
-            // 1.  Trim leading and trailing whitespace from an email address
-            // 2.  Force all characters to lower-case
-            // 3.  md5 hash the final string
-            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+            //// Convert the input string to a byte array and compute the hash. 
+            //// 1.  Trim leading and trailing whitespace from an email address
+            //// 2.  Force all characters to lower-case
+            //// 3.  md5 hash the final string
+            //byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
 
-            // Create a new Stringbuilder to collect the bytes  
-            // and create a string.  
-            StringBuilder sBuilder = new StringBuilder();
+            //// Create a new Stringbuilder to collect the bytes  
+            //// and create a string.  
+            //StringBuilder sBuilder = new StringBuilder();
 
-            // Loop through each byte of the hashed data  
-            // and format each one as a hexadecimal string.  
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
+            //// Loop through each byte of the hashed data  
+            //// and format each one as a hexadecimal string.  
+            //for (int i = 0; i < data.Length; i++)
+            //{
+            //    sBuilder.Append(data[i].ToString("x2"));
+            //}
 
-            return new RedirectResult($"https://secure.gravatar.com/avatar/{sBuilder.ToString()}?s={size}&d=mm");
+            //return new RedirectResult($"https://secure.gravatar.com/avatar/{sBuilder.ToString()}?s={size}&d=mm");
+
+            return null;
         }
 
         #endregion

@@ -73,7 +73,7 @@
             ); window[aiName] = aisdk;
         </script>
     }
-    <script type="text/javascript">
+<script type="text/javascript">
         var EnvironmentSettings = @(Html.Raw(environmentSettingsJson));
         var CompanySettings = @(Html.Raw(settingsJson));
         var CurrentResourceID = @(CurrentResourceID);
@@ -81,8 +81,9 @@
         var SingleSignOn = @(ViewData["SingleSignOn"].ToString().ToLower());
         var ResourceName = '@(ViewData["ResourceName"].ToString())';
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
+        var CurrentResourceUid = '@(ViewData["ResourceUid"].ToString())';
         var VersionNumber = '@(VersionNumber)';
-    </script>
+</script>
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v11.1.0/primeng.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v11.1.0/default.min.css", baseUrl)" />

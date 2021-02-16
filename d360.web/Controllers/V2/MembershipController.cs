@@ -16,10 +16,14 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -1536,7 +1540,96 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, "Success", string.Format("You are {0} watching {1}.", (success) ? "now" : "no longer", (model.assetTypeUid != null) ? $"type '{name}'" : $"'{name}'"))); ;
         }
 
+        /// <summary>
+        /// Retrieve a users logo
+        /// </summary>
+        /// <param name="uid">Uid of the user</param>
+        /// <param name="size">Size of the image to be returned in pixels.</param>
+        [HttpGet,
+        Route("users/{uid:Guid}/image"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(Stream)),
+        SwaggerResponse(HttpStatusCode.BadRequest, "Invalid size specified for image, value greater than max or less than or equal to 0."),
+        SwaggerResponse(HttpStatusCode.NotFound, "Invalid Resource Uid provided."),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),]
+        public async Task<IHttpActionResult> MyImage(Guid uid, int size = 150)
+        {
+            var test = "7E7F6EE4-42B3-4A86-80F5-62D57EC349ED";
+            Guid.TryParse(test, out uid);
+            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where uid = @uid", new { uid });
 
+            if (email == null)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "Invalid resource uid specified"));
+
+            if (size < 1 || size > 2048)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid request, invalid size specified for image. Value must be less then 2048 or greater than 0"));
+
+
+            MD5 md5Hasher = MD5.Create();
+
+            // Convert the input string to a byte array and compute the hash. 
+            // 1.  Trim leading and trailing whitespace from an email address
+            // 2.  Force all characters to lower-case
+            // 3.  md5 hash the final string
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ?? "").Trim().ToLower()));
+
+            // Create a new Stringbuilder to collect the bytes  
+            // and create a string.  
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data  
+            // and format each one as a hexadecimal string.  
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+
+            //var client = new HttpClient();
+            string url = "http://www.gravatar.com/avatar/" + sBuilder.ToString() + "?s=" + size + "&d=mm";
+            //client.BaseAddress = new Uri(url);
+            //var result = await client.GetAsync(url);
+            //var resultContent = result.Content.ReadAsStreamAsync().Result;
+
+            //byte[] array;
+            ImageConverter converter = new ImageConverter();
+            var memoryStream = new MemoryStream();
+            ////using (var memoryStream = new MemoryStream())
+            ////{
+
+            //resultContent.CopyTo(memoryStream);
+            //Bitmap bm = new Bitmap(1, 1);
+            //bm.Save(memoryStream, ImageFormat.Png);
+            //array = memoryStream.ToArray();
+            ////}
+
+            ////var ms = new MemoryStream();
+
+            //byte[] fileContents;
+            byte[] imgData;
+            using (Bitmap image = new Bitmap(WebRequest.Create(url).GetResponse().GetResponseStream()))
+            {
+                image.Save(memoryStream, ImageFormat.Png);
+                imgData = (byte[])converter.ConvertTo(image, typeof(byte[]));
+            }
+            var ms = new MemoryStream(imgData);
+            //    //fileContents = memoryStream.ToArray();
+
+            HttpResponseMessage r = Request.CreateResponse(HttpStatusCode.OK);
+            r.Content = new StreamContent(ms);
+            //r.Content = new ByteArrayContent(imgData);
+            ms.Position = 0;
+            r.Content.Headers.ContentLength = ms.Length;
+            r.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+            r.Content.Headers.ContentDisposition.FileName = "userImage.png";
+            r.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+
+            //return new FileContentResult(fileContents, "image/jpg");
+
+            //var res = createImageResponseMessage(HttpStatusCode.OK, $"userImage.png", fileContents);
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(r));
+            //return null;
+            //return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(response)));
+        }
 
         /// <summary>
         /// Checks the watch status of an Asset for the requesting user.

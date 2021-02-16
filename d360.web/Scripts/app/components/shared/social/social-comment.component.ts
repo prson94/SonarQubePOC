@@ -5,6 +5,7 @@ import { CommentAggregateVoteDetail, CommentDetail, CommentType, Emoji } from ".
 import { Router } from "@angular/router";
 import { CurrentCompanySettings } from "../../../static/company-settings"
 import { map } from "rxjs/operators";
+import { ResourcesService } from "../../../services/resources.service";
 
 declare var CurrentResourceID;
 
@@ -90,15 +91,23 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     isDeletable: boolean = false;
     isEditable: boolean = false;
+    resourceUid: string = "";
     
 
-    constructor(private socialService: SocialService, private router: Router) {
+    constructor(private socialService: SocialService, private router: Router, private resourcesService: ResourcesService) {
         super(); 
     } 
 
     ngOnInit(): void {
         this.isDeletable = this.isAdmin || (this.comment.CreatedBy == CurrentResourceID);
         this.isEditable = this.comment.CreatedBy == CurrentResourceID;
+
+        if (this.comment) {
+            this.resourcesService.getResource(this.comment.CreatedBy)
+                .subscribe(r => {
+                    this.comment.CreatedByUid = r.items[0].uid;
+                });
+        }
 
         this.calculateVotes();
     }
@@ -183,5 +192,9 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
 
     canReply(): boolean {
         return !CurrentCompanySettings.disableCommunityPosting;
+    }
+
+    getResourceUid(id) {
+        
     }
 }
