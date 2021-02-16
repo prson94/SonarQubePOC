@@ -1092,8 +1092,10 @@ create table #ResponsibilityTypeOverride
     SecurityAssetID int,
     Message nvarchar(max),
     Success bit not null
-);
+);"
+, transaction: trans);
 
+                        await connection.ExecuteAsync(@"
 insert into #ResponsibilityTypeOverride
 select LI.RowIndex, 
 LIC1.Value as ResponsibilityName,
@@ -1237,6 +1239,10 @@ where LI.LoadID = @loadId"
                         {
                             CoreFunction.AITrackException(functionName, ex, companyId: company.CurrentCompanyID);
                             trans.Rollback();
+
+                            //mark incomplete records as failed
+                            (await company.QueryAsync(@"update LoadItem set Status = 0, StatusMessage = 'A fatal error occurred while attempting to load responsibilities.' where LoadID = @loadId and coalesce(Status,0) <> 1", new { loadId = load.ID })).FirstOrDefault();
+
                         }
                         catch { }
                     }
