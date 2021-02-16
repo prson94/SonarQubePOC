@@ -6,6 +6,7 @@ import { Router } from "@angular/router";
 import { CurrentCompanySettings } from "../../../static/company-settings"
 import { map } from "rxjs/operators";
 import { ResourcesService } from "../../../services/resources.service";
+import { forEach } from "core-js/fn/array";
 
 declare var CurrentResourceID;
 
@@ -107,6 +108,14 @@ export class SocialCommentComponent extends BaseComponent implements OnInit {
                 .subscribe(r => {
                     this.comment.CreatedByUid = r.items[0].uid;
                 });
+            if (this.comment.Comments && this.comment.Comments.length > 0) {
+                this.comment.Comments.forEach(x => {
+                    this.resourcesService.getResource(x.CreatedBy)
+                        .subscribe(i => {
+                            x.CreatedByUid = i.items[0].uid;
+                        });
+                })
+            }
         }
 
         this.calculateVotes();
