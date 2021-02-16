@@ -65,19 +65,22 @@ namespace d360.core.entities
         public string Name { get; set; }
         [DataMember]
         public string Path { get; set; }
-
         [IgnoreDataMember]
         protected string ResponsibilitiesJson { get; set; }
-
         [DataMember]
-        public List<Guid> ResponsibilityUids
-        {
+        public List<IssueTypeAllocationsResponsibility> Responsibilities { 
             get
-            {                
-                return JsonConvert.DeserializeObject<List<string>>(ResponsibilitiesJson).Where(r => !string.IsNullOrEmpty(r)).Select(r => new Guid(r)).ToList();
-            }
+            {
+                return JsonConvert.DeserializeObject<List<IssueTypeAllocationsResponsibility>>(string.IsNullOrEmpty(ResponsibilitiesJson) ? "[]" : ResponsibilitiesJson);
+            } 
         }
 
+    }
+
+    public class IssueTypeAllocationsResponsibility
+    {
+        public string Name { get; set; }
+        public Guid Uid { get; set; }
     }
 
     public class IssueTypeAllocationRequest
