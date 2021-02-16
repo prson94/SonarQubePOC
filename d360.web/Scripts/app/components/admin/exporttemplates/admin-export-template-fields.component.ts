@@ -178,7 +178,6 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     public top(event, field: FieldDefinition) {
         event.stopPropagation();
         this.isLoading = true;
-        console.log(this.availableFields);
         //push everything down        
         field.ExtOrder = 0;
         for (let i = 0; i < this.availableFields.length; i++) {
